@@ -1,14 +1,17 @@
 
 
-from io import open, StringIO
+from io import StringIO
+
+from lepl.core import Core
 
 
 class Stream():
     '''
-    This serves two purposes.  First, it provides a central, persistent store
-    for things like debug info while doing a parse.  Second, it provides 
-    moderately space-efficient access to the string data, allowing both
-    back-tracking and background clean-up of unused data by the GC.
+    This serves two purposes.  First, it wraps the central, persistent store
+    for things like debug info and backtrace stack management while doing a 
+    parse.  Second, it provides moderately space-efficient access to the string 
+    data, allowing both back-tracking and background clean-up of unused data by 
+    the GC.
     
     We support the GC by making Stream instances pointers into the data,
     which is itself managed in a linked list of chunks (one per line).  Back 
@@ -19,6 +22,9 @@ class Stream():
     chunks are still managed (to keep the code simple), but are implemented
     as slices of the persistent in-memory data (I assume - in practice we
     just use StringIO).
+    
+    Note that Stream() provides only a very limited impression of the
+    string interface via [n] and [n:m].
     '''
     
     @staticmethod
@@ -36,6 +42,13 @@ class Stream():
         return Stream(Chunk(StringIO(text)))
     
     @staticmethod
+    def from_list(data):
+        '''
+        We can parse any list (not just lists of characters as strings).
+        '''
+        return Stream(Chunk(ListIO(data)))
+    
+    @staticmethod
     def from_file(file):
         '''
         Wrap a file.
@@ -44,7 +57,8 @@ class Stream():
     
     def __init__(self, chunk, offset=0, core=None):
         self.__chunk = chunk
-        self.__offset = 0
+        self.__offset = offset
+        self.core = chunk.core
         
     def __getitem__(self, spec):
         '''
@@ -55,18 +69,15 @@ class Stream():
         '''
         if isinstance(spec, int):
             return self.__chunk.read(self.__offset, spec, spec+1)
-        elif isinstance(spec, slice) and slice.step == None:
-            if slice.stop == None:
-                return self.__chunk.stream(self.__offset, slice.start)
-            elif slice.stop >= slice.start:
-                return self.__chunk.read(self.__offset, slice.start, slice.stop)
+        elif isinstance(spec, slice) and spec.step == None:
+            if spec.stop == None:
+                return self.__chunk.stream(self.__offset, spec.start)
+            elif spec.stop >= spec.start:
+                return self.__chunk.read(self.__offset, spec.start, spec.stop)
         raise TypeError()
         
-    def __iter__(self):
-        return self.__chunk.iter(self.__offset)
-    
     def __repr__(self):
-        return '%s[%d:]' % (self.__chunk, self.__offset)
+        return '%r[%d:]' % (self.__chunk, self.__offset)
         
         
 class Chunk():
@@ -82,21 +93,21 @@ class Chunk():
             self.__empty = True
         self.__next = None
         self.__stream = stream
-        self.__core = core if core else Core()
+        self.core = core if core else Core()
         
     def read(self, offset, start, stop):
         '''
         Read a string.
         '''
         if stop == 0: return ''
-        if self.__empty: raise IndexException()
+        if self.__empty: raise IndexError()
         start = start + offset
         stop = stop + offset
         size = len(self.__text)
         if stop <= size:
             return self.__text[start:stop]
         else:
-            return self.__text[start:] + self.next().read(0, 0, stop-size)
+            return self.__text[start:] + self.next().read(0, start-size, stop-size)
         
     def next(self):
         '''
@@ -116,17 +127,24 @@ class Chunk():
         elif self.__empty:
             raise IndexException()
         else:
-            return next().stream(start-len(self.__text))
+            return self.next().stream(start-len(self.__text), 0)
         
     def __repr__(self):
-        return 'Chunk("%s"...)' % '' if self.__empty else self.__text
-                                  
-        
-class Core():
-    '''
-    The persistent core of a set of Streams. 
-    '''
+        return 'Chunk(%r...)' % ('' if self.__empty else self.__text)
 
-    def __init__(self):
-        pass
+
+class ListIO():
+    '''
+    Minimal wrapper for lists - returns entire list as single line.
+    '''
     
+    def __init__(self, data):
+        self.__data = data
+        
+    def readline(self):
+        data = self.__data
+        close()
+        return data
+    
+    def close(self):
+        self.__data = None
