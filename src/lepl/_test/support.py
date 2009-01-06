@@ -23,4 +23,3 @@ class AssertTypeTestCase(TestCase):
             assert False, 'Expected failure'
         except TypeError as e:
             assert e.msg == msg, e.msg
-            

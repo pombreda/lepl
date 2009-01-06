@@ -1,7 +1,27 @@
+ 
+
+from lepl.support import CircularFifo
 
 
-                                  
+def limited_depth(f):
+    def call(self, stream):
+        generator = f(self, stream)
+        stream.core.register_generator(generator)
+        return generator
+    return call
+
+def no_depth(f):
+    def call(self, stream):
+        generator = f(self, stream)
+        def single():
+            try:
+                yield next(generator)
+            finally:
+                generator.close()
+        return single()
+    return call
         
+
 class Core():
     '''
     Data store for a single parse; embedded in the streams used to wrap the
@@ -48,30 +68,3 @@ class GeneratorLimiter():
         len(self.__fifo) if self.__fifo else 0
         
 
-class CircularFifo():
-    
-    def __init__(self, size):
-        '''
-        Stores up to size entries.  Once full, appending a further value
-        will discard (and return) the oldest still present.
-        '''
-        self.__size = 0
-        self.__next = 0
-        self.__buffer = [None] * size
-        
-    def append(self, value):
-        '''
-        This returns a value on overflow, otherwise None.
-        '''
-        capacity = len(self.__buffer)
-        if self.__size == capacity:
-            dropped = self.__buffer[self.__next]
-        else:
-            dropped = None
-            self.__size += 1
-        self.__buffer[self.__next] = value
-        self.__next = (self.__next + 1) % capacity
-        return dropped
-
-    def __len__(self):
-        return len(self.__buffer)
