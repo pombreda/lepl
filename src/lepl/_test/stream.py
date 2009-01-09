@@ -34,3 +34,23 @@ class StreamTest(TestCase):
         except IndexError:
             pass
         
+    def test_describe(self):
+        s1 = Stream.from_string('abc\npqs', )
+        s1.core.description_length = 3
+        s = str(s1)
+        assert s == "'abc'...", s
+        s = str(s1[1:])
+        assert s == "'bc\\n'...", s
+        s = str(s1[2:])
+        assert s == "'c\\np'...", s
+        s = str(s1[3:])
+        assert s == "'\\npq'...", s
+        s = str(s1[4:])
+        assert s == "'pqs'", s
+        s = str(s1[5:])
+        assert s == "'qs'", s
+        s = str(s1[6:])
+        assert s == "'s'", s
+        s = str(s1[7:])
+        assert s == "''", s
+        

@@ -2,6 +2,9 @@
 
 class Any():
     
+    def __init__(self):
+        super().__init__()
+    
     def __call__(self, text):
         '''
         Match any character and progress to the next.

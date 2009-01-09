@@ -52,8 +52,9 @@ class CheckReturnYield():
             for i in range(n):
                 yield i
         else:
-            # this gives a runtime error
-            return self.indirect(n)
+            # this does not compile
+            #return self.indirect(n)
+            pass
         
     def indirect(self, n):
         for i in range(n):
@@ -69,8 +70,27 @@ class CheckReturnYield():
         for i in c:
             print(i)
             
+            
+class CheckGeneratorProxy():
+    
+    def __getattr__(self, name):
+        return getattr(self.target, name)
+    
+    def run(self):
+        self.target = Numbers()
+        for i in self.numbers():
+            print(i)
+
+class Numbers():
+    
+    def numbers(self):
+        for i in range(5):
+            yield i
+
         
 
 if __name__ == '__main__':
     #CheckSlice().run()
-    CheckReturnYield().run()
+    #CheckReturnYield().run()
+    CheckGeneratorProxy().run()
+    

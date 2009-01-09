@@ -34,6 +34,8 @@ class CircularFifo():
         self.__buffer[self.__next] = value
         self.__next = (self.__next + 1) % capacity
         return dropped
-
+    
     def __len__(self):
         return len(self.__buffer)
+
+        

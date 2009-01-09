@@ -1,5 +1,8 @@
 
+from lepl.core import limited_depth
+from lepl.match import MatchMixin
 from lepl.support import assert_type
+from lepl.trace import LogMixin
 
 
 class RepeatMixin():
@@ -8,13 +11,21 @@ class RepeatMixin():
     [n] - Repeat exactly n times
     [n:m] - Repeat n to m times, starting with n and incrementing
     [n:m:s] - Repeat n, n+s, ... times, with an upper bound of m
-    defaults are: n=0, m=infinity, s=1
+    Defaults are: n=0, m=infinity, s=-1
+    We use a negative third index (greedy matching, depth first search)
+    because it behaves better with large patterns and limited backtracking
+    (the generators are stored directly and can be closed to free resources;
+    with non-greedy, breadth first search generators are successively 
+    expanded and the results accumulated in memory).
     '''
+    
+    def __init__(self, *args, **kargs):
+        super().__init__(*args, **kargs)
     
     def __getitem__(self, index):
         start = 0
         stop = None
-        step = 1
+        step = -1
         if isinstance(index, int):
             start = index
             stop = index
@@ -22,10 +33,12 @@ class RepeatMixin():
             if index.start != None: start = index.start
             if index.stop != None: stop = index.stop
             if index.step != None: step = index.step
+        else:
+            raise TypeError()
         return Repeat(self, start, stop, step)
 
 
-class Repeat():
+class Repeat(MatchMixin, LogMixin):
     '''
     Repeats the pattern supplied to the constructor.
     ''' 
@@ -34,6 +47,7 @@ class Repeat():
         '''
         A value of None for stop implies no upper bound.
         '''
+        super().__init__()
         self._pattern = pattern
         if start == None: start = 1
         assert_type('The start index for Repeat or [...]', start, int)
@@ -54,6 +68,7 @@ class Repeat():
         self._stop = stop
         self._step = step
         
+    @limited_depth
     def __call__(self, stream):
         if self._step >= 0:
             return self.__call_up(stream)
@@ -70,20 +85,23 @@ class Repeat():
         
         Discarding stack duplicates may be a gain in odd circumstances?
         '''
-        if 0 == self._start: yield ([], stream)
-        stack = [(0, [], stream)]
-        while stack:
-            # smallest counts first
-            (count1, acc1, stream1) = stack.pop(0)
-            count2 = count1 + 1
-            for (value, stream2) in self._pattern(stream1):
-                acc2 = acc1 + value
-                if count2 >= self._start and \
-                    (self._stop == None or count2 <= self._stop) and \
-                    (count2 - self._start) % self._step == 0:
-                    yield (acc2, stream2)
-                if self._stop == None or count2 + self._step <= self._stop:
-                    stack.append((count2, acc2, stream2))
+        try:
+            if 0 == self._start: yield ([], stream)
+            stack = [(0, [], stream)]
+            while stack:
+                # smallest counts first
+                (count1, acc1, stream1) = stack.pop(0)
+                count2 = count1 + 1
+                for (value, stream2) in self._pattern(stream1):
+                    acc2 = acc1 + value
+                    if count2 >= self._start and \
+                        (self._stop == None or count2 <= self._stop) and \
+                        (count2 - self._start) % self._step == 0:
+                        yield (acc2, stream2)
+                    if self._stop == None or count2 + self._step <= self._stop:
+                        stack.append((count2, acc2, stream2))
+        except GeneratorExit:
+            self._pattern.close()
 
     def __call_down(self, stream):
         '''
@@ -95,27 +113,37 @@ class Repeat():
         Despite that, we still accumulate many (all non-stop) values "on 
         the way".  These are stored for later use.
         '''
-        stack = [(0, [], self._pattern(stream))]
-        known = {}
-        while stack:
-            (count1, acc1, generator) = stack[-1]
-            try:
-                (value, stream2) = next(generator)
-                count2 = count1 + 1
-                acc2 = acc1 + value
-                if count2 == self._stop:
-                    yield (acc2, stream2)
-                elif count2 >= self._start and \
-                    (self._stop == None or \
-                        (count2 <= self._stop and \
-                        (self._stop - count2) % self._step == 0)):
-                    if count2 not in known: known[count2] = []
-                    known[count2].append((acc2, stream2))
-                stack.append((count2, acc2, self._pattern(stream2)))
-            except StopIteration:
-                stack.pop(-1)
-        counts = list(known.keys())
-        counts.sort(reverse=True)
-        for count in counts:
-            for (acc, stream) in known[count]:
-                yield (acc, stream)
+        stack = []
+        try:
+            stack.append((0, [], self._pattern(stream)))
+            known = {}
+            if 0 == self._start:
+                known[0] = [([], stream)]
+            while stack:
+                (count1, acc1, generator) = stack[-1]
+                try:
+                    (value, stream2) = next(generator)
+                    count2 = count1 + 1
+                    acc2 = acc1 + value
+                    if count2 == self._stop:
+                        yield (acc2, stream2)
+                    elif count2 >= self._start and \
+                        (self._stop == None or \
+                            (count2 <= self._stop and \
+                            (self._step == -1 or
+                             (self._stop - count2) % self._step == 0))):
+                        if count2 not in known: known[count2] = []
+                        known[count2].append((acc2, stream2))
+                    stack.append((count2, acc2, self._pattern(stream2)))
+                except StopIteration:
+                    stack.pop(-1)
+            counts = list(known.keys())
+            counts.sort(reverse=True)
+            for count in counts:
+                for (acc, stream) in known[count]:
+                    yield (acc, stream)
+        except GeneratorExit:
+            for (count, acc, generator) in stack:
+                self._debug('Closing %s' % generator)
+                generator.close()
+                

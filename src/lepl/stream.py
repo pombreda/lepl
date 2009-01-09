@@ -68,16 +68,22 @@ class Stream():
         These are all relative to 
         '''
         if isinstance(spec, int):
-            return self.__chunk.read(self.__offset, spec, spec+1)
+            return self.__chunk.read(self.__offset, spec, spec+1)[0]
         elif isinstance(spec, slice) and spec.step == None:
             if spec.stop == None:
                 return self.__chunk.stream(self.__offset, spec.start)
             elif spec.stop >= spec.start:
                 return self.__chunk.read(self.__offset, spec.start, spec.stop)
         raise TypeError()
+    
+    def __bool__(self):
+        return not self.__chunk.empty_at(self.__offset)
         
     def __repr__(self):
         return '%r[%d:]' % (self.__chunk, self.__offset)
+    
+    def __str__(self):
+        return self.__chunk.describe(self.__offset)
         
         
 class Chunk():
@@ -86,6 +92,7 @@ class Chunk():
     '''
     
     def __init__(self, stream, core=None):
+        super().__init__()
         try:
             self.__text = next(stream)
             self.__empty = False
@@ -114,7 +121,7 @@ class Chunk():
         The next line from the stream.
         '''
         if not self.__next:
-            self.__next = Chunk(self.__stream, self.__core)
+            self.__next = Chunk(self.__stream, self.core)
         return self.__next
     
     def stream(self, offset, start):
@@ -129,9 +136,47 @@ class Chunk():
         else:
             return self.next().stream(start-len(self.__text), 0)
         
+    def empty_at(self, offset):
+        '''
+        Used by streams to test whether more data available at their current
+        offset.
+        '''
+        if self.__empty:
+            return True
+        elif offset < len(self.__text):
+            return False
+        else:
+            return self.next().empty_at(offset - len(self.__text))
+
+    def describe(self, offset, length=None):
+        '''
+        Return up to core.description_length characters.
+        
+        This has to work even when the underlying stream is not a string
+        but a list of some kind (so does everything else, but here the
+        addition of "..." causes problems).
+        '''
+        size = self.core.description_length if length == None else length
+        if self.empty_at(offset):
+            return repr('')
+        else:
+            stop = min(offset + size, len(self.__text))
+            content = self.__text[offset:stop]
+            # the empty check avoids receiving '' from next chunk
+            remaining = size - len(content)
+            if remaining and not self.empty_at(stop):
+                content = content + self.next().describe(0, remaining)
+            if length == None: # original call
+                # convert to string
+                content = repr(content)
+                # indicate if more data available
+                if not self.empty_at(offset + size):
+                    content = content + '...'
+            return content
+        
     def __repr__(self):
         return 'Chunk(%r...)' % ('' if self.__empty else self.__text)
-
+    
 
 class ListIO():
     '''
@@ -141,10 +186,18 @@ class ListIO():
     def __init__(self, data):
         self.__data = data
         
-    def readline(self):
-        data = self.__data
-        close()
-        return data
-    
     def close(self):
         self.__data = None
+
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        if self.__data != None:
+            (data, self.__data) = (self.__data, None)
+            return data
+        else:
+            raise StopIteration()
+        
+            
+
