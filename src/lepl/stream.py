@@ -2,9 +2,57 @@
 
 from io import StringIO
 
-from lepl.core import Core
+from lepl.core import Core, LimitedGeneratorStack
+from lepl.trace import SelfDocumentingGenerator
 
 
+def new_stack(stream):
+    '''
+    Generate a stack for managing generators in breadth-first searches.
+    '''
+    if isinstance(stream, Stream):
+        size = stream.core.max_width
+    else:
+        size = 0
+    return LimitedGeneratorStack(size)
+
+
+def limited_depth(f):
+    '''
+    Generators should be decorated with this so that the depth of the search
+    can be limited, freeing resources that are no longer needed.
+    '''
+    def call(self, stream):
+        core = stream.core if isinstance(stream, Stream) else None
+        try:
+            generator = SelfDocumentingGenerator(f(self, stream), self, stream)
+            if core and core.down(): generator.close()
+            return generator
+        finally:
+            if core: core.up()
+    return call
+
+
+def no_depth(f):
+    '''
+    When a match generator is known to only return one value (or none)
+    there is no need to bother with the fifo in the core; instead we simply
+    read and then discard the generator.
+    '''
+    def call(self, stream):
+        generator = SelfDocumentingGenerator(f(self, stream), self, stream)
+        value = None
+        ok = False
+        try:
+            value = next(generator)
+            ok = True
+        finally:
+            generator.close()
+        if ok:
+            yield value
+    return call
+
+        
 class Stream():
     '''
     This serves two purposes.  First, it wraps the central, persistent store
@@ -198,6 +246,3 @@ class ListIO():
             return data
         else:
             raise StopIteration()
-        
-            
-
