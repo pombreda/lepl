@@ -2,57 +2,9 @@
 
 from io import StringIO
 
-from lepl.core import Core, LimitedGeneratorStack
-from lepl.trace import SelfDocumentingGenerator
+from lepl.core import Core
 
 
-def new_stack(stream):
-    '''
-    Generate a stack for managing generators in breadth-first searches.
-    '''
-    if isinstance(stream, Stream):
-        size = stream.core.max_width
-    else:
-        size = 0
-    return LimitedGeneratorStack(size)
-
-
-def limited_depth(f):
-    '''
-    Generators should be decorated with this so that the depth of the search
-    can be limited, freeing resources that are no longer needed.
-    '''
-    def call(self, stream):
-        core = stream.core if isinstance(stream, Stream) else None
-        try:
-            generator = SelfDocumentingGenerator(f(self, stream), self, stream)
-            if core and core.down(): generator.close()
-            return generator
-        finally:
-            if core: core.up()
-    return call
-
-
-def no_depth(f):
-    '''
-    When a match generator is known to only return one value (or none)
-    there is no need to bother with the fifo in the core; instead we simply
-    read and then discard the generator.
-    '''
-    def call(self, stream):
-        generator = SelfDocumentingGenerator(f(self, stream), self, stream)
-        value = None
-        ok = False
-        try:
-            value = next(generator)
-            ok = True
-        finally:
-            generator.close()
-        if ok:
-            yield value
-    return call
-
-        
 class Stream():
     '''
     This serves two purposes.  First, it wraps the central, persistent store
@@ -76,32 +28,32 @@ class Stream():
     '''
     
     @staticmethod
-    def from_path(path):
+    def from_path(path, **options):
         '''
         Open the file with line buffering.
         '''
-        return Stream(Chunk(open(path, 'rt', buffering=1)))
+        return Stream(Chunk(open(path, 'rt', buffering=1), **options))
     
     @staticmethod
-    def from_string(text):
+    def from_string(text, **options):
         '''
         Wrap a string.
         '''
-        return Stream(Chunk(StringIO(text)))
+        return Stream(Chunk(StringIO(text), **options))
     
     @staticmethod
-    def from_list(data):
+    def from_list(data, **options):
         '''
         We can parse any list (not just lists of characters as strings).
         '''
-        return Stream(Chunk(ListIO(data)))
+        return Stream(Chunk(ListIO(data), **options))
     
     @staticmethod
-    def from_file(file):
+    def from_file(file, **options):
         '''
         Wrap a file.
         '''
-        return Stream(Chunk(file))
+        return Stream(Chunk(file, **options))
     
     def __init__(self, chunk, offset=0, core=None):
         self.__chunk = chunk
@@ -139,7 +91,7 @@ class Chunk():
     A linked list (cons cell) of lines from the stream. 
     '''
     
-    def __init__(self, stream, core=None):
+    def __init__(self, stream, core=None, **options):
         super().__init__()
         try:
             self.__text = next(stream)
@@ -148,7 +100,7 @@ class Chunk():
             self.__empty = True
         self.__next = None
         self.__stream = stream
-        self.core = core if core else Core()
+        self.core = core if core else Core(**options)
         
     def read(self, offset, start, stop):
         '''

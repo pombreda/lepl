@@ -1,6 +1,6 @@
 
-from lepl.core import limited_depth
 from lepl.match import MatchMixin
+from lepl.resources import managed
 from lepl.support import assert_type
 from lepl.trace import LogMixin
 
@@ -68,7 +68,7 @@ class Repeat(MatchMixin, LogMixin):
         self._stop = stop
         self._step = step
         
-    @limited_depth
+    @managed
     def __call__(self, stream):
         if self._step >= 0:
             return self.__call_up(stream)

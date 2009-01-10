@@ -1,13 +1,13 @@
 
 
-def assert_type(name, value, type, none_ok=False):
+def assert_type(name, value, type_, none_ok=False):
     '''
     If the value is not of the given type, raise a syntax error.
     '''
     if none_ok and value == None: return
-    if isinstance(value, type): return
+    if isinstance(value, type_): return
     raise TypeError('{0} (value {1}) must be of type {2}.'
-                    .format(name, repr(value), type.__name__))
+                    .format(name, repr(value), type_.__name__))
 
 
 class CircularFifo():

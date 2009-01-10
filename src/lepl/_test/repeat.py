@@ -1,12 +1,16 @@
 
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
+from lepl.gc import managed
 from lepl.repeat import Repeat, RepeatMixin
+from lepl.trace import LogMixin
 
 
 class RepeatTest(TestCase):
 
     def test_simple(self):
+        basicConfig(level=DEBUG)
         self.assert_simple([1], 1, 1, -1, ['0'])
         self.assert_simple([1], 1, 2, -1, ['0'])
         self.assert_simple([2], 1, 1, -1, ['0','1'])
@@ -25,6 +29,7 @@ class RepeatTest(TestCase):
         assert target == result, result
         
     def test_mixin(self):
+        basicConfig(level=DEBUG)
         r = RangeMatch()
         self.assert_mixin(r[1:1], [1], ['0'])
         self.assert_mixin(r[1:2], [1], ['0'])
@@ -50,13 +55,17 @@ class RepeatTest(TestCase):
        
     
     
-class RangeMatch(RepeatMixin):
+class RangeMatch(RepeatMixin, LogMixin):
     '''
     We test repetition by looking at "strings" of integers, where the 
     matcher for any particular value returns all values less than the
     current value. 
     '''
     
+    def __init__(self):
+        super().__init__()
+    
+    @managed
     def __call__(self, values):
         if values:
             for i in range(values[0]):

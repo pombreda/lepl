@@ -9,6 +9,7 @@ class LogMixin():
         super().__init__(*args, **kargs)
         self._log = getLogger(self.__module__ + '.' + self.__class__.__name__)
         self._debug = self._log.debug
+        self._info = self._log.info
         self._warn = self._log.warn
         self._error = self._log.error
         
