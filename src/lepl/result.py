@@ -1,4 +1,8 @@
 
+'''
+Manage the results of parsing.
+'''
+
 
 class ResultMixin():
     

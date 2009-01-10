@@ -2,9 +2,9 @@
 from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.match import MatchMixin
 from lepl.repeat import RepeatMixin
 from lepl.resources import managed
+from lepl.stream import MatchMixin
 from lepl.trace import LogMixin
 
 
@@ -29,7 +29,7 @@ class LimitedDepthTest(LogMixin, TestCase):
                 result = [[0,0,0], [0,0,1], [0,1,0], [0,1,1]]
             else:
                 result = [[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]]
-            self._debug('**** test max_queue={0}'.format(max_queue))
+            self._debug('test max_queue={0}'.format(max_queue))
             self.assert_list(LimitedMatch()[3].match_list([2,2,2], max_queue=max_queue),
                              result, max_queue) 
         

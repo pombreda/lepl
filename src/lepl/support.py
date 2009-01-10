@@ -1,4 +1,8 @@
 
+'''
+Library routines / utilities.
+'''
+
 
 def assert_type(name, value, type_, none_ok=False):
     '''
@@ -11,6 +15,9 @@ def assert_type(name, value, type_, none_ok=False):
 
 
 class CircularFifo():
+    '''
+    Currently unused - now using a priority queue for resource management.
+    '''
     
     def __init__(self, size):
         '''

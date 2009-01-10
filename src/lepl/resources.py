@@ -4,16 +4,17 @@ We can control resource consumption by closing generators - the problem is
 which generators to close?
 
 At first it seems that the answer is going to be connected to tree traversal,
-but after some thought it's not so clear - exactly what tree is being traversed,
-and how that identifies what generators should be closed, is not completely
-clear (to me at least).
+but after some thought it's not so clear exactly what tree is being traversed,
+and how that identifies what generators should be closed.  In particular, an 
+"imperative" implementation with generators does not have the same meaning of 
+"depth" as a recursive functional implementation.
 
 A better approach seems to be to discard those that have not been used "for a
 long time".  A variation on this - keep a maximum number of the youngest 
 generators - is practical.  But care is needed to both in identifying what is 
 used, and when it starts being unused, and in implementing that efficiently.
 
-All generators are stored in a priority queue using weak references.  The 
+Here all generators are stored in a priority queue using weak references.  The 
 "real" priority is given by the "last used date" (a value read from a counter 
 in core each time a value is returned), but the priority in the queue is
 frozen when inserted.  So on removing from the queue the priority must be
@@ -108,6 +109,14 @@ class GeneratorRef():
         return self is other
     
     def update(self):
+        '''
+        A generator is deletable if it no longer exists(!) or if the epoch
+        has not changed since it was registered (this is used as the priority
+        in the heap, so guarantees that the heap position is correct, since
+        other epochs can only increase).  A live generator cannot be deleted;
+        this is consistent with the statement above because a live element has
+        an updated epoch.
+        '''
         wrapper = self.__wrapper()
         if wrapper:
             if wrapper.active: wrapper.update_epoch()
@@ -203,7 +212,7 @@ class GeneratorControl(LogMixin):
                 heappush(self.__queue, wrapper_ref)
             else:
                 # we attempt up to 2*max_queue times to delete (once to update
-                # data, once to verify it is still active)
+                # data; once to verify it is still active)
                 for retry in range(2 * self.__max_queue):
                     candidate_ref = heappushpop(self.__queue, wrapper_ref)
                     self._debug('Exchanged {0} for {1}'

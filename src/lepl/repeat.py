@@ -1,6 +1,10 @@
 
-from lepl.match import MatchMixin
+'''
+Support repeated matches.
+'''
+
 from lepl.resources import managed
+from lepl.stream import MatchMixin
 from lepl.support import assert_type
 from lepl.trace import LogMixin
 

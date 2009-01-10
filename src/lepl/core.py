@@ -1,4 +1,7 @@
  
+'''
+Central, per-parse repository.
+'''
 
 from lepl.resources import GeneratorControl
 from lepl.trace import LogMixin

@@ -1,4 +1,7 @@
 
+'''
+Experimental code - exploring generators and Python 3.
+'''
 
 # what happens when we pass various things to []?
 
