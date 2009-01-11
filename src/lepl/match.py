@@ -13,13 +13,13 @@ Internally, the outer list is important to allow backtracking - this lets
 matchers explore alternative combinations until one "fits" the stream.
 '''
 
-from lepl.repeat import RepeatMixin
+from lepl.combine import _Repeat, _And, _Or
 from lepl.resources import managed
 from lepl.stream import StreamMixin
 from lepl.trace import LogMixin
 
 
-class BaseMatch(RepeatMixin, StreamMixin, LogMixin):
+class BaseMatch(StreamMixin, LogMixin):
     '''
     This provides support and special syntax that is common across all
     matchers.  For example, it provides logging and makes the "&" operator
@@ -63,6 +63,54 @@ class BaseMatch(RepeatMixin, StreamMixin, LogMixin):
         '''
         return Not(self)
         
+    def __getitem__(self, index):
+        '''
+        Allows the main class to be modified via the array index / slice syntax:
+        [n] - Repeat exactly n times
+        [n:m] - Repeat n to m times, starting with n and incrementing
+        [n:m:s] - Repeat n, n+s, ... times, with an upper bound of m
+        Defaults are: n=0, m=infinity, s=-1
+        We use a negative third index (greedy matching, depth first search)
+        because it behaves better with large patterns and limited backtracking
+        (the generators are stored directly and can be closed to free resources;
+        with non-greedy, breadth first search generators are successively 
+        expanded and the results accumulated in memory).
+        '''
+        start = 0
+        stop = None
+        step = -1
+        if isinstance(index, int):
+            start = index
+            stop = index
+        elif isinstance(index, slice):
+            if index.start != None: start = index.start
+            if index.stop != None: stop = index.stop
+            if index.step != None: step = index.step
+        else:
+            raise TypeError()
+        return Repeat(self, start, stop, step)
+    
+    
+class Repeat(_Repeat, BaseMatch):
+    '''
+    Allow for repeated invocation of the matcher.
+    It can be used indirectly by using the [::] array syntax.
+    '''
+
+
+class And(_And, BaseMatch):
+    '''
+    Matches one or more matchers in sequence.
+    It can be used indirectly by using '&' between matchers.
+    '''
+
+
+class Or(_Or, BaseMatch):
+    '''
+    Matches one of the given matchers.
+    It can be used indirectly by using '|' between matchers.
+    '''
+
 
 class Any(BaseMatch):
     '''
@@ -108,64 +156,6 @@ class Not(BaseMatch):
         yield ([], stream)
         
 
-class And(BaseMatch):
-    '''
-    Matches one or more matchers in sequence.
-    It can be used indirectly by using '&' between matchers.
-    '''
-    
-    def __init__(self, *matchers):
-        '''
-        The arguments are the matchers which are matched in turn.
-        '''
-        super().__init__()
-        self.__matchers = matchers
-
-    @managed
-    def __call__(self, stream):
-        if len(self.__matchers) > 0:
-            stack = [([], self.__matchers[0](stream), self.__matchers[1:])]
-            try:
-                while stack:
-                    (result, generator, matchers) = stack.pop(-1)
-                    try:
-                        (value, stream) = next(generator)
-                        stack.append((result, generator, matchers))
-                        if matchers:
-                            stack.append((result+value, matchers[0](stream), 
-                                          matchers[1:]))
-                        else:
-                            yield (result+value, stream)
-                    except StopIteration:
-                        pass
-            finally:
-                for (result, generator, matchers) in stack:
-                    generator.close()
-
-
-class Or(BaseMatch):
-    '''
-    Matches one of the given matchers.
-    It can be used indirectly by using '|' between matchers.
-    '''
-    
-    def __init__(self, *matchers):
-        '''
-        The arguments are the matchers, one of which is matched.
-        They are tried from left to right until one succeeds; backtracking
-        will try more from the same matcher and, once that is exhausted,
-        continue to the right.
-        '''
-        super().__init__()
-        self.__matchers = matchers
-
-    @managed
-    def __call__(self, stream):
-        for match in self.__matchers:
-            for result in match(stream):
-                yield result
-        
-
 class Apply(BaseMatch):
     '''
     Apply an arbitrary function to the results of the matcher.
@@ -175,11 +165,12 @@ class Apply(BaseMatch):
     
     def __init__(self, matcher, function):
         self.__matcher = matcher
+        self.__function = function
         
     @managed
     def __call__(self, stream):
         for (results, stream) in self.__matcher(stream):
-            yield (function(results), stream)
+            yield (self.__function(results), stream)
 
 
  # the following are functions rather than classes, but we use the class
@@ -236,13 +227,12 @@ def Add(matcher):
     It can be used indirectly by using '+' between matchers.
     '''
     def add(results):
+        result = []
         if results:
             result = results[0]
             for extra in results[1:]:
                 result = result + extra
-            yield ([result], stream)
-        else:
-            yield ([], stream)
+        return [result]
     return Apply(matcher, add)
 
 

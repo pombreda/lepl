@@ -2,7 +2,8 @@
 from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.repeat import Repeat, RepeatMixin
+from lepl.combine import _Repeat
+from lepl.match import BaseMatch
 from lepl.resources import managed
 from lepl.trace import LogMixin
 
@@ -25,7 +26,7 @@ class RepeatTest(TestCase):
         
     def assert_simple(self, stream, start, stop, step, target):
         result = [''.join(map(str, l)) 
-                  for (l, s) in Repeat(RangeMatch(), start, stop, step)(stream)]
+                  for (l, s) in _Repeat(RangeMatch(), start, stop, step)(stream)]
         assert target == result, result
         
     def test_mixin(self):
@@ -56,7 +57,7 @@ class RepeatTest(TestCase):
        
     
     
-class RangeMatch(RepeatMixin, LogMixin):
+class RangeMatch(BaseMatch):
     '''
     We test repetition by looking at "strings" of integers, where the 
     matcher for any particular value returns all values less than the

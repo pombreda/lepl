@@ -1,6 +1,6 @@
 
 '''
-Support repeated matches.
+Complex matchers (separated from match module to keep things simpler)
 '''
 
 from lepl.resources import managed
@@ -9,40 +9,7 @@ from lepl.support import assert_type
 from lepl.trace import LogMixin
 
 
-class RepeatMixin():
-    '''
-    Allows the main class to be modified via the array index / slice syntax:
-    [n] - Repeat exactly n times
-    [n:m] - Repeat n to m times, starting with n and incrementing
-    [n:m:s] - Repeat n, n+s, ... times, with an upper bound of m
-    Defaults are: n=0, m=infinity, s=-1
-    We use a negative third index (greedy matching, depth first search)
-    because it behaves better with large patterns and limited backtracking
-    (the generators are stored directly and can be closed to free resources;
-    with non-greedy, breadth first search generators are successively 
-    expanded and the results accumulated in memory).
-    '''
-    
-    def __init__(self, *args, **kargs):
-        super().__init__(*args, **kargs)
-    
-    def __getitem__(self, index):
-        start = 0
-        stop = None
-        step = -1
-        if isinstance(index, int):
-            start = index
-            stop = index
-        elif isinstance(index, slice):
-            if index.start != None: start = index.start
-            if index.stop != None: stop = index.stop
-            if index.step != None: step = index.step
-        else:
-            raise TypeError()
-        return Repeat(self, start, stop, step)
-
-
-class Repeat(StreamMixin, LogMixin):
+class _Repeat():
     '''
     Repeats the pattern supplied to the constructor.
     ''' 
@@ -149,3 +116,62 @@ class Repeat(StreamMixin, LogMixin):
                 self._debug('Closing %s' % generator)
                 generator.close()
                 
+                
+class _And():
+    '''
+    Matches one or more matchers in sequence.
+    It can be used indirectly by using '&' between matchers.
+    '''
+    
+    def __init__(self, *matchers):
+        '''
+        The arguments are the matchers which are matched in turn.
+        '''
+        super().__init__()
+        self.__matchers = matchers
+
+    @managed
+    def __call__(self, stream):
+        if self.__matchers:
+            stack = [([], self.__matchers[0](stream), self.__matchers[1:])]
+            try:
+                while stack:
+                    (result, generator, matchers) = stack.pop(-1)
+                    try:
+                        (value, stream) = next(generator)
+                        stack.append((result, generator, matchers))
+                        if matchers:
+                            stack.append((result+value, matchers[0](stream), 
+                                          matchers[1:]))
+                        else:
+                            yield (result+value, stream)
+                    except StopIteration:
+                        pass
+            finally:
+                for (result, generator, matchers) in stack:
+                    generator.close()
+
+
+class _Or():
+    '''
+    Matches one of the given matchers.
+    It can be used indirectly by using '|' between matchers.
+    '''
+    
+    def __init__(self, *matchers):
+        '''
+        The arguments are the matchers, one of which is matched.
+        They are tried from left to right until one succeeds; backtracking
+        will try more from the same matcher and, once that is exhausted,
+        continue to the right.
+        '''
+        super().__init__()
+        self.__matchers = matchers
+
+    @managed
+    def __call__(self, stream):
+        for match in self.__matchers:
+            for result in match(stream):
+                yield result
+        
+
