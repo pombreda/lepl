@@ -46,6 +46,8 @@ class CheckSlice():
         self[...,1:]
         print("::")
         self[::]
+        print("1:2:3,','")
+        self[1:2:3,',']
         
 
 class CheckReturnYield():
@@ -93,7 +95,7 @@ class Numbers():
         
 
 if __name__ == '__main__':
-    #CheckSlice().run()
+    CheckSlice().run()
     #CheckReturnYield().run()
-    CheckGeneratorProxy().run()
+    #CheckGeneratorProxy().run()
     

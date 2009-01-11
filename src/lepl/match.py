@@ -13,9 +13,9 @@ Internally, the outer list is important to allow backtracking - this lets
 matchers explore alternative combinations until one "fits" the stream.
 '''
 
-from lepl.combine import _Repeat, _And, _Or
 from lepl.resources import managed
 from lepl.stream import StreamMixin
+from lepl.support import assert_type
 from lepl.trace import LogMixin
 
 
@@ -31,40 +31,102 @@ class BaseMatch(StreamMixin, LogMixin):
         
     def __add__(self, other):
         '''
+        self + other
+        
         Combine adjacent matchers in sequence, merging the result with "+" 
         (so strings are joined, lists merged).
         '''
-        if isinstance(other, BaseMatch):
-            return Add(And(self, other))
-        else:
-            raise ValueError('+ can only be applied to to matchers')
+        return Add(And(self, coerce(other)))
+
+    def __radd__(self, other):
+        '''
+        other + self
+        
+        Combine adjacent matchers in sequence, merging the result with "+" 
+        (so strings are joined, lists merged).
+        '''
+        return Add(And(coerce(other), self))
 
     def __and__(self, other):
         '''
+        self & other
+        
         Combine adjacent matchers in sequence.
         '''
-        if isinstance(other, BaseMatch):
-            return And(self, other)
-        else:
-            raise ValueError('& can only be applied to to matchers')
+        return And(self, coerce(other))
+        
+    def __rand__(self, other):
+        '''
+        other & self
+        
+        Combine adjacent matchers in sequence.
+        '''
+        return And(coerce(other), self)
+    
+    def __truediv__(self, other):
+        '''
+        self / other
+        
+        Combine adjacent matchers in sequence, with an optional space between
+        them.  The space is included in the results.
+        '''
+        return And(self, Space()[0:,...], other)
+        
+    def __rtruediv__(self, other):
+        '''
+        other / self
+        
+        Combine adjacent matchers in sequence, with an optional space between
+        them.  The space is included in the results.
+        '''
+        return And(other, Space()[0:,...], self)
+        
+    def __floordiv__(self, other):
+        '''
+        self // other
+        
+        Combine adjacent matchers in sequence, with a space between them.  
+        The space is included in the results.
+        '''
+        return And(self, Space()[1:,...], other)
+        
+    def __rfloordiv__(self, other):
+        '''
+        other // self
+        
+        Combine adjacent matchers in sequence, with a space between them.  
+        The space is included in the results.
+        '''
+        return And(other, Space()[1:,...], self)
         
     def __or__(self, other):
         '''
+        self | other
+        
         Try from alternative matchers.
         '''
-        if isinstance(other, BaseMatch):
-            return Or(self, other)
-        else:
-            raise ValueError('| can only be applied to to matchers')
+        return Or(self, coerce(other))
+        
+    def __ror__(self, other):
+        '''
+        other | self
+        
+        Try from alternative matchers.
+        '''
+        return Or(coerce(other), self)
         
     def __invert__(self):
         '''
+        ~self
+        
         Apply Not to the current matcher.
         '''
-        return Not(self)
+        return Not(coerce(self))
         
-    def __getitem__(self, index):
+    def __getitem__(self, indices):
         '''
+        self[start:stop:step, separator, ...]
+        
         Allows the main class to be modified via the array index / slice syntax:
         [n] - Repeat exactly n times
         [n:m] - Repeat n to m times, starting with n and incrementing
@@ -75,41 +137,246 @@ class BaseMatch(StreamMixin, LogMixin):
         (the generators are stored directly and can be closed to free resources;
         with non-greedy, breadth first search generators are successively 
         expanded and the results accumulated in memory).
+        
+        A match argument can be given, which is used as the separator.
+        For example, [0:3,Drop(Space())] will match lists of length 0 to 3
+        whose entries are separated by a space (omitted from the result).
+        
+        An ellipsis (...) can also be given, in which case the results are 
+        joined together with '+' (as Add()).
         '''
         start = 0
         stop = None
         step = -1
-        if isinstance(index, int):
-            start = index
-            stop = index
-        elif isinstance(index, slice):
-            if index.start != None: start = index.start
-            if index.stop != None: stop = index.stop
-            if index.step != None: step = index.step
+        separator = None
+        add = False
+        if not isinstance(indices, tuple):
+            indices = [indices]
+        for index in indices:
+            if isinstance(index, int):
+                start = index
+                stop = index
+                step = -1
+            elif isinstance(index, slice):
+                start = index.start if index.start != None else 0
+                stop = index.stop if index.stop != None else None
+                step = index.step if index.step != None else -1
+            elif index == Ellipsis:
+                add = True
+            elif separator == None:
+                separator = coerce(index)
+            else:
+                raise TypeError(index)
+        return (Add if add else Identity)(
+                    Repeat(self, start, stop, step, separator))
+    
+    def __gt__(self, function):
+        '''
+        self > function
+        
+        Apply the function to the results returned (unless function is a 
+        string, in which case the results are returned as the second part
+        of a tuple, whose first part is the string given). 
+        '''
+        if isinstance(function, str):
+            return Name(self, function)
         else:
-            raise TypeError()
-        return Repeat(self, start, stop, step)
+            return Apply(self, function)
+    
+    def __rshift__(self, function):
+        '''
+        >> f
+        
+        Apply the function to each member of the list of results returned
+        (unless function is a string, in which case the results are returned 
+        as the second part of a tuple, whose first part is the string given).
+        '''
+        if isinstance(function, str):
+            return Name(self, function)
+        else:
+            return Map(self, function)
     
     
-class Repeat(_Repeat, BaseMatch):
+class Repeat(BaseMatch):
     '''
-    Allow for repeated invocation of the matcher.
-    It can be used indirectly by using the [::] array syntax.
-    '''
+    Repeats the pattern supplied to the constructor.
+    ''' 
+    
+    def __init__(self, pattern, start=0, stop=None, step=1, separator=None):
+        '''
+        A value of None for stop implies no upper bound.
+        '''
+        super().__init__()
+        self.__first = pattern
+        self.__second = pattern if separator == None else And(separator, pattern)
+        if start == None: start = 0
+        assert_type('The start index for Repeat or [...]', start, int)
+        assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
+        assert_type('The index step for Repeat or [...]', step, int)
+        if start < 0:
+            raise ValueError('Repeat or [...] cannot have a negative start.')
+        if stop != None and stop < start:
+            raise ValueError('Repeat or [...] must have a stop '
+                             'value greater than or equal to the start.')
+        if stop == None and step < -1:
+            raise ValueError('Repeat or [...] cannot have an open upper '
+                             'bound with a decreasing step other than -1.')
+        if step == 0:
+            raise ValueError('Repeat or [...] must have a non-zero step.')
+        self._start = start
+        self._stop = stop
+        self._step = step
+        
+    @managed
+    def __call__(self, stream):
+        if self._step > 0:
+            return self.__call_up(stream)
+        else:
+            return self.__call_down(stream)
+        
+    def __call_up(self, stream):
+        '''
+        Note that in the presence of backtracking, non-greedy match is 
+        slightly odd - it will return all possible short lists (including
+        backtracking embedded matchers) before returning longer lists.
+        
+        We generate all possibilities in order of increasing numbers of
+        matches, so for each call to the underlying pattern we immediately
+        examine all possible values (postponing another call as long as
+        possible).  Since any of those values could be expanded on later
+        we save them in a stack.
+        
+        Discarding stack duplicates may be a gain in odd circumstances?
+        '''
+        stack = []
+        if 0 == self._start: yield ([], stream)
+        stack.append((0, [], stream))
+        while stack:
+            # smallest counts first
+            (count1, acc1, stream1) = stack.pop(0)
+            count2 = count1 + 1
+            for (value, stream2) in self.__pattern(count1)(stream1):
+                acc2 = acc1 + value
+                if count2 >= self._start and \
+                    (self._stop == None or count2 <= self._stop) and \
+                    (count2 - self._start) % self._step == 0:
+                    yield (acc2, stream2)
+                if self._stop == None or count2 + self._step <= self._stop:
+                    stack.append((count2, acc2, stream2))
+                    
+    def __pattern(self, count):
+        if 0 == count:
+            return self.__first
+        else:
+            return self.__second
 
-
-class And(_And, BaseMatch):
+    def __call_down(self, stream):
+        '''
+        We attempt (see note below) to generate all possibilities in order of 
+        decreasing numbers of matches, so we build on calls to the underlying
+        pattern by calling again as soon as we have one value.  Later values 
+        (ie the generator that supplies later values) are saved on the stack.
+        
+        Despite that, we still accumulate many (all non-stop) values "on 
+        the way".  These are stored for later use.
+        
+        Note - It is possible (I think) that backtracking may return a larger 
+        match than the first match returned (for example, if the match being 
+        repeated is itself greedy and, on backtracking, matches a smaller 
+        portion of the input).  To guarantee longest first we would need to
+        generate all results and then sort by length; that is too inefficient.
+        '''
+        stack = []
+        try:
+            stack.append((0, [], self.__pattern(0)(stream)))
+            known = {}
+            if 0 == self._start:
+                known[0] = [([], stream)]
+            while stack:
+                (count1, acc1, generator) = stack[-1]
+                try:
+                    (value, stream2) = next(generator)
+                    count2 = count1 + 1
+                    acc2 = acc1 + value
+                    if count2 == self._stop:
+                        yield (acc2, stream2)
+                    elif count2 >= self._start and \
+                        (self._stop == None or \
+                            (count2 <= self._stop and \
+                            (self._step == -1 or
+                             (self._stop - count2) % self._step == 0))):
+                        if count2 not in known: known[count2] = []
+                        known[count2].append((acc2, stream2))
+                    stack.append((count2, acc2, self.__pattern(count2)(stream2)))
+                except StopIteration:
+                    stack.pop(-1)
+            counts = list(known.keys())
+            counts.sort(reverse=True)
+            for count in counts:
+                for (acc, stream) in known[count]:
+                    yield (acc, stream)
+        finally:
+            for (count, acc, generator) in stack:
+                self._debug('Closing %s' % generator)
+                generator.close()
+                
+                
+class And(BaseMatch):
     '''
     Matches one or more matchers in sequence.
     It can be used indirectly by using '&' between matchers.
     '''
+    
+    def __init__(self, *matchers):
+        '''
+        The arguments are the matchers which are matched in turn.
+        '''
+        super().__init__()
+        self.__matchers = matchers
+
+    @managed
+    def __call__(self, stream):
+        if self.__matchers:
+            stack = [([], self.__matchers[0](stream), self.__matchers[1:])]
+            try:
+                while stack:
+                    (result, generator, matchers) = stack.pop(-1)
+                    try:
+                        (value, stream) = next(generator)
+                        stack.append((result, generator, matchers))
+                        if matchers:
+                            stack.append((result+value, matchers[0](stream), 
+                                          matchers[1:]))
+                        else:
+                            yield (result+value, stream)
+                    except StopIteration:
+                        pass
+            finally:
+                for (result, generator, matchers) in stack:
+                    generator.close()
 
 
-class Or(_Or, BaseMatch):
+class Or(BaseMatch):
     '''
     Matches one of the given matchers.
     It can be used indirectly by using '|' between matchers.
     '''
+    
+    def __init__(self, *matchers):
+        '''
+        The arguments are the matchers, one of which is matched.
+        They are tried from left to right until one succeeds; backtracking
+        will try more from the same matcher and, once that is exhausted,
+        continue to the right.
+        '''
+        super().__init__()
+        self.__matchers = matchers
+
+    @managed
+    def __call__(self, stream):
+        for match in self.__matchers:
+            for result in match(stream):
+                yield result
 
 
 class Any(BaseMatch):
@@ -123,6 +390,7 @@ class Any(BaseMatch):
         The argument should be a list of tokens (or a string of suitable 
         characters).  If omitted any single token is accepted.
         '''
+        super().__init__()
         self.__restrict = restrict
     
     @managed
@@ -133,6 +401,46 @@ class Any(BaseMatch):
         if stream and (not self.__restrict or stream[0] in self.__restrict):
             yield ([stream[0]], stream[1:])
             
+            
+class Literal(BaseMatch):
+    '''
+    Matches a series of tokens in the stream.
+    '''
+    
+    def __init__(self, text):
+        '''
+        Typically the argument is a string (treated as list of characters),
+        but a list might be appropriate with some streams.
+        '''
+        super().__init__()
+        self.__text = text
+    
+    @managed
+    def __call__(self, stream):
+        '''
+        Need to be careful here to use only the restricted functionality
+        provided by the stream interface.
+        '''
+        for char in self.__text:
+            if stream and stream[0] == char: 
+                stream = stream[1:]
+            else:
+                return
+        yield ([self.__text], stream)
+        
+        
+class Empty(BaseMatch):
+    '''
+    Matches any stream, consumes no input, and returns nothing.
+    '''
+    
+    @managed
+    def __call__(self, stream):
+        '''
+        Match any character and progress to the next.
+        '''
+        yield ([], stream)
+
             
 class Not(BaseMatch):
     '''
@@ -176,14 +484,20 @@ class Apply(BaseMatch):
  # the following are functions rather than classes, but we use the class
  # syntax to give a uniform interface.
  
-def Word(chars, body=None, space=None):
+def Word(chars=NonSpace(), body=None):
      '''
-     
+     chars and body, if given as strings, define possible characters to use
+     for the first and rest of the characters in the word, respectively.
+     If body is not given, then chars is used for the entire word.
+     They can also specify matchers, which typically should match only a
+     single character.
+     So Word(Upper(), Lower()) would match names that being with an upper
+     case letter, for example, while Word(NoSpace()) matches any sequence
+     of non-space characters. 
      '''
-     chars = Any(chars)
-     body = chars if body == None else Any(body)
-     space = Space() if space == None else Any(space)
-     return chars + body[:] + space
+     chars = coerce(chars, Any)
+     body = chars if body == None else coerce(body, Any)
+     return chars + body[0:,...]
  
 
 def Optional(matcher):
@@ -232,7 +546,8 @@ def Add(matcher):
             result = results[0]
             for extra in results[1:]:
                 result = result + extra
-        return [result]
+            result = [result]
+        return result
     return Apply(matcher, add)
 
 
@@ -256,3 +571,44 @@ def Name(matcher, name):
     '''
     return Map(matcher, lambda x: (name, x))
 
+
+def Space(space=None):
+    '''
+    '''
+    space = ' \n\r\t' if space == None else space
+    return Any(space)
+
+
+def Eof():
+    '''
+    '''
+    return Not(Any())
+
+
+def Identity(matcher):
+    '''
+    '''
+    return matcher
+
+
+def Digit():
+def Alpha():
+def Upper():
+def Lower():
+
+def UnsignedInteger(): 
+def SignedInteger
+Integer = SignedInteger
+def UnsignedFloat():
+def UnsignedEFloat():
+def SignedFloat():
+def SignedEFloat():
+Float = SignedEFloat
+
+    
+
+
+def coerce(arg, function=Literal):
+    '''
+    '''
+    return function(arg) if isinstance(arg, str) else arg
