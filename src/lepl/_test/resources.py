@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from lepl.repeat import RepeatMixin
 from lepl.resources import managed
-from lepl.stream import MatchMixin
+from lepl.stream import StreamMixin
 from lepl.trace import LogMixin
 
 
@@ -38,7 +38,7 @@ class LimitedDepthTest(LogMixin, TestCase):
         assert expected == result, '{0}: {1}'.format(max_queue, result)
               
 
-class NullMatch(MatchMixin, RepeatMixin, LogMixin):
+class NullMatch(StreamMixin, RepeatMixin, LogMixin):
     
     def __init__(self):
         super().__init__()
@@ -49,7 +49,7 @@ class NullMatch(MatchMixin, RepeatMixin, LogMixin):
                 yield ([i], values[1:])
                 
 
-class LimitedMatch(MatchMixin, RepeatMixin, LogMixin):
+class LimitedMatch(StreamMixin, RepeatMixin, LogMixin):
 
     def __init__(self):
         super().__init__()

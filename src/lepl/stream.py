@@ -204,7 +204,7 @@ class ListIO():
             raise StopIteration()
 
 
-class MatchMixin():
+class StreamMixin():
     '''
     Helper functions that forward to __call__.
     '''
