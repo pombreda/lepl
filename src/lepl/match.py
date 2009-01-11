@@ -91,6 +91,7 @@ class Not(BaseMatch):
     This returns an empty list if the stream does not match the given matcher.
     If the stream does match, no result is returned (and the parsing will
     backtrack to explore alternative options).
+    It can be used indirectly by using '!' before a matcher.
     '''
     
     def __init__(self, matcher):
@@ -110,6 +111,7 @@ class Not(BaseMatch):
 class And(BaseMatch):
     '''
     Matches one or more matchers in sequence.
+    It can be used indirectly by using '&' between matchers.
     '''
     
     def __init__(self, *matchers):
@@ -144,6 +146,7 @@ class And(BaseMatch):
 class Or(BaseMatch):
     '''
     Matches one of the given matchers.
+    It can be used indirectly by using '|' between matchers.
     '''
     
     def __init__(self, *matchers):
@@ -163,34 +166,103 @@ class Or(BaseMatch):
                 yield result
         
 
-
-class Add(BaseMatch):
+class Apply(BaseMatch):
     '''
-    Join tokens in the result using the "+" operator.
-    This joins strings and merges lists.
+    Apply an arbitrary function to the results of the matcher.
+    The function should typically expect a list.
+    It can be used indirectly by using '>=' to the right of the matcher.    
     '''
     
-    def __init__(self, matcher):
+    def __init__(self, matcher, function):
         self.__matcher = matcher
         
     @managed
     def __call__(self, stream):
         for (results, stream) in self.__matcher(stream):
-            if results:
-                result = results[0]
-                for extra in results[1:]:
-                    result = result + extra
-                yield ([result], stream)
-            else:
-                yield ([], stream)
- 
- 
+            yield (function(results), stream)
+
+
  # the following are functions rather than classes, but we use the class
  # syntax to give a uniform interface.
  
-def Word(self, chars, body=None, space=None):
+def Word(chars, body=None, space=None):
      '''
      
      '''
-     return None
+     chars = Any(chars)
+     body = chars if body == None else Any(body)
+     space = Space() if space == None else Any(space)
+     return chars + body[:] + space
  
+
+def Optional(matcher):
+    '''
+    
+    '''
+    return matcher[0:1]
+
+
+def Star(matcher):
+    '''
+    
+    '''
+    return matcher[:]
+
+ZeroOrMore = Star
+
+
+def Plus(matcher):
+    '''
+    
+    ''' 
+    return matcher[1:]
+
+OneOrMore = Plus
+
+
+def Map(matcher, function):
+    '''
+    Apply an arbitrary function to each of the tokens in the result of the 
+    matcher.
+    It can be used indirectly by using '>>=' to the right of the matcher.    
+    '''
+    return Apply(matcher, lambda l: map(function, l))
+
+
+def Add(matcher):
+    '''
+    Join tokens in the result using the "+" operator.
+    This joins strings and merges lists.  
+    It can be used indirectly by using '+' between matchers.
+    '''
+    def add(results):
+        if results:
+            result = results[0]
+            for extra in results[1:]:
+                result = result + extra
+            yield ([result], stream)
+        else:
+            yield ([], stream)
+    return Apply(matcher, add)
+
+
+def Drop(matcher):
+    '''
+
+    '''
+    return Apply(matcher, lambda l: [])
+
+
+def Substitute(matcher, value):
+    '''
+    
+    '''
+    return Map(matcher, lambda x: value)
+
+
+def Name(matcher, name):
+    '''
+    
+    '''
+    return Map(matcher, lambda x: (name, x))
+

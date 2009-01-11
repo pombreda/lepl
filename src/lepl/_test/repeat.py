@@ -36,6 +36,7 @@ class RepeatTest(TestCase):
         self.assert_mixin(r[1:1], [2], ['0','1'])
         self.assert_mixin(r[1:2], [2], ['0','1'])
         self.assert_mixin(r[0:], [2], ['0','1', ''])
+        self.assert_mixin(r[:], [2], ['0','1', ''])
         self.assert_mixin(r[0:2], [2], ['0','1', ''])
         self.assert_mixin(r[1], [1,2], ['0'])
         self.assert_mixin(r[1:2], [1,2], ['00','01', '0'])

@@ -90,23 +90,20 @@ class Repeat(StreamMixin, LogMixin):
         Discarding stack duplicates may be a gain in odd circumstances?
         '''
         stack = []
-        try:
-            if 0 == self._start: yield ([], stream)
-            stack.append([(0, [], stream)])
-            while stack:
-                # smallest counts first
-                (count1, acc1, stream1) = stack.pop(0)
-                count2 = count1 + 1
-                for (value, stream2) in self.__pattern(stream1):
-                    acc2 = acc1 + value
-                    if count2 >= self._start and \
-                        (self._stop == None or count2 <= self._stop) and \
-                        (count2 - self._start) % self._step == 0:
-                        yield (acc2, stream2)
-                    if self._stop == None or count2 + self._step <= self._stop:
-                        stack.append((count2, acc2, stream2))
-        finally:
-            self.__pattern.close()
+        if 0 == self._start: yield ([], stream)
+        stack.append((0, [], stream))
+        while stack:
+            # smallest counts first
+            (count1, acc1, stream1) = stack.pop(0)
+            count2 = count1 + 1
+            for (value, stream2) in self.__pattern(stream1):
+                acc2 = acc1 + value
+                if count2 >= self._start and \
+                    (self._stop == None or count2 <= self._stop) and \
+                    (count2 - self._start) % self._step == 0:
+                    yield (acc2, stream2)
+                if self._stop == None or count2 + self._step <= self._stop:
+                    stack.append((count2, acc2, stream2))
 
     def __call_down(self, stream):
         '''
@@ -151,5 +148,4 @@ class Repeat(StreamMixin, LogMixin):
             for (count, acc, generator) in stack:
                 self._debug('Closing %s' % generator)
                 generator.close()
-            self.__pattern.close()
                 
