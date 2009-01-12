@@ -49,6 +49,48 @@ class CheckSlice():
         print("1:2:3,','")
         self[1:2:3,',']
         
+        
+class CheckDash():
+    
+    def __init__(self, name):
+        self.name = name
+    
+    def __sub__(self, other):
+        print(self, '__sub__', other)
+        return CheckDash(str(self) + '-' + str(other))
+        
+    def __rsub__(self, other):
+        print(self, '__rsub__', other)
+        return CheckDash(str(self) + '-' + str(other))
+        
+    def __neg__(self):
+        print('__neg__', self)
+        return CheckDash('-' + str(self))
+    
+    def __rneg__(self):
+        print('__rneg__', self)
+        return CheckDash('-' + str(self))
+    
+    def __str__(self):
+        return self.name
+        
+    @staticmethod
+    def run():
+        a = CheckDash('a')
+        b = CheckDash('b')
+        print("a-b")
+        a-b
+        print("a--b")
+        a--b
+        print("'a'-b")
+        'a'-b
+        print("'a'--b")
+        a--b
+        print("a-'b'")
+        a-'b'
+        print("a--'b'")
+        a--'b'
+        
 
 class CheckReturnYield():
     
@@ -95,7 +137,8 @@ class Numbers():
         
 
 if __name__ == '__main__':
-    CheckSlice().run()
+    #CheckSlice().run()
+    CheckDash.run()
     #CheckReturnYield().run()
     #CheckGeneratorProxy().run()
     

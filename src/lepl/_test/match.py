@@ -51,11 +51,11 @@ class CoercionTest(BaseTest):
     
     def test_right(self):
         basicConfig(level=DEBUG)
-        self.assert_direct(['1','2'], Any() + '2', [['12']])
+        self.assert_direct('12', Any() + '2', [['12']])
          
     def test_left(self):
         basicConfig(level=DEBUG)
-        self.assert_direct(['1','2'], '1' + Any(), [['12']])
+        self.assert_direct('12', '1' + Any(), [['12']])
          
 
 class OrTest(BaseTest):
@@ -177,13 +177,13 @@ class SpaceTest(BaseTest):
         self.assert_direct('  ', Space()[0:], [[' ', ' '], [' '], []])
         self.assert_direct('  ', Space()[0:,...], [['  '], [' '], []])
         
-    def test_slash(self):
+    def test_gt(self):
         ab = Any('ab')
-        self.assert_direct('ab', ab / ab, [['a', 'b']])
-        self.assert_direct('a b', ab / ab, [['a', ' ', 'b']])
-        self.assert_direct('a  b', ab / ab, [['a', '  ', 'b']])
-        self.assert_direct('ab', ab // ab, [])
-        self.assert_direct('a b', ab // ab, [['a', ' ', 'b']])
-        self.assert_direct('a  b', ab // ab, [['a', '  ', 'b']])
+        self.assert_direct('ab', ab > ab, [['a', 'b']])
+        self.assert_direct('a b', ab > ab, [['a', ' ', 'b']])
+        self.assert_direct('a  b', ab > ab, [['a', '  ', 'b']])
+        self.assert_direct('ab', ab >> ab, [])
+        self.assert_direct('a b', ab >> ab, [['a', ' ', 'b']])
+        self.assert_direct('a  b', ab >> ab, [['a', '  ', 'b']])
 
     

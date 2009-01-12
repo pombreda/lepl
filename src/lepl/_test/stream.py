@@ -54,3 +54,11 @@ class StreamTest(TestCase):
         s = str(s1[7:])
         assert s == "''", s
         
+    def test_string(self):
+        s1 = Stream.from_string('12')
+        assert '1' == s1[0:1]
+        assert '12' == s1[0:2]
+        s2 = s1[1:]
+        assert '2' == s2[0:1]
+        
+        

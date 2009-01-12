@@ -13,6 +13,9 @@ Internally, the outer list is important to allow backtracking - this lets
 matchers explore alternative combinations until one "fits" the stream.
 '''
 
+import string
+
+from lepl.node import Node
 from lepl.resources import managed
 from lepl.stream import StreamMixin
 from lepl.support import assert_type
@@ -36,7 +39,7 @@ class BaseMatch(StreamMixin, LogMixin):
         Combine adjacent matchers in sequence, merging the result with "+" 
         (so strings are joined, lists merged).
         '''
-        return Add(And(self, coerce(other)))
+        return Add(And(self, other))
 
     def __radd__(self, other):
         '''
@@ -45,7 +48,7 @@ class BaseMatch(StreamMixin, LogMixin):
         Combine adjacent matchers in sequence, merging the result with "+" 
         (so strings are joined, lists merged).
         '''
-        return Add(And(coerce(other), self))
+        return Add(And(other, self))
 
     def __and__(self, other):
         '''
@@ -53,7 +56,7 @@ class BaseMatch(StreamMixin, LogMixin):
         
         Combine adjacent matchers in sequence.
         '''
-        return And(self, coerce(other))
+        return And(self, other)
         
     def __rand__(self, other):
         '''
@@ -61,7 +64,7 @@ class BaseMatch(StreamMixin, LogMixin):
         
         Combine adjacent matchers in sequence.
         '''
-        return And(coerce(other), self)
+        return And(other, self)
     
     def __truediv__(self, other):
         '''
@@ -81,7 +84,7 @@ class BaseMatch(StreamMixin, LogMixin):
         '''
         return And(other, Space()[0:,...], self)
         
-    def __floordiv__(self, other):
+    def __moddiv__(self, other):
         '''
         self // other
         
@@ -90,7 +93,7 @@ class BaseMatch(StreamMixin, LogMixin):
         '''
         return And(self, Space()[1:,...], other)
         
-    def __rfloordiv__(self, other):
+    def __rmoddiv__(self, other):
         '''
         other // self
         
@@ -105,7 +108,7 @@ class BaseMatch(StreamMixin, LogMixin):
         
         Try from alternative matchers.
         '''
-        return Or(self, coerce(other))
+        return Or(self, other)
         
     def __ror__(self, other):
         '''
@@ -113,7 +116,7 @@ class BaseMatch(StreamMixin, LogMixin):
         
         Try from alternative matchers.
         '''
-        return Or(coerce(other), self)
+        return Or(other, self)
         
     def __invert__(self):
         '''
@@ -121,7 +124,7 @@ class BaseMatch(StreamMixin, LogMixin):
         
         Apply Not to the current matcher.
         '''
-        return Not(coerce(self))
+        return Not(self)
         
     def __getitem__(self, indices):
         '''
@@ -176,16 +179,19 @@ class BaseMatch(StreamMixin, LogMixin):
         
         Apply the function to the results returned (unless function is a 
         string, in which case the results are returned as the second part
-        of a tuple, whose first part is the string given). 
+        of a tuple, whose first part is the string given).  If the function
+        is a Node constructor then we add the list.
         '''
         if isinstance(function, str):
             return Name(self, function)
+        elif isinstance(function, type) and issubclass(function, Node):
+             return Apply(self, lambda l: [function(l)])
         else:
-            return Apply(self, function)
+            return Apply(self, function(l))
     
     def __rshift__(self, function):
         '''
-        >> f
+        self >> function
         
         Apply the function to each member of the list of results returned
         (unless function is a string, in which case the results are returned 
@@ -207,8 +213,8 @@ class Repeat(BaseMatch):
         A value of None for stop implies no upper bound.
         '''
         super().__init__()
-        self.__first = pattern
-        self.__second = pattern if separator == None else And(separator, pattern)
+        self.__first = coerce(pattern)
+        self.__second = self.__first if separator == None else And(separator, pattern)
         if start == None: start = 0
         assert_type('The start index for Repeat or [...]', start, int)
         assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
@@ -332,7 +338,7 @@ class And(BaseMatch):
         The arguments are the matchers which are matched in turn.
         '''
         super().__init__()
-        self.__matchers = matchers
+        self.__matchers = [coerce(matcher) for matcher in matchers]
 
     @managed
     def __call__(self, stream):
@@ -370,7 +376,7 @@ class Or(BaseMatch):
         continue to the right.
         '''
         super().__init__()
-        self.__matchers = matchers
+        self.__matchers = [coerce(matcher) for matcher in matchers]
 
     @managed
     def __call__(self, stream):
@@ -409,8 +415,8 @@ class Literal(BaseMatch):
     
     def __init__(self, text):
         '''
-        Typically the argument is a string (treated as list of characters),
-        but a list might be appropriate with some streams.
+        Typically the argument is a string but a list might be appropriate 
+        with some streams.
         '''
         super().__init__()
         self.__text = text
@@ -421,12 +427,11 @@ class Literal(BaseMatch):
         Need to be careful here to use only the restricted functionality
         provided by the stream interface.
         '''
-        for char in self.__text:
-            if stream and stream[0] == char: 
-                stream = stream[1:]
-            else:
-                return
-        yield ([self.__text], stream)
+        try:
+            if self.__text == stream[0:len(self.__text)]:
+                yield ([self.__text], stream[len(self.__text):])
+        except IndexError:
+            pass
         
         
 class Empty(BaseMatch):
@@ -455,7 +460,7 @@ class Not(BaseMatch):
         The argument acts as a "stop" - if it matches, this will fail.
         '''
         super().__init__()
-        self.__matcher = matcher
+        self.__matcher = coerce(matcher)
     
     @managed
     def __call__(self, stream):
@@ -467,51 +472,60 @@ class Not(BaseMatch):
 class Apply(BaseMatch):
     '''
     Apply an arbitrary function to the results of the matcher.
-    The function should typically expect a list.
+    The function should typically expect and return a list.
     It can be used indirectly by using '>=' to the right of the matcher.    
     '''
     
     def __init__(self, matcher, function):
-        self.__matcher = matcher
+        super().__init__()
+        self.__matcher = coerce(matcher)
         self.__function = function
         
     @managed
     def __call__(self, stream):
         for (results, stream) in self.__matcher(stream):
             yield (self.__function(results), stream)
-
+            
+            
+class Delayed(BaseMatch):
+    '''
+    A placeholder that allows forward references.  Before use a matcher
+    must be assigned via "+="
+    '''
+    
+    def __init__(self):
+        super().__init__()
+        self.__matcher = None
+        
+    def __call__(self, stream):
+        if self.__matcher:
+            return self.__matcher(stream)
+        else:
+            raise ValueError('Delayed matcher still unbound.')
+        
+    def __iadd__(self, matcher):
+        if self.__matcher:
+            raise ValueError('Delayed matcher already bound.')
+        else:
+            self.__matcher = coerce(matcher)
+            return self
+         
 
  # the following are functions rather than classes, but we use the class
  # syntax to give a uniform interface.
  
-def Word(chars=NonSpace(), body=None):
-     '''
-     chars and body, if given as strings, define possible characters to use
-     for the first and rest of the characters in the word, respectively.
-     If body is not given, then chars is used for the entire word.
-     They can also specify matchers, which typically should match only a
-     single character.
-     So Word(Upper(), Lower()) would match names that being with an upper
-     case letter, for example, while Word(NoSpace()) matches any sequence
-     of non-space characters. 
-     '''
-     chars = coerce(chars, Any)
-     body = chars if body == None else coerce(body, Any)
-     return chars + body[0:,...]
- 
-
 def Optional(matcher):
     '''
     
     '''
-    return matcher[0:1]
+    return coerce(matcher)[0:1]
 
 
 def Star(matcher):
     '''
     
     '''
-    return matcher[:]
+    return coerce(matcher)[:]
 
 ZeroOrMore = Star
 
@@ -520,7 +534,7 @@ def Plus(matcher):
     '''
     
     ''' 
-    return matcher[1:]
+    return coerce(matcher)[1:]
 
 OneOrMore = Plus
 
@@ -531,7 +545,7 @@ def Map(matcher, function):
     matcher.
     It can be used indirectly by using '>>=' to the right of the matcher.    
     '''
-    return Apply(matcher, lambda l: map(function, l))
+    return Apply(matcher, lambda l: list(map(function, l)))
 
 
 def Add(matcher):
@@ -552,63 +566,119 @@ def Add(matcher):
 
 
 def Drop(matcher):
-    '''
-
-    '''
+    '''Do the match, but return nothing.'''
     return Apply(matcher, lambda l: [])
 
 
 def Substitute(matcher, value):
-    '''
-    
-    '''
+    '''Replace each return value with that given.'''
     return Map(matcher, lambda x: value)
 
 
 def Name(matcher, name):
     '''
-    
+    Name the result of matching.  This replaces each value in the match with
+    a tuple whose first value is the given name and whose second value is
+    the matched token.  The Node class recognises this form and associates
+    such values with named attributes.
     '''
     return Map(matcher, lambda x: (name, x))
 
 
-def Space(space=None):
-    '''
-    '''
-    space = ' \n\r\t' if space == None else space
-    return Any(space)
-
-
 def Eof():
-    '''
-    '''
+    '''Matches the end of a stream.  Returns nothing.'''
     return Not(Any())
+
+Eos = Eof
 
 
 def Identity(matcher):
-    '''
-    '''
-    return matcher
+    '''Functions identically to the matcher given as an argument.'''
+    return coerce(matcher)
+
+
+def Space(space=string.whitespace):
+    '''Matches a single space (by default from string.whitespace).'''
+    return Any(space)
 
 
 def Digit():
-def Alpha():
-def Upper():
-def Lower():
+    '''Matches any single digit.'''
+    return Any(string.digits)
 
-def UnsignedInteger(): 
-def SignedInteger
-Integer = SignedInteger
-def UnsignedFloat():
-def UnsignedEFloat():
-def SignedFloat():
-def SignedEFloat():
-Float = SignedEFloat
+
+def Letter():
+    '''Matches any ASCII letter (A-Z, a-z).'''
+    return Any(string.ascii_letters)
+
+
+def Upper():
+    '''Matches any ASCII uppercase letter (A-Z).'''
+    return Any(string.ascii_uppercase)
 
     
+def Lower():
+    '''Matches any ASCII lowercase letter (A-Z).'''
+    return Any(string.ascii_lowercase)
+
+
+def Printable():
+    '''Matches any printable character (string.printable).'''
+    return Any(string.printable)
+
+
+def Punctuation():
+    '''Matches any punctuation character (string.punctuation).'''
+    return Any(string.punctuation)
+
+
+def UnsignedInteger():
+    '''A simple sequence of digits.'''
+    return Digit()[1:,...]
+
+def SignedInteger():
+    '''A sequence of digits with an optional initial sign.'''
+    return Any('+-')[0:1] + UnsignedInteger()
+    
+Integer = SignedInteger
+
+
+def UnsignedFloat(decimal='.'):
+    '''A sequence of digits that may include a decimal point.'''
+    return (UnsignedInteger() + Optional(Any(decimal))) \
+        | (UnsignedInteger()[0:1] + Any(decimal) + UnsignedInteger())
+    
+def SignedFloat(decimal='.'):
+    '''A signed sequence of digits that may include a decimal point.'''
+    return Any('+-')[0:1] + UnsignedFloat(decimal)
+    
+def SignedEFloat(decimal='.', exponent='eE'):
+    '''A SignedFloat followed by an optional exponent (e+02 etc).'''
+    return SignedFloat + (Any(exponent) + SignedInteger())[0:1]
+    
+Float = SignedEFloat
 
 
 def coerce(arg, function=Literal):
     '''
+    Many arguments can take a string which is implicitly converted (via this
+    function) to a literal (or similar).
     '''
     return function(arg) if isinstance(arg, str) else arg
+
+
+def Word(chars=~Space(), body=None):
+     '''
+     chars and body, if given as strings, define possible characters to use
+     for the first and rest of the characters in the word, respectively.
+     If body is not given, then chars is used for the entire word.
+     They can also specify matchers, which typically should match only a
+     single character.
+     So Word(Upper(), Lower()) would match names that being with an upper
+     case letter, for example, while Word(~Space()) matches any sequence
+     of non-space characters. 
+     '''
+     chars = coerce(chars, Any)
+     body = chars if body == None else coerce(body, Any)
+     return chars + body[0:,...]
+ 

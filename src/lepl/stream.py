@@ -69,7 +69,7 @@ class Stream():
         [n] returns a character (string of length 1)
         [n:] returns a new Stream instance
         [n:m] returns a string
-        These are all relative to 
+        These are all relative to the internal offset.
         '''
         if isinstance(spec, int):
             return self.__chunk.read(self.__offset, spec, spec+1)[0]

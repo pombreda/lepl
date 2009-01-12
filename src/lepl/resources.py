@@ -56,9 +56,9 @@ class GeneratorWrapper(LogMixin):
         # the dependency between modules
         try:
             self.__core = stream.core
-            self.__registered = False
             self.epoch = 0
             self.active = False
+            self.__ref = None
             self.__managed = True
         except:
             self.__managed = False
@@ -68,14 +68,15 @@ class GeneratorWrapper(LogMixin):
         try:
             if self.__managed:
                 self.active = True
-                if not self.__registered:
-                    self.update_epoch()
-                    self.__core.gc.register(self)
             return next(self.__generator)
         finally:
             if self.__managed:
-                self.update_epoch()
                 self.active = False
+                self.update_epoch()
+                if not self.__ref:
+                    self.__ref = self.__core.gc.register(self)
+                else:
+                    self.__ref.refresh(self.__core)
                 
     def update_epoch(self):
         self.epoch = self.__core.gc.next_epoch()
@@ -108,7 +109,18 @@ class GeneratorRef():
     def __eq__(self, other):
         return self is other
     
-    def update(self):
+    def refresh(self, core):
+        '''
+        To keep the heap relatively correct we remove/push when the epoch has
+        drifted by more that the size of the heap.
+        '''
+        wrapper = self.__wrapper()
+        if wrapper and core.gc.max_queue and \
+            wrapper.epoch - self.__last_known_epoch >= core.gc.max_queue:
+            # have no remove for heap - cannot do anything
+            pass
+    
+    def check(self):
         '''
         A generator is deletable if it no longer exists(!) or if the epoch
         has not changed since it was registered (this is used as the priority
@@ -174,7 +186,6 @@ class GeneratorControl(LogMixin):
             # discard any known generators
             self.__queue = []
         self.__max_queue = max_queue
-        self.__ideal_max_queue = max_queue
         if self.__max_queue > 0:
             self._debug('Maximum number of generators: {0}'
                         .format(max_queue))
@@ -195,50 +206,65 @@ class GeneratorControl(LogMixin):
         '''
         This is called every time a generator is created (when the generator
         returns its first value).
-
-        If we delete a generator when one is added then we keep a constant 
-        number.  So in 'normal' use i hope this is fairly efficient (the
-        many loops are only needed when the queue is too small).
         '''
         # do we need to worry at all about resources?
         if self.__max_queue > 0:
             wrapper_ref = GeneratorRef(wrapper)
-            self._debug('Queue size: {0}/{1}'
-                        .format(len(self.__queue), self.__max_queue))
-            self._debug(self.__queue)
-            # if we have space, simply save with no expiry
-            if len(self.__queue) < self.__max_queue:
-                self._debug('Free space, so add {0}'.format(wrapper_ref))
-                heappush(self.__queue, wrapper_ref)
-            else:
-                # we attempt up to 2*max_queue times to delete (once to update
-                # data; once to verify it is still active)
-                for retry in range(2 * self.__max_queue):
-                    candidate_ref = heappushpop(self.__queue, wrapper_ref)
-                    self._debug('Exchanged {0} for {1}'
-                                .format(wrapper_ref, candidate_ref))
-                    # if we can delete this, do so
-                    if self.__deleted(candidate_ref):
-                        # check whether we have the required queue size
-                        if len(self.__queue) <= self.__max_queue:
-                            return
-                        # otherwise, try deleting the next entry
-                        else:
-                            wrapper_ref = heappop(self.__queue)
+            self.__add_and_delete(wrapper_ref)
+            return wrapper_ref
+        else:
+            return None
+        
+    def refresh(self, wrapper_ref):
+        '''
+        This is called whenever a generator's age has changed significantly
+        '''
+        self._debug('Refreshing {0}'.format(wrapper_ref))
+        heappop(self.__queue, wrapper_ref)
+        heappush(self.__queue, wrapper_ref)
+        
+    def __add_and_delete(self, wrapper_ref):
+        '''
+        If we delete a generator when one is added then we keep a constant 
+        number.  So in 'normal' use i hope this is fairly efficient (the
+        many loops are only needed when the queue is too small).
+        '''
+        self._debug('Queue size: {0}/{1}'
+                    .format(len(self.__queue), self.__max_queue))
+        self._debug(self.__queue)
+        # if we have space, simply save with no expiry
+        if len(self.__queue) < self.__max_queue:
+            self._debug('Free space, so add {0}'.format(wrapper_ref))
+            heappush(self.__queue, wrapper_ref)
+        else:
+            # we attempt up to 2*max_queue times to delete (once to update
+            # data; once to verify it is still active)
+            for retry in range(2 * self.__max_queue):
+                candidate_ref = heappushpop(self.__queue, wrapper_ref)
+                self._debug('Exchanged {0} for {1}'
+                            .format(wrapper_ref, candidate_ref))
+                # if we can delete this, do so
+                if self.__deleted(candidate_ref):
+                    # check whether we have the required queue size
+                    if len(self.__queue) <= self.__max_queue:
+                        return
+                    # otherwise, try deleting the next entry
                     else:
-                        # try again (candidate has been updated)
-                        wrapper_ref = candidate_ref
-                # if we are here, queue is too small
-                heappush(self.__queue, wrapper_ref)
-                self._warn('Queue is too small - temporarily extending to {0}'
-                           .format(len(self.__queue)))
-                self._warn('The parser will run significantly slower')
+                        wrapper_ref = heappop(self.__queue)
+                else:
+                    # try again (candidate has been updated)
+                    wrapper_ref = candidate_ref
+            # if we are here, queue is too small
+            heappush(self.__queue, wrapper_ref)
+            self._warn('Queue is too small - temporarily extending to {0}'
+                       .format(len(self.__queue)))
+            self._warn('The parser will run significantly slower')
                 
     def __deleted(self, candidate_ref):
         '''
         Delete the candidate if possible.
         '''
-        candidate_ref.update()
+        candidate_ref.check()
         if candidate_ref.deletable:
             self._debug('Close and discard {0}'.format(candidate_ref))
             candidate_ref.close()
