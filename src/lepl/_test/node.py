@@ -26,5 +26,5 @@ class NodeTest(TestCase):
         expression += (factor / (addsub / factor)[0:])  > Expression
         
         (ast, _) = next(expression.match_string('1 + 2 * (3 + 4 - 5)',
-                                                max_queue=3))
+                                                min_queue=1))
         print(ast[0])

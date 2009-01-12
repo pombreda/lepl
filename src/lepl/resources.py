@@ -20,6 +20,11 @@ in core each time a value is returned), but the priority in the queue is
 frozen when inserted.  So on removing from the queue the priority must be
 checked to ensure it has not changed (and, if so, it must be updated with the
 real value and replaced).
+
+Note that the aim here is to restrict resource consumption without damaging
+performance too much.  The aim is not to control parse results by excluding
+certain matches.  For efficiency, the queue length is increased (doubled)
+whenever the queue is filled by active generators.
 '''
 
 from heapq import heappushpop, heappop, heappush
@@ -58,7 +63,7 @@ class GeneratorWrapper(LogMixin):
             self.__core = stream.core
             self.epoch = 0
             self.active = False
-            self.__ref = None
+            self.__registered = False
             self.__managed = True
         except:
             self.__managed = False
@@ -71,15 +76,15 @@ class GeneratorWrapper(LogMixin):
             return next(self.__generator)
         finally:
             if self.__managed:
-                self.active = False
                 self.update_epoch()
-                if not self.__ref:
-                    self.__ref = self.__core.gc.register(self)
-                else:
-                    self.__ref.refresh(self.__core)
+                self.active = False
+                if not self.__registered:
+                    self.__core.gc.register(self)
+                    self.__registered = True
                 
     def update_epoch(self):
-        self.epoch = self.__core.gc.next_epoch()
+        if self.active:
+            self.epoch = self.__core.gc.next_epoch()
                 
     def __iter__(self):
         return self
@@ -109,17 +114,6 @@ class GeneratorRef():
     def __eq__(self, other):
         return self is other
     
-    def refresh(self, core):
-        '''
-        To keep the heap relatively correct we remove/push when the epoch has
-        drifted by more that the size of the heap.
-        '''
-        wrapper = self.__wrapper()
-        if wrapper and core.gc.max_queue and \
-            wrapper.epoch - self.__last_known_epoch >= core.gc.max_queue:
-            # have no remove for heap - cannot do anything
-            pass
-    
     def check(self):
         '''
         A generator is deletable if it no longer exists(!) or if the epoch
@@ -131,9 +125,9 @@ class GeneratorRef():
         '''
         wrapper = self.__wrapper()
         if wrapper:
-            if wrapper.active: wrapper.update_epoch()
+            wrapper.update_epoch()
             self.deletable = self.__last_known_epoch == wrapper.epoch
-            if not self.deletable: self.__last_known_epoch = wrapper.epoch
+            self.__last_known_epoch = wrapper.epoch
         else:
             self.deletable = True
             
@@ -158,37 +152,40 @@ class GeneratorControl(LogMixin):
     This manages the priority queue, etc.
     '''
     
-    def __init__(self, max_queue):
+    def __init__(self, min_queue):
         '''
         The maximum size is only a recommendation - we do not discard active
         generators so there is an effective minimum size which takes priority.
         '''
         super().__init__()
-        self.__max_queue = 0
+        self.__min_queue = 0
         self.__queue = []
         self.__epoch = 0
-        self.max_queue = max_queue
+        self.min_queue = min_queue
             
     @property
-    def max_queue(self):
+    def min_queue(self):
         '''
-        This is the maximum number of generators (effectively, the number of
+        This is the current number of generators (effectively, the number of
         'saved' matchers available for backtracking) that can exist at any one
-        time.  It is not exact, because generators that are currently in use
-        cannot be deleted.  A value of zero disables the early deletion of
-        generators, allowing full back-tracking.
+        time.  A value of zero disables the early deletion of generators, 
+        allowing full back-tracking.
+        
+        This is intended for freeing resources, not for controlling parse
+        results by restricting matches.  It may be increased by the system
+        (hence "min") when necessary.
         '''
-        return self.__max_queue
+        return self.__min_queue
     
-    @max_queue.setter
-    def max_queue(self, max_queue):
-        if max_queue == 0:
+    @min_queue.setter
+    def min_queue(self, min_queue):
+        if min_queue == 0:
             # discard any known generators
             self.__queue = []
-        self.__max_queue = max_queue
-        if self.__max_queue > 0:
+        self.__min_queue = min_queue
+        if self.__min_queue > 0:
             self._debug('Maximum number of generators: {0}'
-                        .format(max_queue))
+                        .format(min_queue))
         else:
             self._debug('No limit to number of generators stored')
         
@@ -208,45 +205,36 @@ class GeneratorControl(LogMixin):
         returns its first value).
         '''
         # do we need to worry at all about resources?
-        if self.__max_queue > 0:
+        if self.__min_queue > 0:
             wrapper_ref = GeneratorRef(wrapper)
             self.__add_and_delete(wrapper_ref)
             return wrapper_ref
         else:
             return None
         
-    def refresh(self, wrapper_ref):
-        '''
-        This is called whenever a generator's age has changed significantly
-        '''
-        self._debug('Refreshing {0}'.format(wrapper_ref))
-        heappop(self.__queue, wrapper_ref)
-        heappush(self.__queue, wrapper_ref)
-        
     def __add_and_delete(self, wrapper_ref):
         '''
         If we delete a generator when one is added then we keep a constant 
-        number.  So in 'normal' use i hope this is fairly efficient (the
+        number.  So in 'normal' use this is fairly efficient (the
         many loops are only needed when the queue is too small).
         '''
         self._debug('Queue size: {0}/{1}'
-                    .format(len(self.__queue), self.__max_queue))
-        self._debug(self.__queue)
+                    .format(len(self.__queue), self.__min_queue))
         # if we have space, simply save with no expiry
-        if len(self.__queue) < self.__max_queue:
+        if len(self.__queue) < self.__min_queue:
             self._debug('Free space, so add {0}'.format(wrapper_ref))
             heappush(self.__queue, wrapper_ref)
         else:
-            # we attempt up to 2*max_queue times to delete (once to update
+            # we attempt up to 2*min_queue times to delete (once to update
             # data; once to verify it is still active)
-            for retry in range(2 * self.__max_queue):
+            for retry in range(2 * self.__min_queue):
                 candidate_ref = heappushpop(self.__queue, wrapper_ref)
                 self._debug('Exchanged {0} for {1}'
                             .format(wrapper_ref, candidate_ref))
                 # if we can delete this, do so
                 if self.__deleted(candidate_ref):
                     # check whether we have the required queue size
-                    if len(self.__queue) <= self.__max_queue:
+                    if len(self.__queue) <= self.__min_queue:
                         return
                     # otherwise, try deleting the next entry
                     else:
@@ -256,9 +244,9 @@ class GeneratorControl(LogMixin):
                     wrapper_ref = candidate_ref
             # if we are here, queue is too small
             heappush(self.__queue, wrapper_ref)
-            self._warn('Queue is too small - temporarily extending to {0}'
-                       .format(len(self.__queue)))
-            self._warn('The parser will run significantly slower')
+            self.min_queue = self.min_queue * 2
+            self._warn('Queue is too small - extending to {0}'
+                       .format(self.min_queue))
                 
     def __deleted(self, candidate_ref):
         '''
@@ -269,4 +257,3 @@ class GeneratorControl(LogMixin):
             self._debug('Close and discard {0}'.format(candidate_ref))
             candidate_ref.close()
         return candidate_ref.deletable
-    

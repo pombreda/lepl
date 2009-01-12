@@ -18,24 +18,24 @@ class LimitedDepthTest(LogMixin, TestCase):
         self._debug('test null with stream')
         self.assert_list(NullMatch()[3].match_list([2,2,2]), 
                          [[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]], 0)
-        for max_queue in range(20):
-            if max_queue == 0:
+        for min_queue in range(20):
+            if min_queue == 0:
                 result = [[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]]
-            elif max_queue <= 3:
+            elif min_queue <= 3:
                 result = [[0,0,0]]
-            elif max_queue <= 8:
+            elif min_queue <= 8:
                 result = [[0,0,0], [0,0,1]]
-            elif max_queue <= 18:
+            elif min_queue <= 18:
                 result = [[0,0,0], [0,0,1], [0,1,0], [0,1,1]]
             else:
                 result = [[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]]
-            self._debug('test max_queue={0}'.format(max_queue))
-            self.assert_list(LimitedMatch()[3].match_list([2,2,2], max_queue=max_queue),
-                             result, max_queue) 
+            self._debug('test min_queue={0}'.format(min_queue))
+            self.assert_list(LimitedMatch()[3].match_list([2,2,2], min_queue=min_queue),
+                             result, min_queue) 
         
-    def assert_list(self, match, expected, max_queue):
+    def assert_list(self, match, expected, min_queue):
         result = [i for (i, _) in match]
-        assert expected == result, '{0}: {1}'.format(max_queue, result)
+        assert expected == result, '{0}: {1}'.format(min_queue, result)
               
 
 class NullMatch(StreamMixin, RepeatMixin, LogMixin):
