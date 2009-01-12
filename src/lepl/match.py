@@ -14,6 +14,7 @@ matchers explore alternative combinations until one "fits" the stream.
 '''
 
 import string
+from traceback import print_exc
 
 from lepl.node import Node
 from lepl.resources import managed
@@ -84,7 +85,7 @@ class BaseMatch(StreamMixin, LogMixin):
         '''
         return And(other, Space()[0:,...], self)
         
-    def __moddiv__(self, other):
+    def __floordiv__(self, other):
         '''
         self // other
         
@@ -93,7 +94,7 @@ class BaseMatch(StreamMixin, LogMixin):
         '''
         return And(self, Space()[1:,...], other)
         
-    def __rmoddiv__(self, other):
+    def __rfloordiv__(self, other):
         '''
         other // self
         
@@ -185,9 +186,9 @@ class BaseMatch(StreamMixin, LogMixin):
         if isinstance(function, str):
             return Name(self, function)
         elif isinstance(function, type) and issubclass(function, Node):
-             return Apply(self, lambda l: [function(l)])
+            return Apply(self, lambda l: [function(l)])
         else:
-            return Apply(self, function(l))
+            return Apply(self, function)
     
     def __rshift__(self, function):
         '''
@@ -682,3 +683,19 @@ def Word(chars=~Space(), body=None):
      body = chars if body == None else coerce(body, Any)
      return chars + body[0:,...]
  
+
+class Commit(BaseMatch):
+    '''
+    Commit to the current state - deletes all backtracking information.
+    This only works if the match... methods are used and min_queue is greater
+    than zero.
+    '''
+    
+    def __call__(self, stream):
+        try:
+            stream.core.gc.erase()
+            yield([], stream)
+        except:
+            print_exc()
+            raise ValueError('Commit requires stream source.')
+        

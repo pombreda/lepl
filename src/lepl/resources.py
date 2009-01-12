@@ -131,6 +131,13 @@ class GeneratorRef():
         else:
             self.deletable = True
             
+    def active(self):
+        generator = self.__wrapper()
+        if generator:
+            return generator.active
+        else:
+            return False
+            
     def close(self):
         generator = self.__wrapper()
         if generator:
@@ -227,7 +234,7 @@ class GeneratorControl(LogMixin):
         else:
             # we attempt up to 2*min_queue times to delete (once to update
             # data; once to verify it is still active)
-            for retry in range(2 * self.__min_queue):
+            for retry in range(2 * len(self.__queue)):
                 candidate_ref = heappushpop(self.__queue, wrapper_ref)
                 self._debug('Exchanged {0} for {1}'
                             .format(wrapper_ref, candidate_ref))
@@ -247,6 +254,20 @@ class GeneratorControl(LogMixin):
             self.min_queue = self.min_queue * 2
             self._warn('Queue is too small - extending to {0}'
                        .format(self.min_queue))
+    
+    def erase(self):
+        '''
+        Delete all non-active generators.
+        '''
+        print('erase', self.__queue)
+        if self.__queue:
+            for retry in range(len(self.__queue)):
+                candidate_ref = heappop(self.__queue)
+                if candidate_ref.active():
+                    candidate_ref.check() # forces epoch update
+                    heappush(self.__queue, candidate_ref)
+                else:
+                    candidate_ref.close()
                 
     def __deleted(self, candidate_ref):
         '''

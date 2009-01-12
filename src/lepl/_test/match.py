@@ -6,7 +6,7 @@ from unittest import TestCase
 from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.match import Any, And, Not, Or, BaseMatch, Repeat, Space
+from lepl.match import * 
 from lepl.resources import managed
 from lepl.trace import LogMixin
 
@@ -177,13 +177,22 @@ class SpaceTest(BaseTest):
         self.assert_direct('  ', Space()[0:], [[' ', ' '], [' '], []])
         self.assert_direct('  ', Space()[0:,...], [['  '], [' '], []])
         
-    def test_gt(self):
+    def test_slash(self):
         ab = Any('ab')
-        self.assert_direct('ab', ab > ab, [['a', 'b']])
-        self.assert_direct('a b', ab > ab, [['a', ' ', 'b']])
-        self.assert_direct('a  b', ab > ab, [['a', '  ', 'b']])
-        self.assert_direct('ab', ab >> ab, [])
-        self.assert_direct('a b', ab >> ab, [['a', ' ', 'b']])
-        self.assert_direct('a  b', ab >> ab, [['a', '  ', 'b']])
+        self.assert_direct('ab', ab / ab, [['a', 'b']])
+        self.assert_direct('a b', ab / ab, [['a', ' ', 'b']])
+        self.assert_direct('a  b', ab / ab, [['a', '  ', 'b']])
+        self.assert_direct('ab', ab // ab, [])
+        self.assert_direct('a b', ab // ab, [['a', ' ', 'b']])
+        self.assert_direct('a  b', ab // ab, [['a', '  ', 'b']])
 
+ 
+class CommitTest(BaseTest):
     
+    def test_commit(self):
+        self.assert_direct('abcd', 
+            lambda s: (Any()[0::-1] + (Literal('d') | 
+                                       Literal('cd') + Commit() | 
+                                       Literal('bcd')) + Eof()).match_string(s, min_queue=100), 
+            [['abcd'], ['abcd']])
+        
