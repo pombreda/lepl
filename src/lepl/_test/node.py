@@ -25,6 +25,5 @@ class NodeTest(TestCase):
         addsub      = Any('+-')                         > 'operator'
         expression += (factor / (addsub / factor)[0:])  > Expression
         
-        (ast, _) = next(expression.match_string('1 + 2 * (3 + 4 - 5)',
-                                                min_queue=1))
+        (ast, _) = next(expression.match_string('1 + 2 * (3 + 4 - 5)'))
         print(ast[0])
