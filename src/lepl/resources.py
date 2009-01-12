@@ -21,10 +21,12 @@ frozen when inserted.  So on removing from the queue the priority must be
 checked to ensure it has not changed (and, if so, it must be updated with the
 real value and replaced).
 
-Note that the aim here is to restrict resource consumption without damaging
-performance too much.  The aim is not to control parse results by excluding
-certain matches.  For efficiency, the queue length is increased (doubled)
-whenever the queue is filled by active generators.
+Note that the main aim here is to restrict resource consumption without 
+damaging performance too much.  The aim is not to control parse results by 
+excluding certain matches.  For efficiency, the queue length is increased 
+(doubled) whenever the queue is filled by active generators.
+
+For the control of parse results see the Commit() matcher.
 '''
 
 from heapq import heappushpop, heappop, heappush
