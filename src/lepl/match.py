@@ -1,19 +1,24 @@
 
 '''
-Matches take a stream of input and return a list of a list of values.
+Matchers form the basis of the library; they are used to define the grammar
+and do the work of parsing the input.
 
-The "list of values" is typically a list of words or AST nodes or similar.
-The extra list, "outside" that, is different possible versions.  In most cases
-only the first item from the second, outer list, is used.  So a very simple 
-use of a matcher might be:
-  MyMatcher(stream)[0]
-where the [0] immediately takes the first value from that outer list.
+A matcher is like a parser combinator - it takes a stream, matches content in
+the stream, and returns a list of tokens and a new stream.  However, matchers
+are also generators, so they can be "recalled" to return alternative matches.
+This gives backtracking.
 
-Internally, the outer list is important to allow backtracking - this lets
-matchers explore alternative combinations until one "fits" the stream.
+Matchers are implemented as both classes (these tend to be the basic building
+blocks) and functions (these are typically "syntactic sugar").  I have used
+the same syntax (capitalized names) for both to keep the API uniform.
+
+For more background, please see the `manual`_.
+
+.. _manual: ../index.html 
 '''
 
 import string
+from re import compile
 from traceback import print_exc
 
 from lepl.node import Node
@@ -25,9 +30,9 @@ from lepl.trace import LogMixin
 
 class BaseMatch(StreamMixin, LogMixin):
     '''
-    This provides support and special syntax that is common across all
-    matchers.  For example, it provides logging and makes the "&" operator
-    a shortcut for the "And" matcher.
+    A base class that provides support to all matchers; most 
+    importantly it defines the operators used to combine elements in a 
+    grammar specification.
     '''
 
     def __init__(self):
@@ -35,119 +40,216 @@ class BaseMatch(StreamMixin, LogMixin):
         
     def __add__(self, other):
         '''
-        self + other
+        **self + other** - Join strings, merge lists.
         
         Combine adjacent matchers in sequence, merging the result with "+" 
         (so strings are joined, lists merged).
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
         '''
         return Add(And(self, other))
 
     def __radd__(self, other):
         '''
-        other + self
+        **other + self** - Join strings, merge lists.
         
         Combine adjacent matchers in sequence, merging the result with "+" 
         (so strings are joined, lists merged).
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
         '''
         return Add(And(other, self))
 
     def __and__(self, other):
         '''
-        self & other
+        **self & other** - Append results.
         
         Combine adjacent matchers in sequence.
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
         '''
         return And(self, other)
         
     def __rand__(self, other):
         '''
-        other & self
+        **other & self** - Append results.
         
         Combine adjacent matchers in sequence.
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
         '''
         return And(other, self)
     
     def __truediv__(self, other):
         '''
-        self / other
+        **self / other** - Append results, with optional separating space.
         
         Combine adjacent matchers in sequence, with an optional space between
         them.  The space is included in the results.
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
         '''
         return And(self, Space()[0:,...], other)
         
     def __rtruediv__(self, other):
         '''
-        other / self
+        **other / self** - Append results, with optional separating space.
         
         Combine adjacent matchers in sequence, with an optional space between
         them.  The space is included in the results.
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
         '''
         return And(other, Space()[0:,...], self)
         
     def __floordiv__(self, other):
         '''
-        self // other
+        **self // other** - Append results, with required separating space.
         
         Combine adjacent matchers in sequence, with a space between them.  
         The space is included in the results.
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
         '''
         return And(self, Space()[1:,...], other)
         
     def __rfloordiv__(self, other):
         '''
-        other // self
+        **other // self** - Append results, with required separating space.
         
         Combine adjacent matchers in sequence, with a space between them.  
         The space is included in the results.
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
         '''
         return And(other, Space()[1:,...], self)
         
     def __or__(self, other):
         '''
-        self | other
+        **self | other** - Try alternative matchers.
         
-        Try from alternative matchers.
+        This introduces backtracking.  Matches are tried from left to right
+        and successful results returned (one on each "recall").
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
         '''
         return Or(self, other)
         
     def __ror__(self, other):
         '''
-        other | self
+        **other | self** - Try alternative matchers.
         
-        Try from alternative matchers.
+        This introduces backtracking.  Matches are tried from left to right
+        and successful results returned (one on each "recall").
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
         '''
         return Or(other, self)
         
     def __invert__(self):
         '''
-        ~self
+        **~self** - Negative lookahead.
         
-        Apply Not to the current matcher.
+        This generates a matcher that is only successful (consuming nothing
+        from the stream and returning an empty result) if the original matcher
+        would have failed.
         '''
         return Not(self)
         
     def __getitem__(self, indices):
         '''
-        self[start:stop:step, separator, ...]
+        **self[start:stop:step, separator, ...]** - Repetition and lists.
         
-        Allows the main class to be modified via the array index / slice syntax:
-        [n] - Repeat exactly n times
-        [n:m] - Repeat n to m times, starting with n and incrementing
-        [n:m:s] - Repeat n, n+s, ... times, with an upper bound of m
-        Defaults are: n=0, m=infinity, s=-1
-        We use a negative third index (greedy matching, depth first search)
-        because it behaves better with large patterns and limited backtracking
-        (the generators are stored directly and can be closed to free resources;
-        with non-greedy, breadth first search generators are successively 
-        expanded and the results accumulated in memory).
+        This is a complex statement that modifies the current matcher so
+        that it matches several times.  A separator may be specified
+        (eg for comma-separated lists) and the results may be combined with
+        "+" (so repeated matching of characters would give a word).
         
-        A match argument can be given, which is used as the separator.
-        For example, [0:3,Drop(Space())] will match lists of length 0 to 3
-        whose entries are separated by a space (omitted from the result).
+        start:stop:step
+          This controls how many times the matcher will repeat.
+          
+          [start]
+            Repeat exactly *start* times
+            
+          [start:stop]
+            Repeat *start* to *stop* times (starting with as many matches
+            as possible, and then decreasing as necessary).
+            
+          [start:stop:step]
+            If step is positive, repeat *start*, *start+step*, ... times,
+            with a maximum number of *stop* repetitions.
+            
+            If step is negative, repeat *stop*, *stop-step*, ... times
+            with a minimum number of *start* repetitions.
+            
+          Values may be omitted; the defaults are: *start* = 0, *stop* = 
+          infinity, *step* = -1.
+
+        separator
+          If given, this must appear between repeated values.  Matched
+          separators are returned as part of the result (unless, of course,
+          they are implemented with a matcher that returns nothing).  If 
+          *separator* is a string it is converted to a literal match.
+
+        ...
+          If ... (an ellipsis) is given then the results are joined together
+          with "+".           
+
+        Examples
+        --------
         
-        An ellipsis (...) can also be given, in which case the results are 
-        joined together with '+' (as Add()).
+        Any()[0:3,...] will match 3 or less characters, joining them
+        together so that the result is a single string.
+        
+        Word()[:,','] will match a comma-separated list of words.
+        
+        value[:] or value [0:] or value [0::-1] is the "greedy" match that
+        is sometimes written as "*".
+        value[::1] is the "non-greedy" equivalent (preferring as short a 
+        match as possible).
+        
+        value[1:] or value [1::-1] is the "greedy" match that is sometimes
+        written as "+".  value [1::1] is the "non-greedy" equivalent.
         '''
         start = 0
         stop = None
@@ -176,46 +278,87 @@ class BaseMatch(StreamMixin, LogMixin):
     
     def __gt__(self, function):
         '''
-        self > function
+        **self > function** - Process or label the results.
         
-        Apply the function to the results returned (unless function is a 
-        string, in which case the results are returned as the second part
-        of a tuple, whose first part is the string given).  If the function
-        is a Node constructor then we add the list.
+        :Parameters:
+        
+          function
+            This can be a string or a function.
+            
+            If a string is given each result is replaced by a 
+            (name, value) tuple, where name is the string and value is the
+            result.  This is equivalent to `lepl.match.Name`.
+            
+            If a function is given it is called with the results as an
+            argument.  The return value is used as the new result.  This
+            is *almost* equivalent to `lepl.match.Apply`; the only difference
+            is that the final result is included in a new list (*Apply*
+            must return the list too, if required).
         '''
         if isinstance(function, str):
             return Name(self, function)
-        elif isinstance(function, type) and issubclass(function, Node):
-            return Apply(self, lambda l: [function(l)])
         else:
-            return Apply(self, function)
+            return Apply(self, lambda l: [function(l)])
     
     def __rshift__(self, function):
         '''
-        self >> function
+        **self >> function** - Process or label the results (map).
         
-        Apply the function to each member of the list of results returned
-        (unless function is a string, in which case the results are returned 
-        as the second part of a tuple, whose first part is the string given).
+        This is similar to *self > function*, except that the function is
+        applied to each result in turn.
+        
+        :Parameters:
+        
+          function
+            This can be a string or a function.
+            
+            If a string is given each result is replaced by a 
+            (name, value) tuple, where name is the string and value is the
+            result.  This is equivalent to `lepl.match.Name`.
+            
+            If a function is given it is called with each result in turn.
+            The return values are used as the new result.  This is
+            equivalent to `lepl.match.Map`.
         '''
         if isinstance(function, str):
             return Name(self, function)
         else:
             return Map(self, function)
-    
+        
     
 class Repeat(BaseMatch):
     '''
-    Repeats the pattern supplied to the constructor.
+    Modifies a matcher so that it repeats several times, including an optional
+    separator and the ability to combine results with "+".
     ''' 
     
-    def __init__(self, pattern, start=0, stop=None, step=1, separator=None):
+    def __init__(self, matcher, start=0, stop=None, step=-1, separator=None):
         '''
-        A value of None for stop implies no upper bound.
+        Construct the modified matcher.
+        
+        :Parameters:
+        
+          matcher
+            The matcher to modify (a string is converted to a literal match).
+        
+          start, stop, step
+            Together these control how many times the matcher will repeat.
+          
+            If step is positive, repeat *start*, *start+step*, ... times,
+            with a maximum number of *stop* repetitions.
+            
+            If step is negative, repeat *stop*, *stop-step*, ... times
+            with a minimum number of *start* repetitions.
+            
+          separator
+            If given, this must appear between repeated values.  Matched
+            separators are returned as part of the result (unless, of course,
+            they are implemented with a matcher that returns nothing).  If 
+            *separator* is a string it is converted to a literal match.
         '''
         super().__init__()
-        self.__first = coerce(pattern)
-        self.__second = self.__first if separator == None else And(separator, pattern)
+        self.__first = coerce(matcher)
+        self.__second = self.__first if separator == None else And(separator, matcher)
         if start == None: start = 0
         assert_type('The start index for Repeat or [...]', start, int)
         assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
@@ -236,6 +379,10 @@ class Repeat(BaseMatch):
         
     @managed
     def __call__(self, stream):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).
+        '''
         if self._step > 0:
             return self.__call_up(stream)
         else:
@@ -243,6 +390,8 @@ class Repeat(BaseMatch):
         
     def __call_up(self, stream):
         '''
+        Implement the non-greedy (positive step) matching.
+        
         Note that in the presence of backtracking, non-greedy match is 
         slightly odd - it will return all possible short lists (including
         backtracking embedded matchers) before returning longer lists.
@@ -262,7 +411,7 @@ class Repeat(BaseMatch):
             # smallest counts first
             (count1, acc1, stream1) = stack.pop(0)
             count2 = count1 + 1
-            for (value, stream2) in self.__pattern(count1)(stream1):
+            for (value, stream2) in self.__matcher(count1)(stream1):
                 acc2 = acc1 + value
                 if count2 >= self._start and \
                     (self._stop == None or count2 <= self._stop) and \
@@ -271,7 +420,10 @@ class Repeat(BaseMatch):
                 if self._stop == None or count2 + self._step <= self._stop:
                     stack.append((count2, acc2, stream2))
                     
-    def __pattern(self, count):
+    def __matcher(self, count):
+        '''
+        Provide the appropriate matcher for a given count.
+        '''
         if 0 == count:
             return self.__first
         else:
@@ -279,6 +431,8 @@ class Repeat(BaseMatch):
 
     def __call_down(self, stream):
         '''
+        Implement the greedy (negative step) matching.
+        
         We attempt (see note below) to generate all possibilities in order of 
         decreasing numbers of matches, so we build on calls to the underlying
         pattern by calling again as soon as we have one value.  Later values 
@@ -295,7 +449,7 @@ class Repeat(BaseMatch):
         '''
         stack = []
         try:
-            stack.append((0, [], self.__pattern(0)(stream)))
+            stack.append((0, [], self.__matcher(0)(stream)))
             known = {}
             if 0 == self._start:
                 known[0] = [([], stream)]
@@ -314,7 +468,7 @@ class Repeat(BaseMatch):
                              (self._stop - count2) % self._step == 0))):
                         if count2 not in known: known[count2] = []
                         known[count2].append((acc2, stream2))
-                    stack.append((count2, acc2, self.__pattern(count2)(stream2)))
+                    stack.append((count2, acc2, self.__matcher(count2)(stream2)))
                 except StopIteration:
                     stack.pop(-1)
             counts = list(known.keys())
@@ -388,7 +542,7 @@ class Or(BaseMatch):
 
 class Any(BaseMatch):
     '''
-    Matches any single token in the stream.  Optionally a restricted set of
+    Matches a single token in the stream.  Optionally a restricted set of
     valid tokens can be supplied.
     '''
     
@@ -406,6 +560,29 @@ class Any(BaseMatch):
         Match any character and progress to the next.
         '''
         if stream and (not self.__restrict or stream[0] in self.__restrict):
+            yield ([stream[0]], stream[1:])
+            
+            
+class AnyBut(BaseMatch):
+    '''
+    Matches a single token in the stream if it isn't included in the set of
+    invalid tokens.
+    '''
+    
+    def __init__(self, exclude=None):
+        '''
+        The argument should be a list of tokens (or a string of suitable 
+        characters) to exclude.  If omitted all tokens are accepted.
+        '''
+        super().__init__()
+        self.__exclude = exclude
+    
+    @managed
+    def __call__(self, stream):
+        '''
+        Accept non-invalid characters.
+        '''
+        if stream and (not self.__exclude or stream[0] not in self.__exclude):
             yield ([stream[0]], stream[1:])
             
             
@@ -488,6 +665,26 @@ class Apply(BaseMatch):
             yield (self.__function(results), stream)
             
             
+class Regexp(BaseMatch):
+    '''
+    Match a regular expression.  If groups are defined, they are returned
+    as results.  Otherwise, the entrie expression is returned.
+    '''
+    
+    def __init__(self, pattern):
+        self.__pattern = compile(pattern)
+        
+    @managed
+    def __call__(self, stream):
+        match = self.__pattern.match(stream)
+        if match:
+            eaten = len(match.group())
+            if match.groups():
+                yield (list(match.groups()), stream[eaten:])
+            else:
+                yield ([match.group()], stream[eaten:])
+            
+            
 class Delayed(BaseMatch):
     '''
     A placeholder that allows forward references.  Before use a matcher
@@ -497,7 +694,7 @@ class Delayed(BaseMatch):
     def __init__(self):
         super().__init__()
         self.__matcher = None
-        
+    
     def __call__(self, stream):
         if self.__matcher:
             return self.__matcher(stream)
@@ -668,7 +865,7 @@ def coerce(arg, function=Literal):
     return function(arg) if isinstance(arg, str) else arg
 
 
-def Word(chars=~Space(), body=None):
+def Word(chars=AnyBut(Space()), body=None):
      '''
      chars and body, if given as strings, define possible characters to use
      for the first and rest of the characters in the word, respectively.
@@ -676,8 +873,8 @@ def Word(chars=~Space(), body=None):
      They can also specify matchers, which typically should match only a
      single character.
      So Word(Upper(), Lower()) would match names that being with an upper
-     case letter, for example, while Word(~Space()) matches any sequence
-     of non-space characters. 
+     case letter, for example, while Word(AnyBut(Space())) (the default)
+     matches any sequence of non-space characters. 
      '''
      chars = coerce(chars, Any)
      body = chars if body == None else coerce(body, Any)

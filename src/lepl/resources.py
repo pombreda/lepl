@@ -188,15 +188,15 @@ class GeneratorControl(LogMixin):
     
     @min_queue.setter
     def min_queue(self, min_queue):
-        if min_queue == 0:
-            # discard any known generators
-            self.__queue = []
         self.__min_queue = min_queue
-        if self.__min_queue > 0:
-            self._debug('Maximum number of generators: {0}'
-                        .format(min_queue))
+        if min_queue == None:
+            self.__queue = None
+            self._debug('No monitoring of backtrack state.')
         else:
-            self._debug('No limit to number of generators stored')
+            if min_queue > 0:
+                self._debug('Queue size: {0}'.format(min_queue))
+            else:
+                self._debug('No limit to number of generators stored')
         
     def next_epoch(self):
         '''
@@ -214,7 +214,7 @@ class GeneratorControl(LogMixin):
         returns its first value).
         '''
         # do we need to worry at all about resources?
-        if self.__min_queue > 0:
+        if self.__min_queue != None:
             wrapper_ref = GeneratorRef(wrapper)
             self.__add_and_delete(wrapper_ref)
             return wrapper_ref
@@ -230,7 +230,7 @@ class GeneratorControl(LogMixin):
         self._debug('Queue size: {0}/{1}'
                     .format(len(self.__queue), self.__min_queue))
         # if we have space, simply save with no expiry
-        if len(self.__queue) < self.__min_queue:
+        if self.__min_queue == 0 or len(self.__queue) < self.__min_queue:
             self._debug('Free space, so add {0}'.format(wrapper_ref))
             heappush(self.__queue, wrapper_ref)
         else:

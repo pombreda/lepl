@@ -212,28 +212,54 @@ class StreamMixin():
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
     
-    def match_string(self, text, **options):
+    def match_string(self, **options):
         '''
-        Parse a string.  For options, see __do_match here or lepl.core.Core.
+        Create a parser for a string.  For options see lepl.core.Core.
         '''
-        return self(Stream.from_string(text, **options))
+        return lambda text: self(Stream.from_string(text, **options))
+
+    def match_path(self, **options):
+        '''
+        Create a parser for a file from a given path.  For options see lepl.core.Core.
+        '''
+        return lambda path: self(Stream.from_path(path, **options))
+
+    def match_list(self, **options):
+        '''
+        Create a parser for a list of values.  For options see lepl.core.Core.
+        '''
+        return lambda list_: self(Stream.from_list(list_, **options))
+
+    def match_file(self, **options):
+        '''
+        Create a parser for a file.  For options see lepl.core.Core.
+        '''
+        return lambda file_: self(Stream.from_string(file_, **options))
+
+    def parse_string(self, text, **options):
+        '''
+        Parse a string, returning only a single result.  
+        For options see lepl.core.Core.
+        '''
+        return next(self(Stream.from_string(text, **options)))[0]
 
     def match_path(self, path, **options):
         '''
-        Parse a file from a given path.  
-        For options, see __do_match here or lepl.core.Core.
+        Parse a file from a given path, returning only a single result.  
+        For options see lepl.core.Core.
         '''
-        return self(Stream.from_path(path, **options))
+        return next(self(Stream.from_path(path, **options)))[0]
 
     def match_list(self, list_, **options):
         '''
-        Parse a list of values.  
-        For options, see __do_match here or lepl.core.Core.
+        Parse a list of values, returning only a single result.  
+        For options see lepl.core.Core.
         '''
-        return self(Stream.from_list(list_, **options))
+        return next(self(Stream.from_list(list_, **options)))[0]
 
     def match_file(self, file_, **options):
         '''
-        Parse a file.  For options, see __do_match here or lepl.core.Core.
+        Parse a file, returning only a single result.  
+        For options see lepl.core.Core.
         '''
-        return self(Stream.from_string(file_, **options))
+        return next(self(Stream.from_string(file_, **options)))[0]

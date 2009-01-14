@@ -191,8 +191,16 @@ class CommitTest(BaseTest):
     
     def test_commit(self):
         self.assert_direct('abcd', 
-            lambda s: (Any()[0::-1] + (Literal('d') | 
-                                       Literal('cd') + Commit() | 
-                                       Literal('bcd')) + Eof()).match_string(s, min_queue=100), 
+            (Any()[0::-1] + (Literal('d') | 
+                             Literal('cd') + Commit() | 
+                             Literal('bcd')) + Eof()).match_string(min_queue=100), 
             [['abcd'], ['abcd']])
         
+
+class RegexpTest(BaseTest):
+    
+    def test_group(self):
+        self.assert_direct('  123x', Regexp(r'\s*\d+') & Any(), [['  123', 'x']])
+        
+    def test_groups(self):
+        self.assert_direct('  123x', Regexp(r'\s*(\d)(\d+)') & Any(), [['1','23','x']])
