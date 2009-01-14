@@ -67,15 +67,15 @@ class OrTest(BaseTest):
         self.assert_direct('a', Any('x') | Any('a') | Any(), [['a'],['a']])
 
 
-class NotTest(BaseTest):
+class LookaheadTest(BaseTest):
     
     def test_simple(self):
-        self.assert_direct('ab', Any() + Not(Any('c')) + Any(), [['ab']])
-        self.assert_direct('ab', Any() + Not(Any('b')) + Any(), [])
+        self.assert_direct('ab', Any() + Lookahead('c') + Any(), [])
+        self.assert_direct('ab', Any() + Lookahead('b') + Any(), [['ab']])
 
     def test_bang(self):
-        self.assert_direct('ab', Any() + ~Any('c') + Any(), [['ab']])
-        self.assert_direct('ab', Any() + ~Any('b') + Any(), [])
+        self.assert_direct('ab', Any() + ~Lookahead('c') + Any(), [['ab']])
+        self.assert_direct('ab', Any() + ~Lookahead('b') + Any(), [])
 
 
 class RepeatTest(TestCase):
@@ -204,3 +204,11 @@ class RegexpTest(BaseTest):
         
     def test_groups(self):
         self.assert_direct('  123x', Regexp(r'\s*(\d)(\d+)') & Any(), [['1','23','x']])
+
+
+class WordTest(BaseTest):
+    
+    def test_phone(self):
+        self.assert_direct('andrew, 3333253', Word() / ',' / Integer() / Eof(), 
+                           [['andrew', ',', ' ', '3333253']])
+        

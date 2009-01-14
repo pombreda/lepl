@@ -3,9 +3,11 @@
 
 LEPL is a parser library written in Python.  
 This is the API documentation; the module index is at the bottom of this page.  
-There is also a `manual`_ which explains how to use the library in more detail.
+There is also a `manual <../manual/index.html>`_ which explains how to use the 
+library in more detail.
 
-The source and documentation can be downloaded from the `LEPL website`_.
+The source and documentation can be downloaded from the `LEPL website
+<http://www.acooke.org/lepl>`_.
 
 **Note** - LEPL is written in Python 3, which is not yet fully supported by
 the tool that generates this documentation.  A s a result, some small, 
@@ -83,16 +85,13 @@ Running this gives the result::
              |           `- number '5'
              `- ')'
 
-.. _manual: ../index.html 
-.. _LEPL website: http://www.acooke.org/lepl
-
 Generating Documentation
 ------------------------
 
 To regenerate this documentation, run::
 
   rm -fr doc/api
-  epydoc -v -o doc/api --html --graph-all --docformat=restructuredtext --exclude="_test" src/*
+  epydoc -v -o doc/api --html --graph-all --docformat=restructuredtext --exclude="_test" --exclude="_example" src/*
 
 '''
  

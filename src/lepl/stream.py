@@ -243,21 +243,21 @@ class StreamMixin():
         '''
         return next(self(Stream.from_string(text, **options)))[0]
 
-    def match_path(self, path, **options):
+    def parse_path(self, path, **options):
         '''
         Parse a file from a given path, returning only a single result.  
         For options see lepl.core.Core.
         '''
         return next(self(Stream.from_path(path, **options)))[0]
 
-    def match_list(self, list_, **options):
+    def parse_list(self, list_, **options):
         '''
         Parse a list of values, returning only a single result.  
         For options see lepl.core.Core.
         '''
         return next(self(Stream.from_list(list_, **options)))[0]
 
-    def match_file(self, file_, **options):
+    def parse_file(self, file_, **options):
         '''
         Parse a file, returning only a single result.  
         For options see lepl.core.Core.

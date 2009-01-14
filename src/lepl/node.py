@@ -1,4 +1,6 @@
 
+from collections import Iterable, Mapping
+
 '''
 A base class for AST nodes.  This is designed to be applied to a list of 
 results, via ">".  If the list contains labelled pairs "(str, value)" then
@@ -56,6 +58,12 @@ class Node():
                 return [first + name + ' ' + repr(value)]
         except:
             return [first + repr(arg)]
+
+
+def make_dict(contents):
+    return dict(entry for entry in contents
+                 if isinstance(entry, tuple) 
+                 and len(entry) == 2
+                 and isinstance(entry[0], str))
+
         
-        
-                 

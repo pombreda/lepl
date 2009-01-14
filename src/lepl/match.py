@@ -12,9 +12,7 @@ Matchers are implemented as both classes (these tend to be the basic building
 blocks) and functions (these are typically "syntactic sugar").  I have used
 the same syntax (capitalized names) for both to keep the API uniform.
 
-For more background, please see the `manual`_.
-
-.. _manual: ../index.html 
+For more background, please see the `manual <../manual/index.html>`_.
 '''
 
 import string
@@ -188,13 +186,12 @@ class BaseMatch(StreamMixin, LogMixin):
         
     def __invert__(self):
         '''
-        **~self** - Negative lookahead.
-        
-        This generates a matcher that is only successful (consuming nothing
-        from the stream and returning an empty result) if the original matcher
-        would have failed.
+        **~self** - Discard the result.
+
+        This generates a matcher that behaves as the original, but returns
+        an empty list.
         '''
-        return Not(self)
+        return Drop(self)
         
     def __getitem__(self, indices):
         '''
@@ -484,19 +481,30 @@ class Repeat(BaseMatch):
                 
 class And(BaseMatch):
     '''
-    Matches one or more matchers in sequence.
-    It can be used indirectly by using '&' between matchers.
+    Matches one or more matchers in sequence (**&**).
     '''
     
     def __init__(self, *matchers):
         '''
-        The arguments are the matchers which are matched in turn.
+        Create a matcher one or more sub-matchers in sequence.
+
+        :Parameters:
+        
+          matchers
+            The patterns which are matched, in turn.  String arguments will
+            be coerced to literal matches.
         '''
         super().__init__()
         self.__matchers = [coerce(matcher) for matcher in matchers]
 
     @managed
     def __call__(self, stream):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).  Results from the different matchers are
+        combined together as elements in a list.
+        '''
+
         if self.__matchers:
             stack = [([], self.__matchers[0](stream), self.__matchers[1:])]
             try:
@@ -519,22 +527,32 @@ class And(BaseMatch):
 
 class Or(BaseMatch):
     '''
-    Matches one of the given matchers.
-    It can be used indirectly by using '|' between matchers.
+    Matches one of the given matchers (**|**).
     '''
     
     def __init__(self, *matchers):
         '''
-        The arguments are the matchers, one of which is matched.
-        They are tried from left to right until one succeeds; backtracking
-        will try more from the same matcher and, once that is exhausted,
-        continue to the right.
+        Create a matcher for matching one of the given sub-matchers.
+        
+        :Parameters:
+        
+          matchers
+            They are tried from left to right until one succeeds; backtracking
+            will try more from the same matcher and, once that is exhausted,
+            continue to the right.  String arguments will be coerced to 
+            literal matches.
         '''
         super().__init__()
         self.__matchers = [coerce(matcher) for matcher in matchers]
 
     @managed
     def __call__(self, stream):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).  The result will correspond to one of the
+        sub-matchers (starting from the left).
+        '''
+
         for match in self.__matchers:
             for result in match(stream):
                 yield result
@@ -542,14 +560,21 @@ class Or(BaseMatch):
 
 class Any(BaseMatch):
     '''
-    Matches a single token in the stream.  Optionally a restricted set of
-    valid tokens can be supplied.
+    Matches a single token in the stream.  
+    A set of valid tokens can be supplied.
     '''
     
     def __init__(self, restrict=None):
         '''
-        The argument should be a list of tokens (or a string of suitable 
-        characters).  If omitted any single token is accepted.
+        Create a matcher for a single character.
+        
+        :Parameters:
+        
+          restrict (optional)
+            A list of tokens (or a string of suitable characters).  
+            If omitted any single token is accepted.  
+            
+            **Note:** This argument is *not* a sub-matcher.
         '''
         super().__init__()
         self.__restrict = restrict
@@ -557,32 +582,11 @@ class Any(BaseMatch):
     @managed
     def __call__(self, stream):
         '''
-        Match any character and progress to the next.
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).  The result will be a single matching 
+        character.
         '''
         if stream and (not self.__restrict or stream[0] in self.__restrict):
-            yield ([stream[0]], stream[1:])
-            
-            
-class AnyBut(BaseMatch):
-    '''
-    Matches a single token in the stream if it isn't included in the set of
-    invalid tokens.
-    '''
-    
-    def __init__(self, exclude=None):
-        '''
-        The argument should be a list of tokens (or a string of suitable 
-        characters) to exclude.  If omitted all tokens are accepted.
-        '''
-        super().__init__()
-        self.__exclude = exclude
-    
-    @managed
-    def __call__(self, stream):
-        '''
-        Accept non-invalid characters.
-        '''
-        if stream and (not self.__exclude or stream[0] not in self.__exclude):
             yield ([stream[0]], stream[1:])
             
             
@@ -602,6 +606,11 @@ class Literal(BaseMatch):
     @managed
     def __call__(self, stream):
         '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).
+        '''
+
+        '''
         Need to be careful here to use only the restricted functionality
         provided by the stream interface.
         '''
@@ -620,32 +629,61 @@ class Empty(BaseMatch):
     @managed
     def __call__(self, stream):
         '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).
+        '''
+
+        '''
         Match any character and progress to the next.
         '''
         yield ([], stream)
 
             
-class Not(BaseMatch):
+class Lookahead(BaseMatch):
     '''
-    This returns an empty list if the stream does not match the given matcher.
-    If the stream does match, no result is returned (and the parsing will
-    backtrack to explore alternative options).
-    It can be used indirectly by using '!' before a matcher.
+    Tests to see if the embedded matcher could match, but does not do any
+    matching.  On success an empty list (ie no result) and the original
+    stream are returned.
+    
+    When negated (preceded by ~) the behaviour is reversed - success occurs
+    only if the embedded matcher would fail to match.
     '''
     
-    def __init__(self, matcher):
+    def __init__(self, matcher, negated=False):
         '''
-        The argument acts as a "stop" - if it matches, this will fail.
+        On success, no input is consumed.
+        If negated, this will succeed if the matcher fails.  If the matcher is
+        a string it is coerced to a literal match.
         '''
         super().__init__()
         self.__matcher = coerce(matcher)
+        self.__negated = negated
     
     @managed
     def __call__(self, stream):
-        for result in self.__matcher(stream):
-            raise StopIteration()
-        yield ([], stream)
-        
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).
+        '''
+
+        '''
+        Note that there is no backtracking here - the 'for' is not repeated.
+        '''
+        if self.__negated:
+            for result in self.__matcher(stream):
+                return
+            yield ([], stream)
+        else:
+            for result in self.__matcher(stream):
+                yield ([], stream)
+                return
+            
+    def __invert__(self):
+        '''
+        Invert the semantics (this overrides the usual meaning for ~).
+        '''
+        return Lookahead(self.__matcher, negated=not self.__negated)
+            
 
 class Apply(BaseMatch):
     '''
@@ -661,6 +699,11 @@ class Apply(BaseMatch):
         
     @managed
     def __call__(self, stream):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).
+        '''
+
         for (results, stream) in self.__matcher(stream):
             yield (self.__function(results), stream)
             
@@ -676,6 +719,11 @@ class Regexp(BaseMatch):
         
     @managed
     def __call__(self, stream):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).
+        '''
+
         match = self.__pattern.match(stream)
         if match:
             eaten = len(match.group())
@@ -696,6 +744,11 @@ class Delayed(BaseMatch):
         self.__matcher = None
     
     def __call__(self, stream):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).
+        '''
+
         if self.__matcher:
             return self.__matcher(stream)
         else:
@@ -712,6 +765,14 @@ class Delayed(BaseMatch):
  # the following are functions rather than classes, but we use the class
  # syntax to give a uniform interface.
  
+def AnyBut(exclude=None):
+    '''
+    The argument should be a list of tokens (or a string of suitable 
+    characters) to exclude.  If omitted all tokens are accepted.
+    '''
+    return ~Lookahead(coerce(exclude, Any)) + Any()
+            
+
 def Optional(matcher):
     '''
     
@@ -764,7 +825,7 @@ def Add(matcher):
 
 
 def Drop(matcher):
-    '''Do the match, but return nothing.'''
+    '''Do the match, but return nothing.  The ~ prefix is equivalent.'''
     return Apply(matcher, lambda l: [])
 
 
@@ -785,7 +846,7 @@ def Name(matcher, name):
 
 def Eof():
     '''Matches the end of a stream.  Returns nothing.'''
-    return Not(Any())
+    return ~Lookahead(Any())
 
 Eos = Eof
 
@@ -795,8 +856,21 @@ def Identity(matcher):
     return coerce(matcher)
 
 
-def Space(space=string.whitespace):
-    '''Matches a single space (by default from string.whitespace).'''
+def Newline():
+    '''Match newline (Unix) or carriage return newline (Windows)'''
+    return Literal('\n') | Literal('\r\n')
+
+
+def Space(space=' \t'):
+    '''Match a single space (by default space or tab).'''
+    return Any(space)
+
+
+def Whitespace(space=string.whitespace):
+    '''
+    Matches a single space (by default from string.whitespace,
+    which includes newlines).
+    '''
     return Any(space)
 
 
@@ -889,6 +963,11 @@ class Commit(BaseMatch):
     '''
     
     def __call__(self, stream):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).
+        '''
+
         try:
             stream.core.gc.erase()
             yield([], stream)
