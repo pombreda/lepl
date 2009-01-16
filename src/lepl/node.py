@@ -66,4 +66,8 @@ def make_dict(contents):
                  and len(entry) == 2
                  and isinstance(entry[0], str))
 
+def throw(exception, *args, **kargs):
+    # add context to kargs
+    raise exception(*args, **kargs)
+
         

@@ -30,9 +30,10 @@ For the control of parse results see the Commit() matcher.
 '''
 
 from heapq import heappushpop, heappop, heappush
+from traceback import print_exc
 from weakref import ref
 
-from lepl.trace import LogMixin
+from lepl.trace import LogMixin, traced
 
 
 def managed(f):
@@ -58,9 +59,15 @@ class GeneratorWrapper(LogMixin):
     def __init__(self, generator, match, stream):
         super().__init__()
         self.__generator = generator
-        self.__description = '%s@%s' % (match.describe(), stream)
-        # we do this, rather than testing for stream's type, to simplify
+        # we do try/except, rather than testing for stream's type, to simplify
         # the dependency between modules
+        try:
+            # required by @traced
+            self.register = stream.core.bb.register
+            self.__description = stream.core.bb.preformatter(match, stream)
+        except:
+            self.register = lambda *args: None
+            self.__description = match.describe()
         try:
             self.__core = stream.core
             self.epoch = 0
@@ -71,6 +78,7 @@ class GeneratorWrapper(LogMixin):
             self.__managed = False
         self._debug('Created {0}, managed: {1}'.format(self, self.__managed))
     
+    @traced
     def __next__(self):
         try:
             if self.__managed:
@@ -206,6 +214,9 @@ class GeneratorControl(LogMixin):
         '''
         self.__epoch += 1
         self._debug('Tick: {0}'.format(self.__epoch))
+        return self.__epoch
+    
+    def epoch(self):
         return self.__epoch
     
     def register(self, wrapper):

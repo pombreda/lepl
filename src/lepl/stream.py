@@ -82,6 +82,12 @@ class Stream():
     
     def __bool__(self):
         return not self.__chunk.empty_at(self.__offset)
+    
+    def distance(self):
+        '''
+        Distance from start of stream.
+        '''
+        return self.__chunk.distance(self.__offset)
         
     def __repr__(self):
         return '%r[%d:]' % (self.__chunk, self.__offset)
@@ -95,7 +101,7 @@ class Chunk():
     A linked list (cons cell) of lines from the stream. 
     '''
     
-    def __init__(self, stream, core=None, **options):
+    def __init__(self, stream, distance=0, core=None, **options):
         super().__init__()
         try:
             self.__text = next(stream)
@@ -104,6 +110,7 @@ class Chunk():
             self.__empty = True
         self.__next = None
         self.__stream = stream
+        self.__distance = distance
         self.core = core if core else Core(**options)
         
     def read(self, offset, start, stop):
@@ -125,7 +132,8 @@ class Chunk():
         The next line from the stream.
         '''
         if not self.__next:
-            self.__next = Chunk(self.__stream, self.core)
+            self.__next = Chunk(self.__stream, core=self.core, 
+                                distance=self.__distance + len(self.__text))
         return self.__next
     
     def stream(self, offset, start):
@@ -177,6 +185,12 @@ class Chunk():
                 if not self.empty_at(offset + size):
                     content = content + '...'
             return content
+        
+    def distance(self, offset=0):
+        '''
+        Distance from start of stream.
+        '''
+        return self.__distance + offset
         
     def __repr__(self):
         return 'Chunk(%r...)' % ('' if self.__empty else self.__text)

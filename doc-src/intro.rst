@@ -2,13 +2,11 @@
 Introduction
 ============
 
-Here I start by describing the basic concepts involved in parsing with LEPL,
-then continue to explore the implementation in more detail.  It is difficult
-to know how much to explain --- the first section may be too simple, or later
-sections too technical.
+Below I will work through a simple example using LEPL.
 
-Understanding how LEPL works will help you use it more efficiently, but
-detailed knowledge is not necessary for simple use.
+The `final section`_ is a technical description of the library.  Understanding
+how LEPL works will help you use it more efficiently, but detailed knowledge
+is not necessary for simple use.
 
 
 Matchers
@@ -37,9 +35,12 @@ values.
   >>> from lepl.node import make_dict
 
   >>> matcher = (Word() > 'name') / ',' / (Integer() > 'phone') > make_dict
-  >>> parsed = matcher.parse_string('andrew, 3333253')[0]
-  >>> print(parsed)
+  >>> matcher.parse_string('andrew, 3333253')[0]
   {'phone': '3333253', 'name': 'andrew'}
+
+The first line (``matcher = ...``) defines the matcher.  The second line
+(``matcher.parse_string...``) uses it to split the text "andrew, 3333253" into
+a name and a phone number.
 
 There's a lot going on here, some of which I will explain in later sections,
 but the most important thing to notice is that ``matcher`` was constructed
@@ -59,7 +60,7 @@ We can see these extra matchers in action if we don't send the output to
 ``make_dict``:
 
   >>> matcher = (Word() > 'name') / ',' / (UnsignedInteger() > 'phone')
-  >>> parsed = matcher.parse_string('andrew, 3333253')
+  >>> matcher.parse_string('andrew, 3333253')
   [('name', 'andrew'), ',', ' ', ('phone', '3333253')]
 
 What does this tell us?
@@ -94,12 +95,12 @@ usernames and phone numbers.
   >>> line    = spaces / name / ',' / phone  > make_dict
   >>> newline = spaces & Newline()
   >>> matcher = line[0:,~newline]
-  >>> parsed = matcher.parse_string('andrew, 3333253\n bob, 12345')
-  >>> print(parsed)
+  >>> matcher.parse_string('andrew, 3333253\n bob, 12345')
   [{'phone': '3333253', 'name': 'andrew'}, {'phone': '12345', 'name': 'bob'}]
 
 Since this is becoming increasingly complex I've changed the layout to one
-that I personally find quite useful.
+that I personally find useful (it is similar to the "BNF grammars" that some
+textbooks used).
 
 The most important change here is the introduction of repetition via
 ``line[0:,~newline]``.  Before I describe that, though, I should explain the
@@ -135,14 +136,16 @@ can contain three different kinds of entry, separated by commas:
    of matching are joined together with ``+``.  This is useful when matching
    characters that should join up to form a single word.  For example:
 
-   >>> print(Digit()[1:].parse_string('123'))
+   >>> Digit()[1:].parse_string('123')
    ['1', '2', '3']
-   >>> print(Digit()[1:,...].parse_string('123'))
+   >>> Digit()[1:,...].parse_string('123')
    ['123']
 
 #. **A matcher.** If a matcher is given it will be used between the list
    elements.  This is useful for matching the commas or newlines (as above)
-   that separate list items.
+   that separate list items.  As is common in LEPL, a string can also be
+   given, and will automatically be changed into a literal matcher (ie one
+   that matches the string, like ``','`` earlier).
 
 With that it should be clear that ``Space()[0:]`` matches any spaces.
 
@@ -150,6 +153,7 @@ With that it should be clear that ``Space()[0:]`` matches any spaces.
 Technical Summary
 -----------------
 
+.. _final section:
 .. index:: recursive descent, generators, stack, parser combinators
 
 In the sections above I have tried to explain LEPL without mentioning any

@@ -2,11 +2,10 @@
 LEPL - A Parser Library for Python
 ==================================
 
-Using LEPL you can describe how some text is structured (define a grammar) and
-then generate Python data (lists, dicts, and even trees of objects) with the
-text in that form (parse the text).  It is intended to be simple and easy to
-use, but also has some features that may interest advanced users, including
-full backtracking.
+Using LEPL you can describe how some text is structured and then generate
+Python data (lists, dicts, and even trees of objects) with the text in that
+form.  It is intended to be simple and easy to use, but also has some features
+that may interest advanced users, including full backtracking.
 
 LEPL's *weakest* point is probably performance.  It is intended more for
 exploratory and one--off jobs than, for example, a compiler front--end; it

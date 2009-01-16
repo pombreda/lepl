@@ -279,6 +279,8 @@ class BaseMatch(StreamMixin, LogMixin):
         
         :Parameters:
         
+            TODO - changed
+         
           function
             This can be a string or a function.
             
@@ -292,10 +294,7 @@ class BaseMatch(StreamMixin, LogMixin):
             is that the final result is included in a new list (*Apply*
             must return the list too, if required).
         '''
-        if isinstance(function, str):
-            return Name(self, function)
-        else:
-            return Apply(self, lambda l: [function(l)])
+        return Apply(self, function)
     
     def __rshift__(self, function):
         '''
@@ -306,6 +305,8 @@ class BaseMatch(StreamMixin, LogMixin):
         
         :Parameters:
         
+            TODO - changed
+         
           function
             This can be a string or a function.
             
@@ -317,10 +318,7 @@ class BaseMatch(StreamMixin, LogMixin):
             The return values are used as the new result.  This is
             equivalent to `lepl.match.Map`.
         '''
-        if isinstance(function, str):
-            return Name(self, function)
-        else:
-            return Map(self, function)
+        return Map(self, function)
         
     
 class Repeat(BaseMatch):
@@ -577,6 +575,7 @@ class Any(BaseMatch):
             **Note:** This argument is *not* a sub-matcher.
         '''
         super().__init__()
+        self.describe_args(restrict)
         self.__restrict = restrict
     
     @managed
@@ -601,6 +600,7 @@ class Literal(BaseMatch):
         with some streams.
         '''
         super().__init__()
+        self.describe_args(text)
         self.__text = text
     
     @managed
@@ -689,13 +689,20 @@ class Apply(BaseMatch):
     '''
     Apply an arbitrary function to the results of the matcher.
     The function should typically expect and return a list.
-    It can be used indirectly by using '>=' to the right of the matcher.    
+    It can be used indirectly by using '>' to the right of the matcher.    
     '''
-    
-    def __init__(self, matcher, function):
+
+    def __init__(self, matcher, function, nolist=False):
         super().__init__()
         self.__matcher = coerce(matcher)
-        self.__function = function
+        if isinstance(function, str):
+            # This is a useful hint when debugging
+            self.describe_args(function)
+            self.__function = lambda results: [(function, results)]
+        elif nolist:
+            self.__function = function
+        else:
+            self.__function = lambda results: [function(results)]
         
     @managed
     def __call__(self, stream):
@@ -705,7 +712,7 @@ class Apply(BaseMatch):
         '''
 
         for (results, stream) in self.__matcher(stream):
-            yield (self.__function(results), stream)
+            yield ([self.__function(results)], stream)
             
             
 class Regexp(BaseMatch):
@@ -715,6 +722,8 @@ class Regexp(BaseMatch):
     '''
     
     def __init__(self, pattern):
+        super().__init__()
+        self.describe_args(pattern)
         self.__pattern = compile(pattern)
         
     @managed
@@ -804,7 +813,10 @@ def Map(matcher, function):
     matcher.
     It can be used indirectly by using '>>=' to the right of the matcher.    
     '''
-    return Apply(matcher, lambda l: list(map(function, l)))
+    if isinstance(function, str):
+        return Apply(function)
+    else:
+        return Apply(matcher, lambda l: map(function, l), nolist=True)
 
 
 def Add(matcher):
@@ -819,7 +831,6 @@ def Add(matcher):
             result = results[0]
             for extra in results[1:]:
                 result = result + extra
-            result = [result]
         return result
     return Apply(matcher, add)
 

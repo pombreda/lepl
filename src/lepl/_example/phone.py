@@ -13,7 +13,7 @@ print(parsed)
 spaces  = Space()[0:,...]
 name    = Word()                       > 'name'
 phone   = Integer()                    > 'phone'
-line    = spaces / name / ',' / phone  > make_dict
+line    = name / ',' / phone  > make_dict
 newline = spaces + Newline()
 matcher = line[0:,~newline]
 parsed = matcher.parse_string('andrew, 3333253\n bob, 12345')

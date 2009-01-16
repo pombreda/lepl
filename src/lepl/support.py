@@ -42,14 +42,19 @@ class CircularFifo():
         self.__next = (self.__next + 1) % capacity
         return dropped
     
-    def pop(self, value):
+    def pop(self, value=-1):
         if value != -1: raise IndexError('FIFO is only a FIFO')
         if self.__size < 1: raise IndexError('FIFO empty')
+        popped = self.__buffer[(self.__next - self.__size) % len(self.__buffer)]
         self.__size -= 1
-        self.__next = (self.__next + 1) % len(self.__buffer)
-        return self.__buffer[self.__next]
+        return popped
     
     def __len__(self):
         return len(self.__buffer)
 
-        
+    def __iter__(self):
+        capacity = len(self.__buffer)
+        index = (self.__next - self.__size) % capacity
+        for _ in range(self.__size):
+            yield self.__buffer[index]
+            index = (index + 1) % capacity

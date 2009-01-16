@@ -4,6 +4,7 @@ The core provides a central repository for 'global' data used during a parse.
 '''
 
 from lepl.resources import GeneratorControl
+from lepl.trace import BlackBox
 
 
 class Core():
@@ -21,7 +22,7 @@ class Core():
       (eg in debug messages).
     '''
 
-    def __init__(self, min_queue=0, description_length=6):
+    def __init__(self, min_queue=0, description_length=6, memory=0):
         '''
         Create a new core.  This is typically called during the creation of
         `lepl.stream.Stream`.
@@ -55,6 +56,7 @@ class Core():
             The amount of text to take from the stream when printing 
             descriptions (eg in debug messages).
         '''
-        self.gc = GeneratorControl(min_queue)
+        self.gc = GeneratorControl(min_queue=min_queue)
+        self.bb = BlackBox(self, memory=memory)
         self.description_length = description_length
         
