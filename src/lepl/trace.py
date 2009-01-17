@@ -21,12 +21,10 @@ class LogMixin():
         self._error = self._log.error
         self.__describe = self.__class__.__name__
         
-    def describe_args(self, *args):
+    def tag(self, *args):
         self.__describe = '{0}({1})'.format(self.__class__.__name__, 
-                                            ','.join(map(self.__nice_str, args)))
-        
-    def __nice_str(self, value):
-        return repr(value) if isinstance(value, str) else str(value)
+                                            ','.join(map(str, args)))
+        return self
         
     def describe(self):
         '''
@@ -68,6 +66,7 @@ class BlackBox(LogMixin):
     def memory(self, memory):
         self.latest = [] 
         self.longest = ['Trace not enabled (set memory option on Core)']
+        self.__trace = 0
         self.__longest_depth = 0
         self.__longest_fail = 0
         self.__longest_tail = 0
@@ -100,28 +99,43 @@ class BlackBox(LogMixin):
         return '{0:<20s} {1:4d}:{2:{3}s}'.format(
                     matcher.describe(), stream.distance(), stream, 
                     stream.core.description_length + 5)
+        
+    def switch(self, trace):
+        '''
+        Called to turn immediate tracing on/off.
+        
+        Implement with a counter rather than on/off to allow nesting.
+        '''
+        if trace:
+            self.__trace += 1
+        else:
+            self.__trace -= 1
 
     def register(self, matcher, result=None, stream=None):
         '''
         This is called whenever a match succeeds or fails.
         '''
-        if self.__memory > 0:
+        if self.__memory > 0 or self.__trace:
             record = self.formatter(matcher, result, self.__epoch())
-            self.latest.append(record)
-            if stream and stream.distance() >= self.__longest_depth:
-                self.__longest_depth = stream.distance()
-                self.__longest_fail = self.__memory_fail
-                self.__longest_tail = self.__memory_tail
-                self.longest = list(self.latest)
-            elif not stream and self.__longest_fail:
-                self.__longest_fail -= 1
-                self.longest.append(record)
-            elif stream and self.__longest_tail:
-                self.__longest_tail -= 1
-                self.longest.append(record)
+            if self.__trace:
+                self._info(record)
+            if self.__memory > 0:
+                self.latest.append(record)
+                if stream and stream.distance() >= self.__longest_depth:
+                    self.__longest_depth = stream.distance()
+                    self.__longest_fail = self.__memory_fail
+                    self.__longest_tail = self.__memory_tail
+                    self.longest = list(self.latest)
+                elif not stream and self.__longest_fail:
+                    self.__longest_fail -= 1
+                    self.longest.append(record)
+                elif stream and self.__longest_tail:
+                    self.__longest_tail -= 1
+                    self.longest.append(record)
                 
     def format_latest(self):
-        return '\n'.join(self.latest)
+        return '{0}\nEpoch  Matcher                 Stream          Result' \
+            .format('\n'.join(self.latest))
     
     def format_longest(self):
         before = []

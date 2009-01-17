@@ -54,6 +54,9 @@ class GeneratorWrapper(LogMixin):
     
     It assumes that the match includes the logMixin, but is resilient to
     simple list streams (in which case no GC will occur).
+    
+    Note - not implemented with BaseGeneratorWrapper because it just seemed
+    to confuse things more.
     '''
     
     def __init__(self, generator, match, stream):

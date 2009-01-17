@@ -9,9 +9,12 @@ most important.
 The final section gives some `implementation details`_.
 
 
-Literal `(API) <../api/redirect.html#lepl.match.Literal>`_
---------------------------------------------------------
+Literal 
+-------
 
+.. index:: Literal()
+
+`[API] <../api/redirect.html#lepl.match.Literal>`_
 This matcher identifies a given string.  For example, ``Literal('hello')``
 will give the result "hello" when that text is at the start of a stream::
 
@@ -35,6 +38,8 @@ automatically create a literal match from the given text.
 
 Implementation Details
 ----------------------
+
+.. index:: generator, results, failure, implementation
 
 All matchers work as functions (they may be objects, but will implement the
 ``__call__`` method) that accept a stream of data and return a generator.  The

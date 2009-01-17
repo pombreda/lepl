@@ -1,4 +1,6 @@
 
+.. _introduction:
+
 Introduction
 ============
 
@@ -112,11 +114,11 @@ without the ``~`` we would have had the results of matching the newline in our
 final result (because they do not go through ``make_dict``).
 
 (One obscure exception for experts --- when using lookahead, ``~`` inverts the
-logic of the lookahead, indicating that the lookahead should succeed when the
-embedded match fails).
+logic, indicating that the lookahead should succeed when the embedded match
+fails).
 
-OK, so how can we describe repetition?  As shown above, this uses ``[]`` which
-can contain three different kinds of entry, separated by commas:
+OK, so how do we describe repetition?  As shown above, we use ``[]`` which can
+contain three different kinds of entry, separated by commas:
 
 #. **Start, stop and step values.** These are written ``[start:stop:step]``
    and indicate the number of times to repeat.  If *start* is omitted, it is

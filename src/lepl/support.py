@@ -58,3 +58,36 @@ class CircularFifo():
         for _ in range(self.__size):
             yield self.__buffer[index]
             index = (index + 1) % capacity
+
+
+class BaseGeneratorDecorator():
+    
+    def __init__(self, generator):
+        super().__init__()
+        self.__generator = generator
+    
+    def __next__(self):
+        try:
+            self._before()
+            return self._value(next(self.__generator))
+        finally:
+            self._after()
+            
+    def __iter__(self):
+        return self
+                
+    def close(self):
+        self.__generator.close()
+        
+    def _before(self):
+        pass
+    
+    def _after(self):
+        pass
+    
+    def _value(self, value):
+        return value
+    
+    def getattr(self, name):
+        return getattr(self.__generator, name)
+    

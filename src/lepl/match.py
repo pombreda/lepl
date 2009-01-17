@@ -22,7 +22,7 @@ from traceback import print_exc
 from lepl.node import Node
 from lepl.resources import managed
 from lepl.stream import StreamMixin
-from lepl.support import assert_type
+from lepl.support import assert_type, BaseGeneratorDecorator
 from lepl.trace import LogMixin
 
 
@@ -271,7 +271,21 @@ class BaseMatch(StreamMixin, LogMixin):
             else:
                 raise TypeError(index)
         return (Add if add else Identity)(
-                    Repeat(self, start, stop, step, separator))
+                    Repeat(self, start, stop, step, separator)
+                        .tag(','.join(map(self.__format, indices))))
+        
+    def __format(self, index):
+        def none_blank(x): return '' if x == None else str(x)
+        if isinstance(index, slice):
+            return none_blank(index.start) + ':' + \
+                none_blank(index.stop) + ':' + \
+                none_blank(index.step)
+        elif index == Ellipsis:
+            return '...'
+        elif isinstance(index, LogMixin):
+            return index.describe()
+        else:
+            return repr(index)
     
     def __gt__(self, function):
         '''
@@ -575,7 +589,7 @@ class Any(BaseMatch):
             **Note:** This argument is *not* a sub-matcher.
         '''
         super().__init__()
-        self.describe_args(restrict)
+        self.tag(repr(restrict))
         self.__restrict = restrict
     
     @managed
@@ -600,7 +614,7 @@ class Literal(BaseMatch):
         with some streams.
         '''
         super().__init__()
-        self.describe_args(text)
+        self.tag(repr(text))
         self.__text = text
     
     @managed
@@ -625,6 +639,11 @@ class Empty(BaseMatch):
     '''
     Matches any stream, consumes no input, and returns nothing.
     '''
+    
+    def __init__(self, name=None):
+        super().__init__()
+        if name:
+            self.tag(name)
     
     @managed
     def __call__(self, stream):
@@ -697,7 +716,7 @@ class Apply(BaseMatch):
         self.__matcher = coerce(matcher)
         if isinstance(function, str):
             # This is a useful hint when debugging
-            self.describe_args(function)
+            self.tag(function)
             self.__function = lambda results: [(function, results)]
         elif nolist:
             self.__function = function
@@ -723,7 +742,7 @@ class Regexp(BaseMatch):
     
     def __init__(self, pattern):
         super().__init__()
-        self.describe_args(pattern)
+        self.tag(repr(pattern))
         self.__pattern = compile(pattern)
         
     @managed
@@ -771,8 +790,66 @@ class Delayed(BaseMatch):
             return self
          
 
- # the following are functions rather than classes, but we use the class
- # syntax to give a uniform interface.
+class Commit(BaseMatch):
+    '''
+    Commit to the current state - deletes all backtracking information.
+    This only works if the match... methods are used and min_queue is greater
+    than zero.
+    '''
+    
+    def __call__(self, stream):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).
+        '''
+        try:
+            stream.core.gc.erase()
+            yield([], stream)
+        except:
+            print_exc()
+            raise ValueError('Commit requires stream source.')
+    
+    
+class _TraceDecorator(BaseGeneratorDecorator):
+    
+    def __init__(self, generator, stream, name=None):
+        super().__init__(generator)
+        self.__stream = stream
+        self.__on = Empty('+' + (name if name else ''))
+        self.__off = Empty('-' + (name if name else ''))
+    
+    def _before(self):
+        try:
+            self.__stream.core.bb.switch(True)
+        except:
+            raise ValueError('Trace requires stream source.')
+        next(self.__on(self.__stream))
+        
+    def _after(self):
+        next(self.__off(self.__stream))
+        try:
+            self.__stream.core.bb.switch(False)
+        except:
+            raise ValueError('Trace requires stream source.')
+
+
+class Trace(BaseMatch):
+    '''
+    '''
+    
+    def __init__(self, matcher, name=None):
+        super().__init__()
+        self.__matcher = matcher
+        self.__name = name
+    
+    def __call__(self, stream):
+        '''
+        '''
+        return _TraceDecorator(self.__matcher(stream), stream, self.__name)
+
+
+# the following are functions rather than classes, but we use the class
+# syntax to give a uniform interface.
  
 def AnyBut(exclude=None):
     '''
@@ -832,17 +909,17 @@ def Add(matcher):
             for extra in results[1:]:
                 result = result + extra
         return result
-    return Apply(matcher, add)
+    return Apply(matcher, add).tag('Add')
 
 
 def Drop(matcher):
     '''Do the match, but return nothing.  The ~ prefix is equivalent.'''
-    return Apply(matcher, lambda l: [])
+    return Apply(matcher, lambda l: []).tag('Drop')
 
 
 def Substitute(matcher, value):
     '''Replace each return value with that given.'''
-    return Map(matcher, lambda x: value)
+    return Map(matcher, lambda x: value).tag('Substitute')
 
 
 def Name(matcher, name):
@@ -852,7 +929,7 @@ def Name(matcher, name):
     the matched token.  The Node class recognises this form and associates
     such values with named attributes.
     '''
-    return Map(matcher, lambda x: (name, x))
+    return Map(matcher, lambda x: (name, x)).tag('Name')
 
 
 def Eof():
@@ -966,23 +1043,3 @@ def Word(chars=AnyBut(Space()), body=None):
      return chars + body[0:,...]
  
 
-class Commit(BaseMatch):
-    '''
-    Commit to the current state - deletes all backtracking information.
-    This only works if the match... methods are used and min_queue is greater
-    than zero.
-    '''
-    
-    def __call__(self, stream):
-        '''
-        Do the matching (return a generator that provides successive 
-        (result, stream) tuples).
-        '''
-
-        try:
-            stream.core.gc.erase()
-            yield([], stream)
-        except:
-            print_exc()
-            raise ValueError('Commit requires stream source.')
-        
