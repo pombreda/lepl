@@ -83,10 +83,10 @@ class BlackBox(LogMixin):
                         '{2} following matches)'
                         .format(self.__memory, self.__memory_fail, 
                                 self.__memory_tail))
-            fifo = CircularFifo(self.__memory)
+            limited = CircularFifo(self.__memory)
             if self.latest:
                 for report in self.latest:
-                    fifo.append(report)
+                    limited.append(report)
             self.latest = fifo
         
     @staticmethod        
@@ -96,9 +96,9 @@ class BlackBox(LogMixin):
 
     @staticmethod
     def preformatter(matcher, stream):
-        return '{0:<20s} {1:4d}:{2:{3}s}'.format(
-                    matcher.describe(), stream.distance(), stream, 
-                    stream.core.description_length + 5)
+        return '{0:<30s} {1[0]:3d}.{1[1]:<3d} ({2:05d}) {3:{4}s}'.format(
+                    matcher.describe(), stream.location(), stream.depth(),
+                    stream, stream.core.description_length + 5)
         
     def switch(self, trace):
         '''
@@ -121,8 +121,8 @@ class BlackBox(LogMixin):
                 self._info(record)
             if self.__memory > 0:
                 self.latest.append(record)
-                if stream and stream.distance() >= self.__longest_depth:
-                    self.__longest_depth = stream.distance()
+                if stream and stream.depth() >= self.__longest_depth:
+                    self.__longest_depth = stream.depth()
                     self.__longest_fail = self.__memory_fail
                     self.__longest_tail = self.__memory_tail
                     self.longest = list(self.latest)

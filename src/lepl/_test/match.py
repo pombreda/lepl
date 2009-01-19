@@ -212,3 +212,9 @@ class WordTest(BaseTest):
         self.assert_direct('andrew, 3333253', Word() / ',' / Integer() / Eof(), 
                            [['andrew', ',', ' ', '3333253']])
         
+        
+class EofTest(BaseTest):
+    
+    def test_eof(self):
+        self.assert_direct('foo ', 'foo' / Eof(), [['foo', ' ']])
+        

@@ -32,9 +32,9 @@ about the longest match::
   >>> from lepl.node import make_dict
   >>> from lepl.stream import Stream
 
-  >>> name    = Word()              > 'name'
-  >>> phone   = Integer()           > 'phone'
-  >>> line    = name / ',' / phone  > make_dict
+  >>> name    = Word()              >= 'name'
+  >>> phone   = Integer()           >= 'phone'
+  >>> line    = name / ',' / phone  >= make_dict
   >>> matcher = line[0:,~Newline()]
   >>> stream = Stream.from_string('andrew, 3333253\n bob, 12345', memory=(4,2,2))
   >>> next(matcher(stream))
@@ -81,9 +81,9 @@ Tracing is then enabled when the selected matcher is called::
   >>> from logging import basicConfig, INFO
 
   >>> basicConfig(level=INFO)
-  >>> name    = Word()                   > 'name'
-  >>> phone   = Trace(Integer(), 'here') > 'phone'
-  >>> line    = name / ',' / phone       > make_dict
+  >>> name    = Word()                   >= 'name'
+  >>> phone   = Trace(Integer(), 'here') >= 'phone'
+  >>> line    = name / ',' / phone       >= make_dict
   >>> matcher = line[0:,~Newline()]
   >>> matcher.parse_string('andrew, 3333253\n bob, 12345')
   INFO:lepl.trace.BlackBox:   95  Empty(+here)            8:'333325'...   []

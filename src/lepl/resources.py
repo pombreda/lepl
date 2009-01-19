@@ -275,7 +275,6 @@ class GeneratorControl(LogMixin):
         '''
         Delete all non-active generators.
         '''
-        print('erase', self.__queue)
         if self.__queue:
             for retry in range(len(self.__queue)):
                 candidate_ref = heappop(self.__queue)

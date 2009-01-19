@@ -12,17 +12,26 @@ class Core():
     Data store for a single parse.
     A core instance is embedded in the streams used to wrap the text.
     
-    It currently exposes two attributes:
+    It currently exposes these attributes:
+    
+    **source**
+      The source of the data (a path, filename, or descriptive string of
+      the form '<type>').
     
     **gc** 
-      The `lepl.GeneratorControl` instance that monitors backtracking state.
+      The `lepl.resources.GeneratorControl` instance that monitors 
+      backtracking state.
     
     **description_length**
       The amount of text to take from the stream when printing descriptions 
       (eg in debug messages).
+      
+    **bb**
+      The `lepl.trace.BlackBox` instance that keeps a record of the longest
+      match made.
     '''
 
-    def __init__(self, min_queue=0, description_length=6, memory=0):
+    def __init__(self, source=None, min_queue=0, description_length=6, memory=0):
         '''
         Create a new core.  This is typically called during the creation of
         `lepl.stream.Stream`.
@@ -55,7 +64,13 @@ class Core():
           description_length
             The amount of text to take from the stream when printing 
             descriptions (eg in debug messages).
+            
+          memory
+            The number of matches to store for the longest match.  This can
+            be a triple (matches before, failures after, successes after) or
+            a single value (equivalent to the triple (memory, 3, 3)).
         '''
+        self.source = source
         self.gc = GeneratorControl(min_queue=min_queue)
         self.bb = BlackBox(self, memory=memory)
         self.description_length = description_length

@@ -16,7 +16,9 @@ def assert_type(name, value, type_, none_ok=False):
 
 class CircularFifo():
     '''
-    Currently unused - now using a priority queue for resource management.
+    A FIFO queue with a fixed maximum size that silently discards data on 
+    overflow.  It supports iteration for reading current contents and so
+    can be used for a "latest window".
     '''
     
     def __init__(self, size):
@@ -42,8 +44,8 @@ class CircularFifo():
         self.__next = (self.__next + 1) % capacity
         return dropped
     
-    def pop(self, value=-1):
-        if value != -1: raise IndexError('FIFO is only a FIFO')
+    def pop(self, index=0):
+        if index != 0: raise IndexError('FIFO is only a FIFO')
         if self.__size < 1: raise IndexError('FIFO empty')
         popped = self.__buffer[(self.__next - self.__size) % len(self.__buffer)]
         self.__size -= 1
@@ -90,4 +92,28 @@ class BaseGeneratorDecorator():
     
     def getattr(self, name):
         return getattr(self.__generator, name)
+    
+    
+class FastFifo():
+    '''
+    A FIFO that extends to accommodate data as required.
+    '''
+    
+    def __init__(self):
+        self.__front = []
+        self.__back = []
+    
+    def append(self, value):
+        self.__front.append(value)
+        
+    def pop(self, index=0):
+        if index != 0: raise IndexError('FIFO is only a FIFO')
+        if not self.__back:
+            self.__front.reverse()
+            self.__back = self.__front
+            self.__front = []
+        return self.__back.pop(-1)
+    
+    def __len__(self):
+        return len(self.__front) + len(self.__back)
     

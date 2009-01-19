@@ -40,6 +40,9 @@ class Node():
     def __str__(self):
         return '\n'.join(self._node_str('', ' '))
     
+    def __repr__(self):
+        return self.__class__.__name__ + '(...)'
+    
     def _node_str(self, first, rest):
         args = [[rest + '+- ', rest + '|   ', arg] for arg in self.__args]
         args[-1][0] = rest + '`- '
@@ -66,8 +69,39 @@ def make_dict(contents):
                  and len(entry) == 2
                  and isinstance(entry[0], str))
 
-def throw(exception, *args, **kargs):
-    # add context to kargs
-    raise exception(*args, **kargs)
+
+def join_with(separator=''):
+    def fun(results):
+        return separator.join(results)
+    return fun
+    
+
+def make_error(msg):
+    def fun(stream_in, stream_out, core, results):
+        try:
+            filename = core.source
+            (lineno, offset) = stream_in.location()
+            offset += 1 # appears to be 1-based?
+            line = stream_in.line()
+        except:
+            filename = '<unknown> - use stream for better error reporting'
+            lineno = -1
+            offset = -1
+            try:
+                line = '...' + stream_in
+            except:
+                line = ['...'] + stream_in
+        kargs = {'stream_in': stream_in, 'stream_out': stream_out, 
+                 'core': core, 'results': results, 'filename': filename, 
+                 'lineno': lineno, 'offset':offset, 'line':line}
+        return SyntaxError(msg.format(**kargs), (filename, lineno, offset, line))
+    return fun
+
+
+def raise_error(msg):
+    def fun(stream_in, stream_out, core, results):
+        raise make_error(msg)(stream_in, stream_out, core, results)
+    return fun
 
         
+    

@@ -36,33 +36,39 @@ class Stream():
         '''
         Open the file with line buffering.
         '''
-        return Stream(Chunk(open(path, 'rt', buffering=1), **options))
+        return Stream(Chunk(open(path, 'rt', buffering=1), source=path, 
+                            **options))
     
     @staticmethod
     def from_string(text, **options):
         '''
         Wrap a string.
         '''
-        return Stream(Chunk(StringIO(text), **options))
+        return Stream(Chunk(StringIO(text), source='<string>', **options))
     
     @staticmethod
     def from_list(data, **options):
         '''
         We can parse any list (not just lists of characters as strings).
         '''
-        return Stream(Chunk(ListIO(data), **options))
+        return Stream(Chunk(ListIO(data), source='<list>', **options))
     
     @staticmethod
     def from_file(file, **options):
         '''
         Wrap a file.
         '''
-        return Stream(Chunk(file, **options))
+        return Stream(Chunk(file, source=gettatr(file, 'name', '<file>'), 
+                            **options)) 
     
     def __init__(self, chunk, offset=0, core=None):
+        '''
+        '''
         self.__chunk = chunk
-        self.__offset = offset
+        self.offset = offset
+        self.lineno = chunk.lineno
         self.core = chunk.core
+        self.lineno = chunk.lineno
         
     def __getitem__(self, spec):
         '''
@@ -72,28 +78,38 @@ class Stream():
         These are all relative to the internal offset.
         '''
         if isinstance(spec, int):
-            return self.__chunk.read(self.__offset, spec, spec+1)[0]
+            return self.__chunk.read(self.offset, spec, spec+1)[0]
         elif isinstance(spec, slice) and spec.step == None:
             if spec.stop == None:
-                return self.__chunk.stream(self.__offset, spec.start)
+                return self.__chunk.stream(self.offset + spec.start)
             elif spec.stop >= spec.start:
-                return self.__chunk.read(self.__offset, spec.start, spec.stop)
+                return self.__chunk.read(self.offset, spec.start, spec.stop)
         raise TypeError()
     
     def __bool__(self):
-        return not self.__chunk.empty_at(self.__offset)
+        return not self.__chunk.empty_at(self.offset)
     
-    def distance(self):
+    def location(self):
         '''
-        Distance from start of stream.
+        A pair containing line number and line offset.
+        The line number is ``None`` if this is past the end of the file.
         '''
-        return self.__chunk.distance(self.__offset)
+        return self.__chunk.location(self.offset)
+    
+    def depth(self):
+        '''
+        The file offset.
+        '''
+        return self.__chunk.depth(self.offset)
         
     def __repr__(self):
-        return '%r[%d:]' % (self.__chunk, self.__offset)
+        return '%r[%d:]' % (self.__chunk, self.offset)
     
     def __str__(self):
-        return self.__chunk.describe(self.__offset)
+        return self.__chunk.describe(self.offset)
+    
+    def line(self):
+        return self.__chunk.line(self.offset)
         
         
 class Chunk():
@@ -101,7 +117,7 @@ class Chunk():
     A linked list (cons cell) of lines from the stream. 
     '''
     
-    def __init__(self, stream, distance=0, core=None, **options):
+    def __init__(self, stream, distance=0, lineno=1, core=None, **options):
         super().__init__()
         try:
             self.__text = next(stream)
@@ -110,7 +126,8 @@ class Chunk():
             self.__empty = True
         self.__next = None
         self.__stream = stream
-        self.__distance = distance
+        self.distance = distance
+        self.lineno = lineno
         self.core = core if core else Core(**options)
         
     def read(self, offset, start, stop):
@@ -131,34 +148,43 @@ class Chunk():
         '''
         The next line from the stream.
         '''
+        if self.__empty:
+            raise StopIteration()
         if not self.__next:
             self.__next = Chunk(self.__stream, core=self.core, 
-                                distance=self.__distance + len(self.__text))
+                                lineno=self.lineno + 1,
+                                distance=self.distance + len(self.__text))
         return self.__next
     
-    def stream(self, offset, start):
+    def __iter__(self):
+        return self
+    
+    def stream(self, offset):
         '''
         Return a new pointer to the chunk containing the data indicated.
         '''
-        start = start + offset
-        if start == 0 or (not self.__empty and start <= len(self.__text)):
-            return Stream(self, start)
-        elif self.__empty:
-            raise IndexException()
-        else:
-            return self.next().stream(start-len(self.__text), 0)
+        return Stream(*self.__to(offset))
         
     def empty_at(self, offset):
         '''
         Used by streams to test whether more data available at their current
         offset.
         '''
-        if self.__empty:
+        try:
+            (chunk, offset) = self.__to(offset)
+            return chunk.__empty
+        except:
             return True
+
+    def __to(self, offset):
+        if offset == 0:
+            return (self, 0)
+        elif self.__empty:
+            raise IndexException('No chunk available')
         elif offset < len(self.__text):
-            return False
-        else:
-            return self.next().empty_at(offset - len(self.__text))
+            return (self, offset)
+        else: 
+            return self.next().__to(offset - len(self.__text))
 
     def describe(self, offset, length=None):
         '''
@@ -186,14 +212,29 @@ class Chunk():
                     content = content + '...'
             return content
         
-    def distance(self, offset=0):
+    def location(self, offset=0):
         '''
-        Distance from start of stream.
+        A pair containing line number and offset.
+        The line number is ``None`` if this is past the end of the file.
         '''
-        return self.__distance + offset
+        if self.__empty:
+            return (None, offset)
+        elif offset > len(self.__text):
+            return next().location(offset - len(self.__text))
+        else:
+            return (self.lineno, offset)
         
+    def depth(self, offset=0):
+        '''
+        The file offset.
+        '''
+        return self.distance + offset
+    
     def __repr__(self):
         return 'Chunk(%r...)' % ('' if self.__empty else self.__text)
+    
+    def line(self, offset=0):
+        return self.__to(offset)[0].__text
     
 
 class ListIO():
@@ -255,7 +296,10 @@ class StreamMixin():
         Parse a string, returning only a single result.  
         For options see lepl.core.Core.
         '''
-        return next(self(Stream.from_string(text, **options)))[0]
+        try:
+            return next(self(Stream.from_string(text, **options)))[0]
+        except StopIteration:
+            return None
 
     def parse_path(self, path, **options):
         '''

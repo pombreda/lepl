@@ -31,12 +31,12 @@ called parsing.
 
 An example will make this clearer.  Imagine that we are given a username and
 phone numbers, separated by a comma, and we want to split that into the two
-values.
+values::
 
   >>> from lepl.match import *
   >>> from lepl.node import make_dict
 
-  >>> matcher = (Word() > 'name') / ',' / (Integer() > 'phone') > make_dict
+  >>> matcher = (Word() >= 'name') / ',' / (Integer() >= 'phone') >= make_dict
   >>> matcher.parse_string('andrew, 3333253')[0]
   {'phone': '3333253', 'name': 'andrew'}
 
@@ -61,7 +61,7 @@ optional spaces.
 We can see these extra matchers in action if we don't send the output to
 ``make_dict``:
 
-  >>> matcher = (Word() > 'name') / ',' / (UnsignedInteger() > 'phone')
+  >>> matcher = (Word() >= 'name') / ',' / (UnsignedInteger() >= 'phone')
   >>> matcher.parse_string('andrew, 3333253')
   [('name', 'andrew'), ',', ' ', ('phone', '3333253')]
 
@@ -92,9 +92,9 @@ Now let's extend the matcher so that we can process a list of several
 usernames and phone numbers.
 
   >>> spaces  = Space()[0:]
-  >>> name    = Word()                       > 'name'
-  >>> phone   = Integer()                    > 'phone'
-  >>> line    = spaces / name / ',' / phone  > make_dict
+  >>> name    = Word()                       >= 'name'
+  >>> phone   = Integer()                    >= 'phone'
+  >>> line    = spaces / name / ',' / phone  >= make_dict
   >>> newline = spaces & Newline()
   >>> matcher = line[0:,~newline]
   >>> matcher.parse_string('andrew, 3333253\n bob, 12345')

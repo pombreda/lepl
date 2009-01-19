@@ -1,7 +1,7 @@
 
 from unittest import TestCase
 
-from lepl.support import assert_type, CircularFifo
+from lepl.support import assert_type, CircularFifo, FastFifo
 
 
 class AssertTypeTestCase(TestCase):
@@ -58,3 +58,16 @@ class CircularFifoTest(TestCase):
         assert [6,7,8] == list(fifo)
         fifo.append(9)
         assert [7,8,9] == list(fifo)
+
+
+class FastFifoTest(TestCase):
+    
+    def test_fifo(self):
+        fifo = FastFifo()
+        for i in range(1, 10):
+            for j in range(i):
+                fifo.append(j)
+            for j in range(i):
+                popped = fifo.pop()
+                assert j == popped, popped
+                
