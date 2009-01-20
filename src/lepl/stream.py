@@ -66,9 +66,7 @@ class Stream():
         '''
         self.__chunk = chunk
         self.offset = offset
-        self.lineno = chunk.lineno
         self.core = chunk.core
-        self.lineno = chunk.lineno
         
     def __getitem__(self, spec):
         '''
@@ -77,14 +75,7 @@ class Stream():
         [n:m] returns a string
         These are all relative to the internal offset.
         '''
-        if isinstance(spec, int):
-            return self.__chunk.read(self.offset, spec, spec+1)[0]
-        elif isinstance(spec, slice) and spec.step == None:
-            if spec.stop == None:
-                return self.__chunk.stream(self.offset + spec.start)
-            elif spec.stop >= spec.start:
-                return self.__chunk.read(self.offset, spec.start, spec.stop)
-        raise TypeError()
+        return self.__chunk.getitem(spec, self.offset)
     
     def __bool__(self):
         return not self.__chunk.empty_at(self.offset)
@@ -109,8 +100,11 @@ class Stream():
         return self.__chunk.describe(self.offset)
     
     def line(self):
-        return self.__chunk.line(self.offset)
-        
+        return self.__chunk.line()
+    
+    def text(self):
+        return self.__chunk.text(self.offset)
+    
         
 class Chunk():
     '''
@@ -130,16 +124,25 @@ class Chunk():
         self.lineno = lineno
         self.core = core if core else Core(**options)
         
-    def read(self, offset, start, stop):
+    def read(self, offset=0, start=0, stop=None):
         '''
         Read a string.
         '''
         if stop == 0: return ''
-        if self.__empty: raise IndexError()
-        start = start + offset
-        stop = stop + offset
+        if self.__empty:
+            if start == 0 and stop == None:
+                return ''
+            else:
+                raise IndexError()
         size = len(self.__text)
-        if stop <= size:
+        start = start + offset
+        if stop == None:
+            stop = size
+        else:
+            stop = stop + offset
+        if start >= size:
+            return next().read(0, start-size, stop-size)
+        elif stop <= size:
             return self.__text[start:stop]
         else:
             return self.__text[start:] + self.next().read(0, start-size, stop-size)
@@ -159,13 +162,23 @@ class Chunk():
     def __iter__(self):
         return self
     
-    def stream(self, offset):
+    def stream(self, offset=0):
         '''
         Return a new pointer to the chunk containing the data indicated.
         '''
         return Stream(*self.__to(offset))
-        
-    def empty_at(self, offset):
+    
+    def getitem(self, spec, offset=0):    
+        if isinstance(spec, int):
+            return self.read(offset, spec, spec+1)[0]
+        elif isinstance(spec, slice) and spec.step == None:
+            if spec.stop == None:
+                return self.stream(offset + spec.start)
+            elif spec.stop >= spec.start:
+                return self.read(offset, spec.start, spec.stop)
+        raise TypeError()
+
+    def empty_at(self, offset=0):
         '''
         Used by streams to test whether more data available at their current
         offset.
@@ -209,7 +222,7 @@ class Chunk():
                 content = repr(content)
                 # indicate if more data available
                 if not self.empty_at(offset + size):
-                    content = content + '...'
+                    content = content[0:-1] + '...' + content[-1]
             return content
         
     def location(self, offset=0):
@@ -235,6 +248,9 @@ class Chunk():
     
     def line(self, offset=0):
         return self.__to(offset)[0].__text
+    
+    def text(self, offset=0):
+        return self.read(offset)
     
 
 class ListIO():

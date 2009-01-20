@@ -84,6 +84,7 @@ Contents
    matchers
    operators
    nodes
+   search
    resources
    debugging
    credits

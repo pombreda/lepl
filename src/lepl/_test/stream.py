@@ -61,4 +61,6 @@ class StreamTest(TestCase):
         s2 = s1[1:]
         assert '2' == s2[0:1]
         
-        
+    def test_read(self):
+        s1 = Stream.from_string('12\n123\n')
+        assert '12\n' == s1.text()

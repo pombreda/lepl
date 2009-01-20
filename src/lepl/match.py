@@ -20,6 +20,7 @@ import string
 from re import compile
 from traceback import print_exc
 
+from lepl.custom import NAMESPACE
 from lepl.node import Node, raise_error
 from lepl.resources import managed
 from lepl.stream import StreamMixin
@@ -50,7 +51,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return Add(And(self, other))
+        return NAMESPACE.get('+', lambda a, b: Add(And(a, b)))(self, other)
 
     def __radd__(self, other):
         '''
@@ -65,7 +66,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return Add(And(other, self))
+        return NAMESPACE.get('+', lambda a, b: Add(And(a, b)))(other, self)
 
     def __and__(self, other):
         '''
@@ -80,7 +81,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return And(self, other)
+        return NAMESPACE.get('&', And)(self, other) 
         
     def __rand__(self, other):
         '''
@@ -95,7 +96,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return And(other, self)
+        return NAMESPACE.get('&', And)(other, self) 
     
     def __truediv__(self, other):
         '''
@@ -110,7 +111,10 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return And(self, Space()[0:,...], other)
+        return NAMESPACE.get('/', 
+                             lambda a, b: 
+                             NAMESPACE.get('&', And)(a, Space()[0:,...], b)) \
+                             (self, other)
         
     def __rtruediv__(self, other):
         '''
@@ -125,7 +129,10 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return And(other, Space()[0:,...], self)
+        return NAMESPACE.get('/', 
+                             lambda a, b: 
+                             NAMESPACE.get('&', And)(a, Space()[0:,...], b)) \
+                             (other, self)
         
     def __floordiv__(self, other):
         '''
@@ -140,7 +147,10 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return And(self, Space()[1:,...], other)
+        return NAMESPACE.get('//', 
+                             lambda a, b: 
+                             NAMESPACE.get('&', And)(a, Space()[1:,...], b)) \
+                             (self, other)
         
     def __rfloordiv__(self, other):
         '''
@@ -155,7 +165,10 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return And(other, Space()[1:,...], self)
+        return NAMESPACE.get('//', 
+                             lambda a, b: 
+                             NAMESPACE.get('&', And)(a, Space()[1:,...], b)) \
+                             (other, self)
         
     def __or__(self, other):
         '''
@@ -171,7 +184,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return Or(self, other)
+        return NAMESPACE.get('|', Or)(self, other) 
         
     def __ror__(self, other):
         '''
@@ -187,7 +200,37 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return Or(other, self)
+        return NAMESPACE.get('|', Or)(other, self) 
+        
+    def __mod__(self, other):
+        '''
+        **self % other** - Take first match (committed choice).
+        
+        Matches are tried from left to right and the first successful result
+        is returned.  This is equivalent to `lepl.match.First`.
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
+        '''
+        return NAMESPACE.get('%', First)(self, other) 
+        
+    def __rmod__(self, other):
+        '''
+        **other % self** - Take first match (committed choice).
+        
+        Matches are tried from left to right and the first successful result
+        is returned.  This is equivalent to `lepl.match.First`.
+        
+        :Parameters:
+        
+          other
+            Another matcher or a string that will be converted to a literal
+            match.
+        '''
+        return NAMESPACE.get('%', Or)(other, self) 
         
     def __invert__(self):
         '''
@@ -199,7 +242,7 @@ class BaseMatch(StreamMixin, LogMixin):
         Note that `lepl.match.Lookahead` overrides this method to have
         different semantics (negative lookahead).
         '''
-        return Drop(self)
+        return NAMESPACE.get('~', Drop)(self) 
         
     def __getitem__(self, indices):
         '''
@@ -298,7 +341,7 @@ class BaseMatch(StreamMixin, LogMixin):
             elif index == Ellipsis:
                 add = True
             elif separator == None:
-                separator = coerce(index)
+                separator = index
             else:
                 raise TypeError(index)
         return (Add if add else Identity)(
@@ -309,6 +352,8 @@ class BaseMatch(StreamMixin, LogMixin):
         '''
         Format the repeat arguments to give useful information in trace
         messages.
+        
+        This is separate from Repeat because the '...' isn't supported directly.
         '''
         def none_blank(x): return '' if x == None else str(x)
         if isinstance(index, slice):
@@ -342,7 +387,7 @@ class BaseMatch(StreamMixin, LogMixin):
             argument.  The return value is used as the new result.  This
             is equivalent to `lepl.match.Apply` with nolist=False.
         '''
-        return Apply(self, function)
+        return NAMESPACE.get('>', Apply)(self, function) 
     
     def __rshift__(self, function):
         '''
@@ -365,7 +410,7 @@ class BaseMatch(StreamMixin, LogMixin):
             If a function is given it is called with each result in turn.
             The return values are used as the new result.
         '''
-        return Map(self, function)
+        return NAMESPACE.get('>>', Map)(self, function) 
         
     def __mul__(self, function):
         '''
@@ -382,7 +427,9 @@ class BaseMatch(StreamMixin, LogMixin):
             A function that is called with the results as arguments.
             The return values are used as the new result.
         '''
-        return Apply(self, function, args=True)
+        return NAMESPACE.get('*', 
+                             lambda a, b: Apply(a, b, args=True)) \
+                             (self, function) 
         
     def __pow__(self, function):
         '''
@@ -411,8 +458,7 @@ class BaseMatch(StreamMixin, LogMixin):
               results
                 A list of the results returned.
         '''
-        return KApply(self, function)
-    
+        return NAMESPACE.get('**', KApply)(self, function) 
     
     def __xor__(self, message):
         '''
@@ -425,7 +471,9 @@ class BaseMatch(StreamMixin, LogMixin):
           message
             The message for the SyntaxError.
         '''
-        return KApply(self, raise_error(message))
+        return NAMESPACE.get('^', 
+                             lambda a, b: KApply(a, raise_error(b))) \
+                             (self, message) 
         
     
 class Repeat(BaseMatch):
@@ -492,7 +540,10 @@ class Repeat(BaseMatch):
         '''
         super().__init__()
         self.__first = coerce(matcher)
-        self.__second = self.__first if separator == None else And(separator, matcher)
+        if separator == None:
+            self.__second = self.__first 
+        else:
+            self.__second = And(coerce(separator, Regexp), self.__first)
         if start == None: start = 0
         assert_type('The start index for Repeat or [...]', start, int)
         assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
@@ -526,10 +577,10 @@ class Repeat(BaseMatch):
         '''
         Implement breadth first, non-greedy matching (zero step).
         '''
-        for (_depth, results, stream) in self.__with_depth(stream):
+        for (_depth, results, stream) in self.__with_breadth(stream):
             yield (results, stream)
                     
-    def __with_depth(self, stream):
+    def __with_breadth(self, stream):
         '''
         Implement breadth first, non-greedy matching (zero step).
         '''
@@ -564,7 +615,7 @@ class Repeat(BaseMatch):
         longest first.
         '''
         all = {}
-        for (depth, results, stream) in self.__with_depth(stream):
+        for (depth, results, stream) in self.__with_breadth(stream):
             if depth not in all:
                 all[depth] = []
             all[depth].append((results, stream))
@@ -589,12 +640,13 @@ class Repeat(BaseMatch):
                         acc2 = acc1 + value
                         stack.append((count2, acc2, stream2, self.__matcher(count2)(stream2)))
                         extended = True
-                    except:
+                    except StopIteration:
                         pass
-                if not extended and count2 >= self._start and \
-                        (self._stop == None or count2 <= self._stop):
+                if not extended:
+                    if count1 >= self._start and \
+                            (self._stop == None or count1 <= self._stop):
+                        yield (acc1, stream1)
                     stack.pop(-1)
-                    yield (acc1, stream1)
         finally:
             for (count, acc, stream, generator) in stack:
                 self._debug('Closing %s' % generator)
@@ -652,6 +704,12 @@ class Or(BaseMatch):
     '''
     Match one of the given matchers (**|**).
     It can be used indirectly by placing ``|`` between matchers.
+    
+    **Note:** This is equivalent to depth first search.  Breadth 
+    first search is not supported (partly because the way the parser is
+    built using Python's operators doesn't build the flat tree that
+    it would require to be useful; partly because I don't yet see
+    how it helps).  See `lepl.match.First`.
     '''
     
     def __init__(self, *matchers):
@@ -679,8 +737,42 @@ class Or(BaseMatch):
 
         for match in self.__matchers:
             for result in match(stream):
-                self._warn('or')
                 yield result
+
+
+class First(BaseMatch):
+    '''
+    Match the first successful matchers only (**%**).
+    It can be used indirectly by placing ``%`` between matchers.
+    '''
+    
+    def __init__(self, *matchers):
+        '''
+        Create a matcher for matching one of the given sub-matchers.
+        
+        :Parameters:
+        
+          matchers
+            They are tried from left to right until one succeeds; backtracking
+            will try more from the same matcher and, once that is exhausted,
+            continue to the right.  String arguments will be coerced to 
+            literal matches.
+        '''
+        super().__init__()
+        self.__matchers = [coerce(matcher) for matcher in matchers]
+
+    @managed
+    def __call__(self, stream):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).  The result will correspond to one of the
+        sub-matchers (starting from the left).
+        '''
+
+        for match in self.__matchers:
+            for result in match(stream):
+                yield result
+                return
 
 
 class Any(BaseMatch):
@@ -785,6 +877,8 @@ class Lookahead(BaseMatch):
         super().__init__()
         self.__matcher = coerce(matcher)
         self.__negated = negated
+        if negated:
+            self.tag('~')
     
     @managed
     def __call__(self, stream):
@@ -885,7 +979,7 @@ class Apply(BaseMatch):
             
 class KApply(BaseMatch):
     '''
-    Apply an arbitrary function to named arguments (****=**).
+    Apply an arbitrary function to named arguments (******).
     The function should typically expect and return a list.
     It can be used indirectly by placing ``**=`` to the right of the matcher.    
     '''
@@ -976,7 +1070,10 @@ class Regexp(BaseMatch):
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
         '''
-        match = self.__pattern.match(stream)
+        try:
+            match = self.__pattern.match(stream.text())
+        except:
+            match = self.__pattern.match(stream)
         if match:
             eaten = len(match.group())
             if match.groups():
@@ -1097,7 +1194,7 @@ def AnyBut(exclude=None):
     The argument should be a list of tokens (or a string of suitable 
     characters) to exclude.  If omitted all tokens are accepted.
     '''
-    return ~Lookahead(coerce(exclude, Any)) + Any()
+    return ~Lookahead(coerce(exclude, Any)) + Any().tag('AnyBut')
             
 
 def Optional(matcher):
@@ -1309,5 +1406,3 @@ def Word(chars=AnyBut(Whitespace()), body=None):
      return chars + body[0:,...]
  
 
-def Error(message):
-    return KApply(Empty(), raise_error(message))

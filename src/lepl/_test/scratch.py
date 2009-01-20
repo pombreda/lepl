@@ -133,12 +133,56 @@ class Numbers():
     def numbers(self):
         for i in range(5):
             yield i
+            
+            
+import inspect
+
+class InvisibleScope():
+    
+    def __enter__(self):
+        print('enter')
+        inspect.currentframe().f_locals['foo'] = 'bar'
+        for x in dict(inspect.currentframe().f_locals):
+            print(x, inspect.currentframe().f_locals[x])
+        try:
+            print(foo)
+        except:
+            print('missing in enter')
+        
+    def __exit__(self, *args):
+        print('exit')
+        
+    def method(self):
+        try:
+            print(foo)
+        except:
+            print('missing in method')
+                    
+    def run(self):
+        try:
+            print(foo)
+        except:
+            print('missing before')
+        with self:
+            try:
+                print(foo)
+            except:
+                print('missing inside')
+            self.method()
+        try:
+            print(foo)
+        except:
+            print('missing after')
+        
+        
 
         
 
 if __name__ == '__main__':
     #CheckSlice().run()
-    CheckDash.run()
+    #CheckDash.run()
     #CheckReturnYield().run()
     #CheckGeneratorProxy().run()
+    InvisibleScope().run()
+    
     

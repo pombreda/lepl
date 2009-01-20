@@ -12,6 +12,10 @@ class Expression(Node): pass
 expression  = Delayed()
 number      = Digit()[1:,...]                  > 'number'
 term        = (number | expression)            > Term
+term        = (number <and_deep> expression)         > Term
+term        = (number <and_wide> expression)            > Term
+term        = (number <or_deep> expression)         > Term
+term        = (number <or_wide> expression)            > Term
 muldiv      = Any('*/')                        > 'operator'
 factor      = (term / (muldiv / term)[:])      > Factor
 addsub      = Any('+-')                        > 'operator'
