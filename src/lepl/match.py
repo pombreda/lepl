@@ -230,7 +230,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
-        return NAMESPACE.get('%', Or)(other, self) 
+        return NAMESPACE.get('%', First)(other, self) 
         
     def __invert__(self):
         '''
@@ -344,29 +344,9 @@ class BaseMatch(StreamMixin, LogMixin):
                 separator = index
             else:
                 raise TypeError(index)
-        return (Add if add else Identity)(
-                    Repeat(self, start, stop, step, separator)
-                        .tag(','.join(map(self.__format_repeat, indices))))
+        return NAMESPACE.get('[]', Repeat)(
+            self, start, stop, step, separator, add)
         
-    def __format_repeat(self, index):
-        '''
-        Format the repeat arguments to give useful information in trace
-        messages.
-        
-        This is separate from Repeat because the '...' isn't supported directly.
-        '''
-        def none_blank(x): return '' if x == None else str(x)
-        if isinstance(index, slice):
-            return none_blank(index.start) + ':' + \
-                none_blank(index.stop) + ':' + \
-                none_blank(index.step)
-        elif index == Ellipsis:
-            return '...'
-        elif isinstance(index, LogMixin):
-            return index.describe()
-        else:
-            return repr(index)
-    
     def __gt__(self, function):
         '''
         **self in function** - Process or label the results.
@@ -476,7 +456,7 @@ class BaseMatch(StreamMixin, LogMixin):
                              (self, message) 
         
     
-class Repeat(BaseMatch):
+class _Repeat(BaseMatch):
     '''
     Modifies a matcher so that it repeats several times, including an optional
     separator and the ability to combine results with "+" (**[::]**).
@@ -559,6 +539,17 @@ class Repeat(BaseMatch):
         self._start = start
         self._stop = stop
         self._direction = direction
+        tag = '{0}:{1}:{2}'.format(self._start, self._start, self._direction)
+        if separator != None:
+            tag += ','
+            if isinstance(separator, str):
+                tag += repr(separator)
+            else:
+                try:
+                    tag += separator.describe()
+                except:
+                    tag += str(separator)
+        self.tag(tag)
         
     @managed
     def __call__(self, stream):
@@ -652,6 +643,15 @@ class Repeat(BaseMatch):
                 self._debug('Closing %s' % generator)
                 generator.close()
                 
+
+def Repeat(matcher, start=0, stop=None, direction=0, separator=None, add=False):
+    '''
+    Extend `lepl.match._Repeat` with `lepl.match.Add` to match the
+    functionality required by the [...] syntax in `lepl.match.BaseMatch`.
+    '''
+    return (Add if add else Identity)(
+        _Repeat(matcher, start, stop, direction, separator)).tag('...')
+                
                 
 class And(BaseMatch):
     '''
@@ -742,8 +742,9 @@ class Or(BaseMatch):
 
 class First(BaseMatch):
     '''
-    Match the first successful matchers only (**%**).
+    Match the first successful matcher only (**%**).
     It can be used indirectly by placing ``%`` between matchers.
+    Note that backtracking for the first-selected matcher will still occur.
     '''
     
     def __init__(self, *matchers):
@@ -768,12 +769,13 @@ class First(BaseMatch):
         (result, stream) tuples).  The result will correspond to one of the
         sub-matchers (starting from the left).
         '''
-
+        matched = False
         for match in self.__matchers:
             for result in match(stream):
+                matched = True
                 yield result
-                return
-
+            if matched: break
+            
 
 class Any(BaseMatch):
     '''
@@ -962,7 +964,7 @@ class Apply(BaseMatch):
         if isinstance(function, str): tags.append(repr(function))
         if raw: tags.append('raw')
         if args: tags.append('*args')
-        self.tag(','.join(tags))
+        if tags: self.tag(','.join(tags))
 
     @managed
     def __call__(self, stream):
@@ -1237,10 +1239,11 @@ def Map(matcher, function):
     instead.  It can be used indirectly by placing ``>>=`` to the right of the 
     matcher.    
     '''
+    # list() necessary so we can use '+' on result
     if isinstance(function, str):
-        return Apply(matcher, lambda l: map(lambda x: (function, x), l), raw=True)
+        return Apply(matcher, lambda l: list(map(lambda x: (function, x), l)), raw=True)
     else:
-        return Apply(matcher, lambda l: map(function, l), raw=True)
+        return Apply(matcher, lambda l: list(map(function, l)), raw=True)
 
 
 def Add(matcher):

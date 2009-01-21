@@ -86,7 +86,9 @@ Contents
    nodes
    search
    resources
+   errors
    debugging
+   style
    credits
 
 Indices and tables

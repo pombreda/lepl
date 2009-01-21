@@ -47,7 +47,8 @@ APPLY = '>'
 NOT = '~'
 ARGS = '*'
 KARGS = '**'
-RAISE = '^' 
+RAISE = '^'
+REPEAT = '[]'
 
 
 class Extension():
@@ -64,12 +65,13 @@ class Extension():
 
 class Override(Extension):
 
-    def __init__(space_opt=None, space_req=None, 
+    def __init__(space_opt=None, space_req=None, repeat=None,
                   add=None, and_=None, or_=None, not_=None, 
                   apply=None, args=None, kargs=None, raise_=None):
         super().__init__({SPACE_OPT: space_opt, SPACE_REQ: space_req,
-                          ADD: add, AND: and_, OR: or_, NOT: not_,
-                          APPLY: apply, ARGS: args, KARGS: kargs, RAISE: raise_})
+                          REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
+                          NOT: not_, APPLY: apply, ARGS: args, KARGS: kargs, 
+                          RAISE: raise_})
 
 
 class Extend(Extension):

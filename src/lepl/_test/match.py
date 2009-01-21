@@ -91,8 +91,7 @@ class RepeatTest(TestCase):
         self.assert_simple([1,2], 1, 2, -1, ['00','01', '0'])
         self.assert_simple([1,2], 2, 2, -1, ['00','01'])
         self.assert_simple([1,2], 1, 2, 1, ['0', '00','01'])
-        self.assert_simple([1,2,3], 1, None, 2, ['0', '000', '001', '002', '010', '011', '012'])
-        self.assert_simple([1,2,3], 1, 3, -2, ['000', '001', '002', '010', '011', '012', '0'])
+        self.assert_simple([1,2], 1, 2, 0, ['00', '01','0'])
         
     def assert_simple(self, stream, start, stop, step, target):
         result = [''.join(map(str, l)) 
@@ -113,8 +112,7 @@ class RepeatTest(TestCase):
         self.assert_mixin(r[1:2], [1,2], ['00','01', '0'])
         self.assert_mixin(r[2], [1,2], ['00','01'])
         self.assert_mixin(r[1:2:1], [1,2], ['0', '00','01'])
-        self.assert_mixin(r[1::2], [1,2,3], ['0', '000', '001', '002', '010', '011', '012'])
-        self.assert_mixin(r[1:3:-2], [1,2,3], ['000', '001', '002', '010', '011', '012', '0'])
+        self.assert_mixin(r[1:2:-1], [1,2], ['00', '01','0'])
         try:        
             self.assert_mixin(r[1::-2], [1,2,3], [])
             assert False, 'expected error'

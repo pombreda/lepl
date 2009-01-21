@@ -15,15 +15,17 @@ class StreamTest(TestCase):
         assert s2[0] == 'b', s2[0]
 
     def test_multiple_lines(self):
-        s1 = Stream.from_string('abc\npqs\nxyz')
+        s1 = Stream.from_string('abc\npqr\nxyz')
         assert s1[0:3] == 'abc'
         assert s1[0:4] == 'abc\n'
         assert s1[0:5] == 'abc\np'
-        assert s1[0:11] == 'abc\npqs\nxyz'
+        assert s1[0:11] == 'abc\npqr\nxyz'
         assert s1[5] == 'q', s1[5]
         s2 = s1[5:]
         assert s2[0] == 'q', s2[0]
-        assert repr(s2) == "Chunk('pqs\\n'...)[1:]", repr(s2)
+        assert repr(s2) == "Chunk('pqr\\n')[1:]", repr(s2)
+        s3 = s2[3:]
+        assert repr(s3) == "Chunk('xyz')[0:]", repr(s3)
         
     def test_eof(self):
         s1 = Stream.from_string('abc\npqs')
@@ -38,13 +40,13 @@ class StreamTest(TestCase):
         s1 = Stream.from_string('abc\npqs', )
         s1.core.description_length = 3
         s = str(s1)
-        assert s == "'abc'...", s
+        assert s == "'abc...'", s
         s = str(s1[1:])
-        assert s == "'bc\\n'...", s
+        assert s == "'bc\\n...'", s
         s = str(s1[2:])
-        assert s == "'c\\np'...", s
+        assert s == "'c\\np...'", s
         s = str(s1[3:])
-        assert s == "'\\npq'...", s
+        assert s == "'\\npq...'", s
         s = str(s1[4:])
         assert s == "'pqs'", s
         s = str(s1[5:])

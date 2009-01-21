@@ -2,60 +2,37 @@
 from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.repeat import RepeatMixin
+from lepl.match import *
 from lepl.resources import managed
-from lepl.stream import StreamMixin
 from lepl.trace import LogMixin
 
 
 class LimitedDepthTest(LogMixin, TestCase):
+    '''
+    The test here takes '****' and divides it amongst the matchers, all of
+    which will take 0 to 4 matches.  The number of different permutations
+    depends on backtracking and varies depending on the queue length
+    available.
+    '''
     
     def test_limited_depth(self):
+        '''
+        These show something is happening.  Whether they are exactly correct
+        is another matter altogether...
+        '''
         basicConfig(level=DEBUG)
-        self._debug('test null')
-        self.assert_list(NullMatch()[3]([2,2,2]), 
-                         [[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]], 0)
-        self._debug('test null with stream')
-        self.assert_list(NullMatch()[3].match_list([2,2,2]), 
-                         [[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]], 0)
-        for min_queue in range(20):
-            if min_queue == 0:
-                result = [[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]]
-            elif min_queue <= 3:
-                result = [[0,0,0]]
-            elif min_queue <= 8:
-                result = [[0,0,0], [0,0,1]]
-            elif min_queue <= 18:
-                result = [[0,0,0], [0,0,1], [0,1,0], [0,1,1]]
-            else:
-                result = [[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]]
-            self._debug('test min_queue={0}'.format(min_queue))
-            self.assert_list(LimitedMatch()[3].match_list([2,2,2], min_queue=min_queue),
-                             result, min_queue) 
+        self.assert_range(3, 4, 0, [15,1,1,1,15])
+        self.assert_range(3, 4, 1, [15,0,0,1,15])
+        self.assert_range(3, 4, -1, [15,1,1,1,15])
         
-    def assert_list(self, match, expected, min_queue):
-        result = [i for (i, _) in match]
-        assert expected == result, '{0}: {1}'.format(min_queue, result)
-              
-
-class NullMatch(StreamMixin, RepeatMixin, LogMixin):
-    
-    def __init__(self):
-        super().__init__()
-    
-    def __call__(self, values):
-        if values:
-            for i in range(values[0]):
-                yield ([i], values[1:])
-                
-
-class LimitedMatch(StreamMixin, RepeatMixin, LogMixin):
-
-    def __init__(self):
-        super().__init__()
-    
-    @managed
-    def __call__(self, values):
-        if values:
-            for i in range(values[0]):
-                yield ([i], values[1:])
+    def assert_range(self, n_match, n_char, direcn, results):
+        text = '*' * n_char
+        for min_queue in range(len(results)):
+            matcher = (Literal('*')[::direcn,...][n_match] & Eos()).match_string(min_queue=min_queue)
+            self.assert_count(matcher, min_queue, results[min_queue])
+            
+    def assert_count(self, matcher, min_queue, count):
+        results = list(matcher('****'))
+        print(results)
+        found = len(results)
+        assert found == count, (min_queue, found)

@@ -4,7 +4,7 @@ from logging import basicConfig, DEBUG, INFO
 from unittest import TestCase
 
 from lepl.match import *
-from lepl.node import Node, make_error, Error, RaiseError
+from lepl.node import Node, make_error, Error, throw
 
 
 class NodeTest(TestCase):
@@ -91,41 +91,36 @@ class ErrorTest(TestCase):
         class Expression(Node): pass
 
         expression  = Delayed()
-        number      = Digit()[1:,...]                            >  'number'
-        term        = ( (AnyBut(Space() | Digit() | '(')[1:,...] ^  'unexpected text: {results[0]}') 
-                      | (number                                  >  Term)
-                      | ((number ** make_error('no ( before {stream_out}')) / ')')
-                      | (('(' / expression / ')')                >  Term)
-                      | (('(' / expression / Eos()) ** make_error('no ) for {stream_in}'))
-                      )
-        muldiv      = Any('*/')                                  >  'operator'
-        factor      = (term / (muldiv / term)[0:,r'\s*'])        >  Factor
-        addsub      = Any('+-')                                  >  'operator'
-        expression += (factor / (addsub / factor)[0:,r'\s*'])    >  Expression
+        number      = Digit()[1:,...]                                        > 'number'
+        term        = Or(
+            AnyBut(Space() | Digit() | '(')[1:,...]                          ^ 'unexpected text: {results[0]}', 
+            number                                                           > Term,
+            number ** make_error('no ( before {stream_out}') / ')'           >> throw,
+            '(' / expression / ')'                                           > Term,
+            ('(' / expression / Eos()) ** make_error('no ) for {stream_in}') >> throw)
+        muldiv      = Any('*/')                                              > 'operator'
+        factor      = (term / (muldiv / term)[0:,r'\s*'])                    >  Factor
+        addsub      = Any('+-')                                              > 'operator'
+        expression += (factor / (addsub / factor)[0:,r'\s*'])                >  Expression
         line        = expression / Eos()
        
-#        ast = Trace(line).parse_string('1 + 2 * (3 + 4 - 5)')
-#        print(ast[0])
+        ast = Trace(line).parse_string('1 + 2 * (3 + 4 - 5)')
+        print(ast[0])
         
         try:
             ast = Trace(line).parse_string('1 + 2 * 3 + 4 - 5)')
-            RaiseError().walk(ast[0])
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "no ( before ')'", e.msg
 
         try:
             ast = Trace(line).parse_string('1 + 2 * (3 + 4 - 5')
-            print(ast[0])
-            RaiseError().walk(ast[0])
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "no ) for '(3 + 4...'", e.msg
             
         try:
             ast = Trace(line).parse_string('1 + 2 * foo')
-            print(ast[0])
-            RaiseError().walk(ast[0])
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "unexpected text: foo", e.msg

@@ -130,17 +130,19 @@ class AstWalker():
         self.__queue = None
         self.__dfs = dfs
     
-    def walk(self, root):
+    def __call__(self, root):
+        print(root)
         self._before()
         self.__queue = deque()
         self.__queue.append(root)
         while self.__queue:
             node = self.__queue.pop() if self.__dfs else self.__queue.popleft()
             self._visit(node)
-            if isinstance(node, Node):
+            # avoid strings, maps too...
+            if isinstance(node, Node) or isinstance(node, list):
                 for child in node:
                     self.__queue.append(child)
-        return self._after()
+        return self._after(root)
 
     def _before(self):
         pass
@@ -148,8 +150,8 @@ class AstWalker():
     def _visit(self, node):
         pass
 
-    def _after(self):
-        return None
+    def _after(self, root):
+        return root
 
 
 class RaiseError(AstWalker):
@@ -157,4 +159,6 @@ class RaiseError(AstWalker):
     def _visit(self, node):
         if isinstance(node, Exception):
             raise node
-   
+
+def throw(node):
+     RaiseError()(node)

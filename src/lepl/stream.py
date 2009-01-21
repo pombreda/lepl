@@ -141,7 +141,7 @@ class Chunk():
         else:
             stop = stop + offset
         if start >= size:
-            return next().read(0, start-size, stop-size)
+            return self.next().read(0, start-size, stop-size)
         elif stop <= size:
             return self.__text[start:stop]
         else:
@@ -244,7 +244,7 @@ class Chunk():
         return self.distance + offset
     
     def __repr__(self):
-        return 'Chunk(%r...)' % ('' if self.__empty else self.__text)
+        return 'Chunk(%r)' % ('' if self.__empty else self.__text)
     
     def line(self, offset=0):
         return self.__to(offset)[0].__text
