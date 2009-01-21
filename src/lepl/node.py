@@ -122,6 +122,9 @@ class Error(Node, SyntaxError):
     def __init__(self, results, msg, location):
         Node.__init__(self, results)
         SyntaxError.__init__(self, msg, location)
+        
+    def __str__(self):
+        return SyntaxError.__str__(self)
 
 
 class AstWalker():
@@ -131,7 +134,6 @@ class AstWalker():
         self.__dfs = dfs
     
     def __call__(self, root):
-        print(root)
         self._before()
         self.__queue = deque()
         self.__queue.append(root)

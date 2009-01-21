@@ -1,28 +1,60 @@
 
-from logging import basicConfig, INFO
-basicConfig(level=INFO)
+from logging import basicConfig, DEBUG, INFO
+from unittest import TestCase
 
 from lepl.match import *
-from lepl.node import make_dict
+from lepl.node import Node, make_error, Error, throw
+
+
+basicConfig(level=INFO)
 
 class Term(Node): pass
 class Factor(Node): pass
 class Expression(Node): pass
 
-expression  = Delayed()
-bad_text    = AnyBut(Whitespace() | Digit())[1:,...]                 ^ 'unexpected text: {results[0]}'
-number      = Digit()[1:,...]                                        > 'number'
-term        = (number 
-               | '(' / expression / ')' 
-               | bad_text 
-               | '(' / expression / Error('no "(" for {stream_in}')
-               ) > Term
-muldiv      = Any('*/')                                              > 'operator'
-factor      = (term / (muldiv / term)[0::])                          > Factor
-addsub      = Any('+-')                                              > 'operator'
-expression += (factor / (addsub / factor)[0::])               > Expression
-line        = expression / Eos()
+expr    = Delayed()
+number  = Digit()[1:,...]                          > 'number'
+badChar = AnyBut(Space() | Digit() | '(')[1:,...]
 
-print(line.parse_string('1 + 2 * (3 + 4 - 5)')[0])
-line.parse_string('1 + 2 * 3 + 4 - 5)')
-expression.parse_string('1 + 2 * foo')
+with Separator(r'\s*'):
+    
+    unopen   = number ** make_error('no ( before {stream_out}') & ')'
+    unclosed = ('(' & expr & Eos()) ** make_error('no ) for {stream_in}')
+
+    term    = Or(
+                 (number | '(' & expr & ')')      > Term,
+                 badChar                          ^ 'unexpected text: {results[0]}',
+                 unopen                           >> throw,
+                 unclosed                         >> throw
+                 )
+    muldiv  = Any('*/')                           > 'operator'
+    factor  = (term & (muldiv & term)[:])         > Factor
+    addsub  = Any('+-')                           > 'operator'
+    expr   += (factor & (addsub & factor)[:])     > Expression
+    line    = Empty() & Trace(expr) & Eos()
+
+parser = line.parse_string
+        
+parser('1 + 2 * (3 + 4 - 5')[0]
+#  File "<string>", line 1
+#    1 + 2 * (3 + 4 - 5
+#            ^
+#lepl.node.Error: no ) for '(3 + 4...'
+
+parser('1 + 2 * 3 + 4 - 5)')[0]
+#  File "<string>", line 1
+#    1 + 2 * 3 + 4 - 5)
+#                    ^
+#lepl.node.Error: no ( before ')'
+
+parser('1 + 2 * (3 + four - 5)')[0]
+#  File "<string>", line 1
+#    1 + 2 * (3 + four - 5)
+#                 ^
+#lepl.node.Error: unexpected text: four
+
+parser('1 + 2 ** (3 + 4 - 5)')[0]
+#  File "<string>", line 1
+#    1 + 2 ** (3 + 4 - 5)
+#           ^
+#lepl.node.Error: unexpected text: *

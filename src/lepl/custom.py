@@ -53,7 +53,7 @@ REPEAT = '[]'
 
 class Extension():
     
-    def __init__(frame):
+    def __init__(self, frame):
         self.__frame = frame
         
     def __enter__(self):
@@ -65,18 +65,18 @@ class Extension():
 
 class Override(Extension):
 
-    def __init__(space_opt=None, space_req=None, repeat=None,
+    def __init__(self, space_opt=None, space_req=None, repeat=None,
                   add=None, and_=None, or_=None, not_=None, 
                   apply=None, args=None, kargs=None, raise_=None):
         super().__init__({SPACE_OPT: space_opt, SPACE_REQ: space_req,
                           REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
                           NOT: not_, APPLY: apply, ARGS: args, KARGS: kargs, 
                           RAISE: raise_})
-
+        
 
 class Extend(Extension):
     
-    def __init__(**kargs):
+    def __init__(self, **kargs):
         super().__init__(kargs)
         
 

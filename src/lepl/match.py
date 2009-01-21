@@ -20,7 +20,7 @@ import string
 from re import compile
 from traceback import print_exc
 
-from lepl.custom import NAMESPACE
+from lepl.custom import NAMESPACE, Override
 from lepl.node import Node, raise_error
 from lepl.resources import managed
 from lepl.stream import StreamMixin
@@ -1256,7 +1256,12 @@ def Add(matcher):
         if results:
             result = results[0]
             for extra in results[1:]:
-                result = result + extra
+                try:
+                    result = result + extra
+                except TypeError:
+                    raise TypeError('An attempt was made to add two results '
+                                    'that do not have consistent types: '
+                                    '{0!r} + {1!r}'.format(result, extra))
             result = [result]
         else:
             result = []
@@ -1409,3 +1414,13 @@ def Word(chars=AnyBut(Whitespace()), body=None):
      return chars + body[0:,...]
  
 
+class Separator(Override):
+    
+    def __init__(self, separator):
+        separator = coerce(separator, Regexp)
+        and_ = lambda a, b: And(a, separator, b)
+        def repeat(m, st=0, sp=None, d=0, s=None, a=False):
+            if s == None: s = separator
+            return Repeat(m, st, sp, d, s, a)
+        super().__init__(and_=and_, repeat=repeat)
+        
