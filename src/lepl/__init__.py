@@ -1,7 +1,7 @@
 
 '''
-
-LEPL is a parser library written in Python.  
+LEPL is a parser library written in Python.
+  
 This is the API documentation; the module index is at the bottom of this page.  
 There is also a `manual <../manual/index.html>`_ which explains how to use the 
 library in more detail.

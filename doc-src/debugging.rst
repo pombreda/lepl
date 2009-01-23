@@ -120,5 +120,5 @@ Epoch
 
 A word of warning --- despite the examples here, epoch doesn't always increase
 by exactly 1 per match.  It is guaranteed to increase between matches, but is
-used internally for resource management and may "jump" by unpredictable (but
-positive) values.
+used internally for labelling various events and may "jump" by unpredictable
+(but positive) values.

@@ -15,6 +15,7 @@ the same syntax (capitalized names) for both to keep the API uniform.
 For more background, please see the `manual <../manual/index.html>`_.
 '''
 
+from abc import ABCMeta
 from collections import deque
 import string
 from re import compile
@@ -28,7 +29,11 @@ from lepl.support import assert_type, BaseGeneratorDecorator
 from lepl.trace import LogMixin
 
 
-class BaseMatch(StreamMixin, LogMixin):
+class Matcher(metaclass=ABCMeta):
+    pass
+
+
+class BaseMatcher(StreamMixin, LogMixin, Matcher):
     '''
     A base class that provides support to all matchers; most 
     importantly it defines the operators used to combine elements in a 
@@ -51,6 +56,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('+', other, True)
         return NAMESPACE.get('+', lambda a, b: Add(And(a, b)))(self, other)
 
     def __radd__(self, other):
@@ -66,6 +72,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('+', other, True)
         return NAMESPACE.get('+', lambda a, b: Add(And(a, b)))(other, self)
 
     def __and__(self, other):
@@ -81,6 +88,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('&', other, True)
         return NAMESPACE.get('&', And)(self, other) 
         
     def __rand__(self, other):
@@ -96,6 +104,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('&', other, True)
         return NAMESPACE.get('&', And)(other, self) 
     
     def __truediv__(self, other):
@@ -111,6 +120,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('/', other, True)
         return NAMESPACE.get('/', 
                              lambda a, b: 
                              NAMESPACE.get('&', And)(a, Space()[0:,...], b)) \
@@ -129,6 +139,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('/', other, True)
         return NAMESPACE.get('/', 
                              lambda a, b: 
                              NAMESPACE.get('&', And)(a, Space()[0:,...], b)) \
@@ -147,6 +158,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('//', other, True)
         return NAMESPACE.get('//', 
                              lambda a, b: 
                              NAMESPACE.get('&', And)(a, Space()[1:,...], b)) \
@@ -165,6 +177,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('//', other, True)
         return NAMESPACE.get('//', 
                              lambda a, b: 
                              NAMESPACE.get('&', And)(a, Space()[1:,...], b)) \
@@ -184,6 +197,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('|', other, True)
         return NAMESPACE.get('|', Or)(self, other) 
         
     def __ror__(self, other):
@@ -200,6 +214,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('|', other, True)
         return NAMESPACE.get('|', Or)(other, self) 
         
     def __mod__(self, other):
@@ -215,6 +230,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('%', other, True)
         return NAMESPACE.get('%', First)(self, other) 
         
     def __rmod__(self, other):
@@ -230,6 +246,7 @@ class BaseMatch(StreamMixin, LogMixin):
             Another matcher or a string that will be converted to a literal
             match.
         '''
+        self.__check('%', other, True)
         return NAMESPACE.get('%', First)(other, self) 
         
     def __invert__(self):
@@ -367,6 +384,7 @@ class BaseMatch(StreamMixin, LogMixin):
             argument.  The return value is used as the new result.  This
             is equivalent to `lepl.match.Apply` with nolist=False.
         '''
+        self.__check('>', function, False)
         return NAMESPACE.get('>', Apply)(self, function) 
     
     def __rshift__(self, function):
@@ -390,6 +408,7 @@ class BaseMatch(StreamMixin, LogMixin):
             If a function is given it is called with each result in turn.
             The return values are used as the new result.
         '''
+        self.__check('>>', function, False)
         return NAMESPACE.get('>>', Map)(self, function) 
         
     def __mul__(self, function):
@@ -407,6 +426,7 @@ class BaseMatch(StreamMixin, LogMixin):
             A function that is called with the results as arguments.
             The return values are used as the new result.
         '''
+        self.__check('*', function, False)
         return NAMESPACE.get('*', 
                              lambda a, b: Apply(a, b, args=True)) \
                              (self, function) 
@@ -438,6 +458,7 @@ class BaseMatch(StreamMixin, LogMixin):
               results
                 A list of the results returned.
         '''
+        self.__check('**', function, False)
         return NAMESPACE.get('**', KApply)(self, function) 
     
     def __xor__(self, message):
@@ -453,10 +474,26 @@ class BaseMatch(StreamMixin, LogMixin):
         '''
         return NAMESPACE.get('^', 
                              lambda a, b: KApply(a, raise_error(b))) \
-                             (self, message) 
-        
-    
-class _Repeat(BaseMatch):
+                             (self, message)
+                             
+    def __check(self, name, other, is_match):
+        '''
+        Provide some diagnostics if the syntax is completely mixed up.
+        '''
+        if not isinstance(other, str): # can go either way
+            if is_match != isinstance(other, Matcher):
+                if is_match:
+                    msg = 'The operator {0} for {1} was applied to something ' \
+                        'that is not a matcher ({2}).'
+                else:
+                    msg = 'The operator {0} for {1} was applied to a matcher ' \
+                        '({2}).'
+                msg += ' Check syntax and parentheses.'
+                raise SyntaxError(msg.format(name, self.__class__.__name__, 
+                                             other))
+                             
+
+class _Repeat(BaseMatcher):
     '''
     Modifies a matcher so that it repeats several times, including an optional
     separator and the ability to combine results with "+" (**[::]**).
@@ -647,13 +684,13 @@ class _Repeat(BaseMatch):
 def Repeat(matcher, start=0, stop=None, direction=0, separator=None, add=False):
     '''
     Extend `lepl.match._Repeat` with `lepl.match.Add` to match the
-    functionality required by the [...] syntax in `lepl.match.BaseMatch`.
+    functionality required by the [...] syntax in `lepl.match.BaseMatcher`.
     '''
     return (Add if add else Identity)(
         _Repeat(matcher, start, stop, direction, separator)).tag('...')
                 
                 
-class And(BaseMatch):
+class And(BaseMatcher):
     '''
     Match one or more matchers in sequence (**&**).
     It can be used indirectly by placing ``&`` between matchers.
@@ -700,7 +737,7 @@ class And(BaseMatch):
                     generator.close()
 
 
-class Or(BaseMatch):
+class Or(BaseMatcher):
     '''
     Match one of the given matchers (**|**).
     It can be used indirectly by placing ``|`` between matchers.
@@ -740,7 +777,7 @@ class Or(BaseMatch):
                 yield result
 
 
-class First(BaseMatch):
+class First(BaseMatcher):
     '''
     Match the first successful matcher only (**%**).
     It can be used indirectly by placing ``%`` between matchers.
@@ -777,7 +814,7 @@ class First(BaseMatch):
             if matched: break
             
 
-class Any(BaseMatch):
+class Any(BaseMatcher):
     '''
     Match a single token in the stream.  
     A set of valid tokens can be supplied.
@@ -810,7 +847,7 @@ class Any(BaseMatch):
             yield ([stream[0]], stream[1:])
             
             
-class Literal(BaseMatch):
+class Literal(BaseMatcher):
     '''
     Match a series of tokens in the stream (**''**).
     '''
@@ -840,7 +877,7 @@ class Literal(BaseMatch):
             pass
         
         
-class Empty(BaseMatch):
+class Empty(BaseMatcher):
     '''
     Match any stream, consumes no input, and returns nothing.
     '''
@@ -860,7 +897,7 @@ class Empty(BaseMatch):
         yield ([], stream)
 
             
-class Lookahead(BaseMatch):
+class Lookahead(BaseMatcher):
     '''
     Tests to see if the embedded matcher *could* match, but does not do the
     matching.  On success an empty list (ie no result) and the original
@@ -905,7 +942,7 @@ class Lookahead(BaseMatch):
         return Lookahead(self.__matcher, negated=not self.__negated)
             
 
-class Apply(BaseMatch):
+class Apply(BaseMatcher):
     '''
     Apply an arbitrary function to the results of the matcher (**>=**, ***=**).
     
@@ -979,7 +1016,7 @@ class Apply(BaseMatch):
                 yield (self.__function(results), stream)
             
             
-class KApply(BaseMatch):
+class KApply(BaseMatcher):
     '''
     Apply an arbitrary function to named arguments (******).
     The function should typically expect and return a list.
@@ -1046,7 +1083,7 @@ class KApply(BaseMatch):
                 yield ([self.__function(**kargs)], stream_out)
             
             
-class Regexp(BaseMatch):
+class Regexp(BaseMatcher):
     '''
     Match a regular expression.  If groups are defined, they are returned
     as results.  Otherwise, the entire expression is returned.
@@ -1084,7 +1121,7 @@ class Regexp(BaseMatch):
                 yield ([match.group()], stream[eaten:])
             
             
-class Delayed(BaseMatch):
+class Delayed(BaseMatcher):
     '''
     A placeholder that allows forward references (**+=**).  Before use a 
     matcher must be assigned via '+='.
@@ -1117,11 +1154,11 @@ class Delayed(BaseMatch):
             return self
          
 
-class Commit(BaseMatch):
+class Commit(BaseMatcher):
     '''
     Commit to the current state - deletes all backtracking information.
-    This only works if the match... methods are used and min_queue is greater
-    than zero.
+    This only works if the core is present (eg when parse_string is called)
+    and the min_queue option is greater than zero.
     '''
     
     @managed
@@ -1169,7 +1206,7 @@ class _TraceDecorator(BaseGeneratorDecorator):
             raise ValueError('Trace requires stream source.')
 
 
-class Trace(BaseMatch):
+class Trace(BaseMatcher):
     '''
     Enable trace logging for the sub-matcher.
     '''

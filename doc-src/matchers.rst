@@ -34,6 +34,266 @@ matchers, when they receive a string as a constructor argument, will
 automatically create a literal match from the given text.
 
 
+Any
+---
+
+.. index:: Any()
+
+`[API] <../api/redirect.html#lepl.match.Any>`_ This matcher identifies any
+single character.  It can be restricted to match only characters that appear
+in a given string.  For example::
+
+  >>> Any().parse_string('hello world')
+  ['h']
+
+  >>> Any('abcdefghijklm')[0:].parse_string('hello world')
+  ['h', 'e', 'l', 'l']
+
+
+And (&)
+-------
+
+.. index:: And(), &
+
+`[API] <../api/redirect.html#lepl.match.And>`_ This matcher combines other
+matchers in order.  For example::
+
+  >>> And(Any('h'), Any()).parse_string('hello world')
+  ['h', 'e']
+
+All matchers must succeed for ``And`` as a whole to succeed::
+
+  >>> And(Any('h'), Any('x')).parse_string('hello world')
+  None
+
+
+Or (|)
+------
+
+.. index:: Or(), |
+
+`[API] <../api/redirect.html#lepl.match.Or>`_ This matcher searches through a
+list of other matchers to find a successful match.  For example::
+
+  >>> Or(Any('x'), Any('h'), Any('z')).parse_string('hello world')
+  ['h']
+
+The first match found is the one returned::
+
+  >>> Or(Any('h'), Any()[3]).parse_string('hello world')
+  ['h']
+
+But when the generator is used directly, subsequent calls return the other
+possibilities::
+
+  >>> generator = Or(Any('h'), Any()[3])('hello world')
+  >>> next(generator)
+  (['h'], 'ello world')
+  >>> next(generator)
+  (['h', 'e', 'l'], 'lo world')
+
+
+Repeat ([...])
+--------------
+
+.. index:: Repeat(), []
+
+`[API] <../api/redirect.html#lepl.match.Repeat>`_ This matcher repeats another
+matcher a given number of times.  For example::
+
+  >>> Repeat(Any(), 3, 3).parse_string('12345')
+  ['1', '2', '3']
+
+If only a lower bound to the number of repeats is given the match will be
+repeated as often as possible::
+
+  >>> Repeat(Any(), 3).parse_string('12345')
+  ['1', '2', '3', '4', '5']
+
+If the match cannot be repeated the requested number of times no result is
+returned::
+
+  >>> Repeat(Any(), 3).parse_string('12')
+  None
+
+When used directly as a generator different numbers of matches are available on
+subsequent calls (backtracking)::
+
+  >>> generator = Repeat(Any(), 3)('12345')
+  >>> next(generator)
+  (['1', '2', '3', '4', '5'], '')
+  >>> next(generator)
+  (['1', '2', '3', '4'], '5')
+  >>> next(generator)
+  (['1', '2', '3'], '45')
+  >>> next(generator)
+  StopIteration
+
+By default a depth--first search is used (giving the longest match first).
+Specifying an increment of 1 gives breadth--first search (shortest first)::
+
+  >>> generator = Repeat(Any(), 3, None, 1)('12345')
+  >>> next(generator)
+  (['1', '2', '3'], '45')
+  >>> next(generator)
+  (['1', '2', '3', '4'], '5')
+  >>> next(generator)
+  (['1', '2', '3', '4', '5'], '')
+  >>> next(generator)
+  StopIteration
+
+
+Lookahead
+---------
+
+.. index:: Lookahead(), ~
+
+`[API] <../api/redirect.html#lepl.match.Lookahead>`_ This matcher checks
+whether another matcher would succeed, but returns the original stream with an
+empty result list.
+
+  >>> Lookahead(Literal('hello')).parse_string('hello world')
+  []
+
+It fails if the match would not be possible (specifying a string as matcher is
+equivalent to using ``Literal()``)::
+
+  >>> Lookahead('hello').parse_string('goodbye cruel world')
+  None
+
+When preceded by a ``~`` the logic is reversed::
+
+  >>> (~Lookahead('hello')).parse_string('hello world')
+  None
+  >>> (~Lookahead('hello')).parse_string('goodbye cruel world')
+  []
+
+**Note:** Because ``~`` binds less strongly than method invocation extra
+parenetheses are needed above.
+
+**Note:** This change in behaviour is specific to ``Lookahead`` --- usually
+``~`` applies ``Drop()`` as described below.
+
+
+Drop (~)
+--------
+
+.. index:: Drop(), ~
+
+`[API] <../api/redirect.html#lepl.match.Drop>`_ This matcher calls another
+matcher, but discards the results::
+
+  >>> (Drop('hello') / 'world').parse_string('hello world')
+  [' ', 'world']
+
+(The empty string in the first result is from ``/`` which joins two matchers
+together, with optional spaces between).
+
+This is different to ``Lookahed`` because the matcher after ``Drop`` receives
+a stream that has "moved on" to the next part of the input.  With
+``Lookahead`` the stream is not advanced and so this example will fail::
+
+  >>> (Lookahead('hello') / 'world').parse_string('hello world')
+  None
+
+
+Apply (>, *)
+------------
+
+.. index:: Apply(), >, *
+
+`[API] <../api/redirect.html#lepl.match.Apply>`_ This matcher passes the
+results of another matcher to a function, then returns the value from the
+function as a new result::
+
+  >>> def show(results):
+  ...     print('results:', results)
+  ...     return results
+  >>> Apply(Any()[:,...], show).parse_string('hello world')
+  results: ['hello world']
+  [['hello world']]
+
+The returned result is placed in a new list, which is not always what is
+wanted; setting ``raw=True`` uses the result directly::
+
+  >>> Apply(Any()[:,...], show, raw=True).parse_string('hello world')
+  results: ['hello world']
+  ['hello world']
+
+Setting another optional argument, ``args``, to ``True`` changes the way the
+function is called.  Instead of passing the results as a single list each is
+treated as a separate argument.  This is familiar as the way ``*args`` works
+in Python (hence the shortcut operator, ``*``).
+
+
+KApply (**)
+-----------
+
+.. index:: **
+
+`[API] <../api/redirect.html#lepl.match.KApply>`_ This matcher passes the
+results of another matcher to a function, along with additional information
+about the match, then returns the value from the function as a new result.
+Unlike ``Apply``, this names the arguments as follows:
+
+  stream_in
+    The stream passed to the matcher before matching.
+
+  stream_out
+    The stream returned from the matcher after matching.
+
+  core
+    The core, if streams are being used, else ``None``.  See ...
+
+  results
+    A list of the results returned.
+
+
+More
+----
+
+.. index:: Empty(), Regexp(), Delayed(), Commit(), Trace(), AnyBut(), Optional(), Star(), ZeroOrMore(), Plus(), OneOrMore(), Map(), Add(), Substitute(), Name(), Eof(), Eos(), Identity(), Newline(), Space(), Whitespace(), Digit(), Letter(), Upper(), Lower(), Printable(), Punctuation(), UnsignedInteger(), SignedInteger(), Integer(), UnsignedFloat(), SignedFloat(), SignedEFloat(), Float(), Word().
+
+Many more matchers are desceibed in the `API Documentation
+<../api/redirect.html#lepl.match>`_, including 
+`Empty <../api/redirect.html#lepl.match.Empty>`_,
+`Regexp <../api/redirect.html#lepl.match.Regexp>`_,
+`Delayed <../api/redirect.html#lepl.match.Delayed>`_,
+`Commit <../api/redirect.html#lepl.match.Commit>`_,
+`Trace <../api/redirect.html#lepl.match.Trace>`_,
+`AnyBut <../api/redirect.html#lepl.match.AnyBut>`_,
+`Optional <../api/redirect.html#lepl.match.Optional>`_,
+`Star <../api/redirect.html#lepl.match.Star>`_,
+`ZeroOrMore <../api/redirect.html#lepl.match.ZeroOrMore>`_,
+`Plus <../api/redirect.html#lepl.match.Plus>`_,
+`OneOrMore <../api/redirect.html#lepl.match.OneOrMore>`_,
+`Map <../api/redirect.html#lepl.match.Map>`_,
+`Add <../api/redirect.html#lepl.match.Add>`_,
+`Substitute <../api/redirect.html#lepl.match.Substitute>`_,
+`Name <../api/redirect.html#lepl.match.Name>`_,
+`Eof <../api/redirect.html#lepl.match.Eof>`_,
+`Eos <../api/redirect.html#lepl.match.Eos>`_,
+`Identity <../api/redirect.html#lepl.match.Identity>`_,
+`Newline <../api/redirect.html#lepl.match.Newline>`_,
+`Space <../api/redirect.html#lepl.match.Space>`_,
+`Whitespace <../api/redirect.html#lepl.match.Whitespace>`_,
+`Digit <../api/redirect.html#lepl.match.Digit>`_,
+`Letter <../api/redirect.html#lepl.match.Letter>`_,
+`Upper <../api/redirect.html#lepl.match.Upper>`_,
+`Lower <../api/redirect.html#lepl.match.Lower>`_,
+`Printable <../api/redirect.html#lepl.match.Printable>`_,
+`Punctuation <../api/redirect.html#lepl.match.Punctuation>`_,
+`UnsignedInteger <../api/redirect.html#lepl.match.UnsignedInteger>`_,
+`SignedInteger <../api/redirect.html#lepl.match.SignedInteger>`_,
+`Integer <../api/redirect.html#lepl.match.Integer>`_,
+`UnsignedFloat <../api/redirect.html#lepl.match.UnsignedFloat>`_,
+`SignedFloat <../api/redirect.html#lepl.match.SignedFloat>`_,
+`SignedEFloat <../api/redirect.html#lepl.match.SignedEFloat>`_,
+`Float <../api/redirect.html#lepl.match.Float>`_, and
+`Word <../api/redirect.html#lepl.match.Word>`_
+
+  
+
 .. _implementation details:
 
 Implementation Details
@@ -64,6 +324,10 @@ anyway: all matchers implement this same interface, whether they are
 delegate work to other sub--matchers, or modify results.  This consistency is
 a source of great expressive power.)
 
-Implementations take care to exploit the common interface between lists and
+Existing matchers take care to exploit the common interface between lists and
 strings, so matching should work on a variety of streams, including
 imhomogenous lists of objects.
+
+All matcher implementations should subclass the ABC ``lepl.match.Matcher``.
+Most will do so by inheriting from ``lepl.match.BaseMatcher`` which provides
+support for operators.

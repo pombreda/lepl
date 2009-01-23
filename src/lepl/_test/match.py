@@ -151,7 +151,7 @@ class RepeatTest(TestCase):
         result = [''.join(map(str, l)) for (l, s) in match(stream)]
         assert target == result, result
     
-class RangeMatch(BaseMatch):
+class RangeMatch(BaseMatcher):
     '''
     We test repetition by looking at "strings" of integers, where the 
     matcher for any particular value returns all values less than the

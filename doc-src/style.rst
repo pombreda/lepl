@@ -1,4 +1,7 @@
 
+Style
+=====
+
 Use ``Or(..., ..., ...)`` for alternatives with productions.  The ``|`` syntax
 can lead to errors because it binds more tightly than ``>``.
 

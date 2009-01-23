@@ -32,7 +32,7 @@ class Namespace(local):
         if value != None:
             self.set(name, value)
         
-    def get(self, name, default):
+    def get(self, name, default=None):
         return self.current().get(name, default)
     
 
@@ -51,10 +51,15 @@ RAISE = '^'
 REPEAT = '[]'
 
 
-class Extension():
-    
-    def __init__(self, frame):
-        self.__frame = frame
+class Override():
+
+    def __init__(self, space_opt=None, space_req=None, repeat=None,
+                  add=None, and_=None, or_=None, not_=None, 
+                  apply=None, args=None, kargs=None, raise_=None):
+        self.__frame ={SPACE_OPT: space_opt, SPACE_REQ: space_req,
+                       REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
+                       NOT: not_, APPLY: apply, ARGS: args, KARGS: kargs, 
+                       RAISE: raise_}
         
     def __enter__(self):
         NAMESPACE.push(self.__frame)
@@ -62,22 +67,3 @@ class Extension():
     def __exit__(self, *args):
         NAMESPACE.pop()
 
-
-class Override(Extension):
-
-    def __init__(self, space_opt=None, space_req=None, repeat=None,
-                  add=None, and_=None, or_=None, not_=None, 
-                  apply=None, args=None, kargs=None, raise_=None):
-        super().__init__({SPACE_OPT: space_opt, SPACE_REQ: space_req,
-                          REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
-                          NOT: not_, APPLY: apply, ARGS: args, KARGS: kargs, 
-                          RAISE: raise_})
-        
-
-class Extend(Extension):
-    
-    def __init__(self, **kargs):
-        super().__init__(kargs)
-        
-
-    
