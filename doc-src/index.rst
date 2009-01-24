@@ -13,8 +13,7 @@ may interest advanced users, including full backtracking and multiple results
 
 In this example a tree of objects is generated from an arithmetic expression::
 
-  >>> from lepl.match import *
-  >>> from lepl.node import Node, make_error, Error, throw
+  >>> from lepl import *
 
   >>> class Term(Node): pass
   >>> class Factor(Node): pass

@@ -8,7 +8,7 @@ def assert_type(name, value, type_, none_ok=False):
     '''
     If the value is not of the given type, raise a syntax error.
     '''
-    if none_ok and value == None: return
+    if none_ok and value is None: return
     if isinstance(value, type_): return
     raise TypeError('{0} (value {1}) must be of type {2}.'
                     .format(name, repr(value), type_.__name__))
@@ -19,6 +19,10 @@ class CircularFifo():
     A FIFO queue with a fixed maximum size that silently discards data on 
     overflow.  It supports iteration for reading current contents and so
     can be used for a "latest window".
+    
+    Might be able to use deque instead?  This may be more efficient
+    if the entire contents are read often (as is the case when depth gets
+    deeper)?
     '''
     
     def __init__(self, size):
@@ -62,10 +66,10 @@ class CircularFifo():
             index = (index + 1) % capacity
 
 
-class BaseGeneratorDecorator():
+class BaseGeneratorDecorator(object):
     
     def __init__(self, generator):
-        super().__init__()
+        super(BaseGeneratorDecorator, self).__init__()
         self.__generator = generator
     
     def __next__(self):
@@ -75,6 +79,10 @@ class BaseGeneratorDecorator():
         finally:
             self._after()
             
+    # for 2.6
+    def next(self):
+        return self.__next__()
+                
     def __iter__(self):
         return self
                 
@@ -97,6 +105,8 @@ class BaseGeneratorDecorator():
 class FastFifo():
     '''
     A FIFO that extends to accommodate data as required.
+    
+    Use deque instead.
     '''
     
     def __init__(self):
@@ -117,3 +127,11 @@ class FastFifo():
     def __len__(self):
         return len(self.__front) + len(self.__back)
     
+
+def open_stop(spec):
+    '''
+    In Python 2.6 open [] appears to use maxint or similar, which is not
+    available in Python 3.  This uses a minimum value for maxint I found
+    somewhere; hopefully no-one ever wants finite repeats larger than this.
+    '''
+    return spec.stop == None or spec.stop > 2147483647

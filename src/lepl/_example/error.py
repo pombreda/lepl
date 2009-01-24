@@ -1,4 +1,5 @@
 
+from __future__ import with_statement
 from logging import basicConfig, DEBUG, INFO
 from unittest import TestCase
 from lepl import *
@@ -32,19 +33,19 @@ with Separator(r'\s*'):
 
 parser = line.parse_string
         
-parser('1 + 2 * (3 + 4 - 5')[0]
+#parser('1 + 2 * (3 + 4 - 5')[0]
 #  File "<string>", line 1
 #    1 + 2 * (3 + 4 - 5
 #            ^
 #lepl.node.Error: no ) for '(3 + 4...'
 
-parser('1 + 2 * 3 + 4 - 5)')[0]
+#parser('1 + 2 * 3 + 4 - 5)')[0]
 #  File "<string>", line 1
 #    1 + 2 * 3 + 4 - 5)
 #                    ^
 #lepl.node.Error: no ( before ')'
 
-parser('1 + 2 * (3 + four - 5)')[0]
+#parser('1 + 2 * (3 + four - 5)')[0]
 #  File "<string>", line 1
 #    1 + 2 * (3 + four - 5)
 #                 ^

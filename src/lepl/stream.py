@@ -7,6 +7,7 @@ A stream interface to the parsed string, implemented as a linked list.
 from io import StringIO
 
 from lepl.core import Core
+from lepl.support import open_stop
 
 
 class Stream():
@@ -78,7 +79,16 @@ class Stream():
         return self.__chunk.getitem(spec, self.offset)
     
     def __bool__(self):
+        '''
+        Non-empty?
+        '''
         return not self.__chunk.empty_at(self.offset)
+    
+    def __len__(self):
+        '''
+        Called only by 2.6 (when __bool__ not called).
+        '''
+        return 1 if self.__bool__() else 0
     
     def location(self):
         '''
@@ -106,13 +116,12 @@ class Stream():
         return self.__chunk.text(self.offset)
     
         
-class Chunk():
+class Chunk(object):
     '''
     A linked list (cons cell) of lines from the stream. 
     '''
     
     def __init__(self, stream, distance=0, lineno=1, core=None, **options):
-        super().__init__()
         try:
             self.__text = next(stream)
             self.__empty = False
@@ -130,13 +139,13 @@ class Chunk():
         '''
         if stop == 0: return ''
         if self.__empty:
-            if start == 0 and stop == None:
+            if start == 0 and stop is None:
                 return ''
             else:
                 raise IndexError()
         size = len(self.__text)
         start = start + offset
-        if stop == None:
+        if stop is None:
             stop = size
         else:
             stop = stop + offset
@@ -171,8 +180,8 @@ class Chunk():
     def getitem(self, spec, offset=0):    
         if isinstance(spec, int):
             return self.read(offset, spec, spec+1)[0]
-        elif isinstance(spec, slice) and spec.step == None:
-            if spec.stop == None:
+        elif isinstance(spec, slice) and spec.step is None:
+            if open_stop(spec):
                 return self.stream(offset + spec.start)
             elif spec.stop >= spec.start:
                 return self.read(offset, spec.start, spec.stop)
@@ -207,7 +216,7 @@ class Chunk():
         but a list of some kind (so does everything else, but here the
         addition of "..." causes problems).
         '''
-        size = self.core.description_length if length == None else length
+        size = self.core.description_length if length is None else length
         if self.empty_at(offset):
             return repr('')
         else:
@@ -217,7 +226,7 @@ class Chunk():
             remaining = size - len(content)
             if remaining and not self.empty_at(stop):
                 content = content + self.next().describe(0, remaining)
-            if length == None: # original call
+            if length is None: # original call
                 # convert to string
                 content = repr(content)
                 # indicate if more data available
@@ -274,14 +283,18 @@ class ListIO():
         else:
             raise StopIteration()
 
+    # for 2.6
+    def next(self):
+        return self.__next__()        
 
-class StreamMixin():
+
+class StreamMixin(object):
     '''
     Helper functions that forward to __call__.
     '''
     
     def __init__(self, *args, **kargs):
-        super().__init__(*args, **kargs)
+        super(StreamMixin, self).__init__(*args, **kargs)
     
     def match_string(self, **options):
         '''

@@ -32,8 +32,7 @@ An example will make this clearer.  Imagine that we are given a username and a
 phone number, separated by a comma, and we want to split that into the two
 values::
 
-  >>> from lepl.match import *
-  >>> from lepl.node import make_dict
+  >>> from lepl import *
   
   >>> name    = Word()              > 'name'
   >>> phone   = Integer()           > 'phone'

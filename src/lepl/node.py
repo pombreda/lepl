@@ -12,7 +12,7 @@ these are added as (list) attributes; similarly for Node subclasses.
 class Node(LogMixin):
     
     def __init__(self, args):
-        super().__init__()
+        super(Node, self).__init__()
         self.__args = args
         self.__named_args = {}
         for arg in args:

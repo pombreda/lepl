@@ -1,11 +1,13 @@
 
+from __future__ import print_function
+
 from threading import local
 
 
 class Namespace(local):
     
     def __init__(self):
-        super().__init__()
+        super(Namespace, self).__init__()
         self.__stack = [{}]
         
     def push(self, extra={}):
@@ -51,7 +53,7 @@ RAISE = '^'
 REPEAT = '[]'
 
 
-class Override():
+class Override(object):
 
     def __init__(self, space_opt=None, space_req=None, repeat=None,
                   add=None, and_=None, or_=None, not_=None, 

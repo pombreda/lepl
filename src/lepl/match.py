@@ -19,18 +19,19 @@ from abc import ABCMeta
 from collections import deque
 import string
 from re import compile
+from sys import version
 from traceback import print_exc
 
 from lepl.custom import NAMESPACE, Override
 from lepl.node import Node, raise_error
 from lepl.resources import managed
 from lepl.stream import StreamMixin
-from lepl.support import assert_type, BaseGeneratorDecorator
+from lepl.support import assert_type, BaseGeneratorDecorator, open_stop
 from lepl.trace import LogMixin
 
 
-class Matcher(metaclass=ABCMeta):
-    pass
+#class Matcher(metaclass=ABCMeta):
+Matcher = ABCMeta('Matcher', (object, ), {})
 
 
 class BaseMatcher(StreamMixin, LogMixin, Matcher):
@@ -41,7 +42,7 @@ class BaseMatcher(StreamMixin, LogMixin, Matcher):
     '''
 
     def __init__(self):
-        super().__init__()
+        super(StreamMixin, self).__init__()
         
     def __add__(self, other):
         '''
@@ -105,7 +106,19 @@ class BaseMatcher(StreamMixin, LogMixin, Matcher):
             match.
         '''
         self.__check('&', other, True)
-        return NAMESPACE.get('&', And)(other, self) 
+        return NAMESPACE.get('&', And)(other, self)
+    
+    def __div__(self, other):
+        '''
+        For 2.6
+        '''
+        return self.__truediv__(other)
+    
+    def __rdiv__(self, other):
+        '''
+        For 2.6
+        '''
+        return self.__rtruediv__(other)
     
     def __truediv__(self, other):
         '''
@@ -353,11 +366,11 @@ class BaseMatcher(StreamMixin, LogMixin, Matcher):
                 step = -1
             elif isinstance(index, slice):
                 start = index.start if index.start != None else 0
-                stop = index.stop if index.stop != None else None
+                stop = index.stop if not open_stop(index) else None
                 step = index.step if index.step != None else 0
             elif index == Ellipsis:
                 add = True
-            elif separator == None:
+            elif separator is None:
                 separator = index
             else:
                 raise TypeError(index)
@@ -555,13 +568,13 @@ class _Repeat(BaseMatcher):
             they are implemented with a matcher that returns nothing).  If 
             *separator* is a string it is converted to a literal match.
         '''
-        super().__init__()
+        super(_Repeat, self).__init__()
         self.__first = coerce(matcher)
-        if separator == None:
+        if separator is None:
             self.__second = self.__first 
         else:
             self.__second = And(coerce(separator, Regexp), self.__first)
-        if start == None: start = 0
+        if start is None: start = 0
         assert_type('The start index for Repeat or [...]', start, int)
         assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
         assert_type('The index step (direction) for Repeat or [...]', direction, int)
@@ -621,9 +634,9 @@ class _Repeat(BaseMatcher):
             for (value, stream2) in self.__matcher(count1)(stream1):
                 acc2 = acc1 + value
                 if count2 >= self._start and \
-                    (self._stop == None or count2 <= self._stop):
+                    (self._stop is None or count2 <= self._stop):
                     yield (count2, acc2, stream2)
-                if self._stop == None or count2 < self._stop:
+                if self._stop is None or count2 < self._stop:
                     queue.append((count2, acc2, stream2))
 
     def __matcher(self, count):
@@ -661,7 +674,7 @@ class _Repeat(BaseMatcher):
             while stack:
                 (count1, acc1, stream1, generator) = stack[-1]
                 extended = False
-                if self._stop == None or count1 < self._stop:
+                if self._stop is None or count1 < self._stop:
                     count2 = count1 + 1
                     try:
                         (value, stream2) = next(generator)
@@ -672,7 +685,7 @@ class _Repeat(BaseMatcher):
                         pass
                 if not extended:
                     if count1 >= self._start and \
-                            (self._stop == None or count1 <= self._stop):
+                            (self._stop is None or count1 <= self._stop):
                         yield (acc1, stream1)
                     stack.pop(-1)
         finally:
@@ -706,7 +719,7 @@ class And(BaseMatcher):
             The patterns which are matched, in turn.  String arguments will
             be coerced to literal matches.
         '''
-        super().__init__()
+        super(And, self).__init__()
         self.__matchers = [coerce(matcher) for matcher in matchers]
 
     @managed
@@ -761,7 +774,7 @@ class Or(BaseMatcher):
             continue to the right.  String arguments will be coerced to 
             literal matches.
         '''
-        super().__init__()
+        super(Or, self).__init__()
         self.__matchers = [coerce(matcher) for matcher in matchers]
 
     @managed
@@ -796,7 +809,7 @@ class First(BaseMatcher):
             continue to the right.  String arguments will be coerced to 
             literal matches.
         '''
-        super().__init__()
+        super(First, self).__init__()
         self.__matchers = [coerce(matcher) for matcher in matchers]
 
     @managed
@@ -832,7 +845,7 @@ class Any(BaseMatcher):
             
             **Note:** This argument is *not* a sub-matcher.
         '''
-        super().__init__()
+        super(Any, self).__init__()
         self.tag(repr(restrict))
         self.__restrict = restrict
     
@@ -857,7 +870,7 @@ class Literal(BaseMatcher):
         Typically the argument is a string but a list might be appropriate 
         with some streams.
         '''
-        super().__init__()
+        super(Literal, self).__init__()
         self.tag(repr(text))
         self.__text = text
     
@@ -883,7 +896,7 @@ class Empty(BaseMatcher):
     '''
     
     def __init__(self, name=None):
-        super().__init__()
+        super(Empty, self).__init__()
         if name:
             self.tag(name)
     
@@ -913,7 +926,7 @@ class Lookahead(BaseMatcher):
         If negated, this will succeed if the matcher fails.  If the matcher is
         a string it is coerced to a literal match.
         '''
-        super().__init__()
+        super(Lookahead, self).__init__()
         self.__matcher = coerce(matcher)
         self.__negated = negated
         if negated:
@@ -988,7 +1001,7 @@ class Apply(BaseMatcher):
             arguments (Python's '*args' behaviour) (default is False ---
             the results are passed inside a list).
         '''
-        super().__init__()
+        super(Apply, self).__init__()
         self.__matcher = coerce(matcher)
         if isinstance(function, str):
             self.__function = lambda results: list(map(lambda x:(function, x), results))
@@ -1057,7 +1070,7 @@ class KApply(BaseMatcher):
             and so should match the ``([results], stream)`` type expected by
             other matchers.   
         '''
-        super().__init__()
+        super(KApply, self).__init__()
         self.__matcher = coerce(matcher)
         self.__function = function
         self.__raw = raw
@@ -1099,7 +1112,7 @@ class Regexp(BaseMatcher):
           pattern
             The regular expression to match. 
         '''
-        super().__init__()
+        super(Regexp, self).__init__()
         self.tag(repr(pattern))
         self.__pattern = compile(pattern)
         
@@ -1131,7 +1144,7 @@ class Delayed(BaseMatcher):
         '''
         Introduce the matcher.  It can be defined later with '+='
         '''
-        super().__init__()
+        super(Delayed, self).__init__()
         self.__matcher = None
     
     @managed
@@ -1180,7 +1193,7 @@ class _TraceDecorator(BaseGeneratorDecorator):
     '''
     
     def __init__(self, generator, stream, name=None):
-        super().__init__(generator)
+        super(_TraceDecorator, self).__init__(generator)
         self.__stream = stream
         self.__on = Empty('+' + (name if name else ''))
         self.__off = Empty('-' + (name if name else ''))
@@ -1212,7 +1225,7 @@ class Trace(BaseMatcher):
     '''
     
     def __init__(self, matcher, name=None):
-        super().__init__()
+        super(Trace, self).__init__()
         self.__matcher = matcher
         self.__name = name
     
@@ -1447,7 +1460,7 @@ def Word(chars=AnyBut(Whitespace()), body=None):
      matches any sequence of non-space characters. 
      '''
      chars = coerce(chars, Any)
-     body = chars if body == None else coerce(body, Any)
+     body = chars if body is None else coerce(body, Any)
      return chars + body[0:,...]
  
 
@@ -1457,7 +1470,7 @@ class Separator(Override):
         separator = coerce(separator, Regexp)
         and_ = lambda a, b: And(a, separator, b)
         def repeat(m, st=0, sp=None, d=0, s=None, a=False):
-            if s == None: s = separator
+            if s is None: s = separator
             return Repeat(m, st, sp, d, s, a)
-        super().__init__(and_=and_, repeat=repeat)
+        super(Separator, self).__init__(and_=and_, repeat=repeat)
         

@@ -159,7 +159,7 @@ class RangeMatch(BaseMatcher):
     '''
     
     def __init__(self):
-        super().__init__()
+        super(RangeMatch, self).__init__()
     
     @managed
     def __call__(self, values):

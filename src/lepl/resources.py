@@ -60,7 +60,7 @@ class GeneratorWrapper(LogMixin):
     '''
     
     def __init__(self, generator, match, stream):
-        super().__init__()
+        super(GeneratorWrapper, self).__init__()
         self.__generator = generator
         # we do try/except, rather than testing for stream's type, to simplify
         # the dependency between modules
@@ -94,6 +94,10 @@ class GeneratorWrapper(LogMixin):
                 if not self.__registered:
                     self.__core.gc.register(self)
                     self.__registered = True
+                    
+    # for 2.6
+    def next(self):
+        return self.__next__()
                 
     def update_epoch(self):
         if self.active:
@@ -177,7 +181,7 @@ class GeneratorControl(LogMixin):
         The maximum size is only a recommendation - we do not discard active
         generators so there is an effective minimum size which takes priority.
         '''
-        super().__init__()
+        super(GeneratorControl, self).__init__()
         self.__min_queue = 0
         self.__queue = []
         self.__epoch = 0
@@ -200,7 +204,7 @@ class GeneratorControl(LogMixin):
     @min_queue.setter
     def min_queue(self, min_queue):
         self.__min_queue = min_queue
-        if min_queue == None:
+        if min_queue is None:
             self.__queue = None
             self._debug('No monitoring of backtrack state.')
         else:

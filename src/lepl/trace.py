@@ -10,10 +10,10 @@ from traceback import print_exc
 from lepl.support import CircularFifo
 
 
-class LogMixin():
+class LogMixin(object):
     
     def __init__(self, *args, **kargs):
-        super().__init__(*args, **kargs)
+        super(LogMixin, self).__init__(*args, **kargs)
         self._log = getLogger(self.__module__ + '.' + self.__class__.__name__)
         self._debug = self._log.debug
         self._info = self._log.info
@@ -51,7 +51,7 @@ class BlackBox(LogMixin):
     '''
     
     def __init__(self, core, memory=4):
-        super().__init__()
+        super(BlackBox, self).__init__()
         try:
             self.__epoch = core.gc.epoch
         except:
@@ -92,7 +92,7 @@ class BlackBox(LogMixin):
     @staticmethod        
     def formatter(matcher, result, epoch):
         return '{0:5d}  {1}   {2}'.format(epoch, matcher, 
-                                          'fail' if result == None else result)
+                                          'fail' if result is None else result)
 
     @staticmethod
     def preformatter(matcher, stream):

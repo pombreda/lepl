@@ -1,8 +1,9 @@
 
+from __future__ import with_statement
 from logging import basicConfig, DEBUG, INFO
 from lepl import *
 
-#basicConfig(level=INFO)
+basicConfig(level=INFO)
 
 class Term(Node): pass
 class Factor(Node): pass
@@ -17,7 +18,7 @@ with Separator(r'\s*'):
     factor  = term & (muldiv & term)[:]         > Factor
     addsub  = Any('+-')                         > 'operator'
     expr   += factor & (addsub & factor)[:]     > Expression
-    line    = expr & Eos()
+    line    = Trace(expr) & Eos()
 
 parser = line.parse_string
 print(parser('1 + 2 * (3 + 4 - 5)')[0])
