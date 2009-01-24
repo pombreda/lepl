@@ -254,7 +254,7 @@ More
 
 .. index:: Empty(), Regexp(), Delayed(), Commit(), Trace(), AnyBut(), Optional(), Star(), ZeroOrMore(), Plus(), OneOrMore(), Map(), Add(), Substitute(), Name(), Eof(), Eos(), Identity(), Newline(), Space(), Whitespace(), Digit(), Letter(), Upper(), Lower(), Printable(), Punctuation(), UnsignedInteger(), SignedInteger(), Integer(), UnsignedFloat(), SignedFloat(), SignedEFloat(), Float(), Word().
 
-Many more matchers are desceibed in the `API Documentation
+Many more matchers are described in the `API Documentation
 <../api/redirect.html#lepl.match>`_, including 
 `Empty <../api/redirect.html#lepl.match.Empty>`_,
 `Regexp <../api/redirect.html#lepl.match.Regexp>`_,
@@ -290,7 +290,7 @@ Many more matchers are desceibed in the `API Documentation
 `SignedFloat <../api/redirect.html#lepl.match.SignedFloat>`_,
 `SignedEFloat <../api/redirect.html#lepl.match.SignedEFloat>`_,
 `Float <../api/redirect.html#lepl.match.Float>`_, and
-`Word <../api/redirect.html#lepl.match.Word>`_
+`Word <../api/redirect.html#lepl.match.Word>`_.
 
   
 

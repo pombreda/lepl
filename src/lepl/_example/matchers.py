@@ -1,5 +1,5 @@
 
-from lepl.match import *
+from lepl import *
 
 print( Literal('hello').parse_string('hello world') )
 

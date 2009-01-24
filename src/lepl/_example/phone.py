@@ -1,6 +1,5 @@
 
-from lepl.match import *
-from lepl.node import make_dict
+from lepl import *
 
 name    = Word()              > 'name'
 phone   = Integer()           > 'phone'

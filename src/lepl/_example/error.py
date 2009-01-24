@@ -1,10 +1,7 @@
 
 from logging import basicConfig, DEBUG, INFO
 from unittest import TestCase
-
-from lepl.match import *
-from lepl.node import Node, make_error, Error, throw
-
+from lepl import *
 
 basicConfig(level=INFO)
 

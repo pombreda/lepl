@@ -87,7 +87,7 @@ class BlackBox(LogMixin):
             if self.latest:
                 for report in self.latest:
                     limited.append(report)
-            self.latest = fifo
+            self.latest = limited
         
     @staticmethod        
     def formatter(matcher, result, epoch):
@@ -151,7 +151,8 @@ class BlackBox(LogMixin):
         return 'Up to {0} matches before and including longest match:\n{1}\n' \
             'Up to {2} failures following longest match:\n{3}\n' \
             'Up to {4} successful matches following longest match:\n{5}\n' \
-            'Epoch  Matcher                 Stream          Result' \
+            'Epoch  Matcher                       Line.Chr (Chars) Stream' \
+            '        Result' \
             .format(self.__memory, '\n'.join(before),
                     self.__memory_fail, '\n'.join(failure),
                     self.__memory_tail, '\n'.join(after))
