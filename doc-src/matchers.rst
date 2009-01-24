@@ -252,10 +252,11 @@ Unlike ``Apply``, this names the arguments as follows:
 More
 ----
 
-.. index:: Empty(), Regexp(), Delayed(), Commit(), Trace(), AnyBut(), Optional(), Star(), ZeroOrMore(), Plus(), OneOrMore(), Map(), Add(), Substitute(), Name(), Eof(), Eos(), Identity(), Newline(), Space(), Whitespace(), Digit(), Letter(), Upper(), Lower(), Printable(), Punctuation(), UnsignedInteger(), SignedInteger(), Integer(), UnsignedFloat(), SignedFloat(), SignedEFloat(), Float(), Word().
+.. index:: First(), Empty(), Regexp(), Delayed(), Commit(), Trace(), AnyBut(), Optional(), Star(), ZeroOrMore(), Plus(), OneOrMore(), Map(), Add(), Substitute(), Name(), Eof(), Eos(), Identity(), Newline(), Space(), Whitespace(), Digit(), Letter(), Upper(), Lower(), Printable(), Punctuation(), UnsignedInteger(), SignedInteger(), Integer(), UnsignedFloat(), SignedFloat(), SignedEFloat(), Float(), Word().
 
 Many more matchers are described in the `API Documentation
 <../api/redirect.html#lepl.match>`_, including 
+`First <../api/redirect.html#lepl.match.First>`_,
 `Empty <../api/redirect.html#lepl.match.Empty>`_,
 `Regexp <../api/redirect.html#lepl.match.Regexp>`_,
 `Delayed <../api/redirect.html#lepl.match.Delayed>`_,
