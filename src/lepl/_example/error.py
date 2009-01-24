@@ -1,5 +1,4 @@
 
-from __future__ import with_statement
 from logging import basicConfig, DEBUG, INFO
 from unittest import TestCase
 from lepl import *
