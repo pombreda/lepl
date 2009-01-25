@@ -9,10 +9,10 @@ most important.
 The final section gives some `implementation details`_.
 
 
+.. index:: Literal()
+
 Literal 
 -------
-
-.. index:: Literal()
 
 `[API] <../api/redirect.html#lepl.match.Literal>`_
 This matcher identifies a given string.  For example, ``Literal('hello')``
@@ -34,10 +34,10 @@ matchers, when they receive a string as a constructor argument, will
 automatically create a literal match from the given text.
 
 
+.. index:: Any()
+
 Any
 ---
-
-.. index:: Any()
 
 `[API] <../api/redirect.html#lepl.match.Any>`_ This matcher identifies any
 single character.  It can be restricted to match only characters that appear
@@ -50,10 +50,10 @@ in a given string.  For example::
   ['h', 'e', 'l', 'l']
 
 
+.. index:: And(), &
+
 And (&)
 -------
-
-.. index:: And(), &
 
 `[API] <../api/redirect.html#lepl.match.And>`_ This matcher combines other
 matchers in order.  For example::
@@ -67,10 +67,10 @@ All matchers must succeed for ``And`` as a whole to succeed::
   None
 
 
+.. index:: Or(), |
+
 Or (|)
 ------
-
-.. index:: Or(), |
 
 `[API] <../api/redirect.html#lepl.match.Or>`_ This matcher searches through a
 list of other matchers to find a successful match.  For example::
@@ -93,10 +93,10 @@ possibilities::
   (['h', 'e', 'l'], 'lo world')
 
 
+.. index:: Repeat(), []
+
 Repeat ([...])
 --------------
-
-.. index:: Repeat(), []
 
 `[API] <../api/redirect.html#lepl.match.Repeat>`_ This matcher repeats another
 matcher a given number of times.  For example::
@@ -143,10 +143,11 @@ Specifying an increment of 1 gives breadth--first search (shortest first)::
   StopIteration
 
 
+.. index:: Lookahead(), ~
+.. _lookahead:
+
 Lookahead
 ---------
-
-.. index:: Lookahead(), ~
 
 `[API] <../api/redirect.html#lepl.match.Lookahead>`_ This matcher checks
 whether another matcher would succeed, but returns the original stream with an
@@ -168,17 +169,21 @@ When preceded by a ``~`` the logic is reversed::
   >>> (~Lookahead('hello')).parse_string('goodbye cruel world')
   []
 
-**Note:** Because ``~`` binds less strongly than method invocation extra
-parenetheses are needed above.
+.. note::
 
-**Note:** This change in behaviour is specific to ``Lookahead`` --- usually
-``~`` applies ``Drop()`` as described below.
+  Because ``~`` binds less strongly than method invocation extra parentheses
+  are needed above.
 
+.. note::
+
+  This change in behaviour is specific to ``Lookahead`` --- usually ``~``
+  applies ``Drop()`` as described below.
+
+
+.. index:: Drop(), ~
 
 Drop (~)
 --------
-
-.. index:: Drop(), ~
 
 `[API] <../api/redirect.html#lepl.match.Drop>`_ This matcher calls another
 matcher, but discards the results::
@@ -197,10 +202,10 @@ a stream that has "moved on" to the next part of the input.  With
   None
 
 
+.. index:: Apply(), >, *
+
 Apply (>, *)
 ------------
-
-.. index:: Apply(), >, *
 
 `[API] <../api/redirect.html#lepl.match.Apply>`_ This matcher passes the
 results of another matcher to a function, then returns the value from the
@@ -226,10 +231,10 @@ treated as a separate argument.  This is familiar as the way ``*args`` works
 in Python (hence the shortcut operator, ``*``).
 
 
+.. index:: **
+
 KApply (**)
 -----------
-
-.. index:: **
 
 `[API] <../api/redirect.html#lepl.match.KApply>`_ This matcher passes the
 results of another matcher to a function, along with additional information
@@ -249,10 +254,10 @@ Unlike ``Apply``, this names the arguments as follows:
     A list of the results returned.
 
 
+.. index:: First(), Empty(), Regexp(), Delayed(), Commit(), Trace(), AnyBut(), Optional(), Star(), ZeroOrMore(), Plus(), OneOrMore(), Map(), Add(), Substitute(), Name(), Eof(), Eos(), Identity(), Newline(), Space(), Whitespace(), Digit(), Letter(), Upper(), Lower(), Printable(), Punctuation(), UnsignedInteger(), SignedInteger(), Integer(), UnsignedFloat(), SignedFloat(), SignedEFloat(), Float(), Word().
+
 More
 ----
-
-.. index:: First(), Empty(), Regexp(), Delayed(), Commit(), Trace(), AnyBut(), Optional(), Star(), ZeroOrMore(), Plus(), OneOrMore(), Map(), Add(), Substitute(), Name(), Eof(), Eos(), Identity(), Newline(), Space(), Whitespace(), Digit(), Letter(), Upper(), Lower(), Printable(), Punctuation(), UnsignedInteger(), SignedInteger(), Integer(), UnsignedFloat(), SignedFloat(), SignedEFloat(), Float(), Word().
 
 Many more matchers are described in the `API Documentation
 <../api/redirect.html#lepl.match>`_, including 

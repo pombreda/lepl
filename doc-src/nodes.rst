@@ -1,0 +1,135 @@
+
+
+Results
+=======
+
+
+Flat List
+---------
+
+Simple declarations produce a single list of tokens (ignoring backtracking,
+which I will discuss elsewhere).  For example::
+
+  >>> from lepl import *
+  
+  >>> expr   = Delayed()
+  >>> number = Digit()[1:,...]
+  
+  >>> with Separator(r'\s*'):
+  >>>     term    = number | '(' & expr & ')'
+  >>>     muldiv  = Any('*/')
+  >>>     factor  = term & (muldiv & term)[:]
+  >>>     addsub  = Any('+-')
+  >>>     expr   += factor & (addsub & factor)[:]
+  >>>     line    = expr & Eos()
+  >>> line.parse_string('1 + 2 * (3 + 4 - 5)')
+  ['1', ' ', '', '+', ' ', '2', ' ', '*', ' ', '(', '', '3', ' ', '', '+', ' ', '4', ' ', '', '-', ' ', '5', '', '', ')', '']
+
+.. index:: DropEmpty()
+.. note::
+
+  The empty strings are a result of the separator and could be removed by
+  using ``with Separator(DropEmpty(Regexp(r'\s*'))):``
+
+
+.. index:: s-expressions, list, nested lists
+
+Nested Lists
+------------
+
+Nested lists (S-Expressions) are a traditional way of structuring parse
+results.  With LEPL they are easy to construct with ``> list``::
+
+  >>> expr   = Delayed()
+  >>> number = Digit()[1:,...]
+
+  >>> with Separator(Drop(Regexp(r'\s*'))):
+  >>>     term    = number | (Drop('(') & expr & Drop(')') > list)
+  >>>     muldiv  = Any('*/')
+  >>>     factor  = (term & (muldiv & term)[:])
+  >>>     addsub  = Any('+-')
+  >>>     expr   += factor & (addsub & factor)[:]
+  >>>     line    = expr & Eos()
+  ['1', '+', '2', '*', ['3', '+', '4', '-', '5']]
+
+
+Trees
+-----
+
+LEPL also includes a simple base class that can be used to construct trees::
+
+  >>> class Term(Node): pass
+  >>> class Factor(Node): pass
+  >>> class Expression(Node): pass
+
+  >>> expr   = Delayed()
+  >>> number = Digit()[1:,...]                        > 'number'
+
+  >>> with Separator(r'\s*'):
+  >>>     term    = number | '(' & expr & ')'         > Term
+  >>>     muldiv  = Any('*/')                         > 'operator'
+  >>>     factor  = term & (muldiv & term)[:]         > Factor
+  >>>     addsub  = Any('+-')                         > 'operator'
+  >>>     expr   += factor & (addsub & factor)[:]     > Expression
+  >>>     line    = expr & Eos()
+
+  >>> ast = line.parse_string('1 + 2 * (3 + 4 - 5)')[0]
+
+  >>> ast
+  Expression
+   +- Factor
+   |   +- Term
+   |   |   `- number '1'
+   |   `- ' '
+   +- ''
+   +- operator '+'
+   +- ' '
+   `- Factor
+       +- Term
+       |   `- number '2'
+       +- ' '
+       +- operator '*'
+       +- ' '
+       `- Term
+	   +- '('
+	   +- ''
+	   +- Expression
+	   |   +- Factor
+	   |   |   +- Term
+	   |   |   |   `- number '3'
+	   |   |   `- ' '
+	   |   +- ''
+	   |   +- operator '+'
+	   |   +- ' '
+	   |   +- Factor
+	   |   |   +- Term
+	   |   |   |   `- number '4'
+	   |   |   `- ' '
+	   |   +- ''
+	   |   +- operator '-'
+	   |   +- ' '
+	   |   `- Factor
+	   |       +- Term
+	   |       |   `- number '5'
+	   |       `- ''
+	   +- ''
+	   `- ')
+
+The `Node <../api/redirect.html#lepl.node.Node>`_ class functions like an
+array of the original results (including spaces)::
+
+  >>> [child for child in ast]
+  [Factor(...), '', ('operator', '+'), ' ', Factor(...)]
+
+  >>> [ast[i] for i in range(len(ast))]
+  [Factor(...), '', ('operator', '+'), ' ', Factor(...)]
+
+But they also provide attribute access to the child nodes and named pairs.
+These are returned as lists, since sub--node types and names need not be
+unique::
+
+  >>> [(name, getattr(ast, name)) for name in ast.child_names()]
+  [('operator', ['+']), ('Factor', [Factor(...), Factor(...)])]
+
+  >>> ast.Factor[1].Term[0].number[0]
+  '2'

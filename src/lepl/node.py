@@ -28,6 +28,9 @@ class Node(LogMixin):
             except:
                 pass
         self._info('{0}'.format(self))
+        
+    def child_names(self):
+        return self.__named_args.keys()
     
     def __getattr__(self, name):
         if name in self.__named_args:
@@ -65,6 +68,9 @@ class Node(LogMixin):
                 return [first + name + ' ' + repr(value)]
         except:
             return [first + repr(arg)]
+        
+    def __len__(self):
+        return len(self.__args)
 
 
 def make_dict(contents):
@@ -164,3 +170,5 @@ class RaiseError(AstWalker):
 
 def throw(node):
      RaiseError()(node)
+
+        

@@ -80,11 +80,18 @@ Prefix And Postfix Operators On Matchers
 ========  ===========
 Operator  Description
 ========  ===========
-``~``     Discards the result from the matcher.  Identical to `Drop() <../api/redirect.html#lepl.match.And>`_.  **Note:** `Lookahead() <../api/redirect.html#lepl.match.And>`_ is an exception.
+``~``     Discards the result from the matcher. 
+          Identical to `Drop() <../api/redirect.html#lepl.match.And>`_.
+
 --------  -----------
 ``[]``    Repeats the matcher, with optional concatenation and separator.
           Identical to `Repeat() <../api/redirect.html#lepl.match.Repeat>`_.
 ========  ===========
+
+.. note:
+
+  `Lookahead() <../api/redirect.html#lepl.match.And>`_ is an exception for
+  ``~`` (see :ref:`lookahead`).
 
 
 Operators That Apply Functions To Results
@@ -93,7 +100,10 @@ Operators That Apply Functions To Results
 ========  ===========
 Operator  Description
 ========  ===========
-``>``     Pass the results of the matcher (left) to the given function (right) and use the result as the new result.  If the function is a string a ``(string, result)`` pair is generated instead.  Identical to `Apply() <../api/redirect.html#lepl.match.Apply>`_.
+``>``     Pass the results of the matcher (left) to the given function 
+          (right) and use the result as the new result.  If the function 
+          is a string a ``(string, result)`` pair is generated instead.  
+          Identical to `Apply() <../api/redirect.html#lepl.match.Apply>`_.
 --------  -----------
 ``>>``    As ``>``, but the function is applied to each result in turn 
           (instead of all results being supplied in a single list argument).
@@ -105,7 +115,7 @@ Operator  Description
 ``**``    As ``>``, but the results are passed as the named parameter 
           *results*.  Additional keyword arguments are *stream_in* (the
           stream passed to the matcher), *stream_out* (the rstream returned
-          from the matcher) and *core* (see ????).  
+          from the matcher) and *core* (see :ref:`resources`).  
           Identical to ``KApply()``.
 --------  -----------
 ``^``     Raise a Syntax error.  The argmuent to the right is a string that
@@ -121,6 +131,26 @@ Replacement
 Operators can be replaced inside a ``with`` context using `Override()
 <../api/redirect.html#lepl.custom.Override>`_::
 
-  >>> 
+  >>> with Override(or_=And, and_=Or):
+  >>>     abcd = (Literal('a') & Literal('b')) | ( Literal('c') & Literal('d'))
+  >>>     print(abcd.parse_string('ac'))
+  ['a', 'c']
+  >>>     print(abcd.parse_string('ab'))
+  None
 
+(think about it).
 
+It is also possible to provide a separator that is used for ``&`` and ``[]``.
+With a little care (define matchers for characters before, and matchers for
+characters after, the *with* statement) this can handle the common case of
+space--separated words in a transparent manner:
+
+  >>> word = Letter()[:,...]
+  >>> with Separator(r'\s+'):
+  >>>     sentence = word[1:]
+  >>> sentence.parse_string('hello world')
+  ['hello', ' ', 'world']
+
+Note that there was no need to specify a separator in ``word[1:]``, and that
+this is a rare example of a string being coerced to something other than a
+``Literal()`` (here ``Regexp()`` is used).

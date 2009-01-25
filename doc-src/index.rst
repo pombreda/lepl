@@ -1,6 +1,6 @@
 
-LEPL - A Parser Library for Python 3
-====================================
+LEPL - A Parser Library for Python 3 (and 2.6)
+==============================================
 
 Using LEPL you can define a grammar (that describes how some text is
 structured) and then generate Python data (lists, dicts, and even trees of
@@ -89,13 +89,11 @@ Contents
    matchers
    operators
    nodes
-   search
    resources
    errors
    debugging
    style
-   technical
-   credits
+   closing
 
 Indices and tables
 ------------------

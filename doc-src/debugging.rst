@@ -8,10 +8,12 @@ When a parser fails to match some text it can be difficult (slow, frustrating
 work) to undertand why.  Fortunately, LEPL includes some features that can
 make life easier.
 
-**Note:** This section does not describe "known errors" (for example,
-generating an error message for the user when they enter text that is wrong in
-an expected way).  That issue is addressed in ....  What is discussed here are
-the "unknown errors" you face when a parser fails to work with good input.
+.. note:
+
+  This section does not describe "known errors" (for example, generating an
+  error message for the user when they enter text that is wrong in an expected
+  way).  That issue is addressed in ....  What is discussed here are the
+  "unknown errors" you face when a parser fails to work with good input.
 
 
 Deepest Matches

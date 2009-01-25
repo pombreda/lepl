@@ -151,6 +151,7 @@ __all__ = [
         'Float', 
         'Word',
         'Separator',
+        'DropEmpty',
         # node
         'Node',
         'make_dict',

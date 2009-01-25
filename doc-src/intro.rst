@@ -176,8 +176,10 @@ This matches 0 or more spaces.  In general, adding ``[start:stop]`` to a
 matcher will repeat it for between *start* and *stop* times (the defaults for
 missing values and 0 and "as many as possible").
 
-**Note:** *stop* is *inclusive*, so ``Space()[2:3]`` would match 2 or 3
-spaces.  This is subtly different from Python's normal array behaviour.
+.. note:
+
+  *stop* is *inclusive*, so ``Space()[2:3]`` would match 2 or 3 spaces.  This
+  is subtly different from Python's normal array behaviour.
 
 The second use of repetition is ``line[0:,~newline]``.  This repeats the
 matcher ``line`` 0 or more times, but also includes another matcher,

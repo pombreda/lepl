@@ -1241,10 +1241,11 @@ class Trace(BaseMatcher):
  
 def AnyBut(exclude=None):
     '''
-    Match any character except those specified.
+    Match any character except those specified (or, if a matcher is used as
+    the exclude, if the matcher fails).
     
     The argument should be a list of tokens (or a string of suitable 
-    characters) to exclude.  If omitted all tokens are accepted.
+    characters) to exclude, or a matcher.  If omitted all tokens are accepted.
     '''
     return ~Lookahead(coerce(exclude, Any)) + Any().tag('AnyBut')
             
@@ -1474,3 +1475,7 @@ class Separator(Override):
             return Repeat(m, st, sp, d, s, a)
         super(Separator, self).__init__(and_=and_, repeat=repeat)
         
+def DropEmpty(matcher):
+    def drop(results):
+        return [result for result in results if result]
+    return Apply(matcher, drop, raw=True)
