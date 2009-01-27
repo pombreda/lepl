@@ -82,16 +82,16 @@ class RepeatTest(TestCase):
 
     def test_simple(self):
         basicConfig(level=DEBUG)
-        self.assert_simple([1], 1, 1, -1, ['0'])
-        self.assert_simple([1], 1, 2, -1, ['0'])
-        self.assert_simple([2], 1, 1, -1, ['0','1'])
-        self.assert_simple([2], 1, 2, -1, ['0','1'])
-        self.assert_simple([2], 0, 2, -1, ['0','1', ''])
-        self.assert_simple([1,2], 1, 1, -1, ['0'])
-        self.assert_simple([1,2], 1, 2, -1, ['00','01', '0'])
-        self.assert_simple([1,2], 2, 2, -1, ['00','01'])
-        self.assert_simple([1,2], 1, 2, 1, ['0', '00','01'])
-        self.assert_simple([1,2], 1, 2, 0, ['00', '01','0'])
+        self.assert_simple([1], 1, 1, 'd', ['0'])
+        self.assert_simple([1], 1, 2, 'd', ['0'])
+        self.assert_simple([2], 1, 1, 'd', ['0','1'])
+        self.assert_simple([2], 1, 2, 'd', ['0','1'])
+        self.assert_simple([2], 0, 2, 'd', ['0','1', ''])
+        self.assert_simple([1,2], 1, 1, 'd', ['0'])
+        self.assert_simple([1,2], 1, 2, 'd', ['00','01', '0'])
+        self.assert_simple([1,2], 2, 2, 'd', ['00','01'])
+        self.assert_simple([1,2], 1, 2, 'b', ['0', '00','01'])
+        self.assert_simple([1,2], 1, 2, 'g', ['00', '01','0'])
         
     def assert_simple(self, stream, start, stop, step, target):
         result = [''.join(map(str, l)) 
@@ -111,10 +111,10 @@ class RepeatTest(TestCase):
         self.assert_mixin(r[1], [1,2], ['0'])
         self.assert_mixin(r[1:2], [1,2], ['00','01', '0'])
         self.assert_mixin(r[2], [1,2], ['00','01'])
-        self.assert_mixin(r[1:2:1], [1,2], ['0', '00','01'])
-        self.assert_mixin(r[1:2:-1], [1,2], ['00', '01','0'])
+        self.assert_mixin(r[1:2:'b'], [1,2], ['0', '00','01'])
+        self.assert_mixin(r[1:2:'d'], [1,2], ['00', '01','0'])
         try:        
-            self.assert_mixin(r[1::-2], [1,2,3], [])
+            self.assert_mixin(r[1::'x'], [1,2,3], [])
             assert False, 'expected error'
         except ValueError:
             pass
@@ -125,12 +125,12 @@ class RepeatTest(TestCase):
        
     def test_separator(self):
         basicConfig(level=DEBUG)
-        self.assert_separator('a', 1, 1, -1, ['a'])
-        self.assert_separator('a', 1, 1, 1, ['a'])
-        self.assert_separator('a,a', 1, 2, -1, ['a,a', 'a'])
-        self.assert_separator('a,a', 1, 2, 1, ['a', 'a,a'])
-        self.assert_separator('a,a,a,a', 2, 3, -1, ['a,a,a', 'a,a'])
-        self.assert_separator('a,a,a,a', 2, 3, 1, ['a,a', 'a,a,a'])
+        self.assert_separator('a', 1, 1, 'd', ['a'])
+        self.assert_separator('a', 1, 1, 'b', ['a'])
+        self.assert_separator('a,a', 1, 2, 'd', ['a,a', 'a'])
+        self.assert_separator('a,a', 1, 2, 'b', ['a', 'a,a'])
+        self.assert_separator('a,a,a,a', 2, 3, 'd', ['a,a,a', 'a,a'])
+        self.assert_separator('a,a,a,a', 2, 3, 'b', ['a,a', 'a,a,a'])
         
     def assert_separator(self, stream, start, stop, step, target):
         result = [''.join(l) 
@@ -140,12 +140,12 @@ class RepeatTest(TestCase):
     def test_separator_mixin(self):
         basicConfig(level=DEBUG)
         abc = Any('abc')
-        self.assert_separator_mixin(abc[1:1:-1,','], 'a', ['a'])
-        self.assert_separator_mixin(abc[1:1:1,','], 'a', ['a'])
-        self.assert_separator_mixin(abc[1:2:-1,','], 'a,b', ['a,b', 'a'])
-        self.assert_separator_mixin(abc[1:2:1,','], 'a,b', ['a', 'a,b'])
-        self.assert_separator_mixin(abc[2:3:-1,','], 'a,b,c,a', ['a,b,c', 'a,b'])
-        self.assert_separator_mixin(abc[2:3:1,','], 'a,b,c,a', ['a,b', 'a,b,c'])
+        self.assert_separator_mixin(abc[1:1:'d',','], 'a', ['a'])
+        self.assert_separator_mixin(abc[1:1:'b',','], 'a', ['a'])
+        self.assert_separator_mixin(abc[1:2:'d',','], 'a,b', ['a,b', 'a'])
+        self.assert_separator_mixin(abc[1:2:'b',','], 'a,b', ['a', 'a,b'])
+        self.assert_separator_mixin(abc[2:3:'d',','], 'a,b,c,a', ['a,b,c', 'a,b'])
+        self.assert_separator_mixin(abc[2:3:'b',','], 'a,b,c,a', ['a,b', 'a,b,c'])
 
     def assert_separator_mixin(self, match, stream, target):
         result = [''.join(map(str, l)) for (l, s) in match(stream)]
@@ -189,7 +189,7 @@ class CommitTest(BaseTest):
     
     def test_commit(self):
         self.assert_direct('abcd', 
-            (Any()[0::-1] + (Literal('d') | 
+            (Any()[0::'b'] + (Literal('d') | 
                              Literal('cd') + Commit() | 
                              Literal('bcd')) + Eof()).match_string(min_queue=100), 
             [['abcd'], ['abcd']])

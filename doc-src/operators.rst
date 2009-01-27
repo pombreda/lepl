@@ -2,7 +2,9 @@
 Operators
 =========
 
+
 .. index:: unsupported operand type, operators, BaseMatcher, SyntaxError
+.. _caveatsandlimitations:
 
 Caveats and Limitations
 -----------------------
@@ -124,6 +126,7 @@ Operator  Description
 ========  ===========
 
 
+.. _replacement:
 
 Replacement
 -----------

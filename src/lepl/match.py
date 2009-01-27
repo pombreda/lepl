@@ -33,6 +33,15 @@ from lepl.trace import LogMixin
 #class Matcher(metaclass=ABCMeta):
 Matcher = ABCMeta('Matcher', (object, ), {})
 
+GREEDY = 'g'
+'''Flag (splice increment) for inefficient, guaranteed greedy matching.'''
+NON_GREEDY = 'n'
+'''Flag (splice increment) for inefficient, guaranteed non-greedy matching.'''
+DEPTH_FIRST = 'd'
+'''Flag (splice increment) for efficient, quasi-greedy, matching (default).'''
+BREADTH_FIRST = 'b'
+'''Flag (splice increment) for efficient, quasi-non-greedy, matching.'''
+
 
 class BaseMatcher(StreamMixin, LogMixin, Matcher):
     '''
@@ -276,14 +285,14 @@ class BaseMatcher(StreamMixin, LogMixin, Matcher):
         
     def __getitem__(self, indices):
         '''
-        **self[start:stop:direction, separator, ...]** - Repetition and lists.
+        **self[start:stop:algorithm, separator, ...]** - Repetition and lists.
         
         This is a complex statement that modifies the current matcher so
         that it matches several times.  A separator may be specified
         (eg for comma-separated lists) and the results may be combined with
         "+" (so repeated matching of characters would give a word).
         
-        start:stop:direction
+        start:stop:algorithm
           This controls the number of matches made and the order in which
           different numbers of matches are returned.
           
@@ -294,21 +303,18 @@ class BaseMatcher(StreamMixin, LogMixin, Matcher):
             Repeat *start* to *stop* times (starting with as many matches
             as possible, and then decreasing as necessary).
             
-          [start:stop:direction]
-            Direction selects the algorithm for searching.  This is
-            equivalent to a tree search because at each match we can
-            either consume more of the stream (going deeper) or try
-            an alternative matcher (by backtracking the sub-matcher)
-            (going wider). 
+          [start:stop:algorithm]
+            Direction selects the algorithm for searching.
             
-            1
-              A breadth first search is used, which guarantees that the
-              number of matches returned will not decrease (ie will
-              monotonically increase) on backtracking.  This tries all
-              possible matches for the sub-matcher first (before repeating
-              calls to consume more of the stream).
+            'b' (BREADTH_FIRST)
+              A breadth first search is used, which tends to give shorter
+              matches before longer ones.  This tries all possible matches for 
+              the sub-matcher first (before repeating calls to consume more 
+              of the stream).  If the sub-matcher does not backtrack then this 
+              guarantees that the number of matches returned will not decrease 
+              (ie will monotonically increase) on backtracking.
               
-            0
+            'd' (DEPTH_FIRST)
               A depth first search is used, which tends to give longer
               matches before shorter ones.  This tries to repeats matches 
               with the sub-matcher, consuming as much of the stream as 
@@ -317,15 +323,22 @@ class BaseMatcher(StreamMixin, LogMixin, Matcher):
               that the number of matches returned will not increase (ie will
               monotonically decrease) on backtracking.
               
-            -1
+            'g' (GREEDY)
               An exhaustive search is used, which finds all results (by 
               breadth first search) and orders them by length before returning 
               them ordered from longest to shortest.  This guarantees that
               the number of matches returned will not increase (ie will
-              monotonically decrease) on backtracking.
+              monotonically decrease) on backtracking, but can consume a lot 
+              of resources.
+              
+            'n' (NON_GREEDY)
+              As for 'g' (GREEDY), but results are ordered shortest to 
+              longest.  This guarantees that the number of matches returned 
+              will not decrease (ie will monotonically increase) on 
+              backtracking, but can consume a lot of resources,
             
           Values may be omitted; the defaults are: *start* = 0, *stop* = 
-          infinity, *direction* = 0 (depth first search).
+          infinity, *algorithm* = 'd' (DEPTH_FIRST).
 
         separator
           If given, this must appear between repeated values.  Matched
@@ -345,16 +358,16 @@ class BaseMatcher(StreamMixin, LogMixin, Matcher):
         
         Word()[:,','] will match a comma-separated list of words.
         
-        value[:] or value[0:] or value[0::0] is a "greedy" match that,
+        value[:] or value[0:] or value[0::'d'] is a "greedy" match that,
         if value does not backtrack, is equivalent to the "*" in a regular
         expression.
-        value[::1] is the "non-greedy" equivalent (preferring as short a 
-        match as possible) and value[::-1] is greedy even when value does
+        value[::'n'] is the "non-greedy" equivalent (preferring as short a 
+        match as possible) and value[::'g'] is greedy even when value does
         provide alternative matches on backtracking.
         '''
         start = 0
         stop = None
-        step = 0
+        step = DEPTH_FIRST
         separator = None
         add = False
         if not isinstance(indices, tuple):
@@ -363,11 +376,11 @@ class BaseMatcher(StreamMixin, LogMixin, Matcher):
             if isinstance(index, int):
                 start = index
                 stop = index
-                step = -1
+                step = DEPTH_FIRST
             elif isinstance(index, slice):
                 start = index.start if index.start != None else 0
                 stop = index.stop if not open_stop(index) else None
-                step = index.step if index.step != None else 0
+                step = index.step if index.step != None else DEPTH_FIRST
             elif index == Ellipsis:
                 add = True
             elif separator is None:
@@ -512,7 +525,7 @@ class _Repeat(BaseMatcher):
     separator and the ability to combine results with "+" (**[::]**).
     ''' 
     
-    def __init__(self, matcher, start=0, stop=None, direction=0, separator=None):
+    def __init__(self, matcher, start=0, stop=None, algorithm='d', separator=None):
         '''
         Construct the modified matcher.
         
@@ -522,43 +535,48 @@ class _Repeat(BaseMatcher):
             The matcher to modify (a string is converted to a literal match).
         
           start, stop
-            Together these control how many times the matcher will repeat.
-          
-            If step is positive, repeat *start*, *start+step*, ... times,
-            with a maximum number of *stop* repetitions.
+            Together these place upper and lower limits (inclusive) on how
+            often a matcher can repeat.
             
-            If step is negative, repeat *stop*, *stop-step*, ... times
-            with a minimum number of *start* repetitions.
-            
-          direction
+          algorithm
             In the presence of global backtracking, repeated matching can
             be performed in a variety of ways.
             This parameter controls the sequence in which the matches are 
             generated.
-            The algorithm is selected by an integer:
+            The algorithm is selected by an sing character:
             
-              1 (counts up)
-                This selects a breadth first search of possible matches.
-                The number of matches increases monotonically (ie. never gets
-                smaller).
-                
-              0 (unpredictable, but tends to count down)
-                This selects a depth first search of possible matches.
-                In general, larger numbers of matches are found first, but
-                it is possible for the number of matches to increase or
-                decrease if the sub-matcher backtracks.
-                
-              -1 (counts down)
-                This selects an exhaustive search whose results are then 
-                ordered to guarantee that the number of matches decreases
-                monotonically (ie never gets larger).
-                
-                **Warning**: This will recurse indefinitely (until the
-                stack is exhausted) *without* returning any value if there 
-                is no limit to the number of repetitions via *any possible* 
-                combination of repeated matchers.
-                
-            The default is 0, which approximates the usual "greedy"
+              'b' (BREADTH_FIRST)
+                A breadth first search is used, which tends to give shorter
+                matches before longer ones.  This tries all possible matches for 
+                the sub-matcher first (before repeating calls to consume more 
+                of the stream).  If the sub-matcher does not backtrack then this 
+                guarantees that the number of matches returned will not decrease 
+                (ie will monotonically increase) on backtracking.
+              
+              'd' (DEPTH_FIRST)
+                A depth first search is used, which tends to give longer
+                matches before shorter ones.  This tries to repeats matches 
+                with the sub-matcher, consuming as much of the stream as 
+                possible, before backtracking to find alternative matchers.
+                If the sub-matcher does not backtrack then this guarantees
+                that the number of matches returned will not increase (ie will
+                monotonically decrease) on backtracking.
+              
+              'g' (GREEDY)
+                An exhaustive search is used, which finds all results (by 
+                breadth first search) and orders them by length before returning 
+                them ordered from longest to shortest.  This guarantees that
+                the number of matches returned will not increase (ie will
+                monotonically decrease) on backtracking, but can consume a lot 
+                of resources.
+              
+              'n' (NON_GREEDY)
+                As for 'g' (GREEDY), but results are ordered shortest to 
+                longest.  This guarantees that the number of matches returned 
+                will not decrease (ie will monotonically increase) on 
+                backtracking, but can consume a lot of resources,
+  
+            The default is 'd', which approximates the usual "greedy"
             behaviour of regular expressions, but is more predictable (and
             efficient) that the exhaustive search.
             
@@ -577,19 +595,19 @@ class _Repeat(BaseMatcher):
         if start is None: start = 0
         assert_type('The start index for Repeat or [...]', start, int)
         assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
-        assert_type('The index step (direction) for Repeat or [...]', direction, int)
+        assert_type('The algorithm/increment for Repeat or [...]', algorithm, str)
         if start < 0:
             raise ValueError('Repeat or [...] cannot have a negative start.')
         if stop != None and stop < start:
             raise ValueError('Repeat or [...] must have a stop '
                              'value greater than or equal to the start.')
-        if abs(direction) > 1:
-            raise ValueError('Repeat or [...] must have a step (direction) '
-                             'of -1, 0 or 1.')
+        if 'dbgn'.find(algorithm) == -1:
+            raise ValueError('Repeat or [...] must have a step (algorithm) '
+                             'of d, b, g or n.')
         self._start = start
         self._stop = stop
-        self._direction = direction
-        tag = '{0}:{1}:{2}'.format(self._start, self._start, self._direction)
+        self._algorithm = algorithm
+        tag = '{0}:{1}:{2}'.format(self._start, self._start, self._algorithm)
         if separator != None:
             tag += ','
             if isinstance(separator, str):
@@ -607,12 +625,12 @@ class _Repeat(BaseMatcher):
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
         '''
-        if self._direction > 0:
+        if self._algorithm == BREADTH_FIRST:
             return self.__breadth_first(stream)
-        elif self._direction == 0:
+        elif self._algorithm == DEPTH_FIRST:
             return self.__depth_first(stream)
         else:
-            return self.__exhaustive(stream)
+            return self.__exhaustive(stream, self._algorithm == GREEDY)
         
     def __breadth_first(self, stream):
         '''
@@ -648,19 +666,22 @@ class _Repeat(BaseMatcher):
         else:
             return self.__second
         
-    def __exhaustive(self, stream):
+    def __exhaustive(self, stream, greedy):
         '''
-        Implement the greedy, exhaustive search matching (negative step).
+        Implement the exhaustive search matching.
 
-        The only advantage of this over depth first is that it guarantees
-        longest first.
+        The only advantage of this over depth/breadth first is that it 
+        guarantees ordering.
         '''
         all = {}
         for (depth, results, stream) in self.__with_breadth(stream):
             if depth not in all:
                 all[depth] = []
             all[depth].append((results, stream))
-        for depth in reversed(list(all.keys())):
+        keys = list(all.keys())
+        keys.sort()
+        if greedy: keys = reversed(keys)
+        for depth in keys:
             for (result, stream) in all[depth]:
                 yield (result, stream)
                 
@@ -694,13 +715,14 @@ class _Repeat(BaseMatcher):
                 generator.close()
                 
 
-def Repeat(matcher, start=0, stop=None, direction=0, separator=None, add=False):
+def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST, 
+            separator=None, add=False):
     '''
     Extend `lepl.match._Repeat` with `lepl.match.Add` to match the
     functionality required by the [...] syntax in `lepl.match.BaseMatcher`.
     '''
     return (Add if add else Identity)(
-        _Repeat(matcher, start, stop, direction, separator)).tag('...')
+        _Repeat(matcher, start, stop, algorithm, separator)).tag('...')
                 
                 
 class And(BaseMatcher):

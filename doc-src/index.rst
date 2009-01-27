@@ -21,8 +21,9 @@ In this example a tree of objects is generated from an arithmetic expression::
 
   >>> expr   = Delayed()
   >>> number = Digit()[1:,...]                          > 'number'
+  >>> spaces = DropEmpty(Regexp(r'\s*'))
 
-  >>> with Separator(r'\s*'):
+  >>> with Separator(spaces):
   >>>     term    = number | '(' & expr & ')'           > Term
   >>>     muldiv  = Any('*/')                           > 'operator'
   >>>     factor  = term & (muldiv & term)[:]           > Factor
@@ -38,7 +39,6 @@ In this example a tree of objects is generated from an arithmetic expression::
    |   +- Term
    |   |   `- number '1'
    |   `- ' '
-   +- ''
    +- operator '+'
    +- ' '
    `- Factor
@@ -49,27 +49,22 @@ In this example a tree of objects is generated from an arithmetic expression::
        +- ' '
        `- Term
 	   +- '('
-	   +- ''
 	   +- Expression
 	   |   +- Factor
 	   |   |   +- Term
 	   |   |   |   `- number '3'
 	   |   |   `- ' '
-	   |   +- ''
 	   |   +- operator '+'
 	   |   +- ' '
 	   |   +- Factor
 	   |   |   +- Term
 	   |   |   |   `- number '4'
 	   |   |   `- ' '
-	   |   +- ''
 	   |   +- operator '-'
 	   |   +- ' '
 	   |   `- Factor
-	   |       +- Term
-	   |       |   `- number '5'
-	   |       `- ''
-	   +- ''
+	   |       `- Term
+	   |           `- number '5'
 	   `- ')'
 
 LEPL's *weakest* point is probably performance.  It is intended more for
@@ -89,8 +84,8 @@ Contents
    matchers
    operators
    nodes
-   resources
    errors
+   resources
    debugging
    style
    closing

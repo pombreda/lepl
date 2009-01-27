@@ -10,10 +10,10 @@ After reading this chapter you should have a better understanding of what
 matchers do and how they can be constructed.
 
 
-Matchers
---------
+.. index:: example
 
-.. index:: matchers
+First Example
+-------------
 
 The structure of a piece of text is described in LEPL using *matchers*.  A
 simple matcher might recognise a letter, digit or space.  More complex
@@ -47,13 +47,27 @@ from the string ``'andrew, 3333253'``.
 
 There's a lot going on here, some of which I will explain in later sections,
 but the most important thing to notice is that ``matcher`` was constructed
-from two simpler matchers --- ``Word()`` and ``Integer()``.  It is those two
-matchers that identify the values 'andrew' (a word) and '3333253' (an
-integer).
+from two simpler matchers [#]_ --- `Word()
+<../api/redirect.html#lepl.match.Word>`_ and `Integer()
+<../api/redirect.html#lepl.match.Integer>`_ [#]_.  It is those two matchers
+that identify the values 'andrew' (a word) and '3333253' (an integer).
+
+.. [#] In fact there are probably a dozen or so matchers involved here: the
+       ``,`` is converted into a matcher that matchers commas; the ``/``
+       construct new matchers from the matchers on either side with matchers
+       for spaces between them; most of the matchers I've just mentioned are
+       actually implemented using other matchers for single characters, or to
+       repeat values, or to join characters found together into a string...
+       Fortunately you don't need to know all this just to *use* a matcher.
+
+.. [#] Matcher names are linked to the API documentation which contains more
+       detail.
 
 
-Combinations
-------------
+.. index:: matchers, Word(), Integer()
+
+Matchers
+--------
 
 All matchers work in the same way: they take a *stream* of input and produce
 some results and a new stream as output (for now we use strings as simple
@@ -64,8 +78,9 @@ Generators are a fairly new part of Python, rather like lists.  All you need
 to know to use them is that, to read the value, you use the function
 ``next()``.
 
-We can see how this works with the simple generators ``Word()`` and
-``Integer()``::
+We can see how this works with the simple generators `Word()
+<../api/redirect.html#lepl.match.Word>`_ and `Integer()
+<../api/redirect.html#lepl.match.Integer>`_::
 
   >>> next( Word()('hello world') )
   (['hello'], ' world')
@@ -76,7 +91,7 @@ We can see how this works with the simple generators ``Word()`` and
 Hopefully you can see the result and the remaining stream in both cases.
 
 We can make a more complicated matcher from these by joining them together
-with ``And()``::
+with `And() <../api/redirect.html#lepl.match.And>`_::
 
   >>> next( And(Word(), Space(), Integer())('hello 123') )
   (['hello', ' ', '123'], '')
@@ -91,7 +106,8 @@ or even::
   >>> next( (Word() / Integer())('hello 123')) )
   (['hello', ' ', '123'], '')
 
-because ``&`` is shorthand for ``And()``, while ``/`` is similar, but allows
+because ``&`` is shorthand for `And()
+<../api/redirect.html#lepl.match.Word>`_, while ``/`` is similar, but allows
 optional spaces.
 
 Note how, in all the examples above, the results are contained in a list and
@@ -108,6 +124,8 @@ methods for simplifying the output::
   >>> (Word() / Integer()).parse_string('hello 123')
   ['hello', ' ', '123']
 
+
+.. index:: /, >, make_dict
 
 More Detail
 -----------
@@ -136,8 +154,9 @@ Since the ``>`` produces a matcher, we can test this at the command line::
   >>> next( (Integer() > 'phone')('3333253') )
   ([('phone', '3333253')], '')
 
-This makes ``make_dict`` easier to understand.  Python's standard ``dict()``
-will construct a dictionary from named pairs::
+This makes `make_dict <../api/redirect.html#lepl.node.make_dict>`_ easier to
+understand.  Python's standard ``dict()`` will construct a dictionary from
+named pairs::
 
   >>> dict([('name', 'andrew'), ('phone', '3333253')])
   {'phone': '3333253', 'name': 'andrew'}
@@ -148,15 +167,15 @@ And the results from ``name / ',' / phone`` include named pairs::
   ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], '')
 
 Now we know that ``>`` passes results to a function, so it looks like
-``make_dict`` is almost identical to ``dict``.  In fact, the only difference
-is that it strips out results that are not named pairs (in this case, the
-comma and space).
+`make_dict <../api/redirect.html#lepl.node.make_dict>`_ is almost identical to
+``dict``.  In fact, the only difference is that it strips out results that are
+not named pairs (in this case, the comma and space).
 
+
+.. index:: repetition, [], ~, Drop()
 
 Repetition
 ----------
-
-.. index:: repetition, [], ~
 
 Next we will extend the matcher so that we can process a list of several
 usernames and phone numbers.
@@ -193,8 +212,8 @@ also have been written as ``Drop(newline)`` --- another example of making a
 more complex matcher from simpler pieces.
 
 
-Extension
----------
+Single Dictionary
+-----------------
 
 The repeated matcher above returns a list of dicts.  But what we really want
 is a single dict that associates each username with a telephone number.
@@ -223,9 +242,11 @@ LEPL can be extended in several ways:
 * You can define and call functions to process results, as shown above.
 
 * You can write your own matchers (see the LEPL source for examples; they
-  should inherit from ``BaseMatch`` to take full advantage of the operator
-  syntax).
+  should inherit from `BaseMatcher
+  <../api/redirect.html#lepl.match.BaseMatcher>`_ to take full advantage of
+  the operator syntax).
 
-* You can even change the definition of operators (``&``, ``/`` etc).
+* You can even change the definition of operators (``&``, ``/`` etc; see
+  :ref:`replacement`).
 
 

@@ -2,11 +2,28 @@
 Style
 =====
 
+
+Operators are Matchers
+----------------------
+
 Remember that operators are just shorthand for matchers (``&`` instead of
-``And()`` etc)
+``And()`` etc).  You don't have to use operators --- see the discussion on
+:ref:`caveatsandlimitations`.
+
+
+.. _complexor:
+
+Use Or() With Complex Alternatives
+----------------------------------
 
 Use ``Or(..., ..., ...)`` for alternatives with productions.  The ``|`` syntax
 can lead to errors because it binds more tightly than ``>``.
+
+
+.. _applycase:
+
+``>`` Capitalised; ``>>`` lowercase
+-----------------------------------
 
 Nodes are typically made with constructors and invoked with ``>``, while the
 processing of results is usually done with mapped functions.  So ``>`` is
@@ -15,6 +32,9 @@ Noticing and following this convention can help avoid issues with the
 behaviour of `lepl.match.Apply` with ``raw=False`` (the default implementation
 of ``>``), which adds an extra level of nesting and is usually inappropriate
 for use with functions.
+
+``throw`` can be used with ``>>`` or ``>``.
+
 
 Imports
 -------

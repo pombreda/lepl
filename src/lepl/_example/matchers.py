@@ -27,7 +27,7 @@ print( next(generator) )
 print( next(generator) )
 #print( next(generator) )
 
-generator = Repeat(Any(), 3, None, 1)('12345')
+generator = Repeat(Any(), 3, None, 'b')('12345')
 print( next(generator) )
 print( next(generator) )
 print( next(generator) )

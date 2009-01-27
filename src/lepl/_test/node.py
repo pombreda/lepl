@@ -20,9 +20,9 @@ class NodeTest(TestCase):
         number      = Digit()[1:,...]                      > 'number'
         term        = (number | '(' / expression / ')')    > Term
         muldiv      = Any('*/')                            > 'operator'
-        factor      = (term / (muldiv / term)[0::-1])      > Factor
+        factor      = (term / (muldiv / term)[0::])        > Factor
         addsub      = Any('+-')                            > 'operator'
-        expression += (factor / (addsub / factor)[0::-1])  > Expression
+        expression += (factor / (addsub / factor)[0::])    > Expression
         
         ast = expression.parse_string('1 + 2 * (3 + 4 - 5)')
         print(ast[0])

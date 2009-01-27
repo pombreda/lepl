@@ -79,7 +79,8 @@ class GeneratorWrapper(LogMixin):
             self.__managed = True
         except:
             self.__managed = False
-        self._debug('Created {0}, managed: {1}'.format(self, self.__managed))
+        self.__repr = repr(match)
+        self._debug('Created {0!r}, managed: {1}'.format(self, self.__managed))
     
     @traced
     def __next__(self):
@@ -111,6 +112,9 @@ class GeneratorWrapper(LogMixin):
         
     def __str__(self):
         return self.__description
+    
+    def __repr__(self):
+        return self.__repr
 
 
 class GeneratorRef():
@@ -163,7 +167,7 @@ class GeneratorRef():
     def __str__(self):
         generator = self.__wrapper()
         if generator:
-            return '{0} ({1})'.format(generator, self.__last_known_epoch)
+            return '{0!r} ({1})'.format(generator, self.__last_known_epoch)
         else:
             return 'Empty ref'
     
@@ -247,6 +251,7 @@ class GeneratorControl(LogMixin):
         '''
         self._debug('Queue size: {0}/{1}'
                     .format(len(self.__queue), self.__min_queue))
+#        self._debug(self.__queue)
         # if we have space, simply save with no expiry
         if self.__min_queue == 0 or len(self.__queue) < self.__min_queue:
             self._debug('Free space, so add {0}'.format(wrapper_ref))

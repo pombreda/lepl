@@ -130,9 +130,10 @@ subsequent calls (backtracking)::
   StopIteration
 
 By default a depth--first search is used (giving the longest match first).
-Specifying an increment of 1 gives breadth--first search (shortest first)::
+Specifying an increment of ``'b'`` gives breadth--first search (shortest
+first)::
 
-  >>> generator = Repeat(Any(), 3, None, 1)('12345')
+  >>> generator = Repeat(Any(), 3, None, 'b')('12345')
   >>> next(generator)
   (['1', '2', '3'], '45')
   >>> next(generator)

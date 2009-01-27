@@ -50,7 +50,7 @@ parser = line.parse_string
 #                 ^
 #lepl.node.Error: unexpected text: four
 
-parser('1 + 2 ** (3 + 4 - 5)')[0]
+#parser('1 + 2 ** (3 + 4 - 5)')[0]
 #  File "<string>", line 1
 #    1 + 2 ** (3 + 4 - 5)
 #           ^
