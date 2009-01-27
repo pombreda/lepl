@@ -1,22 +1,29 @@
 
+.. index:: resource management
+.. _resources:
+
 Resource Management
 ===================
 
 
+.. index:: Stream, Core, memory, file, StreamMixin
+
 Streams
 -------
 
-LEPL can process simple strings and lists, but it can also use its own Stream
-class as a wrapper for the input.  There are two advantages to doing this:
+LEPL can process simple strings and lists, but it can also use its own `Stream
+<../api/redirect.html#lepl.stream.Stream>`_ class as a wrapper for the input.
+There are two advantages to doing this:
 
 #. When reading from a file, the stream will not keep more data in memory than
    is necessary, so files larger than the available memory can be processed.
 
-#. The stream provides access to the central Core instance, which supportsis
-   necessary for both :ref:`debugging` and :ref:`depthcontrol`.
+#. The stream provides access to the central `Core
+   <../api/redirect.html#lepl.core.Core>`_ instance, which is necessary for
+   both :ref:`debugging` and :ref:`depthcontrol`.
 
 Streams are most simply created by using the ``parse...`` and ``match...``
-methods that all matchers implement via `BaseMatcher
+methods that all matchers implement via `StreamMixin
 <../api/redirect.html#lepl.stream.StreamMixin>`_.
 
 

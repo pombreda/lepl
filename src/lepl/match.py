@@ -30,8 +30,10 @@ from lepl.support import assert_type, BaseGeneratorDecorator, open_stop
 from lepl.trace import LogMixin
 
 
+# Python 2.6
 #class Matcher(metaclass=ABCMeta):
 Matcher = ABCMeta('Matcher', (object, ), {})
+'''ABC used to identify matchers.'''
 
 GREEDY = 'g'
 '''Flag (splice increment) for inefficient, guaranteed greedy matching.'''

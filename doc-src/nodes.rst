@@ -7,8 +7,8 @@ Results
 Flat List
 ---------
 
-Simple declarations produce a single list of tokens (ignoring backtracking,
-which I will discuss elsewhere).  For example::
+Simple declarations produce a single list of tokens (ignoring
+:ref:`backtracking`).  For example::
 
   >>> from lepl import *
   
@@ -33,6 +33,7 @@ which I will discuss elsewhere).  For example::
 
 
 .. index:: s-expressions, list, nested lists
+.. _nestedlists:
 
 Nested Lists
 ------------
@@ -52,11 +53,17 @@ results.  With LEPL they are easy to construct with ``> list``::
   >>>     line    = expr & Eos()
   ['1', '+', '2', '*', ['3', '+', '4', '-', '5']]
 
+.. note::
+
+  ``list`` is just the usual Python constructor.
+
+
+.. index:: Node(), AST, parse tree, trees
 
 Trees
 -----
 
-LEPL also includes a simple base class that can be used to construct trees::
+LEPL includes a simple base class that can be used to construct trees::
 
   >>> class Term(Node): pass
   >>> class Factor(Node): pass
@@ -124,9 +131,8 @@ array of the original results (including spaces)::
   >>> [ast[i] for i in range(len(ast))]
   [Factor(...), '', ('operator', '+'), ' ', Factor(...)]
 
-But they also provide attribute access to the child nodes and named pairs.
-These are returned as lists, since sub--node types and names need not be
-unique::
+Nodes also provide attribute access to child nodes and named pairs.  These are
+returned as lists, since sub--node types and names need not be unique::
 
   >>> [(name, getattr(ast, name)) for name in ast.child_names()]
   [('operator', ['+']), ('Factor', [Factor(...), Factor(...)])]

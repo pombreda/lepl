@@ -3,11 +3,13 @@ Error Reporting
 ===============
 
 
+.. index:: errors
+
 Introduction
 ------------
 
 In some applications it is important, not only to parse correctly structured
-input, but also to give a helpful report when the input is incorrectly
+input, but also to give a helpful respones when the input is incorrectly
 structured.
 
 LEPL provides support for reporting errors in the input in two ways.  First,
@@ -25,6 +27,8 @@ the functionality already available within LEPL (in particular, Nodes and
 function invocation).  They should therefore be easy to extend to more complex
 schemes.
 
+
+.. index:: ^, make_error, **, throw, Error
 
 Example
 -------
@@ -89,15 +93,17 @@ Here is an example of both approaches in use::
   This example follows the :ref:`applycase` and :ref:`complexor` styles.
 
 
+.. index:: ^, Error, SyntaxError
+
 Operators, Functions and Classes
 --------------------------------
 
-=============  ========  ========
-Name           Type      Action
-=============  ========  ========
-``^``          Operator  Raises an exception, given a format string.  Formatting has the same named parameters as the KApply() matcher (results, stream_in, stream_out, core).
--------------  --------  --------
-``ErrorNode``  Class     Creates a parse tree node that can be used to trigger a later exception (``ErrorNode`` is a subclass of both ``Node`` and ``SyntaxError``).
--------------  --------  --------
-``throw``      Function  Walks the parse tree (typically this is a sub--tree associated with a matcher's result and ``throw`` is invoked by ``Apply()``) and raises the first ``ErrorNode`` found.
-=============  ========  ========
+=========  ========  ========
+Name       Type      Action
+=========  ========  ========
+``^``      Operator  Raises an exception, given a format string.  Formatting has the same named parameters as the `KApply()  <../api/redirect.html#lepl.match.KApply>`_ matcher (results, stream_in, stream_out, core).
+---------  --------  --------
+``Error``  Class     Creates a parse tree node that can be used to trigger a later exception (`Error <../api/redirect.html#lepl.node.Error>`_ is a subclass of both `Node <../api/redirect.html#lepl.node.Node>`_ and ``SyntaxError``).
+---------  --------  --------
+``throw``  Function  Walks the parse tree (typically this is a sub--tree associated with a matcher's result and `throw <../api/redirect.html#lepl.node.throw>`_ is invoked by `Apply() <../api/redirect.html#lepl.match.Apply>`_) and raises the first `Error <../api/redirect.html#lepl.node.Error>`_ found.
+=========  ========  ========

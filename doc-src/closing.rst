@@ -54,6 +54,8 @@ iteration) and allows the environmental cost of backtracking to be managed
 "stack"; the same mechanism can implement "cut").
 
 
+.. _backtracking:
+
 Search and Backtracking
 -----------------------
 
@@ -72,8 +74,8 @@ all the alternative parses for a given input::
 This shows that successive parses match less of the input with the first
 option, indicating that the matching is *greedy*.
 
-It is possible to have *non-greedy* (generous?) matching by specifying an
-array slice increment of ``'b'`` (or ``lepl.BREADTH_FIRST``)::
+*Non-greedy* (generous?) matching is achieved by specifying an array slice
+increment of ``'b'`` (or ``lepl.BREADTH_FIRST``)::
 
   >>> any = Any()[::'b',...]
   >>> split = any & any & Eos()
