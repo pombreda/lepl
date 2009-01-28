@@ -152,6 +152,10 @@ __all__ = [
         'Word',
         'Separator',
         'DropEmpty',
+        'GREEDY',
+        'NON_GREEDY',
+        'DEPTH_FIRST',
+        'BREADTH_FIRST',
         # node
         'Node',
         'make_dict',

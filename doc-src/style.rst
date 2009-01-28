@@ -9,19 +9,22 @@ Operators are Matchers
 ----------------------
 
 Remember that operators are just shorthand for matchers (``&`` instead of
-``And()`` etc).  You don't have to use operators --- see the discussion on
-:ref:`caveatsandlimitations`.
+`And() <../api/redirect.html#lepl.match.And>`_ etc).  You don't have to use
+operators --- see the discussion on :ref:`caveatsandlimitations`.
 
 
+.. index:: Or()
 .. _complexor:
 
 Use Or() With Complex Alternatives
 ----------------------------------
 
-Use ``Or(..., ..., ...)`` for alternatives with productions.  The ``|`` syntax
-can lead to errors because it binds more tightly than ``>``.
+Use `Or(..., ..., ...) <../api/redirect.html#lepl.match.Or>`_ for alternatives
+with productions.  The ``|`` syntax can lead to errors because it binds more
+tightly than ``>``.
 
 
+.. index:: Apply()
 .. _applycase:
 
 ``>`` Capitalised; ``>>`` lowercase
@@ -31,13 +34,14 @@ Nodes are typically made with constructors and invoked with ``>``, while the
 processing of results is usually done with mapped functions.  So ``>`` is
 followed by a Capitalized name, while ``>>`` is followed by a lowercase name.
 Noticing and following this convention can help avoid issues with the
-behaviour of `lepl.match.Apply` with ``raw=False`` (the default implementation
-of ``>``), which adds an extra level of nesting and is usually inappropriate
-for use with functions.
+behaviour of `Apply() <../api/redirect.html#lepl.match.Apply>`_ with
+``raw=False`` (the default implementation of ``>``), which adds an extra level
+of nesting and is usually inappropriate for use with functions.
 
 ``throw`` can be used with ``>>`` or ``>``.
 
 
+.. index:: Separator()
 .. _separator:
 
 Define Words Before Using Separator
@@ -64,7 +68,7 @@ Use Delayed() For Recursive Definitions
 Sometimes a grammar needs to refer to matchers before they are defined.  The
 `Delayed() <../api/redirect.html#lepl.match.Delayed>`_ matcher acts as a
 placeholder which can be passed to other matchers.  It can be defined later
-using `+=`::
+using ``+=``::
 
   >>> expr   = Delayed()
   >>> number = Digit()[1:,...]

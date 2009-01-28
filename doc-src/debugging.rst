@@ -1,27 +1,26 @@
 
+.. index:: debug, errors
 .. _debugging:
 
 Debugging
 =========
 
-.. index:: debug, errors
-
 When a parser fails to match some text it can be difficult (slow, frustrating
-work) to undertand why.  Fortunately, LEPL includes some features that can
-make life easier.
+work) to undertand why.  Fortunately, LEPL includes some features that make
+life easier.
 
-.. note:
+.. note::
 
-  This section does not describe "known errors" (for example, generating an
+  This section does not describe *known errors* (for example, generating an
   error message for the user when they enter text that is wrong in an expected
-  way).  That issue is addressed in ....  What is discussed here are the
-  "unknown errors" you face when a parser fails to work with good input.
+  way).  That issue is addressed in :ref:`errors`.  What is discussed here are
+  the *unknown errors* you face when a parser fails to work with good input.
 
+
+.. index:: longest match, print_longest()
 
 Deepest Matches
 ---------------
-
-.. index:: longest match, print_longest()
 
 It is often useful to know what the last successful match was before the
 parser failed.  More exactly, because backtracking will probably find other
@@ -42,80 +41,80 @@ about the longest match::
   >>> matcher = line[0:,~Newline()]
   >>> stream = Stream.from_string('andrew, 3333253\n bob, 12345', memory=(4,2,2))
   >>> next(matcher(stream))
-  ([{'phone': '3333253', 'name': 'andrew'}], Chunk('andrew, 3333253\n'...)[15:])
-
+  ([{'phone': '3333253', 'name': 'andrew'}], Chunk('andrew, 3333253\n')[15:])
+  
   >>> stream.core.bb.print_longest()
   Up to 4 matches before and including longest match:
-    119  Literal('\n')          15:'\n bob,'...   ['\n']
-    120  Or                     15:'\n bob,'...   ['\n']
-    121  Apply(Drop)            15:'\n bob,'...   [[[]]]
-    122  Any(' \t')             16:' bob, '...   [' ']
+     91  Literal('\n')                    1.15  (00015) '\n bob,...'   ['\n']
+     92  Or                               1.15  (00015) '\n bob,...'   ['\n']
+     93  Apply(Drop)                      1.15  (00015) '\n bob,...'   []
+     94  Any(' \t\n\r\x0b\x0c')           2.0   (00016) ' bob, ...'   [' ']
   Up to 2 failures following longest match:
-    123  Lookahead              16:' bob, '...   fail
-    124  And                    16:' bob, '...   fail
+     95  Lookahead(~)                     2.0   (00016) ' bob, ...'   fail
+     96  And                              2.0   (00016) ' bob, ...'   fail
   Up to 2 successful matches following longest match:
-    137  Repeat(1::,...)         8:'333325'...   ['3', '3', '3', '3', '2', '5']
-    138  Apply(Add)              8:'333325'...   [['333325']]
-  Epoch  Matcher                 Stream          Result
+    109  _Repeat(...)                     1.0   (00000) 'andrew...'   [{'phone': '3333253', 'name': 'andrew'}]
+  Epoch  Matcher                       Line.Chr (Chars) Stream        Result
 
 The left column (Epoch) is a counter that increases with time.  The next
-column is that matcher, which may also display some extra useful information.
-After that comes the stream (character offset and a sample of the next text to
-match).  Finally, on the right, is the result or, on failure, "fail".
+column is the matcher, which may include extra information within ``()``.
+After that comes the stream (line and character, then character offset, then a
+sample of the next text to match).  Finally, on the right, is the result or,
+on failure, "fail".
 
-Lines are generated "at the end" of matching, so the innermost of a set of
-nested matchers is shown first.
+Lines are generated *after* of matching, so the innermost of a set of nested
+matchers is shown first.
+
+The number of entries displayed is controlled by the ``memory`` parameter
+supplied to the `Stream <../api/redirect.html#lepl.stream.Stream>`_.
 
 Looking at the output we can see that the longest match was a whitespace,
-presumably associated with the ``Lookahead`` failure.  So "anything but a
-whitespace" failed, which is the likely definition of ``Word``.  Comparing
-that with our grammar, we can see that ``name`` is failing because of the
-space before "bob".
+presumably associated with the `Lookahead()
+<../api/redirect.html#lepl.match.Lookahead>`_ that fails immediately
+afterwards.  So "anything but a whitespace" failed, which is the likely
+definition of `Word() <../api/redirect.html#lepl.match.Word>`_.  Comparing
+that with our grammar, we can see (with a little practice) that ``name`` is
+failing because of the space before "bob".
 
+
+.. index:: execution trace, Trace(), logging
 
 Trace Output
 ------------
 
-.. index:: trace, Trace(), logging
-
-The same matching data can also be displayed to the logs with the ``Trace``
-matcher.  This takes a matcher as an argument, along with some optional text.
-Tracing is then enabled when the selected matcher is called::
+The same data can also be displayed to the logs with the `Trace()
+<../api/redirect.html#lepl.match.Trace>`_ matcher.  This takes a matcher as an
+argument, along with some optional text.  Tracing is then enabled when the
+selected matcher is called::
 
   >>> from logging import basicConfig, INFO
-
+  
   >>> basicConfig(level=INFO)
   >>> name    = Word()                   >= 'name'
   >>> phone   = Trace(Integer(), 'here') >= 'phone'
   >>> line    = name / ',' / phone       >= make_dict
   >>> matcher = line[0:,~Newline()]
   >>> matcher.parse_string('andrew, 3333253\n bob, 12345')
-  INFO:lepl.trace.BlackBox:   95  Empty(+here)            8:'333325'...   []
-  INFO:lepl.trace.BlackBox:   96  Any('+-')               8:'333325'...   fail
-  INFO:lepl.trace.BlackBox:   97  Repeat(0:1:)            8:'333325'...   []
-  INFO:lepl.trace.BlackBox:   98  Any('0123456789')       8:'333325'...   ['3']
-  INFO:lepl.trace.BlackBox:   99  Any('0123456789')       9:'333253'...   ['3']
-  INFO:lepl.trace.BlackBox:  100  Any('0123456789')      10:'33253\n'...   ['3']
-  INFO:lepl.trace.BlackBox:  101  Any('0123456789')      11:'3253\n '...   ['3']
-  INFO:lepl.trace.BlackBox:  102  Any('0123456789')      12:'253\n b'...   ['2']
-  INFO:lepl.trace.BlackBox:  103  Any('0123456789')      13:'53\n bo'...   ['5']
-  INFO:lepl.trace.BlackBox:  104  Any('0123456789')      14:'3\n bob'...   ['3']
-  INFO:lepl.trace.BlackBox:  105  Any('0123456789')      15:'\n bob,'...   fail
-  INFO:lepl.trace.BlackBox:  106  Any('0123456789')      14:'3\n bob'...   fail
-  INFO:lepl.trace.BlackBox:  107  Any('0123456789')      13:'53\n bo'...   fail
-  INFO:lepl.trace.BlackBox:  108  Any('0123456789')      12:'253\n b'...   fail
-  INFO:lepl.trace.BlackBox:  109  Any('0123456789')      11:'3253\n '...   fail
-  INFO:lepl.trace.BlackBox:  110  Any('0123456789')      10:'33253\n'...   fail
-  INFO:lepl.trace.BlackBox:  111  Any('0123456789')       9:'333253'...   fail
-  INFO:lepl.trace.BlackBox:  112  Any('0123456789')       8:'333325'...   fail
-  INFO:lepl.trace.BlackBox:  113  Repeat(1::,...)         8:'333325'...   ['3', '3', '3', '3', '2', '5', '3']
-  INFO:lepl.trace.BlackBox:  114  Apply(Add)              8:'333325'...   [['3333253']]
-  INFO:lepl.trace.BlackBox:  115  And                     8:'333325'...   [['3333253']]
-  INFO:lepl.trace.BlackBox:  116  Apply(Add)              8:'333325'...   [[['3333253']]]
-  INFO:lepl.trace.BlackBox:  117  Empty(-here)            8:'333325'...   []
-  ...
+  INFO:lepl.trace.BlackBox:   74  Empty(+phone)                    1.8   (00008) '333325...'   []
+  INFO:lepl.trace.BlackBox:   75  Any('+-')                        1.8   (00008) '333325...'   fail
+  INFO:lepl.trace.BlackBox:   76  _Repeat(...)                     1.8   (00008) '333325...'   []
+  INFO:lepl.trace.BlackBox:   77  Any('0123456789')                1.8   (00008) '333325...'   ['3']
+  INFO:lepl.trace.BlackBox:   78  Any('0123456789')                1.9   (00009) '333253...'   ['3']
+  INFO:lepl.trace.BlackBox:   79  Any('0123456789')                1.10  (00010) '33253\n...'   ['3']
+  INFO:lepl.trace.BlackBox:   80  Any('0123456789')                1.11  (00011) '3253\n ...'   ['3']
+  INFO:lepl.trace.BlackBox:   81  Any('0123456789')                1.12  (00012) '253\n b...'   ['2']
+  INFO:lepl.trace.BlackBox:   82  Any('0123456789')                1.13  (00013) '53\n bo...'   ['5']
+  INFO:lepl.trace.BlackBox:   83  Any('0123456789')                1.14  (00014) '3\n bob...'   ['3']
+  INFO:lepl.trace.BlackBox:   84  Any('0123456789')                1.15  (00015) '\n bob,...'   fail
+  INFO:lepl.trace.BlackBox:   85  _Repeat(1:1:d)                   1.8   (00008) '333325...'   ['3', '3', '3', '3', '2', '5', '3']
+  INFO:lepl.trace.BlackBox:   86  Apply(...)                       1.8   (00008) '333325...'   ['3333253']
+  INFO:lepl.trace.BlackBox:   87  And                              1.8   (00008) '333325...'   ['3333253']
+  INFO:lepl.trace.BlackBox:   88  Apply(Add)                       1.8   (00008) '333325...'   ['3333253']
+  INFO:lepl.trace.BlackBox:   89  Empty(-phone)                    1.8   (00008) '333325...'   []
+  [{'phone': '3333253', 'name': 'andrew'}]
 
 
+.. _epoch:
 
 Epoch
 -----

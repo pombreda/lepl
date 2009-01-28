@@ -1,4 +1,6 @@
 
+.. _errors:
+
 Error Reporting
 ===============
 
