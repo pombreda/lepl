@@ -1490,8 +1490,16 @@ def Word(chars=AnyBut(Whitespace()), body=None):
  
 
 class Separator(Override):
+    '''
+    Redefine [] and & to include the given matcher as a separator (so it will
+    be used between list items and between matchers separated by the & 
+    operator)
+    '''
     
     def __init__(self, separator):
+        '''
+        If the separator is a string it is coerced to `lepl.match.Regexp`.
+        '''
         separator = coerce(separator, Regexp)
         and_ = lambda a, b: And(a, separator, b)
         def repeat(m, st=0, sp=None, d=0, s=None, a=False):
@@ -1500,6 +1508,13 @@ class Separator(Override):
         super(Separator, self).__init__(and_=and_, repeat=repeat)
         
 def DropEmpty(matcher):
+    '''
+    Drop results if they are empty (ie if they are False in Python).
+    
+    This will drop empty strings and lists.  It will also drop
+    `lepl.node.Node` instances if they are empty (since the length is then
+    zero).
+    '''
     def drop(results):
         return [result for result in results if result]
     return Apply(matcher, drop, raw=True)

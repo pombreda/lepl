@@ -34,13 +34,13 @@ Generator Management
 
 .. warning::
 
-  The functionality to limit the number of generators described in the
-  following sections is not well understood.  The implementation is more
-  complex than I would like and during development some unit tests changed
-  results in a way that I cannot explain.
+  The functionality to limit the number of generators is not well understood.
+  The implementation is more complex than I would like and during development
+  some unit tests changed results in a way that I cannot explain.
 
-  By default these features are disabled --- the depth of searches is
-  unrestricted.
+  By default the number of generators is unrestricted, but references to
+  generators are stored.  To completely disable the tracking of generators set
+  the ``min_queue`` parameter (described below) to ``None``.
 
 :ref:`backtracking` within LEPL is implemented using generators.  These are
 semi--autonomous *loop--like* blocks of code that can be paused and restarted.
@@ -145,8 +145,9 @@ The `Commit <../api/redirect.html#lepl.match.Commit>`_ matcher does this: it
 discards all non--active generators from the `Core
 <../api/redirect.html#lepl.core.Core>`_.
 
-To enable `Commit <../api/redirect.html#lepl.match.Commit>`_ the ``min_queue``
-parameter must be set.  If no :ref:`limiting` is needed, then a value of 0
-(zero) should be used.
+For `Commit <../api/redirect.html#lepl.match.Commit>`_ to work the `Core
+<../api/redirect.html#lepl.core.Core>`_ must maintain references to
+generators.  This is true by default, when the ``min_queue`` value is 0, which
+stores references but does not cause :ref:`limiting`.
 
 If this is useful, I'd really appreciate a good, short example to put here.

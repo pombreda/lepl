@@ -19,8 +19,8 @@ class Core():
       the form '<type>').
     
     **gc** 
-      The `lepl.resources.GeneratorControl` instance that monitors 
-      backtracking state.
+      The `lepl.resources.GeneratorControl` instance that stores
+      references to generators.
     
     **description_length**
       The amount of text to take from the stream when printing descriptions 
@@ -40,7 +40,7 @@ class Core():
         
           min_queue
             The minimum length of the queue used to store backtrack
-            state.  Legal values include:
+            state.  Legal values are:
             
             0 (zero, the default)
               The core will monitor backtracking state, but will not force

@@ -3,24 +3,19 @@
 LEPL is a parser library written in Python.
   
 This is the API documentation; the module index is at the bottom of this page.  
-There is also a `manual <../manual/index.html>`_ which explains how to use the 
-library in more detail.
+There is also a `manual <../manual/index.html>`_ which gives a higher level
+overview. 
 
 The source and documentation can be downloaded from the `LEPL website
 <http://www.acooke.org/lepl>`_.
 
-**Note** - LEPL is written in Python 3, which is not yet fully supported by
-the tool that generates this documentation.  A s a result, some small, 
-auto-generated details may contain slight errors (for example, constructor
-chaining is reported as overriding).
 
 Example
 -------
 
 A simple example of how to use LEPL::
 
-    from lepl.match import *
-    from lepl.node import Node
+    from lepl import *
     
     # For a simpler result these could be replaced with 'list', giving
     # an AST as a set of nested lists 
@@ -29,21 +24,25 @@ A simple example of how to use LEPL::
     class Term(Node): pass
     class Factor(Node): pass
     class Expression(Node): pass
-    
+        
     def parse_expression(text):
         
         # Here we define the grammar
         
         # A delayed value is defined later (see last line in block) 
-        expression  = Delayed()
-        number      = Digit()[1:,...]                   > 'number'
-        term        = (number | '(' / expression / ')') > Term
-        muldiv      = Any('*/')                         > 'operator'
-        factor      = (term / (muldiv / term)[0:])      > Factor
-        addsub      = Any('+-')                         > 'operator'
-        expression += (factor / (addsub / factor)[0:])  > Expression
-        
-        # parse_string returns a list of tokens, but expression 
+        expr   = Delayed()
+        number = Digit()[1:,...]                        > 'number'
+        spaces = DropEmpty(Regexp(r'\s*'))
+        # Allow spaces between items
+        with Separator(spaces):
+            term    = number | '(' & expr & ')'         > Term
+            muldiv  = Any('*/')                         > 'operator'
+            factor  = term & (muldiv & term)[:]         > Factor
+            addsub  = Any('+-')                         > 'operator'
+            expr   += factor & (addsub & factor)[:]     > Expression
+            line    = Trace(expr) & Eos()
+    
+        # parse_string returns a list of tokens, but expr 
         # returns a single value, so take the first entry
         return expression.parse_string(text)[0]
     
@@ -84,6 +83,7 @@ Running this gives the result::
              |       `- Term
              |           `- number '5'
              `- ')'
+
 
 Generating Documentation
 ------------------------
