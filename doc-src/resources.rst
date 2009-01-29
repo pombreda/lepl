@@ -131,7 +131,7 @@ the ``min_queue`` is set to a very low level generators are discarded whenever
 possible, making backtracking impossible and providing just a single match.
 
 
-.. index:: cut, prolog, min_queue
+.. index:: cut, prolog, min_queue, Commit()
 .. _committing:
 
 Committing
@@ -141,13 +141,15 @@ An alternative to the above, automatic management of generators, is to
 explicitly remove non--active generators as part of the search process.  This
 is similar to Prolog's *cut*, I believe.
 
-The `Commit <../api/redirect.html#lepl.match.Commit>`_ matcher does this: it
+The `Commit() <../api/redirect.html#lepl.match.Commit>`_ matcher does this: it
 discards all non--active generators from the `Core
 <../api/redirect.html#lepl.core.Core>`_.
 
-For `Commit <../api/redirect.html#lepl.match.Commit>`_ to work the `Core
+For `Commit() <../api/redirect.html#lepl.match.Commit>`_ to work the `Core
 <../api/redirect.html#lepl.core.Core>`_ must maintain references to
 generators.  This is true by default, when the ``min_queue`` value is 0, which
 stores references but does not cause :ref:`limiting`.
+
+See also `First() <../api/redirect.html#lepl.match.First>`_.
 
 If this is useful, I'd really appreciate a good, short example to put here.

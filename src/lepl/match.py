@@ -981,12 +981,12 @@ class Lookahead(BaseMatcher):
 
 class Apply(BaseMatcher):
     '''
-    Apply an arbitrary function to the results of the matcher (**>=**, ***=**).
+    Apply an arbitrary function to the results of the matcher (**>**, **\***).
     
     The function should expect a list and can return any value (it should
     return a list if ``raw=True``).
      
-    It can be used indirectly by placing ``>=`` (or ``*=`` to set ``args=True``)
+    It can be used indirectly by placing ``>`` (or ``*`` to set ``args=True``)
     to the right of the matcher.    
     '''
 
@@ -1055,7 +1055,7 @@ class Apply(BaseMatcher):
             
 class KApply(BaseMatcher):
     '''
-    Apply an arbitrary function to named arguments (******).
+    Apply an arbitrary function to named arguments (**\****).
     The function should typically expect and return a list.
     It can be used indirectly by placing ``**=`` to the right of the matcher.    
     '''
@@ -1310,8 +1310,8 @@ Match one or more instances of a matcher (**[1:]**)
 def Map(matcher, function):
     '''
     Apply an arbitrary function to each of the tokens in the result of the 
-    matcher (**>>=**).  If the function is a name, named pairs are created 
-    instead.  It can be used indirectly by placing ``>>=`` to the right of the 
+    matcher (**>>**).  If the function is a name, named pairs are created 
+    instead.  It can be used indirectly by placing ``>>`` to the right of the 
     matcher.    
     '''
     # list() necessary so we can use '+' on result
@@ -1480,8 +1480,8 @@ def Word(chars=AnyBut(Whitespace()), body=None):
      They can also specify matchers, which typically should match only a
      single character.
      
-     So Word(Upper(), Lower()) would match names that being with an upper
-     case letter, for example, while Word(AnyBut(Space())) (the default)
+     So ``Word(Upper(), Lower())`` would match names that being with an upper
+     case letter, for example, while ``Word(AnyBut(Space()))`` (the default)
      matches any sequence of non-space characters. 
      '''
      chars = coerce(chars, Any)
@@ -1491,7 +1491,7 @@ def Word(chars=AnyBut(Whitespace()), body=None):
 
 class Separator(Override):
     '''
-    Redefine [] and & to include the given matcher as a separator (so it will
+    Redefine ``[]`` and ``&`` to include the given matcher as a separator (so it will
     be used between list items and between matchers separated by the & 
     operator)
     '''
@@ -1509,7 +1509,7 @@ class Separator(Override):
         
 def DropEmpty(matcher):
     '''
-    Drop results if they are empty (ie if they are False in Python).
+    Drop results if they are empty (ie if they are ``False`` in Python).
     
     This will drop empty strings and lists.  It will also drop
     `lepl.node.Node` instances if they are empty (since the length is then

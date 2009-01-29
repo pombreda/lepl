@@ -166,3 +166,5 @@ __all__ = [
         'throw',
         # stream
         'Stream']
+
+__version__ = '1.0b1'

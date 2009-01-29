@@ -1,6 +1,6 @@
 
 '''
-Library routines / utilities.
+Library routines / utilities (some unused).
 '''
 
 
@@ -67,6 +67,9 @@ class CircularFifo():
 
 
 class BaseGeneratorDecorator(object):
+    '''
+    Base class for wrapping generators.
+    '''
     
     def __init__(self, generator):
         super(BaseGeneratorDecorator, self).__init__()

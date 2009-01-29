@@ -1,13 +1,16 @@
 
 '''
-We can control resource consumption by closing generators - the problem is
-which generators to close?
+Manage resources.
+
+We can attempt to control resource consumption by closing generators - the 
+problem is which generators to close?
 
 At first it seems that the answer is going to be connected to tree traversal,
 but after some thought it's not so clear exactly what tree is being traversed,
 and how that identifies what generators should be closed.  In particular, an 
 "imperative" implementation with generators does not have the same meaning of 
-"depth" as a recursive functional implementation.
+"depth" as a recursive functional implementation (but see the related 
+discussion in the `manual <../manual/closing.html#search-and-backtracking>`_).
 
 A better approach seems to be to discard those that have not been used "for a
 long time".  A variation on this - keep a maximum number of the youngest 
@@ -26,7 +29,7 @@ damaging performance too much.  The aim is not to control parse results by
 excluding certain matches.  For efficiency, the queue length is increased 
 (doubled) whenever the queue is filled by active generators.
 
-For the control of parse results see the Commit() matcher.
+For the control of parse results see the `lepl.match.Commit()` matcher.
 '''
 
 from heapq import heappushpop, heappop, heappush
@@ -251,7 +254,6 @@ class GeneratorControl(LogMixin):
         '''
         self._debug('Queue size: {0}/{1}'
                     .format(len(self.__queue), self.__min_queue))
-#        self._debug(self.__queue)
         # if we have space, simply save with no expiry
         if self.__min_queue == 0 or len(self.__queue) < self.__min_queue:
             self._debug('Free space, so add {0}'.format(wrapper_ref))
@@ -276,6 +278,8 @@ class GeneratorControl(LogMixin):
                     wrapper_ref = candidate_ref
             # if we are here, queue is too small
             heappush(self.__queue, wrapper_ref)
+            # this is currently 1 too small, and zero means unlimited, so
+            # doubling should always be sufficient.
             self.min_queue = self.min_queue * 2
             self._warn('Queue is too small - extending to {0}'
                        .format(self.min_queue))

@@ -1,6 +1,6 @@
 
 '''
-A stream interface to the parsed string, implemented as a linked list.
+A stream interface to the input, implemented using singly linked lists.
 '''
 
 
@@ -12,6 +12,8 @@ from lepl.support import open_stop
 
 class Stream():
     '''
+    A wrapper for the input data.
+    
     This serves two purposes.  First, it wraps the central, persistent store
     for things like debug info and backtrace stack management while doing a 
     parse.  Second, it provides moderately space-efficient access to the string 
@@ -64,6 +66,7 @@ class Stream():
     
     def __init__(self, chunk, offset=0, core=None):
         '''
+        Create a stream, given the appropriate chunk and offset.
         '''
         self.__chunk = chunk
         self.offset = offset
@@ -118,7 +121,10 @@ class Stream():
         
 class Chunk(object):
     '''
-    A linked list (cons cell) of lines from the stream. 
+    A linked list (cons cell) of lines from the stream.
+    
+    `lepl.stream.Stream()` is a pointer to a Chunk that includes an offset;
+    the Chunks form a singly linked list that contains the input data.
     '''
     
     def __init__(self, stream, distance=0, lineno=1, core=None, **options):
@@ -298,32 +304,33 @@ class StreamMixin(object):
     
     def match_string(self, **options):
         '''
-        Create a parser for a string.  For options see lepl.core.Core.
+        Create a parser for a string.  For options see `lepl.core.Core`.
         '''
         return lambda text: self(Stream.from_string(text, **options))
 
     def match_path(self, **options):
         '''
-        Create a parser for a file from a given path.  For options see lepl.core.Core.
+        Create a parser for a file from a given path.  For options see 
+        `lepl.core.Core`.
         '''
         return lambda path: self(Stream.from_path(path, **options))
 
     def match_list(self, **options):
         '''
-        Create a parser for a list of values.  For options see lepl.core.Core.
+        Create a parser for a list of values.  For options see `lepl.core.Core`.
         '''
         return lambda list_: self(Stream.from_list(list_, **options))
 
     def match_file(self, **options):
         '''
-        Create a parser for a file.  For options see lepl.core.Core.
+        Create a parser for a file.  For options see `lepl.core.Core`.
         '''
         return lambda file_: self(Stream.from_string(file_, **options))
 
     def parse_string(self, text, **options):
         '''
         Parse a string, returning only a single result.  
-        For options see lepl.core.Core.
+        For options see `lepl.core.Core`.
         '''
         try:
             return next(self(Stream.from_string(text, **options)))[0]
@@ -333,20 +340,20 @@ class StreamMixin(object):
     def parse_path(self, path, **options):
         '''
         Parse a file from a given path, returning only a single result.  
-        For options see lepl.core.Core.
+        For options see `lepl.core.Core`.
         '''
         return next(self(Stream.from_path(path, **options)))[0]
 
     def parse_list(self, list_, **options):
         '''
         Parse a list of values, returning only a single result.  
-        For options see lepl.core.Core.
+        For options see `lepl.core.Core`.
         '''
         return next(self(Stream.from_list(list_, **options)))[0]
 
     def parse_file(self, file_, **options):
         '''
         Parse a file, returning only a single result.  
-        For options see lepl.core.Core.
+        For options see `lepl.core.Core`.
         '''
         return next(self(Stream.from_string(file_, **options)))[0]

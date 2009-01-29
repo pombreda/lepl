@@ -60,6 +60,21 @@ after.
   >>>     sentence = word[1:]
 
 
+Explicitly Exclude Spaces
+-------------------------
+
+By default, repetition in LEPL is greedy.  This means that, no matter what
+`Separator() <../api/redirect.html#lepl.match.Separator>`_ is used, `Any()[:]
+<../api/redirect.html#lepl.match.Any>`_ will swallow the *entire* input.
+
+So handling spaces in a grammar takes two steps:
+
+1. Exclude the spaces from matchers that produce results.
+
+2. Use `Separator() <../api/redirect.html#lepl.match.Separator>`_ to "mop up"
+   the input that remains.
+
+
 .. index:: Delayed()
 
 Use Delayed() For Recursive Definitions

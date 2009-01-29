@@ -100,7 +100,7 @@ class TreeExample(Example):
             return [ast[i] for i in range(len(ast))]
                 
         def example3():
-            return [(name, getattr(ast, name)) for name in ast.child_names()]
+            return [(name, getattr(ast, name)) for name in dir(ast)]
         
         def example4():
             return ast.Factor[1].Term[0].number[0]
@@ -150,5 +150,5 @@ class TreeExample(Example):
                     (example2b, 
 "[Factor(...), '', ('operator', '+'), ' ', Factor(...)]"),
                     (example3, 
-"[('operator', ['+']), ('Factor', [Factor(...), Factor(...)])]"),
+"[('Factor', [Factor(...), Factor(...)]), ('operator', ['+'])]"),
                     (example4, '2')])

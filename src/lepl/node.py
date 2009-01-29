@@ -1,17 +1,25 @@
 
+'''
+Support for structuring results.
+'''
+
 from collections import Iterable, Mapping, deque
 
 from lepl.trace import LogMixin
 
-'''
-A base class for AST nodes.  This is designed to be applied to a list of 
-results, via ">".  If the list contains labelled pairs "(str, value)" then
-these are added as (list) attributes; similarly for Node subclasses.
-'''
 
 class Node(LogMixin):
+    '''
+    A base class for AST nodes.  This is designed to be applied to a list of 
+    results, via ``>``.  If the list contains labelled pairs ``(str, value)`` 
+    then these are added as (list) attributes; similarly for Node subclasses.
+    '''
     
     def __init__(self, args):
+        '''
+        Expects a single list of arguments, as will be received if invoked with
+        the ``>`` operator.
+        '''
         super(Node, self).__init__()
         self.__args = args
         self.__named_args = {}
@@ -29,8 +37,16 @@ class Node(LogMixin):
                 pass
         self._info('{0}'.format(self))
         
-    def child_names(self):
-        return self.__named_args.keys()
+    def __dir__(self):
+        '''
+        The names of all the attributes constructed from the results.
+        
+        I realise that this may break some assumptions necessary for 
+        introspection, but I can't find any other appropriate way to expose
+        this information (I want to avoid using a named method as that will
+        obscure a similarly named child).
+        '''
+        return list(self.__named_args.keys())
     
     def __getattr__(self, name):
         if name in self.__named_args:
@@ -74,6 +90,11 @@ class Node(LogMixin):
 
 
 def make_dict(contents):
+    '''
+    Construct a dict from a list of named pairs (other values in the list
+    will be discarded).  Invoke with ``>`` after creating named pairs with
+    ``> string``.
+    '''
     return dict(entry for entry in contents
                  if isinstance(entry, tuple) 
                  and len(entry) == 2
@@ -81,12 +102,22 @@ def make_dict(contents):
 
 
 def join_with(separator=''):
+    '''
+    Join results together (via separator.join()) into a single string.
+    
+    Invoke as ``> join_with(',')``, for example.
+    '''
     def fun(results):
         return separator.join(results)
     return fun
     
 
 def make_error(msg):
+    '''
+    Create an error node using a format string.
+    
+    Invoke as ``** make_error('bad results: {results}')``, for example.
+    '''
     def fun(stream_in, stream_out, core, results):
         return Error(results,
             *_syntax_error_args(msg, stream_in, stream_out, core, results))
@@ -94,6 +125,9 @@ def make_error(msg):
 
 
 def _syntax_error_args(msg, stream_in, stream_out, core, results):
+    '''
+    Helper function for constructing format dictionary.
+    '''
     try:
         filename = core.source
         (lineno, offset) = stream_in.location()
@@ -117,6 +151,9 @@ def _syntax_error_args(msg, stream_in, stream_out, core, results):
 
 
 def raise_error(msg):
+    '''
+    As `lepl.node.make_error()`, but also raise the result.
+    '''
     def fun(stream_in, stream_out, core, results):
         error = make_error(msg)(stream_in, stream_out, core, results)
         raise error
@@ -124,6 +161,12 @@ def raise_error(msg):
 
 
 class Error(Node, SyntaxError):
+    '''
+    Subclass `lepl.node.Node` and Python's SyntaxError to provide an AST
+    node that can be raised as an error via `lepl.node.throw`.
+    
+    Create with `lepl.node.make_error()`.
+    '''
     
     def __init__(self, results, msg, location):
         Node.__init__(self, results)
@@ -134,13 +177,24 @@ class Error(Node, SyntaxError):
 
 
 class AstWalker():
+    '''
+    A tree walker base class.  Override one or more of ``_before``, ``_visit``
+    or ``_after``.
+    '''
     
     def __init__(self, dfs=True):
+        '''
+        By default, the traversal is depth-first.  Set ``dfs`` to ``False`` for
+        breadth-first.  
+        '''
         self.__queue = None
         self.__dfs = dfs
     
     def __call__(self, root):
-        self._before()
+        '''
+        Traverse the given tree (which may be a list or `lepl.node.Node`).
+        '''
+        self._before(root)
         self.__queue = deque()
         self.__queue.append(root)
         while self.__queue:
@@ -152,23 +206,34 @@ class AstWalker():
                     self.__queue.append(child)
         return self._after(root)
 
-    def _before(self):
+    def _before(self, node):
+        '''Called before each node (and its children).'''
         pass
     
     def _visit(self, node):
+        '''Called for each node.'''
         pass
 
     def _after(self, root):
+        '''Called after each node (and its children).'''
         return root
 
 
 class RaiseError(AstWalker):
+    '''
+    A tree walker that raises the first node it finds that subclasses
+    ``Exception``.
+    '''
     
     def _visit(self, node):
         if isinstance(node, Exception):
             raise node
 
 def throw(node):
-     RaiseError()(node)
+    '''
+    Raise an error, if one exists in the results (AST trees are traversed).
+    Otherwise, the results are returned (so to avoid problems with extra lists,
+    invoke with ``>>``).
+    '''
+    return RaiseError()(node)
 
-        

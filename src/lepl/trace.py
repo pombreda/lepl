@@ -1,6 +1,6 @@
 
 '''
-Add standard Python logging to a class.
+Tools for logging and tracing.
 '''
 
 from itertools import count
@@ -11,6 +11,9 @@ from lepl.support import CircularFifo
 
 
 class LogMixin(object):
+    '''
+    Add standard Python logging to a class.
+    '''
     
     def __init__(self, *args, **kargs):
         super(LogMixin, self).__init__(*args, **kargs)
@@ -34,6 +37,12 @@ class LogMixin(object):
     
 
 def traced(f):
+    '''
+    Decorator for traced generators.
+    
+    In the current system this is applied to the generator wrapper that is
+    added by the `lepl.resources.managed` decorator.
+    '''
     def next(self):
         try:
             (result, stream) = f(self)
@@ -51,6 +60,12 @@ class BlackBox(LogMixin):
     '''
     
     def __init__(self, core, memory=4):
+        '''
+        ``memory` is either a single value or a triplet.  If a triplet, it
+        represents the number of matchers before, fails after, and matches 
+        after the longest match.  If a single value, it is the number of 
+        matchers before (the other two values are set to 3).
+        '''
         super(BlackBox, self).__init__()
         try:
             self.__epoch = core.gc.epoch
