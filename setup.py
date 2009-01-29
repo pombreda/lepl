@@ -3,12 +3,13 @@
 from setuptools import setup, find_packages
 
 setup(name='LEPL',
-      version='0.1',
-      description='A Parser Library for Python 3',
+      version='0.1b1',
+      description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       author='Andrew Cooke',
       author_email='andrew@acooke.org',
       url='http://www.acooke.org/lepl/',
-      packages=find_packages(),
+      packages=find_packages('src', exclude=['*._test', '*._example']),
+      package_dir = {'':'src'},
       license = "LGPL",
       keywords = "parser",
       classifiers=['Development Status :: 2 - Pre-Alpha',

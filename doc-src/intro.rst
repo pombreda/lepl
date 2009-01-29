@@ -48,8 +48,8 @@ from the string ``'andrew, 3333253'``.
 There's a lot going on here, some of which I will explain in later sections,
 but the most important thing to notice is that ``matcher`` was constructed
 from two simpler matchers [#]_ --- `Word()
-<../api/redirect.html#lepl.match.Word>`_ and `Integer()
-<../api/redirect.html#lepl.match.Integer>`_ [#]_.  It is those two matchers
+<api/redirect.html#lepl.match.Word>`_ and `Integer()
+<api/redirect.html#lepl.match.Integer>`_ [#]_.  It is those two matchers
 that identify the values 'andrew' (a word) and '3333253' (an integer).
 
 .. [#] In fact there are probably a dozen or so matchers involved here: the
@@ -79,8 +79,8 @@ to know to use them is that, to read the value, you use the function
 ``next()``.
 
 We can see how this works with the simple generators `Word()
-<../api/redirect.html#lepl.match.Word>`_ and `Integer()
-<../api/redirect.html#lepl.match.Integer>`_::
+<api/redirect.html#lepl.match.Word>`_ and `Integer()
+<api/redirect.html#lepl.match.Integer>`_::
 
   >>> next( Word()('hello world') )
   (['hello'], ' world')
@@ -91,7 +91,7 @@ We can see how this works with the simple generators `Word()
 Hopefully you can see the result and the remaining stream in both cases.
 
 We can make a more complicated matcher from these by joining them together
-with `And() <../api/redirect.html#lepl.match.And>`_::
+with `And() <api/redirect.html#lepl.match.And>`_::
 
   >>> next( And(Word(), Space(), Integer())('hello 123') )
   (['hello', ' ', '123'], '')
@@ -107,7 +107,7 @@ or even::
   (['hello', ' ', '123'], '')
 
 because ``&`` is shorthand for `And()
-<../api/redirect.html#lepl.match.Word>`_, while ``/`` is similar, but allows
+<api/redirect.html#lepl.match.Word>`_, while ``/`` is similar, but allows
 optional spaces.
 
 Note how, in all the examples above, the results are contained in a list and
@@ -154,7 +154,7 @@ Since the ``>`` produces a matcher, we can test this at the command line::
   >>> next( (Integer() > 'phone')('3333253') )
   ([('phone', '3333253')], '')
 
-This makes `make_dict <../api/redirect.html#lepl.node.make_dict>`_ easier to
+This makes `make_dict <api/redirect.html#lepl.node.make_dict>`_ easier to
 understand.  Python's standard ``dict()`` will construct a dictionary from
 named pairs::
 
@@ -167,7 +167,7 @@ And the results from ``name / ',' / phone`` include named pairs::
   ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], '')
 
 Now we know that ``>`` passes results to a function, so it looks like
-`make_dict <../api/redirect.html#lepl.node.make_dict>`_ is almost identical to
+`make_dict <api/redirect.html#lepl.node.make_dict>`_ is almost identical to
 ``dict``.  In fact, the only difference is that it strips out results that are
 not named pairs (in this case, the comma and space).
 
@@ -243,7 +243,7 @@ LEPL can be extended in several ways:
 
 * You can write your own matchers (see the LEPL source for examples; they
   should inherit from `BaseMatcher
-  <../api/redirect.html#lepl.match.BaseMatcher>`_ to take full advantage of
+  <api/redirect.html#lepl.match.BaseMatcher>`_ to take full advantage of
   the operator syntax).
 
 * You can even change the definition of operators (``&``, ``/`` etc; see

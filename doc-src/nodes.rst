@@ -122,7 +122,7 @@ LEPL includes a simple base class that can be used to construct trees::
 	   +- ''
 	   `- ')
 
-The `Node <../api/redirect.html#lepl.node.Node>`_ class functions like an
+The `Node <api/redirect.html#lepl.node.Node>`_ class functions like an
 array of the original results (including spaces)::
 
   >>> [child for child in ast]

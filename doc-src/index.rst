@@ -72,7 +72,7 @@ exploratory and one--off jobs than, for example, a compiler front--end; it
 values your time, as a programmer, over CPU time (or, less favourably, the
 time of the end--user).
 
-The `API documentation <../api/index.html>`_ is also available.
+The `API documentation <api/index.html>`_ is also available.
 
 Contents
 --------
@@ -88,6 +88,7 @@ Contents
    resources
    debugging
    style
+   download
    closing
 
 Indices and tables

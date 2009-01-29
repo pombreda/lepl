@@ -2,7 +2,7 @@
 Matchers
 ========
 
-The `API Documentation <../api/redirect.html#lepl.match>`_ contains an
+The `API Documentation <api/redirect.html#lepl.match>`_ contains an
 exhaustive list of the matches available.  This chapter only describes the
 most important.
 
@@ -14,7 +14,7 @@ The final section gives some `implementation details`_.
 Literal 
 -------
 
-`[API] <../api/redirect.html#lepl.match.Literal>`_
+`[API] <api/redirect.html#lepl.match.Literal>`_
 This matcher identifies a given string.  For example, ``Literal('hello')``
 will give the result "hello" when that text is at the start of a stream::
 
@@ -30,7 +30,7 @@ Or explicitly using the generator and a simple string as a stream::
 the result and a new stream, which has "moved past" the matched data.)
 
 In many cases it is not necessary to use `Literal()
-<../api/redirect.html#lepl.match.Literal>`_ explicitly.  Most matchers, when
+<api/redirect.html#lepl.match.Literal>`_ explicitly.  Most matchers, when
 they receive a string as a constructor argument, will automatically create a
 literal match from the given text.
 
@@ -40,7 +40,7 @@ literal match from the given text.
 Any
 ---
 
-`[API] <../api/redirect.html#lepl.match.Any>`_ This matcher identifies any
+`[API] <api/redirect.html#lepl.match.Any>`_ This matcher identifies any
 single character.  It can be restricted to match only characters that appear
 in a given string.  For example::
 
@@ -56,13 +56,13 @@ in a given string.  For example::
 And (&)
 -------
 
-`[API] <../api/redirect.html#lepl.match.And>`_ This matcher combines other
+`[API] <api/redirect.html#lepl.match.And>`_ This matcher combines other
 matchers in order.  For example::
 
   >>> And(Any('h'), Any()).parse_string('hello world')
   ['h', 'e']
 
-All matchers must succeed for `And() <../api/redirect.html#lepl.match.And>`_
+All matchers must succeed for `And() <api/redirect.html#lepl.match.And>`_
 as a whole to succeed::
 
   >>> And(Any('h'), Any('x')).parse_string('hello world')
@@ -74,7 +74,7 @@ as a whole to succeed::
 Or (|)
 ------
 
-`[API] <../api/redirect.html#lepl.match.Or>`_ This matcher searches through a
+`[API] <api/redirect.html#lepl.match.Or>`_ This matcher searches through a
 list of other matchers to find a successful match.  For example::
 
   >>> Or(Any('x'), Any('h'), Any('z')).parse_string('hello world')
@@ -100,7 +100,7 @@ possibilities::
 Repeat ([...])
 --------------
 
-`[API] <../api/redirect.html#lepl.match.Repeat>`_ This matcher repeats another
+`[API] <api/redirect.html#lepl.match.Repeat>`_ This matcher repeats another
 matcher a given number of times.  For example::
 
   >>> Repeat(Any(), 3, 3).parse_string('12345')
@@ -152,7 +152,7 @@ first)::
 Lookahead
 ---------
 
-`[API] <../api/redirect.html#lepl.match.Lookahead>`_ This matcher checks
+`[API] <api/redirect.html#lepl.match.Lookahead>`_ This matcher checks
 whether another matcher would succeed, but returns the original stream with an
 empty result list.
 
@@ -161,7 +161,7 @@ empty result list.
 
 It fails if the match would not be possible (specifying a string as matcher is
 equivalent to using `Literal()
-<../api/redirect.html#lepl.match.Literal>`_)::
+<api/redirect.html#lepl.match.Literal>`_)::
 
   >>> Lookahead('hello').parse_string('goodbye cruel world')
   None
@@ -181,8 +181,8 @@ When preceded by a ``~`` the logic is reversed::
 .. note::
 
   This change in behaviour is specific to `Lookahead()
-  <../api/redirect.html#lepl.match.Lookahead>`_ --- usually ``~`` applies
-  `Drop() <../api/redirect.html#lepl.match.Drop>`_ as described below.
+  <api/redirect.html#lepl.match.Lookahead>`_ --- usually ``~`` applies
+  `Drop() <api/redirect.html#lepl.match.Drop>`_ as described below.
 
 
 .. index:: Drop(), ~
@@ -190,7 +190,7 @@ When preceded by a ``~`` the logic is reversed::
 Drop (~)
 --------
 
-`[API] <../api/redirect.html#lepl.match.Drop>`_ This matcher calls another
+`[API] <api/redirect.html#lepl.match.Drop>`_ This matcher calls another
 matcher, but discards the results::
 
   >>> (Drop('hello') / 'world').parse_string('hello world')
@@ -200,10 +200,10 @@ matcher, but discards the results::
 together, with optional spaces between).
 
 This is different to `Lookahead()
-<../api/redirect.html#lepl.match.Lookahead>`_ because the matcher after
-`Drop() <../api/redirect.html#lepl.match.Drop>`_ receives a stream that has
+<api/redirect.html#lepl.match.Lookahead>`_ because the matcher after
+`Drop() <api/redirect.html#lepl.match.Drop>`_ receives a stream that has
 "moved on" to the next part of the input.  With `Lookahead()
-<../api/redirect.html#lepl.match.Lookahead>`_ the stream is not advanced and
+<api/redirect.html#lepl.match.Lookahead>`_ the stream is not advanced and
 so this example will fail::
 
   >>> (Lookahead('hello') / 'world').parse_string('hello world')
@@ -215,7 +215,7 @@ so this example will fail::
 Apply (>, *)
 ------------
 
-`[API] <../api/redirect.html#lepl.match.Apply>`_ This matcher passes the
+`[API] <api/redirect.html#lepl.match.Apply>`_ This matcher passes the
 results of another matcher to a function, then returns the value from the
 function as a new result::
 
@@ -245,10 +245,10 @@ in Python (hence the shortcut operator, ``*``).
 KApply (**)
 -----------
 
-`[API] <../api/redirect.html#lepl.match.KApply>`_ This matcher passes the
+`[API] <api/redirect.html#lepl.match.KApply>`_ This matcher passes the
 results of another matcher to a function, along with additional information
 about the match, then returns the value from the function as a new result.
-Unlike `Apply() <../api/redirect.html#lepl.match.Apply>`_, this names the
+Unlike `Apply() <api/redirect.html#lepl.match.Apply>`_, this names the
 arguments as follows:
 
   stream_in
@@ -270,43 +270,43 @@ More
 ----
 
 Many more matchers are described in the `API Documentation
-<../api/redirect.html#lepl.match>`_, including 
-`First() <../api/redirect.html#lepl.match.First>`_,
-`Empty() <../api/redirect.html#lepl.match.Empty>`_,
-`Regexp() <../api/redirect.html#lepl.match.Regexp>`_,
-`Delayed() <../api/redirect.html#lepl.match.Delayed>`_,
-`Commit() <../api/redirect.html#lepl.match.Commit>`_,
-`Trace() <../api/redirect.html#lepl.match.Trace>`_,
-`AnyBut() <../api/redirect.html#lepl.match.AnyBut>`_,
-`Optional() <../api/redirect.html#lepl.match.Optional>`_,
-`Star() <../api/redirect.html#lepl.match.Star>`_,
-`ZeroOrMore() <../api/redirect.html#lepl.match.ZeroOrMore>`_,
-`Plus() <../api/redirect.html#lepl.match.Plus>`_,
-`OneOrMore() <../api/redirect.html#lepl.match.OneOrMore>`_,
-`Map() <../api/redirect.html#lepl.match.Map>`_,
-`Add() <../api/redirect.html#lepl.match.Add>`_,
-`Substitute() <../api/redirect.html#lepl.match.Substitute>`_,
-`Name() <../api/redirect.html#lepl.match.Name>`_,
-`Eof() <../api/redirect.html#lepl.match.Eof>`_,
-`Eos() <../api/redirect.html#lepl.match.Eos>`_,
-`Identity() <../api/redirect.html#lepl.match.Identity>`_,
-`Newline() <../api/redirect.html#lepl.match.Newline>`_,
-`Space() <../api/redirect.html#lepl.match.Space>`_,
-`Whitespace() <../api/redirect.html#lepl.match.Whitespace>`_,
-`Digit() <../api/redirect.html#lepl.match.Digit>`_,
-`Letter() <../api/redirect.html#lepl.match.Letter>`_,
-`Upper() <../api/redirect.html#lepl.match.Upper>`_,
-`Lower() <../api/redirect.html#lepl.match.Lower>`_,
-`Printable() <../api/redirect.html#lepl.match.Printable>`_,
-`Punctuation() <../api/redirect.html#lepl.match.Punctuation>`_,
-`UnsignedInteger() <../api/redirect.html#lepl.match.UnsignedInteger>`_,
-`SignedInteger() <../api/redirect.html#lepl.match.SignedInteger>`_,
-`Integer() <../api/redirect.html#lepl.match.Integer>`_,
-`UnsignedFloat() <../api/redirect.html#lepl.match.UnsignedFloat>`_,
-`SignedFloat() <../api/redirect.html#lepl.match.SignedFloat>`_,
-`SignedEFloat() <../api/redirect.html#lepl.match.SignedEFloat>`_,
-`Float() <../api/redirect.html#lepl.match.Float>`_, and
-`Word() <../api/redirect.html#lepl.match.Word>`_.
+<api/redirect.html#lepl.match>`_, including 
+`First() <api/redirect.html#lepl.match.First>`_,
+`Empty() <api/redirect.html#lepl.match.Empty>`_,
+`Regexp() <api/redirect.html#lepl.match.Regexp>`_,
+`Delayed() <api/redirect.html#lepl.match.Delayed>`_,
+`Commit() <api/redirect.html#lepl.match.Commit>`_,
+`Trace() <api/redirect.html#lepl.match.Trace>`_,
+`AnyBut() <api/redirect.html#lepl.match.AnyBut>`_,
+`Optional() <api/redirect.html#lepl.match.Optional>`_,
+`Star() <api/redirect.html#lepl.match.Star>`_,
+`ZeroOrMore() <api/redirect.html#lepl.match.ZeroOrMore>`_,
+`Plus() <api/redirect.html#lepl.match.Plus>`_,
+`OneOrMore() <api/redirect.html#lepl.match.OneOrMore>`_,
+`Map() <api/redirect.html#lepl.match.Map>`_,
+`Add() <api/redirect.html#lepl.match.Add>`_,
+`Substitute() <api/redirect.html#lepl.match.Substitute>`_,
+`Name() <api/redirect.html#lepl.match.Name>`_,
+`Eof() <api/redirect.html#lepl.match.Eof>`_,
+`Eos() <api/redirect.html#lepl.match.Eos>`_,
+`Identity() <api/redirect.html#lepl.match.Identity>`_,
+`Newline() <api/redirect.html#lepl.match.Newline>`_,
+`Space() <api/redirect.html#lepl.match.Space>`_,
+`Whitespace() <api/redirect.html#lepl.match.Whitespace>`_,
+`Digit() <api/redirect.html#lepl.match.Digit>`_,
+`Letter() <api/redirect.html#lepl.match.Letter>`_,
+`Upper() <api/redirect.html#lepl.match.Upper>`_,
+`Lower() <api/redirect.html#lepl.match.Lower>`_,
+`Printable() <api/redirect.html#lepl.match.Printable>`_,
+`Punctuation() <api/redirect.html#lepl.match.Punctuation>`_,
+`UnsignedInteger() <api/redirect.html#lepl.match.UnsignedInteger>`_,
+`SignedInteger() <api/redirect.html#lepl.match.SignedInteger>`_,
+`Integer() <api/redirect.html#lepl.match.Integer>`_,
+`UnsignedFloat() <api/redirect.html#lepl.match.UnsignedFloat>`_,
+`SignedFloat() <api/redirect.html#lepl.match.SignedFloat>`_,
+`SignedEFloat() <api/redirect.html#lepl.match.SignedEFloat>`_,
+`Float() <api/redirect.html#lepl.match.Float>`_, and
+`Word() <api/redirect.html#lepl.match.Word>`_.
 
   
 
@@ -329,7 +329,7 @@ possible matches, the generator will exit.
 
 Most simple matchers will return a generator that yields a single value.
 Generators that return multiple values are used in backtracking.  For example,
-the `Or() <../api/redirect.html#lepl.match.Or>`_ generator may yield once for
+the `Or() <api/redirect.html#lepl.match.Or>`_ generator may yield once for
 each sub--match in turn (in practice some sub-matches may return generators
 that themselves return many values, while others may fail immediately, so it
 is not a direct 1--to--1 correspondence).
@@ -345,6 +345,6 @@ strings, so matching should work on a variety of streams, including
 imhomogenous lists of objects.
 
 All matcher implementations should subclass the ABC `Matcher
-<../api/redirect.html#lepl.match.Matcher>`_.  Most will do so by inheriting
-from `BaseMatcher <../api/redirect.html#lepl.match.BaseMatcher>`_ which
+<api/redirect.html#lepl.match.Matcher>`_.  Most will do so by inheriting
+from `BaseMatcher <api/redirect.html#lepl.match.BaseMatcher>`_ which
 provides support for operators.

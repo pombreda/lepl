@@ -12,19 +12,19 @@ Streams
 -------
 
 LEPL can process simple strings and lists, but it can also use its own `Stream
-<../api/redirect.html#lepl.stream.Stream>`_ class as a wrapper for the input.
+<api/redirect.html#lepl.stream.Stream>`_ class as a wrapper for the input.
 There are two advantages to doing this:
 
 #. When reading from a file, the stream will not keep more data in memory than
    is necessary, so files larger than the available memory can be processed.
 
 #. The stream provides access to the central `Core
-   <../api/redirect.html#lepl.core.Core>`_ instance, which is necessary for
+   <api/redirect.html#lepl.core.Core>`_ instance, which is necessary for
    :ref:`debugging`, :ref:`limiting`, and :ref:`committing`.
 
 Streams are most simply created by using the ``parse...`` and ``match...``
 methods that all matchers implement via `StreamMixin
-<../api/redirect.html#lepl.stream.StreamMixin>`_.
+<api/redirect.html#lepl.stream.StreamMixin>`_.
 
 
 .. index:: GeneratorWrapper, backtracking, generators
@@ -53,16 +53,16 @@ Because generators may be long--lived they can be a resource sink.  For
 example, they maintain references to "old" parts of the stream that might
 otherwise be reclaimed by garbage collection.
 
-The `Core <../api/redirect.html#lepl.core.Core>`_ is an object, created once
+The `Core <api/redirect.html#lepl.core.Core>`_ is an object, created once
 per stream, that provides a central location for managing information related
 to a parse.  This information can be used for :ref:`debugging`, for example.
 
 It is possible to configure the system so that the `Core
-<../api/redirect.html#lepl.core.Core>`_ maintains a (weak) reference to the
+<api/redirect.html#lepl.core.Core>`_ maintains a (weak) reference to the
 generators [#]_ used in a parse.  A generator is registered when it is first
 used.
 
-Generators registered with the `Core <../api/redirect.html#lepl.core.Core>`_
+Generators registered with the `Core <api/redirect.html#lepl.core.Core>`_
 may be active or inactive.  An active generator is one which is participating
 in the current match.  This means that the program's thread of control is
 "inside" the generator.  An inactive generator is one that is not currently in
@@ -78,11 +78,11 @@ behaviour of the parser.  In particular, it is possible to close non--active
 generators, either implicitly or explicitly.
 
 .. [#] The discussion here omits some details from the implementation; the
-       `Core <../api/redirect.html#lepl.core.Core>`_ actually stores
+       `Core <api/redirect.html#lepl.core.Core>`_ actually stores
        `GeneratorWrapper
-       <../api/redirect.html#lepl.resources.GeneratorWrapper>`_ instances,
+       <api/redirect.html#lepl.resources.GeneratorWrapper>`_ instances,
        which are added to generators via the `managed
-       <../api/redirect.html#lepl.resources.managed>`_ decorator.
+       <api/redirect.html#lepl.resources.managed>`_ decorator.
 
 
 .. index:: resources, min_queue
@@ -91,7 +91,7 @@ generators, either implicitly or explicitly.
 Resource Limiting
 -----------------
 
-The `Core <../api/redirect.html#lepl.core.Core>`_ can be configured to store a
+The `Core <api/redirect.html#lepl.core.Core>`_ can be configured to store a
 limited number of generators.  When this number is exceeded, by the addition
 of a new generator, the oldest (ie. least recently used) non--active generator
 is closed.
@@ -141,15 +141,15 @@ An alternative to the above, automatic management of generators, is to
 explicitly remove non--active generators as part of the search process.  This
 is similar to Prolog's *cut*, I believe.
 
-The `Commit() <../api/redirect.html#lepl.match.Commit>`_ matcher does this: it
+The `Commit() <api/redirect.html#lepl.match.Commit>`_ matcher does this: it
 discards all non--active generators from the `Core
-<../api/redirect.html#lepl.core.Core>`_.
+<api/redirect.html#lepl.core.Core>`_.
 
-For `Commit() <../api/redirect.html#lepl.match.Commit>`_ to work the `Core
-<../api/redirect.html#lepl.core.Core>`_ must maintain references to
+For `Commit() <api/redirect.html#lepl.match.Commit>`_ to work the `Core
+<api/redirect.html#lepl.core.Core>`_ must maintain references to
 generators.  This is true by default, when the ``min_queue`` value is 0, which
 stores references but does not cause :ref:`limiting`.
 
-See also `First() <../api/redirect.html#lepl.match.First>`_.
+See also `First() <api/redirect.html#lepl.match.First>`_.
 
 If this is useful, I'd really appreciate a good, short example to put here.

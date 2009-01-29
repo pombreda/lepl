@@ -15,7 +15,7 @@ The code was written using Python 3.0.  It was then backported to Python 2.6
 and appears to work fine there (except that the ``//`` operator doesn't
 exist).  It might even work with Python 2.5 if you add appropriate ``from
 __future__ import ...`` in various places (you could make the `Matcher
-<../api/redirect.html#lepl.match.Matcher>`_ ABC a simple class without really
+<api/redirect.html#lepl.match.Matcher>`_ ABC a simple class without really
 harming anything).
 
 However, it's not regularly tested on anything other than 3.0.
@@ -49,12 +49,12 @@ containing a list of matches and a new stream.
 However, LEPL also exploits Python in two ways.  First, it overloads operators
 to provide a large helping of syntactic sugar (operators simply apply more
 combinators, so ``a | b`` is equivalent to `Or(a, b)
-<../api/redirect.html#lepl.match.Or>`_).  Second, generators are used to
+<api/redirect.html#lepl.match.Or>`_).  Second, generators are used to
 manage backtracking.
 
 Consistent use of generators means that the entire parser can backtrack
 (typically recursive descent parsing restricts backtracking to `Or(...)
-<../api/redirect.html#lepl.match.Or>`_).  It also reduces the use of the C
+<api/redirect.html#lepl.match.Or>`_).  It also reduces the use of the C
 stack (naturally replacing recursion with iteration) and allows the
 environmental cost of backtracking to be managed (generators can be tracked
 and closed, effectively reclaiming resources on the "stack"; the same
@@ -83,7 +83,7 @@ option, indicating that the matching is *greedy*.
 
 *Non-greedy* (generous?) matching is achieved by specifying an array slice
 increment of ``'b'`` (or `BREADTH_FIRST
-<../api/redirect.html#lepl.match.BREADTH_FIRST>`_)::
+<api/redirect.html#lepl.match.BREADTH_FIRST>`_)::
 
   >>> any = Any()[::'b',...]
   >>> split = any & any & Eos()
@@ -93,12 +93,12 @@ increment of ``'b'`` (or `BREADTH_FIRST
   [['****'], ['*', '***'], ['**', '**'], ['***', '*'], ['****']]
 
 The greedy and non--greedy repetitions are implemented by depth (default,
-``'d'``, or `DEPTH_FIRST <../api/redirect.html#lepl.match.BDEPTH_FIRST>`_),
+``'d'``, or `DEPTH_FIRST <api/redirect.html#lepl.match.BDEPTH_FIRST>`_),
 and breadth--first searches (``'b'`` or `BREADTH_FIRST
-<../api/redirect.html#lepl.match.BREADTH_FIRST>`_), respectively.
+<api/redirect.html#lepl.match.BREADTH_FIRST>`_), respectively.
 
 In addition, by specifying a slice increment of ``'g'`` (`GREEDY
-<../api/redirect.html#lepl.match.GREEDY>`_), you can request a *guaranteed
+<api/redirect.html#lepl.match.GREEDY>`_), you can request a *guaranteed
 greedy* match.  This evaluates all possibilities, before returning them in
 reverse length order.  Typically this will be identical to depth--first
 search, but it is possible for backtracking to produce a longer match in
@@ -106,7 +106,7 @@ complex cases --- this final option, by evaluating all cases, re--orders the
 results as necessary.
 
 Specifying ``'n'`` (`NON_GREEDY
-<../api/redirect.html#lepl.match.NON_GREEDY>`_) gets the reverse ordering.
+<api/redirect.html#lepl.match.NON_GREEDY>`_) gets the reverse ordering.
 
 The tree implicit in the descriptions "breadth--first" and "depth--first" is
 not the AST, nor the tree of matchers, but a tree based on matchers and
@@ -116,23 +116,23 @@ to the various streams returned by the current match (none if this is a final
 node, one for a simple match, several if the matcher backtracks).
 
 So far so good.  Unfortunately the process is more complicated for `And()
-<../api/redirect.html#lepl.match.And>`_ and `Or()
-<../api/redirect.html#lepl.match.Or>`_.
+<api/redirect.html#lepl.match.And>`_ and `Or()
+<api/redirect.html#lepl.match.Or>`_.
 
-In the case of `And() <../api/redirect.html#lepl.match.And>`_, the first
+In the case of `And() <api/redirect.html#lepl.match.And>`_, the first
 matcher is matched first.  The child nodes correspond to the various (with
 backtracking) results of this match.  At each child node, the second matcher
 is applied, generating new children.  This repeats until the scope of the
-`And() <../api/redirect.html#lepl.match.And>`_ terminates at a depth in the
+`And() <api/redirect.html#lepl.match.And>`_ terminates at a depth in the
 tree corresponding to the children of the last matcher.  Since `And()
-<../api/redirect.html#lepl.match.And>`_ fails unless all matchers match, only
+<api/redirect.html#lepl.match.And>`_ fails unless all matchers match, only
 the final child nodes are possible results.  As a consequence, both breadth
 and depth first searches would return the same ordering.  The `And()
-<../api/redirect.html#lepl.match.And>`_ match is therefore unambiguous and the
+<api/redirect.html#lepl.match.And>`_ match is therefore unambiguous and the
 implementation has no way to specify the (essentially meaningless) choice
 between the two searches.
 
-In the case of `Or() <../api/redirect.html#lepl.match.Or>`_ we must select
+In the case of `Or() <api/redirect.html#lepl.match.Or>`_ we must select
 both the matcher and the result from the results available for that matcher.
 A natural approach is to assign the first generation of children to the choice
 of matcher, and the second level to the choice of result for the (parent)

@@ -66,13 +66,13 @@ Lines are generated *after* of matching, so the innermost of a set of nested
 matchers is shown first.
 
 The number of entries displayed is controlled by the ``memory`` parameter
-supplied to the `Stream <../api/redirect.html#lepl.stream.Stream>`_.
+supplied to the `Stream <api/redirect.html#lepl.stream.Stream>`_.
 
 Looking at the output we can see that the longest match was a whitespace,
 presumably associated with the `Lookahead()
-<../api/redirect.html#lepl.match.Lookahead>`_ that fails immediately
+<api/redirect.html#lepl.match.Lookahead>`_ that fails immediately
 afterwards.  So "anything but a whitespace" failed, which is the likely
-definition of `Word() <../api/redirect.html#lepl.match.Word>`_.  Comparing
+definition of `Word() <api/redirect.html#lepl.match.Word>`_.  Comparing
 that with our grammar, we can see (with a little practice) that ``name`` is
 failing because of the space before "bob".
 
@@ -83,7 +83,7 @@ Trace Output
 ------------
 
 The same data can also be displayed to the logs with the `Trace()
-<../api/redirect.html#lepl.match.Trace>`_ matcher.  This takes a matcher as an
+<api/redirect.html#lepl.match.Trace>`_ matcher.  This takes a matcher as an
 argument, along with some optional text.  Tracing is then enabled when the
 selected matcher is called::
 

@@ -3,11 +3,11 @@
 LEPL is a parser library written in Python.
   
 This is the API documentation; the module index is at the bottom of this page.  
-There is also a `manual <../manual/index.html>`_ which gives a higher level
+There is also a `manual <../index.html>`_ which gives a higher level
 overview. 
 
-The source and documentation can be downloaded from the `LEPL website
-<http://www.acooke.org/lepl>`_.
+The home page for this package is the 
+`LEPL website <http://www.acooke.org/lepl>`_.
 
 
 Example
