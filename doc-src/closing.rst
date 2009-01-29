@@ -6,30 +6,6 @@ This chapter contains various observations, comments, etc, that didn't fit
 elsewhere in the documentation.
 
 
-.. index:: Python version
-
-Supported Versions
-------------------
-
-The code was written using Python 3.0.  It was then backported to Python 2.6
-and appears to work fine there (except that the ``//`` operator doesn't
-exist).  It might even work with Python 2.5 if you add appropriate ``from
-__future__ import ...`` in various places (you could make the `Matcher
-<api/redirect.html#lepl.match.Matcher>`_ ABC a simple class without really
-harming anything).
-
-However, it's not regularly tested on anything other than 3.0.
-
-
-.. index:: licence, LGPL
-
-Licence
--------
-
-Licensed under the Lesser Gnu Public Licence.  Copyright 2009 Andrew Cooke
-(andrew@acooke.org).
-
-
 .. index:: recursive descent, generators, stack, parser combinators
 
 Technical Summary

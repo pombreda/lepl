@@ -74,6 +74,13 @@ time of the end--user).
 
 The `API documentation <api/index.html>`_ is also available.
 
+
+Download
+--------
+
+See :ref:`download`.
+
+
 Contents
 --------
 
@@ -90,6 +97,7 @@ Contents
    style
    download
    closing
+
 
 Indices and tables
 ------------------
