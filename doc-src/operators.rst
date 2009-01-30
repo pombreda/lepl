@@ -154,5 +154,5 @@ space--separated words in a transparent manner:
 
 Note that there was no need to specify a separator in ``word[1:]``, and that
 this is a rare example of a string being coerced to something other than a
-`Literal() <api/redirect.html#lepl.match.Literal>`_ (here `Separator()
-<api/redirect.html#lepl.match.Separator>`_ is used).
+`Literal() <api/redirect.html#lepl.match.Literal>`_ (here `Regexp()
+<api/redirect.html#lepl.match.Regexp>`_ is used).

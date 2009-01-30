@@ -13,7 +13,7 @@ Download And Installation
 Python 3.0
 ----------
 
-As far as I can tell, setuptools (easyinstall) does not support Python 3.0
+As far as I can tell, setuptools (easy_install) does not support Python 3.0
 yet, so please use the source distribution below.
 
 
@@ -23,19 +23,19 @@ Python 2.6
 If you have `setuptools <http://pypi.python.org/pypi/setuptools>`_ installed
 you should be able to install LEPL with Python 2.6 using::
 
-  easyinstall lepl
+  easy_install lepl
 
 
 Source and Documentation
 ------------------------
 
-* `Source tarball <http://ww.acooke.org/lepl/src.tgz>`_
+* `Source tarball <http://www.acooke.org/lepl/LEPL-1.0b3.tar.gz>`_
 
-* `Source zip <http://ww.acooke.org/lepl/src.zip>`_
+* `Source zip <http://www.acooke.org/lepl/LEPL-1.0b3.zip>`_
 
-* `Document tarball <http://ww.acooke.org/lepl/doc.tgz>`_
+* `Document tarball <http://www.acooke.org/lepl/LEPL-1.0b3-doc.tar.gz>`_
 
-* `Document zip <http://ww.acooke.org/lepl/doc.zip>`_
+* `Document zip <http://www.acooke.org/lepl/LEPL-1.0b3-doc.zip>`_
 
 If you unpack/uncompress the source you can then copy the ``lepl`` directory
 into your Python site packages directory.  This should install LEPL.
@@ -50,6 +50,8 @@ Date        Version  Description
 2009-01-29  1.0b1    Fighting with setuptools etc.
 ----------  -------  -----------
 2009-01-29  1.0b2    Now with source, documentation and inline licence.
+----------  -------  -----------
+2009-01-30  1.0b3    Fixed version number confusion (was 0.1bx in some places)
 ==========  =======  ===========
 
 
