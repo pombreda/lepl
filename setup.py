@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='LEPL',
-      version='0.1b1',
+      version='0.1b2',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       author='Andrew Cooke',
       author_email='andrew@acooke.org',
@@ -18,6 +18,7 @@ setup(name='LEPL',
                    'Natural Language :: English',
                    'Operating System :: OS Independent',
                    'Programming Language :: Python :: 3.0',
+                   'Programming Language :: Python :: 2.6',
                    'Topic :: Software Development',
                    'Topic :: Software Development :: Libraries',
                    'Topic :: Software Development :: Libraries :: Python Modules',
