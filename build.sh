@@ -3,6 +3,8 @@
 # this generates a new release, but does not register anything with pypi
 # or upload files to google code
 
+# python setup.py sdist --formats=gztar,zip register upload
+
 
 RELEASE=`egrep version setup.py | sed -e "s/.*'\(.*\)'.*/\\1/"`
 VERSION=`echo $RELEASE | sed -e "s/.*\([0-9]\.[0-9]\).*/\\1/"`
