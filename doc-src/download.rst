@@ -1,5 +1,6 @@
 
-.. _download:
+.. _install:
+
 
 Download And Installation
 =========================
@@ -10,35 +11,108 @@ Download And Installation
   Please let me know at andrew@acooke.org.
 
 
-Python 3.0
-----------
+LEPL is only available for Python 3 and 2.6.  See :ref:`versions` for more
+information.
 
-As far as I can tell, setuptools (easy_install) does not support Python 3.0
-yet, so please use the source distribution below.
+There are several ways to install LEPL --- they are described below, simplest
+first.  If you want a local copy of the manual you should also read the
+:ref:`localdocs` section.
 
 
-Python 2.6
-----------
+Install with Setuptools / easy_install (Python 2.6)
+---------------------------------------------------
+
+This currently only works for Python 2.6
 
 If you have `setuptools <http://pypi.python.org/pypi/setuptools>`_ installed
-you should be able to install LEPL with Python 2.6 using::
+you should be able to install LEPL using::
 
   easy_install lepl
 
+That's it.  There is no need to download anything beforehand;
+``easy_install`` will do all the work.
 
-Source and Documentation
-------------------------
 
-* `Source tarball <http://www.acooke.org/lepl/LEPL-1.0b3.tar.gz>`_
+Install with Distutils / setup.py (Python 3 and 2.6)
+----------------------------------------------------
 
-* `Source zip <http://www.acooke.org/lepl/LEPL-1.0b3.zip>`_
+Download and unpack a source package (see :ref:`download`) then run::
 
-* `Document tarball <http://www.acooke.org/lepl/LEPL-1.0b3-doc.tar.gz>`_
+  python setup.py install
 
-* `Document zip <http://www.acooke.org/lepl/LEPL-1.0b3-doc.zip>`_
+For example, on Gnu/Linux (in the instructions below, "LEPL-xxx" would be
+"LEPL-\ |release|\ " for the current release)::
 
-If you unpack/uncompress the source you can then copy the ``lepl`` directory
-into your Python site packages directory.  This should install LEPL.
+  wget http://lepl.googlecode.com/files/LEPL-xxx.tar.gz
+  tar xvfz LEPL-xxx.tar.gz
+  cd LEPL-xxx
+  python setup.py install
+
+
+Manual Install (experts only)
+-----------------------------
+
+Download and unpack a source package (see :ref:`download`) then add to your
+``PYTHONPATH`` or ``site-packages``.
+
+
+Package Removal (experts only)
+------------------------------
+
+If you use setuptools or distutils you do not need to remove an old version
+before updating.
+
+To completely remove LEPL from your system, you first need to find where it is
+installed.  For example::
+
+  >>> import lepl
+  >>> lepl.__file__
+  '/usr/local/lib64/python2.6/site-packages/LEPL-1.0b3-py2.6.egg/lepl/__init__.pyc'
+
+You can then delete the appropriate file or directory (in the example above,
+that would be
+``/usr/local/lib64/python2.6/site-packages/LEPL-1.0b3-py2.6.egg``).
+
+
+
+.. _localdocs:
+
+Documentation
+-------------
+
+You are curently reading the `Manual <http://www.acooke.org/lepl>`_.  The `API
+Documentation <http://www.acooke.org/lepl/api>`_ is also available.
+
+The simplest way to view the documentation is via the `web
+<http://www.acooke.org/lepl>`_.  However, you can also install a local copy.
+Simply download and unpack the appropriate files (see :ref:`download`, below).
+
+
+.. _download:
+
+Download
+--------
+
+You can download the source and documentation packages from the `Support Site
+<http://code.google.com/p/lepl/downloads>`_.
+
+The source packages are also available from the `Python Package Index
+<http://pypi.python.org/pypi/LEPL>`_ for the use of setuptools.
+
+
+
+Support
+-------
+
+I am using `Google Code <http://lepl.googlecode.com/>`_ for support
+services.  Currently these are:
+
+* A `mailing list / discussion group <http://groups.google.com/group/lepl>`_.
+
+* An `issue tracker <http://code.google.com/p/lepl/issues>`_.
+
+To ask questions, report bugs, and generally discuss LEPL, please post to the
+`group <http://groups.google.com/group/lepl>`_.
 
 
 Release History
@@ -51,23 +125,32 @@ Date        Version  Description
 ----------  -------  -----------
 2009-01-29  1.0b2    Now with source, documentation and inline licence.
 ----------  -------  -----------
-2009-01-30  1.0b3    Fixed version number confusion (was 0.1bx in some places)
+2009-01-30  1.0b3    Fixed version number confusion (was 0.1bx in some places).
+----------  -------  -----------
+2009-01-30  1.0rc1   With support.
 ==========  =======  ===========
 
 
 .. index:: Python version
+.. _versions:
 
 Supported Versions
 ------------------
 
 The code was written using Python 3.0.  It was then backported to Python 2.6
 and appears to work fine there (except that the ``//`` operator doesn't
-exist).  It might even work with Python 2.5 if you add appropriate ``from
-__future__ import ...`` in various places (you could make the `Matcher
-<api/redirect.html#lepl.match.Matcher>`_ ABC a simple class without really
-harming anything).
+exist).
 
 However, it's not regularly tested on anything other than 3.0.
+
+It does not work with Python 2.5.  Incompatabilities include:
+
+  * with contexts
+  * setter decorators
+  * {} formatting
+  * ABC metaclasses
+  * changed heapq API
+  * except syntax
 
 
 .. index:: licence, LGPL

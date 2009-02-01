@@ -49,11 +49,26 @@ excluding certain matches.  For efficiency, the queue length is increased
 For the control of parse results see the `lepl.match.Commit()` matcher.
 '''
 
-from heapq import heappushpop, heappop, heappush
+from heapq import heappop, heappush
+try:
+    from heapq import heappushpop
+except ImportError: # Python 2.5
+    from heapq import heapreplace
+    def heappushpop(heap, item):
+        if heap and item < heap[0]:
+            return heapreplace(heap, item)
+        else:
+            return item
 from traceback import print_exc
 from weakref import ref
 
 from lepl.trace import LogMixin, traced
+
+
+class property2(property):
+
+    def setter(self, fget):
+        return property(self.fset, fget)
 
 
 def managed(f):
@@ -211,7 +226,7 @@ class GeneratorControl(LogMixin):
         self.__epoch = 0
         self.min_queue = min_queue
             
-    @property
+    @property2
     def min_queue(self):
         '''
         This is the current number of generators (effectively, the number of

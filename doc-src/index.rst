@@ -78,7 +78,7 @@ The `API documentation <api/index.html>`_ is also available.
 Download
 --------
 
-See :ref:`download`.
+See :ref:`install`.
 
 
 Contents

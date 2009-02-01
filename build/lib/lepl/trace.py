@@ -27,6 +27,12 @@ from traceback import print_exc
 from lepl.support import CircularFifo
 
 
+class property2(property):
+
+    def setter(self, fget):
+        return property(self.fset, fget)
+
+
 class LogMixin(object):
     '''
     Add standard Python logging to a class.
@@ -89,8 +95,8 @@ class BlackBox(LogMixin):
         except:
             self.__epoch = lambda: -1
         self.memory = memory
-        
-    @property
+                
+    @property2
     def memory(self):
         return (self.__memory, self.__memory_fail, self.__memory_tail)
     

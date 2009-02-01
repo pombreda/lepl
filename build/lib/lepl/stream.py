@@ -20,7 +20,11 @@
 A stream interface to the input, implemented using singly linked lists.
 '''
 
-from io import StringIO
+try:
+    from io import StringIO
+except ImportError:
+    def StringIO(text):
+        return text
 
 from lepl.core import Core
 from lepl.support import open_stop

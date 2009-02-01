@@ -20,7 +20,7 @@
 Support for structuring results.
 '''
 
-from collections import Iterable, Mapping, deque
+from collections import deque
 
 from lepl.trace import LogMixin
 

@@ -1,6 +1,16 @@
 #!/bin/bash
 
-VERSION=`egrep version setup.py | sed -e "s/.*'\(.*\)'.*/\\1/"`
+# this generates a new release, but does not register anything with pypi
+# or upload files to google code
+
+
+RELEASE=`egrep version setup.py | sed -e "s/.*'\(.*\)'.*/\\1/"`
+VERSION=`echo $RELEASE | sed -e "s/.*\([0-9]\.[0-9]\).*/\\1/"`
+
+sed -i -e "s/release = .*/release = '$RELEASE'/" doc-src/conf.py
+sed -i -e "s/version = .*/version = '$VERSION'/" doc-src/conf.py
+
+sed -i -e "s/__version__ = .*/__version__ = '$RELEASE'/" src/lepl/__init__.py
 
 rm MANIFEST.in
 find . -exec echo "exclude {}" \; | sed -e "s/\.\///" >> MANIFEST.in
@@ -16,21 +26,13 @@ echo "include setup.py" >> MANIFEST.in
 
 python setup.py sdist --formats=gztar,zip
 
+./build-doc.sh
 
-rm -fr doc
-
-sphinx-build -b html doc-src/ doc
-
-epydoc -v -o doc/api --html --graph=all --docformat=restructuredtext -v --exclude="_test"  --exclude="_example" --debug src/*
-
-rm -fr "LEPL-$VERSION"
-mkdir "LEPL-$VERSION"
-cp -r doc/* "LEPL-$VERSION/doc"
-tar cvfz "doc/LEPL-$VERSION-doc.tar.gz" "LEPL-$VERSION"
-zip -r "doc/LEPL-$VERSION-doc.zip" "LEPL-$VERSION" -x \*.tgz
-rm -fr "LEPL-$VERSION"
-
-cp "dist/LEPL-$VERSION.tar.gz" doc
-cp "dist/LEPL-$VERSION.zip" doc
+rm -fr "LEPL-$RELEASE"
+mkdir "LEPL-$RELEASE"
+cp -r doc "LEPL-$RELEASE"
+tar cvfz "dist/LEPL-$RELEASE-doc.tar.gz" "LEPL-$RELEASE"
+zip -r "dist/LEPL-$RELEASE-doc.zip" "LEPL-$RELEASE" -x \*.tgz
+rm -fr "LEPL-$RELEASE"
 
 rsync -rv --exclude=".svn" --delete doc/ ~/projects/personal/www/lepl

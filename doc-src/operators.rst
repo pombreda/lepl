@@ -143,7 +143,7 @@ Operators can be replaced inside a ``with`` context using `Override()
 
 It is also possible to provide a separator that is used for ``&`` and ``[]``.
 With a little care (define matchers for characters before, and matchers for
-characters after, the *with* statement) this can handle the common case of
+sentences after, the *with* statement) this can handle the common case of
 space--separated words in a transparent manner:
 
   >>> word = Letter()[:,...]

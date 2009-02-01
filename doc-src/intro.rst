@@ -193,7 +193,7 @@ usernames and phone numbers.
 This uses repetition in two places.  First, and simplest, is ``Space()[0:]``.
 This matches 0 or more spaces.  In general, adding ``[start:stop]`` to a
 matcher will repeat it for between *start* and *stop* times (the defaults for
-missing values and 0 and "as many as possible").
+missing values is 0 and "as many as possible").
 
 .. note:
 

@@ -257,8 +257,9 @@ arguments as follows:
   stream_out
     The stream returned from the matcher after matching.
 
-  core
-    The core, if streams are being used, else ``None``.  See ...
+  core 
+    The core, if streams are being used, else ``None``.  See
+    :ref:`resources`.
 
   results
     A list of the results returned.

@@ -1,14 +1,15 @@
-#!/usr/local/bin/python3.0
-
-from setuptools import setup, find_packages
+try:
+    from setuptools import setup
+except:
+    from distutils.core import setup
 
 setup(name='LEPL',
-      version='1.0b3',
+      version='1.0rc1',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       author='Andrew Cooke',
       author_email='andrew@acooke.org',
       url='http://www.acooke.org/lepl/',
-      packages=find_packages('src', exclude=['*._test', '*._example']),
+      packages=['lepl'],
       package_dir = {'':'src'},
       license = "LGPL",
       keywords = "parser",

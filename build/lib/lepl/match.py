@@ -29,10 +29,16 @@ Matchers are implemented as both classes (these tend to be the basic building
 blocks) and functions (these are typically "syntactic sugar").  I have used
 the same syntax (capitalized names) for both to keep the API uniform.
 
-For more background, please see the `manual <../manual/index.html>`_.
+For more background, please see the `manual <../index.html>`_.
 '''
 
-from abc import ABCMeta
+try:
+    from abc import ABCMeta
+except ImportError:
+    # Python 2.5
+    def ABCMeta(*args):
+        class Matcher: pass
+        return Matcher
 from collections import deque
 import string
 from re import compile
