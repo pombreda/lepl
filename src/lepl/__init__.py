@@ -174,4 +174,4 @@ __all__ = [
         # stream
         'Stream']
 
-__version__ = '1.0rc1'
+__version__ = '1.0'
