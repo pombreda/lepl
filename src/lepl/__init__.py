@@ -100,16 +100,6 @@ Running this gives the result::
              |       `- Term
              |           `- number '5'
              `- ')'
-
-
-Generating Documentation
-------------------------
-
-To regenerate this documentation, run::
-
-  rm -fr doc/api
-  epydoc -v -o doc/api --html --graph-all --docformat=restructuredtext --exclude="_test" --exclude="_example" src/*
-
 '''
  
 from lepl.custom import *

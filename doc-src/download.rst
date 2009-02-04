@@ -97,7 +97,7 @@ You can download the source and documentation packages from the `Support Site
 <http://code.google.com/p/lepl/downloads>`_.
 
 The source packages are also available from the `Python Package Index
-<http://pypi.python.org/pypi/LEPL>`_ for the use of setuptools.
+<http://pypi.python.org/pypi/LEPL/>`_ for the use of setuptools.
 
 
 
@@ -127,7 +127,7 @@ Date        Version  Description
 ----------  -------  -----------
 2009-01-30  1.0b3    Fixed version number confusion (was 0.1bx in some places).
 ----------  -------  -----------
-2009-01-30  1.0rc1   With support.
+2009-01-31  1.0rc1   With support.
 ==========  =======  ===========
 
 

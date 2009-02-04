@@ -246,6 +246,7 @@ class RaiseError(AstWalker):
         if isinstance(node, Exception):
             raise node
 
+
 def throw(node):
     '''
     Raise an error, if one exists in the results (AST trees are traversed).
