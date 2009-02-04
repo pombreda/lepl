@@ -128,6 +128,8 @@ Date        Version  Description
 2009-01-30  1.0b3    Fixed version number confusion (was 0.1bx in some places).
 ----------  -------  -----------
 2009-01-31  1.0rc1   With support.
+----------  -------  -----------
+2009-02-04  1.0      No significant changes from rc1.
 ==========  =======  ===========
 
 
