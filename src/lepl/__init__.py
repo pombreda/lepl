@@ -102,10 +102,10 @@ Running this gives the result::
              `- ')'
 '''
  
-from lepl.custom import *
-from lepl.match import *
+from lepl.operators import * 
 from lepl.node import *
 from lepl.stream import *
+from lepl.match import *
 
 __all__ = [
         # custom

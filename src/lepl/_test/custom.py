@@ -8,7 +8,6 @@ from threading import Thread
 from unittest import TestCase
 
 from lepl import *
-from lepl.custom import NAMESPACE
 
 
 class ThreadTest(TestCase):

@@ -32,511 +32,30 @@ the same syntax (capitalized names) for both to keep the API uniform.
 For more background, please see the `manual <../index.html>`_.
 '''
 
-from abc import ABCMeta
 from collections import deque
 import string
 from re import compile
 from sys import version
 from traceback import print_exc
 
-from lepl.custom import NAMESPACE, Override
+from lepl.operators \
+    import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
 from lepl.node import Node, raise_error
 from lepl.resources import managed
 from lepl.stream import StreamMixin
-from lepl.support import assert_type, BaseGeneratorDecorator, open_stop
+from lepl.support import assert_type, BaseGeneratorDecorator
 from lepl.trace import LogMixin
 
 
-# Python 2.6
-#class Matcher(metaclass=ABCMeta):
-Matcher = ABCMeta('Matcher', (object, ), {})
-'''ABC used to identify matchers.'''
 
-GREEDY = 'g'
-'''Flag (splice increment) for inefficient, guaranteed greedy matching.'''
-NON_GREEDY = 'n'
-'''Flag (splice increment) for inefficient, guaranteed non-greedy matching.'''
-DEPTH_FIRST = 'd'
-'''Flag (splice increment) for efficient, quasi-greedy, matching (default).'''
-BREADTH_FIRST = 'b'
-'''Flag (splice increment) for efficient, quasi-non-greedy, matching.'''
-
-
-class BaseMatcher(StreamMixin, LogMixin, Matcher):
+class BaseMatcher(OperatorMixin, StreamMixin, LogMixin, Matcher):
     '''
-    A base class that provides support to all matchers; most 
-    importantly it defines the operators used to combine elements in a 
-    grammar specification.
+    A base class that provides support to all matchers.
     '''
 
     def __init__(self):
-        super(StreamMixin, self).__init__()
+        super(BaseMatcher, self).__init__()
         
-    def __add__(self, other):
-        '''
-        **self + other** - Join strings, merge lists.
-        
-        Combine adjacent matchers in sequence, merging the result with "+" 
-        (so strings are joined, lists merged).
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('+', other, True)
-        return NAMESPACE.get('+', lambda a, b: Add(And(a, b)))(self, other)
-
-    def __radd__(self, other):
-        '''
-        **other + self** - Join strings, merge lists.
-        
-        Combine adjacent matchers in sequence, merging the result with "+" 
-        (so strings are joined, lists merged).
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('+', other, True)
-        return NAMESPACE.get('+', lambda a, b: Add(And(a, b)))(other, self)
-
-    def __and__(self, other):
-        '''
-        **self & other** - Append results.
-        
-        Combine adjacent matchers in sequence.  This is equivalent to 
-        `lepl.match.And`.
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('&', other, True)
-        return NAMESPACE.get('&', And)(self, other) 
-        
-    def __rand__(self, other):
-        '''
-        **other & self** - Append results.
-        
-        Combine adjacent matchers in sequence.  This is equivalent to 
-        `lepl.match.And`.
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('&', other, True)
-        return NAMESPACE.get('&', And)(other, self)
-    
-    def __div__(self, other):
-        '''
-        For 2.6
-        '''
-        return self.__truediv__(other)
-    
-    def __rdiv__(self, other):
-        '''
-        For 2.6
-        '''
-        return self.__rtruediv__(other)
-    
-    def __truediv__(self, other):
-        '''
-        **self / other** - Append results, with optional separating space.
-        
-        Combine adjacent matchers in sequence, with an optional space between
-        them.  The space is included in the results.
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('/', other, True)
-        return NAMESPACE.get('/', 
-                             lambda a, b: 
-                             NAMESPACE.get('&', And)(a, Space()[0:,...], b)) \
-                             (self, other)
-        
-    def __rtruediv__(self, other):
-        '''
-        **other / self** - Append results, with optional separating space.
-        
-        Combine adjacent matchers in sequence, with an optional space between
-        them.  The space is included in the results.
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('/', other, True)
-        return NAMESPACE.get('/', 
-                             lambda a, b: 
-                             NAMESPACE.get('&', And)(a, Space()[0:,...], b)) \
-                             (other, self)
-        
-    def __floordiv__(self, other):
-        '''
-        **self // other** - Append results, with required separating space.
-        
-        Combine adjacent matchers in sequence, with a space between them.  
-        The space is included in the results.
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('//', other, True)
-        return NAMESPACE.get('//', 
-                             lambda a, b: 
-                             NAMESPACE.get('&', And)(a, Space()[1:,...], b)) \
-                             (self, other)
-        
-    def __rfloordiv__(self, other):
-        '''
-        **other // self** - Append results, with required separating space.
-        
-        Combine adjacent matchers in sequence, with a space between them.  
-        The space is included in the results.
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('//', other, True)
-        return NAMESPACE.get('//', 
-                             lambda a, b: 
-                             NAMESPACE.get('&', And)(a, Space()[1:,...], b)) \
-                             (other, self)
-        
-    def __or__(self, other):
-        '''
-        **self | other** - Try alternative matchers.
-        
-        This introduces backtracking.  Matches are tried from left to right
-        and successful results returned (one on each "recall").  This is 
-        equivalent to `lepl.match.Or`.
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('|', other, True)
-        return NAMESPACE.get('|', Or)(self, other) 
-        
-    def __ror__(self, other):
-        '''
-        **other | self** - Try alternative matchers.
-        
-        This introduces backtracking.  Matches are tried from left to right
-        and successful results returned (one on each "recall").  This is 
-        equivalent to `lepl.match.Or`.
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('|', other, True)
-        return NAMESPACE.get('|', Or)(other, self) 
-        
-    def __mod__(self, other):
-        '''
-        **self % other** - Take first match (committed choice).
-        
-        Matches are tried from left to right and the first successful result
-        is returned.  This is equivalent to `lepl.match.First`.
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('%', other, True)
-        return NAMESPACE.get('%', First)(self, other) 
-        
-    def __rmod__(self, other):
-        '''
-        **other % self** - Take first match (committed choice).
-        
-        Matches are tried from left to right and the first successful result
-        is returned.  This is equivalent to `lepl.match.First`.
-        
-        :Parameters:
-        
-          other
-            Another matcher or a string that will be converted to a literal
-            match.
-        '''
-        self.__check('%', other, True)
-        return NAMESPACE.get('%', First)(other, self) 
-        
-    def __invert__(self):
-        '''
-        **~self** - Discard the result.
-
-        This generates a matcher that behaves as the original, but returns
-        an empty list. This is equivalent to `lepl.match.Drop`.
-        
-        Note that `lepl.match.Lookahead` overrides this method to have
-        different semantics (negative lookahead).
-        '''
-        return NAMESPACE.get('~', Drop)(self) 
-        
-    def __getitem__(self, indices):
-        '''
-        **self[start:stop:algorithm, separator, ...]** - Repetition and lists.
-        
-        This is a complex statement that modifies the current matcher so
-        that it matches several times.  A separator may be specified
-        (eg for comma-separated lists) and the results may be combined with
-        "+" (so repeated matching of characters would give a word).
-        
-        start:stop:algorithm
-          This controls the number of matches made and the order in which
-          different numbers of matches are returned.
-          
-          [start]
-            Repeat exactly *start* times
-            
-          [start:stop]
-            Repeat *start* to *stop* times (starting with as many matches
-            as possible, and then decreasing as necessary).
-            
-          [start:stop:algorithm]
-            Direction selects the algorithm for searching.
-            
-            'b' (BREADTH_FIRST)
-              A breadth first search is used, which tends to give shorter
-              matches before longer ones.  This tries all possible matches for 
-              the sub-matcher first (before repeating calls to consume more 
-              of the stream).  If the sub-matcher does not backtrack then this 
-              guarantees that the number of matches returned will not decrease 
-              (ie will monotonically increase) on backtracking.
-              
-            'd' (DEPTH_FIRST)
-              A depth first search is used, which tends to give longer
-              matches before shorter ones.  This tries to repeats matches 
-              with the sub-matcher, consuming as much of the stream as 
-              possible, before backtracking to find alternative matchers.
-              If the sub-matcher does not backtrack then this guarantees
-              that the number of matches returned will not increase (ie will
-              monotonically decrease) on backtracking.
-              
-            'g' (GREEDY)
-              An exhaustive search is used, which finds all results (by 
-              breadth first search) and orders them by length before returning 
-              them ordered from longest to shortest.  This guarantees that
-              the number of matches returned will not increase (ie will
-              monotonically decrease) on backtracking, but can consume a lot 
-              of resources.
-              
-            'n' (NON_GREEDY)
-              As for 'g' (GREEDY), but results are ordered shortest to 
-              longest.  This guarantees that the number of matches returned 
-              will not decrease (ie will monotonically increase) on 
-              backtracking, but can consume a lot of resources,
-            
-          Values may be omitted; the defaults are: *start* = 0, *stop* = 
-          infinity, *algorithm* = 'd' (DEPTH_FIRST).
-
-        separator
-          If given, this must appear between repeated values.  Matched
-          separators are returned as part of the result (unless, of course,
-          they are implemented with a matcher that returns nothing).  If 
-          *separator* is a string it is converted to a literal match.
-
-        ...
-          If ... (an ellipsis) is given then the results are joined together
-          with "+".           
-
-        Examples
-        --------
-        
-        Any()[0:3,...] will match 3 or less characters, joining them
-        together so that the result is a single string.
-        
-        Word()[:,','] will match a comma-separated list of words.
-        
-        value[:] or value[0:] or value[0::'d'] is a "greedy" match that,
-        if value does not backtrack, is equivalent to the "*" in a regular
-        expression.
-        value[::'n'] is the "non-greedy" equivalent (preferring as short a 
-        match as possible) and value[::'g'] is greedy even when value does
-        provide alternative matches on backtracking.
-        '''
-        start = 0
-        stop = None
-        step = DEPTH_FIRST
-        separator = None
-        add = False
-        if not isinstance(indices, tuple):
-            indices = [indices]
-        for index in indices:
-            if isinstance(index, int):
-                start = index
-                stop = index
-                step = DEPTH_FIRST
-            elif isinstance(index, slice):
-                start = index.start if index.start != None else 0
-                stop = index.stop if not open_stop(index) else None
-                step = index.step if index.step != None else DEPTH_FIRST
-            elif index == Ellipsis:
-                add = True
-            elif separator is None:
-                separator = index
-            else:
-                raise TypeError(index)
-        return NAMESPACE.get('[]', Repeat)(
-            self, start, stop, step, separator, add)
-        
-    def __gt__(self, function):
-        '''
-        **self in function** - Process or label the results.
-        
-        Create a named pair or apply a function to the results.  This is
-        equivalent to `lepl.match.Apply`.
-        
-        :Parameters:
-        
-          function
-            This can be a string or a function.
-            
-            If a string is given each result is replaced by a 
-            (name, value) pair, where name is the string and value is the
-            result.
-            
-            If a function is given it is called with the results as an
-            argument.  The return value is used as the new result.  This
-            is equivalent to `lepl.match.Apply` with nolist=False.
-        '''
-        self.__check('>', function, False)
-        return NAMESPACE.get('>', Apply)(self, function) 
-    
-    def __rshift__(self, function):
-        '''
-        **self >> function** - Process or label the results (map).
-        
-        Create a named pair or apply a function to each result in turn.  
-        This is equivalent to `lepl.match.Map`.  It is similar to 
-        *self >= function*, except that the function is applied to each 
-        result in turn.
-        
-        :Parameters:
-        
-          function
-            This can be a string or a function.
-            
-            If a string is given each result is replaced by a 
-            (name, value) pair, where name is the string and value is the
-            result.
-            
-            If a function is given it is called with each result in turn.
-            The return values are used as the new result.
-        '''
-        self.__check('>>', function, False)
-        return NAMESPACE.get('>>', Map)(self, function) 
-        
-    def __mul__(self, function):
-        '''
-        **self * function** - Process the results (\*args).
-        
-        Apply a function to each result in turn.  
-        This is equivalent to `lepl.match.Apply` with ``args=True``.  
-        It is similar to *self > function*, except that the function is 
-        applies to multiple arguments (using Python's ``*args`` behaviour).
-        
-        :Parameters:
-        
-          function
-            A function that is called with the results as arguments.
-            The return values are used as the new result.
-        '''
-        self.__check('*', function, False)
-        return NAMESPACE.get('*', 
-                             lambda a, b: Apply(a, b, args=True)) \
-                             (self, function) 
-        
-    def __pow__(self, function):
-        '''
-        **self \** function** - Process the results (\**kargs).
-        
-        Apply a function to keyword arguments
-        This is equivalent to `lepl.match.KApply`.
-        
-        :Parameters:
-        
-          function
-            A function that is called with the keyword arguments described below.
-            The return value is used as the new result.
-
-            Keyword arguments:
-            
-              stream_in
-                The stream passed to the matcher.
-    
-              stream_out
-                The stream returned from the matcher.
-                
-              core
-                The core, if streams are being used, else ``None``.
-            
-              results
-                A list of the results returned.
-        '''
-        self.__check('**', function, False)
-        return NAMESPACE.get('**', KApply)(self, function) 
-    
-    def __xor__(self, message):
-        '''
-        **self ^ message**
-        
-        Raise a SytaxError.
-        
-        :Parameters:
-        
-          message
-            The message for the SyntaxError.
-        '''
-        return NAMESPACE.get('^', 
-                             lambda a, b: KApply(a, raise_error(b))) \
-                             (self, message)
-                             
-    def __check(self, name, other, is_match):
-        '''
-        Provide some diagnostics if the syntax is completely mixed up.
-        '''
-        if not isinstance(other, str): # can go either way
-            if is_match != isinstance(other, Matcher):
-                if is_match:
-                    msg = 'The operator {0} for {1} was applied to something ' \
-                        'that is not a matcher ({2}).'
-                else:
-                    msg = 'The operator {0} for {1} was applied to a matcher ' \
-                        '({2}).'
-                msg += ' Check syntax and parentheses.'
-                raise SyntaxError(msg.format(name, self.__class__.__name__, 
-                                             other))
-                             
 
 class _Repeat(BaseMatcher):
     '''
@@ -1479,14 +998,6 @@ def SignedEFloat(decimal='.', exponent='eE'):
 Float = SignedEFloat
 
 
-def coerce(arg, function=Literal):
-    '''
-    Many arguments can take a string which is implicitly converted (via this
-    function) to a literal (or similar).
-    '''
-    return function(arg) if isinstance(arg, str) else arg
-
-
 def Word(chars=AnyBut(Whitespace()), body=None):
      '''
      Match a sequence of non-space characters, joining them together. 
@@ -1506,24 +1017,6 @@ def Word(chars=AnyBut(Whitespace()), body=None):
      return chars + body[0:,...]
  
 
-class Separator(Override):
-    '''
-    Redefine ``[]`` and ``&`` to include the given matcher as a separator (so it will
-    be used between list items and between matchers separated by the & 
-    operator)
-    '''
-    
-    def __init__(self, separator):
-        '''
-        If the separator is a string it is coerced to `lepl.match.Regexp`.
-        '''
-        separator = coerce(separator, Regexp)
-        and_ = lambda a, b: And(a, separator, b)
-        def repeat(m, st=0, sp=None, d=0, s=None, a=False):
-            if s is None: s = separator
-            return Repeat(m, st, sp, d, s, a)
-        super(Separator, self).__init__(and_=and_, repeat=repeat)
-        
 def DropEmpty(matcher):
     '''
     Drop results if they are empty (ie if they are ``False`` in Python).
@@ -1535,3 +1028,11 @@ def DropEmpty(matcher):
     def drop(results):
         return [result for result in results if result]
     return Apply(matcher, drop, raw=True)
+
+
+def coerce(arg, function=Literal):
+    '''
+    Many arguments can take a string which is implicitly converted (via this
+    function) to a literal (or similar).
+    '''
+    return function(arg) if isinstance(arg, str) else arg
