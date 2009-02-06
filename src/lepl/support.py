@@ -155,3 +155,10 @@ def open_stop(spec):
     somewhere; hopefully no-one ever wants finite repeats larger than this.
     '''
     return spec.stop == None or spec.stop > 2147483647
+
+
+def lmap(function, values):
+    '''
+    A map that returns a list rather than an iterator.
+    '''
+    return list(map(function, values))

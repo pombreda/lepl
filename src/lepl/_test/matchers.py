@@ -1,13 +1,10 @@
 
-
-from unittest import TestCase
-
-
 from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.match import * 
-from lepl.resources import managed
+from lepl.matchers import * 
+from lepl.node import Node
+from lepl.resource import managed
 from lepl.trace import LogMixin
 
 
@@ -215,4 +212,23 @@ class EofTest(BaseTest):
     
     def test_eof(self):
         self.assert_direct('foo ', 'foo' / Eof(), [['foo', ' ']])
+        
+        
+class StrTest(TestCase):
+
+    def test_str(self):
+        class Term(Node): pass
+        class Factor(Node): pass
+        class Expression(Node): pass
+
+        expression  = Delayed()
+        number      = Digit()[1:,...]                      > 'number'
+        term        = (number | '(' / expression / ')')    > Term
+        muldiv      = Any('*/')                            > 'operator'
+        factor      = (term / (muldiv / term)[0::])        > Factor
+        addsub      = Any('+-')                            > 'operator'
+        expression += (factor / (addsub / factor)[0::])    > Expression
+
+        description = repr(expression)
+        assert description == '', description
         

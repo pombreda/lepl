@@ -20,7 +20,7 @@
 The core provides a central repository for 'global' data used during a parse.
 '''
 
-from lepl.resources import GeneratorControl
+from lepl.resource import GeneratorControl
 from lepl.trace import BlackBox
 
 

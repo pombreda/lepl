@@ -105,7 +105,7 @@ Running this gives the result::
 from lepl.operators import * 
 from lepl.node import *
 from lepl.stream import *
-from lepl.match import *
+from lepl.matchers import *
 
 __all__ = [
         # custom

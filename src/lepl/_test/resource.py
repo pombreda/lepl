@@ -2,8 +2,8 @@
 from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.match import *
-from lepl.resources import managed
+from lepl.matchers import *
+from lepl.resource import managed
 from lepl.trace import LogMixin
 
 

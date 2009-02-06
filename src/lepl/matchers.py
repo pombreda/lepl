@@ -41,9 +41,9 @@ from traceback import print_exc
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
 from lepl.node import Node, raise_error
-from lepl.resources import managed
+from lepl.resource import managed
 from lepl.stream import StreamMixin
-from lepl.support import assert_type, BaseGeneratorDecorator
+from lepl.support import assert_type, BaseGeneratorDecorator, lmap
 from lepl.trace import LogMixin
 
 
@@ -55,213 +55,170 @@ class BaseMatcher(OperatorMixin, StreamMixin, LogMixin, Matcher):
 
     def __init__(self):
         super(BaseMatcher, self).__init__()
+        self.arg_names = []
         
-
-class _Repeat(BaseMatcher):
-    '''
-    Modifies a matcher so that it repeats several times, including an optional
-    separator and the ability to combine results with "+" (**[::]**).
-    ''' 
+    def __arg(self, **kargs):
+        assert len(kargs) == 1
+        for name in kargs:
+            value = kargs[name]
+            setattr(self, name, kargs[name])
+            return name
+            
+    def _arg(self, **kargs):
+        '''
+        Set named arg as attribute and save name for future reconstruction.
+        '''
+        self.arg_names.append(self.__arg(**kargs))
+        
+    def _args(self, **kargs):
+        '''
+        Set named *arg as attribute and save name for future reconstruction.
+        '''
+        self.arg_names.append('*' + self.__arg(**kargs))
+        
+    def __str__(self):
+        return '\n'.join(self._node_str('', '', set()))
     
-    def __init__(self, matcher, start=0, stop=None, algorithm='d', separator=None):
-        '''
-        Construct the modified matcher.
-        
-        :Parameters:
-        
-          matcher
-            The matcher to modify (a string is converted to a literal match).
-        
-          start, stop
-            Together these place upper and lower limits (inclusive) on how
-            often a matcher can repeat.
-            
-          algorithm
-            In the presence of global backtracking, repeated matching can
-            be performed in a variety of ways.
-            This parameter controls the sequence in which the matches are 
-            generated.
-            The algorithm is selected by an sing character:
-            
-              'b' (BREADTH_FIRST)
-                A breadth first search is used, which tends to give shorter
-                matches before longer ones.  This tries all possible matches for 
-                the sub-matcher first (before repeating calls to consume more 
-                of the stream).  If the sub-matcher does not backtrack then this 
-                guarantees that the number of matches returned will not decrease 
-                (ie will monotonically increase) on backtracking.
-              
-              'd' (DEPTH_FIRST)
-                A depth first search is used, which tends to give longer
-                matches before shorter ones.  This tries to repeats matches 
-                with the sub-matcher, consuming as much of the stream as 
-                possible, before backtracking to find alternative matchers.
-                If the sub-matcher does not backtrack then this guarantees
-                that the number of matches returned will not increase (ie will
-                monotonically decrease) on backtracking.
-              
-              'g' (GREEDY)
-                An exhaustive search is used, which finds all results (by 
-                breadth first search) and orders them by length before returning 
-                them ordered from longest to shortest.  This guarantees that
-                the number of matches returned will not increase (ie will
-                monotonically decrease) on backtracking, but can consume a lot 
-                of resources.
-              
-              'n' (NON_GREEDY)
-                As for 'g' (GREEDY), but results are ordered shortest to 
-                longest.  This guarantees that the number of matches returned 
-                will not decrease (ie will monotonically increase) on 
-                backtracking, but can consume a lot of resources,
-  
-            The default is 'd', which approximates the usual "greedy"
-            behaviour of regular expressions, but is more predictable (and
-            efficient) that the exhaustive search.
-            
-          separator
-            If given, this must appear between repeated values.  Matched
-            separators are returned as part of the result (unless, of course,
-            they are implemented with a matcher that returns nothing).  If 
-            *separator* is a string it is converted to a literal match.
-        '''
-        super(_Repeat, self).__init__()
-        self.__first = coerce(matcher)
-        if separator is None:
-            self.__second = self.__first 
-        else:
-            self.__second = And(coerce(separator, Regexp), self.__first)
-        if start is None: start = 0
-        assert_type('The start index for Repeat or [...]', start, int)
-        assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
-        assert_type('The algorithm/increment for Repeat or [...]', algorithm, str)
-        if start < 0:
-            raise ValueError('Repeat or [...] cannot have a negative start.')
-        if stop != None and stop < start:
-            raise ValueError('Repeat or [...] must have a stop '
-                             'value greater than or equal to the start.')
-        if 'dbgn'.find(algorithm) == -1:
-            raise ValueError('Repeat or [...] must have a step (algorithm) '
-                             'of d, b, g or n.')
-        self._start = start
-        self._stop = stop
-        self._algorithm = algorithm
-        tag = '{0}:{1}:{2}'.format(self._start, self._start, self._algorithm)
-        if separator != None:
-            tag += ','
-            if isinstance(separator, str):
-                tag += repr(separator)
+    def __repr__(self):
+        return '\n'.join(self._node_str('', '', set()))
+    
+    def _node_str(self, first, rest, visited):
+        cons = self.__class__.__name__
+        if self in visited:
+            return ['{0} <reference loop>'.format(cons)]
+        elif self.__simple():
+            if self.arg_names:
+                return ['{0}{1}({2!r})'.format(first, cons, 
+                                               getattr(self, self.arg_names[0]))]
             else:
-                try:
-                    tag += separator.describe()
-                except:
-                    tag += str(separator)
-        self.tag(tag)
+                return ['{0}{1}()'.format(first, cons)]
+        else:
+            visited = visited.union(set([self]))
+            lines = []
+            for name in self.arg_names:
+                if name.startswith('*'):
+                    for arg in getattr(self, name[1:]):
+                        lines.extend(self.__arg_str(rest, None, arg, visited))
+                else:
+                    lines.extend(self.__arg_str(rest, name, getattr(self, name),
+                                                visited))
+            lines = ['{0}{1}('.format(first, cons)] + lines
+            lines[-1] += ')'
+            return lines
         
+    def __arg_str(self, indent, name, arg, visited):
+        indent += '  '
+        first = indent + ((name + '=') if name else '')
+        if isinstance(arg, BaseMatcher):
+            return arg._node_str(first, indent, visited)
+        else:
+            return ['{0}{1!r}'.format(first, arg)]
+                        
+    def __simple(self):
+        for name in self.arg_names:
+            if name.startswith('*'): return False
+            arg = getattr(self, name)
+            for type_ in (bool, int, float):
+                if isinstance(arg, type_): return True
+            if isinstance(arg, str) and len(arg) < 40: return True
+            return False
+        return True # zero length
+
+class _BaseSearch(BaseMatcher):
+    '''
+    Support for search (repetition) classes.
+    '''
+    
+    def __init__(self, first, start, stop, rest=None):
+        '''
+        Subclasses repeat a match between 'start' and 'stop' times, inclusive.
+        
+        The first match is made with 'first'.  Subsequent matches are made
+        with 'rest' (if undefined, 'first' is used).
+        '''
+        super(_BaseSearch, self).__init__()
+        self._arg(first=coerce(first))
+        self._arg(start=start)
+        self._arg(stop=stop)
+        self._arg(rest=coerce(first if rest is None else rest))
+        
+    def _cleanup(self, queue):
+        for (count, acc, stream, generator) in queue:
+            self._debug('Closing %s' % generator)
+            generator.close()
+        
+        
+class DepthFirst(_BaseSearch):
+    '''
+    Depth first repetition (typically used via ``lepl.Repeat``).
+    '''
+
     @managed
     def __call__(self, stream):
-        '''
-        Do the matching (return a generator that provides successive 
-        (result, stream) tuples).
-        '''
-        if self._algorithm == BREADTH_FIRST:
-            return self.__breadth_first(stream)
-        elif self._algorithm == DEPTH_FIRST:
-            return self.__depth_first(stream)
-        else:
-            return self.__exhaustive(stream, self._algorithm == GREEDY)
-        
-    def __breadth_first(self, stream):
-        '''
-        Implement breadth first, non-greedy matching (zero step).
-        '''
-        for (_depth, results, stream) in self.__with_breadth(stream):
-            yield (results, stream)
-                    
-    def __with_breadth(self, stream):
-        '''
-        Implement breadth first, non-greedy matching (zero step).
-        '''
-        queue = deque()
-        if 0 == self._start: yield(0, [], stream)
-        queue.append((0, [], stream))
-        while queue:
-            (count1, acc1, stream1) = queue.popleft()
-            count2 = count1 + 1
-            for (value, stream2) in self.__matcher(count1)(stream1):
-                acc2 = acc1 + value
-                if count2 >= self._start and \
-                    (self._stop is None or count2 <= self._stop):
-                    yield (count2, acc2, stream2)
-                if self._stop is None or count2 < self._stop:
-                    queue.append((count2, acc2, stream2))
-
-    def __matcher(self, count):
-        '''
-        Provide the appropriate matcher for a given count.
-        '''
-        if 0 == count:
-            return self.__first
-        else:
-            return self.__second
-        
-    def __exhaustive(self, stream, greedy):
-        '''
-        Implement the exhaustive search matching.
-
-        The only advantage of this over depth/breadth first is that it 
-        guarantees ordering.
-        '''
-        all = {}
-        for (depth, results, stream) in self.__with_breadth(stream):
-            if depth not in all:
-                all[depth] = []
-            all[depth].append((results, stream))
-        keys = list(all.keys())
-        keys.sort()
-        if greedy: keys = reversed(keys)
-        for depth in keys:
-            for (result, stream) in all[depth]:
-                yield (result, stream)
-                
-    def __depth_first(self, stream):
-        '''
-        Implement the default, depth first matching (zero step).
-        '''
         stack = []
         try:
-            stack.append((0, [], stream, self.__matcher(0)(stream)))
+            stack.append((0, [], stream, self.first(stream)))
             while stack:
                 (count1, acc1, stream1, generator) = stack[-1]
                 extended = False
-                if self._stop is None or count1 < self._stop:
+                if self.stop is None or count1 < self.stop:
                     count2 = count1 + 1
                     try:
                         (value, stream2) = next(generator)
                         acc2 = acc1 + value
-                        stack.append((count2, acc2, stream2, self.__matcher(count2)(stream2)))
+                        stack.append((count2, acc2, stream2, self.rest(stream2)))
                         extended = True
                     except StopIteration:
                         pass
                 if not extended:
-                    if count1 >= self._start and \
-                            (self._stop is None or count1 <= self._stop):
+                    if count1 >= self.start and \
+                            (self.stop is None or count1 <= self.stop):
                         yield (acc1, stream1)
                     stack.pop(-1)
         finally:
-            for (count, acc, stream, generator) in stack:
-                self._debug('Closing %s' % generator)
-                generator.close()
-                
+            self._cleanup(stack)
+        
+        
+class BreadthFirst(_BaseSearch):
+    '''
+    Breadth first repetition (typically used via ``lepl.Repeat``).
+    '''
+    
+    @managed
+    def __call__(self, stream):
+        queue = deque()
+        try:
+            queue.append((0, [], stream, self.first(stream)))
+            while queue:
+                (count1, acc1, stream1, generator) = queue.popleft()
+                if count1 >= self.start and \
+                        (self.stop is None or count1 <= self.stop):
+                    yield (acc1, stream1)
+                count2 = count1 + 1
+                for (value, stream2) in generator:
+                    acc2 = acc1 + value
+                    if self.stop is None or count2 <= self.stop:
+                        queue.append((count2, acc2, stream2, self.rest(stream2)))
+        finally:
+            self._cleanup(queue)
+            
 
-def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST, 
-            separator=None, add=False):
+class OrderByResultCount(BaseMatcher):
     '''
-    Extend `lepl.match._Repeat` with `lepl.match.Add` to match the
-    functionality required by the [...] syntax in `lepl.match.BaseMatcher`.
+    Modify a matcher to return results in length order.
     '''
-    return (Add if add else Identity)(
-        _Repeat(matcher, start, stop, algorithm, separator)).tag('...')
-                
+    
+    def __init__(self, matcher, ascending=True):
+        super(OrderByResultCount, self).__init__()
+        self._arg(matcher=coerce(matcher, Literal))
+        self._arg(ascending=ascending)
+        
+    @managed
+    def __call__(self, stream):
+        for result in sorted(self.matcher(stream),
+                             key=lambda x: len(x[0]), reverse=self.ascending):
+            yield result
+
                 
 class And(BaseMatcher):
     '''
@@ -280,7 +237,7 @@ class And(BaseMatcher):
             be coerced to literal matches.
         '''
         super(And, self).__init__()
-        self.__matchers = [coerce(matcher) for matcher in matchers]
+        self._args(matchers=lmap(coerce, matchers))
 
     @managed
     def __call__(self, stream):
@@ -290,8 +247,8 @@ class And(BaseMatcher):
         combined together as elements in a list.
         '''
 
-        if self.__matchers:
-            stack = [([], self.__matchers[0](stream), self.__matchers[1:])]
+        if self.matchers:
+            stack = [([], self.matchers[0](stream), self.matchers[1:])]
             try:
                 while stack:
                     (result, generator, matchers) = stack.pop(-1)
@@ -310,33 +267,24 @@ class And(BaseMatcher):
                     generator.close()
 
 
-class Or(BaseMatcher):
+class _BaseCombiner(BaseMatcher):
+    
+    def __init__(self, *matchers):
+        super(_BaseCombiner, self).__init__()
+        self._args(matchers=lmap(coerce, matchers))
+
+
+class Or(_BaseCombiner):
     '''
     Match one of the given matchers (**|**).
     It can be used indirectly by placing ``|`` between matchers.
     
-    **Note:** This is equivalent to depth first search.  Breadth 
-    first search is not supported (partly because the way the parser is
-    built using Python's operators doesn't build the flat tree that
-    it would require to be useful; partly because I don't yet see
-    how it helps).  See `lepl.match.First`.
+    Matchers are tried from left to right until one succeeds; backtracking
+    will try more from the same matcher and, once that is exhausted,
+    continue to the right.  String arguments will be coerced to 
+    literal matches.
     '''
     
-    def __init__(self, *matchers):
-        '''
-        Create a matcher for matching one of the given sub-matchers.
-        
-        :Parameters:
-        
-          matchers
-            They are tried from left to right until one succeeds; backtracking
-            will try more from the same matcher and, once that is exhausted,
-            continue to the right.  String arguments will be coerced to 
-            literal matches.
-        '''
-        super(Or, self).__init__()
-        self.__matchers = [coerce(matcher) for matcher in matchers]
-
     @managed
     def __call__(self, stream):
         '''
@@ -344,34 +292,22 @@ class Or(BaseMatcher):
         (result, stream) tuples).  The result will correspond to one of the
         sub-matchers (starting from the left).
         '''
-
-        for match in self.__matchers:
+        for match in self.matchers:
             for result in match(stream):
                 yield result
 
 
-class First(BaseMatcher):
+class First(_BaseCombiner):
     '''
     Match the first successful matcher only (**%**).
     It can be used indirectly by placing ``%`` between matchers.
     Note that backtracking for the first-selected matcher will still occur.
+
+    Matchers are tried from left to right until one succeeds; backtracking
+    will try more from the same matcher (only).  String arguments will be 
+    coerced to literal matches.
     '''
     
-    def __init__(self, *matchers):
-        '''
-        Create a matcher for matching one of the given sub-matchers.
-        
-        :Parameters:
-        
-          matchers
-            They are tried from left to right until one succeeds; backtracking
-            will try more from the same matcher and, once that is exhausted,
-            continue to the right.  String arguments will be coerced to 
-            literal matches.
-        '''
-        super(First, self).__init__()
-        self.__matchers = [coerce(matcher) for matcher in matchers]
-
     @managed
     def __call__(self, stream):
         '''
@@ -380,7 +316,7 @@ class First(BaseMatcher):
         sub-matchers (starting from the left).
         '''
         matched = False
-        for match in self.__matchers:
+        for match in self.matchers:
             for result in match(stream):
                 matched = True
                 yield result
@@ -406,8 +342,8 @@ class Any(BaseMatcher):
             **Note:** This argument is *not* a sub-matcher.
         '''
         super(Any, self).__init__()
+        self._arg(restrict=restrict)
         self.tag(repr(restrict))
-        self.__restrict = restrict
     
     @managed
     def __call__(self, stream):
@@ -416,7 +352,7 @@ class Any(BaseMatcher):
         (result, stream) tuples).  The result will be a single matching 
         character.
         '''
-        if stream and (not self.__restrict or stream[0] in self.__restrict):
+        if stream and (not self.restrict or stream[0] in self.restrict):
             yield ([stream[0]], stream[1:])
             
             
@@ -431,8 +367,8 @@ class Literal(BaseMatcher):
         with some streams.
         '''
         super(Literal, self).__init__()
+        self._arg(text=text)
         self.tag(repr(text))
-        self.__text = text
     
     @managed
     def __call__(self, stream):
@@ -444,12 +380,20 @@ class Literal(BaseMatcher):
         provided by the stream interface.
         '''
         try:
-            if self.__text == stream[0:len(self.__text)]:
-                yield ([self.__text], stream[len(self.__text):])
+            if self.text == stream[0:len(self.text)]:
+                yield ([self.text], stream[len(self.text):])
         except IndexError:
             pass
         
         
+def coerce(arg, function=Literal):
+    '''
+    Many arguments can take a string which is implicitly converted (via this
+    function) to a literal (or similar).
+    '''
+    return function(arg) if isinstance(arg, str) else arg
+
+
 class Empty(BaseMatcher):
     '''
     Match any stream, consumes no input, and returns nothing.
@@ -457,6 +401,7 @@ class Empty(BaseMatcher):
     
     def __init__(self, name=None):
         super(Empty, self).__init__()
+        self._arg(name=name)
         if name:
             self.tag(name)
     
@@ -487,8 +432,8 @@ class Lookahead(BaseMatcher):
         a string it is coerced to a literal match.
         '''
         super(Lookahead, self).__init__()
-        self.__matcher = coerce(matcher)
-        self.__negated = negated
+        self._arg(matcher=coerce(matcher))
+        self._arg(negated=negated)
         if negated:
             self.tag('~')
     
@@ -499,12 +444,12 @@ class Lookahead(BaseMatcher):
         (result, stream) tuples).
         '''
         # Note that there is no backtracking here - the 'for' is not repeated.
-        if self.__negated:
-            for result in self.__matcher(stream):
+        if self.negated:
+            for result in self.matcher(stream):
                 return
             yield ([], stream)
         else:
-            for result in self.__matcher(stream):
+            for result in self.matcher(stream):
                 yield ([], stream)
                 return
             
@@ -512,7 +457,7 @@ class Lookahead(BaseMatcher):
         '''
         Invert the semantics (this overrides the usual meaning for ~).
         '''
-        return Lookahead(self.__matcher, negated=not self.__negated)
+        return Lookahead(self.matcher, negated=not self.negated)
             
 
 class Apply(BaseMatcher):
@@ -562,14 +507,15 @@ class Apply(BaseMatcher):
             the results are passed inside a list).
         '''
         super(Apply, self).__init__()
-        self.__matcher = coerce(matcher)
+        self._arg(matcher=coerce(matcher))
         if isinstance(function, str):
-            self.__function = lambda results: list(map(lambda x:(function, x), results))
+            self._arg(function=lambda results: list(map(lambda x:(function, x), results)))
         elif raw:
-            self.__function = function
+            self._arg(function=function)
         else:
-            self.__function = lambda results: [function(results)]
-        self.__args = args
+            self._arg(function=lambda results: [function(results)])
+        self._arg(raw=raw)
+        self._arg(args=args)
         tags = []
         if isinstance(function, str): tags.append(repr(function))
         if raw: tags.append('raw')
@@ -582,11 +528,11 @@ class Apply(BaseMatcher):
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
         '''
-        for (results, stream) in self.__matcher(stream):
-            if self.__args:
-                yield (self.__function(*results), stream)
+        for (results, stream) in self.matcher(stream):
+            if self.args:
+                yield (self.function(*results), stream)
             else:
-                yield (self.__function(results), stream)
+                yield (self.function(results), stream)
             
             
 class KApply(BaseMatcher):
@@ -631,9 +577,9 @@ class KApply(BaseMatcher):
             other matchers.   
         '''
         super(KApply, self).__init__()
-        self.__matcher = coerce(matcher)
-        self.__function = function
-        self.__raw = raw
+        self._arg(matcher=coerce(matcher))
+        self._arg(function=function)
+        self._arg(raw=raw)
         
     @managed
     def __call__(self, stream_in):
@@ -647,13 +593,13 @@ class KApply(BaseMatcher):
             kargs['core'] = stream_in.core
         except:
             kargs['core'] = None
-        for (results, stream_out) in self.__matcher(stream_in):
+        for (results, stream_out) in self.matcher(stream_in):
             kargs['stream_out'] = stream_out
             kargs['results'] = results
-            if self.__raw:
-                yield self.__function(**kargs)
+            if self.raw:
+                yield self.function(**kargs)
             else:
-                yield ([self.__function(**kargs)], stream_out)
+                yield ([self.function(**kargs)], stream_out)
             
             
 class Regexp(BaseMatcher):
@@ -673,6 +619,7 @@ class Regexp(BaseMatcher):
             The regular expression to match. 
         '''
         super(Regexp, self).__init__()
+        self._arg(pattern=pattern)
         self.tag(repr(pattern))
         self.__pattern = compile(pattern)
         
@@ -705,7 +652,7 @@ class Delayed(BaseMatcher):
         Introduce the matcher.  It can be defined later with '+='
         '''
         super(Delayed, self).__init__()
-        self.__matcher = None
+        self._arg(matcher=None)
     
     @managed
     def __call__(self, stream):
@@ -714,16 +661,16 @@ class Delayed(BaseMatcher):
         (result, stream) tuples).
         '''
 
-        if self.__matcher:
-            return self.__matcher(stream)
+        if self.matcher:
+            return self.matcher(stream)
         else:
             raise ValueError('Delayed matcher still unbound.')
         
     def __iadd__(self, matcher):
-        if self.__matcher:
+        if self.matcher:
             raise ValueError('Delayed matcher already bound.')
         else:
-            self.__matcher = coerce(matcher)
+            self.matcher = coerce(matcher)
             return self
          
 
@@ -786,19 +733,90 @@ class Trace(BaseMatcher):
     
     def __init__(self, matcher, name=None):
         super(Trace, self).__init__()
-        self.__matcher = matcher
-        self.__name = name
+        self._arg(matcher=matcher)
+        self._arg(name=name)
     
     @managed
     def __call__(self, stream):
-        '''
-        '''
-        return _TraceDecorator(self.__matcher(stream), stream, self.__name)
+        return _TraceDecorator(self.matcher(stream), stream, self.name)
+    
+    
+class Memo(BaseMatcher):
+    '''
+    Memoize the node.
+    
+    This uses a table to store previous results and so avoid repeated
+    matching.  Doing so effectively implements "PackRat" parsing.  In
+    addition, we can detect and avoid the indefinite looping that occurs
+    with left-recursive rules.
+    '''
+    
+    def __init__(self, matcher):
+        super(Memo, self).__init__()
+        self._arg(matcher=matcher)
+        self.__table = {}
 
+    @managed
+    def __call__(self, stream):
+        try:
+            index = stream.depth()
+        except:
+            index = stream
+        if index not in self.__table:
+            # This flags left-recursive calls 
+            self.__table[index] = None
+            self.__table[index] = self.matcher(stream)
+        if self.__table[index] is None:
+            # Abort left-recursive
+            return
+        else:
+            for result in self.__table[index]:
+                yield result
+        
 
-# the following are functions rather than classes, but we use the class
+# The following are functions rather than classes, but we use the class
 # syntax to give a uniform interface.
+
+# The functions are not strictly matchers, in that they do not yield
+# results directly.  Instead they provide useful ways of assembling other
+# matchers to do useful tasks.  Because of this they do not appear in the
+# final matcher tree for any particular grammar.
+
  
+def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST, 
+            separator=None, add=False):
+    '''
+    '''
+    first = coerce(matcher)
+    if separator is None:
+        rest = first
+    else:
+        rest = And(coerce(separator, Regexp), first)
+    if start is None: start = 0
+    assert_type('The start index for Repeat or [...]', start, int)
+    assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
+    assert_type('The algorithm/increment for Repeat or [...]', algorithm, str)
+    if start < 0:
+        raise ValueError('Repeat or [...] cannot have a negative start.')
+    if stop is not None and stop < start:
+        raise ValueError('Repeat or [...] must have a stop '
+                         'value greater than or equal to the start.')
+    if 'dbgn'.find(algorithm) == -1:
+        raise ValueError('Repeat or [...] must have a step (algorithm) '
+                         'of d, b, g or n.')
+    add = Add if add else Identity
+    return {DEPTH_FIRST:
+                add(DepthFirst(first, start, stop, rest)),
+            BREADTH_FIRST: 
+                add(BreadthFirst(first, start, stop, rest)),
+            GREEDY:        
+                add(OrderByResultCount(BreadthFirst(first, start, stop, rest))),
+            NON_GREEDY:
+                add(OrderByResultCount(BreadthFirst(first, start, stop, rest),
+                                       False))
+            }[algorithm]
+            
+        
 def AnyBut(exclude=None):
     '''
     Match any character except those specified (or, if a matcher is used as
@@ -1016,7 +1034,7 @@ def Word(chars=AnyBut(Whitespace()), body=None):
      body = chars if body is None else coerce(body, Any)
      return chars + body[0:,...]
  
-
+ 
 def DropEmpty(matcher):
     '''
     Drop results if they are empty (ie if they are ``False`` in Python).
@@ -1028,11 +1046,3 @@ def DropEmpty(matcher):
     def drop(results):
         return [result for result in results if result]
     return Apply(matcher, drop, raw=True)
-
-
-def coerce(arg, function=Literal):
-    '''
-    Many arguments can take a string which is implicitly converted (via this
-    function) to a literal (or similar).
-    '''
-    return function(arg) if isinstance(arg, str) else arg

@@ -105,7 +105,7 @@ class DefaultNamespace(Namespace):
     
     def __init__(self):
         # Handle circular dependencies
-        from lepl.match import And, Space, Add, Or, Apply, Drop, KApply, \
+        from lepl.matchers import And, Space, Add, Or, Apply, Drop, KApply, \
             Repeat, raise_error, First, Map
         super(DefaultNamespace, self).__init__({
             SPACE_OPT: lambda a, b: And(a, Space()[0:,...], b),
@@ -127,6 +127,7 @@ class DefaultNamespace(Namespace):
 __GLOBAL = None
 def Global():
     '''Global (per-thread) binding from operator name to implementation'''
+    # Delay creation to handle circular dependencies.
     global __GLOBAL
     if __GLOBAL is None:
         __GLOBAL = DefaultNamespace()
