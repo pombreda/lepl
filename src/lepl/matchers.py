@@ -41,7 +41,7 @@ from traceback import print_exc
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
 from lepl.node import Node, raise_error
-from lepl.resource import managed
+from lepl.manager import managed
 from lepl.stream import StreamMixin
 from lepl.support import assert_type, BaseGeneratorDecorator, lmap
 from lepl.trace import LogMixin

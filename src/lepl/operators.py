@@ -201,7 +201,7 @@ class Separator(Override):
         If the separator is a string it is coerced to `lepl.match.Regexp`.
         '''
         # Handle circular dependencies
-        from match import Regexp, And, Repeat, coerce
+        from lepl.matchers import Regexp, And, Repeat, coerce
         separator = coerce(separator, Regexp)
         and_ = lambda a, b: And(a, separator, b)
         def repeat(m, st=0, sp=None, d=0, s=None, a=False):

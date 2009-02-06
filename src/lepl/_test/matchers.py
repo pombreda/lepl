@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from lepl.matchers import * 
 from lepl.node import Node
-from lepl.resource import managed
+from lepl.manager import managed
 from lepl.trace import LogMixin
 
 

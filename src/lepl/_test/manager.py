@@ -3,7 +3,7 @@ from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.matchers import *
-from lepl.resource import managed
+from lepl.manager import managed
 from lepl.trace import LogMixin
 
 
