@@ -42,87 +42,21 @@ from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
 from lepl.node import Node, raise_error
 from lepl.manager import managed
+from lepl.matcher import NodeMixin
 from lepl.stream import StreamMixin
 from lepl.support import assert_type, BaseGeneratorDecorator, lmap
 from lepl.trace import LogMixin
 
 
 
-class BaseMatcher(OperatorMixin, StreamMixin, LogMixin, Matcher):
+class BaseMatcher(NodeMixin, OperatorMixin, StreamMixin, LogMixin, Matcher):
     '''
     A base class that provides support to all matchers.
     '''
 
     def __init__(self):
         super(BaseMatcher, self).__init__()
-        self.arg_names = []
-        
-    def __arg(self, **kargs):
-        assert len(kargs) == 1
-        for name in kargs:
-            value = kargs[name]
-            setattr(self, name, kargs[name])
-            return name
-            
-    def _arg(self, **kargs):
-        '''
-        Set named arg as attribute and save name for future reconstruction.
-        '''
-        self.arg_names.append(self.__arg(**kargs))
-        
-    def _args(self, **kargs):
-        '''
-        Set named *arg as attribute and save name for future reconstruction.
-        '''
-        self.arg_names.append('*' + self.__arg(**kargs))
-        
-    def __str__(self):
-        return '\n'.join(self._node_str('', '', set()))
-    
-    def __repr__(self):
-        return '\n'.join(self._node_str('', '', set()))
-    
-    def _node_str(self, first, rest, visited):
-        cons = self.__class__.__name__
-        if self in visited:
-            return ['{0} <reference loop>'.format(cons)]
-        elif self.__simple():
-            if self.arg_names:
-                return ['{0}{1}({2!r})'.format(first, cons, 
-                                               getattr(self, self.arg_names[0]))]
-            else:
-                return ['{0}{1}()'.format(first, cons)]
-        else:
-            visited = visited.union(set([self]))
-            lines = []
-            for name in self.arg_names:
-                if name.startswith('*'):
-                    for arg in getattr(self, name[1:]):
-                        lines.extend(self.__arg_str(rest, None, arg, visited))
-                else:
-                    lines.extend(self.__arg_str(rest, name, getattr(self, name),
-                                                visited))
-            lines = ['{0}{1}('.format(first, cons)] + lines
-            lines[-1] += ')'
-            return lines
-        
-    def __arg_str(self, indent, name, arg, visited):
-        indent += '  '
-        first = indent + ((name + '=') if name else '')
-        if isinstance(arg, BaseMatcher):
-            return arg._node_str(first, indent, visited)
-        else:
-            return ['{0}{1!r}'.format(first, arg)]
-                        
-    def __simple(self):
-        for name in self.arg_names:
-            if name.startswith('*'): return False
-            arg = getattr(self, name)
-            for type_ in (bool, int, float):
-                if isinstance(arg, type_): return True
-            if isinstance(arg, str) and len(arg) < 40: return True
-            return False
-        return True # zero length
+
 
 class _BaseSearch(BaseMatcher):
     '''
