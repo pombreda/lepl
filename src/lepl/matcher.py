@@ -1,12 +1,12 @@
 
 
-class NodeMixin(object):
+class GraphNodeMixin(object):
     '''
     Allow the construction of a graph of matchers.
     '''
 
     def __init__(self):
-        super(NodeMixin, self).__init__()
+        super(GraphNodeMixin, self).__init__()
         self.arg_names = []
         self.__walker = None
         
@@ -35,7 +35,7 @@ class NodeMixin(object):
         return self.__walker(visitor)
         
     def __repr__(self):
-        visitor = GraphStr()
+        visitor = ConstructorStr(60)
         lines = self.walk(visitor)
         return visitor.postprocess(lines)
 
@@ -46,7 +46,7 @@ class Visitor(object):
     
     'loop' is value returned when a node is re-visited.
     
-    'arg' is called for children that are not NodeMixin instances.
+    'arg' is called for children that are not GraphNodeMixin instances.
     
     'type_' is set with the node type before node() is called.  This
     allows node() itself to be invoked with the Python arguments used to
@@ -103,11 +103,11 @@ class Walker(object):
         for name in node.arg_names:
             if name.startswith('*'):
                 for child in getattr(node, name[1:]):
-                    if isinstance(child, NodeMixin):
+                    if isinstance(child, GraphNodeMixin):
                         yield child
             else:
                 child = getattr(node, name)
-                if isinstance(child, NodeMixin):
+                if isinstance(child, GraphNodeMixin):
                     yield child
     
     def __arguments(self, node, visitor, results):
@@ -122,7 +122,7 @@ class Walker(object):
         return (args, kargs)
     
     def __value(self, node, visitor, results):
-        if isinstance(node, NodeMixin):
+        if isinstance(node, GraphNodeMixin):
             if node in results:
                 return results[node]
             else:
@@ -134,7 +134,7 @@ class Walker(object):
 class ConstructorStr(Visitor):
     
     def __init__(self, line_length=80):
-        super(MatcherStr, self).__init__()
+        super(ConstructorStr, self).__init__()
         self.loop = [[0, '<loop>']]
         self.__line_length = line_length
     

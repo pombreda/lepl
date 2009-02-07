@@ -42,14 +42,14 @@ from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
 from lepl.node import Node, raise_error
 from lepl.manager import managed
-from lepl.matcher import NodeMixin
+from lepl.matcher import GraphNodeMixin
 from lepl.stream import StreamMixin
 from lepl.support import assert_type, BaseGeneratorDecorator, lmap
 from lepl.trace import LogMixin
 
 
 
-class BaseMatcher(NodeMixin, OperatorMixin, StreamMixin, LogMixin, Matcher):
+class BaseMatcher(GraphNodeMixin, OperatorMixin, StreamMixin, LogMixin, Matcher):
     '''
     A base class that provides support to all matchers.
     '''
