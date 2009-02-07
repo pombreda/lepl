@@ -22,10 +22,11 @@ Support for structuring results.
 
 from collections import Iterable, Mapping, deque
 
+from lepl.graph import NamedAttributeMixin, Walker, GraphStr
 from lepl.trace import LogMixin
 
 
-class Node(LogMixin):
+class Node(NamedAttributeMixin, LogMixin):
     '''
     A base class for AST nodes.  This is designed to be applied to a list of 
     results, via ``>``.  If the list contains labelled pairs ``(str, value)`` 
@@ -38,20 +39,20 @@ class Node(LogMixin):
         the ``>`` operator.
         '''
         super(Node, self).__init__()
-        self.__args = args
-        self.__named_args = {}
+        self.__walker = Walker(self)
         for arg in args:
             try:
                 if isinstance(arg, Node):
-                    name = arg.__class__.__name__
-                    value = arg
+                    self._arg(arg.__class__.__name__, arg)
                 else:
+                    # named pairs are treated in a special way - the value
+                    # alone is the attribute, but the pair is the constructor
+                    # arg
                     (name, value) = arg
-                if name not in self.__named_args:
-                    self.__named_args[name] = []
-                self.__named_args[name].append(value)
+                    self._add_attribute(name, value)
+                    self._args.append(arg)
             except:
-                pass
+                self._arg(None, arg)
         self._info('{0}'.format(self))
         
     def __dir__(self):
@@ -63,47 +64,37 @@ class Node(LogMixin):
         this information (I want to avoid using a named method as that will
         obscure a similarly named child).
         '''
-        return list(self.__named_args.keys())
+        return self._names
     
-    def __getattr__(self, name):
-        if name in self.__named_args:
-            return self.__named_args[name]
-        else:
-            raise KeyError(name)
-        
     def __getitem__(self, index):
-        return self.__args[index]
+        return self._args[index]
     
     def __iter__(self):
-        return iter(self.__args)
+        return iter(self._args)
     
     def __str__(self):
-        return '\n'.join(self._node_str('', ' '))
+        visitor = CustomStr()
+        return visitor.postprocess(self.__walker(visitor))
     
     def __repr__(self):
         return self.__class__.__name__ + '(...)'
     
-    def _node_str(self, first, rest):
-        args = [[rest + '+- ', rest + '|   ', arg] for arg in self.__args]
-        args[-1][0] = rest + '`- '
-        args[-1][1] = rest + '    '
-        lines = [first + self.__class__.__name__]
-        for (f, r, a) in args:
-            lines += self.__arg_str(f, r, a)
-        return lines
-    
-    def __arg_str(self, first, rest, arg):
-        try:
-            if isinstance(arg, Node):
-                return arg._node_str(first, rest)
-            else:
-                (name, value) = arg
-                return [first + name + ' ' + repr(value)]
-        except:
-            return [first + repr(arg)]
-        
     def __len__(self):
-        return len(self.__args)
+        return len(self._args)
+    
+
+class CustomStr(GraphStr):
+    '''
+    Extend ``lepl.GraphStr`` to handle named pairs.
+    '''
+    
+    def arg(self, arg):
+        try:
+            (name, value) = arg
+            return lambda first, rest, name_: \
+                [first + name + (' ' if name else '') + repr(value)]
+        except Exception as e:
+            return super(CustomStr, self).arg(arg)
 
 
 def make_dict(contents):
