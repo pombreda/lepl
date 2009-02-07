@@ -38,24 +38,29 @@ from re import compile
 from sys import version
 from traceback import print_exc
 
+from lepl.graph import ArgAsAttributeMixin, GraphWalkerMixin, ConstructorStr
+from lepl.manager import managed
+from lepl.node import Node, raise_error
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
-from lepl.node import Node, raise_error
-from lepl.manager import managed
-from lepl.matcher import GraphNodeMixin
 from lepl.stream import StreamMixin
 from lepl.support import assert_type, BaseGeneratorDecorator, lmap
 from lepl.trace import LogMixin
 
 
 
-class BaseMatcher(GraphNodeMixin, OperatorMixin, StreamMixin, LogMixin, Matcher):
+class BaseMatcher(ArgAsAttributeMixin, GraphWalkerMixin, OperatorMixin, 
+                    StreamMixin, LogMixin, Matcher):
     '''
     A base class that provides support to all matchers.
     '''
 
     def __init__(self):
         super(BaseMatcher, self).__init__()
+
+    def __repr__(self):
+        visitor = ConstructorStr()
+        return visitor.postprocess(self.walk(visitor))
 
 
 class _BaseSearch(BaseMatcher):
