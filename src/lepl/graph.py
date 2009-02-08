@@ -140,11 +140,20 @@ class SimpleWalker(object):
 
 class ConstructorGraphNode(SimpleGraphNode):
     '''
-    Allow the construction and traversal of a graph of objects.  There is
-    assumed to be a close relationship between constructor arguments and
-    children - exactly how is deferred to implementations (there is a
-    somewhat implicit link between Python object constructors and type 
-    constructors in, say, Haskell).
+    Extend ``SimpleGraphNode`` to provide information on constructor arguments,
+    
+    This is used by ``ConstructorGraphWalker`` to provide the results of
+    walking child nodes in the same format as those nodes were provided in
+    the constructor.  The main advantage is that the names of named
+    arguments are associated with the appropriate results.
+    
+    For this to work correctly there is assumed to be a close relationship 
+    between constructor arguments and children  (there is a somewhat implicit 
+    link between Python object constructors and type constructors in, say, 
+    Haskell).  Exactly how constructor argmuents and children match depends
+    on the implementation, but ``ConstructorGraphWalker`` assumes that child
+    nodes (from _children()) are visited before the same nodes appear in
+    constructor arguments during depth-first postorder traversal.
     '''
 
     def _constructor_args(self):
