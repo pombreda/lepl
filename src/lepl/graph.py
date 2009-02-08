@@ -6,7 +6,7 @@ The simplest node interface is ``SimpleGraphNode``.  Implementations must
 provide an iterator over child nodes via '_children()'.
 
 A more complex node interface is ``ConstructorGraphNode``.  This assumes that 
-the children of a node are also the arguments that are original supplied to the
+the children of a node are also the arguments originally supplied to the
 node constructor (this mirrors the idea of data constructors).  It has two 
 implementations that make different assumptions about how children are 
 presented as attributes.
@@ -26,6 +26,7 @@ from collections import Sequence
 
 class SimpleGraphNode(object):
     '''
+    A simple graph node.
     '''
 
     def __init__(self):
@@ -33,7 +34,8 @@ class SimpleGraphNode(object):
         
     def _children(self, type_=None):
         '''
-        Return all children (perhaps of a particular type), in order.
+        Return an iterator over children (perhaps of a particular type), 
+        in order.
         '''
         raise Exception('Not implemented')
 
@@ -118,29 +120,29 @@ class SimpleWalker(object):
         self.__root = root
         
     def __call__(self, visitor):
-        args = {}
+        pending = {}
         for (parent, node, kind) in dfs_edges(self.__root, type_=object):
             if kind & POSTORDER:
-                if node in args:
-                    save = args[node]
-                    del args[node]
+                if node in pending:
+                    args = pending[node]
+                    del pending[node]
                 else:
-                    save = []
-                if parent not in args:
-                    args[parent] = []
+                    args = []
+                if parent not in pending:
+                    pending[parent] = []
                 visitor.type_ = type(node)
                 if kind & LEAF:
-                    args[parent].append(visitor.leaf(node))
+                    pending[parent].append(visitor.leaf(node))
                 elif kind & NONTREE:
-                    args[parent].append(visitor.loop)
+                    pending[parent].append(visitor.loop)
                 else:
-                    args[parent].append(visitor.node(*save))
-        return args[self.__root][0]
+                    pending[parent].append(visitor.node(*args))
+        return pending[self.__root][0]
     
 
 class ConstructorGraphNode(SimpleGraphNode):
     '''
-    Extend ``SimpleGraphNode`` to provide information on constructor arguments,
+    Extend ``SimpleGraphNode`` to provide information on constructor arguments.
     
     This is used by ``ConstructorGraphWalker`` to provide the results of
     walking child nodes in the same format as those nodes were provided in
@@ -378,7 +380,7 @@ class PostorderWalkerMixin(object):
 class ConstructorStr(Visitor):
     '''
     Reconstruct the constructors used to generate the graph as a string
-    (useful for repr).  Expects postorder walk.
+    (useful for repr).
     
     Internally, data is stored as a list of (indent, line) pairs.
     '''
@@ -462,7 +464,7 @@ class ConstructorStr(Visitor):
                 
 class GraphStr(Visitor):
     '''
-    Generate an ASCII graph of the nodes.  Expects postorder walk.
+    Generate an ASCII graph of the nodes.
     '''
     
     def __init__(self):
