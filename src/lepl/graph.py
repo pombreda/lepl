@@ -194,12 +194,59 @@ class Visitor(object):
         Called for children that are not node instances.
         '''
         pass
+    
+
+FORWARD = 1
+BACKWARD = 2
+NONTREE = 4
+ROOT = 8
+    
+def dfs_edges(node, type_=GraphNodeMixin):
+    '''
+    Iterative DFS, based on http://www.ics.uci.edu/~eppstein/PADS/DFS.py
+    
+    Returns forward and reverse edges.  Also returns root node in correct 
+    order for pre- (FORWARD) and post- (BACKWARD) ordering. 
+    '''
+    stack = [(node, node._children())]
+    yield node, node, ROOT | FORWARD
+    visited = set([node])
+    while stack:
+        parent, children = stack[-1]
+        try:
+            child = next(children)
+            if isinstance(child, type_):
+                if child in visited:
+                    yield parent, child, NONTREE
+                else:
+                    yield parent, child, FORWARD
+                    visited.add(child)
+                    stack.append((child, child._children()))
+        except StopIteration:
+            stack.pop()
+            if stack:
+                yield stack[-1][0], parent, BACKWARD
+    yield node, node, ROOT | BACKWARD
+    
+
+def order(node, flag, type_=GraphNodeMixin):
+    for parent, child, direction in dfs_edges(node, type_):
+        if direction & flag:
+            yield child
+
+
+def preorder(node, type_=GraphNodeMixin):
+    return order(node, FORWARD, type_)
+
+
+def postorder(node, type_=GraphNodeMixin):
+    return order(node, BACKWARD, type_)
 
 
 class Walker(object):
     '''
-    Depth first tree walker (it handles cyclic graphs by ignoring repeated
-    nodes).
+    (Post order) Depth first tree walker (it handles cyclic graphs by ignoring 
+    repeated nodes).
     
     Some processes require bottom-up and then top-down processing.  This can
     be achieved by applying this walker (bottom-up) to return functions which
@@ -214,24 +261,13 @@ class Walker(object):
         self.__root = root
         
     def __call__(self, visitor):
-        visited = set()
         results = {}
-        stack = [self.__root]
-        while stack:
-            node = stack[-1]
-            extended = False
-            if node not in visited:
-                for child in node._children(type_=GraphNodeMixin):
-                    stack.append(child)
-                    extended = True
-            visited.add(node)
-            if not extended:
-                visitor.type_ = type(node)
-                (args, kargs) = self.__arguments(node, visitor, results)
-                results[node] = visitor.node(*args, **kargs)
-                stack.pop(-1)
+        for node in order(self.__root, BACKWARD | NONTREE):
+            visitor.type_ = type(node)
+            (args, kargs) = self.__arguments(node, visitor, results)
+            results[node] = visitor.node(*args, **kargs)
         return results[self.__root]
-
+    
     def __arguments(self, node, visitor, results):
         (old_args, old_kargs) = node._constructor_args()
         (new_args, new_kargs) = ([], {})

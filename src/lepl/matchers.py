@@ -89,7 +89,7 @@ class _BaseSearch(BaseMatcher):
         
 class DepthFirst(_BaseSearch):
     '''
-    Depth first repetition (typically used via ``lepl.Repeat``).
+    (Post order) Depth first repetition (typically used via ``lepl.Repeat``).
     '''
 
     @managed
@@ -120,7 +120,7 @@ class DepthFirst(_BaseSearch):
         
 class BreadthFirst(_BaseSearch):
     '''
-    Breadth first repetition (typically used via ``lepl.Repeat``).
+    (Level order) Breadth first repetition (typically used via ``lepl.Repeat``).
     '''
     
     @managed
