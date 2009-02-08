@@ -22,12 +22,11 @@ Support for structuring results.
 
 from collections import Iterable, Mapping, deque
 
-from lepl.graph import NamedAttributeMixin, ConstructorWalker, GraphStr, postorder, POSTORDER
-#from lepl.graph import SimpleGraphNode
+from lepl.graph import SimpleGraphNode, SimpleWalker, GraphStr, postorder, POSTORDER
 from lepl.trace import LogMixin
 
 
-class Node(NamedAttributeMixin, LogMixin):
+class Node(SimpleGraphNode, LogMixin):
     '''
     A base class for AST nodes.  This is designed to be applied to a list of 
     results, via ``>``.  If the list contains labelled pairs ``(str, value)`` 
@@ -40,21 +39,29 @@ class Node(NamedAttributeMixin, LogMixin):
         the ``>`` operator.
         '''
         super(Node, self).__init__()
-        self.__postorder = ConstructorWalker(self)
+        self.__postorder = Walker(self)
+        self.__children = []
+        self.__names = []
         for arg in args:
-            try:
-                if isinstance(arg, Node):
-                    self._arg(arg.__class__.__name__, arg)
-                else:
-                    # named pairs are treated in a special way - the value
-                    # alone is the attribute, but the pair is the constructor
-                    # arg
+            if isinstance(arg, Node):
+                self.__add_attribute(arg.__class__.__name__, arg)
+            else:
+                try:
                     (name, value) = arg
                     self._add_attribute(name, value)
-                    self._args.append(arg)
-            except:
-                self._arg(None, arg)
+                except:
+                    pass
+            self.__children.append(arg)
         self._info('{0}'.format(self))
+        
+    def __add_attribute(self, name, value):
+        if name not in self.__names:
+            self.__names.append(name)
+            setattr(self, name, [])
+        getattr(self, name).append(value)
+        
+    def _children(self):
+        return iter(self)
         
     def __dir__(self):
         '''
@@ -65,13 +72,13 @@ class Node(NamedAttributeMixin, LogMixin):
         this information (I want to avoid using a named method as that will
         obscure a similarly named child).
         '''
-        return self._names
+        return self.__names
     
     def __getitem__(self, index):
-        return self._args[index]
+        return self.__children[index]
     
     def __iter__(self):
-        return iter(self._args)
+        return iter(self.__children)
     
     def __str__(self):
         visitor = CustomStr()
@@ -81,7 +88,7 @@ class Node(NamedAttributeMixin, LogMixin):
         return self.__class__.__name__ + '(...)'
     
     def __len__(self):
-        return len(self._args)
+        return len(self.__children)
     
 
 class CustomStr(GraphStr):
