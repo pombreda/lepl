@@ -38,7 +38,7 @@ from re import compile
 from sys import version
 from traceback import print_exc
 
-from lepl.graph import ArgAsAttributeMixin, GraphWalkerMixin, ConstructorStr
+from lepl.graph import ArgAsAttributeMixin, PostorderWalkerMixin, ConstructorStr
 from lepl.manager import managed
 from lepl.node import Node, raise_error
 from lepl.operators \
@@ -49,7 +49,7 @@ from lepl.trace import LogMixin
 
 
 
-class BaseMatcher(ArgAsAttributeMixin, GraphWalkerMixin, OperatorMixin, 
+class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin, 
                     StreamMixin, LogMixin, Matcher):
     '''
     A base class that provides support to all matchers.
@@ -60,7 +60,7 @@ class BaseMatcher(ArgAsAttributeMixin, GraphWalkerMixin, OperatorMixin,
 
     def __repr__(self):
         visitor = ConstructorStr()
-        return visitor.postprocess(self.walk(visitor))
+        return visitor.postprocess(self.postorder(visitor))
 
 
 class _BaseSearch(BaseMatcher):

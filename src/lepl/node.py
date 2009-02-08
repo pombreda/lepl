@@ -22,7 +22,8 @@ Support for structuring results.
 
 from collections import Iterable, Mapping, deque
 
-from lepl.graph import NamedAttributeMixin, Walker, GraphStr
+from lepl.graph import NamedAttributeMixin, ConstructorWalker, GraphStr, postorder, POSTORDER
+#from lepl.graph import SimpleGraphNode
 from lepl.trace import LogMixin
 
 
@@ -39,7 +40,7 @@ class Node(NamedAttributeMixin, LogMixin):
         the ``>`` operator.
         '''
         super(Node, self).__init__()
-        self.__walker = Walker(self)
+        self.__postorder = ConstructorWalker(self)
         for arg in args:
             try:
                 if isinstance(arg, Node):
@@ -74,7 +75,7 @@ class Node(NamedAttributeMixin, LogMixin):
     
     def __str__(self):
         visitor = CustomStr()
-        return visitor.postprocess(self.__walker(visitor))
+        return visitor.postprocess(self.__postorder(visitor))
     
     def __repr__(self):
         return self.__class__.__name__ + '(...)'
@@ -88,13 +89,13 @@ class CustomStr(GraphStr):
     Extend ``lepl.GraphStr`` to handle named pairs.
     '''
     
-    def arg(self, arg):
+    def leaf(self, arg):
         try:
             (name, value) = arg
             return lambda first, rest, name_: \
                 [first + name + (' ' if name else '') + repr(value)]
         except Exception as e:
-            return super(CustomStr, self).arg(arg)
+            return super(CustomStr, self).leaf(arg)
 
 
 def make_dict(contents):
@@ -184,65 +185,14 @@ class Error(Node, SyntaxError):
         return SyntaxError.__str__(self)
 
 
-class AstWalker():
-    '''
-    A tree walker base class.  Override one or more of ``_before``, ``_visit``
-    or ``_after``.
-    '''
-    
-    def __init__(self, dfs=True):
-        '''
-        By default, the traversal is depth-first.  Set ``dfs`` to ``False`` for
-        breadth-first.  
-        '''
-        self.__queue = None
-        self.__dfs = dfs
-    
-    def __call__(self, root):
-        '''
-        Traverse the given tree (which may be a list or `lepl.node.Node`).
-        '''
-        self._before(root)
-        self.__queue = deque()
-        self.__queue.append(root)
-        while self.__queue:
-            node = self.__queue.pop() if self.__dfs else self.__queue.popleft()
-            self._visit(node)
-            # avoid strings, maps too...
-            if isinstance(node, Node) or isinstance(node, list):
-                for child in node:
-                    self.__queue.append(child)
-        return self._after(root)
-
-    def _before(self, node):
-        '''Called before each node (and its children).'''
-        pass
-    
-    def _visit(self, node):
-        '''Called for each node.'''
-        pass
-
-    def _after(self, root):
-        '''Called after each node (and its children).'''
-        return root
-
-
-class RaiseError(AstWalker):
-    '''
-    A tree walker that raises the first node it finds that subclasses
-    ``Exception``.
-    '''
-    
-    def _visit(self, node):
-        if isinstance(node, Exception):
-            raise node
-
-
 def throw(node):
     '''
     Raise an error, if one exists in the results (AST trees are traversed).
-    Otherwise, the results are returned (so to avoid problems with extra lists,
-    invoke with ``>>``).
+    Otherwise, the results are returned (invoke with ``>>``).
     '''
-    return RaiseError()(node)
+    for child in postorder(node):
+        if isinstance(node, Exception):
+            raise node
+    return child
+        
 
