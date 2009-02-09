@@ -1,5 +1,6 @@
 
 from logging import basicConfig, DEBUG
+from types import MethodType
 from unittest import TestCase
 
 from lepl import *
@@ -46,4 +47,35 @@ class LimitedDepthTest(LogMixin, TestCase):
         matcher = (Literal('*')[:,...][3]).match_string(min_queue=5)('*' * 4)
         results = list(matcher)
         print(results)
-     
+        
+
+class InstanceMethodTest(TestCase):
+    
+    class Foo():
+        class_attribute = 1
+        def __init__(self):
+            self.instance_attribute = 2
+        def bar(self):
+            return (self.class_attribute,
+                    self.instance_attribute,
+                    hasattr(self, 'baz'))
+
+    def test_method(self):
+        foo = self.Foo()
+        assert foo.bar() == (1, 2, False)
+        def my_baz(myself):
+             return (myself.class_attribute,
+                     myself.instance_attribute,
+                     hasattr(myself, 'baz'))
+        foo.baz = MethodType(my_baz, foo)
+        assert foo.baz() == (1, 2, True)
+        assert foo.bar() == (1, 2, True)
+
+
+class FlattenTest(TestCase):
+    
+    def test_flatten(self):
+        matcher = Literal('a') & Literal('b') & Literal('c')
+        assert str(matcher) == '', str(matcher)
+        parser = string_parser(matcher)
+        

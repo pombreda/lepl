@@ -50,7 +50,7 @@ LEAF = 32      # child is a leaf node (does not implement _children())
 POSTORDER = BACKWARD | NONTREE
 PREORDER = FORWARD | NONTREE
 
-    
+
 def dfs_edges(node, type_=SimpleGraphNode):
     '''
     Iterative DFS, based on http://www.ics.uci.edu/~eppstein/PADS/DFS.py
@@ -62,40 +62,56 @@ def dfs_edges(node, type_=SimpleGraphNode):
     These do not have to provide _children() themselves (if they do not,
     they are flagged with LEAF).
     '''
-    stack = [(node, node._children(), ROOT)]
-    yield node, node, FORWARD | ROOT
-    visited = set([node])
-    while stack:
-        parent, children, ptype = stack[-1]
+    while True:
         try:
-            child = next(children)
-            if isinstance(child, type_):
-                if child in visited:
-                    yield parent, child, NONTREE
-                else:
-                    try:
-                        stack.append((child, child._children(), NODE))
-                        yield parent, child, FORWARD | NODE
-                        visited.add(child)
-                    except:
-                        stack.append((child, empty(), LEAF))
-                        yield parent, child, FORWARD | LEAF
-        except StopIteration:
-            stack.pop()
-            if stack:
-                yield stack[-1][0], parent, BACKWARD | ptype
-    yield node, node, BACKWARD | ROOT 
-    
+            stack = [(node, node._children(), ROOT)]
+            yield node, node, FORWARD | ROOT
+            visited = set([node])
+            while stack:
+                parent, children, ptype = stack[-1]
+                try:
+                    child = next(children)
+                    if isinstance(child, type_):
+                        if child in visited:
+                            yield parent, child, NONTREE
+                        else:
+                            try:
+                                stack.append((child, child._children(), NODE))
+                                yield parent, child, FORWARD | NODE
+                                visited.add(child)
+                            except AttributeError:
+                                stack.append((child, empty(), LEAF))
+                                yield parent, child, FORWARD | LEAF
+                except StopIteration:
+                    stack.pop()
+                    if stack:
+                        yield stack[-1][0], parent, BACKWARD | ptype
+            yield node, node, BACKWARD | ROOT
+            return
+        except Reset:
+            yield # in response to the throw (ignored by caller)
 
 def empty():
     if False: yield None
     
+class Reset(Exception):
+    pass
+
+def reset(generator):
+    generator.throw(Reset())
+    
 
 def order(node, include, exclude=0, type_=SimpleGraphNode):
-    for parent, child, direction in dfs_edges(node, type_):
-        if (direction & include) and not (direction & exclude):
-            yield child
-
+    while True:
+        try:
+            for parent, child, direction in dfs_edges(node, type_):
+                if (direction & include) and not (direction & exclude):
+                    print(child)
+                    yield child
+            return
+        except Reset:
+            yield # in response to the throw (ignored by caller)
+            
 
 def preorder(node, type_=SimpleGraphNode):
     return order(node, PREORDER, type_=type_)
@@ -136,7 +152,7 @@ class SimpleWalker(object):
                 elif kind & NONTREE:
                     pending[parent].append(visitor.loop)
                 else:
-                    pending[parent].append(visitor.node(*args))
+                    pending[parent].append(visitor.constructor(*args))
         return pending[self.__root][0]
     
 
@@ -175,12 +191,13 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
     def __init__(self):
         super(ArgAsAttributeMixin, self).__init__()
         self.__arg_names = []
+        self.__karg_names = []
 # Don't set these by default because subclasses have other ideas, which means
 # they get empty args and kargs atributes. 
 #        self._args(args=args)
 #        self._kargs(kargs)
 
-    def __arg_as_attribute(self, name, value):
+    def __set_attribute(self, name, value):
         '''
         Add a single argument as a simple property.
         '''
@@ -195,7 +212,28 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
         '''
         assert len(kargs) == 1
         for name in kargs:
-            self.__arg_names.append(self.__arg_as_attribute(name, kargs[name]))
+            self.__arg_names.append(self.__set_attribute(name, kargs[name]))
+        
+    def _karg(self, **kargs):
+        '''
+        Set a single keyword argument (ie with default) as an attribute (the 
+        signature uses kargs so that the name does not need to be quoted).  
+        The attribute name is added to self.__karg_names.
+        '''
+        assert len(kargs) == 1
+        for name in kargs:
+            self.__karg_names.append(self.__set_attribute(name, kargs[name]))
+      
+    def _args(self, **kargs):
+        '''
+        Set a *arg as an attribute (the signature uses kars so that the 
+        attribute name does not need to be quoted).  The name (without '*')
+        is added to self.__arg_names.
+        '''
+        assert len(kargs) == 1
+        for name in kargs:
+            assert isinstance(kargs[name], Sequence), kargs[name] 
+            self.__arg_names.append('*' + self.__set_attribute(name, kargs[name]))
         
     def _kargs(self, kargs):
         '''
@@ -203,45 +241,36 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
         self.__arg_names.
         '''
         for name in kargs:
-            self.__arg_names.append(self.__arg_as_attribute(name, kargs[name]))
+            self.__karg_names.append(self.__set_attribute(name, kargs[name]))
         
-    def _args(self, **kargs):
-        '''
-        Set *arg as an attribute (the signature uses kars so that the 
-        attribute name does not need to be quoted).  The name (without '*')
-        is added to self.__arg_names.
-        '''
-        assert len(kargs) == 1
-        for name in kargs:
-            assert isinstance(kargs[name], Sequence), kargs[name] 
-            self.__arg_names.append('*' + self.__arg_as_attribute(name, kargs[name]))
+    def __args(self):
+        args = [getattr(self, name)
+                for name in self.__arg_names if not name.startswith('*')]
+        for name in self.__arg_names:
+            if name.startswith('*'):
+                args.extend(getattr(self, name[1:]))
+        return args
+        
+    def __kargs(self):
+        return dict((name, getattr(self, name)) for name in self.__karg_names)
         
     def _constructor_args(self):
         '''
         Regenerate the constructor arguments.
         '''
-        args = []
-        kargs = {}
-        for name in self.__arg_names:
-            if name.startswith('*'):
-                args.extend(getattr(self, name[1:]))
-            else:
-                kargs[name] = getattr(self, name)
-        return (args, kargs)
+        return (self.__args(), self.__kargs())
     
     def _children(self, type_=None):
         '''
         Return all children, in order.
         '''
-        for name in self.__arg_names:
-            if name.startswith('*'):
-                for arg in getattr(self, name[1:]):
-                    if type_ is None or isinstance(arg, type_):
-                        yield arg
-            else:
-                arg = getattr(self, name)
-                if type_ is None or isinstance(arg, type_):
-                        yield arg
+        for arg in self.__args():
+            if type_ is None or isinstance(arg, type_):
+                yield arg
+        for name in self.__karg_names:
+            arg = getattr(self, name)
+            if type_ is None or isinstance(arg, type_):
+                    yield arg
 
 
 class NamedAttributeMixin(ConstructorGraphNode):
@@ -300,16 +329,18 @@ class Visitor(object):
     
     'loop' is value returned when a node is re-visited.
     
-    'type_' is set with the node type before node() is called.  This
-    allows node() itself to be invoked with the Python arguments used to
+    'type_' is set with the node type before constructor() is called.  This
+    allows constructor() itself to be invoked with the Python arguments used to
     construct the original graph.
     '''
     
-    def __init__(self):
-        self.type_ = None
-        self.loop = None
+    def loop(self, value):
+        pass
+    
+    def node(self, node):
+        pass
         
-    def node(self, *args, **kargs):
+    def constructor(self, *args, **kargs):
         '''
         Called for node instances.  The args and kargs are the values for
         the corresponding child nodes, as returned by this visitor.
@@ -338,9 +369,9 @@ class ConstructorWalker(object):
     def __call__(self, visitor):
         results = {}
         for node in postorder(self.__root, type_=ConstructorGraphNode):
-            visitor.type_ = type(node)
+            visitor.node(node)
             (args, kargs) = self.__arguments(node, visitor, results)
-            results[node] = visitor.node(*args, **kargs)
+            results[node] = visitor.constructor(*args, **kargs)
         return results[self.__root]
     
     def __arguments(self, node, visitor, results):
@@ -357,7 +388,7 @@ class ConstructorWalker(object):
             if node in results:
                 return results[node]
             else:
-                return visitor.loop
+                return visitor.loop(node)
         else:
             return visitor.leaf(node)
         
@@ -387,10 +418,15 @@ class ConstructorStr(Visitor):
     
     def __init__(self, line_length=80):
         super(ConstructorStr, self).__init__()
-        self.loop = [[0, '<loop>']]
         self.__line_length = line_length
+        
+    def node(self, node):
+        self.__name = node.__class__.__name__
+        
+    def loop(self, value):
+        return [[0, '<loop>']]
     
-    def node(self, *args, **kargs):
+    def constructor(self, *args, **kargs):
         contents = []
         for arg in args:
             if contents: contents[-1][1] += ', '
@@ -400,7 +436,7 @@ class ConstructorStr(Visitor):
             arg = kargs[name]
             contents.append([arg[0][0]+1, name + '=' + arg[0][1]])
             contents.extend([indent+1, line] for (indent, line) in arg[1:])
-        lines = [[0, self.type_.__name__ + '(']] + contents
+        lines = [[0, self.__name + '(']] + contents
         lines[-1][1] += ')'
         return lines
     
@@ -467,12 +503,14 @@ class GraphStr(Visitor):
     Generate an ASCII graph of the nodes.
     '''
     
-    def __init__(self):
-        super(GraphStr, self).__init__()
-        self.loop = lambda first, rest, name: [first + name + ' <loop>']
+    def loop(self, value):
+        return lambda first, rest, name: [first + name + ' <loop>']
     
-    def node(self, *args, **kargs):
-        def fun(first, rest, name, type_=self.type_):
+    def node(self, node):
+        self.__type = node.__class__.__name__
+    
+    def constructor(self, *args, **kargs):
+        def fun(first, rest, name, type_=self.__type):
             spec = []
             for arg in args:
                 spec.append((' +- ', ' |  ', '', arg))
@@ -480,7 +518,7 @@ class GraphStr(Visitor):
                 spec.append((' +- ', ' |  ', arg, kargs[arg]))
             if spec:
                 spec[-1] = (' `- ', '    ', spec[-1][2], spec[-1][3])
-            yield first + name + (' ' if name else '') + type_.__name__
+            yield first + name + (' ' if name else '') + type_
             for (a, b, c, f) in spec:
                 for line in f(a, b, c):
                     yield rest + line
@@ -493,3 +531,61 @@ class GraphStr(Visitor):
     def postprocess(self, f):
         return '\n'.join(f('', '', ''))
     
+
+class Proxy(object):
+    
+    def __init__(self, mutable_delegate):
+        self.__mutable_delegate = mutable_delegate
+        
+    def __getattr__(self, name):
+        return getattr(self.__mutable_delegate[0], name)
+    
+
+def make_proxy():
+    mutable_delegate = [None]
+    def setter(x):
+        mutable_delegate[0] = x
+    return (setter, Proxy(mutable_delegate))
+
+
+class Clone(Visitor):
+    '''
+    Clone the graph.
+    '''
+    
+    def __init__(self):
+        super(Clone, self).__init__()
+        self.__proxies = {}
+    
+    def loop(self, value):
+        if node not in self.__setters:
+            self.__proxies[node] = make_proxy()
+        return self.__proxies[node][1]
+    
+    def node(self, node):
+        self.__node = node
+        
+    def _new(self, *args, **kargs):
+        return type(self.__node)(*args, **kargs)
+    
+    def constructor(self, *args, **kargs):
+        node = self._new(*args, **kargs)
+        if self.__node in self.__proxies:
+            self.__proxies[self.__node][0](node)
+        return node
+    
+    def leaf(self, value):
+        return value
+    
+
+class CloneApply(Clone):
+    '''
+    Apply a function to every cloned node.
+    '''
+    
+    def __init__(self, function):
+        super(CloneApply, self).__init__()
+        self.__function = function
+        
+    def _new(self, *args, **kargs):
+        return self.__function(super(CloneApply, self)(*args, **kargs))

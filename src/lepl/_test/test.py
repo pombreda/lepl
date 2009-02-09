@@ -2,10 +2,19 @@
 
 class Foo(object):
     
-    def __rsub__(self, other):
-        return self
+    def __init__(self):
+        self.__bar = 1
+    
+    @property
+    def _bar(self):
+        return self.__bar
+    
+    @_bar.setter
+    def _bar(self, bar):
+        self.__bar = bar
+    
     
 if __name__ == '__main__':
     a -= Foo()
-    print(a)
+    a.bar = 1
     
