@@ -85,9 +85,38 @@ class Stream():
         Create a stream, given the appropriate chunk and offset.
         '''
         self.__chunk = chunk
-        self.offset = offset
+        self.__offset = offset
+        # exposed directly for convenience
         self.core = chunk.core
         
+    def location(self):
+        '''
+        A pair containing line number and line offset.
+        The line number is ``None`` if this is past the end of the file.
+        '''
+        return self.__chunk.location(self.__offset)
+    
+    def depth(self):
+        '''
+        The file offset.
+        '''
+        return self.__chunk.depth(self.__offset)
+        
+    def line(self):
+        '''
+        The line of text in the underlying chunk indexed by this stream.
+        '''
+        # not implemented as self.__chunk.text(0), because it's possible
+        # that self.__offset is not in self.__chunk. 
+        return self.__chunk.line()
+    
+    def text(self):
+        '''
+        The line of text in the underlying chunk indexed by this stream,
+        starting at the offset.
+        '''
+        return self.__chunk.text(self.__offset)
+    
     def __getitem__(self, spec):
         '''
         [n] returns a character (string of length 1)
@@ -95,13 +124,13 @@ class Stream():
         [n:m] returns a string
         These are all relative to the internal offset.
         '''
-        return self.__chunk.getitem(spec, self.offset)
+        return self.__chunk.getitem(spec, self.__offset)
     
     def __bool__(self):
         '''
         Non-empty?
         '''
-        return not self.__chunk.empty_at(self.offset)
+        return not self.__chunk.empty_at(self.__offset)
     
     def __len__(self):
         '''
@@ -109,32 +138,21 @@ class Stream():
         '''
         return 1 if self.__bool__() else 0
     
-    def location(self):
-        '''
-        A pair containing line number and line offset.
-        The line number is ``None`` if this is past the end of the file.
-        '''
-        return self.__chunk.location(self.offset)
-    
-    def depth(self):
-        '''
-        The file offset.
-        '''
-        return self.__chunk.depth(self.offset)
-        
     def __repr__(self):
-        return '%r[%d:]' % (self.__chunk, self.offset)
+        return '%r[%d:]' % (self.__chunk, self.__offset)
     
     def __str__(self):
-        return self.__chunk.describe(self.offset)
+        return self.__chunk.describe(self.__offset)
     
-    def line(self):
-        return self.__chunk.line()
+    def __hash__(self):
+        return hash(self.core) ^ self.depth()
     
-    def text(self):
-        return self.__chunk.text(self.offset)
-    
-        
+    def __eq__(self, other):
+        return isinstance(other, Stream) and \
+            self.depth() == other.depth() and \
+            self.core == other.core
+
+
 class Chunk(object):
     '''
     A linked list (cons cell) of lines from the stream.
@@ -158,6 +176,11 @@ class Chunk(object):
     def read(self, offset=0, start=0, stop=None):
         '''
         Read a string.
+        
+        Works something like self.__text[start:stop], but shifted to offset,
+        and allowing stop to be None.  If stop is specified and overshoots the
+        chunk appropriate for start then data are pulled in from the next
+        chunk.
         '''
         if stop == 0: return ''
         if self.__empty:

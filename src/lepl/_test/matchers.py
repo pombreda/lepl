@@ -5,6 +5,7 @@ from unittest import TestCase
 from lepl.matchers import * 
 from lepl.node import Node
 from lepl.manager import managed
+from lepl.parser import string_parser
 from lepl.trace import LogMixin
 
 
@@ -186,9 +187,9 @@ class CommitTest(BaseTest):
     
     def test_commit(self):
         self.assert_direct('abcd', 
-            (Any()[0::'b'] + (Literal('d') | 
-                             Literal('cd') + Commit() | 
-                             Literal('bcd')) + Eof()).match_string(min_queue=100), 
+            stringparser(Any()[0::'b'] + (Literal('d') | 
+                                          Literal('cd') + Commit() | 
+                                          Literal('bcd')) + Eof()), 
             [['abcd'], ['abcd']])
         
 

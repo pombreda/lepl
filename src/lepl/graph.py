@@ -23,6 +23,8 @@ calls to the node constructors.  This is particularly useful for generating
 
 from collections import Sequence
 
+from lepl.support import compose
+
 
 class SimpleGraphNode(object):
     '''
@@ -106,7 +108,6 @@ def order(node, include, exclude=0, type_=SimpleGraphNode):
         try:
             for parent, child, direction in dfs_edges(node, type_):
                 if (direction & include) and not (direction & exclude):
-                    print(child)
                     yield child
             return
         except Reset:
@@ -146,11 +147,11 @@ class SimpleWalker(object):
                     args = []
                 if parent not in pending:
                     pending[parent] = []
-                visitor.type_ = type(node)
+                visitor.node(node)
                 if kind & LEAF:
                     pending[parent].append(visitor.leaf(node))
                 elif kind & NONTREE:
-                    pending[parent].append(visitor.loop)
+                    pending[parent].append(visitor.loop(node))
                 else:
                     pending[parent].append(visitor.constructor(*args))
         return pending[self.__root][0]
@@ -548,13 +549,18 @@ def make_proxy():
     return (setter, Proxy(mutable_delegate))
 
 
+def clone(node, args, kargs):
+    return type(node)(*args, **kargs)
+
+
 class Clone(Visitor):
     '''
     Clone the graph.
     '''
     
-    def __init__(self):
+    def __init__(self, clone=clone):
         super(Clone, self).__init__()
+        self.__clone = clone
         self.__proxies = {}
     
     def loop(self, value):
@@ -565,11 +571,8 @@ class Clone(Visitor):
     def node(self, node):
         self.__node = node
         
-    def _new(self, *args, **kargs):
-        return type(self.__node)(*args, **kargs)
-    
     def constructor(self, *args, **kargs):
-        node = self._new(*args, **kargs)
+        node = self.__clone(self.__node, args, kargs)
         if self.__node in self.__proxies:
             self.__proxies[self.__node][0](node)
         return node
@@ -578,14 +581,6 @@ class Clone(Visitor):
         return value
     
 
-class CloneApply(Clone):
-    '''
-    Apply a function to every cloned node.
-    '''
-    
-    def __init__(self, function):
-        super(CloneApply, self).__init__()
-        self.__function = function
-        
-    def _new(self, *args, **kargs):
-        return self.__function(super(CloneApply, self)(*args, **kargs))
+def post_clone(function):
+    return compose(function, compose)
+

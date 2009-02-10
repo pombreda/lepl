@@ -9,7 +9,7 @@ from lepl.node import Node
 class StrTest(TestCase):
     
     def assert_same(self, text1, text2):
-        assert self.__clean(text1) == self.__clean(text2), self.__clean(text1)
+        assert self.__clean(text1) == self.__clean(text2), text1
     
     def __clean(self, text):
         depth = 0
@@ -36,7 +36,7 @@ class StrTest(TestCase):
         addsub      = Any('+-')                            > 'operator'
         expression += (factor / (addsub / factor)[0::])    > Expression
 
-        description = repr(expression)
+        description = str(expression)
         self.assert_same(description, r'''Delayed(
  matcher=Apply(
   function=<function <lambda> at 0x7f63608010d8>, 
@@ -444,29 +444,22 @@ class StrTest(TestCase):
         number      = Digit()[1:,...]
         expression += (number | '(' / expression / ')')
 
-        description = repr(expression)
+        description = str(expression)
         self.assert_same(description, r'''Delayed(
- matcher=Or(
+ Or(
   Apply(
-   function=<function add at 0x7f63607f4c00>, 
-   matcher=DepthFirst(
-    start=1, stop=None, rest=Any(restrict='0123456789'), 
-    first=Any(restrict='0123456789')), 
-   args=False, raw=True), 
+   DepthFirst(
+    Any(restrict='0123456789'), 1, None, rest=Any(restrict='0123456789')), 
+   <function add at 0x7f551afda738>, raw=True, args=False), 
   And(
    And(
-    Literal(text='('), 
+    Literal('('), 
     Apply(
-     function=<function add at 0x7f63607f68d0>, 
-     matcher=DepthFirst(
-      start=0, stop=None, rest=Any(restrict=' \t'), 
-      first=Any(restrict=' \t')), 
-     args=False, raw=True), 
-    Delayed(matcher=<loop>)), 
+     DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+     <function add at 0x7f551ab4d380>, raw=True, args=False), 
+    Delayed(<loop>)), 
    Apply(
-    function=<function add at 0x7f63607f69e0>, 
-    matcher=DepthFirst(
-     start=0, stop=None, rest=Any(restrict=' \t'), first=Any(restrict=' \t')), 
-    args=False, raw=True), 
-   Literal(text=')'))))''')
+    DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+    <function add at 0x7f551ad76d98>, raw=True, args=False), 
+   Literal(')'))))''')
  

@@ -61,9 +61,9 @@ def managed(f):
     Decorator for managed generators (ie all generators returned by
     matchers)
     '''
-    def call(self, stream):
+    def managed_match(self, stream):
         return GeneratorWrapper(f(self, stream), self, stream)
-    return call
+    return managed_match
 
 
 class GeneratorWrapper(LogMixin):

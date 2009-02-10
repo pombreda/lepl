@@ -162,3 +162,13 @@ def lmap(function, values):
     A map that returns a list rather than an iterator.
     '''
     return list(map(function, values))
+
+
+def compose(f, g):
+    '''
+    Functional composition.
+    '''
+    def fun(*args, **kargs):
+        return f(g(*args, **kargs))
+    return fun
+

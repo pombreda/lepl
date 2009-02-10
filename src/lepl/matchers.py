@@ -44,7 +44,7 @@ from lepl.node import Node, raise_error
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
 from lepl.stream import StreamMixin
-from lepl.support import assert_type, BaseGeneratorDecorator, lmap
+from lepl.support import assert_type, BaseGeneratorDecorator, lmap, compose
 from lepl.trace import LogMixin
 
 
@@ -85,7 +85,7 @@ class _BaseSearch(BaseMatcher):
         self._arg(first=coerce(first))
         self._arg(start=start)
         self._arg(stop=stop)
-        self._arg(rest=coerce(first if rest is None else rest))
+        self._karg(rest=coerce(first if rest is None else rest))
         
     def _cleanup(self, queue):
         for (count, acc, stream, generator) in queue:
@@ -154,7 +154,7 @@ class OrderByResultCount(BaseMatcher):
     def __init__(self, matcher, ascending=True):
         super(OrderByResultCount, self).__init__()
         self._arg(matcher=coerce(matcher, Literal))
-        self._arg(ascending=ascending)
+        self._karg(ascending=ascending)
         
     def match(self, stream):
         for result in sorted(self.matcher(stream),
@@ -162,25 +162,19 @@ class OrderByResultCount(BaseMatcher):
             yield result
 
                 
-class And(BaseMatcher):
+class _BaseCombiner(BaseMatcher):
+    
+    def __init__(self, *matchers):
+        super(_BaseCombiner, self).__init__()
+        self._args(matchers=lmap(coerce, matchers))
+
+
+class And(_BaseCombiner):
     '''
     Match one or more matchers in sequence (**&**).
     It can be used indirectly by placing ``&`` between matchers.
     '''
     
-    def __init__(self, *matchers):
-        '''
-        Create a matcher for one or more sub-matchers in sequence.
-
-        :Parameters:
-        
-          matchers
-            The patterns which are matched, in turn.  String arguments will
-            be coerced to literal matches.
-        '''
-        super(And, self).__init__()
-        self._args(matchers=lmap(coerce, matchers))
-
     def match(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -206,13 +200,6 @@ class And(BaseMatcher):
             finally:
                 for (result, generator, matchers) in stack:
                     generator.close()
-
-
-class _BaseCombiner(BaseMatcher):
-    
-    def __init__(self, *matchers):
-        super(_BaseCombiner, self).__init__()
-        self._args(matchers=lmap(coerce, matchers))
 
 
 class Or(_BaseCombiner):
@@ -281,7 +268,7 @@ class Any(BaseMatcher):
             **Note:** This argument is *not* a sub-matcher.
         '''
         super(Any, self).__init__()
-        self._arg(restrict=restrict)
+        self._karg(restrict=restrict)
         self.tag(repr(restrict))
     
     def match(self, stream):
@@ -338,7 +325,7 @@ class Empty(BaseMatcher):
     
     def __init__(self, name=None):
         super(Empty, self).__init__()
-        self._arg(name=name)
+        self._karg(name=name)
         if name:
             self.tag(name)
     
@@ -369,7 +356,7 @@ class Lookahead(BaseMatcher):
         '''
         super(Lookahead, self).__init__()
         self._arg(matcher=coerce(matcher))
-        self._arg(negated=negated)
+        self._karg(negated=negated)
         if negated:
             self.tag('~')
     
@@ -449,8 +436,8 @@ class Apply(BaseMatcher):
             self._arg(function=function)
         else:
             self._arg(function=lambda results: [function(results)])
-        self._arg(raw=raw)
-        self._arg(args=args)
+        self._karg(raw=raw)
+        self._karg(args=args)
         tags = []
         if isinstance(function, str): tags.append(repr(function))
         if raw: tags.append('raw')
@@ -513,7 +500,7 @@ class KApply(BaseMatcher):
         super(KApply, self).__init__()
         self._arg(matcher=coerce(matcher))
         self._arg(function=function)
-        self._arg(raw=raw)
+        self._karg(raw=raw)
         
     def match(self, stream_in):
         '''
@@ -579,12 +566,12 @@ class Delayed(BaseMatcher):
     matcher must be assigned via '+='.
     '''
     
-    def __init__(self):
+    def __init__(self, matcher=None):
         '''
         Introduce the matcher.  It can be defined later with '+='
         '''
         super(Delayed, self).__init__()
-        self._arg(matcher=None)
+        self._arg(matcher=matcher)
     
     def match(self, stream):
         '''
@@ -664,7 +651,7 @@ class Trace(BaseMatcher):
     def __init__(self, matcher, name=None):
         super(Trace, self).__init__()
         self._arg(matcher=matcher)
-        self._arg(name=name)
+        self._karg(name=name)
     
     def match(self, stream):
         return _TraceDecorator(self.matcher(stream), stream, self.name)
@@ -974,3 +961,14 @@ def DropEmpty(matcher):
     def drop(results):
         return [result for result in results if result]
     return Apply(matcher, drop, raw=True)
+
+
+def Literals(*matchers):
+    '''
+    A series of literals, joined with ``lepl.Or``.
+    '''
+    # I considered implementing this by extending Literal() itself, but
+    # that would have meant putting "Or-like" functionality in Literal,
+    # and I felt it better to keep the base matchers reasonably orthogonal.
+    return lmap(compose(Or, Literal), matchers)
+ 

@@ -39,7 +39,7 @@ class Node(SimpleGraphNode, LogMixin):
         the ``>`` operator.
         '''
         super(Node, self).__init__()
-        self.__postorder = Walker(self)
+        self.__postorder = SimpleWalker(self)
         self.__children = []
         self.__names = []
         for arg in args:

@@ -76,6 +76,7 @@ class FlattenTest(TestCase):
     
     def test_flatten(self):
         matcher = Literal('a') & Literal('b') & Literal('c')
-        assert str(matcher) == '', str(matcher)
+        assert str(matcher) == "And(And(Literal('a'), Literal('b')), Literal('c'))", str(matcher)
         parser = string_parser(matcher)
+        assert str(parser.matcher) == "And(Literal('a'), Literal('b'), Literal('c'))", str(parser.matcher)
         
