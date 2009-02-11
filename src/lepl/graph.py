@@ -585,5 +585,6 @@ class Clone(Visitor):
     
 
 def post_clone(function):
-    return compose(function, compose)
+    return compose(function, clone)
+
 

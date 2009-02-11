@@ -1,7 +1,7 @@
 
 from types import MethodType
 
-from lepl.graph import order, FORWARD, preorder, clone, Clone
+from lepl.graph import order, FORWARD, preorder, clone, Clone, post_clone
 from lepl.manager import managed
 from lepl.matchers import And, Or
 from lepl.operators import Matcher
@@ -61,10 +61,21 @@ def flatten(matcher, options):
         matcher = matcher.postorder(Clone(make_flatten(to_flatten)))
     return (matcher, options)
 
+
+MEMOIZERS = 'memoizers'
+DEFAULT_MEMOIZERS = []
+
+def memoize(matcher, options):
+    (options, memoizers) = opt_karg(options, MEMOIZERS, DEFAULT_MEMOIZERS)
+    for memoizer in memoizers:
+        matcher = matcher.postorder(Clone(post_clone(memoizer)))
+    return (matcher, options)
+
     
 def string_parser(matcher, **options):
     (matcher, options) = flatten(matcher, options)
-    # this must come after flattening, since that clones the tree
+    (matcher, options) = memoize(matcher, options)
+    # this must come after processing that clones the tree
     (matcher, options) = decorate(matcher, options)
     parser = lambda text: matcher(Stream.from_string(text, **options))
     parser.matcher = matcher

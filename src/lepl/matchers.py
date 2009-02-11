@@ -219,8 +219,8 @@ class Or(_BaseCombiner):
         (result, stream) tuples).  The result will correspond to one of the
         sub-matchers (starting from the left).
         '''
-        for match in self.matchers:
-            for result in match(stream):
+        for matcher in self.matchers:
+            for result in matcher(stream):
                 yield result
 
 

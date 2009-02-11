@@ -7,24 +7,24 @@ from lepl.matchers import BaseMatcher
 class Wrapper(object):
     
     def __init__(self, matcher, stream):
-        self.__generator = matcher(stream)
+        self._generator = matcher(stream)
         self.__stopped = False
-        self.__table = []
+        self._table = []
         
     def __get(self, i):
         try:
-            while i >= len(self.__table) and not self.__stopped:
-                self.__extend()
+            while i >= len(self._table) and not self.__stopped:
+                self._extend()
         except StopIteration:
             self.__stopped = True
-            self.__generator = None
+            self._generator = None
         if self.__stopped:
             raise StopIteration()
         else:
-            return self.__table[i]
+            return self._table[i]
         
-    def __extend(self):
-        self.__table.append(next(self.__generator))
+    def _extend(self):
+        self._table.append(next(self._generator))
     
     def proxy(self):
         for i in count():
@@ -36,10 +36,10 @@ class Memo(BaseMatcher):
     def __init__(self, matcher, wrapper=Wrapper):
         super(Memo, self).__init__()
         self._arg(matcher=matcher)
-        self._arg(wrapper=wrapper)
+        self._karg(wrapper=wrapper)
         self.__table = {}
         
-    def __call__(self, stream):
+    def match(self, stream):
         key = hash(stream) # try not to keep hold of resources?
         if key not in self.__table:
             self.__table[key] = self.wrapper(self.matcher, stream)
@@ -51,13 +51,14 @@ class LWrapper(Wrapper):
     def __init__(self, matcher, stream):
         super(LWrapper, self).__init__(matcher, stream)
         self.__counter = 0
-        self.__limit = len(stream)
+        self.__limit = 2
         
-    def __extend(self):
+    def _extend(self):
         self.__counter += 1
+        print(self.__counter)
         if self.__counter > self.__limit:
             raise StopIteration()
-        self.__table.append(next(generator))
+        self._table.append(next(self._generator))
         self.__counter = 0
 
 

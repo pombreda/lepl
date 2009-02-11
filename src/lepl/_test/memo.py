@@ -29,7 +29,8 @@ def main():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase         > Sentence
 
-    p = string_parser(sentence)
+    p = string_parser(sentence, memoizers=[LMemo])
+    print(p.matcher)
     
     for meaning in p('every boy or some girl and helen and john or pat knows '
                      'and respects or loves every boy or some girl and pat or '
