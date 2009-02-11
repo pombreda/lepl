@@ -82,6 +82,7 @@ class GeneratorWrapper(LogMixin):
     def __init__(self, generator, match, stream):
         super(GeneratorWrapper, self).__init__()
         self.__generator = generator
+        assert(generator)
         # we do try/except, rather than testing for stream's type, to simplify
         # the dependency between modules
         try:

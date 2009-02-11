@@ -970,5 +970,5 @@ def Literals(*matchers):
     # I considered implementing this by extending Literal() itself, but
     # that would have meant putting "Or-like" functionality in Literal,
     # and I felt it better to keep the base matchers reasonably orthogonal.
-    return lmap(compose(Or, Literal), matchers)
+    return Or(*lmap(Literal, matchers))
  

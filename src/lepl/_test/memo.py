@@ -2,6 +2,10 @@
 from unittest import TestCase
 
 from lepl import *
+from lepl.matchers import Literals
+from lepl.memo import LMemo
+from lepl.parser import string_parser
+
 
 def main():
     
@@ -19,15 +23,19 @@ def main():
     
     verbphrase  = Delayed()
     verbphrase += verb | (verbphrase // join // verbphrase)      > VerbPhrase
-    det_phrase  = det // noun                                    > DetPhrase
+    det_phrase  = determiner // noun                             > DetPhrase
     simple_tp   = proper_noun | det_phrase                       > SimpleTp
     termphrase  = Delayed()
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase         > Sentence
 
-    p = parser(sentence, memoizer=LMemo)
+    p = string_parser(sentence)
     
     for meaning in p('every boy or some girl and helen and john or pat knows '
                      'and respects or loves every boy or some girl and pat or '
                      'john and helen'):
         print(p)
+
+if __name__ == '__main__':
+    main()
+    

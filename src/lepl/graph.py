@@ -21,7 +21,7 @@ calls to the node constructors.  This is particularly useful for generating
 'repr' strings and might also be used for cloning.
 '''
 
-from collections import Sequence
+from collections import Sequence, Hashable
 
 from lepl.support import compose
 
@@ -74,7 +74,7 @@ def dfs_edges(node, type_=SimpleGraphNode):
                 try:
                     child = next(children)
                     if isinstance(child, type_):
-                        if child in visited:
+                        if isinstance(child, Hashable) and child in visited:
                             yield parent, child, NONTREE
                         else:
                             try:
@@ -140,7 +140,7 @@ class SimpleWalker(object):
         pending = {}
         for (parent, node, kind) in dfs_edges(self.__root, type_=object):
             if kind & POSTORDER:
-                if node in pending:
+                if isinstance(node, Hashable) and node in pending:
                     args = pending[node]
                     del pending[node]
                 else:
@@ -541,6 +541,9 @@ class Proxy(object):
     def __getattr__(self, name):
         return getattr(self.__mutable_delegate[0], name)
     
+    def __call__(self, *args, **kargs):
+        return self.__getattr__('__call__')(*args, **kargs)
+    
 
 def make_proxy():
     mutable_delegate = [None]
@@ -563,8 +566,8 @@ class Clone(Visitor):
         self.__clone = clone
         self.__proxies = {}
     
-    def loop(self, value):
-        if node not in self.__setters:
+    def loop(self, node):
+        if node not in self.__proxies:
             self.__proxies[node] = make_proxy()
         return self.__proxies[node][1]
     
