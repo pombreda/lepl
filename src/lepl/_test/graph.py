@@ -85,9 +85,7 @@ class CloneTest(TestCase):
                      n),
                 Node(12))
         s(g1)
-        print(repr(g1))
         g2 = ConstructorWalker(g1)(Clone())
-        print(repr(g2))
         self.assert_same(repr(g1), repr(g2))
 
     def test_loops(self):
@@ -101,8 +99,21 @@ class CloneTest(TestCase):
                 Node(12, n1))
         s1(g1)
         s2(next(g1._children()))
-        print(repr(g1))
         g2 = ConstructorWalker(g1)(Clone())
-        print(repr(g2))
         self.assert_same(repr(g1), repr(g2))
         
+    def test_loops_with_proxy(self):
+        (s1, n1) = make_proxy()
+        (s2, n2) = make_proxy()
+        g1 = Node(1,
+                Node(11,
+                     Node(111, n2),
+                     Node(112),
+                     n1),
+                Node(12, n1))
+        s1(g1)
+        s2(next(g1._children()))
+        g2 = ConstructorWalker(g1)(Clone())
+        g3 = ConstructorWalker(g2)(Clone())
+        self.assert_same(repr(g1), repr(g3))
+        print(repr(g3))

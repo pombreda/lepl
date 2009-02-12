@@ -38,406 +38,294 @@ class StrTest(TestCase):
 
         description = str(expression)
         self.assert_same(description, r'''Delayed(
- matcher=Apply(
-  function=<function <lambda> at 0x7f63608010d8>, 
-  matcher=And(
+ Apply(
+  And(
    Apply(
-    function=<function <lambda> at 0x7f63608012f8>, 
-    matcher=And(
+    And(
      Apply(
-      function=<function <lambda> at 0x7f63607f6d10>, 
-      matcher=Or(
+      Or(
        Apply(
-        function=<function <lambda> at 0x7f63607f67c0>, 
-        matcher=Apply(
-         function=<function add at 0x7f63607f6af0>, 
-         matcher=DepthFirst(
-          start=1, stop=None, rest=Any(restrict='0123456789'), 
-          first=Any(restrict='0123456789')), 
-         args=False, raw=True), 
-        args=False, raw=False), 
+        Apply(
+         DepthFirst(
+          Any(restrict='0123456789'), 1, None, 
+          rest=Any(restrict='0123456789')), 
+         <function add at 0x7f56d77dbc88>, raw=True, args=False), 
+        <function <lambda> at 0x7f56d77dbc00>, raw=False, args=False), 
        And(
         And(
-         Literal(text='('), 
+         Literal('('), 
          Apply(
-          function=<function add at 0x7f63607f6c00>, 
-          matcher=DepthFirst(
-           start=0, stop=None, rest=Any(restrict=' \t'), 
-           first=Any(restrict=' \t')), 
-          args=False, raw=True), 
-         Delayed(matcher=<loop>)), 
+          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+          <function add at 0x7f56d77db050>, raw=True, args=False), 
+         Delayed(<loop>)), 
         Apply(
-         function=<function add at 0x7f63607f66b0>, 
-         matcher=DepthFirst(
-          start=0, stop=None, rest=Any(restrict=' \t'), 
-          first=Any(restrict=' \t')), 
-         args=False, raw=True), 
-        Literal(text=')'))), 
-      args=False, raw=False), 
+         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+         <function add at 0x7f56d77dbd98>, raw=True, args=False), 
+        Literal(')'))), 
+      <function <lambda> at 0x7f56d77dbe20>, raw=False, args=False), 
      Apply(
-      function=<function add at 0x7f6360801490>, 
-      matcher=DepthFirst(
-       start=0, stop=None, rest=Any(restrict=' \t'), 
-       first=Any(restrict=' \t')), 
-      args=False, raw=True), 
+      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+      <function add at 0x7f56d77dbf30>, raw=True, args=False), 
      DepthFirst(
-      start=0, stop=None, 
+      And(
+       Apply(
+        Any(restrict='*/'), <function <lambda> at 0x7f56d77dbb78>, raw=False, 
+        args=False), 
+       Apply(
+        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+        <function add at 0x7f56d77dbd10>, raw=True, args=False), 
+       Apply(
+        Or(
+         Apply(
+          Apply(
+           DepthFirst(
+            Any(restrict='0123456789'), 1, None, 
+            rest=Any(restrict='0123456789')), 
+           <function add at 0x7f56d77dbc88>, raw=True, args=False), 
+          <function <lambda> at 0x7f56d77dbc00>, raw=False, args=False), 
+         And(
+          And(
+           Literal('('), 
+           Apply(
+            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+            <function add at 0x7f56d77db050>, raw=True, args=False), 
+           Delayed(<loop>)), 
+          Apply(
+           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+           <function add at 0x7f56d77dbd98>, raw=True, args=False), 
+          Literal(')'))), 
+        <function <lambda> at 0x7f56d77dbe20>, raw=False, args=False)), 
+      0, None, 
       rest=And(
        Apply(
-        function=<function <lambda> at 0x7f63608016b0>, 
-        matcher=Any(restrict='*/'), args=False, raw=False), 
+        Any(restrict='*/'), <function <lambda> at 0x7f56d77dbb78>, raw=False, 
+        args=False), 
        Apply(
-        function=<function add at 0x7f6360801518>, 
-        matcher=DepthFirst(
-         start=0, stop=None, rest=Any(restrict=' \t'), 
-         first=Any(restrict=' \t')), 
-        args=False, raw=True), 
+        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+        <function add at 0x7f56d77dbd10>, raw=True, args=False), 
        Apply(
-        function=<function <lambda> at 0x7f63607f6d10>, 
-        matcher=Or(
+        Or(
          Apply(
-          function=<function <lambda> at 0x7f63607f67c0>, 
-          matcher=Apply(
-           function=<function add at 0x7f63607f6af0>, 
-           matcher=DepthFirst(
-            start=1, stop=None, rest=Any(restrict='0123456789'), 
-            first=Any(restrict='0123456789')), 
-           args=False, raw=True), 
-          args=False, raw=False), 
+          Apply(
+           DepthFirst(
+            Any(restrict='0123456789'), 1, None, 
+            rest=Any(restrict='0123456789')), 
+           <function add at 0x7f56d77dbc88>, raw=True, args=False), 
+          <function <lambda> at 0x7f56d77dbc00>, raw=False, args=False), 
          And(
           And(
-           Literal(text='('), 
+           Literal('('), 
            Apply(
-            function=<function add at 0x7f63607f6c00>, 
-            matcher=DepthFirst(
-             start=0, stop=None, rest=Any(restrict=' \t'), 
-             first=Any(restrict=' \t')), 
-            args=False, raw=True), 
-           Delayed(matcher=<loop>)), 
+            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+            <function add at 0x7f56d77db050>, raw=True, args=False), 
+           Delayed(<loop>)), 
           Apply(
-           function=<function add at 0x7f63607f66b0>, 
-           matcher=DepthFirst(
-            start=0, stop=None, rest=Any(restrict=' \t'), 
-            first=Any(restrict=' \t')), 
-           args=False, raw=True), 
-          Literal(text=')'))), 
-        args=False, raw=False)), 
-      first=And(
-       Apply(
-        function=<function <lambda> at 0x7f63608016b0>, 
-        matcher=Any(restrict='*/'), args=False, raw=False), 
-       Apply(
-        function=<function add at 0x7f6360801518>, 
-        matcher=DepthFirst(
-         start=0, stop=None, rest=Any(restrict=' \t'), 
-         first=Any(restrict=' \t')), 
-        args=False, raw=True), 
-       Apply(
-        function=<function <lambda> at 0x7f63607f6d10>, 
-        matcher=Or(
-         Apply(
-          function=<function <lambda> at 0x7f63607f67c0>, 
-          matcher=Apply(
-           function=<function add at 0x7f63607f6af0>, 
-           matcher=DepthFirst(
-            start=1, stop=None, rest=Any(restrict='0123456789'), 
-            first=Any(restrict='0123456789')), 
-           args=False, raw=True), 
-          args=False, raw=False), 
-         And(
-          And(
-           Literal(text='('), 
-           Apply(
-            function=<function add at 0x7f63607f6c00>, 
-            matcher=DepthFirst(
-             start=0, stop=None, rest=Any(restrict=' \t'), 
-             first=Any(restrict=' \t')), 
-            args=False, raw=True), 
-           Delayed(matcher=<loop>)), 
-          Apply(
-           function=<function add at 0x7f63607f66b0>, 
-           matcher=DepthFirst(
-            start=0, stop=None, rest=Any(restrict=' \t'), 
-            first=Any(restrict=' \t')), 
-           args=False, raw=True), 
-          Literal(text=')'))), 
-        args=False, raw=False)))), 
-    args=False, 
-    raw=False), 
+           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+           <function add at 0x7f56d77dbd98>, raw=True, args=False), 
+          Literal(')'))), 
+        <function <lambda> at 0x7f56d77dbe20>, raw=False, args=False)))), 
+    <function <lambda> at 0x7f56d77dbea8>, raw=False, 
+    args=False), 
    Apply(
-    function=<function add at 0x7f6360801270>, 
-    matcher=DepthFirst(
-     start=0, stop=None, rest=Any(restrict=' \t'), first=Any(restrict=' \t')), 
-    args=False, raw=True), 
+    DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+    <function add at 0x7f56d77f9270>, raw=True, args=False), 
    DepthFirst(
-    start=0, stop=None, 
+    And(
+     Apply(
+      Any(restrict='+-'), <function <lambda> at 0x7f56d77f90d8>, raw=False, 
+      args=False), 
+     Apply(
+      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+      <function add at 0x7f56d77f9050>, raw=True, args=False), 
+     Apply(
+      And(
+       Apply(
+        Or(
+         Apply(
+          Apply(
+           DepthFirst(
+            Any(restrict='0123456789'), 1, None, 
+            rest=Any(restrict='0123456789')), 
+           <function add at 0x7f56d77dbc88>, raw=True, args=False), 
+          <function <lambda> at 0x7f56d77dbc00>, raw=False, args=False), 
+         And(
+          And(
+           Literal('('), 
+           Apply(
+            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+            <function add at 0x7f56d77db050>, raw=True, args=False), 
+           Delayed(<loop>)), 
+          Apply(
+           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+           <function add at 0x7f56d77dbd98>, raw=True, args=False), 
+          Literal(')'))), 
+        <function <lambda> at 0x7f56d77dbe20>, raw=False, args=False), 
+       Apply(
+        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+        <function add at 0x7f56d77dbf30>, raw=True, args=False), 
+       DepthFirst(
+        And(
+         Apply(
+          Any(restrict='*/'), <function <lambda> at 0x7f56d77dbb78>, 
+          raw=False, args=False), 
+         Apply(
+          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+          <function add at 0x7f56d77dbd10>, raw=True, args=False), 
+         Apply(
+          Or(
+           Apply(
+            Apply(
+             DepthFirst(
+              Any(restrict='0123456789'), 1, None, 
+              rest=Any(restrict='0123456789')), 
+             <function add at 0x7f56d77dbc88>, raw=True, args=False), 
+            <function <lambda> at 0x7f56d77dbc00>, raw=False, args=False), 
+           And(
+            And(
+             Literal('('), 
+             Apply(
+              DepthFirst(
+               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+              <function add at 0x7f56d77db050>, raw=True, args=False), 
+             Delayed(<loop>)), 
+            Apply(
+             DepthFirst(
+              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+             <function add at 0x7f56d77dbd98>, raw=True, args=False), 
+            Literal(')'))), 
+          <function <lambda> at 0x7f56d77dbe20>, raw=False, args=False)), 
+        0, None, 
+        rest=And(
+         Apply(
+          Any(restrict='*/'), <function <lambda> at 0x7f56d77dbb78>, 
+          raw=False, args=False), 
+         Apply(
+          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+          <function add at 0x7f56d77dbd10>, raw=True, args=False), 
+         Apply(
+          Or(
+           Apply(
+            Apply(
+             DepthFirst(
+              Any(restrict='0123456789'), 1, None, 
+              rest=Any(restrict='0123456789')), 
+             <function add at 0x7f56d77dbc88>, raw=True, args=False), 
+            <function <lambda> at 0x7f56d77dbc00>, raw=False, args=False), 
+           And(
+            And(
+             Literal('('), 
+             Apply(
+              DepthFirst(
+               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+              <function add at 0x7f56d77db050>, raw=True, args=False), 
+             Delayed(<loop>)), 
+            Apply(
+             DepthFirst(
+              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+             <function add at 0x7f56d77dbd98>, raw=True, args=False), 
+            Literal(')'))), 
+          <function <lambda> at 0x7f56d77dbe20>, raw=False, args=False)))), 
+      <function <lambda> at 0x7f56d77dbea8>, raw=False, 
+      args=False)), 
+    0, None, 
     rest=And(
      Apply(
-      function=<function <lambda> at 0x7f63608015a0>, 
-      matcher=Any(restrict='+-'), args=False, raw=False), 
+      Any(restrict='+-'), <function <lambda> at 0x7f56d77f90d8>, raw=False, 
+      args=False), 
      Apply(
-      function=<function add at 0x7f6360801408>, 
-      matcher=DepthFirst(
-       start=0, stop=None, rest=Any(restrict=' \t'), 
-       first=Any(restrict=' \t')), 
-      args=False, raw=True), 
+      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+      <function add at 0x7f56d77f9050>, raw=True, args=False), 
      Apply(
-      function=<function <lambda> at 0x7f63608012f8>, 
-      matcher=And(
+      And(
        Apply(
-        function=<function <lambda> at 0x7f63607f6d10>, 
-        matcher=Or(
+        Or(
          Apply(
-          function=<function <lambda> at 0x7f63607f67c0>, 
-          matcher=Apply(
-           function=<function add at 0x7f63607f6af0>, 
-           matcher=DepthFirst(
-            start=1, stop=None, rest=Any(restrict='0123456789'), 
-            first=Any(restrict='0123456789')), 
-           args=False, raw=True), 
-          args=False, raw=False), 
+          Apply(
+           DepthFirst(
+            Any(restrict='0123456789'), 1, None, 
+            rest=Any(restrict='0123456789')), 
+           <function add at 0x7f56d77dbc88>, raw=True, args=False), 
+          <function <lambda> at 0x7f56d77dbc00>, raw=False, args=False), 
          And(
           And(
-           Literal(text='('), 
+           Literal('('), 
            Apply(
-            function=<function add at 0x7f63607f6c00>, 
-            matcher=DepthFirst(
-             start=0, stop=None, rest=Any(restrict=' \t'), 
-             first=Any(restrict=' \t')), 
-            args=False, raw=True), 
-           Delayed(matcher=<loop>)), 
+            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+            <function add at 0x7f56d77db050>, raw=True, args=False), 
+           Delayed(<loop>)), 
           Apply(
-           function=<function add at 0x7f63607f66b0>, 
-           matcher=DepthFirst(
-            start=0, stop=None, rest=Any(restrict=' \t'), 
-            first=Any(restrict=' \t')), 
-           args=False, raw=True), 
-          Literal(text=')'))), 
-        args=False, raw=False), 
+           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+           <function add at 0x7f56d77dbd98>, raw=True, args=False), 
+          Literal(')'))), 
+        <function <lambda> at 0x7f56d77dbe20>, raw=False, args=False), 
        Apply(
-        function=<function add at 0x7f6360801490>, 
-        matcher=DepthFirst(
-         start=0, stop=None, rest=Any(restrict=' \t'), 
-         first=Any(restrict=' \t')), 
-        args=False, raw=True), 
+        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+        <function add at 0x7f56d77dbf30>, raw=True, args=False), 
        DepthFirst(
-        start=0, stop=None, 
+        And(
+         Apply(
+          Any(restrict='*/'), <function <lambda> at 0x7f56d77dbb78>, 
+          raw=False, args=False), 
+         Apply(
+          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+          <function add at 0x7f56d77dbd10>, raw=True, args=False), 
+         Apply(
+          Or(
+           Apply(
+            Apply(
+             DepthFirst(
+              Any(restrict='0123456789'), 1, None, 
+              rest=Any(restrict='0123456789')), 
+             <function add at 0x7f56d77dbc88>, raw=True, args=False), 
+            <function <lambda> at 0x7f56d77dbc00>, raw=False, args=False), 
+           And(
+            And(
+             Literal('('), 
+             Apply(
+              DepthFirst(
+               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+              <function add at 0x7f56d77db050>, raw=True, args=False), 
+             Delayed(<loop>)), 
+            Apply(
+             DepthFirst(
+              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+             <function add at 0x7f56d77dbd98>, raw=True, args=False), 
+            Literal(')'))), 
+          <function <lambda> at 0x7f56d77dbe20>, raw=False, args=False)), 
+        0, None, 
         rest=And(
          Apply(
-          function=<function <lambda> at 0x7f63608016b0>, 
-          matcher=Any(restrict='*/'), args=False, raw=False), 
+          Any(restrict='*/'), <function <lambda> at 0x7f56d77dbb78>, 
+          raw=False, args=False), 
          Apply(
-          function=<function add at 0x7f6360801518>, 
-          matcher=DepthFirst(
-           start=0, stop=None, rest=Any(restrict=' \t'), 
-           first=Any(restrict=' \t')), 
-          args=False, raw=True), 
+          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+          <function add at 0x7f56d77dbd10>, raw=True, args=False), 
          Apply(
-          function=<function <lambda> at 0x7f63607f6d10>, 
-          matcher=Or(
+          Or(
            Apply(
-            function=<function <lambda> at 0x7f63607f67c0>, 
-            matcher=Apply(
-             function=<function add at 0x7f63607f6af0>, 
-             matcher=DepthFirst(
-              start=1, stop=None, rest=Any(restrict='0123456789'), 
-              first=Any(restrict='0123456789')), 
-             args=False, raw=True), 
-            args=False, raw=False), 
+            Apply(
+             DepthFirst(
+              Any(restrict='0123456789'), 1, None, 
+              rest=Any(restrict='0123456789')), 
+             <function add at 0x7f56d77dbc88>, raw=True, args=False), 
+            <function <lambda> at 0x7f56d77dbc00>, raw=False, args=False), 
            And(
             And(
-             Literal(text='('), 
+             Literal('('), 
              Apply(
-              function=<function add at 0x7f63607f6c00>, 
-              matcher=DepthFirst(
-               start=0, stop=None, rest=Any(restrict=' \t'), 
-               first=Any(restrict=' \t')), 
-              args=False, raw=True), 
-             Delayed(matcher=<loop>)), 
+              DepthFirst(
+               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+              <function add at 0x7f56d77db050>, raw=True, args=False), 
+             Delayed(<loop>)), 
             Apply(
-             function=<function add at 0x7f63607f66b0>, 
-             matcher=DepthFirst(
-              start=0, stop=None, rest=Any(restrict=' \t'), 
-              first=Any(restrict=' \t')), 
-             args=False, raw=True), 
-            Literal(text=')'))), 
-          args=False, raw=False)), 
-        first=And(
-         Apply(
-          function=<function <lambda> at 0x7f63608016b0>, 
-          matcher=Any(restrict='*/'), args=False, raw=False), 
-         Apply(
-          function=<function add at 0x7f6360801518>, 
-          matcher=DepthFirst(
-           start=0, stop=None, rest=Any(restrict=' \t'), 
-           first=Any(restrict=' \t')), 
-          args=False, raw=True), 
-         Apply(
-          function=<function <lambda> at 0x7f63607f6d10>, 
-          matcher=Or(
-           Apply(
-            function=<function <lambda> at 0x7f63607f67c0>, 
-            matcher=Apply(
-             function=<function add at 0x7f63607f6af0>, 
-             matcher=DepthFirst(
-              start=1, stop=None, rest=Any(restrict='0123456789'), 
-              first=Any(restrict='0123456789')), 
-             args=False, raw=True), 
-            args=False, raw=False), 
-           And(
-            And(
-             Literal(text='('), 
-             Apply(
-              function=<function add at 0x7f63607f6c00>, 
-              matcher=DepthFirst(
-               start=0, stop=None, rest=Any(restrict=' \t'), 
-               first=Any(restrict=' \t')), 
-              args=False, raw=True), 
-             Delayed(matcher=<loop>)), 
-            Apply(
-             function=<function add at 0x7f63607f66b0>, 
-             matcher=DepthFirst(
-              start=0, stop=None, rest=Any(restrict=' \t'), 
-              first=Any(restrict=' \t')), 
-             args=False, raw=True), 
-            Literal(text=')'))), 
-          args=False, raw=False)))), 
-      args=False, 
-      raw=False)), 
-    first=And(
-     Apply(
-      function=<function <lambda> at 0x7f63608015a0>, 
-      matcher=Any(restrict='+-'), args=False, raw=False), 
-     Apply(
-      function=<function add at 0x7f6360801408>, 
-      matcher=DepthFirst(
-       start=0, stop=None, rest=Any(restrict=' \t'), 
-       first=Any(restrict=' \t')), 
-      args=False, raw=True), 
-     Apply(
-      function=<function <lambda> at 0x7f63608012f8>, 
-      matcher=And(
-       Apply(
-        function=<function <lambda> at 0x7f63607f6d10>, 
-        matcher=Or(
-         Apply(
-          function=<function <lambda> at 0x7f63607f67c0>, 
-          matcher=Apply(
-           function=<function add at 0x7f63607f6af0>, 
-           matcher=DepthFirst(
-            start=1, stop=None, rest=Any(restrict='0123456789'), 
-            first=Any(restrict='0123456789')), 
-           args=False, raw=True), 
-          args=False, raw=False), 
-         And(
-          And(
-           Literal(text='('), 
-           Apply(
-            function=<function add at 0x7f63607f6c00>, 
-            matcher=DepthFirst(
-             start=0, stop=None, rest=Any(restrict=' \t'), 
-             first=Any(restrict=' \t')), 
-            args=False, raw=True), 
-           Delayed(matcher=<loop>)), 
-          Apply(
-           function=<function add at 0x7f63607f66b0>, 
-           matcher=DepthFirst(
-            start=0, stop=None, rest=Any(restrict=' \t'), 
-            first=Any(restrict=' \t')), 
-           args=False, raw=True), 
-          Literal(text=')'))), 
-        args=False, raw=False), 
-       Apply(
-        function=<function add at 0x7f6360801490>, 
-        matcher=DepthFirst(
-         start=0, stop=None, rest=Any(restrict=' \t'), 
-         first=Any(restrict=' \t')), 
-        args=False, raw=True), 
-       DepthFirst(
-        start=0, stop=None, 
-        rest=And(
-         Apply(
-          function=<function <lambda> at 0x7f63608016b0>, 
-          matcher=Any(restrict='*/'), args=False, raw=False), 
-         Apply(
-          function=<function add at 0x7f6360801518>, 
-          matcher=DepthFirst(
-           start=0, stop=None, rest=Any(restrict=' \t'), 
-           first=Any(restrict=' \t')), 
-          args=False, raw=True), 
-         Apply(
-          function=<function <lambda> at 0x7f63607f6d10>, 
-          matcher=Or(
-           Apply(
-            function=<function <lambda> at 0x7f63607f67c0>, 
-            matcher=Apply(
-             function=<function add at 0x7f63607f6af0>, 
-             matcher=DepthFirst(
-              start=1, stop=None, rest=Any(restrict='0123456789'), 
-              first=Any(restrict='0123456789')), 
-             args=False, raw=True), 
-            args=False, raw=False), 
-           And(
-            And(
-             Literal(text='('), 
-             Apply(
-              function=<function add at 0x7f63607f6c00>, 
-              matcher=DepthFirst(
-               start=0, stop=None, rest=Any(restrict=' \t'), 
-               first=Any(restrict=' \t')), 
-              args=False, raw=True), 
-             Delayed(matcher=<loop>)), 
-            Apply(
-             function=<function add at 0x7f63607f66b0>, 
-             matcher=DepthFirst(
-              start=0, stop=None, rest=Any(restrict=' \t'), 
-              first=Any(restrict=' \t')), 
-             args=False, raw=True), 
-            Literal(text=')'))), 
-          args=False, raw=False)), 
-        first=And(
-         Apply(
-          function=<function <lambda> at 0x7f63608016b0>, 
-          matcher=Any(restrict='*/'), args=False, raw=False), 
-         Apply(
-          function=<function add at 0x7f6360801518>, 
-          matcher=DepthFirst(
-           start=0, stop=None, rest=Any(restrict=' \t'), 
-           first=Any(restrict=' \t')), 
-          args=False, raw=True), 
-         Apply(
-          function=<function <lambda> at 0x7f63607f6d10>, 
-          matcher=Or(
-           Apply(
-            function=<function <lambda> at 0x7f63607f67c0>, 
-            matcher=Apply(
-             function=<function add at 0x7f63607f6af0>, 
-             matcher=DepthFirst(
-              start=1, stop=None, rest=Any(restrict='0123456789'), 
-              first=Any(restrict='0123456789')), 
-             args=False, raw=True), 
-            args=False, raw=False), 
-           And(
-            And(
-             Literal(text='('), 
-             Apply(
-              function=<function add at 0x7f63607f6c00>, 
-              matcher=DepthFirst(
-               start=0, stop=None, rest=Any(restrict=' \t'), 
-               first=Any(restrict=' \t')), 
-              args=False, raw=True), 
-             Delayed(matcher=<loop>)), 
-            Apply(
-             function=<function add at 0x7f63607f66b0>, 
-             matcher=DepthFirst(
-              start=0, stop=None, rest=Any(restrict=' \t'), 
-              first=Any(restrict=' \t')), 
-             args=False, raw=True), 
-            Literal(text=')'))), 
-          args=False, raw=False)))), 
-      args=False, 
-      raw=False)))), 
-  args=False, raw=False))''')
+             DepthFirst(
+              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+             <function add at 0x7f56d77dbd98>, raw=True, args=False), 
+            Literal(')'))), 
+          <function <lambda> at 0x7f56d77dbe20>, raw=False, args=False)))), 
+      <function <lambda> at 0x7f56d77dbea8>, raw=False, 
+      args=False)))), 
+  <function <lambda> at 0x7f56d77f92f8>, raw=False, args=False))''')
         
     def test_simple(self):
         expression  = Delayed()
