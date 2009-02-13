@@ -90,6 +90,7 @@ class GeneratorWrapper(LogMixin):
             self.register = stream.core.bb.register
             self.__description = stream.core.bb.preformatter(match, stream)
         except:
+            self._debug('No trace (no BlackBox)')
             self.register = lambda *args: None
             self.__description = match.describe()
         try:
@@ -201,19 +202,19 @@ class GeneratorControl(LogMixin):
     This manages the priority queue, etc.
     '''
     
-    def __init__(self, min_queue):
+    def __init__(self, queue_len):
         '''
         The maximum size is only a recommendation - we do not discard active
         generators so there is an effective minimum size which takes priority.
         '''
         super(GeneratorControl, self).__init__()
-        self.__min_queue = 0
+        self.__queue_len = 0
         self.__queue = []
         self.__epoch = 0
-        self.min_queue = min_queue
+        self.queue_len = queue_len
             
     @property
-    def min_queue(self):
+    def queue_len(self):
         '''
         This is the current number of generators (effectively, the number of
         'saved' matchers available for backtracking) that can exist at any one
@@ -224,17 +225,17 @@ class GeneratorControl(LogMixin):
         results by restricting matches.  It may be increased by the system
         (hence "min") when necessary.
         '''
-        return self.__min_queue
+        return self.__queue_len
     
-    @min_queue.setter
-    def min_queue(self, min_queue):
-        self.__min_queue = min_queue
-        if min_queue is None:
+    @queue_len.setter
+    def queue_len(self, queue_len):
+        self.__queue_len = queue_len
+        if queue_len is None:
             self.__queue = None
             self._debug('No monitoring of backtrack state.')
         else:
-            if min_queue > 0:
-                self._debug('Queue size: {0}'.format(min_queue))
+            if queue_len > 0:
+                self._debug('Queue size: {0}'.format(queue_len))
             else:
                 self._debug('No limit to number of generators stored')
         
@@ -257,7 +258,7 @@ class GeneratorControl(LogMixin):
         returns its first value).
         '''
         # do we need to worry at all about resources?
-        if self.__min_queue != None:
+        if self.__queue_len != None:
             wrapper_ref = GeneratorRef(wrapper)
             self.__add_and_delete(wrapper_ref)
             return wrapper_ref
@@ -271,13 +272,13 @@ class GeneratorControl(LogMixin):
         many loops are only needed when the queue is too small).
         '''
         self._debug('Queue size: {0}/{1}'
-                    .format(len(self.__queue), self.__min_queue))
+                    .format(len(self.__queue), self.__queue_len))
         # if we have space, simply save with no expiry
-        if self.__min_queue == 0 or len(self.__queue) < self.__min_queue:
+        if self.__queue_len == 0 or len(self.__queue) < self.__queue_len:
             self._debug('Free space, so add {0}'.format(wrapper_ref))
             heappush(self.__queue, wrapper_ref)
         else:
-            # we attempt up to 2*min_queue times to delete (once to update
+            # we attempt up to 2*queue_len times to delete (once to update
             # data; once to verify it is still active)
             for retry in range(2 * len(self.__queue)):
                 candidate_ref = heappushpop(self.__queue, wrapper_ref)
@@ -286,7 +287,7 @@ class GeneratorControl(LogMixin):
                 # if we can delete this, do so
                 if self.__deleted(candidate_ref):
                     # check whether we have the required queue size
-                    if len(self.__queue) <= self.__min_queue:
+                    if len(self.__queue) <= self.__queue_len:
                         return
                     # otherwise, try deleting the next entry
                     else:
@@ -298,9 +299,9 @@ class GeneratorControl(LogMixin):
             heappush(self.__queue, wrapper_ref)
             # this is currently 1 too small, and zero means unlimited, so
             # doubling should always be sufficient.
-            self.min_queue = self.min_queue * 2
+            self.queue_len = self.queue_len * 2
             self._warn('Queue is too small - extending to {0}'
-                       .format(self.min_queue))
+                       .format(self.queue_len))
     
     def erase(self):
         '''

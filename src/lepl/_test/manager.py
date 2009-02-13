@@ -4,6 +4,7 @@ from unittest import TestCase
 
 from lepl.matchers import *
 from lepl.manager import managed
+from lepl.parser import string_matcher, Configuration
 from lepl.trace import LogMixin
 
 
@@ -32,7 +33,9 @@ class LimitedDepthTest(LogMixin, TestCase):
         text = '*' * n_char
         for index in range(len(results)):
             min_queue = index * multiplier
-            matcher = (Literal('*')[::direcn,...][n_match] & Eos()).match_string(min_queue=min_queue)
+            matcher = string_matcher(
+                        Literal('*')[::direcn,...][n_match] & Eos(),
+                        Configuration(queue_len=min_queue))
             self.assert_count(matcher, min_queue, index, results[index])
             
     def assert_count(self, matcher, min_queue, index, count):
@@ -42,7 +45,8 @@ class LimitedDepthTest(LogMixin, TestCase):
 
     def test_single(self):
 #        basicConfig(level=DEBUG)
-        matcher = (Literal('*')[:,...][3]).match_string(min_queue=5)('*' * 4)
+        matcher = string_matcher(Literal('*')[:,...][3],
+                                 Configuration(queue_len=5))('*' * 4)
         results = list(matcher)
         print(results)
         

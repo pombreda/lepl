@@ -24,6 +24,21 @@ from lepl.manager import GeneratorControl
 from lepl.trace import BlackBox
 
 
+class CoreConfiguration(object):
+    
+    def __init__(self, queue_len=None, trace_len=None):
+        self.queue_len = CoreConfiguration.default_queue_len() if queue_len is None else queue_len
+        self.trace_len = CoreConfiguration.default_trace_len() if trace_len is None else trace_len
+        
+    @staticmethod
+    def default_queue_len():
+        return 0
+    
+    @staticmethod
+    def default_trace_len():
+        return (6, 2, 2)
+    
+
 class Core():
     '''
     Data store for a single parse.
@@ -48,7 +63,7 @@ class Core():
       match made.
     '''
 
-    def __init__(self, source=None, min_queue=0, description_length=6, memory=0):
+    def __init__(self, source=None, conf=CoreConfiguration()):
         '''
         Create a new core.  This is typically called during the creation of
         `lepl.stream.Stream`.
@@ -78,17 +93,13 @@ class Core():
               is too small.  The value may be increased if the number of
               active generators is exceed the length of the queue.
           
-          description_length
-            The amount of text to take from the stream when printing 
-            descriptions (eg in debug messages).
-            
           memory
             The number of matches to store for the longest match.  This can
             be a triple (matches before, failures after, successes after) or
             a single value (equivalent to the triple (memory, 3, 3)).
         '''
+        conf = CoreConfiguration() if conf is None else conf
         self.source = source
-        self.gc = GeneratorControl(min_queue=min_queue)
-        self.bb = BlackBox(self, memory=memory)
-        self.description_length = description_length
+        self.gc = GeneratorControl(queue_len=conf.queue_len)
+        self.bb = BlackBox(self, trace_len=conf.trace_len)
         

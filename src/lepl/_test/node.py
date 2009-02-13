@@ -24,7 +24,6 @@ class NodeTest(TestCase):
         expression += (factor / (addsub / factor)[0::])    > Expression
         
         ast = expression.parse_string('1 + 2 * (3 + 4 - 5)')
-        print(ast[0])
         assert str(ast[0]) == """Expression
  +- Factor
  |   +- Term

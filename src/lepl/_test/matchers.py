@@ -187,9 +187,9 @@ class CommitTest(BaseTest):
     
     def test_commit(self):
         self.assert_direct('abcd', 
-            string_parser(Any()[0::'b'] + (Literal('d') | 
-                                          Literal('cd') + Commit() | 
-                                          Literal('bcd')) + Eof()), 
+            (Any()[0::'b'] + (Literal('d') | 
+                              Literal('cd') + Commit() | 
+                              Literal('bcd')) + Eof()).string_matcher(), 
             [['abcd'], ['abcd']])
         
 

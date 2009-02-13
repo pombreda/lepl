@@ -64,7 +64,7 @@ def traced(f):
         try:
             (result, stream) = f(self)
             self.register(self, result, stream)
-        except:
+        except Exception as e:
             self.register(self)
             raise
         return (result, stream)
@@ -76,7 +76,7 @@ class BlackBox(LogMixin):
     Record the longest and the most recent matches. 
     '''
     
-    def __init__(self, core, memory=4):
+    def __init__(self, core, trace_len=4):
         '''
         ``memory` is either a single value or a triplet.  If a triplet, it
         represents the number of matchers before, fails after, and matches 
@@ -88,30 +88,30 @@ class BlackBox(LogMixin):
             self.__epoch = core.gc.epoch
         except:
             self.__epoch = lambda: -1
-        self.memory = memory
+        self.trace_len = trace_len
         
     @property
-    def memory(self):
+    def trace_len(self):
         return (self.__memory, self.__memory_fail, self.__memory_tail)
     
-    @memory.setter
-    def memory(self, memory):
+    @trace_len.setter
+    def trace_len(self, trace_len):
         self.latest = [] 
-        self.longest = ['Trace not enabled (set memory option on Core)']
+        self.longest = ['Trace not enabled (set trace_len option on Core)']
         self.__trace = 0
         self.__longest_depth = 0
         self.__longest_fail = 0
         self.__longest_tail = 0
         try:
-            (self.__memory, self.__memory_fail, self.__memory_tail) = memory
+            (self.__memory, self.__memory_fail, self.__memory_tail) = trace_len
         except:
-            self.__memory = memory
+            self.__memory = trace_len
             self.__memory_fail = 3
             self.__memory_tail = 3
         if not self.__memory or self.__memory < 0:
             self._debug('No recording of best and latest matches.')
         else:
-            self._debug('Recording {0} matches (including {1} failures and '
+            self._debug('Recording {0} matches (plus {1} failures and '
                         '{2} following matches)'
                         .format(self.__memory, self.__memory_fail, 
                                 self.__memory_tail))
@@ -128,9 +128,9 @@ class BlackBox(LogMixin):
 
     @staticmethod
     def preformatter(matcher, stream):
-        return '{0:<30s} {1[0]:3d}.{1[1]:<3d} ({2:05d}) {3:{4}s}'.format(
+        return '{0:<30s} {1[0]:3d}.{1[1]:<3d} ({2:05d}) {3:11s}'.format(
                     matcher.describe(), stream.location(), stream.depth(),
-                    stream, stream.core.description_length + 5)
+                    stream)
         
     def switch(self, trace):
         '''

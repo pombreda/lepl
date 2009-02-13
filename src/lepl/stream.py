@@ -51,34 +51,34 @@ class Stream():
     '''
     
     @staticmethod
-    def from_path(path, **options):
+    def from_path(path, conf=None):
         '''
         Open the file with line buffering.
         '''
         return Stream(Chunk(open(path, 'rt', buffering=1), source=path, 
-                            **options))
+                            conf=conf))
     
     @staticmethod
-    def from_string(text, **options):
+    def from_string(text, conf=None):
         '''
         Wrap a string.
         '''
-        return Stream(Chunk(StringIO(text), source='<string>', **options))
+        return Stream(Chunk(StringIO(text), source='<string>', conf=conf))
     
     @staticmethod
-    def from_list(data, **options):
+    def from_list(data, conf=None):
         '''
         We can parse any list (not just lists of characters as strings).
         '''
-        return Stream(Chunk(ListIO(data), source='<list>', **options))
+        return Stream(Chunk(ListIO(data), source='<list>', conf=conf))
     
     @staticmethod
-    def from_file(file, **options):
+    def from_file(file, conf=None):
         '''
         Wrap a file.
         '''
         return Stream(Chunk(file, source=gettatr(file, 'name', '<file>'), 
-                            **options)) 
+                            conf=conf)) 
     
     def __init__(self, chunk, offset=0, core=None):
         '''
@@ -161,7 +161,8 @@ class Chunk(object):
     the Chunks form a singly linked list that contains the input data.
     '''
     
-    def __init__(self, stream, distance=0, lineno=1, core=None, **options):
+    def __init__(self, stream, distance=0, lineno=1, 
+                  core=None, source=None, conf=None):
         try:
             self.__text = next(stream)
             self.__empty = False
@@ -171,7 +172,7 @@ class Chunk(object):
         self.__stream = stream
         self.distance = distance
         self.lineno = lineno
-        self.core = core if core else Core(**options)
+        self.core = core if core else Core(source=source, conf=conf)
         
     def read(self, offset=0, start=0, stop=None):
         '''
@@ -255,13 +256,11 @@ class Chunk(object):
 
     def describe(self, offset, length=None):
         '''
-        Return up to core.description_length characters.
-        
         This has to work even when the underlying stream is not a string
         but a list of some kind (so does everything else, but here the
         addition of "..." causes problems).
         '''
-        size = self.core.description_length if length is None else length
+        size = 6 if length is None else length
         if self.empty_at(offset):
             return repr('')
         else:
@@ -333,66 +332,66 @@ class ListIO():
         return self.__next__()        
 
 
-class StreamMixin(object):
-    '''
-    Helper functions that forward to __call__.
-    '''
-    
-    def __init__(self, *args, **kargs):
-        super(StreamMixin, self).__init__(*args, **kargs)
-    
-    def match_string(self, **options):
-        '''
-        Create a parser for a string.  For options see `lepl.core.Core`.
-        '''
-        return lambda text: self(Stream.from_string(text, **options))
-
-    def match_path(self, **options):
-        '''
-        Create a parser for a file from a given path.  For options see 
-        `lepl.core.Core`.
-        '''
-        return lambda path: self(Stream.from_path(path, **options))
-
-    def match_list(self, **options):
-        '''
-        Create a parser for a list of values.  For options see `lepl.core.Core`.
-        '''
-        return lambda list_: self(Stream.from_list(list_, **options))
-
-    def match_file(self, **options):
-        '''
-        Create a parser for a file.  For options see `lepl.core.Core`.
-        '''
-        return lambda file_: self(Stream.from_string(file_, **options))
-
-    def parse_string(self, text, **options):
-        '''
-        Parse a string, returning only a single result.  
-        For options see `lepl.core.Core`.
-        '''
-        try:
-            return next(self(Stream.from_string(text, **options)))[0]
-        except StopIteration:
-            return None
-
-    def parse_path(self, path, **options):
-        '''
-        Parse a file from a given path, returning only a single result.  
-        For options see `lepl.core.Core`.
-        '''
-        return next(self(Stream.from_path(path, **options)))[0]
-
-    def parse_list(self, list_, **options):
-        '''
-        Parse a list of values, returning only a single result.  
-        For options see `lepl.core.Core`.
-        '''
-        return next(self(Stream.from_list(list_, **options)))[0]
-
-    def parse_file(self, file_, **options):
-        '''
-        Parse a file, returning only a single result.  
-        For options see `lepl.core.Core`.
-        '''
-        return next(self(Stream.from_string(file_, **options)))[0]
+#class StreamMixin(object):
+#    '''
+#    Helper functions that forward to __call__.
+#    '''
+#    
+#    def __init__(self, *args, **kargs):
+#        super(StreamMixin, self).__init__(*args, **kargs)
+#    
+#    def match_string(self, **options):
+#        '''
+#        Create a parser for a string.  For options see `lepl.core.Core`.
+#        '''
+#        return lambda text: self(Stream.from_string(text, **options))
+#
+#    def match_path(self, **options):
+#        '''
+#        Create a parser for a file from a given path.  For options see 
+#        `lepl.core.Core`.
+#        '''
+#        return lambda path: self(Stream.from_path(path, **options))
+#
+#    def match_list(self, **options):
+#        '''
+#        Create a parser for a list of values.  For options see `lepl.core.Core`.
+#        '''
+#        return lambda list_: self(Stream.from_list(list_, **options))
+#
+#    def match_file(self, **options):
+#        '''
+#        Create a parser for a file.  For options see `lepl.core.Core`.
+#        '''
+#        return lambda file_: self(Stream.from_string(file_, **options))
+#
+#    def parse_string(self, text, **options):
+#        '''
+#        Parse a string, returning only a single result.  
+#        For options see `lepl.core.Core`.
+#        '''
+#        try:
+#            return next(self(Stream.from_string(text, **options)))[0]
+#        except StopIteration:
+#            return None
+#
+#    def parse_path(self, path, **options):
+#        '''
+#        Parse a file from a given path, returning only a single result.  
+#        For options see `lepl.core.Core`.
+#        '''
+#        return next(self(Stream.from_path(path, **options)))[0]
+#
+#    def parse_list(self, list_, **options):
+#        '''
+#        Parse a list of values, returning only a single result.  
+#        For options see `lepl.core.Core`.
+#        '''
+#        return next(self(Stream.from_list(list_, **options)))[0]
+#
+#    def parse_file(self, file_, **options):
+#        '''
+#        Parse a file, returning only a single result.  
+#        For options see `lepl.core.Core`.
+#        '''
+#        return next(self(Stream.from_string(file_, **options)))[0]

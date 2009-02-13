@@ -38,19 +38,21 @@ from re import compile
 from sys import version
 from traceback import print_exc
 
-from lepl.graph import ArgAsAttributeMixin, PostorderWalkerMixin, ConstructorStr
+from lepl.graph \
+    import ArgAsAttributeMixin, PostorderWalkerMixin, ConstructorStr, GraphStr
 from lepl.manager import managed
 from lepl.node import Node, raise_error
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
-from lepl.stream import StreamMixin
+from lepl.parser import Configuration, make_parser, make_matcher
+from lepl.stream import Stream
 from lepl.support import assert_type, BaseGeneratorDecorator, lmap, compose
 from lepl.trace import LogMixin
 
 
 
 class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin, 
-                    StreamMixin, LogMixin, Matcher):
+                    LogMixin, Matcher):
     '''
     A base class that provides support to all matchers.
     '''
@@ -65,9 +67,64 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def __repr__(self):
         return '<%s instance>' % self.__class__.__name__
     
-    def __call__(self, stream):
-        return self.match(stream)
+    def tree(self):
+        visitor = GraphStr()
+        return visitor.postprocess(self.postorder(visitor))
+    
+    def file_parser(self):
+        return make_parser(self, Stream.from_file, self.__default_config())
+    
+    def list_parser(self):
+        return make_parser(self, Stream.from_list, self.__default_config())
+    
+    def path_parser(self):
+        return make_parser(self, Stream.from_path, self.__default_config())
+    
+    def string_parser(self):
+        return make_parser(self, Stream.from_string, self.__default_config())
+    
+    def parse_file(self, file):
+        return self.file_parser()(file)
+        
+    def parse_list(self, list_):
+        return self.list_parser()(list_)
+        
+    def parse_path(self, path):
+        return self.path_parser()(path)
+        
+    def parse_string(self, string):
+        return self.string_parser()(string)
+    
+    
+    def file_matcher(self):
+        return make_matcher(self, Stream.from_file, self.__default_config())
+    
+    def list_matcher(self):
+        return make_matcher(self, Stream.from_list, self.__default_config())
+    
+    def path_matcher(self):
+        return make_matcher(self, Stream.from_path, self.__default_config())
+    
+    def string_matcher(self):
+        return make_matcher(self, Stream.from_string, self.__default_config())
 
+    def match_file(self, file):
+        return self.file_matcher()(file)
+        
+    def match_list(self, list_):
+        return self.list_matcher()(list_)
+        
+    def match_path(self, path):
+        return self.path_matcher()(path)
+        
+    def match_string(self, string):
+        return self.string_matcher()(string)
+
+    
+    def __default_config(self):
+        return Configuration(flatten={And: '*matchers', Or: '*matchers'})
+#        return Configuration()
+    
 
 class _BaseSearch(BaseMatcher):
     '''
@@ -89,7 +146,6 @@ class _BaseSearch(BaseMatcher):
         
     def _cleanup(self, queue):
         for (count, acc, stream, generator) in queue:
-            self._debug('Closing %s' % generator)
             generator.close()
         
         
@@ -98,7 +154,8 @@ class DepthFirst(_BaseSearch):
     (Post order) Depth first repetition (typically used via ``lepl.Repeat``).
     '''
 
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         stack = []
         try:
             stack.append((0, [], stream, self.first(stream)))
@@ -128,7 +185,8 @@ class BreadthFirst(_BaseSearch):
     (Level order) Breadth first repetition (typically used via ``lepl.Repeat``).
     '''
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         queue = deque()
         try:
             queue.append((0, [], stream, self.first(stream)))
@@ -156,7 +214,8 @@ class OrderByResultCount(BaseMatcher):
         self._arg(matcher=coerce(matcher, Literal))
         self._karg(ascending=ascending)
         
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         for result in sorted(self.matcher(stream),
                              key=lambda x: len(x[0]), reverse=self.ascending):
             yield result
@@ -175,7 +234,8 @@ class And(_BaseCombiner):
     It can be used indirectly by placing ``&`` between matchers.
     '''
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  Results from the different matchers are
@@ -213,7 +273,8 @@ class Or(_BaseCombiner):
     literal matches.
     '''
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  The result will correspond to one of the
@@ -235,7 +296,8 @@ class First(_BaseCombiner):
     coerced to literal matches.
     '''
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  The result will correspond to one of the
@@ -271,7 +333,8 @@ class Any(BaseMatcher):
         self._karg(restrict=restrict)
         self.tag(repr(restrict))
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  The result will be a single matching 
@@ -295,7 +358,8 @@ class Literal(BaseMatcher):
         self._arg(text=text)
         self.tag(repr(text))
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
@@ -329,7 +393,8 @@ class Empty(BaseMatcher):
         if name:
             self.tag(name)
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  Match any character and progress to 
@@ -360,7 +425,8 @@ class Lookahead(BaseMatcher):
         if negated:
             self.tag('~')
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
@@ -436,7 +502,8 @@ class Apply(BaseMatcher):
             self._arg(function=function)
         else:
             self._arg(function=lambda results: [function(results)])
-        self._karg(raw=raw)
+        # this may seem odd, but we have already "applied" raw=False above
+        self._karg(raw=True)
         self._karg(args=args)
         tags = []
         if isinstance(function, str): tags.append(repr(function))
@@ -444,7 +511,8 @@ class Apply(BaseMatcher):
         if args: tags.append('*args')
         if tags: self.tag(','.join(tags))
 
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
@@ -502,7 +570,8 @@ class KApply(BaseMatcher):
         self._arg(function=function)
         self._karg(raw=raw)
         
-    def match(self, stream_in):
+    @managed
+    def __call__(self, stream_in):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
@@ -543,7 +612,8 @@ class Regexp(BaseMatcher):
         self.tag(repr(pattern))
         self.__pattern = compile(pattern)
         
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
@@ -573,7 +643,8 @@ class Delayed(BaseMatcher):
         super(Delayed, self).__init__()
         self._arg(matcher=matcher)
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
@@ -599,7 +670,8 @@ class Commit(BaseMatcher):
     and the min_queue option is greater than zero.
     '''
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         '''
         Delete backtracking state and return an empty match.
         '''
@@ -653,7 +725,8 @@ class Trace(BaseMatcher):
         self._arg(matcher=matcher)
         self._karg(name=name)
     
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         return _TraceDecorator(self.matcher(stream), stream, self.name)
     
     
@@ -672,7 +745,8 @@ class Memo(BaseMatcher):
         self._arg(matcher=matcher)
         self.__table = {}
 
-    def match(self, stream):
+    @managed
+    def __call__(self, stream):
         try:
             index = stream.depth()
         except:

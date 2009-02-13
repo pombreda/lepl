@@ -4,7 +4,7 @@ from types import MethodType
 from unittest import TestCase
 
 from lepl import *
-from lepl.parser import string_parser
+from lepl.parser import string_parser, string_matcher, Configuration
 from lepl.trace import LogMixin
 
 
@@ -32,10 +32,10 @@ class LimitedDepthTest(LogMixin, TestCase):
     def assert_range(self, n_match, n_char, direcn, results, multiplier):
         text = '*' * n_char
         for index in range(len(results)):
-            min_queue = index * multiplier
+            queue_len = index * multiplier
             matcher = (Literal('*')[::direcn,...][n_match] & Eos())
-            parser = string_parser(matcher, min_queue=min_queue)
-            self.assert_count(parser, min_queue, index, results[index])
+            parser = string_parser(matcher, Configuration(queue_len=queue_len))
+            self.assert_count(parser, queue_len, index, results[index])
             
     def assert_count(self, matcher, min_queue, index, count):
         results = list(matcher('****'))
@@ -44,7 +44,7 @@ class LimitedDepthTest(LogMixin, TestCase):
 
     def test_single(self):
 #        basicConfig(level=DEBUG)
-        matcher = (Literal('*')[:,...][3]).match_string(min_queue=5)('*' * 4)
+        matcher = string_matcher(Literal('*')[:,...][3], Configuration(queue_len=5))('*' * 4)
         results = list(matcher)
         print(results)
         
@@ -77,6 +77,6 @@ class FlattenTest(TestCase):
     def test_flatten(self):
         matcher = Literal('a') & Literal('b') & Literal('c')
         assert str(matcher) == "And(And(Literal('a'), Literal('b')), Literal('c'))", str(matcher)
-        parser = string_parser(matcher)
+        parser = matcher.string_parser()
         assert str(parser.matcher) == "And(Literal('a'), Literal('b'), Literal('c'))", str(parser.matcher)
         

@@ -1,40 +1,35 @@
 
 from types import MethodType
 
+from lepl.core import CoreConfiguration
 from lepl.graph import order, FORWARD, preorder, clone, Clone, post_clone
 from lepl.manager import managed
-from lepl.matchers import And, Or
 from lepl.operators import Matcher
 from lepl.stream import Stream
     
     
-
-def opt_karg(options, name, default):
-    if name in options:
-        value = options[name]
-        del options[name]
-    else:
-        value = default
-    return (options, value)
+class Configuration(CoreConfiguration):
     
+    def __init__(self, flatten=None, memoizers=None, queue_len=None, trace_len=None):
+        super(Configuration, self).__init__(queue_len, trace_len)
+        self.flatten = [] if flatten is None else flatten 
+        self.memoizers = [] if memoizers is None else memoizers
+        
+        
+#DECORATORS = 'decorators'
+#DEFAULT_DECORATORS = [managed]
+#
+#def decorate_generators(matcher, decorator):
+#    for m in order(matcher, FORWARD, type_=Matcher):
+#        m.match = MethodType(decorator(m.match.__func__), m)
+#    return matcher
+#
+#def decorate(matcher, options):
+#    (options, decorators) = opt_karg(options, DECORATORS, DEFAULT_DECORATORS)
+#    for decorator in decorators:
+#        matcher = decorate_generators(matcher, decorator)
+#    return (matcher, options)
 
-DECORATORS = 'decorators'
-DEFAULT_DECORATORS = [managed]
-
-def decorate_generators(matcher, decorator):
-    for m in order(matcher, FORWARD, type_=Matcher):
-        m.match = MethodType(decorator(m.match.__func__), m)
-    return matcher
-
-def decorate(matcher, options):
-    (options, decorators) = opt_karg(options, DECORATORS, DEFAULT_DECORATORS)
-    for decorator in decorators:
-        matcher = decorate_generators(matcher, decorator)
-    return (matcher, options)
-
-
-TO_FLATTEN = 'to_flatten'
-DEFAULT_TO_FLATTEN = {And:'*matchers', Or:'*matchers'}
 
 def make_flatten(table):
     def flatten(node, old_args, kargs):
@@ -55,29 +50,65 @@ def make_flatten(table):
     return flatten
     
 
-def flatten(matcher, options):
-    (options, to_flatten) = opt_karg(options, TO_FLATTEN, DEFAULT_TO_FLATTEN)
-    if to_flatten:
-        matcher = matcher.postorder(Clone(make_flatten(to_flatten)))
-    return (matcher, options)
+def flatten(matcher, conf):
+    if conf.flatten:
+        matcher = matcher.postorder(Clone(make_flatten(conf.flatten)))
+    return matcher
 
 
-MEMOIZERS = 'memoizers'
-DEFAULT_MEMOIZERS = []
-
-def memoize(matcher, options):
-    (options, memoizers) = opt_karg(options, MEMOIZERS, DEFAULT_MEMOIZERS)
-    for memoizer in memoizers:
+def memoize(matcher, conf):
+    for memoizer in conf.memoizers:
         matcher = matcher.postorder(Clone(post_clone(memoizer)))
-    return (matcher, options)
+    return matcher
+
+
+def prepare(matcher, conf):
+    matcher = flatten(matcher, conf)
+    matcher = memoize(matcher, conf)
+    return matcher
+
+
+def make_parser(matcher, stream, conf):
+    matcher = prepare(matcher, conf)
+    def single(arg):
+        try:
+            return next(matcher(stream(arg, conf)))[0]
+        except StopIteration:
+            return None
+    single.matcher = matcher
+    return single
 
     
-def string_parser(matcher, **options):
-    (matcher, options) = flatten(matcher, options)
-    (matcher, options) = memoize(matcher, options)
-    # this must come after processing that clones the tree
-    (matcher, options) = decorate(matcher, options)
-    parser = lambda text: matcher(Stream.from_string(text, **options))
-    parser.matcher = matcher
-    return parser
+def make_matcher(matcher, stream, conf):
+    matcher = prepare(matcher, conf)
+    def multiple(arg):
+        return matcher(stream(arg, conf))
+    multiple.matcher = matcher
+    return multiple
+
+    
+def file_parser(matcher, conf):
+    return make_parser(matcher, Stream.from_file, conf)
+
+def list_parser(matcher, conf):
+    return make_parser(matcher, Stream.from_list, conf)
+
+def path_parser(matcher, conf):
+    return make_parser(matcher, Stream.from_path, conf)
+
+def string_parser(matcher, conf):
+    return make_parser(matcher, Stream.from_string, conf)
+
+
+def file_matcher(matcher, conf):
+    return make_matcher(matcher, Stream.from_file, conf)
+
+def list_matcher(matcher, conf):
+    return make_matcher(matcher, Stream.from_list, conf)
+
+def path_matcher(matcher, conf):
+    return make_matcher(matcher, Stream.from_path, conf)
+
+def string_matcher(matcher, conf):
+    return make_matcher(matcher, Stream.from_string, conf)
 
