@@ -102,6 +102,12 @@ class BaseGeneratorDecorator(object):
     # for 2.6
     def next(self):
         return self.__next__()
+    
+    def send(self, value):
+        return self.__generator.send(value)
+    
+    def throw(self, value):
+        return self.__generator.throw(value)
                 
     def __iter__(self):
         return self

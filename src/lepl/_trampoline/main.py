@@ -14,39 +14,65 @@ def node(level=0, p=0.0001):
 
 
 def trampoline(main):
-    try:
-        stack = []
-        value = main
-        while True:
+    stack = []
+    value = main
+    exception = False
+    while True:
+        try:
             if type(value) is GeneratorType:
                 stack.append(value)
                 value = next(stack[-1])
             else:
                 stack.pop()
                 if stack:
-                    value = stack[-1].send(value)
+                    if exception:
+                        exception = False
+                        value = stack[-1].throw(value)
+                    else:
+                        value = stack[-1].send(value)
                 else:
-                    yield value
+                    if exception:
+                        raise value
+                    else:
+                        yield value
                     value = main
-    except StopIteration:
-        pass
-    
+        except Exception as e:
+            if exception:
+                raise value
+            else:
+                value = e
+                exception = True
     
 def fib(n):
     if n < 2:
         yield n
     else:
         yield (yield fib(n-1)) + (yield fib(n-2)) 
-    
+        
+        
+def sequence(n):
+    for i in range(n):
+        yield n
+
+
+def outer(n):
+    for i in range(n):
+        generator = sequence(i)
+        try:
+            while True:
+                yield (yield generator)
+        except StopIteration:
+            pass
+
             
 if __name__ == '__main__':
 #    t = trampoline(node())
 #    for i in t:
 #        print(i)
 
-    for n in range(1, 10):
-        print(n, next(trampoline(fib(n))))
-    print(100, next(trampoline(fib(100))))
+#    for n in range(1, 10):
+#        print(n, next(trampoline(fib(n))))
+#    print(100, next(trampoline(fib(100))))
 
 #    def stack_size(depth=0):
 #        if 0 == depth % 100:
@@ -54,3 +80,7 @@ if __name__ == '__main__':
 #        stack_size(depth+1)
 #    stack_size()
     
+    generator = trampoline(outer(3))
+    for i in range(6):
+        print(next(generator))
+            

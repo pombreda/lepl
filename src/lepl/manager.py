@@ -132,6 +132,12 @@ class GeneratorWrapper(LogMixin):
     def close(self):
         self.__generator.close()
         
+    def send(self, value):
+        return self.__generator.send(value)
+        
+    def throw(self, value):
+        return self.__generator.throw(value)
+        
     def __str__(self):
         return self.__description
     

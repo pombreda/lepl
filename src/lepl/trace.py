@@ -62,12 +62,14 @@ def traced(f):
     '''
     def next(self):
         try:
-            (result, stream) = f(self)
-            self.register(self, result, stream)
+            response = f(self)
+            if type(response) is tuple:
+                (result, stream) = response
+                self.register(self, result, stream)
+            return response
         except Exception as e:
             self.register(self)
             raise
-        return (result, stream)
     return next
 
 

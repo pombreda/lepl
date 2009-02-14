@@ -1,9 +1,10 @@
 
-from types import MethodType
+from types import MethodType, GeneratorType
+
 
 from lepl.core import CoreConfiguration
 from lepl.graph import order, FORWARD, preorder, clone, Clone, post_clone
-from lepl.manager import managed
+from lepl.manager import managed, GeneratorWrapper
 from lepl.operators import Matcher
 from lepl.stream import Stream
     
@@ -62,29 +63,58 @@ def memoize(matcher, conf):
     return matcher
 
 
-def prepare(matcher, conf):
+def trampoline(main):
+    stack = []
+    value = main
+    exception = False
+    while True:
+        try:
+            if type(value) in (GeneratorType, GeneratorWrapper):
+                stack.append(value)
+                value = next(stack[-1])
+            else:
+                stack.pop()
+                if stack:
+                    if exception:
+                        exception = False
+                        value = stack[-1].throw(value)
+                    else:
+                        value = stack[-1].send(value)
+                else:
+                    if exception:
+                        raise value
+                    else:
+                        yield value
+                    value = main
+        except Exception as e:
+            if exception:
+                raise value
+            else:
+                value = e
+                exception = True
+    
+    
+def prepare(matcher, stream, conf):
     matcher = flatten(matcher, conf)
     matcher = memoize(matcher, conf)
-    return matcher
+    parser = lambda arg: trampoline(matcher(stream(arg, conf)))
+    parser.matcher = matcher
+    return parser
 
 
 def make_parser(matcher, stream, conf):
-    matcher = prepare(matcher, conf)
+    matcher = prepare(matcher, stream, conf)
     def single(arg):
         try:
-            return next(matcher(stream(arg, conf)))[0]
+            return next(matcher(arg))[0]
         except StopIteration:
             return None
-    single.matcher = matcher
+    single.matcher = matcher.matcher
     return single
 
     
 def make_matcher(matcher, stream, conf):
-    matcher = prepare(matcher, conf)
-    def multiple(arg):
-        return matcher(stream(arg, conf))
-    multiple.matcher = matcher
-    return multiple
+    return prepare(matcher, stream, conf)
 
     
 def file_parser(matcher, conf):

@@ -165,7 +165,7 @@ class DepthFirst(_BaseSearch):
                 if self.stop is None or count1 < self.stop:
                     count2 = count1 + 1
                     try:
-                        (value, stream2) = next(generator)
+                        (value, stream2) = yield generator
                         acc2 = acc1 + value
                         stack.append((count2, acc2, stream2, self.rest(stream2)))
                         extended = True
@@ -196,10 +196,14 @@ class BreadthFirst(_BaseSearch):
                         (self.stop is None or count1 <= self.stop):
                     yield (acc1, stream1)
                 count2 = count1 + 1
-                for (value, stream2) in generator:
-                    acc2 = acc1 + value
-                    if self.stop is None or count2 <= self.stop:
-                        queue.append((count2, acc2, stream2, self.rest(stream2)))
+                try:
+                    while True:
+                        (value, stream2) = yield generator
+                        acc2 = acc1 + value
+                        if self.stop is None or count2 <= self.stop:
+                            queue.append((count2, acc2, stream2, self.rest(stream2)))
+                except StopIteration:
+                    pass
         finally:
             self._cleanup(queue)
             
@@ -216,7 +220,16 @@ class OrderByResultCount(BaseMatcher):
         
     @managed
     def __call__(self, stream):
-        for result in sorted(self.matcher(stream),
+        generator = self.matcher(stream)
+        results = []
+        try:
+            while True:
+                # syntax error if this on one line?!
+                result = yield generator
+                results.append(result)
+        except StopIteration:
+            pass
+        for result in sorted(results,
                              key=lambda x: len(x[0]), reverse=self.ascending):
             yield result
 
@@ -248,7 +261,7 @@ class And(_BaseCombiner):
                 while stack:
                     (result, generator, matchers) = stack.pop(-1)
                     try:
-                        (value, stream) = next(generator)
+                        (value, stream) = yield generator
                         stack.append((result, generator, matchers))
                         if matchers:
                             stack.append((result+value, matchers[0](stream), 
@@ -281,9 +294,12 @@ class Or(_BaseCombiner):
         sub-matchers (starting from the left).
         '''
         for matcher in self.matchers:
-            for result in matcher(stream):
-                yield result
-
+            generator = matcher(stream)
+            try:
+                while True:
+                    yield (yield generator)
+            except StopIteration:
+                pass
 
 class First(_BaseCombiner):
     '''
@@ -305,9 +321,13 @@ class First(_BaseCombiner):
         '''
         matched = False
         for match in self.matchers:
-            for result in match(stream):
-                matched = True
-                yield result
+            generator = match(stream)
+            try:
+                while True:
+                    yield (yield generator)
+                    matched = True
+            except StopIteration:
+                pass
             if matched: break
             
 
@@ -431,15 +451,15 @@ class Lookahead(BaseMatcher):
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
         '''
-        # Note that there is no backtracking here - the 'for' is not repeated.
-        if self.negated:
-            for result in self.matcher(stream):
-                return
-            yield ([], stream)
+        try:
+            yield self.matcher(stream) # an evaluation, not a return
+            success = True
+        except StopIteration:
+            success = False
+        if success is self.negated:
+            return
         else:
-            for result in self.matcher(stream):
-                yield ([], stream)
-                return
+            yield ([], stream)
             
     def __invert__(self):
         '''
@@ -517,11 +537,16 @@ class Apply(BaseMatcher):
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
         '''
-        for (results, stream) in self.matcher(stream):
-            if self.args:
-                yield (self.function(*results), stream)
-            else:
-                yield (self.function(results), stream)
+        try:
+            generator = self.matcher(stream)
+            while True:
+                (results, stream) = yield generator
+                if self.args:
+                    yield (self.function(*results), stream)
+                else:
+                    yield (self.function(results), stream)
+        except StopIteration:
+            pass
             
             
 class KApply(BaseMatcher):
@@ -582,13 +607,18 @@ class KApply(BaseMatcher):
             kargs['core'] = stream_in.core
         except:
             kargs['core'] = None
-        for (results, stream_out) in self.matcher(stream_in):
-            kargs['stream_out'] = stream_out
-            kargs['results'] = results
-            if self.raw:
-                yield self.function(**kargs)
-            else:
-                yield ([self.function(**kargs)], stream_out)
+        try:
+            generator = self.matcher(stream_in)
+            while True:
+                (results, stream_out) = yield generator
+                kargs['stream_out'] = stream_out
+                kargs['results'] = results
+                if self.raw:
+                    yield self.function(**kargs)
+                else:
+                    yield ([self.function(**kargs)], stream_out)
+        except StopIteration:
+            pass
             
             
 class Regexp(BaseMatcher):
@@ -620,7 +650,7 @@ class Regexp(BaseMatcher):
         '''
         try:
             match = self.__pattern.match(stream.text())
-        except:
+        except: # no text method
             match = self.__pattern.match(stream)
         if match:
             eaten = len(match.group())
@@ -730,39 +760,6 @@ class Trace(BaseMatcher):
         return _TraceDecorator(self.matcher(stream), stream, self.name)
     
     
-class Memo(BaseMatcher):
-    '''
-    Memoize the node.
-    
-    This uses a table to store previous results and so avoid repeated
-    matching.  Doing so effectively implements "PackRat" parsing.  In
-    addition, we can detect and avoid the indefinite looping that occurs
-    with left-recursive rules.
-    '''
-    
-    def __init__(self, matcher):
-        super(Memo, self).__init__()
-        self._arg(matcher=matcher)
-        self.__table = {}
-
-    @managed
-    def __call__(self, stream):
-        try:
-            index = stream.depth()
-        except:
-            index = stream
-        if index not in self.__table:
-            # This flags left-recursive calls 
-            self.__table[index] = None
-            self.__table[index] = self.matcher(stream)
-        if self.__table[index] is None:
-            # Abort left-recursive
-            return
-        else:
-            for result in self.__table[index]:
-                yield result
-        
-
 # The following are functions rather than classes, but we use the class
 # syntax to give a uniform interface.
 

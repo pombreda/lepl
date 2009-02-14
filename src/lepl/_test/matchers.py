@@ -12,7 +12,11 @@ from lepl.trace import LogMixin
 class BaseTest(TestCase):
     
     def assert_direct(self, stream, match, target):
-        result = [x for (x, s) in match(stream)]
+        result = [x for (x, s) in match.match_string(stream)]
+        assert target == result, result
+    
+    def assert_list(self, stream, match, target):
+        result = [x for (x, s) in match.match_list(stream)]
         assert target == result, result
     
 
@@ -34,15 +38,15 @@ class AndTest(BaseTest):
         
     def assert_join(self, stream, match, target):
         result = [''.join(map(str, l)) 
-                  for (l, s) in match(stream)]
+                  for (l, s) in match.match_list(stream)]
         assert target == result, result
 
     def test_add(self):
         basicConfig(level=DEBUG)
-        self.assert_direct(['1','2'], Any() + Any(), [['12']])
-        self.assert_direct(['1','2','3'], Any() + Any(), [['12']])
-        self.assert_direct(['1','2','3'], Any() + Any() + Any(), [['123']])
-        self.assert_direct(['1'], Any() + Any(), [])
+        self.assert_list(['1','2'], Any() + Any(), [['12']])
+        self.assert_list(['1','2','3'], Any() + Any(), [['12']])
+        self.assert_list(['1','2','3'], Any() + Any() + Any(), [['123']])
+        self.assert_list(['1'], Any() + Any(), [])
     
     
 class CoercionTest(BaseTest):
@@ -93,7 +97,7 @@ class RepeatTest(TestCase):
         
     def assert_simple(self, stream, start, stop, step, target):
         result = [''.join(map(str, l)) 
-                  for (l, s) in Repeat(RangeMatch(), start, stop, step)(stream)]
+                  for (l, s) in Repeat(RangeMatch(), start, stop, step).match_list(stream)]
         assert target == result, result
         
     def test_mixin(self):
@@ -118,7 +122,7 @@ class RepeatTest(TestCase):
             pass
     
     def assert_mixin(self, match, stream, target):
-        result = [''.join(map(str, l)) for (l, s) in match(stream)]
+        result = [''.join(map(str, l)) for (l, s) in match.match_list(stream)]
         assert target == result, result
        
     def test_separator(self):
@@ -132,7 +136,7 @@ class RepeatTest(TestCase):
         
     def assert_separator(self, stream, start, stop, step, target):
         result = [''.join(l) 
-                  for (l, s) in Repeat(Any('abc'), start, stop, step, Any(','))(stream)]
+                  for (l, s) in Repeat(Any('abc'), start, stop, step, Any(',')).match_string(stream)]
         assert target == result, result
         
     def test_separator_mixin(self):
@@ -145,8 +149,8 @@ class RepeatTest(TestCase):
         self.assert_separator_mixin(abc[2:3:'d',','], 'a,b,c,a', ['a,b,c', 'a,b'])
         self.assert_separator_mixin(abc[2:3:'b',','], 'a,b,c,a', ['a,b', 'a,b,c'])
 
-    def assert_separator_mixin(self, match, stream, target):
-        result = [''.join(map(str, l)) for (l, s) in match(stream)]
+    def assert_separator_mixin(self, matcher, stream, target):
+        result = [''.join(map(str, l)) for (l, s) in matcher.match_string(stream)]
         assert target == result, result
     
 class RangeMatch(BaseMatcher):
@@ -189,7 +193,7 @@ class CommitTest(BaseTest):
         self.assert_direct('abcd', 
             (Any()[0::'b'] + (Literal('d') | 
                               Literal('cd') + Commit() | 
-                              Literal('bcd')) + Eof()).string_matcher(), 
+                              Literal('bcd')) + Eof()), 
             [['abcd'], ['abcd']])
         
 
@@ -214,4 +218,9 @@ class EofTest(BaseTest):
     def test_eof(self):
         self.assert_direct('foo ', 'foo' / Eof(), [['foo', ' ']])
         
-       
+
+class LiteralTest(BaseTest):
+    
+    def test_literal(self):
+        self.assert_direct('foo ', Literal('foo'), [['foo']])
+        
