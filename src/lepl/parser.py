@@ -71,7 +71,7 @@ def trampoline(main):
         try:
             if type(value) in (GeneratorType, GeneratorWrapper):
                 stack.append(value)
-                value = next(stack[-1])
+                value = next(value)
             else:
                 stack.pop()
                 if stack:

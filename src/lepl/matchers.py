@@ -757,8 +757,25 @@ class Trace(BaseMatcher):
     
     @managed
     def __call__(self, stream):
-        return _TraceDecorator(self.matcher(stream), stream, self.name)
-    
+        try:
+            generator = self.matcher(stream)
+            while True:
+                try:
+                    stream.core.bb.switch(True)
+                except:
+                    raise ValueError('Trace requires stream source.')
+                response = (yield generator)
+                try:
+                    stream.core.bb.switch(False)
+                except:
+                    pass
+                yield response
+        except StopIteration:
+            try:
+                stream.core.bb.switch(False)
+            except:
+                pass
+
     
 # The following are functions rather than classes, but we use the class
 # syntax to give a uniform interface.

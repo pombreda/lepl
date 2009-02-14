@@ -33,14 +33,14 @@ class LimitedDepthTest(LogMixin, TestCase):
         text = '*' * n_char
         for index in range(len(results)):
             queue_len = index * multiplier
-            matcher = (Literal('*')[::direcn,...][n_match] & Eos())
+            matcher = Trace(Literal('*')[::direcn,...][n_match] & Eos())
             parser = string_parser(matcher, Configuration(queue_len=queue_len))
             self.assert_count(parser, queue_len, index, results[index])
             
-    def assert_count(self, matcher, min_queue, index, count):
+    def assert_count(self, matcher, queue_len, index, count):
         results = list(matcher('****'))
         found = len(results)
-        assert found == count, (min_queue, index, found)
+        assert found == count, (queue_len, index, found)
 
     def test_single(self):
 #        basicConfig(level=DEBUG)
@@ -79,4 +79,19 @@ class FlattenTest(TestCase):
         assert str(matcher) == "And(And(Literal('a'), Literal('b')), Literal('c'))", str(matcher)
         parser = matcher.string_parser()
         assert str(parser.matcher) == "And(Literal('a'), Literal('b'), Literal('c'))", str(parser.matcher)
+
+
+class RepeatTest(TestCase):
+    
+    def test_depth(self):
+        matcher = Any()[:,...]
+        matcher = matcher.string_matcher()
+        results = [m for (m, s) in matcher('abc')]
+        assert results == [['abc'], ['ab'], ['a'], []], results
+
+    def test_breadth(self):
+        matcher = Any()[::'b',...]
+        matcher = matcher.string_matcher()
+        results = [m for (m, s) in matcher('abc')]
+        assert results == [[], ['a'], ['ab'], ['abc']], results
         

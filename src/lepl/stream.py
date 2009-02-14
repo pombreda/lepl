@@ -281,10 +281,10 @@ class Chunk(object):
     def location(self, offset=0):
         '''
         A pair containing line number and offset.
-        The line number is ``None`` if this is past the end of the file.
+        The line number is -1 if this is past the end of the file.
         '''
         if self.__empty:
-            return (None, offset)
+            return (-1, offset)
         elif offset > len(self.__text):
             return next().location(offset - len(self.__text))
         else:
