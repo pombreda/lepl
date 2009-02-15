@@ -3,9 +3,8 @@ from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.matchers import *
-from lepl.manager import managed
 from lepl.parser import string_matcher, Configuration
-from lepl.trace import LogMixin
+from lepl.support import LogMixin
 
 
 class LimitedDepthTest(LogMixin, TestCase):

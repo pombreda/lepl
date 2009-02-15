@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from lepl import *
 from lepl.parser import string_parser, string_matcher, Configuration
-from lepl.trace import LogMixin
+from lepl.support import LogMixin
 
 
 class LimitedDepthTest(LogMixin, TestCase):

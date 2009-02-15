@@ -20,6 +20,8 @@
 Library routines / utilities (some unused).
 '''
 
+from logging import getLogger
+
 
 def assert_type(name, value, type_, none_ok=False):
     '''
@@ -81,23 +83,22 @@ class CircularFifo():
         for _ in range(self.__size):
             yield self.__buffer[index]
             index = (index + 1) % capacity
+            
+    def clear(self):
+        self.__size = 0
 
 
-class BaseGeneratorDecorator(object):
+class BaseGeneratorWrapper(object):
     '''
     Base class for wrapping generators.
     '''
     
     def __init__(self, generator):
-        super(BaseGeneratorDecorator, self).__init__()
+        super(BaseGeneratorWrapper, self).__init__()
         self.__generator = generator
     
     def __next__(self):
-        try:
-            self._before()
-            return self._value(next(self.__generator))
-        finally:
-            self._after()
+        return self.__generator.__next__()
             
     # for 2.6
     def next(self):
@@ -115,45 +116,7 @@ class BaseGeneratorDecorator(object):
     def close(self):
         self.__generator.close()
         
-    def _before(self):
-        pass
     
-    def _after(self):
-        pass
-    
-    def _value(self, value):
-        return value
-    
-    def getattr(self, name):
-        return getattr(self.__generator, name)
-    
-    
-class FastFifo():
-    '''
-    A FIFO that extends to accommodate data as required.
-    
-    Use deque instead.
-    '''
-    
-    def __init__(self):
-        self.__front = []
-        self.__back = []
-    
-    def append(self, value):
-        self.__front.append(value)
-        
-    def pop(self, index=0):
-        if index != 0: raise IndexError('FIFO is only a FIFO')
-        if not self.__back:
-            self.__front.reverse()
-            self.__back = self.__front
-            self.__front = []
-        return self.__back.pop(-1)
-    
-    def __len__(self):
-        return len(self.__front) + len(self.__back)
-    
-
 def open_stop(spec):
     '''
     In Python 2.6 open [] appears to use maxint or similar, which is not
@@ -177,4 +140,25 @@ def compose(f, g):
     def fun(*args, **kargs):
         return f(g(*args, **kargs))
     return fun
+
+
+class LogMixin(object):
+    '''
+    Add standard Python logging to a class.
+    '''
+    
+    def __init__(self, *args, **kargs):
+        super(LogMixin, self).__init__(*args, **kargs)
+        self._log = getLogger(self.__module__ + '.' + self.__class__.__name__)
+        self._debug = self._log.debug
+        self._info = self._log.info
+        self._warn = self._log.warn
+        self._error = self._log.error
+        self.describe = self.__class__.__name__
+        
+    def tag(self, *args):
+        self.describe = '{0}({1})'.format(self.__class__.__name__, 
+                                          ','.join(map(str, args)))
+        return self
+    
 

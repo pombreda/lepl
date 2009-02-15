@@ -23,7 +23,7 @@ Support for structuring results.
 from collections import Iterable, Mapping, deque
 
 from lepl.graph import SimpleGraphNode, SimpleWalker, GraphStr, postorder, POSTORDER
-from lepl.trace import LogMixin
+from lepl.support import LogMixin
 
 
 class Node(SimpleGraphNode, LogMixin):

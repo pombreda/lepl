@@ -3,8 +3,8 @@ from unittest import TestCase
 
 from lepl import *
 from lepl.matchers import Literals
-from lepl.memo import LMemo
-from lepl.parser import string_parser
+from lepl.memo import LMemo, Memo
+from lepl.parser import string_parser, Configuration
 
 
 def main():
@@ -29,7 +29,7 @@ def main():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase         > Sentence
 
-    p = string_parser(sentence, memoizers=[LMemo])
+    p = string_parser(sentence, Configuration(memoizers=[Memo]))
     print(p.matcher)
     
     for meaning in p('every boy or some girl and helen and john or pat knows '

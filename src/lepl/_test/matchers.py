@@ -4,9 +4,8 @@ from unittest import TestCase
 
 from lepl.matchers import * 
 from lepl.node import Node
-from lepl.manager import managed
-from lepl.parser import string_parser
-from lepl.trace import LogMixin
+from lepl.parser import string_parser, tagged
+from lepl.support import LogMixin
 
 
 class BaseTest(TestCase):
@@ -163,7 +162,7 @@ class RangeMatch(BaseMatcher):
     def __init__(self):
         super(RangeMatch, self).__init__()
     
-    @managed
+    @tagged
     def __call__(self, values):
         if values:
             for i in range(values[0]):

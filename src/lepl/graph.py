@@ -563,21 +563,21 @@ class Clone(Visitor):
     
     def __init__(self, clone=clone):
         super(Clone, self).__init__()
-        self.__clone = clone
-        self.__proxies = {}
+        self._clone = clone
+        self._proxies = {}
     
     def loop(self, node):
-        if node not in self.__proxies:
-            self.__proxies[node] = make_proxy()
-        return self.__proxies[node][1]
+        if node not in self._proxies:
+            self._proxies[node] = make_proxy()
+        return self._proxies[node][1]
     
     def node(self, node):
-        self.__node = node
+        self._node = node
         
     def constructor(self, *args, **kargs):
-        node = self.__clone(self.__node, args, kargs)
-        if self.__node in self.__proxies:
-            self.__proxies[self.__node][0](node)
+        node = self._clone(self._node, args, kargs)
+        if self._node in self._proxies:
+            self._proxies[self._node][0](node)
         return node
     
     def leaf(self, value):

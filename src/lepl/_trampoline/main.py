@@ -1,6 +1,8 @@
 
+from itertools import count
 from random import uniform
 from types import GeneratorType
+
 
 def node(level=0, p=0.0001):
     if uniform(0, 1) < p:
@@ -50,6 +52,13 @@ def fib(n):
         yield (yield fib(n-1)) + (yield fib(n-2)) 
         
         
+def add_attribute(f):
+    def fun(*args, **kargs):
+        generator = f(*args, **kargs)
+        generator.attribute = 42
+    return fun
+
+# @add_attribute - doesn't work, generators have read-only attributes            
 def sequence(n):
     for i in range(n):
         yield n
@@ -63,8 +72,8 @@ def outer(n):
                 yield (yield generator)
         except StopIteration:
             pass
-
-            
+        
+        
 if __name__ == '__main__':
 #    t = trampoline(node())
 #    for i in t:
@@ -81,6 +90,5 @@ if __name__ == '__main__':
 #    stack_size()
     
     generator = trampoline(outer(3))
-    for i in range(6):
-        print(next(generator))
+    print(list(zip(count(), generator)))
             

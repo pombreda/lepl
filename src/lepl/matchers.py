@@ -40,14 +40,12 @@ from traceback import print_exc
 
 from lepl.graph \
     import ArgAsAttributeMixin, PostorderWalkerMixin, ConstructorStr, GraphStr
-from lepl.manager import managed
 from lepl.node import Node, raise_error
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
-from lepl.parser import Configuration, make_parser, make_matcher
+from lepl.parser import Configuration, make_parser, make_matcher, tagged
 from lepl.stream import Stream
-from lepl.support import assert_type, BaseGeneratorDecorator, lmap, compose
-from lepl.trace import LogMixin
+from lepl.support import assert_type, lmap, compose, LogMixin
 
 
 
@@ -65,7 +63,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         return visitor.postprocess(self.postorder(visitor))
     
     def __repr__(self):
-        return '<%s instance>' % self.__class__.__name__
+        return '<%s>' % self.__class__.__name__
     
     def tree(self):
         visitor = GraphStr()
@@ -154,7 +152,7 @@ class DepthFirst(_BaseSearch):
     (Post order) Depth first repetition (typically used via ``lepl.Repeat``).
     '''
 
-    @managed
+    @tagged
     def __call__(self, stream):
         stack = []
         try:
@@ -185,7 +183,7 @@ class BreadthFirst(_BaseSearch):
     (Level order) Breadth first repetition (typically used via ``lepl.Repeat``).
     '''
     
-    @managed
+    @tagged
     def __call__(self, stream):
         queue = deque()
         try:
@@ -218,7 +216,7 @@ class OrderByResultCount(BaseMatcher):
         self._arg(matcher=coerce(matcher, Literal))
         self._karg(ascending=ascending)
         
-    @managed
+    @tagged
     def __call__(self, stream):
         generator = self.matcher(stream)
         results = []
@@ -247,7 +245,7 @@ class And(_BaseCombiner):
     It can be used indirectly by placing ``&`` between matchers.
     '''
     
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -286,7 +284,7 @@ class Or(_BaseCombiner):
     literal matches.
     '''
     
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -312,7 +310,7 @@ class First(_BaseCombiner):
     coerced to literal matches.
     '''
     
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -353,7 +351,7 @@ class Any(BaseMatcher):
         self._karg(restrict=restrict)
         self.tag(repr(restrict))
     
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -378,7 +376,7 @@ class Literal(BaseMatcher):
         self._arg(text=text)
         self.tag(repr(text))
     
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -413,7 +411,7 @@ class Empty(BaseMatcher):
         if name:
             self.tag(name)
     
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -445,7 +443,7 @@ class Lookahead(BaseMatcher):
         if negated:
             self.tag('~')
     
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -527,11 +525,10 @@ class Apply(BaseMatcher):
         self._karg(args=args)
         tags = []
         if isinstance(function, str): tags.append(repr(function))
-        if raw: tags.append('raw')
         if args: tags.append('*args')
         if tags: self.tag(','.join(tags))
 
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -595,7 +592,7 @@ class KApply(BaseMatcher):
         self._arg(function=function)
         self._karg(raw=raw)
         
-    @managed
+    @tagged
     def __call__(self, stream_in):
         '''
         Do the matching (return a generator that provides successive 
@@ -642,7 +639,7 @@ class Regexp(BaseMatcher):
         self.tag(repr(pattern))
         self.__pattern = compile(pattern)
         
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -673,7 +670,7 @@ class Delayed(BaseMatcher):
         super(Delayed, self).__init__()
         self._arg(matcher=matcher)
     
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -700,7 +697,7 @@ class Commit(BaseMatcher):
     and the min_queue option is greater than zero.
     '''
     
-    @managed
+    @tagged
     def __call__(self, stream):
         '''
         Delete backtracking state and return an empty match.
@@ -713,69 +710,88 @@ class Commit(BaseMatcher):
             raise ValueError('Commit requires stream source.')
     
     
-class _TraceDecorator(BaseGeneratorDecorator):
-    '''
-    Support class for `lepl.match.Trace`.
-    '''
-    
-    def __init__(self, generator, stream, name=None):
-        super(_TraceDecorator, self).__init__(generator)
-        self.__stream = stream
-        self.__on = Empty('+' + (name if name else ''))
-        self.__off = Empty('-' + (name if name else ''))
-    
-    def _before(self):
-        '''
-        Called before each match.
-        '''
-        try:
-            self.__stream.core.bb.switch(True)
-        except:
-            raise ValueError('Trace requires stream source.')
-        next(self.__on(self.__stream))
-        
-    def _after(self):
-        '''
-        Called after each match.
-        '''
-        next(self.__off(self.__stream))
-        try:
-            self.__stream.core.bb.switch(False)
-        except:
-            raise ValueError('Trace requires stream source.')
-
+#class _TraceDecorator(BaseGeneratorDecorator):
+#    '''
+#    Support class for `lepl.match.Trace`.
+#    '''
+#    
+#    def __init__(self, generator, stream, name=None):
+#        super(_TraceDecorator, self).__init__(generator)
+#        self.__stream = stream
+#        self.__on = Empty('+' + (name if name else ''))
+#        self.__off = Empty('-' + (name if name else ''))
+#    
+#    def _before(self):
+#        '''
+#        Called before each match.
+#        '''
+#        try:
+#            self.__stream.core.bb.switch(True)
+#        except:
+#            raise ValueError('Trace requires stream source.')
+#        next(self.__on(self.__stream))
+#        
+#    def _after(self):
+#        '''
+#        Called after each match.
+#        '''
+#        next(self.__off(self.__stream))
+#        try:
+#            self.__stream.core.bb.switch(False)
+#        except:
+#            raise ValueError('Trace requires stream source.')
+#
+#
+#class Trace(BaseMatcher):
+#    '''
+#    Enable trace logging for the sub-matcher.
+#    '''
+#    
+#    def __init__(self, matcher, name=None):
+#        super(Trace, self).__init__()
+#        self._arg(matcher=matcher)
+#        self._karg(name=name)
+#    
+#    @tagged
+#    def __call__(self, stream):
+#        try:
+#            generator = self.matcher(stream)
+#            while True:
+#                try:
+#                    stream.core.bb.switch(True)
+#                except:
+#                    raise ValueError('Trace requires stream source.')
+#                response = (yield generator)
+#                try:
+#                    stream.core.bb.switch(False)
+#                except:
+#                    pass
+#                yield response
+#        except StopIteration:
+#            try:
+#                stream.core.bb.switch(False)
+#            except:
+#                pass
 
 class Trace(BaseMatcher):
     '''
     Enable trace logging for the sub-matcher.
     '''
     
-    def __init__(self, matcher, name=None):
+    def __init__(self, matcher, trace=True):
         super(Trace, self).__init__()
         self._arg(matcher=matcher)
-        self._karg(name=name)
-    
-    @managed
+        self._karg(trace=trace)
+
+    @tagged
     def __call__(self, stream):
         try:
             generator = self.matcher(stream)
             while True:
-                try:
-                    stream.core.bb.switch(True)
-                except:
-                    raise ValueError('Trace requires stream source.')
-                response = (yield generator)
-                try:
-                    stream.core.bb.switch(False)
-                except:
-                    pass
-                yield response
+                yield (yield generator)
         except StopIteration:
-            try:
-                stream.core.bb.switch(False)
-            except:
-                pass
-
+            pass
+        
     
 # The following are functions rather than classes, but we use the class
 # syntax to give a uniform interface.

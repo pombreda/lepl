@@ -8,28 +8,24 @@ class Wrapper(object):
     
     def __init__(self, matcher, stream):
         self._generator = matcher(stream)
-        self.__stopped = False
+        self._stopped = False
         self._table = []
         
-    def __get(self, i):
+    def _get(self, i):
         try:
-            while i >= len(self._table) and not self.__stopped:
-                self._extend()
+            while i >= len(self._table) and not self._stopped:
+                result = yield self._generator
+                self._table.append(result)
         except StopIteration:
-            self.__stopped = True
+            self._stopped = True
             self._generator = None
-        if self.__stopped:
-            raise StopIteration()
-        else:
-            return self._table[i]
+        if not self._stopped:
+            yield self._table[i]
         
-    def _extend(self):
-        self._table.append(next(self._generator))
-    
     def proxy(self):
         for i in count():
-            yield self.__get(i)
-
+            yield (yield self._get(i))
+            
 
 class Memo(BaseMatcher):
     
@@ -39,11 +35,10 @@ class Memo(BaseMatcher):
         self._karg(wrapper=wrapper)
         self.__table = {}
         
-    def match(self, stream):
-        key = hash(stream) # try not to keep hold of resources?
-        if key not in self.__table:
-            self.__table[key] = self.wrapper(self.matcher, stream)
-        return self.__table[key].proxy()
+    def __call__(self, stream):
+        if stream not in self.__table:
+            self.__table[stream] = self.wrapper(self.matcher, stream)
+        return self.__table[stream].proxy()
     
 
 class LWrapper(Wrapper):
@@ -53,13 +48,26 @@ class LWrapper(Wrapper):
         self.__counter = 0
         self.__limit = 2
         
-    def _extend(self):
+    def _get(self, i):
         self.__counter += 1
         print(self.__counter)
         if self.__counter > self.__limit:
-            raise StopIteration()
-        self._table.append(next(self._generator))
-        self.__counter = 0
+            self._stopped = True
+            
+        try:
+            while i >= len(self._table) and not self._stopped:
+                result = yield self._generator
+                print(len(self._table), '=', result)
+                self._table.append(result)
+                
+                self.__counter = 0
+                
+        except StopIteration:
+            self._stopped = True
+            self._generator = None
+        if not self._stopped:
+            print('>>>>>>>>>>>>>', self._table[i])
+            yield self._table[i]
 
 
 def LMemo(matcher):

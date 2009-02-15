@@ -1,20 +1,42 @@
 
 from types import MethodType, GeneratorType
 
-
 from lepl.core import CoreConfiguration
 from lepl.graph import order, FORWARD, preorder, clone, Clone, post_clone
-from lepl.manager import managed, GeneratorWrapper
 from lepl.operators import Matcher
 from lepl.stream import Stream
+from lepl.support import BaseGeneratorWrapper
+from lepl.trace import TraceResults, RecordDeepest
     
     
+def tagged(call):
+    '''
+    Decorator for generators to add extra attributes.
+    '''
+    def tagged_call(matcher, stream):
+        return GeneratorWrapper(call(matcher, stream), stream, matcher)
+    return tagged_call
+
+
+class GeneratorWrapper(BaseGeneratorWrapper):
+    '''
+    Associate basic info about call that created the generator with the 
+    generator itself.  This lets us manage resources and provide logging.
+    '''
+
+    def __init__(self, generator, stream, matcher):
+        super(GeneratorWrapper, self).__init__(generator)
+        self.stream = stream
+        self.matcher = matcher
+        
+
 class Configuration(CoreConfiguration):
     
-    def __init__(self, flatten=None, memoizers=None, queue_len=None, trace_len=None):
-        super(Configuration, self).__init__(queue_len, trace_len)
+    def __init__(self, flatten=None, memoizers=None, monitor=None, queue_len=None):
+        super(Configuration, self).__init__(queue_len)
         self.flatten = [] if flatten is None else flatten 
         self.memoizers = [] if memoizers is None else memoizers
+        self.monitor = monitor
         
         
 #DECORATORS = 'decorators'
@@ -49,41 +71,60 @@ def make_flatten(table):
             new_args = old_args
         return clone(node, new_args, kargs)
     return flatten
+
+
+class CloneWithDescribe(Clone):
+    
+    def constructor(self, *args, **kargs):
+        node = super(CloneWithDescribe, self).constructor(*args, **kargs)
+        node.describe = self._node.describe
+        return node    
     
 
 def flatten(matcher, conf):
     if conf.flatten:
-        matcher = matcher.postorder(Clone(make_flatten(conf.flatten)))
+        matcher = matcher.postorder(CloneWithDescribe(make_flatten(conf.flatten)))
     return matcher
 
 
 def memoize(matcher, conf):
     for memoizer in conf.memoizers:
-        matcher = matcher.postorder(Clone(post_clone(memoizer)))
+        matcher = matcher.postorder(CloneWithDescribe(post_clone(memoizer)))
     return matcher
 
 
-def trampoline(main):
+def trampoline(main, monitor=None):
     stack = []
     value = main
     exception = False
     while True:
         try:
-            if type(value) in (GeneratorType, GeneratorWrapper):
+            if monitor: monitor.next_iteration(value, exception, stack)
+            if type(value) is GeneratorWrapper:
+                if monitor: monitor.push(value)
                 stack.append(value)
+                if monitor: monitor.before_next(value)
                 value = next(value)
+                if monitor: monitor.after_next(value)
             else:
-                stack.pop()
+                pop = stack.pop()
+                if monitor: monitor.pop(pop)
                 if stack:
                     if exception:
                         exception = False
+                        if monitor: monitor.before_throw(stack[-1], value)
                         value = stack[-1].throw(value)
+                        if monitor: monitor.after_throw(value)
                     else:
+                        if monitor: monitor.before_send(stack[-1], value)
                         value = stack[-1].send(value)
+                        if monitor: monitor.after_send(value)
                 else:
                     if exception:
+                        if monitor: monitor.raise_(value)
                         raise value
                     else:
+                        if monitor: monitor.yield_(value)
                         yield value
                     value = main
         except Exception as e:
@@ -92,12 +133,13 @@ def trampoline(main):
             else:
                 value = e
                 exception = True
-    
+                if monitor: monitor.exception(value)
+                
     
 def prepare(matcher, stream, conf):
     matcher = flatten(matcher, conf)
     matcher = memoize(matcher, conf)
-    parser = lambda arg: trampoline(matcher(stream(arg, conf)))
+    parser = lambda arg: trampoline(matcher(stream(arg, conf)), monitor=conf.monitor)
     parser.matcher = matcher
     return parser
 

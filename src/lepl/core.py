@@ -20,8 +20,8 @@
 The core provides a central repository for 'global' data used during a parse.
 '''
 
-from lepl.manager import GeneratorControl
-from lepl.trace import BlackBox
+#from lepl.manager import GeneratorControl
+#from lepl.trace import BlackBox
 
 
 class CoreConfiguration(object):
@@ -100,6 +100,6 @@ class Core():
         '''
         conf = CoreConfiguration() if conf is None else conf
         self.source = source
-        self.gc = GeneratorControl(queue_len=conf.queue_len)
-        self.bb = BlackBox(self, trace_len=conf.trace_len)
+#        self.gc = GeneratorControl(queue_len=conf.queue_len)
+#        self.bb = BlackBox(self, trace_len=conf.trace_len)
         
