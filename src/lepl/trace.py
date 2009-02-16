@@ -36,7 +36,8 @@ class TraceResults(MonitorInterface):
         self.action = None
         self.enabled = 1 if enabled else 0
     
-    def next_iteration(self, value, exception, stack):
+    def next_iteration(self, epoch, value, exception, stack):
+        self.epoch = epoch
         self.depth = len(stack)
     
     def before_next(self, generator):
@@ -77,8 +78,9 @@ class TraceResults(MonitorInterface):
                 self.error(value, self.fmt_result(value))
         
     def fmt_result(self, value):
-        return '{0:11s} {1} ({2:04d}) {3:03d} {4:>60s} -> {5!r}' \
-                .format(self.generator.stream,
+        return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> {6!r}' \
+                .format(self.epoch, 
+                        self.generator.stream,
                         self.fmt_location(self.generator.stream),
                         self.generator.stream.depth(),
                         self.depth,
@@ -86,8 +88,9 @@ class TraceResults(MonitorInterface):
                         value)
         
     def fmt_done(self):
-        return '{0:11s} {1} ({2:04d}) {3:03d} {4:>60s}    done' \
-                .format(self.generator.stream,
+        return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s}    done' \
+                .format(self.epoch, 
+                        self.generator.stream,
                         self.fmt_location(self.generator.stream),
                         self.generator.stream.depth(),
                         self.depth,
@@ -109,8 +112,9 @@ class TraceResults(MonitorInterface):
             self._warn(self.fmt_final_result(value))
         
     def fmt_final_result(self, value):
-        return '                           {0:03d} {1} {2}' \
-                .format(self.depth,
+        return '{0:05d}                            {0:03d} {1} {2}' \
+                .format(self.epoch,
+                        self.depth,
                         ' ' * 63,
                         value)
 

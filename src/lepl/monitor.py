@@ -7,7 +7,7 @@ class MonitorInterface(LogMixin):
     def __init__(self):
         super(MonitorInterface, self).__init__()
     
-    def next_iteration(self, value, exception, stack):
+    def next_iteration(self, epoch, value, exception, stack):
         pass
     
     def before_next(self, generator):
@@ -46,8 +46,8 @@ class MonitorInterface(LogMixin):
 
 class MultipleMonitors(MonitorInterface):
     
-    def __init__(self):
-        super(MonitorInterface, self).__init__(monitors=None)
+    def __init__(self, monitors=None):
+        super(MonitorInterface, self).__init__()
         self._monitors = [] if monitors is None else monitors
         
     def append(self, monitor):
@@ -56,9 +56,9 @@ class MultipleMonitors(MonitorInterface):
     def __len__(self):
         return len(self._monitors)
     
-    def next_iteration(self, value, exception, stack):
+    def next_iteration(self, epoch, value, exception, stack):
         for monitor in self._monitors:
-            monitor.next_iteration(value, exception, stack)
+            monitor.next_iteration(epoch, value, exception, stack)
     
     def before_next(self, generator):
         for monitor in self._monitors:

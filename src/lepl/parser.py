@@ -3,6 +3,7 @@ from types import MethodType, GeneratorType
 
 from lepl.core import CoreConfiguration
 from lepl.graph import order, FORWARD, preorder, clone, Clone, post_clone
+from lepl.monitor import MultipleMonitors
 from lepl.operators import Matcher
 from lepl.stream import Stream
 from lepl.support import BaseGeneratorWrapper
@@ -30,14 +31,18 @@ class GeneratorWrapper(BaseGeneratorWrapper):
         self.matcher = matcher
         
 
-class Configuration(CoreConfiguration):
+class Configuration(object):
     
-    def __init__(self, flatten=None, memoizers=None, monitor=None, queue_len=None):
-        super(Configuration, self).__init__(queue_len)
+    def __init__(self, flatten=None, memoizers=None, monitors=None):
         self.flatten = [] if flatten is None else flatten 
         self.memoizers = [] if memoizers is None else memoizers
-        self.monitor = monitor
-        
+        if not monitors:
+            self.monitor = None
+        elif len(monitors) == 1:
+            self.monitor = monitors[0]
+        else:
+            self.monitor = MultipleMonitors(monitors)
+            
         
 #DECORATORS = 'decorators'
 #DEFAULT_DECORATORS = [managed]
@@ -97,9 +102,11 @@ def trampoline(main, monitor=None):
     stack = []
     value = main
     exception = False
+    epoch = 0
     while True:
+        epoch += 1
         try:
-            if monitor: monitor.next_iteration(value, exception, stack)
+            if monitor: monitor.next_iteration(epoch, value, exception, stack)
             if type(value) is GeneratorWrapper:
                 if monitor: monitor.push(value)
                 stack.append(value)
