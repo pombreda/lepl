@@ -786,6 +786,7 @@ class Trace(BaseMatcher):
         super(Trace, self).__init__()
         self._arg(matcher=matcher)
         self._karg(trace=trace)
+        self.monitor_class = TraceResults
 
     @tagged
     def __call__(self, stream):
@@ -795,6 +796,12 @@ class Trace(BaseMatcher):
                 yield (yield generator)
         except StopIteration:
             pass
+        
+    def on_push(self, monitor):
+        monitor.switch(1)
+        
+    def on_pop(self, monitor):
+        monitor.switch(-1)
         
     
 # The following are functions rather than classes, but we use the class

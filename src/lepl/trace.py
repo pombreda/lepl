@@ -23,11 +23,11 @@ Tools for logging and tracing.
 from itertools import count
 from traceback import print_exc
 
-from lepl.monitor import MonitorInterface
+from lepl.monitor import ExposedMonitor
 from lepl.support import CircularFifo, BaseGeneratorWrapper
 
 
-class TraceResults(MonitorInterface):
+class TraceResults(ExposedMonitor):
     
     def __init__(self, enabled=False):
         super(TraceResults, self).__init__()
@@ -127,19 +127,8 @@ class TraceResults(MonitorInterface):
     def done(self, text):
         self._debug(text)
         
-    def push(self, generator):
-        try:
-            switch = generator.matcher.trace
-            self.enabled += 1 if switch else -1
-        except:
-            pass
-    
-    def pop(self, generator):
-        try:
-            switch = generator.matcher.trace
-            self.enabled -= 1 if switch else -1
-        except:
-            pass
+    def switch(self, increment):
+        self.enabled += increment
     
 
 class RecordDeepest(TraceResults):

@@ -43,6 +43,30 @@ class MonitorInterface(LogMixin):
     def pop(self, value):
         pass
     
+    
+class ExposedMonitor(MonitorInterface):
+    '''
+    Generators can  interact with monitors if:
+    
+    1 - The monitor extends this class
+    2 - The matcher has a monitor_class attribute whose value is equal to (or a 
+        subclass of) the monitor class it will interact with
+    '''
+    
+    def push(self, generator):
+        try:
+            if isinstance(self, generator.matcher.monitor_class):
+                generator.on_push(self)
+        except:
+            pass
+        
+    def pop(self, generator):
+        try:
+            if isinstance(self, generator.matcher.monitor_class):
+                generator.on_pop(self)
+        except:
+            pass
+        
 
 class MultipleMonitors(MonitorInterface):
     
