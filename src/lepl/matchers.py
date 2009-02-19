@@ -542,13 +542,7 @@ class Apply(BaseMatcher):
         try:
             generator = self.matcher(stream)
             while True:
-#                (results, stream) = yield generator
-                self._debug('==============================================')
-                foo = yield generator
-                if type(foo) not in (list, tuple):
-                    self._debug('***************' + str(foo))
-                    self._debug(repr(generator))
-                (results, stream) = foo
+                (results, stream) = yield generator
                 if self.args:
                     yield (self.function(*results), stream)
                 else:

@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from lepl import *
 from lepl.matchers import Literals
-from lepl.memo import RMemo
+from lepl.memo import RMemo, LMemo
 from lepl.parser import string_parser, Configuration, string_matcher
 from lepl.trace import TraceResults
 
@@ -21,6 +21,23 @@ class MemoTest(TestCase):
         
         p = string_matcher(seq, 
                 Configuration(memoizers=[RMemo], monitors=[TraceResults(True)]))
+        results = list(p('ab'))
+        print(results)
+        assert len(results) == 2, len(results)
+        assert results[0][0] == ['a', 'b'], results[0][0]
+        assert results[1][0] == ['a'], results[1][0]
+        
+    
+    def test_left(self):
+        
+        basicConfig(level=DEBUG)
+        
+        seq    = Delayed()
+        letter = Any()
+        seq   += Optional(seq) & letter
+        
+        p = string_matcher(seq, 
+                Configuration(memoizers=[LMemo], monitors=[TraceResults(True)]))
         results = list(p('ab'))
         print(results)
         assert len(results) == 2, len(results)
@@ -52,12 +69,13 @@ class MemoTest(TestCase):
         termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
         sentence    = termphrase // verbphrase // termphrase         > Sentence
     
-        p = string_parser(sentence, 
-                Configuration(memoizers=[Memo], monitors=[TraceResults(True)]))
+        p = string_matcher(sentence, 
+                Configuration(memoizers=[LMemo], monitors=[TraceResults(True)]))
         
         for meaning in p('every boy or some girl and helen and john or pat knows '
                          'and respects or loves every boy or some girl and pat or '
                          'john and helen'):
-            print(p)
+            print('-------------------------------------')
+            print(meaning)
     
     

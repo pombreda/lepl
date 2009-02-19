@@ -52,7 +52,7 @@ class Node(SimpleGraphNode, LogMixin):
                 except:
                     pass
             self.__children.append(arg)
-        self._info('{0}'.format(self))
+#        self._info('{0}'.format(self))
         
     def __add_attribute(self, name, value):
         if name not in self.__names:
