@@ -1,4 +1,6 @@
 
+from logging import getLogger
+from traceback import print_exc, format_exc
 from types import MethodType, GeneratorType
 
 from lepl.core import CoreConfiguration
@@ -15,7 +17,7 @@ def tagged(call):
     Decorator for generators to add extra attributes.
     '''
     def tagged_call(matcher, stream):
-        return GeneratorWrapper(call(matcher, stream), stream, matcher)
+        return GeneratorWrapper(call(matcher, stream), matcher, stream)
     return tagged_call
 
 
@@ -25,10 +27,14 @@ class GeneratorWrapper(BaseGeneratorWrapper):
     generator itself.  This lets us manage resources and provide logging.
     '''
 
-    def __init__(self, generator, stream, matcher):
+    def __init__(self, generator, matcher, stream):
         super(GeneratorWrapper, self).__init__(generator)
-        self.stream = stream
         self.matcher = matcher
+        self.stream = stream
+        self.describe = '{0}({1})'.format(matcher.describe, stream)
+        
+    def __repr__(self):
+        return self.describe
         
 
 class Configuration(object):
@@ -94,7 +100,7 @@ def flatten(matcher, conf):
 
 def memoize(matcher, conf):
     for memoizer in conf.memoizers:
-        matcher = matcher.postorder(CloneWithDescribe(post_clone(memoizer)))
+        matcher = matcher.postorder(Clone(post_clone(memoizer)))
     return matcher
 
 
@@ -103,6 +109,8 @@ def trampoline(main, monitor=None):
     value = main
     exception = False
     epoch = 0
+    log = getLogger('lepl.parser.trampoline')
+    last_exc = None
     while True:
         epoch += 1
         try:
@@ -135,12 +143,15 @@ def trampoline(main, monitor=None):
                         yield value
                     value = main
         except Exception as e:
-            if exception:
-                raise value
+            if exception: # raising to caller
+                raise
             else:
                 value = e
                 exception = True
                 if monitor: monitor.exception(value)
+                if type(value) is not StopIteration and value != last_exc:
+                    last_exc = value
+                    log.warn(format_exc())
                 
     
 def prepare(matcher, stream, conf):

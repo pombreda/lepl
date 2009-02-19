@@ -302,6 +302,7 @@ class Or(_BaseCombiner):
                     yield (yield generator)
             except StopIteration:
                 pass
+        self._debug('Or done')
 
 class First(_BaseCombiner):
     '''
@@ -541,7 +542,13 @@ class Apply(BaseMatcher):
         try:
             generator = self.matcher(stream)
             while True:
-                (results, stream) = yield generator
+#                (results, stream) = yield generator
+                self._debug('==============================================')
+                foo = yield generator
+                if type(foo) not in (list, tuple):
+                    self._debug('***************' + str(foo))
+                    self._debug(repr(generator))
+                (results, stream) = foo
                 if self.args:
                     yield (self.function(*results), stream)
                 else:
@@ -672,15 +679,13 @@ class Delayed(BaseMatcher):
         Introduce the matcher.  It can be defined later with '+='
         '''
         super(Delayed, self).__init__()
-        self._arg(matcher=matcher)
+        self._karg(matcher=matcher)
     
-    @tagged
     def __call__(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
         '''
-
         if self.matcher:
             return self.matcher(stream)
         else:

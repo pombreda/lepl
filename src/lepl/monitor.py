@@ -54,18 +54,14 @@ class ExposedMonitor(MonitorInterface):
     '''
     
     def push(self, generator):
-        try:
-            if isinstance(self, generator.matcher.monitor_class):
-                generator.on_push(self)
-        except:
-            pass
+        if hasattr(generator.matcher, 'monitor_class') and \
+                isinstance(self, generator.matcher.monitor_class):
+            generator.matcher.on_push(self)
         
     def pop(self, generator):
-        try:
-            if isinstance(self, generator.matcher.monitor_class):
-                generator.on_pop(self)
-        except:
-            pass
+        if hasattr(generator.matcher, 'monitor_class') and \
+                isinstance(self, generator.matcher.monitor_class):
+            generator.matcher.on_pop(self)
         
 
 class MultipleMonitors(MonitorInterface):

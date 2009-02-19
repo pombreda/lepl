@@ -2,74 +2,65 @@
 from itertools import count
 
 from lepl.matchers import BaseMatcher
+from lepl.parser import tagged, GeneratorWrapper
+from lepl.support import LogMixin
 
 
-class Wrapper(object):
+
+class RMemo(BaseMatcher):
+    '''
+    A simple memoizer for grammars that do not have left recursion.
+    '''
     
-    def __init__(self, matcher, stream):
-        self._generator = matcher(stream)
-        self._stopped = False
-        self._table = []
-        
-    def _get(self, i):
-        try:
-            while i >= len(self._table) and not self._stopped:
-                result = yield self._generator
-                self._table.append(result)
-        except StopIteration:
-            self._stopped = True
-            self._generator = None
-        if not self._stopped:
-            yield self._table[i]
-        
-    def proxy(self):
-        for i in count():
-            yield (yield self._get(i))
-            
-
-class Memo(BaseMatcher):
-    
-    def __init__(self, matcher, wrapper=Wrapper):
-        super(Memo, self).__init__()
+    def __init__(self, matcher):
+        super(RMemo, self).__init__()
         self._arg(matcher=matcher)
-        self._karg(wrapper=wrapper)
         self.__table = {}
+        self.tag(self.matcher.describe)
         
+    @tagged
     def __call__(self, stream):
         if stream not in self.__table:
-            self.__table[stream] = self.wrapper(self.matcher, stream)
-        return self.__table[stream].proxy()
-    
+            # we have no cache for this stream, so we need to generate the
+            # entry.  we do not care about nested calls with the same stream
+            # because this memoization is not for left recursion.  that means
+            # that we can return a table around this generator immediately.
+            self.__table[stream] = RTable(self.matcher(stream))
+        return self.__table[stream].generator(self.matcher, stream)
 
-class LWrapper(Wrapper):
+
+class RTable(LogMixin):
+    '''
+    Wrap a generator so that separate uses all call the same core generator,
+    which is itself tabulated as it unrolls.
+    '''
     
-    def __init__(self, matcher, stream):
-        super(LWrapper, self).__init__(matcher, stream)
-        self.__counter = 0
-        self.__limit = 2
+    def __init__(self, generator):
+        self.__generator = generator
+        self.__table = []
+        self.__stopped = False
         
-    def _get(self, i):
-        self.__counter += 1
-        print(self.__counter)
-        if self.__counter > self.__limit:
-            self._stopped = True
-            
+    def __read(self, i):
         try:
-            while i >= len(self._table) and not self._stopped:
-                result = yield self._generator
-                print(len(self._table), '=', result)
-                self._table.append(result)
-                
-                self.__counter = 0
-                
+            while i >= len(self.__table) and not self.__stopped:
+                result = yield self.__generator
+                self.__table.append(result)
         except StopIteration:
             self._stopped = True
-            self._generator = None
-        if not self._stopped:
-            print('>>>>>>>>>>>>>', self._table[i])
-            yield self._table[i]
-
-
-def LMemo(matcher):
-    return Memo(matcher, wrapper=LWrapper)
+        if i < len(self.__table):
+            yield self.__table[i]
+        else:
+            raise StopIteration()
     
+    def generator(self, matcher, stream):
+        for i in count():
+            yield (yield GeneratorWrapper(self.__read(i), 
+                            DummyMatcher(self.__class__.__name__, matcher.describe), 
+                            stream))
+
+
+class DummyMatcher(object):
+    
+    def __init__(self, outer, inner):
+        self.describe = '{0}({1})'.format(outer, inner)
+        

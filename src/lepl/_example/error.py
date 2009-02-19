@@ -3,7 +3,7 @@ from logging import basicConfig, DEBUG, INFO
 from unittest import TestCase
 from lepl import *
 
-basicConfig(level=INFO)
+basicConfig(level=DEBUG)
 
 class Term(Node): pass
 class Factor(Node): pass

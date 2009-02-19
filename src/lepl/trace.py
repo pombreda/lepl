@@ -43,7 +43,7 @@ class TraceResults(ExposedMonitor):
     def before_next(self, generator):
         if self.enabled > 0:
             self.generator = generator
-            self.action = 'next({0}({1!s}))'.format(generator.matcher.describe, generator.stream)
+            self.action = 'next({0})'.format(generator.describe)
     
     def after_next(self, value):
         if self.enabled > 0:
@@ -53,9 +53,9 @@ class TraceResults(ExposedMonitor):
         if self.enabled > 0:
             self.generator = generator
             if type(value) is StopIteration:
-                self.action = '{0}'.format(generator.matcher.describe)
+                self.action = ' stop -> {0}({1!s})'.format(generator.matcher.describe, generator.stream)
             else:
-                self.action = '{1!r} -> {0}'.format(generator.matcher.describe, value)
+                self.action = '{2!r} -> {0}({1!s})'.format(generator.matcher.describe, generator.stream, value)
     
     def after_throw(self, value):
         if self.enabled > 0:
@@ -88,7 +88,7 @@ class TraceResults(ExposedMonitor):
                         value)
         
     def fmt_done(self):
-        return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s}    done' \
+        return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> stop' \
                 .format(self.epoch, 
                         self.generator.stream,
                         self.fmt_location(self.generator.stream),
@@ -109,10 +109,10 @@ class TraceResults(ExposedMonitor):
         
     def raise_(self, value):
         if self.enabled > 0:
-            self._warn(self.fmt_final_result(value))
+            self._warn(self.fmt_final_result('raise {0!r}'.format(value)))
         
     def fmt_final_result(self, value):
-        return '{0:05d}                            {0:03d} {1} {2}' \
+        return '{0:05d}                            {1:03d} {2} {3}' \
                 .format(self.epoch,
                         self.depth,
                         ' ' * 63,

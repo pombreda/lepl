@@ -85,7 +85,13 @@ class GeneratorManager(MonitorInterface):
         # if we have space, simply save with no expiry
         if self.__queue_len == 0 or len(self.__queue) < self.__queue_len:
             self._debug('Free space, so add {0}'.format(reference))
-            heappush(self.__queue, reference)
+            candidate = heappushpop(self.__queue, reference)
+            while True:
+                candidate.update(self.epoch)
+                if not candidate.gced:
+                    heappush(self.__queue, candidate)
+                    return
+                candidate = heappop(self.__queue)
         else:
             # we attempt until epoch is same as current
             while True:
@@ -131,6 +137,7 @@ class GeneratorRef():
         self.order_epoch = epoch
         self.alive = alive
         self.deletable = False
+        self.gced = False
         
     def __lt__(self, other):
         assert isinstance(other, GeneratorRef)
@@ -146,6 +153,7 @@ class GeneratorRef():
         if not self.__wrapper():
             # already disposed by system
             self.deletable = True
+            self.gced = True
         else:
             if not self.alive and self.order_epoch == self.last_known_epoch:
                 self.deletable = True
@@ -165,146 +173,13 @@ class GeneratorRef():
     def __str__(self):
         generator = self.__wrapper()
         if generator:
-            return '{0!r} ({1:d}/{2:d})'.format(generator, self.order_epoch, 
-                                                self.last_known_epoch)
+            return '{0} ({2:d}/{3:d})'.format(
+                generator, self.order_epoch, self.last_known_epoch)
         else:
             return 'Empty ref'
     
     def __repr__(self):
         return str(self)
-
-
-class GeneratorControl(LogMixin):
-    '''
-    This manages the priority queue, etc.
-    '''
-    
-    def __init__(self, queue_len):
-        '''
-        The maximum size is only a recommendation - we do not discard active
-        generators so there is an effective minimum size which takes priority.
-        '''
-        super(GeneratorControl, self).__init__()
-        self.__queue_len = 0
-        self.__queue = []
-        self.__epoch = 0
-        self.queue_len = queue_len
-            
-    @property
-    def queue_len(self):
-        '''
-        This is the current number of generators (effectively, the number of
-        'saved' matchers available for backtracking) that can exist at any one
-        time.  A value of zero disables the early deletion of generators, 
-        allowing full back-tracking.
-        
-        This is intended for freeing resources, not for controlling parse
-        results by restricting matches.  It may be increased by the system
-        (hence "min") when necessary.
-        '''
-        return self.__queue_len
-    
-    @queue_len.setter
-    def queue_len(self, queue_len):
-        self.__queue_len = queue_len
-        if queue_len is None:
-            self.__queue = None
-            self._debug('No monitoring of backtrack state.')
-        else:
-            if queue_len > 0:
-                self._debug('Queue size: {0}'.format(queue_len))
-            else:
-                self._debug('No limit to number of generators stored')
-        
-    def next_epoch(self):
-        '''
-        This is called every time a generator updates its state (typically on
-        first registering, on returning a value, and when being resubmitted
-        because it is in use).
-        '''
-        self.__epoch += 1
-        self._debug('Tick: {0}'.format(self.__epoch))
-        return self.__epoch
-    
-    def epoch(self):
-        return self.__epoch
-    
-    def register(self, wrapper):
-        '''
-        This is called every time a generator is created (when the generator
-        returns its first value).
-        '''
-        # do we need to worry at all about resources?
-        if self.__queue_len != None:
-            wrapper_ref = GeneratorRef(wrapper)
-            self.__add_and_delete(wrapper_ref)
-            return wrapper_ref
-        else:
-            return None
-        
-    def __add_and_delete(self, wrapper_ref):
-        '''
-        If we delete a generator when one is added then we keep a constant 
-        number.  So in 'normal' use this is fairly efficient (the
-        many loops are only needed when the queue is too small).
-        '''
-        self._debug('Queue size: {0}/{1}'
-                    .format(len(self.__queue), self.__queue_len))
-        # if we have space, simply save with no expiry
-        if self.__queue_len == 0 or len(self.__queue) < self.__queue_len:
-            self._debug('Free space, so add {0}'.format(wrapper_ref))
-            heappush(self.__queue, wrapper_ref)
-        else:
-            # we attempt up to 2*queue_len times to delete (once to update
-            # data; once to verify it is still active)
-            for retry in range(2 * len(self.__queue)):
-                candidate_ref = heappushpop(self.__queue, wrapper_ref)
-                self._debug('Exchanged {0} for {1}'
-                            .format(wrapper_ref, candidate_ref))
-                # if we can delete this, do so
-                if self.__deleted(candidate_ref):
-                    # check whether we have the required queue size
-                    if len(self.__queue) <= self.__queue_len:
-                        return
-                    # otherwise, try deleting the next entry
-                    else:
-                        wrapper_ref = heappop(self.__queue)
-                else:
-                    # try again (candidate has been updated)
-                    wrapper_ref = candidate_ref
-            # if we are here, queue is too small
-            heappush(self.__queue, wrapper_ref)
-            # this is currently 1 too small, and zero means unlimited, so
-            # doubling should always be sufficient.
-            self.queue_len = self.queue_len * 2
-            self._warn('Queue is too small - extending to {0}'
-                       .format(self.queue_len))
-    
-    def erase(self):
-        '''
-        Delete all non-active generators.
-        '''
-        if self.__queue:
-            for retry in range(len(self.__queue)):
-                candidate_ref = heappop(self.__queue)
-                if candidate_ref.active():
-                    candidate_ref.check() # forces epoch update
-                    heappush(self.__queue, candidate_ref)
-                else:
-                    candidate_ref.close()
-                
-    def __deleted(self, candidate_ref):
-        '''
-        Delete the candidate if possible.
-        '''
-        candidate_ref.check()
-        if candidate_ref.deletable:
-            self._debug('Close and discard {0}'.format(candidate_ref))
-            candidate_ref.close()
-        return candidate_ref.deletable
-
-
-
 
 
 #from heapq import heappushpop, heappop, heappush

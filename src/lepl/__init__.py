@@ -125,7 +125,7 @@ __all__ = [
         'Regexp', 
         'Delayed', 
         'Commit', 
-#        'Trace', 
+        'Trace', 
         'AnyBut', 
         'Optional', 
         'Star', 

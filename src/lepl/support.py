@@ -20,6 +20,8 @@
 Library routines / utilities (some unused).
 '''
 
+from traceback import print_exc
+
 from logging import getLogger
 
 
@@ -98,7 +100,7 @@ class BaseGeneratorWrapper(object):
         self.__generator = generator
     
     def __next__(self):
-        return self.__generator.__next__()
+        return next(self.__generator)
             
     # for 2.6
     def next(self):
