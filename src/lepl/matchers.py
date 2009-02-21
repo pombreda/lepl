@@ -302,7 +302,7 @@ class Or(_BaseCombiner):
                     yield (yield generator)
             except StopIteration:
                 pass
-        self._debug('Or done')
+
 
 class First(_BaseCombiner):
     '''

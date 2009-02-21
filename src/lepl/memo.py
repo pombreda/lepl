@@ -76,63 +76,105 @@ class LMemo(BaseMatcher):
     def __init__(self, matcher):
         super(LMemo, self).__init__()
         self._arg(matcher=matcher)
-        self.__table = {}
-        self.__counts = {}
         self.tag(self.matcher.describe)
+        self.__caches = {}
         
     @tagged
     def __call__(self, stream):
-        if stream not in self.__table:
-            if stream not in self.__counts:
-                self.__counts[stream] = 0
-            self.__counts[stream] += 1
-            if self.__counts[stream] > len(stream) + 2:
-                # this is the termination described in ...
-                raise StopIteration()
-            else:
-                # we have no cache for this stream, so we need to generate the
-                # entry.  because we have left recursion we can only fill this
-                # when the matcher returns a value.
-                return LTable(self.__table, stream, self.matcher(stream)).generator(self.matcher, stream)
-        else:
-            return self.__table[stream].generator(self.matcher, stream)
-
-
-class LTable(LogMixin):
-    '''
-    Wrap a generator so that separate uses all call the same core generator,
-    which is itself tabulated as it unrolls.
-    '''
-    
-    def __init__(self, cache, stream, generator):
-        self.__cache = cache
-        self.__stream = stream
-        self.__generator = generator
-        self.__table = []
-        self.__stopped = False
+        if stream not in self.__caches:
+            self.__caches[stream] = PerStreamCache(self.matcher)
+        return self.__caches[stream](stream)
         
-    def __read(self, i):
-        try:
-            while i >= len(self.__table) and not self.__stopped:
-                result = yield self.__generator
-                if not self.__table:
-                    # we have a first result, so fill in the LMemo cache
-                    # (we may overwrite earlier values as we "roll back" up
-                    # the tree - that is ok) 
-                    self.__cache[self.__stream] = self
-                self.__table.append(result)
-        except StopIteration:
-            self._stopped = True
-        if i < len(self.__table):
-            yield self.__table[i]
-        else:
-            raise StopIteration()
+
+class PerStreamCache(LogMixin):
     
-    def generator(self, matcher, stream):
-        for i in count():
-            yield (yield GeneratorWrapper(self.__read(i), 
-                            DummyMatcher(self.__class__.__name__, matcher.describe), 
-                            stream))
+    def __init__(self, matcher):
+        super(PerStreamCache, self).__init__()
+        self.__matcher = matcher
+        self.__counter = 0
+        self.__first = None
+        
+    def __curtail(self, count, stream):
+        if count == 1:
+            return False
+        else:
+            try:
+                return not stream.check_len(count)
+            except AttributeError:
+                return count >= len(stream) 
+        
+    @tagged
+    def __call__(self, stream):
+        if not self.__first:
+            self.__counter += 1
+            if self.__curtail(self.__counter, stream):
+                return self.__empty()
+            else:
+                cache = PerCallCache(self.__matcher(stream))
+                if self.__first is None:
+                    self.__first = cache
+                return cache.generator()
+        else:
+            return self.__first.view()
+        
+    def __empty(self):
+        if False:
+            yield None
 
 
-       
+class PerCallCache(LogMixin):
+    
+    def __init__(self, generator):
+        super(PerCallCache, self).__init__()
+        self.__generator = generator
+        self.__cache = []
+        self.__returned = False # has an initial match completed?
+        self.__complete = False # have all matches completed?
+        self.__unstable = False # has a view completed before the matcher?
+        
+    def view(self):
+        '''
+        Provide available (cached) values.
+        
+        This does not generate further values itself - the assumption is that
+        generator() has already done this.  I believe that is reasonable
+        (the argument is basically that generator was created first, so is
+        'above' whatever is using view()), but I do not have a proof.
+        
+        Note that changing this assumption is non-trivial.  It would be easy
+        to have shared access to the generator, but we would need to guarantee
+        that the generator is not "in the middle" of generating a new value
+        (ie has not been yielded by some earlier, pending call).
+        '''
+        for value in self.__cache:
+            yield value
+        self.__unstable = not self.__complete
+    
+    def generator(self):
+        '''
+        Expand the underlying generator, storing results.
+        '''
+        try:
+            while True:
+                result = yield self.__generator
+                if self.__unstable:
+#                    self._warn('A view completed before the cache was complete: '
+#                               '{0}'.format(self.__generator.describe))
+                    raise Exception('A view completed before the cache was '
+                                    'complete: {0}'
+                                    .format(self.__generator.describe))
+                self.__cache.append(result)
+                self.__returned = True
+                yield result
+        finally:
+            self.__complete = True
+            
+    def __bool__(self):
+        '''
+        Has the underlying call returned?  If so, then we can use the cache.
+        If not, then the call tree is still being constructed via left-
+        recursive calls.
+        '''
+        return self.__returned
+            
+    

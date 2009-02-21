@@ -5,10 +5,11 @@ name    = Word()              > 'name'
 phone   = Integer()           > 'phone'
 matcher = name / ',' / phone  > make_dict
 
-print(Trace(matcher).parse_string('andrew, 3333253'))
+parser = matcher.string_parser()
+print(parser('andrew, 3333253'))
+#print(parser.matcher)
 
-
-print(next(Word()('hello world')))
+print(Word().parse('hello world'))
 print(next(Integer()('123 four five')))
 
 print(next(And(Word(), Space(), Integer())('hello 123')))

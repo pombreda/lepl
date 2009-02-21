@@ -173,7 +173,7 @@ class GeneratorRef():
     def __str__(self):
         generator = self.__wrapper()
         if generator:
-            return '{0} ({2:d}/{3:d})'.format(
+            return '{0} ({1:d}/{2:d})'.format(
                 generator, self.order_epoch, self.last_known_epoch)
         else:
             return 'Empty ref'

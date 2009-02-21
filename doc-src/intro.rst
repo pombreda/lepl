@@ -7,7 +7,7 @@ Introduction
 This chapter works through a simple example using LEPL.
 
 After reading this chapter you should have a better understanding of what
-matchers do and how they can be constructed.
+matchers and parsers do, and how they can be constructed.
 
 
 .. index:: example
@@ -19,14 +19,17 @@ The structure of a piece of text is described in LEPL using *matchers*.  A
 simple matcher might recognise a letter, digit or space.  More complex
 matchers are built from these to recognise words, equations, etc.
 
-One a matcher has been built up in this way it can be used to process text.
-Internally, this means that the final, complex, matcher passes the text to the
-simpler matchers that were used as "building blocks".  These break the text
+One a matcher has been built up in this way it can be used to create a
+*parser* to process text.  The parser contains the original matchers, but may
+also add additional processing (this provides advanced features like ...).
+
+Internally, when the parser is used to anaylse some text, it passes the string
+to the matchers that were used as "building blocks".  These break the text
 into pieces that are then assembled into the final result.
 
-So we describe a structure (called a *grammar*) using matchers then use those
-matchers to break text into pieces that match that structure.  This process is
-called parsing.
+So, ignoring the parser for a moment, we describe a structure (called a
+*grammar*) using matchers then use those matchers to break text into pieces
+that match that structure.
 
 An example will make this clearer.  Imagine that we are given a username and a
 phone number, separated by a comma, and we want to split that into the two
@@ -38,8 +41,9 @@ values::
   >>> phone   = Integer()           > 'phone'
   >>> matcher = name / ',' / phone  > make_dict
   
-  >>> next(matcher('andrew, 3333253'))
-  ([{'phone': '3333253', 'name': 'andrew'}], '')
+  >>> parser = matcher.string_parser()
+  >>> parser('andrew, 3333253')
+  [{'phone': '3333253', 'name': 'andrew'}]
 
 The main body of this program (after the import statements) defines the
 matcher.  The last line uses that to make a ``dict`` that contains the values
@@ -48,12 +52,12 @@ from the string ``'andrew, 3333253'``.
 There's a lot going on here, some of which I will explain in later sections,
 but the most important thing to notice is that ``matcher`` was constructed
 from two simpler matchers [#]_ --- `Word()
-<api/redirect.html#lepl.match.Word>`_ and `Integer()
+<api/redirect.html#lepl.Word>`_ and `Integer()
 <api/redirect.html#lepl.match.Integer>`_ [#]_.  It is those two matchers
 that identify the values 'andrew' (a word) and '3333253' (an integer).
 
 .. [#] In fact there are probably a dozen or so matchers involved here: the
-       ``,`` is converted into a matcher that matchers commas; the ``/``
+       ``,`` is converted into a matcher that matches commas; the ``/``
        construct new matchers from the matchers on either side with matchers
        for spaces between them; most of the matchers I've just mentioned are
        actually implemented using other matchers for single characters, or to

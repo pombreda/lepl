@@ -152,6 +152,8 @@ def trampoline(main, monitor=None):
                 if type(value) is not StopIteration and value != last_exc:
                     last_exc = value
                     log.warn(format_exc())
+                    for generator in stack:
+                        log.warn('Stack: ' + generator.matcher.describe)
                 
     
 def prepare(matcher, stream, conf):

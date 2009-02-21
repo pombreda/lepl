@@ -138,6 +138,12 @@ class Stream():
         '''
         return 1 if self.__bool__() else 0
     
+    def check_len(self, len):
+        '''
+        Called for limiting left-recursion.
+        '''
+        return self.__chunk.check_len(self.__offset + len)
+    
     def __repr__(self):
         return '%r[%d:]' % (self.__chunk, self.__offset)
     
@@ -304,6 +310,17 @@ class Chunk(object):
     
     def text(self, offset=0):
         return self.read(offset)
+    
+    def check_len(self, length):
+        '''
+        Are at least length characters available?
+        '''
+        if self.__empty:
+            return False
+        elif len(self.__text) >= length:
+            return True
+        else:
+            return self.next().check_len(length - len(self.__text))
     
 
 class ListIO():

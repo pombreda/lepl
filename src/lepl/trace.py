@@ -109,7 +109,10 @@ class TraceResults(ExposedMonitor):
         
     def raise_(self, value):
         if self.enabled > 0:
-            self._warn(self.fmt_final_result('raise {0!r}'.format(value)))
+            if type(value) is StopIteration:
+                self._info(self.fmt_final_result('raise {0!r}'.format(value)))
+            else:
+                self._warn(self.fmt_final_result('raise {0!r}'.format(value)))
         
     def fmt_final_result(self, value):
         return '{0:05d}                            {1:03d} {2} {3}' \
