@@ -1,46 +1,110 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Support for classes that monitor the execution process (for example, managing 
+resources and tracing program flow).
+
+See `lepl.parser.trampoline()`.
+'''
+
+
 from lepl.support import LogMixin
 
 
 class MonitorInterface(LogMixin):
+    '''
+    The interface expected by `lepl.parser.trampoline()`.
+    '''
     
     def __init__(self):
         super(MonitorInterface, self).__init__()
     
     def next_iteration(self, epoch, value, exception, stack):
+        '''
+        Called at the start of each iteration.
+        '''
         pass
     
     def before_next(self, generator):
+        '''
+        Called before invoking ``next`` on a generator.
+        '''
         pass
     
     def after_next(self, value):
+        '''
+        Called after invoking ``next`` on a generator.
+        '''
         pass
     
     def before_throw(self, generator, value):
+        '''
+        Called before invoking ``throw`` on a generator. 
+        '''
         pass
     
     def after_throw(self, value):
+        '''
+        Called after invoking ``throw`` on a generator. 
+        '''
         pass
     
     def before_send(self, generator, value):
+        '''
+        Called before invoking ``send`` on a generator. 
+        '''
         pass
     
     def after_send(self, value):
+        '''
+        Called after invoking ``send`` on a generator. 
+        '''
         pass
     
     def exception(self, value):
+        '''
+        Called when an exception is caught (instead of any 'after' method).
+        '''
         pass
     
     def raise_(self, value):
+        '''
+        Called before raising an exception to the caller.
+        '''
         pass
     
     def yield_(self, value):
+        '''
+        Called before yielding a value to the caller.
+        '''
         pass
     
     def push(self, value):
+        '''
+        Called before adding a generator to the stack.
+        '''
         pass
     
     def pop(self, value):
+        '''
+        Called after removing a generator from the stack.
+        '''
         pass
     
     
@@ -65,6 +129,9 @@ class ExposedMonitor(MonitorInterface):
         
 
 class MultipleMonitors(MonitorInterface):
+    '''
+    Combine several monitors into one.
+    '''
     
     def __init__(self, monitors=None):
         super(MonitorInterface, self).__init__()

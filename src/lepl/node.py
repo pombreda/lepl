@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Support for structuring results.
+Base classes for AST nodes (and associated functions).
 '''
 
 from collections import Iterable, Mapping, deque
