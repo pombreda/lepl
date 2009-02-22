@@ -6,12 +6,13 @@ from lepl import *
 class ResourceExample(Example):
     
     def test_no_limit(self):
-        matcher = (Literal('*')[:,...][2] & Eos()).match_string()('*' * 4)
+        matcher = (Literal('*')[:,...][2] & Eos()).match('*' * 4)
         self.examples([(lambda: list(matcher), 
-                        "[(['****'], Chunk('')[0:]), (['***', '*'], Chunk('')[0:]), (['**', '**'], Chunk('')[0:]), (['*', '***'], Chunk('')[0:]), (['****'], Chunk('')[0:])]")])
+                        "[(['****'], ''), (['***', '*'], ''), (['**', '**'], ''), (['*', '***'], ''), (['****'], '')]")])
 
     def test_limit(self):
-        matcher = (Literal('*')[:,...][2] & Eos()).match_string(min_queue=1)('*' * 4)
+        config = Configuration(monitors=[GeneratorManager(queue_len=1)])
+        matcher = (Literal('*')[:,...][2] & Eos()).match('*' * 4, config)
         self.examples([(lambda: list(matcher), 
-                        "[(['****'], Chunk('')[0:])]")])
+                        "[(['****'], '')]")])
 

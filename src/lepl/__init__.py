@@ -105,11 +105,11 @@ Running this gives the result::
 from lepl.operators import * 
 from lepl.node import *
 from lepl.stream import *
+from lepl.manager import *
 from lepl.matchers import *
+from lepl.trace import *
 
 __all__ = [
-        # custom
-        'Override',
         # match
         'Empty',
         'Repeat',
@@ -172,6 +172,21 @@ __all__ = [
         'Error',
         'throw',
         # stream
-        'Stream']
+        'Stream',
+        # operators
+        'Override',
+        'Separator',
+        # parser
+        'Configuration',
+        # manager
+        'GeneratorManager',
+        # trace
+        'RecordDeepest',
+        'TraceResults']
 
-__version__ = '1.0'
+__version__ = '2.0b1'
+
+if __version__.find('b') > -1:
+    from logging import getLogger, basicConfig, WARN
+    basicConfig(level=WARN)
+    getLogger('lepl').warn('You are using a BETA version of LEPL.')

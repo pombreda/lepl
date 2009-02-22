@@ -10,8 +10,8 @@ Error Reporting
 Introduction
 ------------
 
-In some applications it is important, not only to parse correctly structured
-input, but also to give a helpful respones when the input is incorrectly
+In some applications it is important not only to parse correctly structured
+input, but also to give a helpful responses when the input is incorrectly
 structured.
 
 LEPL provides support for reporting errors in the input in two ways.  First,
@@ -92,7 +92,7 @@ Here is an example of both approaches in use::
 
 .. note::
 
-  This example follows the :ref:`applycase` and :ref:`complexor` styles.
+  This example follows the :ref:`applycase` and :ref:`complexor` patterns.
 
 
 .. index:: ^, Error, SyntaxError
@@ -103,9 +103,9 @@ Operators, Functions and Classes
 =========  ========  ========
 Name       Type      Action
 =========  ========  ========
-``^``      Operator  Raises an exception, given a format string.  Formatting has the same named parameters as the `KApply()  <api/redirect.html#lepl.match.KApply>`_ matcher (results, stream_in, stream_out, core).
+``^``      Operator  Raises an exception, given a format string.  Formatting has the same named parameters as the `KApply()  <api/redirect.html#lepl.matchers.KApply>`_ matcher (results, stream_in, stream_out, core).
 ---------  --------  --------
 ``Error``  Class     Creates a parse tree node that can be used to trigger a later exception (`Error <api/redirect.html#lepl.node.Error>`_ is a subclass of both `Node <api/redirect.html#lepl.node.Node>`_ and ``SyntaxError``).
 ---------  --------  --------
-``throw``  Function  Walks the parse tree (typically this is a sub--tree associated with a matcher's result and `throw <api/redirect.html#lepl.node.throw>`_ is invoked by `Apply() <api/redirect.html#lepl.match.Apply>`_) and raises the first `Error <api/redirect.html#lepl.node.Error>`_ found.
+``throw``  Function  Walks the parse tree (typically this is a sub--tree associated with a matcher's result and `throw <api/redirect.html#lepl.node.throw>`_ is invoked by `Apply() <api/redirect.html#lepl.matchers.Apply>`_) and raises the first `Error <api/redirect.html#lepl.node.Error>`_ found.
 =========  ========  ========

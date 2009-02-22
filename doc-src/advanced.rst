@@ -1,11 +1,9 @@
 
-Closing Remarks
-===============
-
-This chapter contains various observations, comments, etc, that didn't fit
-elsewhere in the documentation.
+Advanced Use
+============
 
 
+.. index:: search, backtracking
 .. _backtracking:
 
 Search and Backtracking
@@ -28,7 +26,7 @@ option, indicating that the matching is *greedy*.
 
 *Non-greedy* (generous?) matching is achieved by specifying an array slice
 increment of ``'b'`` (or `BREADTH_FIRST
-<api/redirect.html#lepl.match.BREADTH_FIRST>`_)::
+<api/redirect.html#lepl.matchers.BREADTH_FIRST>`_)::
 
   >>> any = Any()[::'b',...]
   >>> split = any & any & Eos()
@@ -38,12 +36,12 @@ increment of ``'b'`` (or `BREADTH_FIRST
   [['****'], ['*', '***'], ['**', '**'], ['***', '*'], ['****']]
 
 The greedy and non--greedy repetitions are implemented by depth (default,
-``'d'``, or `DEPTH_FIRST <api/redirect.html#lepl.match.DEPTH_FIRST>`_),
+``'d'``, or `DEPTH_FIRST <api/redirect.html#lepl.matchers.DEPTH_FIRST>`_),
 and breadth--first searches (``'b'`` or `BREADTH_FIRST
-<api/redirect.html#lepl.match.BREADTH_FIRST>`_), respectively.
+<api/redirect.html#lepl.matchers.BREADTH_FIRST>`_), respectively.
 
 In addition, by specifying a slice increment of ``'g'`` (`GREEDY
-<api/redirect.html#lepl.match.GREEDY>`_), you can request a *guaranteed
+<api/redirect.html#lepl.matchers.GREEDY>`_), you can request a *guaranteed
 greedy* match.  This evaluates all possibilities, before returning them in
 reverse length order.  Typically this will be identical to depth--first
 search, but it is possible for backtracking to produce a longer match in
@@ -51,7 +49,7 @@ complex cases --- this final option, by evaluating all cases, re--orders the
 results as necessary.
 
 Specifying ``'n'`` (`NON_GREEDY
-<api/redirect.html#lepl.match.NON_GREEDY>`_) gets the reverse ordering.
+<api/redirect.html#lepl.matchers.NON_GREEDY>`_) gets the reverse ordering.
 
 The tree implicit in the descriptions "breadth--first" and "depth--first" is
 not the AST, nor the tree of matchers, but a tree based on matchers and
@@ -61,23 +59,23 @@ to the various streams returned by the current match (none if this is a final
 node, one for a simple match, several if the matcher backtracks).
 
 So far so good.  Unfortunately the process is more complicated for `And()
-<api/redirect.html#lepl.match.And>`_ and `Or()
-<api/redirect.html#lepl.match.Or>`_.
+<api/redirect.html#lepl.matchers.And>`_ and `Or()
+<api/redirect.html#lepl.matchers.Or>`_.
 
-In the case of `And() <api/redirect.html#lepl.match.And>`_, the first
+In the case of `And() <api/redirect.html#lepl.matchers.And>`_, the first
 matcher is matched first.  The child nodes correspond to the various (with
 backtracking) results of this match.  At each child node, the second matcher
 is applied, generating new children.  This repeats until the scope of the
-`And() <api/redirect.html#lepl.match.And>`_ terminates at a depth in the
+`And() <api/redirect.html#lepl.matchers.And>`_ terminates at a depth in the
 tree corresponding to the children of the last matcher.  Since `And()
-<api/redirect.html#lepl.match.And>`_ fails unless all matchers match, only
+<api/redirect.html#lepl.matchers.And>`_ fails unless all matchers match, only
 the final child nodes are possible results.  As a consequence, both breadth
 and depth first searches would return the same ordering.  The `And()
-<api/redirect.html#lepl.match.And>`_ match is therefore unambiguous and the
+<api/redirect.html#lepl.matchers.And>`_ match is therefore unambiguous and the
 implementation has no way to specify the (essentially meaningless) choice
 between the two searches.
 
-In the case of `Or() <api/redirect.html#lepl.match.Or>`_ we must select
+In the case of `Or() <api/redirect.html#lepl.matchers.Or>`_ we must select
 both the matcher and the result from the results available for that matcher.
 A natural approach is to assign the first generation of children to the choice
 of matcher, and the second level to the choice of result for the (parent)
@@ -90,38 +88,14 @@ before considering backtracking.  At the moment I do not see a "natural" way
 to form such a tree, and so this is not implemented.  Feedback is appreciated.
 
 
-.. index:: Tim Peters, Sam Wilmott, Pattern Matching in Python, Guy Cousineau,
-           Michel Mauny, PyParsing, Paul McGuire
+Memoisation
+-----------
 
-Credits
--------
+To do:
 
-Blame Tim Peters' `test_generators.py
-<http://www.koders.com/python/fid9B99238B5452E1EDA851459C2F4B5FD19ECBAD17.aspx?s=mdef%3Amd5>`_
-for starting me thinking about this, but that would have got nowhere without
-Sam Wilmott's `Pattern Matching in Python
-<http://www.wilmott.ca/python/patternmatching.html>`_ from which I have stolen
-almost everything (well, a large chunk of LEPL 1.0, including the repetition
-syntax).
+* Move part of :ref:`memoisation` here.
+* Extend the implementation discussion to discuss the code.
 
-`PyParsing <http://pyparsing.wikispaces.com/>`_ was also a major motivation
-(if you don't like the way LEPL handles spaces, you may prefer Paul McGuire's
-package which is, I think, pretty much the standard for simple, recursive
-descent Python parsers).
-
-Thanks to `Guy Cousineau and Michel Mauny
-<http://books.google.cl/books?hl=en&id=-vQPDXciXUMC&dq=cousineau+mauny>`_ for
-the original education.
-
-David Eppstein's `DFS code <http://www.ics.uci.edu/~eppstein/PADS/DFS.py>`_
-strongly influenced `dfs_edges() <api/redirect.html#lepl.graph.dfs_edges>`_.
-Thanks for putting that on the web.
-
-
-.. index:: futile despair
-
-Endnote
--------
-
-LEPL was written as Israel, with the implicit support of the USA, largely
-destroyed Gaza.
+Because I expect that code to change significantly, this will not happen until
+release 2.1 (but I would love feedback on the current implementation --- even
+better if someone can prove it correct!).

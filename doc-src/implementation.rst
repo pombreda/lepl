@@ -1,4 +1,5 @@
 
+.. index:: recursive descent, generators, stack, parser combinators, implementation
 .. _implementation:
 
 Implementation
@@ -13,6 +14,7 @@ implementation.
        :ref:`implementation_details`.
    
 
+.. index:: trampolining
 .. _trampolining:
 
 Trampolining
@@ -73,6 +75,9 @@ returned from the trampoline via ``generator.send(result, stream2)``.
 It is clear, then, that the impact on existing code was fairly small.
 
 
+.. index:: memoisation, Norvig, Frost, Hafiz, left--recursion
+.. _memoisation:
+
 Memoisation
 -----------
 
@@ -114,19 +119,21 @@ which makes LEPL robust to handle left--recursive grammars.
    addressed in LEPL 2.1.
 
 
+.. index:: rewriting, graph, flattening
+
 Parser Rewriting
 ----------------
 
 A parser is constructed from a set of matchers.  The matchers form a directed
-(possibly cyclic) graph.  By storing the constructor arguements for the
-matcher objects (and knowing their types, which are constuctors in Python) we
+(possibly cyclic) graph.  By storing the constructor arguments for the
+matcher objects (and knowing their types, which are constructors in Python) we
 can reconstruct (and, more generally, rewrite) the graph.
 
 The base classes for the graph are in the `graph
 <api/redirect.html#lepl.graph>`_ package (the `node
 <api/redirect.html#lepl.node>`_ package, used for ASTs, builds on these
 classes so many of the tools used internally within LEPL may also be useful to
-process ASTs).  Matcher graph rewriting occurse during parser construction
+process ASTs).  Matcher graph rewriting occurs during parser construction
 (see the `parser <api/redirect.html#lepl.parser>`_ package).
 
 Parser rewriting allows memoisation to be transparently added to all nodes.

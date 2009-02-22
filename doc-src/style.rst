@@ -1,9 +1,12 @@
 
+.. index:: patterns
 .. _style:
 
-Style
-=====
+Patterns
+========
 
+
+.. index:: operators
 
 Operators are Matchers
 ----------------------
@@ -32,7 +35,7 @@ tightly than ``>``.
 
 Nodes are typically made with constructors and invoked with ``>``, while the
 processing of results is usually done with mapped functions.  So ``>`` is
-followed by a Capitalized name, while ``>>`` is followed by a lowercase name.
+followed by a Capitalised name, while ``>>`` is followed by a lowercase name.
 Noticing and following this convention can help avoid issues with the
 behaviour of `Apply() <api/redirect.html#lepl.match.Apply>`_ with
 ``raw=False`` (the default implementation of ``>``), which adds an extra level

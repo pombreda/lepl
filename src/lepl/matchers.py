@@ -68,72 +68,173 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         return '<%s>' % self.__class__.__name__
     
     def tree(self):
+        '''
+        An ASCII tree for display.
+        '''
         visitor = GraphStr()
         return visitor.postprocess(self.postorder(visitor))
     
-    def file_parser(self):
-        return make_parser(self, Stream.from_file, self.__default_config())
+    def file_parser(self, config=None):
+        '''
+        Construct a parser for file objects that uses a `lepl.stream.Stream()` 
+        internally and returns a single result.
+        '''
+        return make_parser(self, Stream.from_file, 
+                           config if config else self.default_config())
     
-    def list_parser(self):
-        return make_parser(self, Stream.from_list, self.__default_config())
+    def list_parser(self, config=None):
+        '''
+        Construct a parser for lists that uses a `lepl.stream.Stream()` 
+        internally and returns a single result.
+        '''
+        return make_parser(self, Stream.from_list, 
+                           config if config else self.default_config())
     
-    def path_parser(self):
-        return make_parser(self, Stream.from_path, self.__default_config())
+    def path_parser(self, config=None):
+        '''
+        Construct a parser for a file that uses a `lepl.stream.Stream()` 
+        internally and returns a single result.
+        '''
+        return make_parser(self, Stream.from_path, 
+                           config if config else self.default_config())
     
-    def string_parser(self):
-        return make_parser(self, Stream.from_string, self.__default_config())
+    def string_parser(self, config=None):
+        '''
+        Construct a parser for strings that uses a `lepl.stream.Stream()` 
+        internally and returns a single result.
+        '''
+        return make_parser(self, Stream.from_string, 
+                           config if config else self.default_config())
     
-    def null_parser(self):
-        return make_parser(self, Stream.null, self.__default_config())
+    def null_parser(self, config=None):
+        '''
+        Construct a parser for strings and lists that returns a single result
+        (this does not use streams).
+        '''
+        return make_parser(self, Stream.null, 
+                           config if config else self.default_config())
     
-    def parse_file(self, file):
-        return self.file_parser()(file)
+    def parse_file(self, file, config=None):
+        '''
+        Parse the contents of a file, returning a single match and using a
+        `lepl.stream.Stream()` internally.
+        '''
+        return self.file_parser(config)(file)
         
-    def parse_list(self, list_):
-        return self.list_parser()(list_)
+    def parse_list(self, list_, config=None):
+        '''
+        Parse the contents of a list, returning a single match and using a
+        `lepl.stream.Stream()` internally.
+        '''
+        return self.list_parser(config)(list_)
         
-    def parse_path(self, path):
-        return self.path_parser()(path)
+    def parse_path(self, path, config=None):
+        '''
+        Parse the contents of a file, returning a single match and using a
+        `lepl.stream.Stream()` internally.
+        '''
+        return self.path_parser(config)(path)
         
-    def parse_string(self, string):
-        return self.string_parser()(string)
+    def parse_string(self, string, config=None):
+        '''
+        Parse the contents of a string, returning a single match and using a
+        `lepl.stream.Stream()` internally.
+        '''
+        return self.string_parser(config)(string)
     
-    def parse(self, stream):
-        return self.null_parser()(stream)
+    def parse(self, stream, config=None):
+        '''
+        Parse the contents of a string or list, returning a single match (this
+        does not use streams).
+        '''
+        return self.null_parser(config)(stream)
     
     
-    def file_matcher(self):
-        return make_matcher(self, Stream.from_file, self.__default_config())
+    def file_matcher(self, config=None):
+        '''
+        Construct a parser for file objects that returns a sequence of matches
+        and uses a `lepl.stream.Stream()` internally.
+        '''
+        return make_matcher(self, Stream.from_file, 
+                            config if config else self.default_config())
     
-    def list_matcher(self):
-        return make_matcher(self, Stream.from_list, self.__default_config())
+    def list_matcher(self, config=None):
+        '''
+        Construct a parser for lists that returns a sequence of matches
+        and uses a `lepl.stream.Stream()` internally.
+        '''
+        return make_matcher(self, Stream.from_list, 
+                            config if config else self.default_config())
     
-    def path_matcher(self):
-        return make_matcher(self, Stream.from_path, self.__default_config())
+    def path_matcher(self, config=None):
+        '''
+        Construct a parser for a file that returns a sequence of matches
+        and uses a `lepl.stream.Stream()` internally.
+        '''
+        return make_matcher(self, Stream.from_path, 
+                            config if config else self.default_config())
     
-    def string_matcher(self):
-        return make_matcher(self, Stream.from_string, self.__default_config())
+    def string_matcher(self, config=None):
+        '''
+        Construct a parser for strings that returns a sequence of matches
+        and uses a `lepl.stream.Stream()` internally.
+        '''
+        return make_matcher(self, Stream.from_string, 
+                            config if config else self.default_config())
 
-    def null_matcher(self):
-        return make_matcher(self, Stream.null, self.__default_config())
+    def null_matcher(self, config=None):
+        '''
+        Construct a parser for strings and lists list objects that returns a s
+        equence of matches (this does not use streams).
+        '''
+        return make_matcher(self, Stream.null, 
+                            config if config else self.default_config())
 
-    def match_file(self, file):
-        return self.file_matcher()(file)
+    def match_file(self, file, config=None):
+        '''
+        Parse the contents of a file, returning a sequence of matches and using a
+        `lepl.stream.Stream()` internally.
+        '''
+        return self.file_matcher(config)(file)
         
-    def match_list(self, list_):
-        return self.list_matcher()(list_)
+    def match_list(self, list_, config=None):
+        '''
+        Parse a list, returning a sequence of matches and using a
+        `lepl.stream.Stream()` internally.
+        '''
+        return self.list_matcher(config)(list_)
         
-    def match_path(self, path):
-        return self.path_matcher()(path)
+    def match_path(self, path, config=None):
+        '''
+        Parse a file, returning a sequence of matches and using a
+        `lepl.stream.Stream()` internally.
+        '''
+        return self.path_matcher(config)(path)
         
-    def match_string(self, string):
-        return self.string_matcher()(string)
+    def match_string(self, string, config=None):
+        '''
+        Parse a string, returning a sequence of matches and using a
+        `lepl.stream.Stream()` internally.
+        '''
+        return self.string_matcher(config)(string)
 
-    def match(self, stream):
-        return self.null_matcher()(stream)
+    def match(self, stream, config=None):
+        '''
+        Parse a string or list, returning a sequence of matches 
+        (this does not use streams).
+        '''
+        return self.null_matcher(config)(stream)
 
     
-    def __default_config(self):
+    def default_config(self):
+        '''
+        Generate a default configuration instance.  Currently this flattens
+        nested `lepl.matchers.And()` and `lepl.matchers.Or()` instances;
+        supports tracing (which is initially disabled, but can be enabled
+        using the `lepl.matchers.Trace()` matcher); and tracks but does
+        not limit generators (which can be flushed using the 
+        `lepl.matchers.Commit()` matcher).
+        '''
         return Configuration(flatten={And: '*matchers', Or: '*matchers'},
                              monitors=[TraceResults(False), 
                                        GeneratorManager(0)])
@@ -749,10 +850,10 @@ class Trace(BaseMatcher):
             pass
         
     def on_push(self, monitor):
-        monitor.switch(1)
+        monitor.switch(1 if self.trace else -1)
         
     def on_pop(self, monitor):
-        monitor.switch(-1)
+        monitor.switch(-1 if self.trace else 1)
         
     
 # The following are functions rather than classes, but we use the class

@@ -2,21 +2,17 @@
 LEPL - A Parser Library for Python 3 (and 2.6)
 ==============================================
 
-Introducing version 2.0 of LEPL.  It has a new, more
-powerful core.
+Introducing version 2.0 of LEPL with a new, more powerful core.
 
-I am trying to keep LEPL simple and intuitive to the "end
-user" (the :ref:`example` shows just how friendly it can be)
-while making it easier to add features from recent research
-papers "under the hood".  The combination of trampolining
-(which exposes the inner loop) and parser rewriting (which
-allows the parser to be restructured programatically)
-enabled powerful extensions without changing the original, 
-simple grammar syntax.
+I am trying to keep LEPL simple and intuitive to the "end user" (the
+:ref:`example` shows just how friendly it can be) while making it easier to
+add features from recent research papers "under the hood".  The combination of
+trampolining (which exposes the inner loop) and matcher graph rewriting (which
+allows the parser to be restructured programmatically) should allow further
+extensions without changing the original, simple grammar syntax.
 
-The aim is a powerful, extensible parser that will also give
-solid, reliable results to first--time users.  This release
-is a major step towards that goal.
+The aim is a powerful, extensible parser that will also give solid, reliable
+results to first--time users.  This release is a major step towards that goal.
 
 
 Features
@@ -44,7 +40,7 @@ Features
   automatic memoisation.
 
 * **Parser rewriting**.  The parser can itself be manipulated by
-  Python code.  This gives unlimited opportuntities for future
+  Python code.  This gives unlimited opportunities for future
   expansion and optimisation.
 
 * **Left recursive grammars**.  Memoisation can detect and control
@@ -63,7 +59,7 @@ The `API documentation <api/index.html>`_ is also available.
 
 .. [1] These features rely on the most ambitious changes in the new
        2.0 core and so are not yet as reliable or efficient as the
-       rest of the code.  This will be adressed in the 2.1 release.
+       rest of the code.  This will be addressed in the 2.1 release.
 
 
 Download
@@ -152,6 +148,7 @@ Contents
    errors
    resources
    debugging
+   advanced
    style
    download
    implementation

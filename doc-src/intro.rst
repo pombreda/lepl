@@ -23,7 +23,7 @@ One a matcher has been built up in this way it can be used to create a
 *parser* to process text.  The parser contains the original matchers, but may
 also add additional processing (this provides advanced features like ...).
 
-Internally, when the parser is used to anaylse some text, it passes the string
+Internally, when the parser is used to analyse some text, it passes the string
 to the matchers that were used as "building blocks".  These break the text
 into pieces that are then assembled into the final result.
 
@@ -187,6 +187,7 @@ not named pairs (in this case, the comma and space).
 
 
 .. index:: repetition, [], ~, Drop()
+.. _repetition:
 
 Repetition
 ----------

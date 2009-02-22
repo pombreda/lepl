@@ -6,27 +6,6 @@ Resource Management
 ===================
 
 
-.. index:: Stream, Core, memory, file, StreamMixin
-
-Streams
--------
-
-LEPL can process simple strings and lists, but it can also use its own `Stream
-<api/redirect.html#lepl.stream.Stream>`_ class as a wrapper for the input.
-There are two advantages to doing this:
-
-#. When reading from a file, the stream will not keep more data in memory than
-   is necessary, so files larger than the available memory can be processed.
-
-#. The stream provides access to the central `Core
-   <api/redirect.html#lepl.core.Core>`_ instance, which is necessary for
-   :ref:`debugging`, :ref:`limiting`, and :ref:`committing`.
-
-Streams are most simply created by using the ``parse...`` and ``match...``
-methods that all matchers implement via `StreamMixin
-<api/redirect.html#lepl.stream.StreamMixin>`_.
-
-
 .. index:: GeneratorWrapper, backtracking, generators
 
 Generator Management
@@ -39,8 +18,12 @@ Generator Management
   some unit tests changed results in a way that I cannot explain.
 
   By default the number of generators is unrestricted, but references to
-  generators are stored.  To completely disable the tracking of generators set
-  the ``min_queue`` parameter (described below) to ``None``.
+  generators are stored.  To completely disable the tracking of generators
+  provide a `Configuration() <api/redirect.html#lepl.parser.Configuration>`_
+  without the monitor `GeneratorManager()
+  <api/redirect.html#lepl.manager.GeneratorManager>`_ (one is provided by the
+  `default configuration
+  <api/redirect.html#lepl.matchers.BaseMatcher.default_config>`_).
 
 :ref:`backtracking` within LEPL is implemented using generators.  These are
 semi--autonomous *loop--like* blocks of code that can be paused and restarted.
@@ -50,25 +33,20 @@ successive matches.  Backtracking means saving these generators for future use
 value from a stored generator.
 
 Because generators may be long--lived they can be a resource sink.  For
-example, they maintain references to "old" parts of the stream that might
+example, they maintain references to "old" parts of the input that might
 otherwise be reclaimed by garbage collection.
 
-The `Core <api/redirect.html#lepl.core.Core>`_ is an object, created once
-per stream, that provides a central location for managing information related
-to a parse.  This information can be used for :ref:`debugging`, for example.
+It is possible to configure the system with a `GeneratorManager()
+<api/redirect.html#lepl.manager.GeneratorManager>`_ that maintains a (weak)
+reference to the generators [#]_ used in a parse.  A generator is registered
+when it is first used.
 
-It is possible to configure the system so that the `Core
-<api/redirect.html#lepl.core.Core>`_ maintains a (weak) reference to the
-generators [#]_ used in a parse.  A generator is registered when it is first
-used.
-
-Generators registered with the `Core <api/redirect.html#lepl.core.Core>`_
-may be active or inactive.  An active generator is one which is participating
-in the current match.  This means that the program's thread of control is
-"inside" the generator.  An inactive generator is one that is not currently in
-use.  Inactive generators may have been discarded (for example, if they have
-returned all possible matches), or they may be stored in some way for later
-use (for example, to implement backtracking).
+Registered generators may be active or inactive.  An active generator is one
+which is participating in the current match.  This means that the program's
+thread of control is "inside" the generator.  An inactive generator is one
+that is not currently in use.  Inactive generators may have been discarded
+(for example, if they have returned all possible matches), or they may be
+stored in some way for later use (for example, to implement backtracking).
 
 Generators also have a *last--used* date.  More exactly, they are associated
 with the :ref:`epoch` when they were last used.
@@ -77,24 +55,24 @@ Given all this, it is possible to modify the generators and so change the
 behaviour of the parser.  In particular, it is possible to close non--active
 generators, either implicitly or explicitly.
 
-.. [#] The discussion here omits some details from the implementation; the
-       `Core <api/redirect.html#lepl.core.Core>`_ actually stores
-       `GeneratorWrapper
-       <api/redirect.html#lepl.resources.GeneratorWrapper>`_ instances,
-       which are added to generators via the `managed
-       <api/redirect.html#lepl.resources.managed>`_ decorator.
+.. [#] The discussion here omits some details from the implementation.  The
+       `GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_
+       actually stores `GeneratorWrapper
+       <api/redirect.html#lepl.resources.GeneratorWrapper>`_ instances, which
+       are added to generators via the `tagged
+       <api/redirect.html#lepl.resources.tagged>`_ decorator.
 
 
-.. index:: resources, min_queue
+.. index:: resources, queue_len
 .. _limiting:
 
 Resource Limiting
 -----------------
 
-The `Core <api/redirect.html#lepl.core.Core>`_ can be configured to store a
-limited number of generators.  When this number is exceeded, by the addition
-of a new generator, the oldest (ie. least recently used) non--active generator
-is closed.
+The `GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_
+can be configured to store only a limited number of generators.  When this
+number is exceeded, by the addition of a new generator, the oldest (ie. least
+recently used) non--active generator is closed.
 
 .. warning::
 
@@ -103,31 +81,31 @@ is closed.
   successfully.
 
 If all the current generators are active then no generator is discarded and
-the upper limit on the number of generators increases to accomodate this.
+the upper limit on the number of generators increases to accommodate this.
 Currently no attempt is made to later reduce the number back to the original
 level.
 
-To configure this limit use the ``min_queue`` parameter.  This can be supplied
-on stream creation::
+To configure this limit use the ``queue_len`` parameter::
 
-  >>> matcher = (Literal('*')[:,...][2] & Eos()).match_string()('*' * 4)
-  >>> list(matcher)
-  [(['****'],     Chunk('')[0:]), 
-   (['***', '*'], Chunk('')[0:]), 
-   (['**', '**'], Chunk('')[0:]), 
-   (['*', '***'], Chunk('')[0:]), 
-   (['****'],     Chunk('')[0:])]
+  >>> matches = (Literal('*')[:,...][2] & Eos()).match('*' * 4)
+  >>> list(matches)
+  [(['****'],     ''), 
+   (['***', '*'], ''), 
+   (['**', '**'], ''), 
+   (['*', '***'], ''), 
+   (['****'],     '')]
   
-  >>> matcher = (Literal('*')[:,...][2] & Eos()).match_string(min_queue=1)('*' * 4)
-  >>> list(matcher)
-  [(['****'],     Chunk('')[0:])]
+  >>> config = Configuration(monitors=[GeneratorManager(queue_len=1)])
+  >>> matches = (Literal('*')[:,...][2] & Eos()).match('*' * 4, config)
+  >>> list(matches)
+  [(['****'],     '')]
 
 It may not be clear what the rather compact expressions are doing above.  In
 both cases two matchers, each of which can match 0 or more "*" characters, are
 followed by the end of string test.  They are applied to a string containing
 "\****".  With full backtracking all the different solutions (different ways
 of splitting the "*" characters between the two matchers) are available.  When
-the ``min_queue`` is set to a very low level generators are discarded whenever
+the ``queue_len`` is set to a very low level generators are discarded whenever
 possible, making backtracking impossible and providing just a single match.
 
 
@@ -141,15 +119,44 @@ An alternative to the above, automatic management of generators, is to
 explicitly remove non--active generators as part of the search process.  This
 is similar to Prolog's *cut*, I believe.
 
-The `Commit() <api/redirect.html#lepl.match.Commit>`_ matcher does this: it
-discards all non--active generators from the `Core
-<api/redirect.html#lepl.core.Core>`_.
+The `Commit() <api/redirect.html#lepl.matchers.Commit>`_ matcher does this: it
+discards all non--active generators.
 
-For `Commit() <api/redirect.html#lepl.match.Commit>`_ to work the `Core
-<api/redirect.html#lepl.core.Core>`_ must maintain references to
-generators.  This is true by default, when the ``min_queue`` value is 0, which
-stores references but does not cause :ref:`limiting`.
+For `Commit() <api/redirect.html#lepl.matchers.Commit>`_ to work the
+`GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_ must
+maintain references to generators.  This is true by default, when the
+``queue_len`` value is 0, which stores references but does not cause
+:ref:`limiting`.
 
-See also `First() <api/redirect.html#lepl.match.First>`_.
+See also `First() <api/redirect.html#lepl.matchers.First>`_.
 
 If this is useful, I'd really appreciate a good, short example to put here.
+
+
+.. index:: Stream, Core, memory, file, StreamMixin
+
+Streams
+-------
+
+LEPL can process simple strings and lists, but it can also use its own `Stream
+<api/redirect.html#lepl.stream.Stream>`_ class as a wrapper for the input.
+
+Streams were more important in LEPL 1.0, when they were necessary to support
+resource management.  In LEPL 2.0 their status is unclear --- the efficiency
+work for release 2.1 will help clarify their role, if any.
+
+They do have an advantages when reading files, as they store the file path,
+which can be used in error messages.
+
+Streams are created automatically by methods like `parse_string()
+<api/redirect.html#lepl.matchers.BaseMatcher.parse_string>`_, `string_parser()
+<api/redirect.html#lepl.matchers.BaseMatcher.string_parser>`_, `match_string()
+<api/redirect.html#lepl.matchers.BaseMatcher.match_string>`_,
+`string_matcher()
+<api/redirect.html#lepl.matchers.BaseMatcher.string_matcher>`_ etc.  But the
+methods `parse() <api/redirect.html#lepl.matchers.BaseMatcher.parse>`_,
+`null_parser() <api/redirect.html#lepl.matchers.BaseMatcher.null_parser>`_,
+`match() <api/redirect.html#lepl.matchers.BaseMatcher.match>`_,
+`null_matcher() <api/redirect.html#lepl.matchers.BaseMatcher.null_matcher>`_
+do not do so.
+

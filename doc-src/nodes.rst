@@ -29,7 +29,7 @@ Simple declarations produce a single list of tokens (ignoring
 .. note::
 
   The empty strings are a result of the separator and could be removed by
-  using ``with Separator(DropEmpty(Regexp(r'\s*'))):``
+  using ``with Separator(Drop(Regexp(r'\s*'))):``
 
 
 .. index:: s-expressions, list, nested lists
@@ -51,11 +51,18 @@ results.  With LEPL they are easy to construct with ``> list``::
   >>>     addsub  = Any('+-')
   >>>     expr   += factor & (addsub & factor)[:]
   >>>     line    = expr & Eos()
+  >>> line.parse_string('1 + 2 * (3 + 4 - 5)')
   ['1', '+', '2', '*', ['3', '+', '4', '-', '5']]
 
 .. note::
 
   ``list`` is just the usual Python constructor.
+
+  (Since ``list`` is idempotent (or a fixed point or something) ---
+  ``list(list(x)) == list(x)`` --- the operator ``>``
+  (`lepl.matchers.Apply(raw=false)`) actually has to add wrap the result of
+  any function in a list.  If this comment is confusing, please ignore it, but
+  it may help explain an otherwise annoying design detail.)
 
 
 .. index:: Node(), AST, parse tree, trees
@@ -139,3 +146,8 @@ returned as lists, since sub--node types and names need not be unique::
 
   >>> ast.Factor[1].Term[0].number[0]
   '2'
+
+Finally, Nodes extend `SimpleGraphNode()
+<api/redirect.html#lepl.graph.SimpleGraphNode>`_, which means that some of the
+routines in the `graph <api/redirect.html#lepl.graph>`_ package can be used to
+process ASTs.

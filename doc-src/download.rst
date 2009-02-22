@@ -4,13 +4,6 @@
 Download And Installation
 =========================
 
-.. warning::
-
-  This release is a new major version, with significant changes to the
-  implementation.  So there may be a bug or two.  Please let me know at
-  andrew@acooke.org.
-
-
 LEPL is only available for Python 3 and 2.6.  See :ref:`versions` for more
 information.
 
@@ -22,6 +15,13 @@ first.  If you want a local copy of the manual you should also read the
 Install With Setuptools / easy_install (Python 2.6)
 ---------------------------------------------------
 
+.. note::
+
+  You are reading the documentation for LEPL |release|, but because this is
+  still in beta easy_install will install the stable 1.0 version.  To install
+  the new version you must download and install the approrpiate package
+  following the instructions in :ref:`manual_install`.
+
 This currently only works for Python 2.6
 
 If you have `setuptools <http://pypi.python.org/pypi/setuptools>`_ installed
@@ -32,6 +32,8 @@ you should be able to install LEPL using::
 That's it.  There is no need to download anything beforehand;
 ``easy_install`` will do all the work.
 
+
+.. _manual_install:
 
 Install With Distutils / setup.py (Python 3 and 2.6)
 ----------------------------------------------------
@@ -80,7 +82,7 @@ that would be
 Documentation
 -------------
 
-You are curently reading the `Manual <http://www.acooke.org/lepl>`_.  The `API
+You are currently reading the `Manual <http://www.acooke.org/lepl>`_.  The `API
 Documentation <http://www.acooke.org/lepl/api>`_ is also available.
 
 The simplest way to view the documentation is via the `web
@@ -96,7 +98,7 @@ Download
 You can download the source and documentation packages from the `Support Site
 <http://code.google.com/p/lepl/downloads>`_.
 
-The source packages are also available from the `Python Package Index
+*Stable* source packages are also available from the `Python Package Index
 <http://pypi.python.org/pypi/LEPL/>`_ for the use of setuptools.
 
 
@@ -130,7 +132,15 @@ Date        Version  Description
 2009-01-31  1.0rc1   With support.
 ----------  -------  -----------
 2009-02-04  1.0      No significant changes from rc1.
+----------  -------  -----------
+2009-02-23  2.0b1    New trampolining core; matcher graph rewriting; memoisation.
 ==========  =======  ===========
+
+A final 2.0 version will be released early March.  The next release will be a
+minor increment (2.1), focussing on efficiency and reliability (lots of
+profiling and testing).  Hopefully the new core (particularly the matcher
+graph rewriting) is flexible enough to avoid another major release for some
+time.
 
 
 .. index:: Python version
@@ -145,7 +155,7 @@ exist).
 
 However, it's not regularly tested on anything other than 3.0.
 
-It does not work with Python 2.5.  Incompatabilities include:
+It does not work with Python 2.5.  Incompatibilities include:
 
   * with contexts
   * setter decorators

@@ -230,69 +230,78 @@ def make_parser(matcher, stream, conf):
 def make_matcher(matcher, stream, conf):
     '''
     Similar to `make_parser`, but constructs a function that returns a 
-    generator that provides a sequence of parses.
+    generator that provides a sequence of matches.
     '''
     return prepare(matcher, stream, conf)
 
     
 def file_parser(matcher, conf):
     '''
-    Construct a parser for file objects.
+    Construct a parser for file objects that returns a single match and
+    uses a `lepl.stream.Stream()` internally.
     '''
     return make_parser(matcher, Stream.from_file, conf)
 
 def list_parser(matcher, conf):
     '''
-    Construct a parser for lists.
+    Construct a parser for lists that returns a single match and uses a 
+    `lepl.stream.Stream()` internally.
     '''
     return make_parser(matcher, Stream.from_list, conf)
 
 def path_parser(matcher, conf):
     '''
-    Construct a parser for a file path.
+    Construct a parser for a file that returns a single match and uses a 
+    `lepl.stream.Stream()` internally.
     '''
     return make_parser(matcher, Stream.from_path, conf)
 
 def string_parser(matcher, conf):
     '''
-    Construct a parser for strings.
+    Construct a parser for strings that returns a single match and uses a 
+    `lepl.stream.Stream()` internally.
     '''
     return make_parser(matcher, Stream.from_string, conf)
 
-def parser(matcher, conf):
+def null_parser(matcher, conf):
     '''
-    Construct a parser for strings and lists (this does not use streams).
+    Construct a parser for strings and lists returns a single match
+    (this does not use streams).
     '''
     return make_parser(matcher, Stream.null, conf)
 
 
 def file_matcher(matcher, conf):
     '''
-    Construct a parser (that returns a sequence of parses) for file objects.
+    Construct a parser that returns a sequence of matches for file objects 
+    and uses a `lepl.stream.Stream()` internally.
     '''
     return make_matcher(matcher, Stream.from_file, conf)
 
 def list_matcher(matcher, conf):
     '''
-    Construct a parser (that returns a sequence of parses) for lists.
+    Construct a parser that returns a sequence of matches for lists 
+    and uses a `lepl.stream.Stream()` internally.
     '''
     return make_matcher(matcher, Stream.from_list, conf)
 
 def path_matcher(matcher, conf):
     '''
-    Construct a parser (that returns a sequence of parses) for a file path.
+    Construct a parser that returns a sequence of matches for a file
+    and uses a `lepl.stream.Stream()` internally.
     '''
     return make_matcher(matcher, Stream.from_path, conf)
 
 def string_matcher(matcher, conf):
     '''
-    Construct a parser (that returns a sequence of parses) for strings.
+    Construct a parser that returns a sequence of matches for strings 
+    and uses a `lepl.stream.Stream()` internally.
     '''
     return make_matcher(matcher, Stream.from_string, conf)
 
-def matcher(matcher, conf):
+def null_matcher(matcher, conf):
     '''
-    Construct a parser (that returns a sequence of parses) for strings
+    Construct a parser that returns a sequence of matches for strings
     and lists (this does not use streams).
     '''
     return make_matcher(matcher, Stream.null, conf)

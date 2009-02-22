@@ -83,30 +83,47 @@ class TraceResults(ExposedMonitor):
                 self.error(value, self.fmt_result(value))
         
     def fmt_result(self, value):
+        (stream, depth) = self.fmt_stream_depth() 
         return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> {6!r}' \
                 .format(self.epoch, 
-                        self.generator.stream,
+                        stream,
                         self.fmt_location(self.generator.stream),
-                        self.generator.stream.depth(),
+                        depth,
                         self.depth,
                         self.action,
                         value)
+                
+    def fmt_stream_depth(self):
+        try:
+            depth = self.generator.stream.depth()
+            stream = str(self.generator.stream)
+        except:
+            depth = -len(self.generator.stream)
+            if len(self.generator.stream) > 10:
+                stream = repr(self.generator.stream[0:7]) + '...'
+            else:
+                stream = repr(self.generator.stream)
+        return (stream, depth)
         
     def fmt_done(self):
+        (stream, depth) = self.fmt_stream_depth() 
         return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> stop' \
                 .format(self.epoch, 
-                        self.generator.stream,
+                        stream,
                         self.fmt_location(self.generator.stream),
-                        self.generator.stream.depth(),
+                        depth,
                         self.depth,
                         self.action)
                 
     def fmt_location(self, stream):
-        (line, char) = stream.location()
-        if line < 0:
-            return '  eof  '
-        else:
-            return '{0:3d}.{1:<3d}'.format(line, char)
+        try:
+            (line, char) = stream.location()
+            if line < 0:
+                return '  eof  '
+            else:
+                return '{0:3d}.{1:<3d}'.format(line, char)
+        except:
+            return '<unknown>'
 
     def yield_(self, value):
         if self.enabled > 0:
@@ -146,7 +163,7 @@ class RecordDeepest(TraceResults):
     '''
     
     def __init__(self, n_before=6, n_results_after=2, n_done_after=2):
-        super(RecordDeepest, self).__init__()
+        super(RecordDeepest, self).__init__(enabled=True)
         self.n_before = n_before
         self.n_results_after = n_results_after
         self.n_done_after = n_done_after
@@ -154,7 +171,9 @@ class RecordDeepest(TraceResults):
         self._before = []
         self._results_after = []
         self._done_after = []
-        self._deepest = 0
+        self._deepest = -1e99
+        self._countdown_result = 0
+        self._countdown_done = 0
         
     def result(self, value, text):
         if type(value) is tuple:
@@ -168,8 +187,12 @@ class RecordDeepest(TraceResults):
 
     def record(self, is_result, text):
         stream = self.generator.stream
-        if stream.depth() >= self._deepest:
-            self._deepest = stream.depth()
+        try:
+            depth = stream.depth()
+        except:
+            depth = -len(stream)
+        if depth >= self._deepest and is_result:
+            self._deepest = depth
             self._countdown_result = self.n_results_after
             self._countdown_done = self.n_done_after
             self._before = list(self._limited)

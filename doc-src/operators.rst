@@ -114,11 +114,11 @@ Operator  Description
 --------  -----------
 ``**``    As ``>``, but the results are passed as the named parameter 
           *results*.  Additional keyword arguments are *stream_in* (the
-          stream passed to the matcher), *stream_out* (the rstream returned
+          stream passed to the matcher), *stream_out* (the stream returned
           from the matcher) and *core* (see :ref:`resources`).  
           Identical to `KApply() <api/redirect.html#lepl.matchers.KApply>`_.
 --------  -----------
-``^``     Raise a Syntax error.  The argmuent to the right is a string that
+``^``     Raise a Syntax error.  The argument to the right is a string that
           is treated as a format template for the same named arguments as 
           ``**``.
 ========  ===========

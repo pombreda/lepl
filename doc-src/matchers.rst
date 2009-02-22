@@ -257,10 +257,6 @@ arguments as follows:
   stream_out
     The stream returned from the matcher after matching.
 
-  core 
-    The core, if streams are being used, else ``None``.  See
-    :ref:`resources`.
-
   results
     A list of the results returned.
 
@@ -340,7 +336,7 @@ is a source of great expressive power.)
 
 Existing matchers take care to exploit the common interface between lists and
 strings, so matching should work on a variety of streams, including
-imhomogenous lists of objects.
+inhomogeneous lists of objects.
 
 All matcher implementations should subclass the ABC `Matcher
 <api/redirect.html#lepl.operators.Matcher>`_.  Most will do so by inheriting
