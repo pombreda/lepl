@@ -198,7 +198,7 @@ class Separator(Override):
     
     def __init__(self, separator):
         '''
-        If the separator is a string it is coerced to `lepl.match.Regexp`.
+        If the separator is a string it is coerced to `lepl.matchers.Regexp()`.
         '''
         # Handle circular dependencies
         from lepl.matchers import Regexp, And, Repeat, coerce
@@ -265,7 +265,7 @@ class OperatorMixin(object):
         **self & other** - Append results.
         
         Combine adjacent matchers in sequence.  This is equivalent to 
-        `lepl.match.And`.
+        `lepl.matchers.And()`.
         
         :Parameters:
         
@@ -281,7 +281,7 @@ class OperatorMixin(object):
         **other & self** - Append results.
         
         Combine adjacent matchers in sequence.  This is equivalent to 
-        `lepl.match.And`.
+        `lepl.matchers.And()`.
         
         :Parameters:
         
@@ -374,7 +374,7 @@ class OperatorMixin(object):
         
         This introduces backtracking.  Matches are tried from left to right
         and successful results returned (one on each "recall").  This is 
-        equivalent to `lepl.match.Or`.
+        equivalent to `lepl.matchers.Or()`.
         
         :Parameters:
         
@@ -391,7 +391,7 @@ class OperatorMixin(object):
         
         This introduces backtracking.  Matches are tried from left to right
         and successful results returned (one on each "recall").  This is 
-        equivalent to `lepl.match.Or`.
+        equivalent to `lepl.matchers.Or()`.
         
         :Parameters:
         
@@ -407,7 +407,7 @@ class OperatorMixin(object):
         **self % other** - Take first match (committed choice).
         
         Matches are tried from left to right and the first successful result
-        is returned.  This is equivalent to `lepl.match.First`.
+        is returned.  This is equivalent to `lepl.matchers.First()`.
         
         :Parameters:
         
@@ -423,7 +423,7 @@ class OperatorMixin(object):
         **other % self** - Take first match (committed choice).
         
         Matches are tried from left to right and the first successful result
-        is returned.  This is equivalent to `lepl.match.First`.
+        is returned.  This is equivalent to `lepl.matchers.First()`.
         
         :Parameters:
         
@@ -439,9 +439,9 @@ class OperatorMixin(object):
         **~self** - Discard the result.
 
         This generates a matcher that behaves as the original, but returns
-        an empty list. This is equivalent to `lepl.match.Drop`.
+        an empty list. This is equivalent to `lepl.matchers.Drop()`.
         
-        Note that `lepl.match.Lookahead` overrides this method to have
+        Note that `lepl.matchers.Lookahead()` overrides this method to have
         different semantics (negative lookahead).
         '''
         return Global()[NOT](self) 
@@ -557,7 +557,7 @@ class OperatorMixin(object):
         **self in function** - Process or label the results.
         
         Create a named pair or apply a function to the results.  This is
-        equivalent to `lepl.match.Apply`.
+        equivalent to `lepl.matchers.Apply()`.
         
         :Parameters:
         
@@ -570,7 +570,7 @@ class OperatorMixin(object):
             
             If a function is given it is called with the results as an
             argument.  The return value is used as the new result.  This
-            is equivalent to `lepl.match.Apply` with nolist=False.
+            is equivalent to `lepl.matchers.Apply()` with nolist=False.
         '''
         self.__check(APPLY, function, False)
         return Global()[APPLY](self, function) 
@@ -580,7 +580,7 @@ class OperatorMixin(object):
         **self >> function** - Process or label the results (map).
         
         Create a named pair or apply a function to each result in turn.  
-        This is equivalent to `lepl.match.Map`.  It is similar to 
+        This is equivalent to `lepl.matchers.Map()`.  It is similar to 
         *self >= function*, except that the function is applied to each 
         result in turn.
         
@@ -604,7 +604,7 @@ class OperatorMixin(object):
         **self * function** - Process the results (\*args).
         
         Apply a function to each result in turn.  
-        This is equivalent to `lepl.match.Apply` with ``args=True``.  
+        This is equivalent to `lepl.matchers.Apply()` with ``args=True``.  
         It is similar to *self > function*, except that the function is 
         applies to multiple arguments (using Python's ``*args`` behaviour).
         
@@ -622,7 +622,7 @@ class OperatorMixin(object):
         **self \** function** - Process the results (\**kargs).
         
         Apply a function to keyword arguments
-        This is equivalent to `lepl.match.KApply`.
+        This is equivalent to `lepl.matchers.KApply()`.
         
         :Parameters:
         
