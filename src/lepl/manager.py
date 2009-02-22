@@ -57,22 +57,45 @@ from lepl.support import LogMixin
 
 
 class GeneratorManager(MonitorInterface):
+    '''
+    A 'Monitor' (implements `lepl.monitor.MonitorInterface`, can be supplied
+    to `lepl.parser.Configuration`) that tracks (and can limit the number of)
+    generators.
+    '''
     
     def __init__(self, queue_len):
+        '''
+        `queue_len` is the number of generators that can exist.  When the
+        number is exceeded the oldest generators are closed, unless currently
+        active (in which case the queue size is extended).  If zero then no
+        limit is applied (although generators are still tracked and can be
+        removed using `lepl.matcher.Commit`.
+        '''
         super(GeneratorManager, self).__init__()
         self.__queue = []
         self.__queue_len = queue_len
         self.__known = {} # map from hash to ref
         
     def next_iteration(self, epoch, value, exception, stack):
+        '''
+        Store the current epoch.
+        '''
         self.epoch = epoch
         
     def push(self, generator):
+        '''
+        Add a generator if it is not already known.
+        '''
         key = hash(generator) 
         if key not in self.__known:
             self.__add(generator)
             
     def pop(self, generator):
+        '''
+        Mark a generator as no longer active.
+        
+        WARNING - there may be a bug here.  See comment in source.
+        '''
         key = hash(generator)
         # why is this test needed if objects on the stack are alive?
         # do they appear more than once perhaps? 
@@ -82,6 +105,10 @@ class GeneratorManager(MonitorInterface):
             reference.last_known_epoch = self.epoch
             
     def __add(self, generator):
+        '''
+        Add a generator, trying to keep the number of active generators to
+        that given in the constructor.
+        '''
         reference = GeneratorRef(generator, self.epoch, True)
         self.__known[hash(generator)] = reference
         self._debug('Queue size: {0}/{1}'
