@@ -46,7 +46,7 @@ A simple example of how to use LEPL::
         
         # Here we define the grammar
         
-        # A delayed value is defined later (see last line in block) 
+        # A delayed value is defined later (see penultimate line in block) 
         expr   = Delayed()
         number = Digit()[1:,...]                        > 'number'
         spaces = DropEmpty(Regexp(r'\s*'))

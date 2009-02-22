@@ -32,6 +32,9 @@ class SimpleGraphNode(object):
     '''
 
     def __init__(self):
+        '''
+        Create a node.
+        '''
         super(SimpleGraphNode, self).__init__()
         
     def _children(self, type_=None):
@@ -93,17 +96,32 @@ def dfs_edges(node, type_=SimpleGraphNode):
         except Reset:
             yield # in response to the throw (ignored by caller)
 
+
 def empty():
+    '''
+    An empty generator.
+    '''
     if False: yield None
     
+    
 class Reset(Exception):
+    '''
+    An exception that can be passed to dfs_edges to reset the traversal.
+    '''
     pass
 
+
 def reset(generator):
+    '''
+    Reset the traversal by raising Reset.
+    '''
     generator.throw(Reset())
     
 
 def order(node, include, exclude=0, type_=SimpleGraphNode):
+    '''
+    An ordered sequence of nodes.  The ordering is given by 'include'.
+    '''
     while True:
         try:
             for parent, child, direction in dfs_edges(node, type_):
@@ -115,10 +133,16 @@ def order(node, include, exclude=0, type_=SimpleGraphNode):
             
 
 def preorder(node, type_=SimpleGraphNode):
+    '''
+    The nodes in preorder.
+    '''
     return order(node, PREORDER, type_=type_)
 
 
 def postorder(node, type_=SimpleGraphNode):
+    '''
+    The nodes in postorder.
+    '''
     return order(node, POSTORDER, type_=type_)
 
 
@@ -130,13 +154,20 @@ class SimpleWalker(object):
     children are passed like '*args'.
     
     This allows visitors written for ``ConstructorGraphNode`` trees to be
-    used with ``SimpleNode`` trees.
+    used with ``SimpleNode`` trees (as long as they follow the convention
+    described above).
     '''
     
     def __init__(self, root):
+        '''
+        Create a walker for the graph starting at the given node.
+        '''
         self.__root = root
         
     def __call__(self, visitor):
+        '''
+        Apply the visitor to the nodes in the graph, in postorder.
+        '''
         pending = {}
         for (parent, node, kind) in dfs_edges(self.__root, type_=object):
             if kind & POSTORDER:
@@ -271,7 +302,7 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
         for name in self.__karg_names:
             arg = getattr(self, name)
             if type_ is None or isinstance(arg, type_):
-                    yield arg
+                yield arg
 
 
 class NamedAttributeMixin(ConstructorGraphNode):
@@ -368,6 +399,9 @@ class ConstructorWalker(object):
         self.__root = root
         
     def __call__(self, visitor):
+        '''
+        Apply the visitor to each node in turn.
+        '''
         results = {}
         for node in postorder(self.__root, type_=ConstructorGraphNode):
             visitor.node(node)
@@ -404,6 +438,9 @@ class PostorderWalkerMixin(object):
         self.__postorder = None
         
     def postorder(self, visitor):
+        '''
+        A shortcut that allows a visitor to be applied postorder.
+        '''
         if self.__postorder is None:
             self.__postorder = ConstructorWalker(self)
         return self.__postorder(visitor)
@@ -422,12 +459,21 @@ class ConstructorStr(Visitor):
         self.__line_length = line_length
         
     def node(self, node):
+        '''
+        Store the node's class name for later use.
+        '''
         self.__name = node.__class__.__name__
         
     def loop(self, value):
+        '''
+        Replace loop nodes by a <loop> marker.
+        '''
         return [[0, '<loop>']]
     
     def constructor(self, *args, **kargs):
+        '''
+        Build the constructor string, given the node and arguments.
+        '''
         contents = []
         for arg in args:
             if contents: contents[-1][1] += ', '
@@ -442,11 +488,16 @@ class ConstructorStr(Visitor):
         return lines
     
     def leaf(self, value):
+        '''
+        Non-node nodes (attributes) are displayed using repr.
+        '''
         return [[0, repr(value)]]
 
     def postprocess(self, lines):
         '''
-        Ugly, bug-prone and completely ad-hoc, but it seems to work....
+        This is an ad-hoc algorithm to make the final string reasonably
+        compact.  It's ugly, bug-prone and completely arbitrary, but it 
+        seems to work....
         '''
         sections = []
         (scan, indent) = (0, -1)
