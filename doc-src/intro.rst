@@ -68,7 +68,7 @@ that identify the values 'andrew' (a word) and '3333253' (an integer).
        detail.
 
 
-.. index:: matchers, Word(), Integer()
+.. index:: matchers, Word(), Integer(), .match(), .parse_string()
 
 Matchers
 --------
@@ -83,36 +83,46 @@ to know to use them is that, to read the value, you use the function
 ``next()``.
 
 We can see how this works with the simple generators `Word()
-<api/redirect.html#lepl.match.Word>`_ and `Integer()
-<api/redirect.html#lepl.match.Integer>`_::
+<api/redirect.html#lepl.Word>`_ and `Integer()
+<api/redirect.html#lepl.Integer>`_::
 
-  >>> next( Word()('hello world') )
+  >>> next( Word().match('hello world') )
   (['hello'], ' world')
   
-  >>> next( Integer()('123 four five') )
+  >>> next( Integer().match('123 four five') )
   (['123'], ' four five')
 
 Hopefully you can see the result and the remaining stream in both cases.
 
-We can make a more complicated matcher from these by joining them together
-with `And() <api/redirect.html#lepl.match.And>`_::
+.. warning::
 
-  >>> next( And(Word(), Space(), Integer())('hello 123') )
+   In LEPL 1.0 the examples above called the matcher directly instead of using
+   the ``match`` method (eg. ``Integer()('123 four five')``).  This change was
+   necessary because matchers now use a "trampoline" for evaluation (see ...).
+   Calling ``match`` automatically invokes the trampoline so that you see the
+   final result.
+
+   (You don't need to understand the explanation above!  It's enough to know
+   that the method you call has changed.)
+
+We can make a more complicated matcher from these by joining them together
+with `And() <api/redirect.html#lepl.And>`_::
+
+  >>> next( And(Word(), Space(), Integer()).match('hello 123') )
   (['hello', ' ', '123'], '')
 
 which can also be written as::
 
-  >>> next( (Word() & Space() & Integer())('hello 123')) )
+  >>> next( (Word() & Space() & Integer()).match('hello 123')) )
   (['hello', ' ', '123'], '')
 
 or even::
 
-  >>> next( (Word() / Integer())('hello 123')) )
+  >>> next( (Word() / Integer()).match('hello 123')) )
   (['hello', ' ', '123'], '')
 
-because ``&`` is shorthand for `And()
-<api/redirect.html#lepl.match.Word>`_, while ``/`` is similar, but allows
-optional spaces.
+because ``&`` is shorthand for `And() <api/redirect.html#lepl.And>`_, while
+``/`` is similar, but allows optional spaces.
 
 Note how, in all the examples above, the results are contained in a list and
 the returned stream starts after the results.  Putting the results in a list
@@ -152,10 +162,10 @@ string a *named pair* is generated.
 
 Since the ``>`` produces a matcher, we can test this at the command line::
 
-  >>> next( (Word() > 'name')('andrew') )
+  >>> next( (Word() > 'name').match('andrew') )
   ([('name', 'andrew')], '')
 
-  >>> next( (Integer() > 'phone')('3333253') )
+  >>> next( (Integer() > 'phone').match('3333253') )
   ([('phone', '3333253')], '')
 
 This makes `make_dict <api/redirect.html#lepl.node.make_dict>`_ easier to
@@ -171,7 +181,7 @@ And the results from ``name / ',' / phone`` include named pairs::
   ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], '')
 
 Now we know that ``>`` passes results to a function, so it looks like
-`make_dict <api/redirect.html#lepl.node.make_dict>`_ is almost identical to
+`make_dict <api/redirect.html#lepl.make_dict>`_ is almost identical to
 ``dict``.  In fact, the only difference is that it strips out results that are
 not named pairs (in this case, the comma and space).
 
@@ -247,7 +257,7 @@ LEPL can be extended in several ways:
 
 * You can write your own matchers (see the LEPL source for examples; they
   should inherit from `BaseMatcher
-  <api/redirect.html#lepl.match.BaseMatcher>`_ to take full advantage of
+  <api/redirect.html#lepl.matchers.BaseMatcher>`_ to take full advantage of
   the operator syntax).
 
 * You can even change the definition of operators (``&``, ``/`` etc; see

@@ -38,7 +38,7 @@ class StrTest(TestCase):
 
         description = str(expression)
         self.assert_same(description, r'''Delayed(
- Apply(
+ matcher=Apply(
   And(
    Apply(
     And(
@@ -49,31 +49,31 @@ class StrTest(TestCase):
          DepthFirst(
           Any(restrict='0123456789'), 1, None, 
           rest=Any(restrict='0123456789')), 
-         <function add at 0x7f5b704caea8>, raw=True, args=False), 
-        <function <lambda> at 0x7f5b704caf30>, raw=True, args=False), 
+         <function add at 0x7f72cf212738>, raw=True, args=False), 
+        <function <lambda> at 0x7f72cf212848>, raw=True, args=False), 
        And(
         And(
          Literal('('), 
          Apply(
           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          <function add at 0x7f5b704cad10>, raw=True, args=False), 
-         Delayed(<loop>)), 
+          <function add at 0x7f72cf2127c0>, raw=True, args=False), 
+         Delayed(matcher=<loop>)), 
         Apply(
          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-         <function add at 0x7f5b704ca848>, raw=True, args=False), 
+         <function add at 0x7f72cf212958>, raw=True, args=False), 
         Literal(')'))), 
-      <function <lambda> at 0x7f5b704ca7c0>, raw=True, args=False), 
+      <function <lambda> at 0x7f72cf2129e0>, raw=True, args=False), 
      Apply(
       DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-      <function add at 0x7f5b704ca738>, raw=True, args=False), 
+      <function add at 0x7f72cf212b78>, raw=True, args=False), 
      DepthFirst(
       And(
        Apply(
-        Any(restrict='*/'), <function <lambda> at 0x7f5b704cab78>, raw=True, 
+        Any(restrict='*/'), <function <lambda> at 0x7f72cf2125a0>, raw=True, 
         args=False), 
        Apply(
         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        <function add at 0x7f5b704cac88>, raw=True, args=False), 
+        <function add at 0x7f72cf2128d0>, raw=True, args=False), 
        Apply(
         Or(
          Apply(
@@ -81,28 +81,28 @@ class StrTest(TestCase):
            DepthFirst(
             Any(restrict='0123456789'), 1, None, 
             rest=Any(restrict='0123456789')), 
-           <function add at 0x7f5b704caea8>, raw=True, args=False), 
-          <function <lambda> at 0x7f5b704caf30>, raw=True, args=False), 
+           <function add at 0x7f72cf212738>, raw=True, args=False), 
+          <function <lambda> at 0x7f72cf212848>, raw=True, args=False), 
          And(
           And(
            Literal('('), 
            Apply(
             DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            <function add at 0x7f5b704cad10>, raw=True, args=False), 
-           Delayed(<loop>)), 
+            <function add at 0x7f72cf2127c0>, raw=True, args=False), 
+           Delayed(matcher=<loop>)), 
           Apply(
            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           <function add at 0x7f5b704ca848>, raw=True, args=False), 
+           <function add at 0x7f72cf212958>, raw=True, args=False), 
           Literal(')'))), 
-        <function <lambda> at 0x7f5b704ca7c0>, raw=True, args=False)), 
+        <function <lambda> at 0x7f72cf2129e0>, raw=True, args=False)), 
       0, None, 
       rest=And(
        Apply(
-        Any(restrict='*/'), <function <lambda> at 0x7f5b704cab78>, raw=True, 
+        Any(restrict='*/'), <function <lambda> at 0x7f72cf2125a0>, raw=True, 
         args=False), 
        Apply(
         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        <function add at 0x7f5b704cac88>, raw=True, args=False), 
+        <function add at 0x7f72cf2128d0>, raw=True, args=False), 
        Apply(
         Or(
          Apply(
@@ -110,33 +110,33 @@ class StrTest(TestCase):
            DepthFirst(
             Any(restrict='0123456789'), 1, None, 
             rest=Any(restrict='0123456789')), 
-           <function add at 0x7f5b704caea8>, raw=True, args=False), 
-          <function <lambda> at 0x7f5b704caf30>, raw=True, args=False), 
+           <function add at 0x7f72cf212738>, raw=True, args=False), 
+          <function <lambda> at 0x7f72cf212848>, raw=True, args=False), 
          And(
           And(
            Literal('('), 
            Apply(
             DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            <function add at 0x7f5b704cad10>, raw=True, args=False), 
-           Delayed(<loop>)), 
+            <function add at 0x7f72cf2127c0>, raw=True, args=False), 
+           Delayed(matcher=<loop>)), 
           Apply(
            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           <function add at 0x7f5b704ca848>, raw=True, args=False), 
+           <function add at 0x7f72cf212958>, raw=True, args=False), 
           Literal(')'))), 
-        <function <lambda> at 0x7f5b704ca7c0>, raw=True, args=False)))), 
-    <function <lambda> at 0x7f5b704ca5a0>, raw=True, 
+        <function <lambda> at 0x7f72cf2129e0>, raw=True, args=False)))), 
+    <function <lambda> at 0x7f72cf212c00>, raw=True, 
     args=False), 
    Apply(
     DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-    <function add at 0x7f5b704ca518>, raw=True, args=False), 
+    <function add at 0x7f72cf212d98>, raw=True, args=False), 
    DepthFirst(
     And(
      Apply(
-      Any(restrict='+-'), <function <lambda> at 0x7f5b704ca8d0>, raw=True, 
+      Any(restrict='+-'), <function <lambda> at 0x7f72cf212a68>, raw=True, 
       args=False), 
      Apply(
       DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-      <function add at 0x7f5b704ca6b0>, raw=True, args=False), 
+      <function add at 0x7f72cf212af0>, raw=True, args=False), 
      Apply(
       And(
        Apply(
@@ -146,31 +146,31 @@ class StrTest(TestCase):
            DepthFirst(
             Any(restrict='0123456789'), 1, None, 
             rest=Any(restrict='0123456789')), 
-           <function add at 0x7f5b704caea8>, raw=True, args=False), 
-          <function <lambda> at 0x7f5b704caf30>, raw=True, args=False), 
+           <function add at 0x7f72cf212738>, raw=True, args=False), 
+          <function <lambda> at 0x7f72cf212848>, raw=True, args=False), 
          And(
           And(
            Literal('('), 
            Apply(
             DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            <function add at 0x7f5b704cad10>, raw=True, args=False), 
-           Delayed(<loop>)), 
+            <function add at 0x7f72cf2127c0>, raw=True, args=False), 
+           Delayed(matcher=<loop>)), 
           Apply(
            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           <function add at 0x7f5b704ca848>, raw=True, args=False), 
+           <function add at 0x7f72cf212958>, raw=True, args=False), 
           Literal(')'))), 
-        <function <lambda> at 0x7f5b704ca7c0>, raw=True, args=False), 
+        <function <lambda> at 0x7f72cf2129e0>, raw=True, args=False), 
        Apply(
         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        <function add at 0x7f5b704ca738>, raw=True, args=False), 
+        <function add at 0x7f72cf212b78>, raw=True, args=False), 
        DepthFirst(
         And(
          Apply(
-          Any(restrict='*/'), <function <lambda> at 0x7f5b704cab78>, raw=True, 
+          Any(restrict='*/'), <function <lambda> at 0x7f72cf2125a0>, raw=True, 
           args=False), 
          Apply(
           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          <function add at 0x7f5b704cac88>, raw=True, args=False), 
+          <function add at 0x7f72cf2128d0>, raw=True, args=False), 
          Apply(
           Or(
            Apply(
@@ -178,30 +178,30 @@ class StrTest(TestCase):
              DepthFirst(
               Any(restrict='0123456789'), 1, None, 
               rest=Any(restrict='0123456789')), 
-             <function add at 0x7f5b704caea8>, raw=True, args=False), 
-            <function <lambda> at 0x7f5b704caf30>, raw=True, args=False), 
+             <function add at 0x7f72cf212738>, raw=True, args=False), 
+            <function <lambda> at 0x7f72cf212848>, raw=True, args=False), 
            And(
             And(
              Literal('('), 
              Apply(
               DepthFirst(
                Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              <function add at 0x7f5b704cad10>, raw=True, args=False), 
-             Delayed(<loop>)), 
+              <function add at 0x7f72cf2127c0>, raw=True, args=False), 
+             Delayed(matcher=<loop>)), 
             Apply(
              DepthFirst(
               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             <function add at 0x7f5b704ca848>, raw=True, args=False), 
+             <function add at 0x7f72cf212958>, raw=True, args=False), 
             Literal(')'))), 
-          <function <lambda> at 0x7f5b704ca7c0>, raw=True, args=False)), 
+          <function <lambda> at 0x7f72cf2129e0>, raw=True, args=False)), 
         0, None, 
         rest=And(
          Apply(
-          Any(restrict='*/'), <function <lambda> at 0x7f5b704cab78>, raw=True, 
+          Any(restrict='*/'), <function <lambda> at 0x7f72cf2125a0>, raw=True, 
           args=False), 
          Apply(
           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          <function add at 0x7f5b704cac88>, raw=True, args=False), 
+          <function add at 0x7f72cf2128d0>, raw=True, args=False), 
          Apply(
           Or(
            Apply(
@@ -209,32 +209,32 @@ class StrTest(TestCase):
              DepthFirst(
               Any(restrict='0123456789'), 1, None, 
               rest=Any(restrict='0123456789')), 
-             <function add at 0x7f5b704caea8>, raw=True, args=False), 
-            <function <lambda> at 0x7f5b704caf30>, raw=True, args=False), 
+             <function add at 0x7f72cf212738>, raw=True, args=False), 
+            <function <lambda> at 0x7f72cf212848>, raw=True, args=False), 
            And(
             And(
              Literal('('), 
              Apply(
               DepthFirst(
                Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              <function add at 0x7f5b704cad10>, raw=True, args=False), 
-             Delayed(<loop>)), 
+              <function add at 0x7f72cf2127c0>, raw=True, args=False), 
+             Delayed(matcher=<loop>)), 
             Apply(
              DepthFirst(
               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             <function add at 0x7f5b704ca848>, raw=True, args=False), 
+             <function add at 0x7f72cf212958>, raw=True, args=False), 
             Literal(')'))), 
-          <function <lambda> at 0x7f5b704ca7c0>, raw=True, args=False)))), 
-      <function <lambda> at 0x7f5b704ca5a0>, raw=True, 
+          <function <lambda> at 0x7f72cf2129e0>, raw=True, args=False)))), 
+      <function <lambda> at 0x7f72cf212c00>, raw=True, 
       args=False)), 
     0, None, 
     rest=And(
      Apply(
-      Any(restrict='+-'), <function <lambda> at 0x7f5b704ca8d0>, raw=True, 
+      Any(restrict='+-'), <function <lambda> at 0x7f72cf212a68>, raw=True, 
       args=False), 
      Apply(
       DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-      <function add at 0x7f5b704ca6b0>, raw=True, args=False), 
+      <function add at 0x7f72cf212af0>, raw=True, args=False), 
      Apply(
       And(
        Apply(
@@ -244,31 +244,31 @@ class StrTest(TestCase):
            DepthFirst(
             Any(restrict='0123456789'), 1, None, 
             rest=Any(restrict='0123456789')), 
-           <function add at 0x7f5b704caea8>, raw=True, args=False), 
-          <function <lambda> at 0x7f5b704caf30>, raw=True, args=False), 
+           <function add at 0x7f72cf212738>, raw=True, args=False), 
+          <function <lambda> at 0x7f72cf212848>, raw=True, args=False), 
          And(
           And(
            Literal('('), 
            Apply(
             DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            <function add at 0x7f5b704cad10>, raw=True, args=False), 
-           Delayed(<loop>)), 
+            <function add at 0x7f72cf2127c0>, raw=True, args=False), 
+           Delayed(matcher=<loop>)), 
           Apply(
            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           <function add at 0x7f5b704ca848>, raw=True, args=False), 
+           <function add at 0x7f72cf212958>, raw=True, args=False), 
           Literal(')'))), 
-        <function <lambda> at 0x7f5b704ca7c0>, raw=True, args=False), 
+        <function <lambda> at 0x7f72cf2129e0>, raw=True, args=False), 
        Apply(
         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        <function add at 0x7f5b704ca738>, raw=True, args=False), 
+        <function add at 0x7f72cf212b78>, raw=True, args=False), 
        DepthFirst(
         And(
          Apply(
-          Any(restrict='*/'), <function <lambda> at 0x7f5b704cab78>, raw=True, 
+          Any(restrict='*/'), <function <lambda> at 0x7f72cf2125a0>, raw=True, 
           args=False), 
          Apply(
           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          <function add at 0x7f5b704cac88>, raw=True, args=False), 
+          <function add at 0x7f72cf2128d0>, raw=True, args=False), 
          Apply(
           Or(
            Apply(
@@ -276,30 +276,30 @@ class StrTest(TestCase):
              DepthFirst(
               Any(restrict='0123456789'), 1, None, 
               rest=Any(restrict='0123456789')), 
-             <function add at 0x7f5b704caea8>, raw=True, args=False), 
-            <function <lambda> at 0x7f5b704caf30>, raw=True, args=False), 
+             <function add at 0x7f72cf212738>, raw=True, args=False), 
+            <function <lambda> at 0x7f72cf212848>, raw=True, args=False), 
            And(
             And(
              Literal('('), 
              Apply(
               DepthFirst(
                Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              <function add at 0x7f5b704cad10>, raw=True, args=False), 
-             Delayed(<loop>)), 
+              <function add at 0x7f72cf2127c0>, raw=True, args=False), 
+             Delayed(matcher=<loop>)), 
             Apply(
              DepthFirst(
               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             <function add at 0x7f5b704ca848>, raw=True, args=False), 
+             <function add at 0x7f72cf212958>, raw=True, args=False), 
             Literal(')'))), 
-          <function <lambda> at 0x7f5b704ca7c0>, raw=True, args=False)), 
+          <function <lambda> at 0x7f72cf2129e0>, raw=True, args=False)), 
         0, None, 
         rest=And(
          Apply(
-          Any(restrict='*/'), <function <lambda> at 0x7f5b704cab78>, raw=True, 
+          Any(restrict='*/'), <function <lambda> at 0x7f72cf2125a0>, raw=True, 
           args=False), 
          Apply(
           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          <function add at 0x7f5b704cac88>, raw=True, args=False), 
+          <function add at 0x7f72cf2128d0>, raw=True, args=False), 
          Apply(
           Or(
            Apply(
@@ -307,25 +307,25 @@ class StrTest(TestCase):
              DepthFirst(
               Any(restrict='0123456789'), 1, None, 
               rest=Any(restrict='0123456789')), 
-             <function add at 0x7f5b704caea8>, raw=True, args=False), 
-            <function <lambda> at 0x7f5b704caf30>, raw=True, args=False), 
+             <function add at 0x7f72cf212738>, raw=True, args=False), 
+            <function <lambda> at 0x7f72cf212848>, raw=True, args=False), 
            And(
             And(
              Literal('('), 
              Apply(
               DepthFirst(
                Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              <function add at 0x7f5b704cad10>, raw=True, args=False), 
-             Delayed(<loop>)), 
+              <function add at 0x7f72cf2127c0>, raw=True, args=False), 
+             Delayed(matcher=<loop>)), 
             Apply(
              DepthFirst(
               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             <function add at 0x7f5b704ca848>, raw=True, args=False), 
+             <function add at 0x7f72cf212958>, raw=True, args=False), 
             Literal(')'))), 
-          <function <lambda> at 0x7f5b704ca7c0>, raw=True, args=False)))), 
-      <function <lambda> at 0x7f5b704ca5a0>, raw=True, 
+          <function <lambda> at 0x7f72cf2129e0>, raw=True, args=False)))), 
+      <function <lambda> at 0x7f72cf212c00>, raw=True, 
       args=False)))), 
-  <function <lambda> at 0x7f5b704ca380>, raw=True, args=False))''')
+  <function <lambda> at 0x7f72cf212e20>, raw=True, args=False))''')
         
     def test_simple(self):
         expression  = Delayed()
@@ -334,20 +334,20 @@ class StrTest(TestCase):
 
         description = str(expression)
         self.assert_same(description, r'''Delayed(
- Or(
+ matcher=Or(
   Apply(
    DepthFirst(
     Any(restrict='0123456789'), 1, None, rest=Any(restrict='0123456789')), 
-   <function add at 0x7f551afda738>, raw=True, args=False), 
+   <function add at 0x7f72cf2120d8>, raw=True, args=False), 
   And(
    And(
     Literal('('), 
     Apply(
      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-     <function add at 0x7f551ab4d380>, raw=True, args=False), 
-    Delayed(<loop>)), 
+     <function add at 0x7f72cf2122f8>, raw=True, args=False), 
+    Delayed(matcher=<loop>)), 
    Apply(
     DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-    <function add at 0x7f551ad76d98>, raw=True, args=False), 
+    <function add at 0x7f72cf212270>, raw=True, args=False), 
    Literal(')'))))''')
  

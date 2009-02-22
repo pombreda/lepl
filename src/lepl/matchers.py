@@ -83,6 +83,9 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def string_parser(self):
         return make_parser(self, Stream.from_string, self.__default_config())
     
+    def null_parser(self):
+        return make_parser(self, Stream.null, self.__default_config())
+    
     def parse_file(self, file):
         return self.file_parser()(file)
         
@@ -94,6 +97,9 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         
     def parse_string(self, string):
         return self.string_parser()(string)
+    
+    def parse(self, stream):
+        return self.null_parser()(stream)
     
     
     def file_matcher(self):
@@ -108,6 +114,9 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def string_matcher(self):
         return make_matcher(self, Stream.from_string, self.__default_config())
 
+    def null_matcher(self):
+        return make_matcher(self, Stream.null, self.__default_config())
+
     def match_file(self, file):
         return self.file_matcher()(file)
         
@@ -119,6 +128,9 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         
     def match_string(self, string):
         return self.string_matcher()(string)
+
+    def match(self, stream):
+        return self.null_matcher()(stream)
 
     
     def __default_config(self):
@@ -700,82 +712,22 @@ class Commit(BaseMatcher):
     and the min_queue option is greater than zero.
     '''
     
+    def __init__(self):
+        super(Commit, self).__init__()
+        self.monitor_class = GeneratorManager
+    
     @tagged
     def __call__(self, stream):
-        '''
-        Delete backtracking state and return an empty match.
-        '''
-        try:
-            stream.core.gc.erase()
-            yield([], stream)
-        except AttributeError:
-            print_exc()
-            raise ValueError('Commit requires stream source.')
+        if False:
+            yield
+    
+    def on_push(self, monitor):
+        pass
+    
+    def on_pop(self, monitor):
+        monitor.commit()
     
     
-#class _TraceDecorator(BaseGeneratorDecorator):
-#    '''
-#    Support class for `lepl.match.Trace`.
-#    '''
-#    
-#    def __init__(self, generator, stream, name=None):
-#        super(_TraceDecorator, self).__init__(generator)
-#        self.__stream = stream
-#        self.__on = Empty('+' + (name if name else ''))
-#        self.__off = Empty('-' + (name if name else ''))
-#    
-#    def _before(self):
-#        '''
-#        Called before each match.
-#        '''
-#        try:
-#            self.__stream.core.bb.switch(True)
-#        except:
-#            raise ValueError('Trace requires stream source.')
-#        next(self.__on(self.__stream))
-#        
-#    def _after(self):
-#        '''
-#        Called after each match.
-#        '''
-#        next(self.__off(self.__stream))
-#        try:
-#            self.__stream.core.bb.switch(False)
-#        except:
-#            raise ValueError('Trace requires stream source.')
-#
-#
-#class Trace(BaseMatcher):
-#    '''
-#    Enable trace logging for the sub-matcher.
-#    '''
-#    
-#    def __init__(self, matcher, name=None):
-#        super(Trace, self).__init__()
-#        self._arg(matcher=matcher)
-#        self._karg(name=name)
-#    
-#    @tagged
-#    def __call__(self, stream):
-#        try:
-#            generator = self.matcher(stream)
-#            while True:
-#                try:
-#                    stream.core.bb.switch(True)
-#                except:
-#                    raise ValueError('Trace requires stream source.')
-#                response = (yield generator)
-#                try:
-#                    stream.core.bb.switch(False)
-#                except:
-#                    pass
-#                yield response
-#        except StopIteration:
-#            try:
-#                stream.core.bb.switch(False)
-#            except:
-#                pass
-
 class Trace(BaseMatcher):
     '''
     Enable trace logging for the sub-matcher.

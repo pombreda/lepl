@@ -22,7 +22,6 @@ A stream interface to the input, implemented using singly linked lists.
 
 from io import StringIO
 
-from lepl.core import Core
 from lepl.support import open_stop
 
 
@@ -79,15 +78,21 @@ class Stream():
         '''
         return Stream(Chunk(file, source=gettatr(file, 'name', '<file>'), 
                             conf=conf)) 
+        
+    @staticmethod
+    def null(stream, conf=None):
+        '''
+        Return the underlying data with no modification.
+        '''
+        return stream
     
-    def __init__(self, chunk, offset=0, core=None):
+    def __init__(self, chunk, offset=0):
         '''
         Create a stream, given the appropriate chunk and offset.
         '''
         self.__chunk = chunk
         self.__offset = offset
-        # exposed directly for convenience
-        self.core = chunk.core
+        self.source = chunk.source
         
     def location(self):
         '''
@@ -151,7 +156,7 @@ class Stream():
         return self.__chunk.describe(self.__offset)
     
     def __hash__(self):
-        return hash(self.core) ^ self.depth()
+        return hash(self.source) ^ self.depth()
     
     def __eq__(self, other):
         return isinstance(other, Stream) and \
@@ -178,7 +183,7 @@ class Chunk(object):
         self.__stream = stream
         self.distance = distance
         self.lineno = lineno
-        self.core = core if core else Core(source=source, conf=conf)
+        self.source = source
         
     def read(self, offset=0, start=0, stop=None):
         '''
@@ -215,8 +220,7 @@ class Chunk(object):
         if self.__empty:
             raise StopIteration()
         if not self.__next:
-            self.__next = Chunk(self.__stream, core=self.core, 
-                                lineno=self.lineno + 1,
+            self.__next = Chunk(self.__stream, lineno=self.lineno + 1,
                                 distance=self.distance + len(self.__text))
         return self.__next
     

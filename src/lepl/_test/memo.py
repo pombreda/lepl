@@ -93,7 +93,7 @@ class MemoTest(TestCase):
         for meaning in p('every boy or some girl and helen and john or pat knows '
                          'and respects or loves every boy or some girl and pat or '
                          'john and helen'):
-            print(meaning[0][0])
+#            print(meaning[0][0])
             count += 1
         print(count)
     

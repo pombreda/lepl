@@ -145,7 +145,7 @@ def _syntax_error_args(msg, stream_in, stream_out, core, results):
     Helper function for constructing format dictionary.
     '''
     try:
-        filename = core.source
+        filename = stream_in.source
         (lineno, offset) = stream_in.location()
         offset += 1 # appears to be 1-based?
         line = stream_in.line()

@@ -73,9 +73,13 @@ class GeneratorManager(MonitorInterface):
             self.__add(generator)
             
     def pop(self, generator):
-        reference = self.__known[hash(generator)]
-        reference.alive = False
-        reference.last_known_epoch = self.epoch
+        key = hash(generator)
+        # why is this test needed if objects on the stack are alive?
+        # do they appear more than once perhaps? 
+        if key in self.__known:
+            reference = self.__known[key]
+            reference.alive = False
+            reference.last_known_epoch = self.epoch
             
     def __add(self, generator):
         reference = GeneratorRef(generator, self.epoch, True)
@@ -119,9 +123,22 @@ class GeneratorManager(MonitorInterface):
             heappush(self.__queue, reference)
             # this is currently 1 too small, and zero means unlimited, so
             # doubling should always be sufficient.
-            self.queue_len = self.queue_len * 2
+            self.__queue_len = self.__queue_len * 2
             self._warn('Queue is too small - extending to {0}'
-                       .format(self.queue_len))
+                       .format(self.__queue_len))
+            
+    def commit(self):
+        '''
+        Delete all non-active generators.
+        '''
+        if self.__queue:
+            for retry in range(len(self.__queue)):
+                reference = heappop(self.__queue)
+                if reference.active():
+                    reference.update(self.epoch) # forces epoch update
+                    heappush(self.__queue, reference)
+                else:
+                    reference.close()
             
 
 class GeneratorRef():

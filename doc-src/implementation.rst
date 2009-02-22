@@ -1,0 +1,142 @@
+
+.. _implementation:
+
+Implementation
+==============
+
+LEPL is, in many ways, a very traditional recursive descent parser.  This
+chapter does not describe the basic ideas behind recursive descent parsing
+[*]_.  Instead I will focus on the details that are unique to this particular
+implementation.
+
+.. [*] There is a broad--bush description of how matchers work in
+       :ref:`implementation_details`.
+   
+
+.. _trampolining:
+
+Trampolining
+------------
+
+A typical recursive descent parser uses at least one stack frame for each
+recursive call to a matcher.  Unfortunately, the default Python stack is
+rather small and there is no optimisation of tail--recursive calls.  So the
+degree of recursion is limited.  This problem is exacerbated by a "clean",
+orthogonal design that constructs matchers in a hierarchical manner
+(eg. `Word() <api/redirect.html#lepl.Word>`_ calls, `Any()
+<api/redirect.html#lepl.Any>`_ to handle character matching; memoisation uses
+nested matchers to manage caches).
+
+Trampolining removes this limitation by moving evaluation to a separate
+function, which manages the evaluation sequence separately from the program
+stack.
+
+A trampolining implementation would typically use a continuation passing
+style, but Python supports co--routines (via extended generators) which
+automate the encapsulation of a local environment.  Trampolining then becomes
+a simple loop that repeatedly evaluates co-routines stored in a stack
+allocated on the heap.
+
+The conversion from nested functions to trampolining with generators involves
+little more than replacing evaluation with ``yield`` (which presents the
+target to the trampoline function for evaluation).
+
+Trampolining is most visible in the source in two areas:
+
+#. The `trampoline() <api/redirect.html#lepl.parser.trampoline>`_ function is
+   the main evaluation loop.
+
+#. Each matcher in the `matchers <api/redirect.html#lepl.matchers>`_ package
+   is modified to ``yield`` sub-matchers rather than evaluating them directly.
+
+The second area above, individual matchers, nearly always follows the same
+pattern.  Code that originally looked like::
+
+  def __call__(self, stream1):
+    (result, stream2) = self.matcher(stream1)
+    # do something here (eg process results)
+    yield (result, stream2)
+
+where the a submatcher (``self.matcher``) is invoked and the result modified,
+becomes::
+
+  def __call__(self, stream1):
+    (result, stream2) = yield self.matcher(stream1)
+    # do something here (eg process results)
+    yield (result, stream2)
+    
+The first ``yield`` returns the generator (constructed by ``matcher(stream)``)
+to the trampoline.  This is then evaluated (which may mean evaluating other
+generators, yielded by the generator we returned), and the final result
+returned from the trampoline via ``generator.send(result, stream2)``.
+
+It is clear, then, that the impact on existing code was fairly small.
+
+
+Memoisation
+-----------
+
+LEPL 2.0 supports two approaches to memoisation.
+
+The simplest memoizer is `RMemo <api/redirect.html#lepl.memo.RMemo>`_ which is
+a simple cache based on the stream supplied.  I believe this is equivalent to
+the approach described by `Norvig 1991
+<http://acl.ldc.upenn.edu/J/J91/J91-1004.pdf>`_ (I may be wrong, because it
+seems odd that something so simple is so famous, but perhaps life was simpler
+back then).
+
+For left--recursive grammars, however, things are more complicated.  In such
+cases a matcher may be called with the same stream, but within different
+contexts (eg. consider ``a = Optional(a) & b``, where each repeated call to
+``a`` is from an additional "step down").
+
+.. note::
+
+   Without memoisation left recursion will cause an infinite loop and crash the
+   program.
+
+`Frost and Hafiz 2006 <http://www.cs.uwindsor.ca/~hafiz/p46-frost.pdf>`_
+observed that there is a natural limit to the number of times left recursion
+can be meaningful, which is the length of the remaining input (since you have
+to consumer `something` each time round).  They therefore recommended
+extending the simple cache with a counter that blocks recursion past that
+depth.
+
+This approach is implemented in `LMemo <api/redirect.html#lepl.memo.LMemo>`_
+which makes LEPL robust to handle left--recursive grammars.
+
+.. warning::
+
+   The current implementation is provisional.  There is at least one known
+   issue that makes the asymptotic performance significantly worse than
+   expected (evaluating the length of remaining input is expensive for
+   streams).  This is one of the performance--related issues that will be
+   addressed in LEPL 2.1.
+
+
+Parser Rewriting
+----------------
+
+A parser is constructed from a set of matchers.  The matchers form a directed
+(possibly cyclic) graph.  By storing the constructor arguements for the
+matcher objects (and knowing their types, which are constuctors in Python) we
+can reconstruct (and, more generally, rewrite) the graph.
+
+The base classes for the graph are in the `graph
+<api/redirect.html#lepl.graph>`_ package (the `node
+<api/redirect.html#lepl.node>`_ package, used for ASTs, builds on these
+classes so many of the tools used internally within LEPL may also be useful to
+process ASTs).  Matcher graph rewriting occurse during parser construction
+(see the `parser <api/redirect.html#lepl.parser>`_ package).
+
+Parser rewriting allows memoisation to be transparently added to all nodes.
+
+There is also support for flattening nested lists of `Or()
+<api/redirect.html#lepl.Or>`_ and `And() <api/redirect.html#lepl.And>`_
+matchers (typically the result of using ``|`` and ``&`` operators, which are
+applied pair--wise; this is really just proof of concept --- it's not
+particularly useful).
+
+Tree traversal (without rewriting) is also useful; it is used to generate
+various textual representations of the matchers (and the pretty ASCII trees
+for ASTs).

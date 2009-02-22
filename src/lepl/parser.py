@@ -3,7 +3,6 @@ from logging import getLogger
 from traceback import print_exc, format_exc
 from types import MethodType, GeneratorType
 
-from lepl.core import CoreConfiguration
 from lepl.graph import order, FORWARD, preorder, clone, Clone, post_clone
 from lepl.monitor import MultipleMonitors
 from lepl.operators import Matcher
@@ -50,21 +49,6 @@ class Configuration(object):
             self.monitor = MultipleMonitors(monitors)
             
         
-#DECORATORS = 'decorators'
-#DEFAULT_DECORATORS = [managed]
-#
-#def decorate_generators(matcher, decorator):
-#    for m in order(matcher, FORWARD, type_=Matcher):
-#        m.match = MethodType(decorator(m.match.__func__), m)
-#    return matcher
-#
-#def decorate(matcher, options):
-#    (options, decorators) = opt_karg(options, DECORATORS, DEFAULT_DECORATORS)
-#    for decorator in decorators:
-#        matcher = decorate_generators(matcher, decorator)
-#    return (matcher, options)
-
-
 def make_flatten(table):
     def flatten(node, old_args, kargs):
         if type(node) in table:

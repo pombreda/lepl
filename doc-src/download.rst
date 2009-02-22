@@ -1,14 +1,14 @@
 
 .. _install:
 
-
 Download And Installation
 =========================
 
 .. warning::
 
-  This is the very first release.  So there may be a bug or two.
-  Please let me know at andrew@acooke.org.
+  This release is a new major version, with significant changes to the
+  implementation.  So there may be a bug or two.  Please let me know at
+  andrew@acooke.org.
 
 
 LEPL is only available for Python 3 and 2.6.  See :ref:`versions` for more
@@ -19,7 +19,7 @@ first.  If you want a local copy of the manual you should also read the
 :ref:`localdocs` section.
 
 
-Install with Setuptools / easy_install (Python 2.6)
+Install With Setuptools / easy_install (Python 2.6)
 ---------------------------------------------------
 
 This currently only works for Python 2.6
@@ -33,7 +33,7 @@ That's it.  There is no need to download anything beforehand;
 ``easy_install`` will do all the work.
 
 
-Install with Distutils / setup.py (Python 3 and 2.6)
+Install With Distutils / setup.py (Python 3 and 2.6)
 ----------------------------------------------------
 
 Download and unpack a source package (see :ref:`download`) then run::

@@ -22,42 +22,37 @@ is a major step towards that goal.
 Features
 --------
 
-* Parsers are Python code, defined in Python itself.  No
-  separate grammar is necessary.
+* **Parsers are Python code**, defined in Python itself.  No separate
+  grammar is necessary.
 
-* Friendly syntax using Python's operators (:ref:`example`).
+* **Friendly syntax** using Python's operators (:ref:`example`).
 
-* Built-in support (a generic ``Node`` class) for
-  constructing ASTs.  Improved support for the visitor
-  pattern and tree re--writing.
+* Built-in **AST support** (a generic ``Node`` class).  Improved
+  support for the visitor pattern and tree re--writing.
 
-* Well documented and easy to extend.
+* **Well documented** and easy to extend.
 
-* Unlimited recursion depth.  The underlying algorithm is
-  recursive descent, which can exhaust the stack for complex
-  grammars and large data sets.  LEPL avoids this problem by
-  using Python generators as coroutines (aka
-  "trampolining").
+* **Unlimited recursion depth**.  The underlying algorithm is
+  recursive descent, which can exhaust the stack for complex grammars
+  and large data sets.  LEPL avoids this problem by using Python
+  generators as coroutines (aka "trampolining").
 
-* Support for ambiguous grammars (complete backtracking).  A
-  parser can return more than one result (aka "parse
-  forests").
+* Support for ambiguous grammars (**complete backtracking**).  A
+  parser can return more than one result (aka **"parse forests"**).
 
-* Packrat parsing.  Parsers can be made much more efficient
-  with automatic memoisation.
+* **Packrat parsing**.  Parsers can be made much more efficient with
+  automatic memoisation.
 
-* Parser rewriting.  The parser can itself be manipulated by
-  Python code.  This gives unlimited opportuntities for
-  future expansion and optimisation.
+* **Parser rewriting**.  The parser can itself be manipulated by
+  Python code.  This gives unlimited opportuntities for future
+  expansion and optimisation.
 
-* Left recursive grammars.  Memoisation can detect and
-  control left--recursive grammars.  Together with LEPL's
-  support for ambiguity this means that "any" grammar can be
-  supported. [1]_
+* **Left recursive grammars**.  Memoisation can detect and control
+  left--recursive grammars.  Together with LEPL's support for
+  ambiguity this means that "any" grammar can be supported. [1]_
 
-* Pluggable trace and resource management, including
-  "deepest match" diagnostics and the ability to limit
-  backtracking. [1]_
+* Pluggable trace and resource management, including **"deepest match"
+  diagnostics** and the ability to limit backtracking. [1]_
 
 LEPL's *weakest* point is probably performance.  This has improved
 with memoisation, but it is still more suited for exploratory and
@@ -159,6 +154,7 @@ Contents
    debugging
    style
    download
+   implementation
    closing
 
 
