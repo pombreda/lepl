@@ -1089,7 +1089,7 @@ def SignedFloat(decimal='.'):
     
 def SignedEFloat(decimal='.', exponent='eE'):
     '''
-    Match a `lepl.match.SignedFloat` followed by an optional exponent 
+    Match a `lepl.matchers.SignedFloat` followed by an optional exponent 
     (e+02 etc).
     '''
     return SignedFloat + (Any(exponent) + SignedInteger())[0:1]
