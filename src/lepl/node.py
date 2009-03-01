@@ -48,7 +48,7 @@ class Node(SimpleGraphNode, LogMixin):
             else:
                 try:
                     (name, value) = arg
-                    self._add_attribute(name, value)
+                    self.__add_attribute(name, value)
                 except:
                     pass
             self.__children.append(arg)

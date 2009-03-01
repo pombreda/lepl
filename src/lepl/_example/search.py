@@ -9,7 +9,7 @@ class SearchExample(Example):
         
         any = Any()[:,...]
         split = any & any & Eos()
-        match = split.match_string()
+        match = split.string_matcher()
 
         def example1():
             return [pair[0] for pair in match('****')]
@@ -21,7 +21,7 @@ class SearchExample(Example):
         
         any = Any()[::'b',...]
         split = any & any & Eos()
-        match = split.match_string()
+        match = split.string_matcher()
 
         def example1():
             return [pair for (pair, stream) in match('****')]

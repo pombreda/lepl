@@ -48,8 +48,7 @@ that is not currently in use.  Inactive generators may have been discarded
 (for example, if they have returned all possible matches), or they may be
 stored in some way for later use (for example, to implement backtracking).
 
-Generators also have a *last--used* date.  More exactly, they are associated
-with the :ref:`epoch` when they were last used.
+Generators also have a *last--used* date.
 
 Given all this, it is possible to modify the generators and so change the
 behaviour of the parser.  In particular, it is possible to close non--active

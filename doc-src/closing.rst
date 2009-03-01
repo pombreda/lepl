@@ -18,7 +18,7 @@ all the alternative parses for a given input::
 
   >>> any = Any()[:,...]
   >>> split = any & any & Eos()
-  >>> match = split.match_string()
+  >>> match = split.string_matcher()
 
   >>> [pair[0] for pair in match('****')]
   [['****'], ['***', '*'], ['**', '**'], ['*', '***'], ['****']]
@@ -32,7 +32,7 @@ increment of ``'b'`` (or `BREADTH_FIRST
 
   >>> any = Any()[::'b',...]
   >>> split = any & any & Eos()
-  >>> match = split.match_string()
+  >>> match = split.string_matcher()
 
   >>> [pair for (pair, stream) in match('****')]
   [['****'], ['*', '***'], ['**', '**'], ['***', '*'], ['****']]
