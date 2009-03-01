@@ -9,7 +9,7 @@ class Example(TestCase):
         for (example, target) in examples:
             try:
                 result = str(example())
-            except Exception:
-                result = '\n'.join(format_exception_only(None, None))
-            assert target == result, result
+            except Exception as e:
+                result = ''.join(format_exception_only(type(e), e))
+            assert target == result, '"' + result + '"'
             
