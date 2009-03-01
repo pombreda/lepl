@@ -184,7 +184,7 @@ __all__ = [
         'RecordDeepest',
         'TraceResults']
 
-__version__ = '1.0'
+__version__ = '2.0b1'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

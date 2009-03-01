@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# IMPORTANT - update version in setup.py and doc-src/conf.py
+
 # this generates a new release, but does not register anything with pypi
 # or upload files to google code
 
@@ -13,6 +15,12 @@ sed -i -e "s/release = .*/release = '$RELEASE'/" doc-src/conf.py
 sed -i -e "s/version = .*/version = '$VERSION'/" doc-src/conf.py
 
 sed -i -e "s/__version__ = .*/__version__ = '$RELEASE'/" src/lepl/__init__.py
+
+if [ -e "dist/LEPL-$RELEASE-doc.tar.gz" ]
+then
+  echo "update version in setup.py and doc-src/conf.py"
+  exit
+fi
 
 rm MANIFEST.in
 find . -exec echo "exclude {}" \; | sed -e "s/\.\///" >> MANIFEST.in
@@ -37,4 +45,13 @@ tar cvfz "dist/LEPL-$RELEASE-doc.tar.gz" "LEPL-$RELEASE"
 zip -r "dist/LEPL-$RELEASE-doc.zip" "LEPL-$RELEASE" -x \*.tgz
 rm -fr "LEPL-$RELEASE"
 
-rsync -rv --exclude=".svn" --delete doc/ ~/projects/personal/www/lepl
+#pushd ~/projects/personal/www/lepl
+#svn update
+#svn remove --force *
+#svn commit -m "lepl"
+#popd
+#rsync -rv --exclude=".svn" --delete doc/ ~/projects/personal/www/lepl
+#pushd ~/projects/personal/www/lepl
+#svn add *
+#svn commit -m "lepl"
+#popd

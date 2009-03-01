@@ -25,7 +25,7 @@ Simple declarations produce a single list of tokens (ignoring
   >>> line.parse_string('1 + 2 * (3 + 4 - 5)')
   ['1', ' ', '', '+', ' ', '2', ' ', '*', ' ', '(', '', '3', ' ', '', '+', ' ', '4', ' ', '', '-', ' ', '5', '', '', ')', '']
 
-.. index:: DropEmpty()
+.. index:: Drop()
 .. note::
 
   The empty strings are a result of the separator and could be removed by
