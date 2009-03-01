@@ -1,6 +1,6 @@
 
-from lepl._example.support import Example
 from lepl import *
+from lepl._example.support import Example
 
 
 class ResourceExample(Example):

@@ -1,54 +1,62 @@
 
 from lepl import *
+from lepl._example.support import Example
 
-name    = Word()              > 'name'
-phone   = Integer()           > 'phone'
-matcher = name / ',' / phone  > make_dict
 
-parser = matcher.string_parser()
-print(parser('andrew, 3333253'))
-#print(parser.matcher)
+class PhoneExample(Example):
+    
+    def test_basic_parser(self):
 
-print(next(Word().match('hello world')))
-print(next(Integer()('123 four five')))
+        name    = Word()              > 'name'
+        phone   = Integer()           > 'phone'
+        matcher = name / ',' / phone  > make_dict
+        
+        parser = matcher.string_parser()
 
-print(next(And(Word(), Space(), Integer()).match('hello 123')))
-print(next( (Word() & Space() & Integer()).match('hello 123')) )
-print(next( (Word() / Integer()).match('hello 123')) )
-print((Word() / Integer()).parse('hello 123'))
+        self.examples([(lambda: parser('andrew, 3333253'),
+                        "[{'phone': '3333253', 'name': 'andrew'}]"),
+                       (lambda: matcher.parse_string('andrew, 3333253')[0],
+                        "{'phone': '3333253', 'name': 'andrew'}"),
+                       (lambda: next( (name / ',' / phone).match('andrew, 3333253') ),
+                        "([('name', 'andrew'), ',', ' ', ('phone', '3333253')], '')")])
 
-print('----')
-print(matcher.parse('andrew, 3333253')[0])
+    def test_components(self):
+        
+        self.examples([(lambda: next( (Word() > 'name').match('andrew') ),
+                        "([('name', 'andrew')], '')"),
+                       (lambda: next( (Integer() > 'phone').match('3333253') ),
+                        "([('phone', '3333253')], '')"),
+                       (lambda: dict([('name', 'andrew'), ('phone', '3333253')]),
+                        "{'phone': '3333253', 'name': 'andrew'}")])
 
-print(next( (Word() > 'name').match('andrew') ))
-print(next( (Integer() > 'phone').match('3333253') ))
-print(dict([('name', 'andrew'), ('phone', '3333253')]))
-print(next( (name / ',' / phone)('andrew, 3333253') ))
-
-print('----')
-
-spaces  = Space()[0:]
-name    = Word()              > 'name'
-phone   = Integer()           > 'phone'
-line    = name / ',' / phone  > make_dict
-newline = spaces & Newline() & spaces
-matcher = line[0:,~newline]
-parsed = matcher.parse('andrew, 3333253\n bob, 12345')
-print(parsed)
-
-def combine(results):
-    all = {}
-    for result in results:
-        all[result['name']] = result['phone']
-    return all
-
-spaces  = Space()[0:]
-name    = Word()              > 'name'
-phone   = Integer()           > 'phone'
-line    = name / ',' / phone  > make_dict
-newline = spaces & Newline() & spaces
-matcher = line[0:,~newline]   > combine
-parsed = matcher.parse('andrew, 3333253\n bob, 12345')
-print(parsed)
+    def test_repetition(self):
+        
+        spaces  = Space()[0:]
+        name    = Word()              > 'name'
+        phone   = Integer()           > 'phone'
+        line    = name / ',' / phone  > make_dict
+        newline = spaces & Newline() & spaces
+        matcher = line[0:,~newline]
+        
+        self.examples([(lambda: matcher.parse('andrew, 3333253\n bob, 12345'),
+                        "[{'phone': '3333253', 'name': 'andrew'}, {'phone': '12345', 'name': 'bob'}]")])
+        
+    def test_combine(self):
+        
+        def combine(results):
+            all = {}
+            for result in results:
+                all[result['name']] = result['phone']
+            return all
+        
+        spaces  = Space()[0:]
+        name    = Word()              > 'name'
+        phone   = Integer()           > 'phone'
+        line    = name / ',' / phone  > make_dict
+        newline = spaces & Newline() & spaces
+        matcher = line[0:,~newline]   > combine
+        
+        self.examples([(lambda: matcher.parse('andrew, 3333253\n bob, 12345'),
+                        "[{'bob': '12345', 'andrew': '3333253'}]")])
 
     

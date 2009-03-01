@@ -668,10 +668,10 @@ class OperatorMixin(object):
             if is_match != isinstance(other, Matcher):
                 if is_match:
                     msg = 'The operator {0} for {1} was applied to something ' \
-                        'that is not a matcher ({2}).'
+                        'that is not a matcher ({2!r}).'
                 else:
                     msg = 'The operator {0} for {1} was applied to a matcher ' \
-                        '({2}).'
+                        '({2!r}).'
                 msg += ' Check syntax and parentheses.'
                 raise SyntaxError(msg.format(name, self.__class__.__name__, 
                                              other))

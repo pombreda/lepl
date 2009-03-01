@@ -21,14 +21,6 @@ will give the result "hello" when that text is at the start of a stream::
   >>> Literal('hello').parse_string('hello world')
   ['hello']
 
-Or explicitly using the generator and a simple string as a stream::
-
-  >>> next(Literal('hello')('hello world'))
-  (['hello'], ' world')
-
-(The second form above shows how matchers are used internally.  They return
-the result and a new stream, which has "moved past" the matched data.)
-
 In many cases it is not necessary to use `Literal()
 <api/redirect.html#lepl.matchers.Literal>`_ explicitly.  Most matchers, when
 they receive a string as a constructor argument, will automatically create a
@@ -85,17 +77,21 @@ The first match found is the one returned::
   >>> Or(Any('h'), Any()[3]).parse_string('hello world')
   ['h']
 
-But when the generator is used directly, subsequent calls return the other
-possibilities::
+But with the "match" rather than the "parse" methods, subsequent calls return
+the other possibilities::
 
-  >>> generator = Or(Any('h'), Any()[3])('hello world')
-  >>> next(generator)
+  >>> matcher = Or(Any('h'), Any()[3]).match('hello world')
+  >>> next(matcher)
   (['h'], 'ello world')
-  >>> next(generator)
+  >>> next(matcher)
   (['h', 'e', 'l'], 'lo world')
 
+This shows how `Or() <api/redirect.html#lepl.matchers.Or>`_ --- backtracking
+may call the matcher times before a result is found that "fits" with the rest
+of the grammar.
 
-.. index:: Repeat(), []
+
+.. index:: Repeat(), [], backtracking, breadth--first, depth--first
 
 Repeat ([...])
 --------------
@@ -118,31 +114,31 @@ returned::
   >>> Repeat(Any(), 3).parse_string('12')
   None
 
-When used directly as a generator different numbers of matches are available on
-subsequent calls (backtracking)::
+When used as with the "match" methods, different numbers of matches are
+available on subsequent calls (backtracking)::
 
-  >>> generator = Repeat(Any(), 3)('12345')
-  >>> next(generator)
+  >>> matcher = Repeat(Any(), 3).match('12345')
+  >>> next(matcher)
   (['1', '2', '3', '4', '5'], '')
-  >>> next(generator)
+  >>> next(matcher)
   (['1', '2', '3', '4'], '5')
-  >>> next(generator)
+  >>> next(matcher)
   (['1', '2', '3'], '45')
-  >>> next(generator)
+  >>> next(matcher)
   StopIteration
 
 By default a depth--first search is used (giving the longest match first).
-Specifying an increment of ``'b'`` gives breadth--first search (shortest
-first)::
+Specifying an third argument (the increment when used with ``[]`` syntax) of
+``'b'`` gives breadth--first search (shortest first)::
 
-  >>> generator = Repeat(Any(), 3, None, 'b')('12345')
-  >>> next(generator)
+  >>> matcher = Repeat(Any(), 3, None, 'b').match('12345')
+  >>> next(matcher)
   (['1', '2', '3'], '45')
-  >>> next(generator)
+  >>> next(matcher)
   (['1', '2', '3', '4'], '5')
-  >>> next(generator)
+  >>> next(matcher)
   (['1', '2', '3', '4', '5'], '')
-  >>> next(generator)
+  >>> next(matcher)
   StopIteration
 
 
@@ -156,7 +152,9 @@ Lookahead
 whether another matcher would succeed, but returns the original stream with an
 empty result list.
 
-  >>> Lookahead(Literal('hello')).parse_string('hello world')
+  >>> next(Lookahead(Literal('hello')).match('hello world'))
+  ([], 'hello world')
+  >>> Lookahead(Literal('hello')).parse('hello world')
   []
 
 It fails if the match would not be possible (specifying a string as matcher is

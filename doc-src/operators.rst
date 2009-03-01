@@ -32,7 +32,7 @@ defined, via ``__or__`` and ``__ror__``).
 Another example, where precedence is not as we might hope::
 
   >>> name = ('Mr' // Word() > 'man' | 'Ms' // Word() > 'woman')
-  SyntaxError: The operator > for And was applied to a matcher (<lepl.matchers.Or object at 0x7fbedc14a290>). Check syntax and parentheses.
+  SyntaxError: The operator > for And was applied to a matcher (<Or>). Check syntax and parentheses.
 
 because the expression is parsed by Python as::
 

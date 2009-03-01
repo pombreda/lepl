@@ -113,12 +113,12 @@ with `And() <api/redirect.html#lepl.And>`_::
 
 which can also be written as::
 
-  >>> next( (Word() & Space() & Integer()).match('hello 123')) )
+  >>> next( (Word() & Space() & Integer()).match('hello 123') )
   (['hello', ' ', '123'], '')
 
 or even::
 
-  >>> next( (Word() / Integer()).match('hello 123')) )
+  >>> next( (Word() / Integer()).match('hello 123') )
   (['hello', ' ', '123'], '')
 
 because ``&`` is shorthand for `And() <api/redirect.html#lepl.And>`_, while
@@ -177,7 +177,7 @@ named pairs::
 
 And the results from ``name / ',' / phone`` include named pairs::
 
-  >>> next( (name / ',' / phone)('andrew, 3333253') )
+  >>> next( (name / ',' / phone).match('andrew, 3333253') )
   ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], '')
 
 Now we know that ``>`` passes results to a function, so it looks like

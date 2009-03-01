@@ -1,6 +1,7 @@
 
 from __future__ import with_statement
 from logging import basicConfig, DEBUG, INFO
+
 from lepl import *
 from lepl._example.support import Example
 
