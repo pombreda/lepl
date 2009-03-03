@@ -202,5 +202,10 @@ class PerCallCache(LogMixin):
         recursive calls.
         '''
         return self.__returned
-            
+    
+    def __nonzero__(self):
+        '''
+        For Python 2.6: may it burn in hell, hell I say!
+        '''
+        return self.__bool__()
     
