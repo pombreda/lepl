@@ -127,7 +127,7 @@ class PerStreamCache(LogMixin):
             try:
                 return not stream.check_len(count)
             except AttributeError:
-                return count >= len(stream) 
+                return count > len(stream) 
         
     @tagged
     def __call__(self, stream):

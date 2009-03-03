@@ -5,6 +5,7 @@ from lepl._example.support import Example
 
 class PhoneExample(Example):
     
+    
     def test_basic_parser(self):
 
         name    = Word()              > 'name'
@@ -20,6 +21,7 @@ class PhoneExample(Example):
                        (lambda: next( (name / ',' / phone).match('andrew, 3333253') ),
                         "([('name', 'andrew'), ',', ' ', ('phone', '3333253')], '')")])
 
+
     def test_components(self):
         
         self.examples([(lambda: next( (Word() > 'name').match('andrew') ),
@@ -28,6 +30,7 @@ class PhoneExample(Example):
                         "([('phone', '3333253')], '')"),
                        (lambda: dict([('name', 'andrew'), ('phone', '3333253')]),
                         "{'phone': '3333253', 'name': 'andrew'}")])
+
 
     def test_repetition(self):
         
@@ -40,6 +43,7 @@ class PhoneExample(Example):
         
         self.examples([(lambda: matcher.parse('andrew, 3333253\n bob, 12345'),
                         "[{'phone': '3333253', 'name': 'andrew'}, {'phone': '12345', 'name': 'bob'}]")])
+        
         
     def test_combine(self):
         

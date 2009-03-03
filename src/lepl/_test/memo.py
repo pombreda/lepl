@@ -28,7 +28,7 @@ class MemoTest(TestCase):
         assert results[1][0] == ['a'], results[1][0]
         
     
-    def test_left1(self):
+    def test_left1a(self):
         
         basicConfig(level=DEBUG)
         
@@ -36,8 +36,23 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += Optional(seq) & letter
         
-        p = string_matcher(seq, 
-                Configuration(memoizers=[LMemo], monitors=[TraceResults(True)]))
+        p = seq.null_matcher(Configuration(memoizers=[LMemo], monitors=[TraceResults(True)]))
+        results = list(p('ab'))
+        print(results)
+        assert len(results) == 2, len(results)
+        assert results[0][0] == ['a', 'b'], results[0][0]
+        assert results[1][0] == ['a'], results[1][0]
+        
+        
+    def test_left1b(self):
+        
+        basicConfig(level=DEBUG)
+        
+        seq    = Delayed()
+        letter = Any()
+        seq   += Optional(seq) & letter
+        
+        p = seq.string_matcher(Configuration(memoizers=[LMemo], monitors=[TraceResults(True)]))
         results = list(p('ab'))
         print(results)
         assert len(results) == 2, len(results)
