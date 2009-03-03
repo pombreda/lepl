@@ -149,54 +149,59 @@ def trampoline(main, monitor=None):
     The main parser loop.  Evaluates matchers as coroutines. 
     '''
     stack = []
-    value = main
-    exception = False
-    epoch = 0
-    log = getLogger('lepl.parser.trampoline')
-    last_exc = None
-    while True:
-        epoch += 1
-        try:
-            if monitor: monitor.next_iteration(epoch, value, exception, stack)
-            if type(value) is GeneratorWrapper:
-                if monitor: monitor.push(value)
-                stack.append(value)
-                if monitor: monitor.before_next(value)
-                value = next(value)
-                if monitor: monitor.after_next(value)
-            else:
-                pop = stack.pop()
-                if monitor: monitor.pop(pop)
-                if stack:
-                    if exception:
-                        exception = False
-                        if monitor: monitor.before_throw(stack[-1], value)
-                        value = stack[-1].throw(value)
-                        if monitor: monitor.after_throw(value)
-                    else:
-                        if monitor: monitor.before_send(stack[-1], value)
-                        value = stack[-1].send(value)
-                        if monitor: monitor.after_send(value)
+    try:
+        value = main
+        exception = False
+        epoch = 0
+        log = getLogger('lepl.parser.trampoline')
+        last_exc = None
+        while True:
+            epoch += 1
+            try:
+                if monitor: monitor.next_iteration(epoch, value, exception, stack)
+                if type(value) is GeneratorWrapper:
+                    if monitor: monitor.push(value)
+                    stack.append(value)
+                    if monitor: monitor.before_next(value)
+                    value = next(value)
+                    if monitor: monitor.after_next(value)
                 else:
-                    if exception:
-                        if monitor: monitor.raise_(value)
-                        raise value
+                    pop = stack.pop()
+                    if monitor: monitor.pop(pop)
+                    if stack:
+                        if exception:
+                            exception = False
+                            if monitor: monitor.before_throw(stack[-1], value)
+                            value = stack[-1].throw(value)
+                            if monitor: monitor.after_throw(value)
+                        else:
+                            if monitor: monitor.before_send(stack[-1], value)
+                            value = stack[-1].send(value)
+                            if monitor: monitor.after_send(value)
                     else:
-                        if monitor: monitor.yield_(value)
-                        yield value
-                    value = main
-        except Exception as e:
-            if exception: # raising to caller
-                raise
-            else:
-                value = e
-                exception = True
-                if monitor: monitor.exception(value)
-                if type(value) is not StopIteration and value != last_exc:
-                    last_exc = value
-                    log.warn(format_exc())
-                    for generator in stack:
-                        log.warn('Stack: ' + generator.matcher.describe)
+                        if exception:
+                            if monitor: monitor.raise_(value)
+                            raise value
+                        else:
+                            if monitor: monitor.yield_(value)
+                            yield value
+                        value = main
+            except Exception as e:
+                if exception: # raising to caller
+                    raise
+                else:
+                    value = e
+                    exception = True
+                    if monitor: monitor.exception(value)
+                    if type(value) is not StopIteration and value != last_exc:
+                        last_exc = value
+                        log.warn(format_exc())
+                        for generator in stack:
+                            log.warn('Stack: ' + generator.matcher.describe)
+    finally:
+        while monitor and stack:
+            monitor.pop(stack.pop())
+                    
                 
     
 def prepare(matcher, stream, conf):

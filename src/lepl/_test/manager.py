@@ -22,12 +22,11 @@ class LimitedDepthTest(LogMixin, TestCase):
         is another matter altogether...
         '''
         basicConfig(level=DEBUG)
-        # i'm worried something odd is happening here - this changed
-        # at some point, and i don't understand if the old behaviour was
-        # wrong, or whether the new behaviour isn't right.
-        self.assert_range(3, 4, 'g', [15,1,1,1,6,6,15,15], 4)
-        self.assert_range(3, 4, 'b', [15,0,1,1,5,5,5,5,15], 4)
-        self.assert_range(3, 4, 'd', [15,1,1,1,6,10,10,10,15], 4)
+        # there was a major bug here that made this test vary often
+        # it should now be fixed
+        self.assert_range(3, 4, 'g', [15,1,1,1,3,3,6,6,6,6,10,10,10,10,15], 4)
+        self.assert_range(3, 4, 'b', [15,0,1,1,1,1,5,5,5,5,5,5,5,5,5,5,5,15], 4)
+        self.assert_range(3, 4, 'd', [15,1,1,3,3,3,6,6,6,10,10,10,15], 4)
         
     def assert_range(self, n_match, n_char, direcn, results, multiplier):
         text = '*' * n_char
@@ -44,7 +43,7 @@ class LimitedDepthTest(LogMixin, TestCase):
         assert found == count, (queue_len, index, found, count)
 
     def test_single(self):
-#        basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         matcher = string_matcher(Literal('*')[:,...][3],
                                  Configuration(monitors=[GeneratorManager(queue_len=5)]))('*' * 4)
         results = list(matcher)
