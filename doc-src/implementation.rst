@@ -87,7 +87,7 @@ equivalent to the approach described by `Norvig 1991
 seems odd that something so simple is so famous, but perhaps life was simpler
 back then).
 
-During the aplication of left--recursive grammars a matcher may be called with
+During the application of left--recursive grammars a matcher may be called with
 the same stream, but within different contexts (eg. consider ``a = Optional(a)
 & b``, where each repeated call to ``a`` is from an additional "step down").
 

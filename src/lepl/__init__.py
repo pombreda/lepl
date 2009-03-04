@@ -193,7 +193,7 @@ __all__ = [
         'RMemo',
         'LMemo']
 
-__version__ = '2.0b1'
+__version__ = '2.0b2'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

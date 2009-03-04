@@ -19,7 +19,7 @@ Install With Setuptools / easy_install (Python 2.6)
 
   You are reading the documentation for LEPL |release|, but because this is
   still in beta easy_install will install the stable 1.0 version.  To install
-  the new version you must download and install the approrpiate package
+  the new version you must download and install the appropriate package
   following the instructions in :ref:`manual_install`.
 
 This currently only works for Python 2.6
@@ -134,10 +134,12 @@ Date        Version  Description
 2009-02-04  1.0      No significant changes from rc1.
 ----------  -------  -----------
 2009-02-23  2.0b1    New trampolining core; matcher graph rewriting; memoisation.
+----------  -------  -----------
+2009-03-04  2.0b2    Fixed major bug in LMemo for 2.6; general tidying.
 ==========  =======  ===========
 
 A final 2.0 version will be released early March.  The next release will be a
-minor increment (2.1), focussing on efficiency and reliability (lots of
+minor increment (2.1), focusing on efficiency and reliability (lots of
 profiling and testing).  Hopefully the new core (particularly the matcher
 graph rewriting) is flexible enough to avoid another major release for some
 time.

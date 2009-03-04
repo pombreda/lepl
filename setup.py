@@ -4,7 +4,7 @@ except:
     from distutils.core import setup
 
 setup(name='LEPL',
-      version='2.0b1',
+      version='2.0b2',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       author='Andrew Cooke',
       author_email='andrew@acooke.org',

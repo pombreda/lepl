@@ -27,7 +27,7 @@ The single rewriter (`flatten() <api/redirect.html#lepl.parser.flatten>`_ ---
 a function that takes a matcher graph as a single argument and returns a new,
 rewritten graph as the result) rewrites nested `And()
 <api/redirect.html#lepl.matchers.And>`_ and `Or()
-<api/redirect.html#lepl.matchers.Or>`_ matchers.  This is a laregly cosmetic
+<api/redirect.html#lepl.matchers.Or>`_ matchers.  This is a largely cosmetic
 fix; without it, using repeated ``&`` and ``|`` gives an unbalanced tree of
 matchers because it generates a set of nested pairs rather than a single
 matcher with many sub--matchers.
@@ -154,7 +154,7 @@ the "bbbb" for each different combination of "a"s.
     
 Next, an example where the memoizer is added to all matchers via rewriting of
 the matcher graph (from the paper describing the technique used for handling
-left--recusive grammars)::
+left--recursive grammars)::
         
   >>> class VerbPhrase(Node): pass
   >>> class DetPhrase(Node): pass
