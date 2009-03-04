@@ -91,7 +91,7 @@ may call the matcher times before a result is found that "fits" with the rest
 of the grammar.
 
 
-.. index:: Repeat(), [], backtracking, breadth--first, depth--first
+.. index:: Repeat(), [], backtracking, breadth-first, depth-first
 
 Repeat ([...])
 --------------

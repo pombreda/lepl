@@ -3,6 +3,41 @@ Advanced Use
 ============
 
 
+.. index:: Configuration(), configuration, flatten
+.. _configuration:
+
+Configuration
+-------------
+
+The configuration is used when generating a parser from the matchers graph.
+It is specified using `Configuration()
+<api/redirect.html#lepl.parser.Configuration>`_ which takes two arguments,
+``rewriters`` and ``monitors``.
+
+Most examples here use the default configuration, which is supplied by
+`default_config()
+<api/redirect.html#lepl.matchers.BaseMatcher.default_config>`_.  This is
+currently defined as::
+
+  Configuration(
+    rewriters=[flatten({And: '*matchers', Or: '*matchers'})],
+    monitors=[TraceResults(False), GeneratorManager(0)])
+
+The single rewriter (`flatten() <api/redirect.html#lepl.parser.flatten>`_ ---
+a function that takes a matcher graph as a single argument and returns a new,
+rewritten graph as the result) rewrites nested `And()
+<api/redirect.html#lepl.matchers.And>`_ and `Or()
+<api/redirect.html#lepl.matchers.Or>`_ matchers.  This is a laregly cosmetic
+fix; without it, using repeated ``&`` and ``|`` gives an unbalanced tree of
+matchers because it generates a set of nested pairs rather than a single
+matcher with many sub--matchers.
+
+The two monitors (which are passed to `trampoline()
+<api/redirect.html#lepl.parser.trampoline>`_) enable the `Trace()
+<api/redirect.html#lepl.matchers.Trace>`_ and `Commit()
+<api/redirect.html#lepl.matchers.Commit>`_ matchers.
+
+
 .. index:: search, backtracking
 .. _backtracking:
 
@@ -88,14 +123,75 @@ before considering backtracking.  At the moment I do not see a "natural" way
 to form such a tree, and so this is not implemented.  Feedback is appreciated.
 
 
+.. index:: memoisation, RMemo(), LMemo(), memoize(), ambiguous grammars, left-recursion
+.. _memoisation:
+
 Memoisation
 -----------
 
-To do:
+LEPL 2.0 supports two approaches to memoisation.
 
-* Move part of :ref:`memoisation` here.
-* Extend the implementation discussion to discuss the code.
+The simplest memoizer is `RMemo() <api/redirect.html#lepl.memo.RMemo>`_ which is
+a cache based on the stream supplied.
 
-Because I expect that code to change significantly, this will not happen until
-release 2.1 (but I would love feedback on the current implementation --- even
-better if someone can prove it correct!).
+For left--recursive grammars, however, things are more complicated (for full
+details see :ref:`memoisation`).  In this case, `LMemo()
+<api/redirect.html#lepl.memo.LMemo>`_ must be used.
+
+Memoizers can either be specified directly, as matchers in the grammar, or via
+the :ref:`configuration`.  If they are used directly they only affect the
+matcher to which they are applied.  If they are given as a rewriter in the
+configuration then they are automatically applied to every matcher.
+
+First, an example of restricted use::
+
+  >>> matcher = Any('a')[:] & Any('a')[:] & RMemo(Any('b')[4])
+  >>> len(list(matcher.match('aaaabbbb')))
+  5
+
+Here the `RMemo() <api/redirect.html#lepl.memo.RMemo>`_ avoids re-matching of
+the "bbbb" for each different combination of "a"s.
+    
+Next, an example where the memoizer is added to all matchers via rewriting of
+the matcher graph (from the paper describing the technique used for handling
+left--recusive grammars)::
+        
+  >>> class VerbPhrase(Node): pass
+  >>> class DetPhrase(Node): pass
+  >>> class SimpleTp(Node): pass
+  >>> class TermPhrase(Node): pass
+  >>> class Sentence(Node): pass
+
+  >>> verb        = Literals('knows', 'respects', 'loves')         > 'verb'
+  >>> join        = Literals('and', 'or')                          > 'join'
+  >>> proper_noun = Literals('helen', 'john', 'pat')               > 'proper_noun'
+  >>> determiner  = Literals('every', 'some')                      > 'determiner'
+  >>> noun        = Literals('boy', 'girl', 'man', 'woman')        > 'noun'
+        
+  >>> verbphrase  = Delayed()
+  >>> verbphrase += verb | (verbphrase // join // verbphrase)      > VerbPhrase
+  >>> det_phrase  = determiner // noun                             > DetPhrase
+  >>> simple_tp   = proper_noun | det_phrase                       > SimpleTp
+  >>> termphrase  = Delayed()
+  >>> termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
+  >>> sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
+    
+  >>> p = sentence.null_matcher(
+  >>>         Configuration(rewriters=[memoize(LMemo)], 
+  >>>                       monitors=[TraceResults(False)]))
+  >>> len(list(p('every boy or some girl and helen and john or pat knows '
+  >>>            'and respects or loves every boy or some girl and pat or '
+  >>>            'john and helen')))
+  392
+
+This example is left--recursive and very ambiguous.  With `LMemo()
+<api/redirect.html#lepl.memo.LMemo>`_ it can be parsed with no problems.
+
+The `memoize() <api/redirect.html#lepl.parser.memoize>`_ function converts a
+memoizing matcher to a rewriter.
+
+.. note::
+
+  In both cases above there is nothing obvious to show that the memoizer is
+  actually used (I am just printing the number of different parses available).
+  Efficiency and profiling will be addressed in the next release.

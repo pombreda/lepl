@@ -101,9 +101,11 @@ Running this gives the result::
              |           `- number '5'
              `- ')'
 '''
- 
-from lepl.operators import * 
+
+from lepl.memo import * 
 from lepl.node import *
+from lepl.operators import * 
+from lepl.parser import *
 from lepl.stream import *
 from lepl.manager import *
 from lepl.matchers import *
@@ -159,6 +161,7 @@ __all__ = [
         'Word',
         'Separator',
         'DropEmpty',
+        'Literals',
         'GREEDY',
         'NON_GREEDY',
         'DEPTH_FIRST',
@@ -182,7 +185,13 @@ __all__ = [
         'GeneratorManager',
         # trace
         'RecordDeepest',
-        'TraceResults']
+        'TraceResults',
+        # parser
+        'memoize',
+        'flatten',
+        # memo,
+        'RMemo',
+        'LMemo']
 
 __version__ = '2.0b1'
 

@@ -3,10 +3,7 @@ from logging import basicConfig, INFO, DEBUG
 from unittest import TestCase
 
 from lepl import *
-from lepl.matchers import Literals
-from lepl.memo import RMemo, LMemo
-from lepl.parser import string_parser, Configuration, string_matcher
-from lepl.trace import TraceResults
+from lepl.parser import string_parser, string_matcher
 
 
 class MemoTest(TestCase):
@@ -20,7 +17,8 @@ class MemoTest(TestCase):
         seq   += letter & Optional(seq)
         
         p = string_matcher(seq, 
-                Configuration(memoizers=[RMemo], monitors=[TraceResults(True)]))
+                Configuration(rewriters=[memoize(RMemo)], 
+                              monitors=[TraceResults(True)]))
         results = list(p('ab'))
         print(results)
         assert len(results) == 2, len(results)
@@ -36,7 +34,9 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += Optional(seq) & letter
         
-        p = seq.null_matcher(Configuration(memoizers=[LMemo], monitors=[TraceResults(True)]))
+        p = seq.null_matcher(
+                Configuration(rewriters=[memoize(LMemo)], 
+                              monitors=[TraceResults(True)]))
         results = list(p('ab'))
         print(results)
         assert len(results) == 2, len(results)
@@ -52,7 +52,9 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += Optional(seq) & letter
         
-        p = seq.string_matcher(Configuration(memoizers=[LMemo], monitors=[TraceResults(True)]))
+        p = seq.string_matcher(
+                Configuration(rewriters=[memoize(LMemo)], 
+                              monitors=[TraceResults(True)]))
         results = list(p('ab'))
         print(results)
         assert len(results) == 2, len(results)
@@ -69,7 +71,8 @@ class MemoTest(TestCase):
         seq   += letter | (seq  & letter)
         
         p = string_matcher(seq, 
-                Configuration(memoizers=[LMemo], monitors=[TraceResults(True)]))
+                Configuration(rewriters=[memoize(LMemo)], 
+                              monitors=[TraceResults(True)]))
         results = list(p('abcdef'))
         print(results)
         assert len(results) == 6, len(results)
@@ -102,7 +105,8 @@ class MemoTest(TestCase):
         sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
         p = string_matcher(sentence, 
-                Configuration(memoizers=[LMemo], monitors=[TraceResults(False)]))
+                Configuration(rewriters=[memoize(LMemo)], 
+                              monitors=[TraceResults(False)]))
         
         count = 0
         for meaning in p('every boy or some girl and helen and john or pat knows '

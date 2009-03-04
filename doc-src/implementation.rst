@@ -75,25 +75,21 @@ returned from the trampoline via ``generator.send(result, stream2)``.
 It is clear, then, that the impact on existing code was fairly small.
 
 
-.. index:: memoisation, Norvig, Frost, Hafiz, left--recursion
+.. index:: memoisation, Norvig, Frost, Hafiz, left-recursion
 .. _memoisation:
 
 Memoisation
 -----------
 
-LEPL 2.0 supports two approaches to memoisation.
-
-The simplest memoizer is `RMemo <api/redirect.html#lepl.memo.RMemo>`_ which is
-a simple cache based on the stream supplied.  I believe this is equivalent to
-the approach described by `Norvig 1991
-<http://acl.ldc.upenn.edu/J/J91/J91-1004.pdf>`_ (I may be wrong, because it
+The simple memoizer, `RMemo() <api/redirect.html#lepl.memo.RMemo>`_, is
+equivalent to the approach described by `Norvig 1991
+<http://acl.ldc.upenn.edu/J/J91/J91-1004.pdf>`_ (I may be mistaken, because it
 seems odd that something so simple is so famous, but perhaps life was simpler
 back then).
 
-For left--recursive grammars, however, things are more complicated.  In such
-cases a matcher may be called with the same stream, but within different
-contexts (eg. consider ``a = Optional(a) & b``, where each repeated call to
-``a`` is from an additional "step down").
+During the aplication of left--recursive grammars a matcher may be called with
+the same stream, but within different contexts (eg. consider ``a = Optional(a)
+& b``, where each repeated call to ``a`` is from an additional "step down").
 
 .. note::
 
@@ -107,8 +103,8 @@ to consumer `something` each time round).  They therefore recommended
 extending the simple cache with a counter that blocks recursion past that
 depth.
 
-This approach is implemented in `LMemo <api/redirect.html#lepl.memo.LMemo>`_
-which makes LEPL robust to handle left--recursive grammars.
+This approach is implemented in `LMemo() <api/redirect.html#lepl.memo.LMemo>`_
+which makes LEPL robust to left--recursive grammars.
 
 .. warning::
 

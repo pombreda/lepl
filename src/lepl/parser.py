@@ -71,19 +71,17 @@ class Configuration(object):
     rewritten and evaluated.
     '''
     
-    def __init__(self, flatten=None, memoizers=None, monitors=None):
+    def __init__(self, rewriters=None, monitors=None):
         '''
-        `flatten` A map from type to attribute name.  If they type is nested 
-        then the nested instance is replaced with the value(s) of the attribute 
-        on the instance (see `make_flatten()`).
-        
-        `memoizers` A list of functions applied to cloned nodes.
+        `rewriters` Are functions that take and return a matcher tree.  They
+        can add memoisation, restructure the tree, etc.  They are applied left
+        to right.
         
         `monitors` Subclasses of `lepl.monitor.MonitorInterface` that will be
-        invoked by `trampoline()`.
+        invoked by `trampoline()`.  Multiple values are combined into a single 
+        monitor.
         '''
-        self.flatten = [] if flatten is None else flatten 
-        self.memoizers = [] if memoizers is None else memoizers
+        self.rewriters = [] if rewriters is None else rewriters 
         if not monitors:
             self.monitor = None
         elif len(monitors) == 1:
@@ -92,6 +90,30 @@ class Configuration(object):
             self.monitor = MultipleMonitors(monitors)
             
         
+class CloneWithDescribe(Clone):
+    '''
+    Extend `lepl.graph.Clone` to copy the `describe` attribute.
+    '''
+    
+    def constructor(self, *args, **kargs):
+        node = super(CloneWithDescribe, self).constructor(*args, **kargs)
+        node.describe = self._node.describe
+        return node    
+    
+
+def flatten(spec):
+    '''
+    A rewriter that flattens the matcher graph according to the spec.
+    
+    The spec is a map from type to attribute name.  If type instances are 
+    nested then the nested instance is replaced with the value(s) of the 
+    attribute on the instance (see `make_flatten()`).
+    '''
+    def rewriter(matcher):
+        return matcher.postorder(CloneWithDescribe(make_flatten(spec)))
+    return rewriter
+
+
 def make_flatten(table):
     '''
     Create a function that can be applied to a graph of matchers to implement
@@ -115,33 +137,14 @@ def make_flatten(table):
     return flatten
 
 
-class CloneWithDescribe(Clone):
+def memoize(memoizer):
     '''
-    Extend `lepl.graph.Clone` to copy the `describe` attribute.
+    A rewriter that adds the given memoizer to all nodes in the matcher
+    graph.
     '''
-    
-    def constructor(self, *args, **kargs):
-        node = super(CloneWithDescribe, self).constructor(*args, **kargs)
-        node.describe = self._node.describe
-        return node    
-    
-
-def flatten(matcher, conf):
-    '''
-    Flatten the matcher graph according to the configuration.
-    '''
-    if conf.flatten:
-        matcher = matcher.postorder(CloneWithDescribe(make_flatten(conf.flatten)))
-    return matcher
-
-
-def memoize(matcher, conf):
-    '''
-    Add memoizers to the matcher graph according to the configuration.
-    '''
-    for memoizer in conf.memoizers:
-        matcher = matcher.postorder(Clone(post_clone(memoizer)))
-    return matcher
+    def rewriter(matcher):
+        return matcher.postorder(Clone(post_clone(memoizer)))
+    return rewriter
 
 
 def trampoline(main, monitor=None):
@@ -208,8 +211,8 @@ def prepare(matcher, stream, conf):
     '''
     Rewrite the matcher and prepare the input for a parser.
     '''
-    matcher = flatten(matcher, conf)
-    matcher = memoize(matcher, conf)
+    for rewriter in conf.rewriters:
+        matcher = rewriter(matcher)
     parser = lambda arg: trampoline(matcher(stream(arg, conf)), 
                                     monitor=conf.monitor)
     parser.matcher = matcher
