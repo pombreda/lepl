@@ -110,7 +110,10 @@ class MonitorInterface(LogMixin):
     
 class ExposedMonitor(MonitorInterface):
     '''
-    Generators can  interact with monitors if:
+    A monitor that can interact with a generator (to allow switching on/off
+    for various parts of the parse, for example).
+    
+    Generators can interact with monitors if:
     
     1 - The monitor extends this class
     2 - The matcher has a monitor_class attribute whose value is equal to (or a 

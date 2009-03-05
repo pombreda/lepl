@@ -125,8 +125,16 @@ class DefaultNamespace(Namespace):
     
 
 __GLOBAL = None
+'''
+The global singleton.
+'''
+
 def Global():
-    '''Global (per-thread) binding from operator name to implementation'''
+    '''
+    Global (per-thread) binding from operator name to implementation.
+    
+    This provides an interface to `__GLOBAL`.
+    '''
     # Delay creation to handle circular dependencies.
     global __GLOBAL
     if __GLOBAL is None:

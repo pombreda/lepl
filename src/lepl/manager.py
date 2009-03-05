@@ -27,7 +27,7 @@ but after some thought it's not so clear exactly what tree is being traversed,
 and how that identifies what generators should be closed.  In particular, an 
 "imperative" implementation with generators does not have the same meaning of 
 "depth" as a recursive functional implementation (but see the related 
-discussion in the `manual <../closing.html#search-and-backtracking>`_).
+discussion in the `manual <../advanced.html#search-and-backtracking>`_).
 
 A better approach seems to be to discard those that have not been used "for a
 long time".  A variation on this - keep a maximum number of the youngest 

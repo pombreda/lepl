@@ -59,9 +59,14 @@ class GeneratorWrapper(BaseGeneratorWrapper):
         super(GeneratorWrapper, self).__init__(generator)
         self.matcher = matcher
         self.stream = stream
-        self.describe = '{0}({1})'.format(matcher.describe, stream)
+        self.describe = None
         
     def __repr__(self):
+        '''
+        Lazily evaluated for speed - saves 1/3 of time spent in constructor
+        '''
+        if not self.describe:
+            self.describe = '{0}({1})'.format(matcher.describe, stream)
         return self.describe
         
 

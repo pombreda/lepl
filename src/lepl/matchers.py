@@ -50,7 +50,6 @@ from lepl.trace import TraceResults
 from lepl.support import assert_type, lmap, compose, LogMixin
 
 
-
 class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin, 
                     LogMixin, Matcher):
     '''
@@ -350,6 +349,9 @@ class OrderByResultCount(BaseMatcher):
 
                 
 class _BaseCombiner(BaseMatcher):
+    '''
+    Support for `And` and `Or`.
+    '''
     
     def __init__(self, *matchers):
         super(_BaseCombiner, self).__init__()

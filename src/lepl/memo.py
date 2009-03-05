@@ -19,7 +19,7 @@
 '''
 Memoisation (both as described by Norvig 1991, giving Packrat 
 parsers for non-left recursive grammars, and the equivalent described by
-Frost and Hafiz 2006 which allows left-recursive grammars to be used.
+Frost and Hafiz 2006 which allows left-recursive grammars to be used).
  
 Note that neither paper describes the extension to backtracking with
 generators implemented here. 
@@ -70,6 +70,10 @@ class RTable(LogMixin):
         self.__stopped = False
         
     def __read(self, i):
+        '''
+        Either return a value from previous cached values or call the
+        embedded generator to get the next value (and then store it).
+        '''
         try:
             while i >= len(self.__table) and not self.__stopped:
                 result = yield self.__generator
@@ -82,13 +86,20 @@ class RTable(LogMixin):
             raise StopIteration()
     
     def generator(self, matcher, stream):
+        '''
+        A proxy to the "real" generator embedded inside the cache.
+        '''
         for i in count():
             yield (yield GeneratorWrapper(self.__read(i), 
-                            DummyMatcher(self.__class__.__name__, matcher.describe), 
+                            _DummyMatcher(self.__class__.__name__, matcher.describe), 
                             stream))
 
 
-class DummyMatcher(object):
+class _DummyMatcher(object):
+    '''
+    Fake matcher used to provide the appropriate interface to the generator 
+    wrapper from within `RTable`.
+    '''
     
     def __init__(self, outer, inner):
         self.describe = '{0}({1})'.format(outer, inner)
@@ -113,6 +124,11 @@ class LMemo(BaseMatcher):
         
 
 class PerStreamCache(LogMixin):
+    '''
+    Manage the counter (one for each different stream) that limits the 
+    number of (left-)recursive calls.  Each permitted call receives a separate
+    `PerCallCache`. 
+    '''
     
     def __init__(self, matcher):
         super(PerStreamCache, self).__init__()
@@ -149,6 +165,10 @@ class PerStreamCache(LogMixin):
 
 
 class PerCallCache(LogMixin):
+    '''
+    The "final" cache for a matcher at a certain recursive depth and with a
+    certain input stream.
+    '''
     
     def __init__(self, generator):
         super(PerCallCache, self).__init__()

@@ -24,7 +24,6 @@ from itertools import count
 from traceback import print_exc
 
 from lepl.monitor import ExposedMonitor
-from lepl.support import CircularFifo, BaseGeneratorWrapper
 
 
 class TraceResults(ExposedMonitor):
