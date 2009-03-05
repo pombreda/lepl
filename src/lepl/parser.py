@@ -66,7 +66,7 @@ class GeneratorWrapper(BaseGeneratorWrapper):
         Lazily evaluated for speed - saves 1/3 of time spent in constructor
         '''
         if not self.describe:
-            self.describe = '{0}({1})'.format(matcher.describe, stream)
+            self.describe = '{0}({1})'.format(self.matcher.describe, self.stream)
         return self.describe
         
 

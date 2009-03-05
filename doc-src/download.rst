@@ -131,6 +131,8 @@ Date        Version  Description
 2009-03-04  2.0b2    Fixed major bug in LMemo for 2.6; general tidying.
 ----------  -------  -----------
 2009-03-05  2.0      Improved documentation.
+----------  -------  -----------
+2009-03-05  2.0.1    Fixed stupid bug introduced at last minute in 2.0.
 ==========  =======  ===========
 
 The next release will be a minor increment (2.1), focusing on efficiency and
