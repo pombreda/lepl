@@ -102,6 +102,9 @@ class _DummyMatcher(object):
     '''
     
     def __init__(self, outer, inner):
+        '''
+        Making this lazy has no effect on efficiency for nested.right.
+        '''
         self.describe = '{0}({1})'.format(outer, inner)
         
         
@@ -140,10 +143,7 @@ class PerStreamCache(LogMixin):
         if count == 1:
             return False
         else:
-            try:
-                return not stream.check_len(count)
-            except AttributeError:
-                return count > len(stream) 
+            return count > len(stream) 
         
     @tagged
     def __call__(self, stream):

@@ -34,7 +34,6 @@ from lepl.graph import order, FORWARD, preorder, clone, Clone, post_clone
 from lepl.monitor import MultipleMonitors
 from lepl.operators import Matcher
 from lepl.stream import Stream
-from lepl.support import BaseGeneratorWrapper
 from lepl.trace import TraceResults, RecordDeepest
     
     
@@ -47,7 +46,7 @@ def tagged(call):
     return tagged_call
 
 
-class GeneratorWrapper(BaseGeneratorWrapper):
+class GeneratorWrapper(object):
     '''
     Associate basic info about call that created the generator with the 
     generator itself.  This lets us manage resources and provide logging.
@@ -56,10 +55,29 @@ class GeneratorWrapper(BaseGeneratorWrapper):
     '''
 
     def __init__(self, generator, matcher, stream):
-        super(GeneratorWrapper, self).__init__(generator)
         self.matcher = matcher
         self.stream = stream
         self.describe = None
+        self.__generator = generator
+    
+    def __next__(self):
+        return next(self.__generator)
+            
+    # for 2.6
+    def next(self):
+        return self.__next__()
+    
+    def send(self, value):
+        return self.__generator.send(value)
+    
+    def throw(self, value):
+        return self.__generator.throw(value)
+                
+    def __iter__(self):
+        return self
+                
+    def close(self):
+        self.__generator.close()
         
     def __repr__(self):
         '''
@@ -154,7 +172,13 @@ def memoize(memoizer):
 
 def trampoline(main, monitor=None):
     '''
-    The main parser loop.  Evaluates matchers as coroutines. 
+    The main parser loop.  Evaluates matchers as coroutines.
+    
+    A dedicated version for when monitor not present increased the speed of
+    the nat_lang performance test by only around 1% (close to noise). 
+    
+    Replacing stack append/pop with a manually allocated non-decreasing array
+    and index made no significant difference (at around 1% level)
     '''
     stack = []
     try:
@@ -211,15 +235,13 @@ def trampoline(main, monitor=None):
             monitor.pop(stack.pop())
                     
                 
-    
 def prepare(matcher, stream, conf):
     '''
     Rewrite the matcher and prepare the input for a parser.
     '''
     for rewriter in conf.rewriters:
         matcher = rewriter(matcher)
-    parser = lambda arg: trampoline(matcher(stream(arg, conf)), 
-                                    monitor=conf.monitor)
+    parser = lambda arg: trampoline(matcher(stream(arg)), monitor=conf.monitor)
     parser.matcher = matcher
     return parser
 

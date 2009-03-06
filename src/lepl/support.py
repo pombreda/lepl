@@ -90,35 +90,6 @@ class CircularFifo():
         self.__size = 0
 
 
-class BaseGeneratorWrapper(object):
-    '''
-    Base class for wrapping generators.
-    '''
-    
-    def __init__(self, generator):
-        super(BaseGeneratorWrapper, self).__init__()
-        self.__generator = generator
-    
-    def __next__(self):
-        return next(self.__generator)
-            
-    # for 2.6
-    def next(self):
-        return self.__next__()
-    
-    def send(self, value):
-        return self.__generator.send(value)
-    
-    def throw(self, value):
-        return self.__generator.throw(value)
-                
-    def __iter__(self):
-        return self
-                
-    def close(self):
-        self.__generator.close()
-        
-    
 def open_stop(spec):
     '''
     In Python 2.6 open [] appears to use maxint or similar, which is not

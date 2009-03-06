@@ -199,8 +199,8 @@ class Override(object):
 
 class Separator(Override):
     '''
-    Redefine ``[]`` and ``&`` to include the given matcher as a separator (so it will
-    be used between list items and between matchers separated by the & 
+    Redefine ``[]`` and ``&`` to include the given matcher as a separator 
+    (so it will be used between list items and between matchers separated by the & 
     operator)
     '''
     

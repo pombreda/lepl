@@ -36,8 +36,9 @@ def naturalLanguage():
 def time():
     from timeit import Timer
     t = Timer("naturalLanguage()", "from __main__ import naturalLanguage")
-    print(t.timeit(number=10)) 
+    print(t.timeit(number=100)) 
     # 6.3, 6.6 for 2.0 on laptop
+    # 5.3 after simplifying generator wrapper
     
 
 def profile():
