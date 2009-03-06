@@ -32,6 +32,9 @@ def right():
 def left():
     '''
     This hammers the stream length method.
+    
+    Hmmm.  No it doesn't.  It does many more iterations than RMemo because it 
+    has to "bottom out".  
     '''
     pair = Delayed()
     with Separator(Regexp(r'\s*')):

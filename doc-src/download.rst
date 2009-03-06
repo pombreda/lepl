@@ -133,6 +133,8 @@ Date        Version  Description
 2009-03-05  2.0      Improved documentation.
 ----------  -------  -----------
 2009-03-05  2.0.1    Fixed stupid bug introduced at last minute in 2.0.
+----------  -------  -----------
+2009-03-06  2.0.2    A few more small bug fixes.
 ==========  =======  ===========
 
 The next release will be a minor increment (2.1), focusing on efficiency and
