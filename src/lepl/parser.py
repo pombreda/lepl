@@ -160,16 +160,6 @@ def make_flatten(table):
     return flatten
 
 
-def memoize(memoizer):
-    '''
-    A rewriter that adds the given memoizer to all nodes in the matcher
-    graph.
-    '''
-    def rewriter(matcher):
-        return matcher.postorder(Clone(post_clone(memoizer)))
-    return rewriter
-
-
 def trampoline(main, monitor=None):
     '''
     The main parser loop.  Evaluates matchers as coroutines.

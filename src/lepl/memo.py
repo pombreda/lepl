@@ -28,8 +28,9 @@ generators implemented here.
 
 from itertools import count
 
-from lepl.matchers import BaseMatcher
-from lepl.parser import tagged, GeneratorWrapper
+from lepl.graph import preorder, empty, loops
+from lepl.matchers import BaseMatcher, Delayed, Or
+from lepl.parser import tagged, GeneratorWrapper, Clone, post_clone
 from lepl.support import LogMixin
 
 
@@ -150,7 +151,7 @@ class PerStreamCache(LogMixin):
         if not self.__first:
             self.__counter += 1
             if self.__curtail(self.__counter, stream):
-                return self.__empty()
+                return empty()
             else:
                 cache = PerCallCache(self.__matcher(stream))
                 if self.__first is None:
@@ -159,10 +160,6 @@ class PerStreamCache(LogMixin):
         else:
             return self.__first.view()
         
-    def __empty(self):
-        if False:
-            yield None
-
 
 class PerCallCache(LogMixin):
     '''
@@ -228,4 +225,76 @@ class PerCallCache(LogMixin):
         For Python 2.6: may it burn in hell, hell I say!
         '''
         return self.__bool__()
+
+
+def memoize(memoizer):
+    '''
+    A rewriter that adds the given memoizer to all nodes in the matcher
+    graph.
+    '''
+    def rewriter(graph):
+        return graph.postorder(Clone(post_clone(memoizer)))
+    return rewriter
+
+
+def auto_memoize(graph):
+    '''
+    Rewrite the matcher graph to do two things:
+    1 - add memoizers as appropriate
+    2 - rewrite recursive `Or` calls so that terminating clauses are
+    checked first.
     
+    This rewriting may change the order in which different results for
+    an ambiguous grammar are returned.
+    '''
+    graph = optimize_or(graph)
+    graph = context_memoize(graph)
+    return graph
+
+
+def optimize_or(graph):
+    '''
+    When a left-recursive rule is used, it is much more efficient if it
+    appears last in an `Or` statement, since that forces the alternates
+    (which correspond to the terminating case in a recursive function)
+    to be tested before the LMemo limit is reached.
+    
+    This rewriting may change the order in which different results for
+    an ambiguous grammar are returned.
+    '''
+    for delayed in [x for x in preorder(graph) if type(x) is Delayed]:
+        for loop in loops(delayed):
+            for i in range(len(loop)):
+                if isinstance(loop[i], Or):
+                    # we cannot be at the end of the list here, since that
+                    # is a Delayed instance
+                    matchers = loop[i].matchers
+                    target = loop[i+1]
+                    # move target to end of list
+                    index = matchers.index(target)
+                    del matchers[index]
+                    matchers.append(target)
+    return graph
+
+
+def context_memoize(graph):
+    '''
+    We only need to apply LMemo to left recursive loops.  Everything else
+    can use the simpler RMemo.
+    '''
+    dangerous = set()
+    for delayed in [x for x in preorder(graph) if type(x) is Delayed]:
+        for loop in loops(delayed):
+            for node in loop:
+                dangerous.add(node)
+    def clone(node, args, kargs):
+        '''
+        Clone with the apropriate memoizer 
+        (cannot use post_clone as need to test original)
+        '''
+        clone = type(node)(*args, **kargs)
+        if node in dangerous:
+            return LMemo(clone)
+        else:
+            return RMemo(clone)
+    return graph.postorder(Clone(clone))

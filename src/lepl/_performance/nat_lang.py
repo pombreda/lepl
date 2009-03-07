@@ -36,10 +36,11 @@ def naturalLanguage():
 def time():
     from timeit import Timer
     t = Timer("naturalLanguage()", "from __main__ import naturalLanguage")
-    print(t.timeit(number=100)) 
+    print(t.timeit(number=100))
+    # using LMemo:
     # 6.3, 6.6 for 2.0 on laptop
     # 5.3 after simplifying generator wrapper
-    
+    # using auto_memoze 48 -> 34
 
 def profile():
     '''
@@ -48,7 +49,7 @@ p=pstats.Stats('nat_lang.prof')
 p.strip_dirs()
 p.sort_stats('cumulative')
 p.sort_stats('time')
-p.print_stats(20)
+p.print_stats(35)
     '''
     import cProfile
     cProfile.run('naturalLanguage()', 'nat_lang.prof')

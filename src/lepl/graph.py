@@ -164,6 +164,25 @@ def postorder(node, type_=SimpleGraphNode):
     return order(node, POSTORDER, type_=type_)
 
 
+def loops(node, type_=SimpleGraphNode):
+    '''
+    Return all loops from the given node.
+    
+    Each loop is a list that starts and ends with the given node.
+    '''
+    stack = [[node]]
+    while stack:
+        ancestors = stack.pop()
+        parent = ancestors[-1]
+        if isinstance(parent, type_):
+            for child in parent._children():
+                family = list(ancestors)
+                family.append(child)
+                if child is node:
+                    yield family
+                else:
+                    stack.append(family)
+
 
 class SimpleWalker(object):
     '''

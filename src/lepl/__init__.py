@@ -191,7 +191,10 @@ __all__ = [
         'flatten',
         # memo,
         'RMemo',
-        'LMemo']
+        'LMemo',
+        'auto_memoize',
+        'context_memoize',
+        'optimize_or']
 
 __version__ = '2.0.2'
 
