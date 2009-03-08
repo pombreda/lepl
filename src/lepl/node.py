@@ -134,13 +134,13 @@ def make_error(msg):
     
     Invoke as ``** make_error('bad results: {results}')``, for example.
     '''
-    def fun(stream_in, stream_out, core, results):
+    def fun(stream_in, stream_out, results):
         return Error(results,
-            *_syntax_error_args(msg, stream_in, stream_out, core, results))
+            *_syntax_error_args(msg, stream_in, stream_out, results))
     return fun
 
 
-def _syntax_error_args(msg, stream_in, stream_out, core, results):
+def _syntax_error_args(msg, stream_in, stream_out, results):
     '''
     Helper function for constructing format dictionary.
     '''
@@ -158,7 +158,7 @@ def _syntax_error_args(msg, stream_in, stream_out, core, results):
         except:
             line = ['...'] + stream_in
     kargs = {'stream_in': stream_in, 'stream_out': stream_out, 
-             'core': core, 'results': results, 'filename': filename, 
+             'results': results, 'filename': filename, 
              'lineno': lineno, 'offset':offset, 'line':line}
     try:
         return (msg.format(**kargs), (filename, lineno, offset, line))
@@ -170,8 +170,8 @@ def raise_error(msg):
     '''
     As `lepl.node.make_error()`, but also raise the result.
     '''
-    def fun(stream_in, stream_out, core, results):
-        error = make_error(msg)(stream_in, stream_out, core, results)
+    def fun(stream_in, stream_out, results):
+        error = make_error(msg)(stream_in, stream_out, results)
         raise error
     return fun
 

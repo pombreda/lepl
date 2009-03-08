@@ -1,6 +1,6 @@
 
 
-from lepl.graph import Visitor, clone
+from lepl.graph import Visitor, clone, preorder, loops
 
 
 class DelayedClone(Visitor):    
@@ -133,6 +133,7 @@ def optimize_or(graph):
     This rewriting may change the order in which different results for
     an ambiguous grammar are returned.
     '''
+    from lepl.matchers import Delayed, Or
     for delayed in [x for x in preorder(graph) if type(x) is Delayed]:
         for loop in loops(delayed):
             for i in range(len(loop)):
@@ -153,6 +154,8 @@ def context_memoize(graph):
     We only need to apply LMemo to left recursive loops.  Everything else
     can use the simpler RMemo.
     '''
+    from lepl.matchers import Delayed
+    from lepl.memo import LMemo, RMemo
     dangerous = set()
     for delayed in [x for x in preorder(graph) if type(x) is Delayed]:
         for loop in loops(delayed):
@@ -160,12 +163,16 @@ def context_memoize(graph):
                 dangerous.add(node)
     def clone(node, args, kargs):
         '''
-        Clone with the apropriate memoizer 
+        Clone with the appropriate memoizer 
         (cannot use post_clone as need to test original)
         '''
         clone = type(node)(*args, **kargs)
-        if node in dangerous:
+        if isinstance(node, Delayed):
+            # no need to memoize the proxy (if we do, we also break 
+            # rewriting, since we "hide" the Delayed instance)
+            return clone
+        elif node in dangerous:
             return LMemo(clone)
         else:
             return RMemo(clone)
-    return graph.postorder(Clone(clone))
+    return graph.postorder(DelayedClone(clone))

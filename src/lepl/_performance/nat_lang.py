@@ -27,7 +27,8 @@ def naturalLanguage():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    p = sentence.null_matcher(Configuration(rewriters=[memoize(LMemo)]))
+    p = sentence.null_matcher(Configuration(rewriters=[auto_memoize]))
+#    print(p.matcher)
     assert len(list(p('every boy or some girl and helen and john or pat knows '
                       'and respects or loves every boy or some girl and pat or '
                       'john and helen'))) == 392  
@@ -40,7 +41,7 @@ def time():
     # using LMemo:
     # 6.3, 6.6 for 2.0 on laptop
     # 5.3 after simplifying generator wrapper
-    # using auto_memoze 48 -> 34
+    # using auto_memoze 48 -> 34 (44->31)
 
 def profile():
     '''
@@ -55,8 +56,8 @@ p.print_stats(35)
     cProfile.run('naturalLanguage()', 'nat_lang.prof')
 
 if __name__ == '__main__':
-#    time()
-    profile()
+    time()
+#    profile()
 
     
     

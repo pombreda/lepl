@@ -43,8 +43,8 @@ p.print_stats(40)
     cProfile.run('full_left()', 'full_left.prof')
 
 if __name__ == '__main__':
-#    time()
-    profile()
+    time()
+#    profile()
 #    full_left()
 
     

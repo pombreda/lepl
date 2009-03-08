@@ -241,6 +241,29 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
 #        return Configuration()
     
 
+_NULL_TRANSFORM = lambda r, i, o: (r, o)
+
+class Transformable(BaseMatcher):
+    '''
+    All subclasses invoke the function attribute on
+    (results, stream_in, stream_out) when returning their final value.
+    This allows `Transform` instances to be merged directly.
+    '''
+
+    def __init__(self, function=_NULL_TRANSFORM):
+        super(Transformable, self).__init__()
+        self._arg(function=function)
+
+    def compose(self, function):
+        '''
+        Add a transform.
+        '''
+        if self.function is _NULL_TRANSFORM:
+            self.function = function
+        else:
+            self.function = compose(function, self.function)
+
+
 class _BaseSearch(BaseMatcher):
     '''
     Support for search (repetition) classes.
@@ -587,158 +610,32 @@ class Lookahead(BaseMatcher):
         return Lookahead(self.matcher, negated=not self.negated)
             
 
-class Apply(BaseMatcher):
+class Transform(Transformable):
     '''
-    Apply an arbitrary function to the results of the matcher (**>**, **\***).
-    
-    The function should expect a list and can return any value (it should
-    return a list if ``raw=True``).
-     
-    It can be used indirectly by placing ``>`` (or ``*`` to set ``args=True``)
-    to the right of the matcher.    
+    Apply a function to (result, stream_in, stream_out)
+
+    Typically used via `Apply` and `KApply`.
     '''
 
-    def __init__(self, matcher, function, raw=False, args=False):
-        '''
-        The function will be applied to all the arguments.  If a string is
-        given named pairs will be created.
-        
-        **Note:** The creation of named pairs (when a string argument is
-        used) behaves more like a mapping than a single function invocation.
-        If several values are present, several pairs will be created.
-        
-        **Note:** There is an asymmetry in the default values of *raw*
-        and *args*.  If the identity function is used with the default settings
-        then a list of results is passed as a single argument (``args=False``).
-        That is then returned (by the identity) as a list, which is wrapped
-        in an additional list (``raw=False``), giving an extra level of
-        grouping.  This is necessary because Python's ``list()`` is an
-        identity for lists, but we want it to add an extra level of grouping
-        so that nested S-expressions are easy to generate.  
-        
-        :Parameters:
-        
-          matcher
-            The matcher whose results will be modified.
-            
-          function
-            The modification to apply.
-            
-          raw
-            If false, no list will be added around the final result (default
-            is False because results should always be returned in a list).
-            
-          args
-            If true, the results are passed to the function as separate
-            arguments (Python's '*args' behaviour) (default is False ---
-            the results are passed inside a list).
-        '''
-        super(Apply, self).__init__()
+    def __init__(self, function, matcher):
+        super(Transform, self).__init__(function)
         self._arg(matcher=coerce(matcher))
-        if isinstance(function, str):
-            self._arg(function=lambda results: list(map(lambda x:(function, x), results)))
-        elif raw:
-            self._arg(function=function)
-        else:
-            self._arg(function=lambda results: [function(results)])
-        # this may seem odd, but we have already "applied" raw=False above
-        self._karg(raw=True)
-        self._karg(args=args)
-        tags = []
-        if isinstance(function, str): tags.append(repr(function))
-        if args: tags.append('*args')
-        if tags: self.tag(','.join(tags))
 
-    @tagged
-    def __call__(self, stream):
-        '''
-        Do the matching (return a generator that provides successive 
-        (result, stream) tuples).
-        '''
-        try:
-            generator = self.matcher(stream)
-            while True:
-                (results, stream) = yield generator
-                if self.args:
-                    yield (self.function(*results), stream)
-                else:
-                    yield (self.function(results), stream)
-        except StopIteration:
-            pass
-            
-            
-class KApply(BaseMatcher):
-    '''
-    Apply an arbitrary function to named arguments (**\****).
-    The function should typically expect and return a list.
-    It can be used indirectly by placing ``**=`` to the right of the matcher.    
-    '''
-
-    def __init__(self, matcher, function, raw=False):
-        '''
-        The function will be applied the following keyword arguments:
-        
-          stream_in
-            The stream passed to the matcher.
-
-          stream_out
-            The stream returned from the matcher.
-            
-          core
-            The core, if streams are being used, else ``None``.
-        
-          results
-            A list of the results returned.
-            
-        :Parameters:
-        
-          matcher
-            The matcher whose results will be modified.
-            
-          function
-            The modification to apply.
-            
-          raw
-            If false (the default), the final return value from the function 
-            will be placed in a list and returned in a pair together with the 
-            new stream returned from the matcher (ie the function returns a 
-            single new result).
-            
-            If true, the final return value from the function is used directly
-            and so should match the ``([results], stream)`` type expected by
-            other matchers.   
-        '''
-        super(KApply, self).__init__()
-        self._arg(matcher=coerce(matcher))
-        self._arg(function=function)
-        self._karg(raw=raw)
-        
     @tagged
     def __call__(self, stream_in):
         '''
-        Do the matching (return a generator that provides successive 
+        Do the matching (return a generator that provides successive
         (result, stream) tuples).
         '''
-        kargs = {}
-        kargs['stream_in'] = stream_in
-        try:
-            kargs['core'] = stream_in.core
-        except:
-            kargs['core'] = None
         try:
             generator = self.matcher(stream_in)
             while True:
                 (results, stream_out) = yield generator
-                kargs['stream_out'] = stream_out
-                kargs['results'] = results
-                if self.raw:
-                    yield self.function(**kargs)
-                else:
-                    yield ([self.function(**kargs)], stream_out)
+                yield (self.function(results, stream_in, stream_out))
         except StopIteration:
             pass
-            
-            
+
+
 class Regexp(BaseMatcher):
     '''
     Match a regular expression.  If groups are defined, they are returned
@@ -812,8 +709,8 @@ class Delayed(BaseMatcher):
 class Commit(BaseMatcher):
     '''
     Commit to the current state - deletes all backtracking information.
-    This only works if the core is present (eg when parse_string is called)
-    and the min_queue option is greater than zero.
+    This only works if `lepl.manager.GeneratorManager` is present (eg when 
+    parse_string is called) and the min_queue option is greater than zero.
     '''
     
     def __init__(self):
@@ -901,6 +798,106 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
                                        False))
             }[algorithm]
             
+            
+def Apply(matcher, function, raw=False, args=False):
+    '''
+    Apply an arbitrary function to the results of the matcher (**>**, **\***).
+
+    The function should expect a list and can return any value (it should
+    return a list if ``raw=True``).
+
+    It can be used indirectly by placing ``>`` (or ``*`` to set ``args=True``)
+    to the right of the matcher.
+
+    The function will be applied to all the arguments (together), unless a
+    string is given, in which case named pairs will be created.
+
+    **Note:** The creation of named pairs (when a string argument is
+    used) behaves more like a mapping than a single function invocation.
+    If several values are present, several pairs will be created.
+
+    **Note:** There is an asymmetry in the default values of *raw*
+    and *args*.  If the identity function is used with the default settings
+    then a list of results is passed as a single argument (``args=False``).
+    That is then returned (by the identity) as a list, which is wrapped
+    in an additional list (``raw=False``), giving an extra level of
+    grouping.  This is necessary because Python's ``list()`` is an
+    identity for lists, but we want it to add an extra level of grouping
+    so that nested S-expressions are easy to generate.
+
+    :Parameters:
+
+      matcher
+        The matcher whose results will be modified.
+
+      function
+        The modification to apply.
+
+      raw
+        If false, no list will be added around the final result (default
+        is False because results should always be returned in a list).
+
+      args
+        If true, the results are passed to the function as separate
+        arguments (Python's '*args' behaviour) (default is False ---
+        the results are passed inside a list).
+    '''
+    if isinstance(function, str):
+        function = lambda results, f=function: lmap(lambda x:(f, x), results)
+        raw = True
+    if not raw:
+        function = lambda results, f=function: [f(results)]
+    if args:
+        function = lambda results, f=function: f(*results)
+    function = lambda results, sin, sout, f=function: (f(results), sout)
+    return Transform(function, matcher).tag('Apply')
+
+
+def KApply(matcher, function, raw=False):
+    '''
+    Apply an arbitrary function to named arguments (**\****).
+    The function should typically expect and return a list.
+    It can be used indirectly by placing ``**=`` to the right of the matcher.
+
+    The function will be applied with the following keyword arguments:
+
+      stream_in
+        The stream passed to the matcher.
+
+      stream_out
+        The stream returned from the matcher.
+
+      results
+        A list of the results returned.
+
+    :Parameters:
+
+      matcher
+        The matcher whose results will be modified.
+
+      function
+        The modification to apply.
+
+      raw
+        If false (the default), the final return value from the function
+        will be placed in a list and returned in a pair together with the
+        new stream returned from the matcher (ie the function returns a
+        single new result).
+
+        If true, the final return value from the function is used directly
+        and so should match the ``([results], stream)`` type expected by
+        other matchers.
+        '''
+    def fun(results, stream_in, stream_out):
+        kargs = {'results': results,
+                 'stream_in': stream_in,
+                 'stream_out': stream_out}
+        if raw:
+            return function(**kargs)
+        else:
+            return ([function(**kargs)], stream_out)
+    return Transform(fun, matcher).tag('KApply')
+
         
 def AnyBut(exclude=None):
     '''

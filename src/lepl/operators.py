@@ -646,9 +646,6 @@ class OperatorMixin(object):
               stream_out
                 The stream returned from the matcher.
                 
-              core
-                The core, if streams are being used, else ``None``.
-            
               results
                 A list of the results returned.
         '''
