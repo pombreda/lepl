@@ -39,7 +39,7 @@ def left():
     pair = Delayed()
     with Separator(Regexp(r'\s*')):
         pair += Optional(pair) & '(' & Optional(pair) & ')' 
-    p = pair.string_matcher(Configuration(rewriters=[memoize(LMemo)]))
+    p = pair.string_matcher(Configuration(rewriters=[auto_memoize(True)]))
     results = list(p(make_data(6)))
     print(len(results))
 
@@ -47,9 +47,12 @@ def left():
 def time(name='right'):
     from timeit import Timer
     t = Timer("{0}()".format(name), "from __main__ import {0}".format(name))
-    print(t.timeit(number=10)) 
+    print(t.timeit(number=10 if name == 'right' else 6)) 
     # right - 16.2 for 10
     # left - 82.5 for 6 (!)
+    # after auto_memoize work
+    # left - 30 for 6 (31 for conservative)
+    # right - 15 for 10
     
 
 def profile(name='right'):
@@ -65,8 +68,8 @@ p.print_stats(20)
     cProfile.run('{0}()'.format(name), 'nested.prof')
 
 if __name__ == '__main__':
-#    time('left')
-    profile('left')
+    time('left')
+#    profile('left')
 #    right()
 
     

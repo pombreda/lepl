@@ -47,6 +47,8 @@ def time():
     # RMemo as Transformable -> 30
     # Both as Transformable -> 27
     # So not worth making RMemo transformable(!)
+    # Seem to be back at 27 for auto_memoize(False) after fixing bugs
+    # and slightly worse (28) for auto_memoize(True)
     
 
 def profile():
@@ -62,8 +64,8 @@ p.print_stats(35)
     cProfile.run('naturalLanguage()', 'nat_lang.prof')
 
 if __name__ == '__main__':
-#    time()
-    profile()
+    time()
+#    profile()
 #    naturalLanguage()
 
     
