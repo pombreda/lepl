@@ -1,5 +1,6 @@
 
 from lepl import *
+from lepl.rewriters import compose_transforms
 
 
 def naturalLanguage():
@@ -27,7 +28,7 @@ def naturalLanguage():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    p = sentence.null_matcher(Configuration(rewriters=[auto_memoize]))
+    p = sentence.null_matcher(Configuration(rewriters=[auto_memoize(False)]))
 #    print(p.matcher)
     assert len(list(p('every boy or some girl and helen and john or pat knows '
                       'and respects or loves every boy or some girl and pat or '
@@ -41,7 +42,12 @@ def time():
     # using LMemo:
     # 6.3, 6.6 for 2.0 on laptop
     # 5.3 after simplifying generator wrapper
-    # using auto_memoze 48 -> 34 (44->31)
+    # using auto_memoize 48 -> 34 (44->31)
+    # Or as Transformable -> 24
+    # RMemo as Transformable -> 30
+    # Both as Transformable -> 27
+    # So not worth making RMemo transformable(!)
+    
 
 def profile():
     '''
@@ -56,8 +62,9 @@ p.print_stats(35)
     cProfile.run('naturalLanguage()', 'nat_lang.prof')
 
 if __name__ == '__main__':
-    time()
-#    profile()
+#    time()
+    profile()
+#    naturalLanguage()
 
     
     

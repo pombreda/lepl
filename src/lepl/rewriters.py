@@ -1,6 +1,19 @@
 
 
-from lepl.graph import Visitor, clone, preorder, loops
+from lepl.graph import Visitor, preorder, SimpleGraphNode, loops
+
+
+def clone(node, args, kargs):
+    '''
+    Clone including matcher-specific attributes.
+    '''
+    from lepl.graph import clone as old_clone
+    from lepl.matchers import Transformable
+    copy = old_clone(node, args, kargs)
+    if isinstance(node, Transformable):
+        copy.function = node.function
+    copy.describe = node.describe 
+    return copy
 
 
 class DelayedClone(Visitor):    
@@ -39,13 +52,12 @@ class DelayedClone(Visitor):
             else:
                 # otherwise, store this version for future use
                 self._delayeds[self._node] = copy
-        copy.describe = self._node.describe 
         return copy
     
     def leaf(self, value):
         return value
-
-
+    
+    
 def post_clone(function):
     '''
     Generate a clone function that applies the given function to the newly
@@ -108,22 +120,66 @@ def memoize(memoizer):
     return rewriter
 
 
-def auto_memoize(graph):
+def auto_memoize(conservative=True):
+    from lepl.memo import RMemo
     '''
-    Rewrite the matcher graph to do two things:
-    1 - add memoizers as appropriate
+    Rewrite the matcher graph to:
+    1 - compose transforms
     2 - rewrite recursive `Or` calls so that terminating clauses are
     checked first.
+    3 - add memoizers as appropriate
     
     This rewriting may change the order in which different results for
     an ambiguous grammar are returned.
     '''
-    graph = optimize_or(graph)
-    graph = context_memoize(graph)
-    return graph
+    def rewriter(graph):
+        graph = compose_transforms(graph)
+        graph = optimize_or(conservative)(graph)
+        graph = context_memoize(conservative)(graph)
+        return graph
+    return rewriter
 
 
-def optimize_or(graph):
+def left_loops(node):
+    '''
+    Return (an estimate of) all left-recursive loops from the given node.
+    
+    We cannot know for certain whether a loop is left recursive because we
+    don't know exactly which parsers will consume data.  But we can estimate
+    by assuming that all matchers eventually (ie via their children) consume
+    something.  We can also improve that slightly by ignoring `Lookahead`.
+    
+    So we estimate left-recursive loops as paths that start and end at
+    the given node, and which are first children of intermediate nodes
+    unless the node is `lepl.matcher.Or`, or the preceding matcher is a
+    `lepl.matcher.Lookahead`.  
+    
+    Each loop is a list that starts and ends with the given node.
+    '''
+    from lepl.matchers import Or, Lookahead
+    stack = [[node]]
+    while stack:
+        ancestors = stack.pop()
+        parent = ancestors[-1]
+        if isinstance(parent, SimpleGraphNode):
+            for child in parent._children():
+                family = list(ancestors) + [child]
+                if child is node:
+                    yield family
+                else:
+                    stack.append(family)
+                if not isinstance(parent, Or) and not isinstance(child, Lookahead):
+                    break
+    
+                    
+def either_loops(node, conservative):
+    if conservative:
+        return loops(node)
+    else:
+        return left_loops(node)
+    
+
+def optimize_or(conservative=True):
     '''
     When a left-recursive rule is used, it is much more efficient if it
     appears last in an `Or` statement, since that forces the alternates
@@ -134,45 +190,89 @@ def optimize_or(graph):
     an ambiguous grammar are returned.
     '''
     from lepl.matchers import Delayed, Or
-    for delayed in [x for x in preorder(graph) if type(x) is Delayed]:
-        for loop in loops(delayed):
-            for i in range(len(loop)):
-                if isinstance(loop[i], Or):
-                    # we cannot be at the end of the list here, since that
-                    # is a Delayed instance
-                    matchers = loop[i].matchers
-                    target = loop[i+1]
-                    # move target to end of list
-                    index = matchers.index(target)
-                    del matchers[index]
-                    matchers.append(target)
-    return graph
+    def rewriter(graph):
+        for delayed in [x for x in preorder(graph) if type(x) is Delayed]:
+            for loop in either_loops(delayed, conservative):
+                for i in range(len(loop)):
+                    if isinstance(loop[i], Or):
+                        # we cannot be at the end of the list here, since that
+                        # is a Delayed instance
+                        matchers = loop[i].matchers
+                        target = loop[i+1]
+                        # move target to end of list
+                        index = matchers.index(target)
+                        del matchers[index]
+                        matchers.append(target)
+        return graph
+    return rewriter
 
 
-def context_memoize(graph):
+def context_memoize(conservative=True):
     '''
     We only need to apply LMemo to left recursive loops.  Everything else
     can use the simpler RMemo.
     '''
     from lepl.matchers import Delayed
     from lepl.memo import LMemo, RMemo
-    dangerous = set()
-    for delayed in [x for x in preorder(graph) if type(x) is Delayed]:
-        for loop in loops(delayed):
-            for node in loop:
-                dangerous.add(node)
-    def clone(node, args, kargs):
-        '''
-        Clone with the appropriate memoizer 
-        (cannot use post_clone as need to test original)
-        '''
-        clone = type(node)(*args, **kargs)
-        if isinstance(node, Delayed):
-            # no need to memoize the proxy (if we do, we also break 
-            # rewriting, since we "hide" the Delayed instance)
-            return clone
-        elif node in dangerous:
-            return LMemo(clone)
+    def rewriter(graph):
+        dangerous = set()
+        for delayed in [x for x in preorder(graph) if type(x) is Delayed]:
+            for loop in either_loops(delayed, conservative):
+                for node in loop:
+                    dangerous.add(node)
+        def new_clone(node, args, kargs):
+            '''
+            Clone with the appropriate memoizer 
+            (cannot use post_clone as need to test original)
+            '''
+            copy = clone(node, args, kargs)
+            if isinstance(node, Delayed):
+                # no need to memoize the proxy (if we do, we also break 
+                # rewriting, since we "hide" the Delayed instance)
+                return copy
+            elif node in dangerous:
+                return LMemo(copy)
+            else:
+                return RMemo(copy)
+        return graph.postorder(DelayedClone(new_clone))
+    return rewriter
+
+
+def compose_transforms(graph):
+    '''
+    A rewriter that joins adjacent transformations into a single
+    operation, avoiding trampolining in some cases.
+    '''
+    from lepl.matchers import Transform, Transformable
+    applied = set()
+    def new_clone(node, args, kargs):
+        # must always clone or don't know how to access matcher
+        copy = clone(node, args, kargs)
+        if isinstance(copy, Transform) \
+                and isinstance(copy.matcher, Transformable):
+            # avoid applying same transform twice via multiple paths
+            if node not in applied:
+                applied.add(node)
+                copy.matcher.compose(copy.function)
+            return copy.matcher
         else:
-            return RMemo(clone)
-    return graph.postorder(DelayedClone(clone))
+            return copy
+    return graph.postorder(DelayedClone(new_clone))
+
+
+def drop_nested(type_):
+    '''
+    Generate a rewriter that drops nested instances of the given type
+    (the "outer" is discarded).
+    '''
+    def new_clone(node, args, kargs):
+        copy = clone(node, args, kargs)
+        all_args = list(args)
+        for name in kargs:
+            all_args.append(kargs[name])
+        if len(all_args) == 1 and isinstance(copy, type_) \
+                and isinstance(all_args[0], type_):
+            return all_args[0]
+        else:
+            return copy
+    return lambda graph: graph.postorder(DelayedClone(new_clone))

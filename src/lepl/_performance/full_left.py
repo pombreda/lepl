@@ -7,6 +7,7 @@ from lepl import *
 
 def full_left():
     '''
+    Extreme test of left-recursion.
     '''
     basicConfig(level=DEBUG)
     ab  = Delayed()

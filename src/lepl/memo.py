@@ -40,6 +40,9 @@ class RMemo(BaseMatcher):
     fails with left recursion it's safer to always use LMemo (this is here
     largely as documentation - the code is non-trivial and it helps to have 
     both cases available).
+    
+    Making this class Transformable did not improve performance (it's better
+    to place the transformation on critical classes like Or and And). 
     '''
     
     def __init__(self, matcher):

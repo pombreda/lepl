@@ -23,7 +23,10 @@ class NodeTest(TestCase):
         addsub      = Any('+-')                            > 'operator'
         expression += (factor / (addsub / factor)[0::])    > Expression
         
-        ast = expression.parse_string('1 + 2 * (3 + 4 - 5)')
+        print(expression)
+        p = expression.string_parser()
+        print(p.matcher)
+        ast = p('1 + 2 * (3 + 4 - 5)')
         assert str(ast[0]) == """Expression
  +- Factor
  |   +- Term

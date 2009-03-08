@@ -115,6 +115,15 @@ def compose(f, g):
     return fun
 
 
+def compose_tuple(f, g):
+    '''
+    Functional composition.
+    '''
+    def fun(*args, **kargs):
+        return f(*g(*args, **kargs))
+    return fun
+
+
 class LogMixin(object):
     '''
     Add standard Python logging to a class.

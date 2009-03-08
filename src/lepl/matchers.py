@@ -45,10 +45,10 @@ from lepl.node import Node, raise_error
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
 from lepl.parser import Configuration, make_parser, make_matcher, tagged
-from lepl.rewriters import flatten
+from lepl.rewriters import flatten, auto_memoize
 from lepl.stream import Stream
 from lepl.trace import TraceResults
-from lepl.support import assert_type, lmap, compose, LogMixin
+from lepl.support import assert_type, lmap, LogMixin
 
 
 class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin, 
@@ -230,13 +230,16 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         '''
         Generate a default configuration instance.  Currently this flattens
         nested `lepl.matchers.And()` and `lepl.matchers.Or()` instances;
+        adds memoisation (which allows left recursion, but may alter the order 
+        in which matches are returned for ambiguous grammars);
         supports tracing (which is initially disabled, but can be enabled
         using the `lepl.matchers.Trace()` matcher); and tracks but does
         not limit generators (which can be flushed using the 
         `lepl.matchers.Commit()` matcher).
         '''
         return Configuration(
-            rewriters=[flatten({And: '*matchers', Or: '*matchers'})],
+            rewriters=[flatten({And: '*matchers', Or: '*matchers'}),
+                       auto_memoize(False)],
             monitors=[TraceResults(False), GeneratorManager(0)])
 #        return Configuration()
     
@@ -252,16 +255,19 @@ class Transformable(BaseMatcher):
 
     def __init__(self, function=_NULL_TRANSFORM):
         super(Transformable, self).__init__()
-        self._arg(function=function)
+        self.function = function
 
-    def compose(self, function):
+    def compose(self, function2):
         '''
         Add a transform.
         '''
         if self.function is _NULL_TRANSFORM:
-            self.function = function
+            self.function = function2
         else:
-            self.function = compose(function, self.function)
+            def fun(results, stream_in, stream_out, function1=self.function):
+                (results, stream_out) = function1(results, stream_in, stream_out)
+                return function2(results, stream_in, stream_out)
+            self.function = fun
 
 
 class _BaseSearch(BaseMatcher):
@@ -372,7 +378,7 @@ class OrderByResultCount(BaseMatcher):
             yield result
 
                 
-class _BaseCombiner(BaseMatcher):
+class _BaseCombiner(Transformable):
     '''
     Support for `And` and `Or`.
     '''
@@ -389,7 +395,7 @@ class And(_BaseCombiner):
     '''
     
     @tagged
-    def __call__(self, stream):
+    def __call__(self, stream_in):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  Results from the different matchers are
@@ -397,18 +403,18 @@ class And(_BaseCombiner):
         '''
 
         if self.matchers:
-            stack = [([], self.matchers[0](stream), self.matchers[1:])]
+            stack = [([], self.matchers[0](stream_in), self.matchers[1:])]
             try:
                 while stack:
                     (result, generator, matchers) = stack.pop(-1)
                     try:
-                        (value, stream) = yield generator
+                        (value, stream_out) = yield generator
                         stack.append((result, generator, matchers))
                         if matchers:
-                            stack.append((result+value, matchers[0](stream), 
+                            stack.append((result+value, matchers[0](stream_out), 
                                           matchers[1:]))
                         else:
-                            yield (result+value, stream)
+                            yield self.function(result+value, stream_in, stream_out)
                     except StopIteration:
                         pass
             finally:
@@ -428,17 +434,18 @@ class Or(_BaseCombiner):
     '''
     
     @tagged
-    def __call__(self, stream):
+    def __call__(self, stream_in):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  The result will correspond to one of the
         sub-matchers (starting from the left).
         '''
         for matcher in self.matchers:
-            generator = matcher(stream)
+            generator = matcher(stream_in)
             try:
                 while True:
-                    yield (yield generator)
+                    (results, stream_out) = (yield generator)
+                    yield self.function(results, stream_in, stream_out)
             except StopIteration:
                 pass
 
@@ -506,7 +513,7 @@ class Any(BaseMatcher):
             yield ([stream[0]], stream[1:])
             
             
-class Literal(BaseMatcher):
+class Literal(Transformable):
     '''
     Match a series of tokens in the stream (**''**).
     '''
@@ -531,7 +538,7 @@ class Literal(BaseMatcher):
         '''
         try:
             if self.text == stream[0:len(self.text)]:
-                yield ([self.text], stream[len(self.text):])
+                yield self.function([self.text], stream, stream[len(self.text):])
         except IndexError:
             pass
         
@@ -617,9 +624,13 @@ class Transform(Transformable):
     Typically used via `Apply` and `KApply`.
     '''
 
-    def __init__(self, function, matcher):
+    def __init__(self, matcher, function):
         super(Transform, self).__init__(function)
         self._arg(matcher=coerce(matcher))
+        # it's ok that this overwrites the same thing from Transformable
+        # (Transformable cannot have an argument because it is subclass to
+        # matcher without explicit functions)
+        self._arg(function=function)
 
     @tagged
     def __call__(self, stream_in):
@@ -850,7 +861,7 @@ def Apply(matcher, function, raw=False, args=False):
     if args:
         function = lambda results, f=function: f(*results)
     function = lambda results, sin, sout, f=function: (f(results), sout)
-    return Transform(function, matcher).tag('Apply')
+    return Transform(matcher, function).tag('Apply')
 
 
 def KApply(matcher, function, raw=False):
@@ -896,7 +907,7 @@ def KApply(matcher, function, raw=False):
             return function(**kargs)
         else:
             return ([function(**kargs)], stream_out)
-    return Transform(fun, matcher).tag('KApply')
+    return Transform(matcher, fun).tag('KApply')
 
         
 def AnyBut(exclude=None):

@@ -32,7 +32,7 @@ def stream():
         termphrase += simple_tp | (termphrase & join & termphrase) > TermPhrase
         sentence    = termphrase & verbphrase & termphrase & Eos() > Sentence
 
-    p = sentence.string_matcher(Configuration(rewriters=[memoize(LMemo)]))
+    p = sentence.string_matcher(Configuration(rewriters=[auto_memoize]))
     results = list(p('every boy or some girl and helen and john or pat knows\n'
                      'and respects or loves every boy or some girl and pat or\n'
                      'john and helen'))
@@ -44,6 +44,7 @@ def time():
     t = Timer("stream()", "from __main__ import stream")
     print(t.timeit(number=100)) 
     # 56.6
+    # auto-memoize brings that down to 30 (24 for nat_lang)
     
 
 def profile():
@@ -59,8 +60,8 @@ p.print_stats(20)
     cProfile.run('stream()', 'stream.prof')
 
 if __name__ == '__main__':
-#    time()
-    profile()
+    time()
+#    profile()
 #    stream()
 
     

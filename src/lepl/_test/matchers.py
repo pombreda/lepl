@@ -15,7 +15,9 @@ class BaseTest(TestCase):
         assert target == result, result
     
     def assert_list(self, stream, match, target):
-        result = [x for (x, s) in match.match_list(stream)]
+        matcher = match.list_matcher()
+        print(matcher.matcher)
+        result = [x for (x, s) in matcher(stream)]
         assert target == result, result
     
 
