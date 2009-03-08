@@ -44,7 +44,8 @@ from lepl.manager import GeneratorManager
 from lepl.node import Node, raise_error
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
-from lepl.parser import Configuration, make_parser, make_matcher, tagged, flatten
+from lepl.parser import Configuration, make_parser, make_matcher, tagged
+from lepl.rewriters import flatten
 from lepl.stream import Stream
 from lepl.trace import TraceResults
 from lepl.support import assert_type, lmap, compose, LogMixin

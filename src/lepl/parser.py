@@ -30,11 +30,8 @@ from logging import getLogger
 from traceback import print_exc, format_exc
 from types import MethodType, GeneratorType
 
-from lepl.graph import order, FORWARD, preorder, clone, Clone, post_clone
 from lepl.monitor import MultipleMonitors
-from lepl.operators import Matcher
 from lepl.stream import Stream
-from lepl.trace import TraceResults, RecordDeepest
     
     
 def tagged(call):
@@ -113,53 +110,6 @@ class Configuration(object):
             self.monitor = MultipleMonitors(monitors)
             
         
-class CloneWithDescribe(Clone):
-    '''
-    Extend `lepl.graph.Clone` to copy the `describe` attribute.
-    '''
-    
-    def constructor(self, *args, **kargs):
-        node = super(CloneWithDescribe, self).constructor(*args, **kargs)
-        node.describe = self._node.describe
-        return node    
-    
-
-def flatten(spec):
-    '''
-    A rewriter that flattens the matcher graph according to the spec.
-    
-    The spec is a map from type to attribute name.  If type instances are 
-    nested then the nested instance is replaced with the value(s) of the 
-    attribute on the instance (see `make_flatten()`).
-    '''
-    def rewriter(matcher):
-        return matcher.postorder(CloneWithDescribe(make_flatten(spec)))
-    return rewriter
-
-
-def make_flatten(table):
-    '''
-    Create a function that can be applied to a graph of matchers to implement
-    flattening.
-    '''
-    def flatten(node, old_args, kargs):
-        if type(node) in table:
-            attribute_name = table[type(node)]
-            new_args = []
-            for arg in old_args:
-                if type(arg) is type(node):
-                    if attribute_name.startswith('*'):
-                        new_args.extend(getattr(arg, attribute_name[1:]))
-                    else:
-                        new_args.append(getattr(arg, attribute_name))
-                else:
-                    new_args.append(arg)
-        else:
-            new_args = old_args
-        return clone(node, new_args, kargs)
-    return flatten
-
-
 def trampoline(main, monitor=None):
     '''
     The main parser loop.  Evaluates matchers as coroutines.

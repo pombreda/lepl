@@ -109,6 +109,7 @@ from lepl.parser import *
 from lepl.stream import *
 from lepl.manager import *
 from lepl.matchers import *
+from lepl.rewriters import *
 from lepl.trace import *
 
 __all__ = [
@@ -188,13 +189,14 @@ __all__ = [
         'TraceResults',
         # parser
         'memoize',
-        'flatten',
         # memo,
         'RMemo',
         'LMemo',
         'auto_memoize',
         'context_memoize',
-        'optimize_or']
+        'optimize_or',
+        # rewriters
+        'flatten']
 
 __version__ = '2.0.2'
 
