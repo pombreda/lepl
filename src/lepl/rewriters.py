@@ -110,6 +110,28 @@ def make_flatten(table):
     return flatten
 
 
+def compose_transforms(graph):
+    '''
+    A rewriter that joins adjacent transformations into a single
+    operation, avoiding trampolining in some cases.
+    '''
+    from lepl.matchers import Transform, Transformable
+    applied = set()
+    def new_clone(node, args, kargs):
+        # must always clone or don't know how to access matcher
+        copy = clone(node, args, kargs)
+        if isinstance(copy, Transform) \
+                and isinstance(copy.matcher, Transformable):
+            # avoid applying same transform twice via multiple paths
+            if node not in applied:
+                applied.add(node)
+                copy.matcher.compose(copy.function)
+            return copy.matcher
+        else:
+            return copy
+    return graph.postorder(DelayedClone(new_clone))
+
+
 def memoize(memoizer):
     '''
     A rewriter that adds the given memoizer to all nodes in the matcher
@@ -123,17 +145,18 @@ def memoize(memoizer):
 def auto_memoize(conservative=True):
     from lepl.memo import RMemo
     '''
-    Rewrite the matcher graph to:
-    1 - compose transforms
-    2 - rewrite recursive `Or` calls so that terminating clauses are
+    Generate an all-purpose memoizing rewriter.  It is typically called after
+    flattening and composing transforms.
+    
+    This rewrites the matcher graph to:
+    1 - rewrite recursive `Or` calls so that terminating clauses are
     checked first.
-    3 - add memoizers as appropriate
+    2 - add memoizers as appropriate
     
     This rewriting may change the order in which different results for
     an ambiguous grammar are returned.
     '''
     def rewriter(graph):
-        graph = compose_transforms(graph)
         graph = optimize_or(conservative)(graph)
         graph = context_memoize(conservative)(graph)
         return graph
@@ -173,6 +196,9 @@ def left_loops(node):
     
                     
 def either_loops(node, conservative):
+    '''
+    Select between the conservative and liberal loop detection algorithms.
+    '''
     if conservative:
         return loops(node)
     else:
@@ -181,6 +207,9 @@ def either_loops(node, conservative):
 
 def optimize_or(conservative=True):
     '''
+    Generate a memoizer that re-arranges ``Or`` matcher contents for
+    left--recursive loops.
+    
     When a left-recursive rule is used, it is much more efficient if it
     appears last in an `Or` statement, since that forces the alternates
     (which correspond to the terminating case in a recursive function)
@@ -188,6 +217,9 @@ def optimize_or(conservative=True):
     
     This rewriting may change the order in which different results for
     an ambiguous grammar are returned.
+    
+    `conservative` refers to the algorithm used to detect loops; False
+    may classify some left--recursive loops as right--recursive.
     '''
     from lepl.matchers import Delayed, Or
     def rewriter(graph):
@@ -209,8 +241,11 @@ def optimize_or(conservative=True):
 
 def context_memoize(conservative=True):
     '''
-    We only need to apply LMemo to left recursive loops.  Everything else
-    can use the simpler RMemo.
+    Generate a memoizer that only applies LMemo to left recursive loops.
+    Everything else can use the simpler RMemo.
+    
+    `conservative` refers to the algorithm used to detect loops; False
+    may classify some left--recursive loops as right--recursive.
     '''
     from lepl.matchers import Delayed
     from lepl.memo import LMemo, RMemo
@@ -236,28 +271,6 @@ def context_memoize(conservative=True):
                 return RMemo(copy)
         return graph.postorder(DelayedClone(new_clone))
     return rewriter
-
-
-def compose_transforms(graph):
-    '''
-    A rewriter that joins adjacent transformations into a single
-    operation, avoiding trampolining in some cases.
-    '''
-    from lepl.matchers import Transform, Transformable
-    applied = set()
-    def new_clone(node, args, kargs):
-        # must always clone or don't know how to access matcher
-        copy = clone(node, args, kargs)
-        if isinstance(copy, Transform) \
-                and isinstance(copy.matcher, Transformable):
-            # avoid applying same transform twice via multiple paths
-            if node not in applied:
-                applied.add(node)
-                copy.matcher.compose(copy.function)
-            return copy.matcher
-        else:
-            return copy
-    return graph.postorder(DelayedClone(new_clone))
 
 
 def drop_nested(type_):
