@@ -20,6 +20,7 @@
 Support for operator syntactic sugar (and operator redefinition).
 '''
 
+from collections import deque
 from threading import local
 from abc import ABCMeta
 
@@ -42,7 +43,7 @@ class Namespace(local):
     
     def __init__(self, base={}):
         super(Namespace, self).__init__()
-        self.__stack = [base]
+        self.__stack = deque([base])
         
     def push(self, extra={}):
         '''
@@ -56,7 +57,7 @@ class Namespace(local):
         '''
         Return the previous state from the stack.
         '''
-        self.__stack.pop(-1)
+        self.__stack.pop()
         
     def __enter__(self):
         '''

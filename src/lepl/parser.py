@@ -26,6 +26,7 @@ rewritten beforehand.
 '''
 
 
+from collections import deque
 from logging import getLogger
 from traceback import print_exc, format_exc
 from types import MethodType, GeneratorType
@@ -120,7 +121,9 @@ def trampoline(main, monitor=None):
     Replacing stack append/pop with a manually allocated non-decreasing array
     and index made no significant difference (at around 1% level)
     '''
-    stack = []
+    stack = deque()
+    append = stack.append
+    pop = stack.pop
     try:
         value = main
         exception = False
@@ -133,13 +136,13 @@ def trampoline(main, monitor=None):
                 if monitor: monitor.next_iteration(epoch, value, exception, stack)
                 if type(value) is GeneratorWrapper:
                     if monitor: monitor.push(value)
-                    stack.append(value)
+                    append(value)
                     if monitor: monitor.before_next(value)
                     value = next(value)
                     if monitor: monitor.after_next(value)
                 else:
-                    pop = stack.pop()
-                    if monitor: monitor.pop(pop)
+                    popped = pop()
+                    if monitor: monitor.pop(popped)
                     if stack:
                         if exception:
                             exception = False
@@ -172,7 +175,7 @@ def trampoline(main, monitor=None):
                             log.warn('Stack: ' + generator.matcher.describe)
     finally:
         while monitor and stack:
-            monitor.pop(stack.pop())
+            monitor.pop(pop())
                     
                 
 def prepare(matcher, stream, conf):

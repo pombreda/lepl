@@ -39,7 +39,7 @@ def left():
     pair = Delayed()
     with Separator(Regexp(r'\s*')):
         pair += Optional(pair) & '(' & Optional(pair) & ')' 
-    p = pair.string_matcher(Configuration(rewriters=[auto_memoize(True)]))
+    p = pair.string_matcher(Configuration(rewriters=[auto_memoize(False)]))
     results = list(p(make_data(6)))
     print(len(results))
 
@@ -62,15 +62,15 @@ p=pstats.Stats('nested.prof')
 p.strip_dirs()
 p.sort_stats('cumulative')
 p.sort_stats('time')
-p.print_stats(20)
+p.print_stats(35)
     '''
     import cProfile
     cProfile.run('{0}()'.format(name), 'nested.prof')
 
 if __name__ == '__main__':
-    time('left')
-#    profile('left')
+#    time('left')
+    profile('left')
 #    right()
-
+#    left()
     
     

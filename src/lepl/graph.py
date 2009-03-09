@@ -39,7 +39,7 @@ particularly useful for generating 'repr' strings and might also be used for
 cloning.
 '''
 
-from collections import Sequence, Hashable
+from collections import Sequence, Hashable, deque
 
 from lepl.support import compose
 
@@ -536,7 +536,7 @@ class ConstructorStr(Visitor):
         compact.  It's ugly, bug-prone and completely arbitrary, but it 
         seems to work....
         '''
-        sections = []
+        sections = deque()
         (scan, indent) = (0, -1)
         while scan < len(lines):
             (i, _) = lines[scan]
@@ -547,7 +547,7 @@ class ConstructorStr(Visitor):
                 (scan, indent) = self.__compress(lines, sections.pop(-1)[1], scan)
             scan = scan + 1
         while sections:
-            self.__compress(lines, sections.pop(-1)[1], len(lines))
+            self.__compress(lines, sections.pop()[1], len(lines))
         return self.__format(lines)
     
     def __compress(self, lines, start, stop):

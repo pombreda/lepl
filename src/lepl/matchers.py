@@ -239,7 +239,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         '''
         return Configuration(
             rewriters=[flatten, compose_transforms,
-                       auto_memoize(conservative=False)],
+                       auto_memoize(conservative=True)],
             monitors=[TraceResults(False), GeneratorManager(0)])
 #        return Configuration()
     
@@ -300,7 +300,7 @@ class DepthFirst(_BaseSearch):
 
     @tagged
     def __call__(self, stream):
-        stack = []
+        stack = deque()
         try:
             stack.append((0, [], stream, self.first(stream)))
             while stack:
@@ -319,7 +319,7 @@ class DepthFirst(_BaseSearch):
                     if count1 >= self.start and \
                             (self.stop is None or count1 <= self.stop):
                         yield (acc1, stream1)
-                    stack.pop(-1)
+                    stack.pop()
         finally:
             self._cleanup(stack)
         
@@ -403,16 +403,18 @@ class And(_BaseCombiner):
         '''
 
         if self.matchers:
-            stack = [([], self.matchers[0](stream_in), self.matchers[1:])]
+            stack = deque([([], self.matchers[0](stream_in), self.matchers[1:])])
+            append = stack.append
+            pop = stack.pop
             try:
                 while stack:
-                    (result, generator, matchers) = stack.pop(-1)
+                    (result, generator, matchers) = pop()
                     try:
                         (value, stream_out) = yield generator
-                        stack.append((result, generator, matchers))
+                        append((result, generator, matchers))
                         if matchers:
-                            stack.append((result+value, matchers[0](stream_out), 
-                                          matchers[1:]))
+                            append((result+value, matchers[0](stream_out), 
+                                    matchers[1:]))
                         else:
                             yield self.function(result+value, stream_in, stream_out)
                     except StopIteration:
