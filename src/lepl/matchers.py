@@ -45,7 +45,7 @@ from lepl.node import Node, raise_error
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
 from lepl.parser import Configuration, make_parser, make_matcher, tagged
-from lepl.rewriters import flatten, auto_memoize
+from lepl.rewriters import flatten, auto_memoize, compose_transforms
 from lepl.stream import Stream
 from lepl.trace import TraceResults
 from lepl.support import assert_type, lmap, LogMixin
@@ -238,8 +238,8 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         `lepl.matchers.Commit()` matcher).
         '''
         return Configuration(
-            rewriters=[flatten({And: '*matchers', Or: '*matchers'}),
-                       auto_memoize(False)],
+            rewriters=[flatten, compose_transforms,
+                       auto_memoize(conservative=False)],
             monitors=[TraceResults(False), GeneratorManager(0)])
 #        return Configuration()
     

@@ -3,7 +3,7 @@ Advanced Use
 ============
 
 
-.. index:: Configuration(), configuration, flatten
+.. index:: Configuration(), configuration, flatten, compose_transforms, auto_memoize, default configuration
 .. _configuration:
 
 Configuration
@@ -20,22 +20,147 @@ Most examples here use the default configuration, which is supplied by
 currently defined as::
 
   Configuration(
-    rewriters=[flatten({And: '*matchers', Or: '*matchers'})],
+    rewriters=[flatten, compose_transforms, auto_memoize(conservative=False)],
     monitors=[TraceResults(False), GeneratorManager(0)])
 
-The single rewriter (`flatten() <api/redirect.html#lepl.parser.flatten>`_ ---
-a function that takes a matcher graph as a single argument and returns a new,
-rewritten graph as the result) rewrites nested `And()
-<api/redirect.html#lepl.matchers.And>`_ and `Or()
-<api/redirect.html#lepl.matchers.Or>`_ matchers.  This is a largely cosmetic
-fix; without it, using repeated ``&`` and ``|`` gives an unbalanced tree of
-matchers because it generates a set of nested pairs rather than a single
-matcher with many sub--matchers.
+The rewriters are described below (:ref:`rewriting`).
 
 The two monitors (which are passed to `trampoline()
 <api/redirect.html#lepl.parser.trampoline>`_) enable the `Trace()
 <api/redirect.html#lepl.matchers.Trace>`_ and `Commit()
 <api/redirect.html#lepl.matchers.Commit>`_ matchers.
+
+
+.. index:: rewriting
+.. _rewriting:
+
+Rewriting
+---------
+
+A grammar is specified by :ref:`matchers`, giving a collection of Python
+objects.  More exactly, a directed graph of objects is created.  LEPL 2 was
+designed so that this graph can be examined and modified before it is used as
+a parser.
+
+.. note::
+
+  This is very powerful --- it allows LEPL to use some of the techniques that
+  make "compiled" parsers more efficient --- but it can also introduce quite
+  subtle errors.  The addition of user--defined rewriters is not encouraged
+  unless you are *very* familiar with LEPL.
+
+The work of modifying the matcher graph is done by functions called
+*rewriters*.  They are specified in the :ref:`configuration`.  The following
+rewriters are available:
+
+
+.. index:: flatten
+
+Flatten And, Or
+
+  The `flatten <api/redirect.html#lepl.rewriters.flatten>`_ rewriter
+  combines nested `And() <api/redirect.html#lepl.matchers.And>`_ and `Or()
+  <api/redirect.html#lepl.matchers.Or>`_ matchers.  This helps improve
+  efficiency.
+
+  Nested matchers typically occur because each ``&`` and ``|`` operator
+  generates a new matcher, so a sequence of matchers separated by ``&``, for
+  example, generates several `And() <api/redirect.html#lepl.matchers.And>`_
+  matchers.  This rewriter moves them into a single matcher, as might be
+  expected from reading the grammar.  This should not change the "meaning" of
+  the grammar or the results returned.
+
+  This matcher is used in the default :ref:`configuration`.
+
+
+.. index:: compose_transforms
+
+Composing and Merging Transforms
+
+  The `Transform() <api/redirect.html#lepl.matchers.Transform>`_ matcher is
+  the "workhorse" that underlies `Apply()
+  <api/redirect.html#lepl.matchers.Apply>`_, ``>``, etc.  It changes the
+  results returned by other matchers.
+
+  Because transforms are not involved in the work of matching --- they just
+  modify the final results --- the effects of adjacent instances can be
+  combined into a single operation.  In some cases they can also be merged
+  into the operation of another matcher.  This is done by the
+  `compose_transforms <api/redirect.html#lepl.rewriters.compose_transforms>`_
+  rewriter.
+
+  These operations should not change the "meaning" of the grammar or the
+  results returned, but should improve performance by reducing the amount of
+  :ref:`trampolining` made by the parser.
+
+  This matcher is used in the default :ref:`configuration`.
+
+
+.. index:: memoize()
+
+Global Memoizer
+
+  The `memoize() <api/redirect.html#lepl.rewriters.memoize>`_ rewriter applys
+  a single memoizer to all matchers.  For more information see
+  :ref:`memoisation` below.
+
+
+.. index:: optimize_or()
+.. _optimizeor:
+
+Optimize Or For Left Recursion
+
+  When a left--recursive rule occurs in an `Or()
+  <api/redirect.html#lepl.matchers.Or>`_ matcher it is usually most efficient
+  to make it the right--most alternative.  This allows other rules to consume
+  input before the recursive rule is (re-)called.
+
+  The `optimize_or(conservative)
+  <api/redirect.html#lepl.rewriters.optimize_or>`_ rewriter tries to detect
+  left--recursive rules and re-arranges `Or()
+  <api/redirect.html#lepl.matchers.Or>`_ matcher contents appropriately.
+
+  The ``consverative`` parameter supplied to this rewriter (and a few more
+  below) indicates how left--recursive rules are detected.  If true, all
+  recursive paths are assumed to be left recursive.  If false then only those
+  matchers that are in the left--most position of multiple arguments are used
+  (except for `Or() <api/redirect.html#lepl.matchers.Or>`_).
+
+  This matcher is used in the default :ref:`configuration` via the
+  `auto_memoize(conservative)
+  <api/redirect.html#lepl.rewriters.auto_memoize>`_ rewriter (below).
+
+
+.. index:: context_memoize()
+
+Context--Sensitive Memoisation
+
+  The `context_memoize(conservative)
+  <api/redirect.html#lepl.rewriters.context_memoize>`_ rewriter applys a
+  memoizer to all matchers.  Whether `LMemo()
+  <api/redirect.html#lepl.memo.LMemo>`_ or the `RMemo()
+  <api/redirect.html#lepl.memo.RMemo>`_ depends on whether the matcher is part
+  of a left--recursive rule.
+
+  The memoizers are described in more detail in :ref:`memoisation` below.  The
+  detection of left--recursive rules is explained in the :ref:`Optimize Or
+  <optimizeor>` entry above.
+
+  This matcher is used in the default :ref:`configuration` via the
+  `auto_memoize(conservative)
+  <api/redirect.html#lepl.rewriters.auto_memoize>`_ rewriter (below).
+
+
+.. index:: auto_memoize()
+
+Automatic Memoisation
+
+  This calls the `optimize_or(conservative)
+  <api/redirect.html#lepl.rewriters.optimize_or>`_ and
+  `context_memoize(conservative)
+  <api/redirect.html#lepl.rewriters.context_memoize>`_ rewriters, described
+  above.  It is used in the default :ref:`configuration` with
+  ``consverative=False``.
 
 
 .. index:: search, backtracking
@@ -123,39 +248,42 @@ before considering backtracking.  At the moment I do not see a "natural" way
 to form such a tree, and so this is not implemented.  Feedback is appreciated.
 
 
-.. index:: memoisation, RMemo(), LMemo(), memoize(), ambiguous grammars, left-recursion
+.. index:: memoisation, RMemo(), LMemo(), memoize(), ambiguous grammars, left-recursion, context_memoize(), auto_memoize()
 .. _memoisation:
 
 Memoisation
 -----------
 
-LEPL 2.0 supports two approaches to memoisation.
+A memoizer stores a matcher's results.  If it is called again in the same
+context (during backtracking, for example), the stored result can be returned
+without repeating the work needed to generate it.  This improves the
+efficiency of the parser.
 
-The simplest memoizer is `RMemo() <api/redirect.html#lepl.memo.RMemo>`_ which is
-a cache based on the stream supplied.
+LEPL 2 has two memoizers.  The simplest is `RMemo()
+<api/redirect.html#lepl.memo.RMemo>`_ which is a simple cache based on the
+stream supplied.
 
-For left--recursive grammars, however, things are more complicated (for full
-details see :ref:`memoisation`).  In this case, `LMemo()
+For left--recursive grammars, however, things are more complicated.  The same
+matcher can be called with the same stream at different "levels" of recursion
+(for full details see :ref:`memoisation_impl`).  In this case, `LMemo()
 <api/redirect.html#lepl.memo.LMemo>`_ must be used.
 
-Memoizers can either be specified directly, as matchers in the grammar, or via
-the :ref:`configuration`.  If they are used directly they only affect the
-matcher to which they are applied.  If they are given as a rewriter in the
-configuration then they are automatically applied to every matcher.
+Memoizers can be specified directly in the grammar or they can be added by
+:ref:`rewriting` the matcher graph.  
 
-First, an example of restricted use::
+When added directly to the grammar a memoizer only affects the given
+matcher(s).  For example::
 
   >>> matcher = Any('a')[:] & Any('a')[:] & RMemo(Any('b')[4])
   >>> len(list(matcher.match('aaaabbbb')))
   5
 
 Here the `RMemo() <api/redirect.html#lepl.memo.RMemo>`_ avoids re-matching of
-the "bbbb" for each different combination of "a"s.
-    
-Next, an example where the memoizer is added to all matchers via rewriting of
-the matcher graph (from the paper describing the technique used for handling
-left--recursive grammars)::
-        
+the "bbbb", but has no effect on the matching of the "a"s.
+
+The simplest way to apply a memoizer to all matchers is with the `memoize()
+<api/redirect.html#lepl.rewriters.memoize>`_ rewriter::
+
   >>> class VerbPhrase(Node): pass
   >>> class DetPhrase(Node): pass
   >>> class SimpleTp(Node): pass
@@ -185,13 +313,19 @@ left--recursive grammars)::
   392
 
 This example is left--recursive and very ambiguous.  With `LMemo()
-<api/redirect.html#lepl.memo.LMemo>`_ it can be parsed with no problems.
+<api/redirect.html#lepl.memo.LMemo>`_ added to all matchers it can be parsed
+with no problems.
 
-The `memoize() <api/redirect.html#lepl.parser.memoize>`_ function converts a
-memoizing matcher to a rewriter.
+It is also possible to use the `context_memoize()
+<api/redirect.html#lepl.rewriters.context_memoize>`_ or `auto_memoize()
+<api/redirect.html#lepl.rewriters.auto_memoize>`_ rewriters.  Both of these
+attempt to detect left--recursive rules, so that the less efficient `LMemo()
+<api/redirect.html#lepl.memo.LMemo>`_ is only used where necessary.
 
-.. note::
+The default :ref:`configuration` uses `auto_memoize(conservative=False)
+<api/redirect.html#lepl.rewriters.auto_memoize>`_, which should provide the
+most efficient parser in most cases.  It is possible that some grammars will
+need to use the more conservative algorithm to detect left--recursive loops,
+via `auto_memoize(conservative=True)
+<api/redirect.html#lepl.rewriters.auto_memoize>`_.
 
-  In both cases above there is nothing obvious to show that the memoizer is
-  actually used (I am just printing the number of different parses available).
-  Efficiency and profiling will be addressed in the next release.

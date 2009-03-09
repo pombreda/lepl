@@ -76,7 +76,7 @@ It is clear, then, that the impact on existing code was fairly small.
 
 
 .. index:: memoisation, Norvig, Frost, Hafiz, left-recursion
-.. _memoisation:
+.. _memoisation_impl:
 
 Memoisation
 -----------
@@ -105,14 +105,6 @@ depth.
 
 This approach is implemented in `LMemo() <api/redirect.html#lepl.memo.LMemo>`_
 which makes LEPL robust to left--recursive grammars.
-
-.. warning::
-
-   The current implementation is provisional.  There is at least one known
-   issue that makes the asymptotic performance significantly worse than
-   expected (evaluating the length of remaining input is expensive for
-   streams).  This is one of the performance--related issues that will be
-   addressed in LEPL 2.1.
 
 
 .. index:: rewriting, graph, flattening

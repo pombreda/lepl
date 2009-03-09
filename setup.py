@@ -4,19 +4,28 @@ except:
     from distutils.core import setup
 
 setup(name='LEPL',
-      version='2.0.2',
+      version='2.1b',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       long_description='''
-Introducing version 2.0 of LEPL with a new, more powerful core.
+LEPL is a recursive descent parser, written in Python, which has a a friendly,
+easy-to-use syntax.  The underlying implementation includes
+several features that make it more powerful than might be expected.
 
-I am trying to keep LEPL simple and intuitive while making it easier to add
-features from recent research papers "under the hood".  The combination of
-trampolining (which exposes the inner loop) and matcher graph rewriting (which
-allows the parser to be restructured programmatically) should allow further
-extensions without changing the original, simple grammar syntax.
+For example, it is not limited by the Python stack, because it uses
+trampolining and co-routines.  Multiple parses can be found for ambiguous
+grammars and it can also handle left-recursive grammars.
 
 The aim is a powerful, extensible parser that will also give solid, reliable
-results to first--time users.  This release is a major step towards that goal.
+results to first-time users.
+
+This release (2.1) improves performance.  Typical parsers are now twice as
+fast (improved constant factor) while left recursive grammars are re--arranged
+to avoid unnecessary deep recursion (improved "big-O" performance; one test
+case improved by a factor of 40).  This work is decribed in :ref:`rewriting`,
+but is applied automatically and need to be understood for simple
+applications.
+
+The stable (2.0.2) release remains available.
 
 
 Features
@@ -53,11 +62,6 @@ Features
 
 * Pluggable trace and resource management, including **"deepest match"
   diagnostics** and the ability to limit backtracking.
-
-LEPL's *weakest* point is probably performance.  This has improved
-with memoisation, but it is still more suited for exploratory and
-one--off jobs than, for example, a compiler front--end.  Measuring and
-improving performance is the main target of the next release.
 ''',
       author='Andrew Cooke',
       author_email='andrew@acooke.org',

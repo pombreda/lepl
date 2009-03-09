@@ -11,11 +11,21 @@ There are several ways to install LEPL --- they are described below, simplest
 first.  If you want a local copy of the manual you should also read the
 :ref:`localdocs` section.
 
+.. note::
+
+  When a new version of LEPL is close to being released there may be both a
+  stable and a beta version available.  The main documentation (at
+  www.acooke.org) describes the latest (beta) version, but source and
+  documentation for either version can be downloaded.
+
+  For more details, please read the information below.
+
 
 Install With Setuptools / easy_install (Python 2.6)
 ---------------------------------------------------
 
-This currently only works for Python 2.6
+This installs the **latest stable version** and currently only works for
+Python 2.6
 
 If you have `setuptools <http://pypi.python.org/pypi/setuptools>`_ installed
 you should be able to install LEPL using::
@@ -31,7 +41,8 @@ That's it.  There is no need to download anything beforehand;
 Install With Distutils / setup.py (Python 3 and 2.6)
 ----------------------------------------------------
 
-Download and unpack a source package (see :ref:`download`) then run::
+Download and unpack a source package (**all versions**, see :ref:`download`)
+then run::
 
   python setup.py install
 
@@ -47,8 +58,8 @@ For example, on Gnu/Linux (in the instructions below, "LEPL-xxx" would be
 Manual Install (experts only)
 -----------------------------
 
-Download and unpack a source package (see :ref:`download`) then add to your
-``PYTHONPATH`` or ``site-packages``.
+Download and unpack a source package (**all versions**, see :ref:`download`)
+then add to your ``PYTHONPATH`` or ``site-packages``.
 
 
 Package Removal (experts only)
@@ -88,10 +99,10 @@ Simply download and unpack the appropriate files (see :ref:`download`, below).
 Download
 --------
 
-You can download the source and documentation packages from the `Support Site
-<http://code.google.com/p/lepl/downloads>`_.
+You can download the source and documentation packages (**all versions**) from
+the `Support Site <http://code.google.com/p/lepl/downloads>`_.
 
-*Stable* source packages are also available from the `Python Package Index
+**Stable** source packages are also available from the `Python Package Index
 <http://pypi.python.org/pypi/LEPL/>`_ for the use of setuptools.
 
 
@@ -135,12 +146,9 @@ Date        Version  Description
 2009-03-05  2.0.1    Fixed stupid bug introduced at last minute in 2.0.
 ----------  -------  -----------
 2009-03-06  2.0.2    A few more small bug fixes.
+----------  -------  -----------
+2009-03-06  2.1      Improved efficiency.
 ==========  =======  ===========
-
-The next release will be a minor increment (2.1), focusing on efficiency and
-reliability (lots of profiling and testing).  Hopefully the new core
-(particularly the matcher graph rewriting) is flexible enough to avoid another
-major release for some time.
 
 
 .. index:: Python version

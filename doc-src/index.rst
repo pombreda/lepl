@@ -2,17 +2,26 @@
 LEPL - A Parser Library for Python 3 (and 2.6)
 ==============================================
 
-Introducing version 2.0 of LEPL with a new, more powerful core.
+LEPL is a recursive descent parser, written in Python, which has a a friendly,
+easy--to--use syntax (:ref:`example`).  The underlying implementation includes
+several features that make it more powerful than might be expected.
 
-I am trying to keep LEPL simple and intuitive to the "end user" (the
-:ref:`example` shows just how friendly it can be) while making it easier to
-add features from recent research papers "under the hood".  The combination of
-trampolining (which exposes the inner loop) and matcher graph rewriting (which
-allows the parser to be restructured programmatically) should allow further
-extensions without changing the original, simple grammar syntax.
+For example, it is not limited by the Python stack, because it uses
+trampolining and co--routines.  Multiple parses can be found for ambiguous
+grammars and it can also handle left--recursive grammars.
 
 The aim is a powerful, extensible parser that will also give solid, reliable
-results to first--time users.  This release is a major step towards that goal.
+results to first--time users.
+
+This release (2.1) improves performance.  Typical parsers are now twice as
+fast (improved constant factor) while left recursive grammars are re--arranged
+to avoid unnecessary deep recursion (improved "big-O" performance; one test
+case improved by a factor of 40).  This work is decribed in :ref:`rewriting`,
+but is applied automatically and need to be understood for simple
+applications.
+
+Version 2.1 is currently a *beta* release; the previous stable version is also
+available for :ref:`download`.
 
 
 Features
@@ -45,21 +54,12 @@ Features
 
 * **Left recursive grammars**.  Memoisation can detect and control
   left--recursive grammars.  Together with LEPL's support for
-  ambiguity this means that "any" grammar can be supported. [1]_
+  ambiguity this means that "any" grammar can be supported.
 
 * Pluggable trace and resource management, including **"deepest match"
-  diagnostics** and the ability to limit backtracking. [1]_
-
-LEPL's *weakest* point is probably performance.  This has improved
-with memoisation, but it is still more suited for exploratory and
-one--off jobs than, for example, a compiler front--end.  Measuring and
-improving performance is the main target of the next release.
+  diagnostics** and the ability to limit backtracking.
 
 The `API documentation <api/index.html>`_ is also available.
-
-.. [1] These features rely on the most ambitious changes in the new
-       2.0 core and so are not yet as reliable or efficient as the
-       rest of the code.  This will be addressed in the 2.1 release.
 
 
 Download

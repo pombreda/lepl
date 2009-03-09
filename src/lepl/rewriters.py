@@ -74,30 +74,18 @@ def post_clone(function):
     return new_clone
 
 
-def flatten(spec):
+def flatten(graph):
     '''
-    A rewriter that flattens the matcher graph according to the spec.
-    
-    The spec is a map from type to attribute name.  If type instances are 
-    nested then the nested instance is replaced with the value(s) of the 
-    attribute on the instance (see `make_flatten()`).
+    A rewriter that flattens ``And`` and ``Or`` lists.
     '''
-    def rewriter(matcher):
-        return matcher.postorder(DelayedClone(make_flatten(spec)))
-    return rewriter
-
-
-def make_flatten(table):
-    '''
-    Create a function that can be applied to a graph of matchers to implement
-    flattening.
-    '''
-    def flatten(node, old_args, kargs):
+    from lepl.matchers import And, Or
+    def new_clone(node, old_args, kargs):
+        table = {And: '*matchers', Or: '*matchers'}
         if type(node) in table:
             attribute_name = table[type(node)]
             new_args = []
             for arg in old_args:
-                if type(arg) is type(node):
+                if type(arg) is type(node) and arg.function is node.function:
                     if attribute_name.startswith('*'):
                         new_args.extend(getattr(arg, attribute_name[1:]))
                     else:
@@ -107,7 +95,7 @@ def make_flatten(table):
         else:
             new_args = old_args
         return clone(node, new_args, kargs)
-    return flatten
+    return graph.postorder(DelayedClone(new_clone))
 
 
 def compose_transforms(graph):
@@ -207,7 +195,7 @@ def either_loops(node, conservative):
 
 def optimize_or(conservative=True):
     '''
-    Generate a memoizer that re-arranges ``Or`` matcher contents for
+    Generate a rewriter that re-arranges ``Or`` matcher contents for
     left--recursive loops.
     
     When a left-recursive rule is used, it is much more efficient if it

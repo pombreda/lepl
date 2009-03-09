@@ -1,4 +1,7 @@
 
+.. index:: matchers
+.. _matchers:
+
 Matchers
 ========
 
