@@ -20,7 +20,7 @@ Most examples here use the default configuration, which is supplied by
 currently defined as::
 
   Configuration(
-    rewriters=[flatten, compose_transforms, auto_memoize(conservative=False)],
+    rewriters=[flatten, compose_transforms, auto_memoize(conservative=True)],
     monitors=[TraceResults(False), GeneratorManager(0)])
 
 The rewriters are described below (:ref:`rewriting`).
@@ -120,7 +120,7 @@ Optimize Or For Left Recursion
   left--recursive rules and re-arranges `Or()
   <api/redirect.html#lepl.matchers.Or>`_ matcher contents appropriately.
 
-  The ``consverative`` parameter supplied to this rewriter (and a few more
+  The ``conservative`` parameter supplied to this rewriter (and a few more
   below) indicates how left--recursive rules are detected.  If true, all
   recursive paths are assumed to be left recursive.  If false then only those
   matchers that are in the left--most position of multiple arguments are used

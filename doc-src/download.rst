@@ -147,7 +147,7 @@ Date        Version  Description
 ----------  -------  -----------
 2009-03-06  2.0.2    A few more small bug fixes.
 ----------  -------  -----------
-2009-03-06  2.1      Improved efficiency.
+2009-03-08  2.1b     Improved efficiency.
 ==========  =======  ===========
 
 
@@ -158,8 +158,7 @@ Supported Versions
 ------------------
 
 The code was written using Python 3.0.  It was then backported to Python 2.6
-and appears to work fine there (except that the ``//`` operator doesn't
-exist).
+and appears to work fine there.
 
 However, it's not regularly tested on anything other than 3.0.
 

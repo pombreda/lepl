@@ -97,7 +97,7 @@ def post_clone(function):
 
 def flatten(graph):
     '''
-    A rewriter that flattens ``And`` and ``Or`` lists.
+    A rewriter that flattens `And` and `Or` lists.
     '''
     from lepl.matchers import And, Or
     def new_clone(node, old_args, kargs):
@@ -183,8 +183,8 @@ def left_loops(node):
     
     So we estimate left-recursive loops as paths that start and end at
     the given node, and which are first children of intermediate nodes
-    unless the node is `lepl.matcher.Or`, or the preceding matcher is a
-    `lepl.matcher.Lookahead`.  
+    unless the node is `Or`, or the preceding matcher is a
+    `Lookahead`.  
     
     Each loop is a list that starts and ends with the given node.
     '''
@@ -216,7 +216,7 @@ def either_loops(node, conservative):
 
 def optimize_or(conservative=True):
     '''
-    Generate a rewriter that re-arranges ``Or`` matcher contents for
+    Generate a rewriter that re-arranges `Or` matcher contents for
     left--recursive loops.
     
     When a left-recursive rule is used, it is much more efficient if it
@@ -281,20 +281,3 @@ def context_memoize(conservative=True):
         return graph.postorder(DelayedClone(new_clone))
     return rewriter
 
-
-def drop_nested(type_):
-    '''
-    Generate a rewriter that drops nested instances of the given type
-    (the "outer" is discarded).
-    '''
-    def new_clone(node, args, kargs):
-        copy = clone(node, args, kargs)
-        all_args = list(args)
-        for name in kargs:
-            all_args.append(kargs[name])
-        if len(all_args) == 1 and isinstance(copy, type_) \
-                and isinstance(all_args[0], type_):
-            return all_args[0]
-        else:
-            return copy
-    return lambda graph: graph.postorder(DelayedClone(new_clone))

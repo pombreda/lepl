@@ -295,7 +295,7 @@ class _BaseSearch(BaseMatcher):
         
 class DepthFirst(_BaseSearch):
     '''
-    (Post order) Depth first repetition (typically used via ``lepl.Repeat``).
+    (Post order) Depth first repetition (typically used via `Repeat`).
     '''
 
     @tagged
@@ -326,7 +326,7 @@ class DepthFirst(_BaseSearch):
         
 class BreadthFirst(_BaseSearch):
     '''
-    (Level order) Breadth first repetition (typically used via ``lepl.Repeat``).
+    (Level order) Breadth first repetition (typically used via `Repeat`).
     '''
     
     @tagged
@@ -1145,7 +1145,7 @@ def DropEmpty(matcher):
 
 def Literals(*matchers):
     '''
-    A series of literals, joined with ``lepl.Or``.
+    A series of literals, joined with `Or`.
     '''
     # I considered implementing this by extending Literal() itself, but
     # that would have meant putting "Or-like" functionality in Literal,

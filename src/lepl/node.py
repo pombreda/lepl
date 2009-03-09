@@ -93,7 +93,7 @@ class Node(SimpleGraphNode, LogMixin):
 
 class CustomStr(GraphStr):
     '''
-    Extend ``lepl.GraphStr`` to handle named pairs.
+    Extend `GraphStr` to handle named pairs.
     '''
     
     def leaf(self, arg):
