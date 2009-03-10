@@ -29,9 +29,9 @@ from lepl.support import CircularFifo
 
 class TraceResults(ExposedMonitor):
     '''
-    A basic logger (implemented as a monitor - `lepl.monitor.MonitorInterface`)
+    A basic logger (implemented as a monitor - `MonitorInterface`)
     that records the flow of control during parsing.  It can be controlled by 
-    `lepl.matchers.Trace()`.
+    `Trace()`.
     '''
     
     def __init__(self, enabled=False):

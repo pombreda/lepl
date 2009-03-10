@@ -76,7 +76,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     
     def file_parser(self, config=None):
         '''
-        Construct a parser for file objects that uses a `lepl.stream.Stream()` 
+        Construct a parser for file objects that uses a `Stream()` 
         internally and returns a single result.
         '''
         return make_parser(self, Stream.from_file, 
@@ -84,7 +84,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     
     def list_parser(self, config=None):
         '''
-        Construct a parser for lists that uses a `lepl.stream.Stream()` 
+        Construct a parser for lists that uses a `Stream()` 
         internally and returns a single result.
         '''
         return make_parser(self, Stream.from_list, 
@@ -92,7 +92,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     
     def path_parser(self, config=None):
         '''
-        Construct a parser for a file that uses a `lepl.stream.Stream()` 
+        Construct a parser for a file that uses a `Stream()` 
         internally and returns a single result.
         '''
         return make_parser(self, Stream.from_path, 
@@ -100,7 +100,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     
     def string_parser(self, config=None):
         '''
-        Construct a parser for strings that uses a `lepl.stream.Stream()` 
+        Construct a parser for strings that uses a `Stream()` 
         internally and returns a single result.
         '''
         return make_parser(self, Stream.from_string, 
@@ -117,28 +117,28 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def parse_file(self, file, config=None):
         '''
         Parse the contents of a file, returning a single match and using a
-        `lepl.stream.Stream()` internally.
+        `Stream()` internally.
         '''
         return self.file_parser(config)(file)
         
     def parse_list(self, list_, config=None):
         '''
         Parse the contents of a list, returning a single match and using a
-        `lepl.stream.Stream()` internally.
+        `Stream()` internally.
         '''
         return self.list_parser(config)(list_)
         
     def parse_path(self, path, config=None):
         '''
         Parse the contents of a file, returning a single match and using a
-        `lepl.stream.Stream()` internally.
+        `Stream()` internally.
         '''
         return self.path_parser(config)(path)
         
     def parse_string(self, string, config=None):
         '''
         Parse the contents of a string, returning a single match and using a
-        `lepl.stream.Stream()` internally.
+        `Stream()` internally.
         '''
         return self.string_parser(config)(string)
     
@@ -153,7 +153,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def file_matcher(self, config=None):
         '''
         Construct a parser for file objects that returns a sequence of matches
-        and uses a `lepl.stream.Stream()` internally.
+        and uses a `Stream()` internally.
         '''
         return make_matcher(self, Stream.from_file, 
                             config if config else self.default_config())
@@ -161,7 +161,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def list_matcher(self, config=None):
         '''
         Construct a parser for lists that returns a sequence of matches
-        and uses a `lepl.stream.Stream()` internally.
+        and uses a `Stream()` internally.
         '''
         return make_matcher(self, Stream.from_list, 
                             config if config else self.default_config())
@@ -169,7 +169,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def path_matcher(self, config=None):
         '''
         Construct a parser for a file that returns a sequence of matches
-        and uses a `lepl.stream.Stream()` internally.
+        and uses a `Stream()` internally.
         '''
         return make_matcher(self, Stream.from_path, 
                             config if config else self.default_config())
@@ -177,7 +177,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def string_matcher(self, config=None):
         '''
         Construct a parser for strings that returns a sequence of matches
-        and uses a `lepl.stream.Stream()` internally.
+        and uses a `Stream()` internally.
         '''
         return make_matcher(self, Stream.from_string, 
                             config if config else self.default_config())
@@ -193,28 +193,28 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def match_file(self, file, config=None):
         '''
         Parse the contents of a file, returning a sequence of matches and using a
-        `lepl.stream.Stream()` internally.
+        `Stream()` internally.
         '''
         return self.file_matcher(config)(file)
         
     def match_list(self, list_, config=None):
         '''
         Parse a list, returning a sequence of matches and using a
-        `lepl.stream.Stream()` internally.
+        `Stream()` internally.
         '''
         return self.list_matcher(config)(list_)
         
     def match_path(self, path, config=None):
         '''
         Parse a file, returning a sequence of matches and using a
-        `lepl.stream.Stream()` internally.
+        `Stream()` internally.
         '''
         return self.path_matcher(config)(path)
         
     def match_string(self, string, config=None):
         '''
         Parse a string, returning a sequence of matches and using a
-        `lepl.stream.Stream()` internally.
+        `Stream()` internally.
         '''
         return self.string_matcher(config)(string)
 
@@ -229,17 +229,16 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def default_config(self):
         '''
         Generate a default configuration instance.  Currently this flattens
-        nested `lepl.matchers.And()` and `lepl.matchers.Or()` instances;
+        nested `And()` and `Or()` instances;
         adds memoisation (which allows left recursion, but may alter the order 
         in which matches are returned for ambiguous grammars);
         supports tracing (which is initially disabled, but can be enabled
-        using the `lepl.matchers.Trace()` matcher); and tracks but does
+        using the `Trace()` matcher); and tracks but does
         not limit generators (which can be flushed using the 
-        `lepl.matchers.Commit()` matcher).
+        `Commit()` matcher).
         '''
         return Configuration(
-            rewriters=[flatten, compose_transforms,
-                       auto_memoize(conservative=True)],
+            rewriters=[flatten, compose_transforms, auto_memoize()],
             monitors=[TraceResults(False), GeneratorManager(0)])
 #        return Configuration()
     
@@ -722,7 +721,7 @@ class Delayed(BaseMatcher):
 class Commit(BaseMatcher):
     '''
     Commit to the current state - deletes all backtracking information.
-    This only works if `lepl.manager.GeneratorManager` is present (eg when 
+    This only works if `GeneratorManager` is present (eg when 
     parse_string is called) and the min_queue option is greater than zero.
     '''
     
@@ -1102,7 +1101,7 @@ def SignedFloat(decimal='.'):
     
 def SignedEFloat(decimal='.', exponent='eE'):
     '''
-    Match a `lepl.matchers.SignedFloat` followed by an optional exponent 
+    Match a `SignedFloat` followed by an optional exponent 
     (e+02 etc).
     '''
     return SignedFloat + (Any(exponent) + SignedInteger())[0:1]
@@ -1135,7 +1134,7 @@ def DropEmpty(matcher):
     Drop results if they are empty (ie if they are ``False`` in Python).
     
     This will drop empty strings and lists.  It will also drop
-    `lepl.node.Node` instances if they are empty (since the length is then
+    `Node` instances if they are empty (since the length is then
     zero).
     '''
     def drop(results):

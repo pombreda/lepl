@@ -39,8 +39,8 @@ def clone(node, args, kargs):
 
 class DelayedClone(Visitor):    
     '''
-    A version of `lepl.parsers.Clone` that uses `lepl.matchers.Delayed` rather
-    that `lepl.parsers.Proxy` to handle circular references.
+    A version of `Clone()` that uses `Delayed()` rather
+    that `Proxy()` to handle circular references.
     '''
     
     def __init__(self, clone=clone):
@@ -151,7 +151,7 @@ def memoize(memoizer):
     return rewriter
 
 
-def auto_memoize(conservative=True):
+def auto_memoize(conservative=None):
     from lepl.memo import RMemo
     '''
     Generate an all-purpose memoizing rewriter.  It is typically called after
@@ -164,10 +164,14 @@ def auto_memoize(conservative=True):
     
     This rewriting may change the order in which different results for
     an ambiguous grammar are returned.
+    
+    If ``conservative`` is not specified then `optimize_or(False)` and
+    `context_memoize(True)` are used.  This gives conservative memoisation 
+    with minimal rewriting of alternatives.
     '''
     def rewriter(graph):
-        graph = optimize_or(conservative)(graph)
-        graph = context_memoize(conservative)(graph)
+        graph = optimize_or(False if conservative is None else conservative)(graph)
+        graph = context_memoize(True if conservative is None else conservative)(graph)
         return graph
     return rewriter
 

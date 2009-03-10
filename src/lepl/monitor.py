@@ -20,7 +20,7 @@
 Support for classes that monitor the execution process (for example, managing 
 resources and tracing program flow).
 
-See `lepl.parser.trampoline()`.
+See `trampoline()`.
 '''
 
 
@@ -29,7 +29,7 @@ from lepl.support import LogMixin
 
 class MonitorInterface(LogMixin):
     '''
-    The interface expected by `lepl.parser.trampoline()`.
+    The interface expected by `trampoline()`.
     '''
     
     def __init__(self):

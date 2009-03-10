@@ -168,7 +168,7 @@ def _syntax_error_args(msg, stream_in, stream_out, results):
 
 def raise_error(msg):
     '''
-    As `lepl.node.make_error()`, but also raise the result.
+    As `make_error()`, but also raise the result.
     '''
     def fun(stream_in, stream_out, results):
         error = make_error(msg)(stream_in, stream_out, results)
@@ -178,10 +178,10 @@ def raise_error(msg):
 
 class Error(Node, SyntaxError):
     '''
-    Subclass `lepl.node.Node` and Python's SyntaxError to provide an AST
-    node that can be raised as an error via `lepl.node.throw`.
+    Subclass `Node` and Python's SyntaxError to provide an AST
+    node that can be raised as an error via `throw`.
     
-    Create with `lepl.node.make_error()`.
+    Create with `make_error()`.
     '''
     
     def __init__(self, results, msg, location):

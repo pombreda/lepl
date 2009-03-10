@@ -161,9 +161,9 @@ class Stream():
     
     def __hash__(self):
         '''
-        Streams are only ever used in contexts where they share the same source.
+        Combine underlying stream and depth.
         '''
-        return self.depth()
+        return self.__chunk.hash ^ self.depth()
     
     def __eq__(self, other):
         '''
@@ -177,11 +177,11 @@ class Chunk(object):
     '''
     A linked list (cons cell) of lines from the stream.
     
-    `lepl.stream.Stream()` is a pointer to a Chunk that includes an offset;
+    `Stream()` is a pointer to a Chunk that includes an offset;
     the Chunks form a singly linked list that contains the input data.
     '''
     
-    def __init__(self, stream, distance=0, lineno=1, source=None):
+    def __init__(self, stream, distance=0, lineno=1, source=None, hash_=None):
         try:
             self.__text = next(stream)
             self.__empty = False
@@ -192,6 +192,7 @@ class Chunk(object):
         self.__distance = distance
         self.__lineno = lineno
         self.source = source
+        self.hash = hash(stream) if hash_ is None else hash_
         self.__len = None
         
     def read(self, offset=0, start=0, stop=None):
@@ -230,7 +231,8 @@ class Chunk(object):
             raise IndexError()
         if not self.__next:
             self.__next = Chunk(self.__stream, lineno=self.__lineno + 1,
-                                distance=self.__distance + len(self.__text))
+                                distance=self.__distance + len(self.__text),
+                                hash_=self.hash)
         return self.__next
     
     def __iter__(self):

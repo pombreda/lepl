@@ -98,7 +98,7 @@ class Configuration(object):
         can add memoisation, restructure the tree, etc.  They are applied left
         to right.
         
-        `monitors` Subclasses of `lepl.monitor.MonitorInterface` that will be
+        `monitors` Subclasses of `MonitorInterface` that will be
         invoked by `trampoline()`.  Multiple values are combined into a single 
         monitor.
         '''
@@ -216,28 +216,28 @@ def make_matcher(matcher, stream, conf):
 def file_parser(matcher, conf):
     '''
     Construct a parser for file objects that returns a single match and
-    uses a `lepl.stream.Stream()` internally.
+    uses a `Stream()` internally.
     '''
     return make_parser(matcher, Stream.from_file, conf)
 
 def list_parser(matcher, conf):
     '''
     Construct a parser for lists that returns a single match and uses a 
-    `lepl.stream.Stream()` internally.
+    `Stream()` internally.
     '''
     return make_parser(matcher, Stream.from_list, conf)
 
 def path_parser(matcher, conf):
     '''
     Construct a parser for a file that returns a single match and uses a 
-    `lepl.stream.Stream()` internally.
+    `Stream()` internally.
     '''
     return make_parser(matcher, Stream.from_path, conf)
 
 def string_parser(matcher, conf):
     '''
     Construct a parser for strings that returns a single match and uses a 
-    `lepl.stream.Stream()` internally.
+    `Stream()` internally.
     '''
     return make_parser(matcher, Stream.from_string, conf)
 
@@ -252,28 +252,28 @@ def null_parser(matcher, conf):
 def file_matcher(matcher, conf):
     '''
     Construct a parser that returns a sequence of matches for file objects 
-    and uses a `lepl.stream.Stream()` internally.
+    and uses a `Stream()` internally.
     '''
     return make_matcher(matcher, Stream.from_file, conf)
 
 def list_matcher(matcher, conf):
     '''
     Construct a parser that returns a sequence of matches for lists 
-    and uses a `lepl.stream.Stream()` internally.
+    and uses a `Stream()` internally.
     '''
     return make_matcher(matcher, Stream.from_list, conf)
 
 def path_matcher(matcher, conf):
     '''
     Construct a parser that returns a sequence of matches for a file
-    and uses a `lepl.stream.Stream()` internally.
+    and uses a `Stream()` internally.
     '''
     return make_matcher(matcher, Stream.from_path, conf)
 
 def string_matcher(matcher, conf):
     '''
     Construct a parser that returns a sequence of matches for strings 
-    and uses a `lepl.stream.Stream()` internally.
+    and uses a `Stream()` internally.
     '''
     return make_matcher(matcher, Stream.from_string, conf)
 

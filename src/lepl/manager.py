@@ -45,7 +45,7 @@ damaging performance too much.  The aim is not to control parse results by
 excluding certain matches.  For efficiency, the queue length is increased 
 (doubled) whenever the queue is filled by active generators.
 
-For the control of parse results see the `lepl.match.Commit()` matcher.
+For the control of parse results see the `Commit()` matcher.
 '''
 
 from heapq import heappushpop, heappop, heappush
@@ -57,8 +57,8 @@ from lepl.support import LogMixin
 
 class GeneratorManager(MonitorInterface):
     '''
-    A 'Monitor' (implements `lepl.monitor.MonitorInterface`, can be supplied
-    to `lepl.parser.Configuration`) that tracks (and can limit the number of)
+    A 'Monitor' (implements `MonitorInterface`, can be supplied
+    to `Configuration`) that tracks (and can limit the number of)
     generators.
     '''
     
@@ -68,7 +68,7 @@ class GeneratorManager(MonitorInterface):
         number is exceeded the oldest generators are closed, unless currently
         active (in which case the queue size is extended).  If zero then no
         limit is applied (although generators are still tracked and can be
-        removed using `lepl.matcher.Commit`.
+        removed using `Commit()`.
         '''
         super(GeneratorManager, self).__init__()
         self.__queue = []

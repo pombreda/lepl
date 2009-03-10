@@ -148,6 +148,8 @@ Date        Version  Description
 2009-03-06  2.0.2    A few more small bug fixes.
 ----------  -------  -----------
 2009-03-08  2.1b     Improved efficiency.
+----------  -------  -----------
+2009-03-08  2.1      Minor bugfixes and documentation.
 ==========  =======  ===========
 
 

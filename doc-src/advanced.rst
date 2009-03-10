@@ -20,7 +20,7 @@ Most examples here use the default configuration, which is supplied by
 currently defined as::
 
   Configuration(
-    rewriters=[flatten, compose_transforms, auto_memoize(conservative=True)],
+    rewriters=[flatten, compose_transforms, auto_memoize()],
     monitors=[TraceResults(False), GeneratorManager(0)])
 
 The rewriters are described below (:ref:`rewriting`).

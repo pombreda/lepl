@@ -2,8 +2,7 @@
 from logging import basicConfig, DEBUG, INFO
 from unittest import TestCase
 
-from lepl.matchers import *
-from lepl.node import Node, make_error, Error, throw
+from lepl import *
 
 
 class NodeTest(TestCase):
@@ -105,23 +104,25 @@ class ErrorTest(TestCase):
         expression += (factor / (addsub / factor)[0:,r'\s*'])                >  Expression
         line        = expression / Eos()
        
-        ast = Trace(line).parse_string('1 + 2 * (3 + 4 - 5)')
+        parser = line.string_parser()
+        ast = parser('1 + 2 * (3 + 4 - 5)')
         print(ast[0])
         
         try:
-            ast = Trace(line).parse_string('1 + 2 * 3 + 4 - 5)')
+            ast = parser('1 + 2 * 3 + 4 - 5)')[0]
+            print(ast)
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "no ( before ')'", e.msg
 
         try:
-            ast = Trace(line).parse_string('1 + 2 * (3 + 4 - 5')
+            ast = parser('1 + 2 * (3 + 4 - 5')
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "no ) for '(3 + 4...'", e.msg
             
         try:
-            ast = Trace(line).parse_string('1 + 2 * foo')
+            ast = parser('1 + 2 * foo')
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "unexpected text: foo", e.msg

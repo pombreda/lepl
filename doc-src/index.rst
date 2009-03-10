@@ -20,9 +20,6 @@ case improved by a factor of 40).  This work is decribed in :ref:`rewriting`,
 but is applied automatically and need to be understood for simple
 applications.
 
-Version 2.1 is currently a *beta* release; the previous stable version is also
-available for :ref:`download`.
-
 
 Features
 --------

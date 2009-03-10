@@ -64,35 +64,45 @@ Here is an example of both approaches in use::
   >>>     expr   += (factor & (addsub & factor)[:])     > Expression
   >>>     line    = Empty() & Trace(expr) & Eos()
 
-  >>> parser = line.parse_string
+  >>> parser = line.string_parser()
 
   >>> parser('1 + 2 * (3 + 4 - 5')[0]
     File "<string>", line 1
       1 + 2 * (3 + 4 - 5
-	      ^
+              ^
   lepl.node.Error: no ) for '(3 + 4...'
 
   >>> parser('1 + 2 * 3 + 4 - 5)')[0]
     File "<string>", line 1
       1 + 2 * 3 + 4 - 5)
-		      ^
+                      ^
   lepl.node.Error: no ( before ')'
 
   >>> parser('1 + 2 * (3 + four - 5)')[0]
     File "<string>", line 1
       1 + 2 * (3 + four - 5)
-		   ^
+                   ^
   lepl.node.Error: unexpected text: four
 
   >>> parser('1 + 2 ** (3 + 4 - 5)')[0]
     File "<string>", line 1
       1 + 2 ** (3 + 4 - 5)
-	     ^
+             ^
   lepl.node.Error: unexpected text: *
 
 .. note::
 
   This example follows the :ref:`applycase` and :ref:`complexor` patterns.
+
+.. warning::
+
+  The *order* of expressions is important in the example above.  The default
+  :ref:`configuration` will *change the order* of some expressions if the
+  grammar is left--recursive.  So if you have a left--recursive grammar and
+  want to use the approach shown to error handling then you must use a custom
+  configuration that excludes the `optimize_or(conservative)
+  <api/redirect.html#lepl.rewriters.optimize_or>`_ rewriter.  For more
+  information see :ref:`memoisation`.
 
 
 .. index:: ^, Error, SyntaxError

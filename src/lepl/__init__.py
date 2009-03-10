@@ -188,18 +188,18 @@ __all__ = [
         'RecordDeepest',
         'TraceResults',
         # parser
-        'memoize',
         # memo,
         'RMemo',
         'LMemo',
         # rewriters
+        'memoize',
         'flatten',
         'compose_transforms',
         'auto_memoize',
         'context_memoize',
         'optimize_or']
 
-__version__ = '2.1b'
+__version__ = '2.1'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

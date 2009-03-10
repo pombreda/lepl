@@ -229,7 +229,7 @@ class ConstructorGraphNode(SimpleGraphNode):
     '''
     Extend `SimpleGraphNode` to provide information on constructor arguments.
     
-    This is used by `ConstructorGraphWalker` to provide the results of
+    This is used by `ConstructorWalker` to provide the results of
     walking child nodes in the same format as those nodes were provided in
     the constructor.  The main advantage is that the names of named
     arguments are associated with the appropriate results.
@@ -544,7 +544,7 @@ class ConstructorStr(Visitor):
                 indent = i
                 sections.append((indent, scan))
             elif i < indent:
-                (scan, indent) = self.__compress(lines, sections.pop(-1)[1], scan)
+                (scan, indent) = self.__compress(lines, sections.pop()[1], scan)
             scan = scan + 1
         while sections:
             self.__compress(lines, sections.pop()[1], len(lines))
