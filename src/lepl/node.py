@@ -200,6 +200,6 @@ def throw(node):
     for child in postorder(node):
         if isinstance(node, Exception):
             raise node
-    return child
+    return node
         
 
