@@ -3,7 +3,7 @@
 # IMPORTANT - update version in setup.py
 
 # this generates a new release, but does not register anything with pypi
-# or upload files to google code
+# or upload files to google code.
 
 # python setup.py sdist --formats=gztar,zip register upload
 
