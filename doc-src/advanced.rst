@@ -21,14 +21,13 @@ currently defined as::
 
   Configuration(
     rewriters=[flatten, compose_transforms, auto_memoize()],
-    monitors=[TraceResults(False), GeneratorManager(0)])
+    monitors=[TraceResults(False)])
 
 The rewriters are described below (:ref:`rewriting`).
 
-The two monitors (which are passed to `trampoline()
-<api/redirect.html#lepl.parser.trampoline>`_) enable the `Trace()
-<api/redirect.html#lepl.matchers.Trace>`_ and `Commit()
-<api/redirect.html#lepl.matchers.Commit>`_ matchers.
+The monitor (which is passed to `trampoline()
+<api/redirect.html#lepl.parser.trampoline>`_) enables the `Trace()
+<api/redirect.html#lepl.matchers.Trace>`_.
 
 
 .. index:: rewriting

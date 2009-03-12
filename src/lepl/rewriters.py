@@ -40,13 +40,15 @@ def clone(node, args, kargs):
 class DelayedClone(Visitor):    
     '''
     A version of `Clone()` that uses `Delayed()` rather
-    that `Proxy()` to handle circular references.
+    that `Proxy()` to handle circular references.  Also caches results to
+    avoid duplications.
     '''
     
     def __init__(self, clone=clone):
         super(DelayedClone, self).__init__()
         self._clone = clone
         self._delayeds = {}
+        self._visited = {}
     
     def loop(self, node):
         '''
@@ -62,17 +64,21 @@ class DelayedClone(Visitor):
     def constructor(self, *args, **kargs):
         # delayed import to avoid dependency loops
         from lepl.matchers import Delayed
-        copy = self._clone(self._node, args, kargs)
-        if isinstance(copy, Delayed):
+        if isinstance(self._node, Delayed):
+            copy = self._clone(self._node, args, kargs)
             if self._node in self._delayeds:
                 # we already created a replacement for this node, but it's
                 # matcher may be contained None (from loop), so fix it
                 # up and return it.
                 self._delayeds[self._node].matcher = copy.matcher
-                copy = already = self._delayeds[self._node]
+                copy = self._delayeds[self._node]
             else:
                 # otherwise, store this version for future use
                 self._delayeds[self._node] = copy
+        else:
+            if self._node not in self._visited:
+                self._visited[self._node] = self._clone(self._node, args, kargs)
+            copy = self._visited[self._node]
         return copy
     
     def leaf(self, value):
@@ -99,14 +105,16 @@ def flatten(graph):
     '''
     A rewriter that flattens `And` and `Or` lists.
     '''
-    from lepl.matchers import And, Or
+    from lepl.matchers import And, Or, _NULL_TRANSFORM
     def new_clone(node, old_args, kargs):
         table = {And: '*matchers', Or: '*matchers'}
         if type(node) in table:
             attribute_name = table[type(node)]
             new_args = []
             for arg in old_args:
-                if type(arg) is type(node) and arg.function is node.function:
+                if type(arg) is type(node) \
+                        and arg.function is _NULL_TRANSFORM \
+                        and node.function is _NULL_TRANSFORM:
                     if attribute_name.startswith('*'):
                         new_args.extend(getattr(arg, attribute_name[1:]))
                     else:
@@ -125,17 +133,13 @@ def compose_transforms(graph):
     operation, avoiding trampolining in some cases.
     '''
     from lepl.matchers import Transform, Transformable
-    applied = set()
     def new_clone(node, args, kargs):
-        # must always clone or don't know how to access matcher
+        # must always clone to expose the matcher (which was cloned earlier - 
+        # it is not node.matcher)
         copy = clone(node, args, kargs)
         if isinstance(copy, Transform) \
                 and isinstance(copy.matcher, Transformable):
-            # avoid applying same transform twice via multiple paths
-            if node not in applied:
-                applied.add(node)
-                copy.matcher.compose(copy.function)
-            return copy.matcher
+            return copy.matcher.compose(copy)
         else:
             return copy
     return graph.postorder(DelayedClone(new_clone))

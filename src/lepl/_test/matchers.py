@@ -11,12 +11,12 @@ from lepl.support import LogMixin
 class BaseTest(TestCase):
     
     def assert_direct(self, stream, match, target):
-        result = [x for (x, s) in match.match_string(stream)]
+        result = [x for (x, s) in match.match_string(stream, config=Configuration())]
         assert target == result, result
     
     def assert_list(self, stream, match, target):
         matcher = match.list_matcher()
-        print(matcher.matcher)
+#        print(matcher.matcher)
         result = [x for (x, s) in matcher(stream)]
         assert target == result, result
     
@@ -224,4 +224,25 @@ class LiteralTest(BaseTest):
     
     def test_literal(self):
         self.assert_direct('foo ', Literal('foo'), [['foo']])
+        
+        
+class TransformTest(BaseTest):
+    
+    @staticmethod
+    def mkappend(x):
+        return lambda a: a + x
+    
+    def test_apply(self):
+        # note extra list 
+        self.assert_direct('foo ', Literal('foo') > self.mkappend(['b']), [[['foo', 'b']]])
+        
+    def test_kapply(self):
+        # note extra list 
+        self.assert_direct('foo ', Literal('foo') >> self.mkappend('b'), [['foob']])
+        
+    def test_nested(self):
+        # note extra list 
+        self.assert_direct('foo ', 
+                           (Literal('foo') >> self.mkappend('b')) > self.mkappend(['c']), 
+                           [[['foob', 'c']]])
         

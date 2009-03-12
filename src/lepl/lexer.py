@@ -78,15 +78,16 @@ class Characters():
         self.__intervals = intervals
         
     def __str__(self):
-        def escape(x):
+        inrange = '-\\[]'
+        outrange = inrange + '*+()'
+        def escape(x, chars=inrange):
             s = chr(x)
-            if s in ('-', '\\', ']', '['):
-                s = '\\' + s
+            if s in chars: s = '\\' + s
             return s
         ranges = []
         if len(self.__intervals) == 1 and \
                 self.__intervals[0][0] + 1 == self.__intervals[0][1]:
-            return escape(self.__intervals[0][1])
+            return escape(self.__intervals[0][1], outrange)
         else:
             for (a, b) in self.__intervals:
                 if a + 1 == b:
@@ -96,9 +97,6 @@ class Characters():
             return '[{0}]'.format(''.join(ranges))
     
 
-class Repeat(Node): pass
-
-
 class Sequence(Node):
     
     def __str__(self):
@@ -106,19 +104,33 @@ class Sequence(Node):
         return ''.join(chars)
 
 
+class Repeat(Sequence):
+
+    def __str__(self):
+        s = super(Repeat, self).__str__()
+        if len(self) == 1:
+            return s + '*'
+        else:
+            return '({0})*'.format(s)
+
+
 def _make_parser():
     
     mktuple1 = lambda x: (ord(x)-1, ord(x))
     mktuple2 = lambda xy: (ord(xy[0])-1, ord(xy[1]))
     
-    char   = Drop('\\')+Any() | ~Lookahead('\\')+Any()
-    pair   = char & Drop('-') & char
-    range  = Or(pair          > mktuple2,
-                char          >> mktuple1,
-                Literal('\\') ^ 'Unescaped \\')
-    brkt   = Drop('[') & range[1:] & Drop(']')  > Characters
-    letter = (char >> mktuple1) > Characters
-    expr   = (brkt | letter)[:] & Drop(Eos()) > Sequence
-    return Trace(expr).string_parser(Configuration(monitors=[TraceResults(True)]))
+    char     = Drop('\\')+Any() | ~Lookahead('\\')+Any()
+    pair     = char & Drop('-') & char
+    interval = (pair > mktuple2) | (char >> mktuple1)
+    brackets = (Drop('[') & interval[1:] & Drop(']')) > Characters
+    letter   = (char >> mktuple1) > Characters
+    nested   = Drop('(') & (brackets | letter)[1:] & Drop(')')
+    star     = (nested | brackets | letter) & Drop('*') > Repeat
+    expr     = (star | brackets | letter)[:] & Drop(Eos()) > Sequence
+    parser = expr.string_parser(Configuration(
+                    rewriters=[flatten, compose_transforms, auto_memoize()],
+                    monitors=[TraceResults(False)]))
+#    print(parser.matcher)
+    return lambda text: parser(text)[0]
 
-_parser = lambda text: _make_parser()(text)[0]
+_parser = _make_parser()

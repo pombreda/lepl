@@ -22,9 +22,7 @@ class NodeTest(TestCase):
         addsub      = Any('+-')                            > 'operator'
         expression += (factor / (addsub / factor)[0::])    > Expression
         
-        print(expression)
         p = expression.string_parser()
-        print(p.matcher)
         ast = p('1 + 2 * (3 + 4 - 5)')
         assert str(ast[0]) == """Expression
  +- Factor
@@ -77,7 +75,6 @@ class ListTest(TestCase):
         expression += (factor / (addsub / factor)[0:])  > list
         
         ast = expression.parse_string('1 + 2 * (3 + 4 - 5)')
-        print(ast)
         assert ast == [[[[('number', '1')], ' '], ('operator', '+'), ' ', [[('number', '2')], ' ', ('operator', '*'), ' ', ['(', [[[('number', '3')], ' '], ('operator', '+'), ' ', [[('number', '4')], ' '], ('operator', '-'), ' ', [[('number', '5')]]], ')']]]], ast
 
 
@@ -106,11 +103,9 @@ class ErrorTest(TestCase):
        
         parser = line.string_parser()
         ast = parser('1 + 2 * (3 + 4 - 5)')
-        print(ast[0])
         
         try:
             ast = parser('1 + 2 * 3 + 4 - 5)')[0]
-            print(ast)
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "no ( before ')'", e.msg

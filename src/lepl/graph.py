@@ -85,7 +85,7 @@ def dfs_edges(node, type_=SimpleGraphNode):
     These do not have to provide _children() themselves (if they do not,
     they are flagged with LEAF).
     '''
-    while True:
+    while isinstance(node, type_):
         try:
             stack = [(node, node._children(), ROOT)]
             yield node, node, FORWARD | ROOT

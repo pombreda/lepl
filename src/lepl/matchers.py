@@ -239,7 +239,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         '''
         return Configuration(
             rewriters=[flatten, compose_transforms, auto_memoize()],
-            monitors=[TraceResults(False), GeneratorManager(0)])
+            monitors=[TraceResults(False)])
 #        return Configuration()
     
 
@@ -256,17 +256,29 @@ class Transformable(BaseMatcher):
         super(Transformable, self).__init__()
         self.function = function
 
-    def compose(self, function2):
+    def _compose(self, function):
         '''
-        Add a transform.
+        Generate the composition of the given function and the existing
+        function.
         '''
         if self.function is _NULL_TRANSFORM:
-            self.function = function2
+            return function
         else:
             def fun(results, stream_in, stream_out, function1=self.function):
+                self._debug('two functions')
                 (results, stream_out) = function1(results, stream_in, stream_out)
-                return function2(results, stream_in, stream_out)
-            self.function = fun
+                return function(results, stream_in, stream_out)
+            return fun
+            
+    def compose(self, transform):
+        '''
+        Combine with a transform, returning a new instance.
+        
+        We must return a new instance because the same Transformable may 
+        occur more than once in a graph and we don't want to include the
+        Transform in other cases.
+        '''
+        raise NotImplementedError()
 
 
 class _BaseSearch(BaseMatcher):
@@ -385,6 +397,14 @@ class _BaseCombiner(Transformable):
     def __init__(self, *matchers):
         super(_BaseCombiner, self).__init__()
         self._args(matchers=lmap(coerce, matchers))
+        
+    def compose(self, transform):
+        '''
+        Generate a new instance with the composed function from the Transform.
+        '''
+        copy = type(self)(*self.matchers)
+        copy.function = self._compose(transform.function)
+        return copy
 
 
 class And(_BaseCombiner):
@@ -446,6 +466,7 @@ class Or(_BaseCombiner):
             try:
                 while True:
                     (results, stream_out) = (yield generator)
+                    if self.function: self._debug('APPLY')
                     yield self.function(results, stream_in, stream_out)
             except StopIteration:
                 pass
@@ -542,6 +563,14 @@ class Literal(Transformable):
                 yield self.function([self.text], stream, stream[len(self.text):])
         except IndexError:
             pass
+        
+    def compose(self, transform):
+        '''
+        Generate a new instance with the composed function from the Transform.
+        '''
+        copy = Literal(self.text)
+        copy.function = self._compose(transform.function)
+        return copy
         
         
 def coerce(arg, function=Literal):
@@ -646,6 +675,9 @@ class Transform(Transformable):
                 yield (self.function(results, stream_in, stream_out))
         except StopIteration:
             pass
+        
+    def compose(self, transform):
+        return Transform(self.matcher, self._compose(transform.function))
 
 
 class Regexp(BaseMatcher):

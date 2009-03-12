@@ -11,11 +11,11 @@ Resource Management
 Generator Management
 --------------------
 
-.. note::
+.. warning::
 
-  There used to be a warning here about the unreliability of resource
-  management.  It turns out that there was a bug in 1.0 that has been fixed in
-  2.0; the current implementation appears to be reliable.
+  To use the techniques described in this section the `GeneratorManager()
+  <api/redirect.html#lepl.manager.GeneratorManager>`_ monitor must be added to
+  the :ref:`configuration`.
 
 :ref:`backtracking` within LEPL is implemented using generators.  These are
 semi--autonomous *loop--like* blocks of code that can be paused and restarted.
@@ -45,15 +45,6 @@ Generators also have a *last--used* date.
 Given all this, it is possible to modify the generators and so change the
 behaviour of the parser.  In particular, it is possible to close non--active
 generators, either implicitly or explicitly.
-
-By default the number of generators is unrestricted, but references to
-generators are stored.  To completely disable the tracking of generators
-provide a `Configuration() <api/redirect.html#lepl.parser.Configuration>`_
-without the monitor `GeneratorManager()
-<api/redirect.html#lepl.manager.GeneratorManager>`_ (one is provided by the
-`default configuration
-<api/redirect.html#lepl.matchers.BaseMatcher.default_config>`_).  See
-:ref:`configuration` for more information.
 
 .. [#] The discussion here omits some details from the implementation.  The
        `GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_
@@ -124,9 +115,8 @@ discards all non--active generators.
 
 For `Commit() <api/redirect.html#lepl.matchers.Commit>`_ to work the
 `GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_ must
-maintain references to generators.  This is true by default, when the
-``queue_len`` value is 0, which stores references but does not cause
-:ref:`limiting`.
+maintain references to generators.  This occurs when the ``queue_len`` value
+is 0, which stores references but does not cause :ref:`limiting`.
 
 See also `First() <api/redirect.html#lepl.matchers.First>`_.
 

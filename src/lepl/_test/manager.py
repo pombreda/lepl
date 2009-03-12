@@ -47,5 +47,5 @@ class LimitedDepthTest(LogMixin, TestCase):
         matcher = string_matcher(Literal('*')[:,...][3],
                                  Configuration(monitors=[GeneratorManager(queue_len=5)]))('*' * 4)
         results = list(matcher)
-        print(results)
+#        print(results)
         

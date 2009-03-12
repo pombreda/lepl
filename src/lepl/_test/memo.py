@@ -20,7 +20,6 @@ class MemoTest(TestCase):
                 Configuration(rewriters=[memoize(RMemo)], 
                               monitors=[TraceResults(True)]))
         results = list(p('ab'))
-        print(results)
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
         assert results[1][0] == ['a'], results[1][0]
@@ -38,7 +37,6 @@ class MemoTest(TestCase):
                 Configuration(rewriters=[memoize(LMemo)], 
                               monitors=[TraceResults(True)]))
         results = list(p('ab'))
-        print(results)
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
         assert results[1][0] == ['a'], results[1][0]
@@ -56,7 +54,6 @@ class MemoTest(TestCase):
                 Configuration(rewriters=[memoize(LMemo)], 
                               monitors=[TraceResults(True)]))
         results = list(p('ab'))
-        print(results)
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
         assert results[1][0] == ['a'], results[1][0]
@@ -74,7 +71,6 @@ class MemoTest(TestCase):
                 Configuration(rewriters=[memoize(LMemo)], 
                               monitors=[TraceResults(True)]))
         results = list(p('abcdef'))
-        print(results)
         assert len(results) == 6, len(results)
         assert results[0][0] == ['a'], results[0][0]
         assert results[1][0] == ['a', 'b'], results[1][0]
@@ -112,7 +108,6 @@ class MemoTest(TestCase):
         for meaning in p('every boy or some girl and helen and john or pat knows '
                          'and respects or loves every boy or some girl and pat or '
                          'john and helen'):
-#            print(meaning[0][0])
             count += 1
         print(count)
     

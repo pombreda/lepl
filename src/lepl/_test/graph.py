@@ -116,4 +116,4 @@ class CloneTest(TestCase):
         g2 = ConstructorWalker(g1)(Clone())
         g3 = ConstructorWalker(g2)(Clone())
         self.assert_same(repr(g1), repr(g3))
-        print(repr(g3))
+#        print(repr(g3))

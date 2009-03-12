@@ -17,7 +17,7 @@ This release (2.1) improves performance.  Typical parsers are now twice as
 fast (improved constant factor) while left recursive grammars are re--arranged
 to avoid unnecessary deep recursion (improved "big-O" performance; one test
 case improved by a factor of 40).  This work is decribed in :ref:`rewriting`,
-but is applied automatically and need to be understood for simple
+but is applied automatically and does not need to be understood for simple
 applications.
 
 

@@ -22,6 +22,22 @@ class DelayedCloneTest(TestCase):
         except StopIteration:
             self.assert_empty(original, 'original')
             self.assert_empty(duplicate, 'duplicate')
+    
+    def assert_relative(self, matcher):
+        copy = matcher.postorder(DelayedClone())
+        def pairs(matcher):
+            for a in preorder(matcher):
+                for b in preorder(matcher):
+                    yield (a, b)
+        for ((a,b), (c,d)) in zip(pairs(matcher), pairs(copy)):
+            if a is b:
+                assert c is d
+            else:
+                assert c is not d
+            if type(a) is type(b):
+                assert type(c) is type(d)
+            else:
+                assert type(c) is not type(d)
             
     def assert_empty(self, generator, name):
         try:
@@ -33,12 +49,14 @@ class DelayedCloneTest(TestCase):
     def test_no_delayed(self):
         matcher = Any('a') | Any('b')[1:2,...]
         self.assert_clone(matcher)
+        self.assert_relative(matcher)
         
     def test_simple_loop(self):
         delayed = Delayed()
         matcher = Any('a') | Any('b')[1:2,...] | delayed
         self.assert_clone(matcher)
-        
+        self.assert_relative(matcher)
+       
     def test_complex_loop(self):
         delayed1 = Delayed()
         delayed2 = Delayed()
@@ -46,7 +64,16 @@ class DelayedCloneTest(TestCase):
         line2 = delayed1 & delayed2
         matcher = line1 | line2 | delayed1 | delayed2 > 'foo'
         self.assert_clone(matcher)
+        self.assert_relative(matcher)
 
+    def test_common_child(self):
+        a = Any('a')
+        b = a | Any('b')
+        c = a | b | Any('c')
+        matcher = a | b | c
+        self.assert_clone(matcher)
+        self.assert_relative(matcher)
+                
 
 def append(x):
     return lambda l: l[0] + x
@@ -98,9 +125,7 @@ class ComposeTransformsTest(TestCase):
         term        = number                               > Term
         factor      = term | Drop(Optional(term))
         
-        print(factor)
         p = factor.string_parser(Configuration(rewriters=[compose_transforms]))
-        print(p.matcher)
         ast = p('1')
         assert str(ast[0]) == """Term
  `- number '1'""", ast[0]
@@ -120,6 +145,5 @@ class OptimizeOrTest(TestCase):
         matcher += matcher | Any()
         assert isinstance(matcher.matcher.matchers[0], Delayed)
         p = matcher.string_parser(Configuration(rewriters=[optimize_or(False)]))
-        print(p.matcher)
         assert isinstance(matcher.matcher.matchers[0], Any)
         

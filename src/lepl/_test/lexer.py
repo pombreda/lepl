@@ -7,8 +7,8 @@ from lepl.lexer import _parser
 
 class CharactersTest(TestCase):
     
-    def test_parser(self):
-        basicConfig(level=DEBUG)
+    def test_brackets(self):
+        #basicConfig(level=DEBUG)
         c = _parser('a')
         assert 'a' == str(c), str(c)
         c = _parser('[ac]')
@@ -21,8 +21,8 @@ class CharactersTest(TestCase):
         assert r'\\' == str(c), str(c)
         c = _parser(r'\-')
         assert r'\-' == str(c), str(c)
-        c = _parser(r'[\-x]')
-        assert r'[\-x]' == str(c), str(c)
+        c = _parser(r'[\\-x]')
+        assert r'[\\-x]' == str(c), str(c)
     
     def test_merge(self):
         c = _parser('[a-ce-g]')
@@ -53,3 +53,11 @@ class CharactersTest(TestCase):
         assert '[a-eg]' == str(c), str(c)
         c = _parser('[ga-e]')
         assert '[a-eg]' == str(c), str(c)
+
+    def test_star(self):
+        c = _parser('a*')
+        assert 'a*' == str(c), str(c)
+        c = _parser('a(bc)*d')
+        assert 'a(bc)*d' == str(c), str(c)
+        c = _parser('a(bc)*d[e-g]*')
+        assert 'a(bc)*d[e-g]*' == str(c), str(c)
