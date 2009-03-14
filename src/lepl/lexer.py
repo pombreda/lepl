@@ -9,13 +9,12 @@ from lepl.trace import TraceResults
 _CH_UPPER = maxunicode
 _CH_LOWER = -1
 
-
-class Characters():
+class Character():
     '''
-    A set of characters, described as a collection of intervals.  Each 
-    interval is (a, b] (ie a < x <= b, where x is a character code).  If
-    a is -1 or b is sys.maxunicode then the relevant bound is effectively
-    open.
+    A set of possible values for a character, described as a collection of 
+    intervals.  Each interval is (a, b] (ie a < x <= b, where x is a character 
+    code).  If a is -1 or b is sys.maxunicode then the relevant bound is 
+    effectively open.
     
     The intervals are stored in a list, ordered by a, rewriting intervals as 
     necessary to ensure no overlap.
@@ -24,9 +23,10 @@ class Characters():
     def __init__(self, intervals):
         self.__intervals = []
         for interval in intervals:
-            self.append(interval)
+            self.__append(interval)
+        self.__str = self._build_str()
             
-    def append(self, interval):
+    def __append(self, interval):
         '''
         Add an interval to the existing intervals.
         
@@ -77,7 +77,7 @@ class Characters():
         intervals.extend(self.__intervals) # slurp remaining
         self.__intervals = intervals
         
-    def __str__(self):
+    def _build_str(self):
         inrange = '-\\[]'
         outrange = inrange + '*+()'
         def escape(x, chars=inrange):
@@ -95,23 +95,108 @@ class Characters():
                 else:
                     ranges.append('{0!s}-{1!s}'.format(escape(a+1), escape(b)))
             return '[{0}]'.format(''.join(ranges))
+        
+    def __str__(self):
+        return self.__str
+    
+    def complete(self):
+        '''
+        In a sequence this has no internal state, so is always complete.
+        '''
+        return True
     
 
-class Sequence(Node):
+class _Sequence(MutableNode):
+    '''
+    Common support for sequences of characters, etc.  This includes an index,
+    which is internal state that describes progression through the sequence.
+    '''
+    
+    def __init__(self, children, index=0):
+        super(_Sequence, self).__init__(children)
+        self.__str = self._build_str()
+        self._index = index
+        
+    def clone(self, index):
+        return type(self)(self.children(), index)
+        
+    def _build_str(self):
+        return ''.join(str(c) for c in self.children())
     
     def __str__(self):
-        chars = [str(c) for c in self._children()]
-        return ''.join(chars)
+        return self.__str
+    
+    def complete(self):
+        '''
+        Has reached a possible final match?
+        '''
+        return self.__index == len(self)
+    
+    def incomplete(self):
+        '''
+        More transitions available?
+        '''
+        return not self.complete()
+    
+    def transitions(self):
+        '''
+        Generate all possible transitions.  A transition a
+        (Character, _Sequence) pair, which describes the possible characters
+        and a sequence with an updated internal index.
+        
+        The algorithm here is generic; attempting to forward the responsibilty
+        of generating transitions to the (embedded) sequence at the current
+        index and, if that fails, calling the _next() method.
+        '''
+        if self[self._index].complete():
+            for transition in self._next():
+                yield transition
+        else:
+            for transition in self[self._index].transitions():
+                    # construct the new sequence
+                    clone = self.clone()
+                    clone[self.__index] = transition[1]
+                    yield (transition[0], clone)
+                
+    def _next(self):
+        '''
+        Generate transitions from the current position.  This is called if 
+        forwarding to the the embedded sequence at the current index has
+        failed.
+        '''
+        if not self.complete():
+            yield (self[self._index], self.clone(self._index + 1))
+    
 
+class Repeat(_Sequence):
+    '''
+    A sequence of Characters that can repeat 0 or more times.
+    '''
 
-class Repeat(Sequence):
-
-    def __str__(self):
-        s = super(Repeat, self).__str__()
+    def _build_str(self):
+        s = super(Repeat, self)._build_str()
         if len(self) == 1:
             return s + '*'
         else:
             return '({0})*'.format(s)
+        
+    def _next(self):
+        if self._index+1 < len(self):
+            yield (self[self._index], self.clone(self._index + 1))
+        else:
+            yield (self[self._index], self.clone(0)) # restart
+            
+    def complete(self):
+        return self.__index == 0
+    
+    def incomplete(self):
+        return True
+            
+        
+class Regexp(_Sequence):
+    '''
+    A sequence of Characters and Repeats.
+    '''
 
 
 def _make_parser():
@@ -122,15 +207,31 @@ def _make_parser():
     char     = Drop('\\')+Any() | ~Lookahead('\\')+Any()
     pair     = char & Drop('-') & char
     interval = (pair > mktuple2) | (char >> mktuple1)
-    brackets = (Drop('[') & interval[1:] & Drop(']')) > Characters
-    letter   = (char >> mktuple1) > Characters
+    brackets = (Drop('[') & interval[1:] & Drop(']')) > Character
+    letter   = (char >> mktuple1) > Character
     nested   = Drop('(') & (brackets | letter)[1:] & Drop(')')
     star     = (nested | brackets | letter) & Drop('*') > Repeat
-    expr     = (star | brackets | letter)[:] & Drop(Eos()) > Sequence
-    parser = expr.string_parser(Configuration(
-                    rewriters=[flatten, compose_transforms, auto_memoize()],
-                    monitors=[TraceResults(False)]))
+    expr     = (star | brackets | letter)[:] & Drop(Eos()) > Regexp
+    parser = expr.string_parser()
 #    print(parser.matcher)
     return lambda text: parser(text)[0]
 
 _parser = _make_parser()
+
+
+class State():
+    
+    def __init__(self, regexps):
+        self.__regexps = regexps
+        
+    def __raw_transitions(self):
+        for regexp in self.__regexps:
+            if regexp.incomplete():
+                for transition in regexp.transitions():
+                    yield transition
+                    
+    def complete(self):
+        '''
+        '''
+                
+        

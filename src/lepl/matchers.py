@@ -466,7 +466,6 @@ class Or(_BaseCombiner):
             try:
                 while True:
                     (results, stream_out) = (yield generator)
-                    if self.function: self._debug('APPLY')
                     yield self.function(results, stream_in, stream_out)
             except StopIteration:
                 pass
@@ -812,6 +811,7 @@ class Trace(BaseMatcher):
 def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST, 
             separator=None, add=False):
     '''
+    This is called by the [] operator.
     '''
     first = coerce(matcher)
     if separator is None:
@@ -1136,7 +1136,7 @@ def SignedEFloat(decimal='.', exponent='eE'):
     Match a `SignedFloat` followed by an optional exponent 
     (e+02 etc).
     '''
-    return SignedFloat + (Any(exponent) + SignedInteger())[0:1]
+    return SignedFloat() + (Any(exponent) + SignedInteger())[0:1]
 
     
 Float = SignedEFloat
@@ -1182,4 +1182,4 @@ def Literals(*matchers):
     # that would have meant putting "Or-like" functionality in Literal,
     # and I felt it better to keep the base matchers reasonably orthogonal.
     return Or(*lmap(Literal, matchers))
- 
+

@@ -40,8 +40,8 @@ class Node(SimpleGraphNode, LogMixin):
         '''
         super(Node, self).__init__()
         self.__postorder = SimpleWalker(self)
-        self.__children = []
-        self.__names = []
+        self._children = []
+        self._names = []
         for arg in args:
             if isinstance(arg, Node):
                 self.__add_attribute(arg.__class__.__name__, arg)
@@ -51,16 +51,16 @@ class Node(SimpleGraphNode, LogMixin):
                     self.__add_attribute(name, value)
                 except:
                     pass
-            self.__children.append(arg)
+            self._children.append(arg)
 #        self._info('{0}'.format(self))
         
     def __add_attribute(self, name, value):
-        if name not in self.__names:
-            self.__names.append(name)
+        if name not in self._names:
+            self._names.append(name)
             setattr(self, name, [])
         getattr(self, name).append(value)
         
-    def _children(self):
+    def children(self):
         return iter(self)
         
     def __dir__(self):
@@ -72,13 +72,13 @@ class Node(SimpleGraphNode, LogMixin):
         this information (I want to avoid using a named method as that will
         obscure a similarly named child).
         '''
-        return self.__names
+        return self._names
     
     def __getitem__(self, index):
-        return self.__children[index]
+        return self._children[index]
     
     def __iter__(self):
-        return iter(self.__children)
+        return iter(self._children)
     
     def __str__(self):
         visitor = CustomStr()
@@ -88,7 +88,16 @@ class Node(SimpleGraphNode, LogMixin):
         return self.__class__.__name__ + '(...)'
     
     def __len__(self):
-        return len(self.__children)
+        return len(self._children)
+    
+    
+class MutableNode(Node):
+    '''
+    Extend `Node` to allow children to be set.
+    '''
+    
+    def __setitem__(self, index, value):
+        self._children[index] = value
     
 
 class CustomStr(GraphStr):

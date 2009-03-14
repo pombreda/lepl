@@ -20,7 +20,7 @@
 Graph node classes and support graph traversal.
 
 The simplest node interface is `SimpleGraphNode`.  Implementations must
-provide an iterator over child nodes via '_children()'.
+provide an iterator over child nodes via 'children()'.
 
 A more complex node interface is `ConstructorGraphNode`.  This assumes that 
 the children of a node are also the arguments originally supplied to the
@@ -41,7 +41,7 @@ cloning.
 
 from collections import Sequence, Hashable, deque
 
-from lepl.support import compose
+from lepl.support import compose, safe_in
 
 
 class SimpleGraphNode(object):
@@ -55,7 +55,7 @@ class SimpleGraphNode(object):
         '''
         super(SimpleGraphNode, self).__init__()
         
-    def _children(self, type_=None):
+    def children(self, type_=None):
         '''
         Return an iterator over children (perhaps of a particular type), 
         in order.
@@ -68,7 +68,7 @@ BACKWARD = 2   # backward edge
 NONTREE = 4    # cyclic edge
 ROOT = 8       # root node (not an edge)
 NODE = 16      # child is a 'normal' node (not root or leaf)
-LEAF = 32      # child is a leaf node (does not implement _children())
+LEAF = 32      # child is a leaf node (does not implement children())
 
 POSTORDER = BACKWARD | NONTREE
 PREORDER = FORWARD | NONTREE
@@ -81,13 +81,13 @@ def dfs_edges(node, type_=SimpleGraphNode):
     Returns forward and reverse edges.  Also returns root node in correct 
     order for pre- (FORWARD) and post- (BACKWARD) ordering.
 
-    type_ selects which values returned by _children() are returned as nodes.
-    These do not have to provide _children() themselves (if they do not,
+    type_ selects which values returned by children() are returned as nodes.
+    These do not have to provide children() themselves (if they do not,
     they are flagged with LEAF).
     '''
     while isinstance(node, type_):
         try:
-            stack = [(node, node._children(), ROOT)]
+            stack = [(node, node.children(), ROOT)]
             yield node, node, FORWARD | ROOT
             visited = set([node])
             while stack:
@@ -95,16 +95,18 @@ def dfs_edges(node, type_=SimpleGraphNode):
                 try:
                     child = next(children)
                     if isinstance(child, type_):
-                        if isinstance(child, Hashable) and child in visited:
+                        if safe_in(child, visited, False):
                             yield parent, child, NONTREE
                         else:
                             try:
-                                stack.append((child, child._children(), NODE))
+                                stack.append((child, child.children(), NODE))
                                 yield parent, child, FORWARD | NODE
                                 visited.add(child)
                             except AttributeError:
                                 stack.append((child, empty(), LEAF))
                                 yield parent, child, FORWARD | LEAF
+                            except TypeError:
+                                pass # failed to add to visited
                 except StopIteration:
                     stack.pop()
                     if stack:
@@ -175,7 +177,7 @@ def loops(node, type_=SimpleGraphNode):
         ancestors = stack.pop()
         parent = ancestors[-1]
         if isinstance(parent, type_):
-            for child in parent._children():
+            for child in parent.children():
                 family = list(ancestors)
                 family.append(child)
                 if child is node:
@@ -208,7 +210,7 @@ class SimpleWalker(object):
         pending = {}
         for (parent, node, kind) in dfs_edges(self.__root, type_=object):
             if kind & POSTORDER:
-                if isinstance(node, Hashable) and node in pending:
+                if safe_in(node, pending):
                     args = pending[node]
                     del pending[node]
                 else:
@@ -239,7 +241,7 @@ class ConstructorGraphNode(SimpleGraphNode):
     link between Python object constructors and type constructors in, say, 
     Haskell).  Exactly how constructor argmuents and children match depends
     on the implementation, but `ConstructorWalker` assumes that child
-    nodes (from _children()) are visited before the same nodes appear in
+    nodes (from children()) are visited before the same nodes appear in
     constructor arguments during depth-first postorder traversal.
     '''
 
@@ -329,7 +331,7 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
         '''
         return (self.__args(), self.__kargs())
     
-    def _children(self, type_=None):
+    def children(self, type_=None):
         '''
         Return all children, in order.
         '''
@@ -383,7 +385,7 @@ class NamedAttributeMixin(ConstructorGraphNode):
         '''
         return (self._args, {})
     
-    def _children(self, type_=None):
+    def children(self, type_=None):
         '''
         Return all children, in order.
         '''

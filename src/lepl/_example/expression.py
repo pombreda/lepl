@@ -18,7 +18,7 @@ class ExpressionExample(Example):
             
         expr   = Delayed()
         number = Digit()[1:,...]                        > 'number'
-        spaces = DropEmpty(Regexp(r'\s*'))
+        spaces = Drop(Regexp(r'\s*'))
         
         with Separator(spaces):
             term    = number | '(' & expr & ')'         > Term

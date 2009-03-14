@@ -246,3 +246,4 @@ class TransformTest(BaseTest):
                            (Literal('foo') >> self.mkappend('b')) > self.mkappend(['c']), 
                            [[['foob', 'c']]])
         
+       

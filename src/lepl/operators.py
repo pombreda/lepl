@@ -214,7 +214,10 @@ class Separator(Override):
         separator = coerce(separator, Regexp)
         and_ = lambda a, b: And(a, separator, b)
         def repeat(m, st=0, sp=None, d=0, s=None, a=False):
-            if s is None: s = separator
+            if s is None:
+                s = separator
+            elif not a:
+                s = And(separator, s, separator)
             return Repeat(m, st, sp, d, s, a)
         super(Separator, self).__init__(and_=and_, repeat=repeat)
         

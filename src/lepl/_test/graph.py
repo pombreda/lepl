@@ -98,7 +98,7 @@ class CloneTest(TestCase):
                      n1),
                 Node(12, n1))
         s1(g1)
-        s2(next(g1._children()))
+        s2(next(g1.children()))
         g2 = ConstructorWalker(g1)(Clone())
         self.assert_same(repr(g1), repr(g2))
         
@@ -112,7 +112,7 @@ class CloneTest(TestCase):
                      n1),
                 Node(12, n1))
         s1(g1)
-        s2(next(g1._children()))
+        s2(next(g1.children()))
         g2 = ConstructorWalker(g1)(Clone())
         g3 = ConstructorWalker(g2)(Clone())
         self.assert_same(repr(g1), repr(g3))

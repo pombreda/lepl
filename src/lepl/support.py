@@ -144,3 +144,9 @@ class LogMixin(object):
         return self
     
 
+def safe_in(value, container, default=False):
+    try:
+        return value in container
+    except TypeError:
+        return default
+
