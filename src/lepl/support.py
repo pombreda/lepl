@@ -145,8 +145,19 @@ class LogMixin(object):
     
 
 def safe_in(value, container, default=False):
+    '''
+    Test for membership without an error for unhashable items.
+    '''
     try:
         return value in container
     except TypeError:
         return default
 
+
+def fold(fun, start, sequence):
+    '''
+    Fold over a sequence.
+    '''
+    for value in sequence:
+        start = fun(start, value)
+    return start
