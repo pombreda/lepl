@@ -265,7 +265,6 @@ class Transformable(BaseMatcher):
             return function
         else:
             def fun(results, stream_in, stream_out, function1=self.function):
-                self._debug('two functions')
                 (results, stream_out) = function1(results, stream_in, stream_out)
                 return function(results, stream_in, stream_out)
             return fun

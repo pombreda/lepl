@@ -10,50 +10,121 @@ from lepl.node import *
 from lepl.trace import TraceResults
 
 
-_CH_UPPER = maxunicode
-_CH_LOWER = -1
+class UnicodeAlphabet:
+    '''
+    Various values needed to define the domain over which the regular 
+    expression is applied.  Here default unicode strings are supported.
+    
+    Characters in the alphabet must have an ordering defined (equality,
+    less than, and less than or equal to are used).
+    
+    nbr returns true if two characters are adjacent.  It can always return
+    false, but the generated machine will be less compact. 
+    '''
+    
+    def __init__(self):
+        self.min=chr(0)
+        self.max=chr(maxunicode)
+    
+    def before(self, c): 
+        '''
+        Must return the character before c in the alphabet.  Never called with
+        min (assuming input data are in range).
+        ''' 
+        return chr(ord(c)-1)
+    
+    def after(self, c): 
+        '''
+        Must return the character after c in the alphabet.  Never called with
+        max (assuming input data are in range).
+        ''' 
+        return chr(ord(c)+1)
+    
+    def fmt_intervals(self, intervals):
+        '''
+        This must fully describe the data in the intervals (it is used to
+        hash the data).
+        '''
+        inrange = '-\\[]'
+        outrange = inrange + '*+()'
+        def escape(c, chars=inrange):
+            if c in chars: c = '\\' + c
+            return c
+        ranges = []
+        if len(intervals) == 1 and \
+                intervals[0][0] == intervals[0][1]:
+            return escape(intervals[0][0], outrange)
+        else:
+            for (a, b) in intervals:
+                if a == b:
+                    ranges.append(escape(a))
+                else:
+                    ranges.append('{0!s}-{1!s}'.format(escape(a), escape(b)))
+            return '[{0}]'.format(''.join(ranges))
+        
+    def fmt_sequence(self, children):
+        '''
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        return ''.join(str(c) for c in children)
+    
+    def fmt_repeat(self, children):
+        '''
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        s = self.fmt_sequence(children)
+        if len(children) == 1:
+            return s + '*'
+        else:
+            return '({0})*'.format(s)
 
-class Character():
+
+UNICODE = UnicodeAlphabet()
+
+
+class Character:
     '''
     A set of possible values for a character, described as a collection of 
-    intervals.  Each interval is (a, b] (ie a < x <= b, where x is a character 
-    code).  If a is -1 or b is sys.maxunicode then the relevant bound is 
-    effectively open.
+    intervals.  Each interval is [a, b] (ie a <= x <= b, where x is a character 
+    code).  We use open bounds to avoid having to specify an "out of range"
+    value, making it easier to work with a variey of alphabets.
     
     The intervals are stored in a list, ordered by a, rewriting intervals as 
     necessary to ensure no overlap.
     '''
     
-    def __init__(self, intervals):
+    def __init__(self, intervals, alphabet):
         self.__intervals = deque()
         for interval in intervals:
-            self.__append(interval)
+            self.__append(interval, alphabet)
         self.__intervals = list(self.__intervals)
-        self.__str = self._build_str()
+        self.__str = alphabet.fmt_intervals(self.__intervals)
         self.__index = [interval[1] for interval in self.__intervals]
             
-    def __append(self, interval):
+    def __append(self, interval, alphabet):
         '''
         Add an interval to the existing intervals.
         
         This maintains self.__intervals in the normalized form described above.
         '''
         (a1, b1) = interval
-        if a1 > b1: (a1, b1) = (b1, a1)
+        if b1 < a1: (a1, b1) = (b1, a1)
         intervals = deque()
+        done = False
         while self.__intervals:
             (a0, b0) = self.__intervals.popleft()
             if a0 <= a1:
-                if b0 < a1:
-                    # note that (2, 3] and (3, 4] "touch"
+                if b0 < a1 and b0 != alphabet.before(a1):
                     # old interval starts and ends before new interval
                     # so keep old interval and continue
                     intervals.append((a0, b0))
-                elif b0 >= b1:
+                elif b1 <= b0:
                     # old interval starts before and ends after new interval
                     # so keep old interval, discard new interval and slurp
                     intervals.append((a0, b0))
-                    a1 = _CH_UPPER
+                    done = True
                     break
                 else:
                     # old interval starts before new, but partially overlaps
@@ -61,14 +132,14 @@ class Character():
                     # (since it may overlap more intervals...)
                     (a1, b1) = (a0, b1)
             else:
-                if b1 < a0:
+                if b1 < a0 and b1 != alphabet.before(a0):
                     # new interval starts and ends before old, so add both
                     # and slurp
                     intervals.append((a1, b1))
                     intervals.append((a0, b0))
-                    a1 = _CH_UPPER
+                    done = True
                     break
-                elif b1 >= b0:
+                elif b0 <= b1:
                     # new interval starts before and ends after old interval
                     # so discard old and continue (since it may overlap...)
                     pass
@@ -76,31 +147,12 @@ class Character():
                     # new interval starts before old, but partially overlaps,
                     # add extended interval and slurp rest
                     intervals.append((a1, b0))
-                    a1 = _CH_UPPER
+                    done = True
                     break
-        if a1 < _CH_UPPER:
+        if not done:
             intervals.append((a1, b1))
         intervals.extend(self.__intervals) # slurp remaining
         self.__intervals = intervals
-        
-    def _build_str(self):
-        inrange = '-\\[]'
-        outrange = inrange + '*+()'
-        def escape(x, chars=inrange):
-            s = chr(x)
-            if s in chars: s = '\\' + s
-            return s
-        ranges = []
-        if len(self.__intervals) == 1 and \
-                self.__intervals[0][0] + 1 == self.__intervals[0][1]:
-            return escape(self.__intervals[0][1], outrange)
-        else:
-            for (a, b) in self.__intervals:
-                if a + 1 == b:
-                    ranges.append(escape(b))
-                else:
-                    ranges.append('{0!s}-{1!s}'.format(escape(a+1), escape(b)))
-            return '[{0}]'.format(''.join(ranges))
         
     def __str__(self):
         return self.__str
@@ -114,19 +166,15 @@ class Character():
     def __iter__(self):
         return iter(self.__intervals)
     
-    def __contains__(self, char):
+    def __contains__(self, c):
         '''
-        Does char lie within the intervals?
+        Does the value lie within the intervals?
         '''
         if self.__index:
-            if type(char) is int:
-                c = char
-            else: 
-                c = ord(char)
             index = bisect_left(self.__index, c)
             if index < len(self.__intervals):
                 (a, b) = self.__intervals[index]
-                return a < c <= b
+                return a <= c <= b
         return False
     
     def __hash__(self):
@@ -145,72 +193,72 @@ class _Fragments():
     of ranges.  Used internally to combine transitions.
     '''
     
-    def __init__(self, characters):
+    def __init__(self, characters, alphabet):
         self.__intervals = deque()
         for character in characters:
             assert type(character) is Character
             for interval in character:
-                self.__append(interval)
+                self.__append(interval, alphabet)
             
-    def __append(self, interval):
+    def __append(self, interval, alphabet):
         '''
         Add an interval to the existing intervals.
         '''
         (a1, b1) = interval
-        if a1 > b1: (a1, b1) = (b1, a1)
+        if b1 < a1: (a1, b1) = (b1, a1)
         intervals = deque()
+        done = False
         while self.__intervals:
             (a0, b0) = self.__intervals.popleft()
             if a0 <= a1:
-                if b0 <= a1:
+                if b0 < a1:
                     # old interval starts and ends before new interval
                     # so keep old interval and continue
                     intervals.append((a0, b0))
-                elif b0 >= b1:
+                elif b1 <= b0:
                     # old interval starts before or with and ends after or with 
                     # new interval
                     # so we have one, two or three new intervals
-                    if a0 < a1: intervals.append((a0, a1)) # first part of old
+                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
                     intervals.append((a1, b1)) # common to both
-                    if b0 > b1: intervals.append((b1, b0)) # last part of old
-                    a1 = _CH_UPPER
+                    if b1 < b0: intervals.append((alphabet.after(b1), b0)) # last part of old
+                    done = True
                     break
                 else:
                     # old interval starts before new, but partially overlaps
                     # so split old and continue
                     # (since it may overlap more intervals...)
-                    if a0 < a1: intervals.append((a0, a1)) # first part of old
+                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
                     intervals.append((a1, b0)) # common to both
-                    (a1, b1) = (b0, b1)
+                    a1 = alphabet.after(b0)
             else:
-                if b1 <= a0:
-                    # new interval starts and ends before old, so add both
-                    # and slurp
+                if b1 < a0:
+                    # new interval starts and ends before old
                     intervals.append((a1, b1))
                     intervals.append((a0, b0))
                     a1 = _CH_UPPER
                     break
-                elif b1 >= b0:
+                elif b0 <= b1:
                     # new interval starts before and ends after or with old 
                     # interval
                     # so split and continue if extends (since last part may 
                     # overlap...)
-                    intervals.append((a1, a0)) # first part of new
+                    intervals.append((a1, alphabet.before(a0))) # first part of new
                     intervals.append((a0, b0)) # old
                     if b1 > b0:
-                        (a1, b1) = (b0, b1)
+                        a1 = alphabet.after(b0)
                     else:
-                        a1 = _CH_UPPER
+                        done = True
                         break
                 else:
                     # new interval starts before old, but partially overlaps,
                     # split and slurp rest
-                    intervals.append((a1, a0)) # first part of new
+                    intervals.append((a1, alphabet.before(a0))) # first part of new
                     intervals.append((a0, b1)) # overlap
-                    intervals.append((b1, b0)) # last part of old
-                    a1 = _CH_UPPER
+                    intervals.append((alphabet.after(b1), b0)) # last part of old
+                    done = True
                     break
-        if a1 < _CH_UPPER:
+        if not done:
             intervals.append((a1, b1))
         intervals.extend(self.__intervals) # slurp remaining
         self.__intervals = intervals
@@ -234,17 +282,18 @@ class _Sequence(MutableNode):
     may be cloned with a different index value.
     '''
     
-    def __init__(self, children, index=0):
+    def __init__(self, children, alphabet, index=0):
         super(_Sequence, self).__init__(children)
-        self.__str = self._build_str()
         self._index = index
-        
-    def clone(self, index):
-        return type(self)(self.children(), index)
+        self.alphabet = alphabet
+        self.__str = self._build_str()
         
     def _build_str(self):
-        return ''.join(str(c) for c in self.children())
-    
+        return self.alphabet.fmt_sequence(self._children)
+        
+    def clone(self, index):
+        return type(self)(self.children(), self.alphabet, index)
+        
     def __str__(self):
         return self.__str
     
@@ -318,11 +367,7 @@ class Repeat(_Sequence):
     '''
     
     def _build_str(self):
-        s = super(Repeat, self)._build_str()
-        if len(self) == 1:
-            return s + '*'
-        else:
-            return '({0})*'.format(s)
+        return self.alphabet.fmt_repeat(self._children)
         
     def _transitions(self):
         yield (self[self._index], self.clone((self._index + 1) % len(self)))
@@ -339,35 +384,36 @@ class Regexp(_Sequence):
     A labelled sequence of Characters and Repeats.
     '''
     
-    def __init__(self, label, children, index=0):
-        super(Regexp, self).__init__(children, index)
+    def __init__(self, label, children, alphabet, index=0):
+        super(Regexp, self).__init__(children, alphabet, index)
         self.label = label
 
     def clone(self, index):
-        return type(self)(self.label, self.children(), index)
+        return type(self)(self.label, self.children(), self.alphabet, index)
         
 
-def _make_parser():
+def _make_unicode_parser():
     
-    mktuple1 = lambda x: (ord(x)-1, ord(x))
-    mktuple2 = lambda xy: (ord(xy[0])-1, ord(xy[1]))
+    dup = lambda x: (x, x)
+    repeat = lambda x: Repeat(x, UNICODE)
+    character = lambda x: Character(x, UNICODE)
     
     char     = Drop('\\')+Any() | ~Lookahead('\\')+Any()
     pair     = char & Drop('-') & char
-    interval = (pair > mktuple2) | (char >> mktuple1)
-    brackets = (Drop('[') & interval[1:] & Drop(']')) > Character
-    letter   = (char >> mktuple1) > Character
+    interval = (pair > tuple) | (char >> dup)
+    brackets = (Drop('[') & interval[1:] & Drop(']')) > character
+    letter   = (char >> dup) > character
     nested   = Drop('(') & (brackets | letter)[1:] & Drop(')')
-    star     = (nested | brackets | letter) & Drop('*') > Repeat
+    star     = (nested | brackets | letter) & Drop('*') > repeat
     expr     = (star | brackets | letter)[:] & Drop(Eos())
     parser = expr.string_parser()
 #    print(parser.matcher)
     return lambda text: parser(text)
 
-__compiled_parser = _make_parser()
+__compiled_unicode_parser = _make_unicode_parser()
 
-def parser(label, text):
-    return Regexp(label, __compiled_parser(text))
+def unicode_parser(label, text):
+    return Regexp(label, __compiled_unicode_parser(text), UNICODE)
 
 
 class State():
@@ -375,8 +421,9 @@ class State():
     A single node in a FSM.
     '''
     
-    def __init__(self, regexps):
+    def __init__(self, regexps, alphabet):
         self.__regexps = frozenset(regexps)
+        self.__alphabet = alphabet
         
     def transitions(self):
         '''
@@ -385,7 +432,8 @@ class State():
         fragments = self.__split(list(self.__raw_transitions()))
         joined = self.__join(fragments)
         for regexps in joined:
-            yield (Character(joined[regexps]), State(regexps))
+            yield (Character(joined[regexps], self.__alphabet), 
+                   State(regexps, self.__alphabet))
         
     def __raw_transitions(self):
         for regexp in self.__regexps:
@@ -399,7 +447,8 @@ class State():
         divide the transitions cleanly.
         '''
         fragments = {} # from char range to regexps
-        for (fa, fb) in _Fragments(chars for (chars, _seq) in raw):
+        for (fa, fb) in _Fragments((chars for (chars, _seq) in raw), 
+                                   self.__alphabet):
             # we have constructed fragments so that chars will always be
             # within the chars for a transition
             for (chars, regexp) in raw:
@@ -455,9 +504,10 @@ class State():
             return False
         
 
-class Fsm():
+class Fsm:
     
-    def __init__(self, regexps):
+    def __init__(self, regexps, alphabet):
+        self.__alphabet = alphabet
         self.__terminals = []
         self.__transitions = []
         index = self.__expand(regexps)
@@ -470,7 +520,7 @@ class Fsm():
         known = set()
         state_to_index = {}
         stack = deque()
-        stack.append(State(regexps))
+        stack.append(State(regexps, self.__alphabet))
         while stack:
             state = stack.pop()
             if state not in known:
@@ -508,7 +558,7 @@ class Fsm():
                 triple = bisect_left(index, c)
                 if triple < l:
                     (a, b, end) = triples[triple]
-                    if a < c <= b:
+                    if a <= c <= b:
                         return end
                 return None
             self.__transitions[start] = lookup
@@ -530,8 +580,7 @@ class Fsm():
                 yield (label, result)
             char = next(characters)
             result.append(char)
-            c = ord(char)
-            state = transitions[state](c)
+            state = transitions[state](char)
     
     def all_for_string(self, string):
         '''
