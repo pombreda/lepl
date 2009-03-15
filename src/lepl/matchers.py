@@ -950,7 +950,7 @@ def AnyBut(exclude=None):
     The argument should be a list of tokens (or a string of suitable 
     characters) to exclude, or a matcher.  If omitted all tokens are accepted.
     '''
-    return ~Lookahead(coerce(exclude, Any)) + Any().tag('AnyBut')
+    return ~Lookahead(coerce(exclude, Any)) & Any().tag('AnyBut')
             
 
 def Optional(matcher):

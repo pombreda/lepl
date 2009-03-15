@@ -1,4 +1,40 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+A simple regular expression engine in pure Python.
+
+This takes a set of regular expressions (only the most basic functionality is
+supported) and generates a finite state machine that can match them against
+a stream of values.
+
+Although simple (and slow compared to a C version), it has some advantages 
+from being implemented in Python.
+
+First, it can use a variety of alphabets - it is not restricted to strings.  
+It could, for example, match lists of integers, or sequences of tokens.
+
+Second, it can yield intermediate matches.
+
+Third, it is extensible.
+'''
+
+
 from bisect import bisect_left, bisect_right
 from collections import deque
 from operator import itemgetter
@@ -10,7 +46,7 @@ from lepl.node import *
 from lepl.trace import TraceResults
 
 
-class UnicodeAlphabet:
+class UnicodeAlphabet(object):
     '''
     Various values needed to define the domain over which the regular 
     expression is applied.  Here default unicode strings are supported.
@@ -23,8 +59,11 @@ class UnicodeAlphabet:
     '''
     
     def __init__(self):
-        self.min=chr(0)
-        self.max=chr(maxunicode)
+        self.min = chr(0)
+        try:
+            self.max = chr(maxunicode)
+        except: # Python 2.6
+            self.max = unichr(maxunicode)
     
     def before(self, c): 
         '''
@@ -75,7 +114,7 @@ class UnicodeAlphabet:
         hash the data).
         '''
         s = self.fmt_sequence(children)
-        if len(children) == 1:
+        if len(children) == 1 and type(children[0]) is Character:
             return s + '*'
         else:
             return '({0})*'.format(s)
@@ -84,7 +123,7 @@ class UnicodeAlphabet:
 UNICODE = UnicodeAlphabet()
 
 
-class Character:
+class Character(object):
     '''
     A set of possible values for a character, described as a collection of 
     intervals.  Each interval is [a, b] (ie a <= x <= b, where x is a character 
@@ -157,6 +196,9 @@ class Character:
     def __str__(self):
         return self.__str
     
+    def __repr__(self):
+        return self.__str
+    
     def len(self):
         return len(self.__intervals)
     
@@ -185,9 +227,27 @@ class Character:
             return self.__str == other.__str
         except:
             return False
+        
+    def start(self):
+        return True
+    
+    def end(self):
+        return True
+    
+    def complete(self):
+        return False
+    
+    def incomplete(self):
+        return True
+    
+    def reset(self):
+        return self
+    
+    def transitions(self):
+        yield (self, None)
             
 
-class _Fragments():
+class _Fragments(object):
     '''
     Similar to Character, but each additional interval fragments the list
     of ranges.  Used internally to combine transitions.
@@ -236,7 +296,7 @@ class _Fragments():
                     # new interval starts and ends before old
                     intervals.append((a1, b1))
                     intervals.append((a0, b0))
-                    a1 = _CH_UPPER
+                    done = True
                     break
                 elif b0 <= b1:
                     # new interval starts before and ends after or with old 
@@ -273,17 +333,18 @@ class _Fragments():
         return iter(self.__intervals)
     
 
-class _Sequence(MutableNode):
+class Sequence(MutableNode):
     '''
-    Common support for sequences of Characters, etc.  This includes an index,
-    which is internal state that describes progression through the sequence.
+    A sequence of Characters, etc.  This includes an index, which is internal 
+    state that describes progression through the sequence.
     
-    Note that a _Sequence instance is static - index does not change - but it
+    Note that a Sequence instance is static - index does not change - but it
     may be cloned with a different index value.
     '''
     
     def __init__(self, children, alphabet, index=0):
-        super(_Sequence, self).__init__(children)
+#        print(type(self), children)
+        super(Sequence, self).__init__(children)
         self._index = index
         self.alphabet = alphabet
         self.__str = self._build_str()
@@ -297,20 +358,45 @@ class _Sequence(MutableNode):
     def __str__(self):
         return self.__str
     
+    def __repr__(self):
+        contents = deque()
+        for i in range(len(self)):
+            if i == self._index: contents.append('{')
+            contents.append(repr(self[i]))
+            if i == self._index: contents.append('}')
+        return '<{0}>({1})'.format(self._name(), ''.join(contents))
+    
+    def _name(self):
+        return type(self).__name__
+    
     def complete(self):
         '''
         Has reached a possible final match?
         '''
-        try:
-            return self[self._index].complete()
-        except:
-            return self._index == len(self)
+        return self._index == len(self) or self[self._index].complete()
     
     def incomplete(self):
         '''
         More transitions available?
         '''
-        return self._index < len(self)
+        return self._index + 1 < len(self) or \
+              self._index + 1 == len(self) and self[self._index].incomplete()
+    
+    def start(self):
+        '''
+        At start of matches?
+        '''
+        return 0 == self._index and self[self._index].start()
+        
+    def end(self):
+        '''
+        On last state?
+        '''
+        return len(self) == self._index + 1 and self[self._index].end()
+    
+    def reset(self):
+        return type(self)([child.reset() for child in self._children], 
+                          self.alphabet)
     
     def transitions(self):
         '''
@@ -322,21 +408,21 @@ class _Sequence(MutableNode):
         of generating transitions to the (embedded) sequence at the current
         index and, if that fails, calling the _next() method.
         '''
-        try:
+        if self._index < len(self):
             for (chars, seq) in self[self._index].transitions():
-                    # construct the new sequence
+                # construct the new sequence
+                if seq:
                     clone = self.clone(self._index)
                     clone[self._index] = seq
-                    yield (chars, clone)
-        except:
-            for transition in self._transitions():
-                yield transition
+                else:
+                    clone = self.clone(self._index+1)
+                yield (chars, clone)
                 
     def _transitions(self):
         '''
         Generate transitions from the current position.  This is called if 
         forwarding to the the embedded sequence at the current index has
-        failed.
+        failed (so the current child is a character, not a sequence).
         '''
         if self._index < len(self):
             yield (self[self._index], self.clone(self._index + 1))
@@ -361,25 +447,41 @@ class _Sequence(MutableNode):
             return False
     
 
-class Repeat(_Sequence):
+class Repeat(Sequence):
     '''
-    A sequence of Characters that can repeat 0 or more times.
+    A sequence of Characters (or sequences) that can repeat 0 or more times.
     '''
     
     def _build_str(self):
         return self.alphabet.fmt_repeat(self._children)
         
-    def _transitions(self):
-        yield (self[self._index], self.clone((self._index + 1) % len(self)))
+    def transitions(self):
+        '''
+        If this is the end state then the next state will be empty; we
+        replace it with a reset clone so that we can continue looping.
+        '''
+        for (chars, seq) in super(Repeat, self).transitions():
+            if self.end():
+                seq = self.reset()
+            yield (chars, seq)
             
     def complete(self):
-        return self._index == 0
+        return self.start()
     
     def incomplete(self):
         return True
+    
+    
+class Choice(Sequence):
+    '''
+    A set of alternative Characters (or sequences).
+    '''
+    
+    def _build_str(self):
+        return self.alphabet.fmt_repeat(self._children)
             
         
-class Regexp(_Sequence):
+class Regexp(Sequence):
     '''
     A labelled sequence of Characters and Repeats.
     '''
@@ -390,38 +492,24 @@ class Regexp(_Sequence):
 
     def clone(self, index):
         return type(self)(self.label, self.children(), self.alphabet, index)
-        
 
-def _make_unicode_parser():
+    def _name(self):
+        return type(self).__name__ + ' ' + str(self.label)
     
-    dup = lambda x: (x, x)
-    repeat = lambda x: Repeat(x, UNICODE)
-    character = lambda x: Character(x, UNICODE)
-    
-    char     = Drop('\\')+Any() | ~Lookahead('\\')+Any()
-    pair     = char & Drop('-') & char
-    interval = (pair > tuple) | (char >> dup)
-    brackets = (Drop('[') & interval[1:] & Drop(']')) > character
-    letter   = (char >> dup) > character
-    nested   = Drop('(') & (brackets | letter)[1:] & Drop(')')
-    star     = (nested | brackets | letter) & Drop('*') > repeat
-    expr     = (star | brackets | letter)[:] & Drop(Eos())
-    parser = expr.string_parser()
-#    print(parser.matcher)
-    return lambda text: parser(text)
+       
 
-__compiled_unicode_parser = _make_unicode_parser()
-
-def unicode_parser(label, text):
-    return Regexp(label, __compiled_unicode_parser(text), UNICODE)
-
-
-class State():
+class State(LogMixin):
     '''
-    A single node in a FSM.
+    A single node in a FSM.  This is used to construct the FSM, but plays no
+    part in the final matching (which is done via a simple table).
+    
+    A state provides a list of transitions which describe how to get to
+    neighbouring states.  Duplicate instances (with the same internal
+    state) will hash and equate identically.
     '''
     
     def __init__(self, regexps, alphabet):
+        super(State, self).__init__()
         self.__regexps = frozenset(regexps)
         self.__alphabet = alphabet
         
@@ -432,8 +520,13 @@ class State():
         fragments = self.__split(list(self.__raw_transitions()))
         joined = self.__join(fragments)
         for regexps in joined:
-            yield (Character(joined[regexps], self.__alphabet), 
-                   State(regexps, self.__alphabet))
+            char = Character(joined[regexps], self.__alphabet)
+            state = State(regexps, self.__alphabet)
+            self._debug('Transitions from ' + repr(self))
+            self._debug('For character    ' + repr(char))
+            self._debug('next state is    ' + repr(state))
+            self._debug('with terminals   ' + str(list(self.terminals())))
+            yield (char, state)
         
     def __raw_transitions(self):
         for regexp in self.__regexps:
@@ -470,12 +563,6 @@ class State():
             joined[regexps].append(chars)
         return joined
     
-    def __eq__(self, other):
-        try:
-            return self.__regexps == other.__regexps
-        except:
-            return False
-
     def __len__(self):
         return len(self.__regexps)
     
@@ -503,13 +590,26 @@ class State():
         except:
             return False
         
+    def __repr__(self):
+        return '<State>({0})'.format(','.join(repr(regexp) 
+                                              for regexp in self.__regexps))
+        
 
-class Fsm:
+class Fsm(object):
+    '''
+    Given a set of regular expressions, this compiles the state machine and
+    provides the transition table to sub-classes.  To use this in a subclass
+    simply start at state 0 and iterate over the input data, supplying each
+    value to self._transition[state] to get the next state (state is None 
+    when no further transitions are available).
+    
+    For any state, self._terminals[state] lists the labels that may terminate.
+    '''
     
     def __init__(self, regexps, alphabet):
         self.__alphabet = alphabet
-        self.__terminals = []
-        self.__transitions = []
+        self._terminals = []
+        self._transitions = []
         index = self.__expand(regexps)
         self.__compile(index)
 
@@ -527,9 +627,9 @@ class Fsm:
                 index = len(known)
                 state_to_index[state] = index
                 known.add(state)
-                self.__terminals.append(list(state.terminals()))
+                self._terminals.append(list(state.terminals()))
                 transitions = list(state.transitions())
-                self.__transitions.append(transitions)
+                self._transitions.append(transitions)
                 for (_, state) in transitions:
                     stack.append(state)
         return state_to_index
@@ -543,11 +643,11 @@ class Fsm:
         Note that the Characters for a particular entry, by construction in 
         State, will not overlap.
         '''
-        for start in range(len(self.__transitions)):
+        for start in range(len(self._transitions)):
             # construct a list of (a, b, index) triples, where a and b are the
             # usual interval values (a < c <= b)
             triples = []
-            for (chars, state) in self.__transitions[start]:
+            for (chars, state) in self._transitions[start]:
                 end = state_to_index[state]
                 for (a, b) in chars:
                     triples.append((a, b, end))
@@ -561,7 +661,60 @@ class Fsm:
                     if a <= c <= b:
                         return end
                 return None
-            self.__transitions[start] = lookup
+            self._transitions[start] = lookup
+            
+
+def _make_unicode_parser():
+    '''
+    Construct a parser for Unicode based expressions.
+    '''
+    
+    dup = lambda x: (x, x)
+    sequence = lambda x: Sequence(x, UNICODE)
+    repeat = lambda x: Repeat(x, UNICODE)
+    choice = lambda x: Choice(x, UNICODE)
+    character = lambda x: Character(x, UNICODE)
+    
+    escaped  = Drop('\\') + Any()
+    raw      = ~Lookahead('\\') + AnyBut("[]*()-")
+    single   = escaped | raw
+    
+    pair     = single & Drop('-') & single                      > tuple
+    letter   = single                                           >> dup
+    
+    interval = pair | letter
+    brackets = Drop('[') & interval[1:] & Drop(']')
+    char     = brackets | letter                                > character
+
+    item     = Delayed()
+    
+    seq      = (char | item)[1:]                                > sequence
+    group    = Drop('(') & seq & Drop(')')
+    alts     = Drop('(') & seq[2:, Drop('|')] & Drop(')')       > choice
+    star     = (alts | group | char) & Drop('*')                > repeat
+    
+    item    += alts | group | star
+    
+    expr     = (char | item)[:] & Drop(Eos())
+    parser = expr.string_parser(Configuration(monitors=[TraceResults(False)]))
+    return lambda text: parser(text)
+
+__compiled_unicode_parser = _make_unicode_parser()
+'''
+Cache the parser to allow efficient re-use.
+'''
+
+def unicode_parser(label, text):
+    '''
+    Parse a Unicode regular expression, returning the associated Regexp.
+    '''
+    return Regexp(label, __compiled_unicode_parser(text), UNICODE)
+
+
+class SimpleFsm(Fsm):
+    '''
+    A simple implementation of the matcher, mainly for testing.
+    '''
             
     def generator(self, characters):
         '''
@@ -573,8 +726,8 @@ class Fsm:
         '''
         state = 0
         result = deque()
-        transitions = self.__transitions
-        terminals = self.__terminals
+        transitions = self._transitions
+        terminals = self._terminals
         while state is not None:
             for label in terminals[state]:
                 yield (label, result)

@@ -153,6 +153,7 @@ class PerStreamCache(LogMixin):
     def __call__(self, stream):
         if not self.__first:
             self.__counter += 1
+            print(self.__counter)
             if self.__curtail(self.__counter, stream):
                 return empty()
             else:

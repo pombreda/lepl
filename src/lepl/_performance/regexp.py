@@ -1,10 +1,10 @@
 
 from lepl import *
-from lepl.regexp import parser
+from lepl.regexp import unicode_parser
 
 
-def test_test_parser(text):
-    return test_parser(None, text)
+def test_parser(text):
+    return unicode_parser(None, text)
 
 def lexer():
     '''
