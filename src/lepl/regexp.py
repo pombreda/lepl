@@ -114,10 +114,29 @@ class UnicodeAlphabet(object):
         hash the data).
         '''
         s = self.fmt_sequence(children)
-        if len(children) == 1 and type(children[0]) is Character:
+        if len(children) == 1 and type(children[0]) in (Character, Choice):
             return s + '*'
         else:
             return '({0})*'.format(s)
+
+    def fmt_choice(self, children):
+        '''
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        return '({0})'.format('|'.join(self.fmt_sequence(child) 
+                                       for child in children))
+
+    def fmt_option(self, children):
+        '''
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        s = self.fmt_sequence(children)
+        if len(children) == 1 and type(children[0]) in (Character, Choice):
+            return s + '?'
+        else:
+            return '({0})?'.format(s)
 
 
 UNICODE = UnicodeAlphabet()
@@ -227,6 +246,8 @@ class Character(object):
             return self.__str == other.__str
         except:
             return False
+        
+    # ------ the following methods co-operate with Sequence
         
     def start(self):
         return True
@@ -373,7 +394,8 @@ class Sequence(MutableNode):
         '''
         Has reached a possible final match?
         '''
-        return self._index == len(self) or self[self._index].complete()
+        return self._index == len(self) or \
+            self._index + 1 == len(self) and self[self._index].complete()
     
     def incomplete(self):
         '''
@@ -409,23 +431,16 @@ class Sequence(MutableNode):
         index and, if that fails, calling the _next() method.
         '''
         if self._index < len(self):
-            for (chars, seq) in self[self._index].transitions():
-                # construct the new sequence
+            for (char, seq) in self[self._index].transitions():
                 if seq:
                     clone = self.clone(self._index)
                     clone[self._index] = seq
                 else:
-                    clone = self.clone(self._index+1)
-                yield (chars, clone)
-                
-    def _transitions(self):
-        '''
-        Generate transitions from the current position.  This is called if 
-        forwarding to the the embedded sequence at the current index has
-        failed (so the current child is a character, not a sequence).
-        '''
-        if self._index < len(self):
-            yield (self[self._index], self.clone(self._index + 1))
+                    clone = self.next()
+                yield (char, clone)
+    
+    def next(self):
+        return self.clone(self._index+1)
     
     def __contains__(self, char):
         return self.incomplete() and char in self[self._index]
@@ -472,14 +487,49 @@ class Repeat(Sequence):
         return True
     
     
+class Option(Sequence):
+    '''
+    An optional sequence of Characters (or sequences).
+    '''
+    
+    def _build_str(self):
+        return self.alphabet.fmt_option(self._children)
+        
+    
 class Choice(Sequence):
     '''
     A set of alternative Characters (or sequences).
     '''
     
     def _build_str(self):
-        return self.alphabet.fmt_repeat(self._children)
+        return self.alphabet.fmt_choice(self._children)
             
+    def transitions(self):
+        if self.start():
+            for index in range(len(self)):
+                for (chars, seq) in self[index].transitions():
+                    if seq:
+                        clone = self.clone(index)
+                        clone[index] = seq
+                    else:
+                        clone = self.clone(len(self))
+                    yield (chars, clone)
+        else:
+            if self._index < len(self):
+                for (chars, seq) in self[self._index].transitions():
+                    if seq:
+                        clone = self.clone(self._index)
+                        clone[self._index] = seq
+                    else:
+                        clone = self.clone(len(self))
+                    yield (chars, clone)
+                
+    def end(self):
+        '''
+        On last state?
+        '''
+        return self._index == len(self) or self[self._index].end()
+    
         
 class Regexp(Sequence):
     '''
@@ -531,8 +581,9 @@ class State(LogMixin):
     def __raw_transitions(self):
         for regexp in self.__regexps:
             if regexp.incomplete():
-                for transition in regexp.transitions():
-                    yield transition
+                for (char, regexp) in regexp.transitions():
+                    self._debug('Raw: ' + repr(char) + ' -> ' + repr(regexp))
+                    yield (char, regexp)
                     
     def __split(self, raw):
         '''
@@ -595,7 +646,7 @@ class State(LogMixin):
                                               for regexp in self.__regexps))
         
 
-class Fsm(object):
+class Fsm(LogMixin):
     '''
     Given a set of regular expressions, this compiles the state machine and
     provides the transition table to sub-classes.  To use this in a subclass
@@ -607,6 +658,7 @@ class Fsm(object):
     '''
     
     def __init__(self, regexps, alphabet):
+        super(Fsm, self).__init__()
         self.__alphabet = alphabet
         self._terminals = []
         self._transitions = []
@@ -630,7 +682,8 @@ class Fsm(object):
                 self._terminals.append(list(state.terminals()))
                 transitions = list(state.transitions())
                 self._transitions.append(transitions)
-                for (_, state) in transitions:
+                for (char, state) in transitions:
+#                    self._debug('Raw: ' + repr(char) + ' -> ' + repr(state))
                     stack.append(state)
         return state_to_index
     
@@ -672,11 +725,12 @@ def _make_unicode_parser():
     dup = lambda x: (x, x)
     sequence = lambda x: Sequence(x, UNICODE)
     repeat = lambda x: Repeat(x, UNICODE)
+    option = lambda x: Option(x, UNICODE)
     choice = lambda x: Choice(x, UNICODE)
     character = lambda x: Character(x, UNICODE)
     
     escaped  = Drop('\\') + Any()
-    raw      = ~Lookahead('\\') + AnyBut("[]*()-")
+    raw      = ~Lookahead('\\') + AnyBut("[]*()-?")
     single   = escaped | raw
     
     pair     = single & Drop('-') & single                      > tuple
@@ -692,11 +746,13 @@ def _make_unicode_parser():
     group    = Drop('(') & seq & Drop(')')
     alts     = Drop('(') & seq[2:, Drop('|')] & Drop(')')       > choice
     star     = (alts | group | char) & Drop('*')                > repeat
+    opt      = (alts | group | char) & Drop('?')                > option
     
-    item    += alts | group | star
+    item    += alts | group | star | opt
     
     expr     = (char | item)[:] & Drop(Eos())
-    parser = expr.string_parser(Configuration(monitors=[TraceResults(False)]))
+    parser = expr.string_parser(#Configuration(monitors=[TraceResults(False)]))
+                                )
     return lambda text: parser(text)
 
 __compiled_unicode_parser = _make_unicode_parser()
@@ -715,6 +771,9 @@ class SimpleFsm(Fsm):
     '''
     A simple implementation of the matcher, mainly for testing.
     '''
+    
+    def __init__(self, regexps, alphabet):
+        super(SimpleFsm, self).__init__(regexps, alphabet)
             
     def generator(self, characters):
         '''
@@ -730,10 +789,13 @@ class SimpleFsm(Fsm):
         terminals = self._terminals
         while state is not None:
             for label in terminals[state]:
+#                self._debug('terminal ' + str(label))
                 yield (label, result)
             char = next(characters)
             result.append(char)
-            state = transitions[state](char)
+            state2 = transitions[state](char)
+            self._debug(str(state) + '/' + char + ' -> ' + str(state2))
+            state = state2
     
     def all_for_string(self, string):
         '''
