@@ -44,6 +44,7 @@ from traceback import format_exc
 from lepl.matchers import *
 from lepl.node import *
 from lepl.trace import TraceResults
+from lepl.support import empty
 
 
 class UnicodeAlphabet(object):
@@ -249,12 +250,6 @@ class Character(object):
         
     # ------ the following methods co-operate with Sequence
         
-    def start(self):
-        return True
-    
-    def end(self):
-        return True
-    
     def complete(self):
         return False
     
@@ -266,7 +261,10 @@ class Character(object):
     
     def transitions(self):
         yield (self, None)
-            
+        
+    def options(self):
+        return empty()
+    
 
 class _Fragments(object):
     '''
@@ -363,10 +361,11 @@ class Sequence(MutableNode):
     may be cloned with a different index value.
     '''
     
-    def __init__(self, children, alphabet, index=0):
+    def __init__(self, children, alphabet, index=0, fresh=True):
 #        print(type(self), children)
         super(Sequence, self).__init__(children)
         self._index = index
+        self._fresh = fresh
         self.alphabet = alphabet
         self.__str = self._build_str()
         
@@ -374,8 +373,12 @@ class Sequence(MutableNode):
         return self.alphabet.fmt_sequence(self._children)
         
     def clone(self, index):
-        return type(self)(self.children(), self.alphabet, index)
+        return type(self)(self.children(), self.alphabet, index, False)
         
+    def reset(self):
+        return type(self)([child.reset() for child in self._children], 
+                          self.alphabet, 0, True)
+    
     def __str__(self):
         return self.__str
     
@@ -394,8 +397,12 @@ class Sequence(MutableNode):
         '''
         Has reached a possible final match?
         '''
-        return self._index == len(self) or \
-            self._index + 1 == len(self) and self[self._index].complete()
+        complete = True
+        index = self._index
+        while index < len(self):
+            complete = complete and self[index].complete()
+            index += 1
+        return complete
     
     def incomplete(self):
         '''
@@ -403,22 +410,6 @@ class Sequence(MutableNode):
         '''
         return self._index + 1 < len(self) or \
               self._index + 1 == len(self) and self[self._index].incomplete()
-    
-    def start(self):
-        '''
-        At start of matches?
-        '''
-        return 0 == self._index and self[self._index].start()
-        
-    def end(self):
-        '''
-        On last state?
-        '''
-        return len(self) == self._index + 1 and self[self._index].end()
-    
-    def reset(self):
-        return type(self)([child.reset() for child in self._children], 
-                          self.alphabet)
     
     def transitions(self):
         '''
@@ -432,13 +423,34 @@ class Sequence(MutableNode):
         '''
         if self._index < len(self):
             for (char, seq) in self[self._index].transitions():
-                if seq:
+                if seq and seq.incomplete():
+                    # a sub-sequence has been returned, so we need to clone
+                    # ourselves and then replace the old sequence with the
+                    # new one.
                     clone = self.clone(self._index)
                     clone[self._index] = seq
+                    # that sequence may have options, but they will be returned
+                    # via the same call above
                 else:
+                    # we have a transition from a character, or a sequence that
+                    # is now complete.  in either case we need to move on to
+                    # the next child.
                     clone = self.next()
+                    # we should also check to see if we have progressed to an
+                    # option (ie that the next state, the one we would 
+                    # transition to with char, and which will match the 
+                    # character after char, is an option).  if so, we must 
+                    # allow the possibility of jumping ahead.
+                    for option in clone.options():
+                        yield (char, option)
                 yield (char, clone)
     
+    def options(self):
+        index = self._index
+        while index + 1 < len(self) and isinstance(self[index], Option):
+            yield self.clone(index + 1)
+            index += 1
+            
     def next(self):
         return self.clone(self._index+1)
     
@@ -462,31 +474,6 @@ class Sequence(MutableNode):
             return False
     
 
-class Repeat(Sequence):
-    '''
-    A sequence of Characters (or sequences) that can repeat 0 or more times.
-    '''
-    
-    def _build_str(self):
-        return self.alphabet.fmt_repeat(self._children)
-        
-    def transitions(self):
-        '''
-        If this is the end state then the next state will be empty; we
-        replace it with a reset clone so that we can continue looping.
-        '''
-        for (chars, seq) in super(Repeat, self).transitions():
-            if self.end():
-                seq = self.reset()
-            yield (chars, seq)
-            
-    def complete(self):
-        return self.start()
-    
-    def incomplete(self):
-        return True
-    
-    
 class Option(Sequence):
     '''
     An optional sequence of Characters (or sequences).
@@ -494,7 +481,31 @@ class Option(Sequence):
     
     def _build_str(self):
         return self.alphabet.fmt_option(self._children)
+    
+    def complete(self):
+        return True
         
+    
+class Repeat(Option):
+    '''
+    A sequence of Characters (or sequences) that can repeat 0 or more times.
+    '''
+    
+    def _build_str(self):
+        return self.alphabet.fmt_repeat(self._children)
+
+    def clone(self, index):
+        if index < len(self):
+            return super(Repeat, self).clone(index)
+        else:
+            return self.reset()
+        
+    def complete(self):
+        return self._fresh
+    
+    def incomplete(self):
+        return True
+    
     
 class Choice(Sequence):
     '''
@@ -505,30 +516,30 @@ class Choice(Sequence):
         return self.alphabet.fmt_choice(self._children)
             
     def transitions(self):
-        if self.start():
+        '''
+        Either generate all choices, or do normal sequential processing of
+        current choice.
+        '''
+        if self._fresh:
             for index in range(len(self)):
-                for (chars, seq) in self[index].transitions():
+                for (char, seq) in self[index].transitions():
                     if seq:
                         clone = self.clone(index)
                         clone[index] = seq
                     else:
-                        clone = self.clone(len(self))
-                    yield (chars, clone)
+                        clone = self.next()
+                    yield (char, clone)
+                    for option in clone.options():
+                        yield (char, option)
         else:
-            if self._index < len(self):
-                for (chars, seq) in self[self._index].transitions():
-                    if seq:
-                        clone = self.clone(self._index)
-                        clone[self._index] = seq
-                    else:
-                        clone = self.clone(len(self))
-                    yield (chars, clone)
+            for (char, seq) in super(Choice, self).transitions():
+                yield (char, seq)
                 
-    def end(self):
-        '''
-        On last state?
-        '''
-        return self._index == len(self) or self[self._index].end()
+    def incomplete(self):
+        return self._index < len(self) and self[self._index].incomplete() 
+                
+    def next(self):
+        return self.clone(len(self))
     
         
 class Regexp(Sequence):
@@ -547,7 +558,6 @@ class Regexp(Sequence):
         return type(self).__name__ + ' ' + str(self.label)
     
        
-
 class State(LogMixin):
     '''
     A single node in a FSM.  This is used to construct the FSM, but plays no
@@ -569,13 +579,11 @@ class State(LogMixin):
         '''
         fragments = self.__split(list(self.__raw_transitions()))
         joined = self.__join(fragments)
+        self._debug('Transitions from ' + repr(self))
         for regexps in joined:
             char = Character(joined[regexps], self.__alphabet)
             state = State(regexps, self.__alphabet)
-            self._debug('Transitions from ' + repr(self))
-            self._debug('For character    ' + repr(char))
-            self._debug('next state is    ' + repr(state))
-            self._debug('with terminals   ' + str(list(self.terminals())))
+            self._debug(repr(char) + ' -> ' + repr(state))
             yield (char, state)
         
     def __raw_transitions(self):
@@ -642,8 +650,10 @@ class State(LogMixin):
             return False
         
     def __repr__(self):
-        return '<State>({0})'.format(','.join(repr(regexp) 
-                                              for regexp in self.__regexps))
+        return '<State>({0}) {1}'.format(','.join(repr(regexp) 
+                                                  for regexp in self.__regexps),
+                                         list(self.terminals()))
+                                        
         
 
 class Fsm(LogMixin):

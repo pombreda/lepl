@@ -124,6 +124,13 @@ def compose_tuple(f, g):
     return fun
 
 
+def empty():
+    '''
+    An empty generator.
+    '''
+    if False: yield None
+    
+    
 class LogMixin(object):
     '''
     Add standard Python logging to a class.

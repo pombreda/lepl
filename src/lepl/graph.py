@@ -41,7 +41,7 @@ cloning.
 
 from collections import Sequence, Hashable, deque
 
-from lepl.support import compose, safe_in
+from lepl.support import compose, safe_in, empty
 
 
 class SimpleGraphNode(object):
@@ -117,13 +117,6 @@ def dfs_edges(node, type_=SimpleGraphNode):
             yield # in response to the throw (ignored by caller)
 
 
-def empty():
-    '''
-    An empty generator.
-    '''
-    if False: yield None
-    
-    
 class Reset(Exception):
     '''
     An exception that can be passed to dfs_edges to reset the traversal.

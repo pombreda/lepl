@@ -164,7 +164,7 @@ class StateTest(TestCase):
     def test_choice(self):
         abc = unicode_parser('(a|bc)', '(a|bc)')
         s1 = State([abc], UNICODE)
-        [(cb, s3), (ca, s2)] = s1.transitions()
+        [(ca, s2), (cb, s3)] = s1.transitions()
         assert 'a' == str(ca), str(ca)
         assert 'b' == str(cb), str(cb)
         t = list(s2.transitions())
@@ -174,7 +174,7 @@ class StateTest(TestCase):
         t = list(s4.transitions())
         
     def test_repeat_choice(self):
-#        basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         aab = unicode_parser('a(a|b)*', 'a(a|b)*')
         s1 = State([aab], UNICODE)
         [(ca, s2)] = s1.transitions()
@@ -182,6 +182,16 @@ class StateTest(TestCase):
         [(cab, s3)] = s2.transitions()
         assert '[a-b]' == str(cab), str(cab)
         assert s3 == s2, '\n' + str(s3) + '\n' + str(s2)
+        
+    def test_option_in_repeat(self):
+        basicConfig(level=DEBUG)
+        aab = unicode_parser('(ax?)*', '(ax?)*')
+        s1 = State([aab], UNICODE)
+        [(ca, s2)] = s1.transitions()
+        assert 'a' == str(ca), str(ca)
+        [(cx1, s2), (cx2, s3)] = s2.transitions()
+        assert 'x' == str(cx1), str(cx1)
+        assert 'x' == str(cx2), str(cx2)
 
 
 class FsmTest(TestCase):
@@ -197,9 +207,9 @@ class FsmTest(TestCase):
                    unicode_parser(3, 'aax')]
         fsm = SimpleFsm(regexps, UNICODE)
         results = list(fsm.all_for_string('aaxbxcxdx'))
-        assert results == [(1, ''), (1, 'a'), (2, 'a'), (1, 'aa'), (2, 'aax'), 
-                           (3, 'aax'), (2, 'aaxbx'), (2, 'aaxbxcx')], \
-               results
+        expected = [(1, ''), (1, 'a'), (2, 'a'), (1, 'aa'), (2, 'aax'), 
+                    (3, 'aax'), (2, 'aaxbx'), (2, 'aaxbxcx')]
+        assert results == expected, '\n' + str(results) + '\n' + str(expected)
     
     def test_choices(self):
 #        basicConfig(level=DEBUG)
@@ -217,9 +227,9 @@ class FsmTest(TestCase):
                    unicode_parser(3, 'aax')]
         fsm = SimpleFsm(regexps, UNICODE)
         results = list(fsm.all_for_string('aaxbxcxdx'))
-        assert results == [(1, ''), (1, 'a'), (2, 'a'), (1, 'aa'), (2, 'aax'), 
-                           (3, 'aax'), (2, 'aaxb'), (2, 'aaxbx'), 
-                           (2, 'aaxbxcx')], results
+        expected = [(1, ''), (1, 'a'), (2, 'a'), (1, 'aa'), (2, 'aax'), 
+                    (3, 'aax'), (2, 'aaxb'), (2, 'aaxbx'), (2, 'aaxbxcx')]
+        assert results == expected, '\n' + str(results) + '\n' + str(expected)
 
     def test_embedded_repeat(self):
         regexps = [unicode_parser(1, 'ab*c')]
@@ -228,11 +238,37 @@ class FsmTest(TestCase):
         assert results == [(1, 'abbc')], results
         
     def test_optional(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         regexps = [unicode_parser(1, 'ab?c')]
         fsm = SimpleFsm(regexps, UNICODE)
-        results = list(fsm.all_for_string('ac'))
-        assert results == [(1, 'ac')], results
         results = list(fsm.all_for_string('abc'))
         assert results == [(1, 'abc')], results
+        results = list(fsm.all_for_string('ac'))
+        assert results == [(1, 'ac')], results
+        
+    def test_all(self):
+        regexps = [unicode_parser(1, 'a*'),
+                   unicode_parser(2, 'a([a-c]x?|axb)*'),
+                   unicode_parser(3, 'aax')]
+        fsm = SimpleFsm(regexps, UNICODE)
+        results = list(fsm.all_for_string('aaxbxcxdx'))
+        expected = [(1, ''), (1, 'a'), (2, 'a'), (1, 'aa'), (2, 'aax'), 
+                    (3, 'aax'), (2, 'aaxb'), (2, 'aaxbx'), 
+                    (2, 'aaxbxc'), (2, 'aaxbxcx')]
+        assert results == expected, '\n' + str(results) + '\n' + str(expected)
+
+    def test_final_option(self):
+        basicConfig(level=DEBUG)
+        regexps = [unicode_parser(1, 'ax?')]
+        fsm = SimpleFsm(regexps, UNICODE)
+        results = list(fsm.all_for_string('a'))
+        assert results == [(1, 'a')], results
+
+    def test_option2_in_repeat(self):
+        basicConfig(level=DEBUG)
+        regexps = [unicode_parser(1, '(ax?)*')]
+        fsm = SimpleFsm(regexps, UNICODE)
+        results = list(fsm.all_for_string('aa'))
+        assert results == [(1, ''), (1, 'a'), (1, 'aa')], results
+
         

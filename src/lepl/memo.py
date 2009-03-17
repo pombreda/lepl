@@ -28,10 +28,9 @@ generators implemented here.
 
 from itertools import count
 
-from lepl.graph import empty
 from lepl.matchers import BaseMatcher
 from lepl.parser import tagged, GeneratorWrapper
-from lepl.support import LogMixin
+from lepl.support import LogMixin, empty
 
 
 class RMemo(BaseMatcher):
