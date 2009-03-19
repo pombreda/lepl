@@ -4,23 +4,29 @@ from unittest import TestCase
 
 from lepl.graph \
     import ArgAsAttributeMixin, preorder, postorder, reset, ConstructorWalker, \
-           Clone, make_proxy
+           Clone, make_proxy, TreeIndex, BEFORE
 
 
 class Node(ArgAsAttributeMixin):
     
-    def __init__(self, label, *children):
+    def __init__(self, label, *nodes):
         super(Node, self).__init__()
         self._arg(label=label)
-        self._args(children=children)
+        self._args(nodes=nodes)
         
     def __str__(self):
         return str(self.label)
     
     def __repr__(self):
         args = [str(self.label)]
-        args.extend(map(repr, self.children))
+        args.extend(map(repr, self.nodes))
         return 'Node(%s)' % ','.join(args)
+    
+    def __getitem__(self, index):
+        return self.nodes[index]
+    
+    def __len__(self):
+        return len(self.nodes)
     
 
 def graph():
@@ -117,3 +123,33 @@ class CloneTest(TestCase):
         g3 = ConstructorWalker(g2)(Clone())
         self.assert_same(repr(g1), repr(g3))
 #        print(repr(g3))
+
+
+class IndexTest(TestCase):
+    
+    def test_traversal(self):
+        tree = Node('a', Node('b', 1, 2), 3, Node('c', Node('d'), 4, Node('e', 5, 6), 7))
+        class Record(TreeIndex):
+            def __init__(self):
+                super(Record, self).__init__(tree, Node)
+                self.all = ''
+                self.preorder = ''
+                self.postorder = ''
+                self.children = ''
+            def leaf(self, node):
+                self.all += str(node)
+                self.children += str(node)
+            def before(self, node):
+                self.preorder += node.label
+                self.all += node.label
+            def after(self, node):
+                self.postorder += node.label
+                self.all += node.label
+        r = Record()
+        r.run()
+        assert r.all == 'ab12b3cdd4e56e7ca', r.all
+        assert r.preorder == 'abcde', r.preorder
+        assert r.postorder == 'bdeca', r.postorder
+        assert r.children == '1234567', r.children
+
+        

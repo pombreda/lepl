@@ -703,3 +703,4 @@ def post_clone(function):
     '''
     return compose(function, clone)
 
+
