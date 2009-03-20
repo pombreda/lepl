@@ -2,7 +2,7 @@
 from unittest import TestCase
 
 from logging import basicConfig, DEBUG
-from lepl.regexp2 import unicode_parser, Regexp, Character, UNICODE, Expander
+from lepl.regexp2 import unicode_parser, Regexp, Character, UNICODE
 
 
 def _test_parser(text):
@@ -91,30 +91,4 @@ class CharactersTest(TestCase):
         c = _test_parser('a([a-c]x|axb)*')
         assert 'a([a-c]x|axb)*' == str(c), str(c)
 
-
-
-class ExpanderTest(TestCase):
-    
-    def assert_transitions(self, regexp, transitions, terminals):
-        expander = Expander(unicode_parser(None, regexp))
-        transitions = set(transitions)
-        for (start, char) in expander.transitions:
-            text = str(start) + str(char) + str(char.state)
-            assert text in transitions, text
-            transitions.remove(text)
-        assert 0 == len(transitions), transitions
-        terminals = set(terminals)
-        for state in expander.terminals:
-            assert state in terminals
-            terminals.remove(state)
-        assert 0 == len(terminals), terminals
-    
-    def test_sequence(self):
-        basicConfig(level=DEBUG)
-        self.assert_transitions('abc', ['0a1', '1b2', '2c3'], [3])
-        
-    def test_repeat(self):
-        basicConfig(level=DEBUG)
-        self.assert_transitions('a*', ['0a0'], [0])
-        
     

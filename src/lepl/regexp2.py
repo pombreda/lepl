@@ -154,28 +154,17 @@ class Character(object):
     necessary to ensure no overlap.
     '''
     
-    def __init__(self, intervals=[], alphabet=None):
-        if intervals: assert alphabet
+    def __init__(self, intervals=[], alphabet):
+        self.alphabet = alphabet
         self.__intervals = deque()
         for interval in intervals:
-            self.__append(interval, alphabet)
+            self.__append(interval)
         self.__intervals = list(self.__intervals)
-        self.__alphabet = alphabet
-        if alphabet:
-            self.__str = alphabet.fmt_intervals(self.__intervals)
-        else:
-            self.__str = '' # final state is invisible
+        self.__str = alphabet.fmt_intervals(self.__intervals)
         self.__index = [interval[1] for interval in self.__intervals]
         self.state = None
         
-    def clone(self):
-        return Character(self.__intervals, self.__alphabet)
-        
-    def number(self, state):
-        self.state = state
-        return self.state + 1
-            
-    def __append(self, interval, alphabet):
+    def __append(self, interval):
         '''
         Add an interval to the existing intervals.
         
@@ -188,7 +177,7 @@ class Character(object):
         while self.__intervals:
             (a0, b0) = self.__intervals.popleft()
             if a0 <= a1:
-                if b0 < a1 and b0 != alphabet.before(a1):
+                if b0 < a1 and b0 != self.alphabet.before(a1):
                     # old interval starts and ends before new interval
                     # so keep old interval and continue
                     intervals.append((a0, b0))
@@ -204,7 +193,7 @@ class Character(object):
                     # (since it may overlap more intervals...)
                     (a1, b1) = (a0, b1)
             else:
-                if b1 < a0 and b1 != alphabet.before(a0):
+                if b1 < a0 and b1 != self.alphabet.before(a0):
                     # new interval starts and ends before old, so add both
                     # and slurp
                     intervals.append((a1, b1))
@@ -260,92 +249,96 @@ class Character(object):
             return self.__str == other.__str
         except:
             return False
+        
+    def build(self, graph, src, dest):
+        graph.connect(src, dest, self)
     
 
-class _Fragments(object):
-    '''
-    Similar to Character, but each additional interval fragments the list
-    of ranges.  Used internally to combine transitions.
-    '''
-    
-    def __init__(self, characters, alphabet):
-        self.__intervals = deque()
-        for character in characters:
-            assert type(character) is Character
-            for interval in character:
-                self.__append(interval, alphabet)
-            
-    def __append(self, interval, alphabet):
-        '''
-        Add an interval to the existing intervals.
-        '''
-        (a1, b1) = interval
-        if b1 < a1: (a1, b1) = (b1, a1)
-        intervals = deque()
-        done = False
-        while self.__intervals:
-            (a0, b0) = self.__intervals.popleft()
-            if a0 <= a1:
-                if b0 < a1:
-                    # old interval starts and ends before new interval
-                    # so keep old interval and continue
-                    intervals.append((a0, b0))
-                elif b1 <= b0:
-                    # old interval starts before or with and ends after or with 
-                    # new interval
-                    # so we have one, two or three new intervals
-                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
-                    intervals.append((a1, b1)) # common to both
-                    if b1 < b0: intervals.append((alphabet.after(b1), b0)) # last part of old
-                    done = True
-                    break
-                else:
-                    # old interval starts before new, but partially overlaps
-                    # so split old and continue
-                    # (since it may overlap more intervals...)
-                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
-                    intervals.append((a1, b0)) # common to both
-                    a1 = alphabet.after(b0)
-            else:
-                if b1 < a0:
-                    # new interval starts and ends before old
-                    intervals.append((a1, b1))
-                    intervals.append((a0, b0))
-                    done = True
-                    break
-                elif b0 <= b1:
-                    # new interval starts before and ends after or with old 
-                    # interval
-                    # so split and continue if extends (since last part may 
-                    # overlap...)
-                    intervals.append((a1, alphabet.before(a0))) # first part of new
-                    intervals.append((a0, b0)) # old
-                    if b1 > b0:
-                        a1 = alphabet.after(b0)
-                    else:
-                        done = True
-                        break
-                else:
-                    # new interval starts before old, but partially overlaps,
-                    # split and slurp rest
-                    intervals.append((a1, alphabet.before(a0))) # first part of new
-                    intervals.append((a0, b1)) # overlap
-                    intervals.append((alphabet.after(b1), b0)) # last part of old
-                    done = True
-                    break
-        if not done:
-            intervals.append((a1, b1))
-        intervals.extend(self.__intervals) # slurp remaining
-        self.__intervals = intervals
-        
-    def len(self):
-        return len(self.__intervals)
-    
-    def __getitem__(self, index):
-        return self.__intervals[index]
-    
-    def __iter__(self):
-        return iter(self.__intervals)
+#class _Fragments(object):
+#    '''
+#    Similar to Character, but each additional interval fragments the list
+#    of ranges.  Used internally to combine transitions.
+#    '''
+#    
+#    def __init__(self, characters):
+#        self.alphabet = alphabet
+#        self.__intervals = deque()
+#        for character in characters:
+#            assert type(character) is Character
+#            for interval in character:
+#                self.__append(interval, character.alphabet)
+#            
+#    def __append(self, interval, alphabet):
+#        '''
+#        Add an interval to the existing intervals.
+#        '''
+#        (a1, b1) = interval
+#        if b1 < a1: (a1, b1) = (b1, a1)
+#        intervals = deque()
+#        done = False
+#        while self.__intervals:
+#            (a0, b0) = self.__intervals.popleft()
+#            if a0 <= a1:
+#                if b0 < a1:
+#                    # old interval starts and ends before new interval
+#                    # so keep old interval and continue
+#                    intervals.append((a0, b0))
+#                elif b1 <= b0:
+#                    # old interval starts before or with and ends after or with 
+#                    # new interval
+#                    # so we have one, two or three new intervals
+#                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
+#                    intervals.append((a1, b1)) # common to both
+#                    if b1 < b0: intervals.append((alphabet.after(b1), b0)) # last part of old
+#                    done = True
+#                    break
+#                else:
+#                    # old interval starts before new, but partially overlaps
+#                    # so split old and continue
+#                    # (since it may overlap more intervals...)
+#                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
+#                    intervals.append((a1, b0)) # common to both
+#                    a1 = alphabet.after(b0)
+#            else:
+#                if b1 < a0:
+#                    # new interval starts and ends before old
+#                    intervals.append((a1, b1))
+#                    intervals.append((a0, b0))
+#                    done = True
+#                    break
+#                elif b0 <= b1:
+#                    # new interval starts before and ends after or with old 
+#                    # interval
+#                    # so split and continue if extends (since last part may 
+#                    # overlap...)
+#                    intervals.append((a1, alphabet.before(a0))) # first part of new
+#                    intervals.append((a0, b0)) # old
+#                    if b1 > b0:
+#                        a1 = alphabet.after(b0)
+#                    else:
+#                        done = True
+#                        break
+#                else:
+#                    # new interval starts before old, but partially overlaps,
+#                    # split and slurp rest
+#                    intervals.append((a1, alphabet.before(a0))) # first part of new
+#                    intervals.append((a0, b1)) # overlap
+#                    intervals.append((alphabet.after(b1), b0)) # last part of old
+#                    done = True
+#                    break
+#        if not done:
+#            intervals.append((a1, b1))
+#        intervals.extend(self.__intervals) # slurp remaining
+#        self.__intervals = intervals
+#        
+#    def len(self):
+#        return len(self.__intervals)
+#    
+#    def __getitem__(self, index):
+#        return self.__intervals[index]
+#    
+#    def __iter__(self):
+#        return iter(self.__intervals)
     
 
 class Sequence(Node):
@@ -362,11 +355,6 @@ class Sequence(Node):
         self.alphabet = alphabet
         self.state = None
         self.__str = self._build_str()
-        
-    def number(self, state):
-        for child in self._children:
-            state = child.number(state)
-        return state
         
     def _build_str(self):
         return self.alphabet.fmt_sequence(self._children)
@@ -387,15 +375,20 @@ class Sequence(Node):
         except:
             return False
         
-    def before(self, expander):
-        pass
-    
-    def after(self, expander):
-        pass
-    
-    def leaf(self, expander, prev, char):
-        return (prev, char)
-    
+    def build(self, graph, before, after):
+        '''
+        Connect in sequence.
+        '''
+        if self._children:
+            src = before
+            last = self._children[-1]
+            for child in self._children:
+               dest = after if child is last else graph.new_node()
+               child.build(graph, src, dest)
+               src = dest
+        else:
+            graph.connect(before, after)
+
 
 class Option(Sequence):
     '''
@@ -405,39 +398,29 @@ class Option(Sequence):
     def _build_str(self):
         return self.alphabet.fmt_option(self._children)
     
+    def build(self, graph, before, after):
+        '''
+        Connect as sequence and also directly from start to end
+        '''
+        super(Option, self).build(graph, before, after)
+        graph.connect(before, after)
+    
 
-class Repeat(Option):
+class Repeat(Sequence):
     '''
     A sequence of Characters (or sequences) that can repeat 0 or more times.
     '''
     
-    def __init__(self, children, alphabet):
-        super(Repeat, self).__init__(children, alphabet)
-        self.entry = None
-    
     def _build_str(self):
-        return self.alphabet.fmt_repeat(self._children)
+        return self.alphabet.fmt_repeat(self._children)            
     
-    def before(self, expander):
-        assert expander.states
-        (prev, stack) = expander.states[-1]
-        self.entry = prev
-        assert stack
-        (index, this) = stack[-1]
-        assert this is self
-        clone = deque(stack)
-        clone.pop()
-        clone.append((AFTER, self))
-        print('clone', prev, clone)
-        expander.push(prev, clone)
-        
-    def leaf(self, expander, prev, char):
-        # this won't work - need to somehow intercept last transition from 
-        # within repeat
-        if char == self[-1]:
-            char = char.clone()
-            char.number(self.entry)
-            
+    def build(self, graph, before, after):
+        '''
+        Connect in loop from before to before, and also directly from
+        start to end.
+        '''
+        super(Repeat, self).build(graph, before, before)
+        graph.connect(before, after) 
     
     
 class Choice(Sequence):
@@ -448,21 +431,58 @@ class Choice(Sequence):
     def _build_str(self):
         return self.alphabet.fmt_choice(self._children)
     
+    def build(self, graph, before, after):
+        '''
+        Connect in parallel from start to end, but add extra nodes so that
+        the sequence is tried in order (because evaluation tries empty
+        transitions last).
+        '''
+        if self._children:
+            last = self._children[-1]
+        for child in self._children:
+            child.build(graph, before, after)
+            if child is not last:
+                node = graph.new_node()
+                graph.connect(before, node)
+                before = node
+    
         
-_FINAL = Character()
-
-class Regexp(Sequence):
+class Labelled(Sequence):
     '''
-    A labelled sequence of Characters and Repeats.
+    A labelled sequence.  Within our limited implementation these are 
+    restricted to (1) being children of Regexp and (2) not being followed
+    by any other sequence.  Their termination defines terminal nodes.
     '''
     
     def __init__(self, label, children, alphabet):
-        children.append(_FINAL)
         super(Regexp, self).__init__(children, alphabet)
-        self._info(children)
         self.label = label
-        self.final = self.number(1)
+        
+    def build(self, graph, before):
+        '''
+        A sequence, but with an extra final empty transition to force
+        any loops before termination, and no connection to 'after'.
+        '''
+        after = graph.new_node()
+        final = graph.new_node()
+        super(Labelled, self).build(graph, before, after)
+        graph.connect(after, final)
+        graph.terminal(final, self.label)
+        
 
+class Regexp(Choice):
+    '''
+    A collection of Labelled instances.
+    '''
+    
+    def __init__(self, children, alphabet):
+        for child in children:
+            assert isinstance(child, Labelled)
+        super(Regexp, self).__init__(children, alphabet)
+        self.label = label
+        self.graph = Graph()
+        self.build(self.graph, self.graph.new_node(), self.graph.new_node())
+        
 
 def _make_unicode_parser():
     '''
@@ -514,128 +534,162 @@ def unicode_parser(label, text):
     return Regexp(label, __compiled_unicode_parser(text), UNICODE)
 
 
-BEFORE = 'BEFORE'
-AFTER = 'AFTER'
+class FGraph(object):
+    
+    def __init__(self):
+        self.__next_node = 0
+        self.__edges = {} # map from source to [(dest, edge)]
+        self.__terminals = {} # node to label
+        self.__transitions = {} # map from source to [(a, b, [dest])]
+        self.__empty_transitions = {} # map from source to [dest]
+    
+    def terminal(self, node, label):
+        assert node < self.__next_node
+        assert node not in self.__terminals, 'Node already has terminal'
+        self.__terminals[node] = label
+    
+    def new_node(self):
+        node = self.__next_node
+        self.__next_node += 1
+        self.__edges[node] = []
+        return node
+    
+    def connect(self, src, dest, edge=None):
+        '''
+        Define a connection between src and dest, with an optional edge
+        value (a character).
+        '''
+        assert src < self.__next_node
+        assert dest < self.__next_node
+        self.__edges[src].append([src, edge])
 
-class TreeIndex(LogMixin):
+    def __split(self):
+        '''
+        For a given source, split overlapping edges (character matches) so
+        that we are specific - if a character is associated with only one
+        state, it will only go to that state, even if it was associated
+        with a character range that overlapped transitions to another state.
+        This increases the number of different possible matches but reduces
+        the number of transitions associated with multiple states (which 
+        require backtracking).
+        
+        It's not clear this is ever needed, because of the extra edges
+        added to order choices.
+        '''
+        for src in self.__edges:
+            transition = []
+            for (a, b) in _Fragments([char for (dest_, char) 
+                                      in self.__edges[src] if char]):
+                # find the destinations for this character range
+                dests = [dest for (dest, char) 
+                         in self.__edges[src] if char and b in char]
+                transition.append((a, b, dests))
+            self.__transitions[src] = transition
+            self.__empty_transitions[src] = [dest for (dest, char) 
+                                             in self.__edges[src] if not char]
+        
+    def __compile(self):
+        '''
+        Generate a FSM (with stack - do I have the right terminology?) that
+        yields for each possible match.
+        '''
+        for src in self.__transitions:
+            transitions = self.__transitions[src]
+            transitions.sort(key=itemgetter(0))
+            index = [b for (_a, b, _dests) in triples]
+            l = len(index)
+            def lookup(c, l=l, index=index, triples=triples):
+                triple = bisect_left(index, c)
+                if triple < l:
+                    (a, b, end) = triples[triple]
+                    if a <= c <= b:
+                        return end
+                return None
+            self._transitions[start] = lookup
+
+
+class Graph(object):
     '''
-    This gives in-order traversal for children and both pre- and post-order
-    (via BEFORE and AFTER) traversal of nodes.
-    
-    This requires indexing of nodes (which isn't directly supported by any
-    of the classes above) and len().
-    
-    It is distinct from the earlier traversal code in that it has a stack of
-    indexes.  No assumptions are made about the persistence of self.indexes 
-    between calls to self.action.
+    Evaluation order for transition:
+    - Transition with character, if defined
+    - Empty transition to largest numbered node 
+    these ensure we do deepest match first.
     '''
     
-    def __init__(self, root, type_):
-        super(TreeIndex, self).__init__()
-        self.root = root
-        self.__type = type_
-        
-    def run(self):
-        self.indexes = deque()
-        self.push()
-        self.__enter(self.root)
-        
-        while self.indexes:
-            
-            (prev, index) = self.indexes[-1]
-            print(len(self.indexes), prev, index)
-            
-            if index:
-                (posn, node) = index[-1]
-                self._debug('Previous state was {0}'.format(prev))
-                self._debug('Current position is {0}[{1}]'.format(node, posn))
-                
-                if posn is AFTER:
-                    # if we are about to end and have an initial state of 0
-                    # then have an empty transition to the final state
-                    print(prev, len(index), '***')
-                    if prev == 0 and len(index) == 1:
-                        empty = Character()
-                        empty.number(index[0].final)
-                        self.__visit(empty)
-                    # drop current node and repeat loop
-                    index.pop()
-                    
-                else:
-                    # if next position is in current node, find index
-                    next_posn = None
-                    if posn is BEFORE and len(node) > 0:
-                        next_posn = 0
-                    elif posn is not BEFORE and posn + 1 < len(node):
-                        next_posn = posn + 1
-                        
-                    # advance to next position if found
-                    if index is not None:
-                        # update existing state on stack
-                        index.pop()
-                        index.append((next_posn, node))
-                        # and extend
-                        child = node[next_posn]
-                        if isinstance(child, self.__type):
-                            self.__enter(child)
-                        else:
-                            self.__visit(child)
-                    else:
-                        # otherwise, we are leaving this node
-                        self.__leave()
-            
-            else:
-                # if the current state is now empty, discard it
-                self.indexes.pop()
-                
-        
-    def __enter(self, node):
-        self.indexes[-1][1].append((BEFORE, node))
-        self.before(node)
-        
-    def __leave(self):
-        (_index, node) = self.indexes[-1][1].pop()
-        self.indexes[-1][1].append((AFTER, node))
-        self.after(node)
-
-    def __visit(self, child):
-        # replace previous state
-        (prev, index) = self.indexes.pop()
-        (_posn, node) = index[-1]
-        self.indexes.append((child.state, index))
-        self._debug('Visiting {0} at {1}'.format(child, child.state))
-        self.leaf(node, prev, child)
-
-    def push(self, prev=0, index=None):
-        self.indexes.append((prev, deque() if index is None else index))
-        
-        
-class Expander(TreeIndex):
+    def __init__(self):
+        self.__next_node = 0
+        self.__transitions = {} # map from source to (dest, edge)
+        self.__empty_transitions = {} # map from source to set(dest)
+        self.__terminals = {} # node to label
     
-    def __init__(self, regexp):
-        super(Expander, self).__init__(regexp, Node)
-        self.__known_states = set()
-        self.transitions = set()
-        self.terminals = set()
-        self.run()
-
-    def leaf(self, node, prev, char):
-        (prev, char) = node.leaf(self, prev, char)
-        if char is _FINAL:
-            self._debug('So {0} is a terminal'.format(prev))
-            self.terminals.add(prev)
+    def terminal(self, node, label):
+        assert node < self.__next_node
+        assert node not in self.__terminals, 'Node already has terminal'
+        assert node not in self.__transitions, 'Terminal node has transition'
+        assert node not in self.__empty_transitions, 'Terminal node has transition'
+        assert label is not None, 'Label cannot be None'
+        self.__terminals[node] = label
+    
+    def new_node(self):
+        node = self.__next_node
+        self.__next_node += 1
+        self.__empty_transitions[node] = set()
+        return node
+    
+    def connect(self, src, dest, edge=None):
+        '''
+        Define a connection between src and dest, with an optional edge
+        value (a character).
+        '''
+        assert src < self.__next_node
+        assert dest < self.__next_node
+        assert src not in self.__terminals, 'Source is terminal'
+        if edge:
+            assert src not in self.__transitions, 'Node already has transition'
+            self.__transitions[src] = (dest, edge)
         else:
-            transition = (prev, char)
-            if transition in self.transitions:
-                self._debug('Already known; discarding')
-                self.indexes.pop()
-            else:
-                self._debug('New transition {0}/{1}'.format(transition, char.state))
-                self.transitions.add(transition)
-    
-    def before(self, node):
-        node.before(self)
-        
-    def after(self, node):
-        node.after(self)
+            self.__empty_transitions[src].add(dest)
 
+    def compile(self):
+        '''
+        Generate a FSM (with stack - do I have the right terminology?) that
+        yields for each possible match.
+        '''
+        def make_matcher():
+            table = {}
+            for src in range(self.__next_node):
+                table[src] = []
+                if src in self.__transitions:
+                    (dest, char) = self.__transitions[src]
+                    table.append((char.__contains__, dest, 
+                                  self.__terminals.get(dest, None)))
+                    for dest in sorted(self.__empty_transitions[src]):
+                        table.append((None, dest, 
+                                      self.__terminals.get(dest, None)))
+            def matcher(stream):
+                saved = None
+                stack = deque()
+                stack.append(deque(table[0], []))
+                while stack:
+                    (transitions, match) = stack[0]
+                    if not transitions:
+                        # if we have no more transitions, drop
+                        stack.pop()
+                    else:
+                        (char, dest, label) = transitions.popleft()
+                        if char is None:
+                            # empty edge
+                            stack.append((table[dest], match))
+                            if label: yield (label, match)
+                        else:
+                            if saved is None:
+                                try: saved = next(stream)
+                                except: pass
+                            if saved in char:
+                                match = list(match)
+                                match.append(saved)
+                                stack.append((table[dest], match))
+                                # this never happens?
+                                if label: yield match
+            return matcher
+        
