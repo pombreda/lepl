@@ -138,6 +138,9 @@ class UnicodeAlphabet(object):
             return s + '?'
         else:
             return '({0})?'.format(s)
+        
+    def join(self, chars):
+        return ''.join(chars)
 
 
 UNICODE = UnicodeAlphabet()
@@ -154,7 +157,7 @@ class Character(object):
     necessary to ensure no overlap.
     '''
     
-    def __init__(self, intervals=[], alphabet):
+    def __init__(self, intervals, alphabet):
         self.alphabet = alphabet
         self.__intervals = deque()
         for interval in intervals:
@@ -455,19 +458,19 @@ class Labelled(Sequence):
     '''
     
     def __init__(self, label, children, alphabet):
-        super(Regexp, self).__init__(children, alphabet)
+        super(Labelled, self).__init__(children, alphabet)
         self.label = label
         
     def build(self, graph, before):
         '''
         A sequence, but with an extra final empty transition to force
-        any loops before termination, and no connection to 'after'.
+        any loops before termination.
         '''
         after = graph.new_node()
         final = graph.new_node()
         super(Labelled, self).build(graph, before, after)
         graph.connect(after, final)
-        graph.terminal(final, self.label)
+        graph.terminate(final, self.label)
         
 
 class Regexp(Choice):
@@ -479,11 +482,31 @@ class Regexp(Choice):
         for child in children:
             assert isinstance(child, Labelled)
         super(Regexp, self).__init__(children, alphabet)
-        self.label = label
-        self.graph = Graph()
-        self.build(self.graph, self.graph.new_node(), self.graph.new_node())
         
+    def _build_str(self):
+        return self.alphabet.fmt_sequence(self._children)
 
+    def build(self, graph):
+        '''
+        Each Labelled is an independent sequence.  We use empty transitions 
+        to order the choices.
+        '''
+        if self._children:
+            before = graph.new_node()
+            last = self._children[-1]
+            src = before
+            for child in self._children:
+                child.build(graph, src)
+                if child is not last:
+                    src = graph.new_node()
+                    graph.connect(before, src)
+                    
+    def nfa(self):
+        graph = Graph(self.alphabet)
+        self.build(graph)
+        return NfaCompiler(graph, self.alphabet).matcher
+        
+        
 def _make_unicode_parser():
     '''
     Construct a parser for Unicode based expressions.
@@ -518,8 +541,7 @@ def _make_unicode_parser():
     item    += alts | group | star | opt
     
     expr     = (char | item)[:] & Drop(Eos())
-    parser = expr.string_parser(#Configuration(monitors=[TraceResults(False)]))
-                                )
+    parser = expr.string_parser()
     return lambda text: parser(text)
 
 __compiled_unicode_parser = _make_unicode_parser()
@@ -527,106 +549,40 @@ __compiled_unicode_parser = _make_unicode_parser()
 Cache the parser to allow efficient re-use.
 '''
 
-def unicode_parser(label, text):
+def unicode_single_parser(label, text):
     '''
     Parse a Unicode regular expression, returning the associated Regexp.
     '''
-    return Regexp(label, __compiled_unicode_parser(text), UNICODE)
+    return Regexp([Labelled(label, __compiled_unicode_parser(text), UNICODE)], 
+                  UNICODE)
 
 
-class FGraph(object):
-    
-    def __init__(self):
-        self.__next_node = 0
-        self.__edges = {} # map from source to [(dest, edge)]
-        self.__terminals = {} # node to label
-        self.__transitions = {} # map from source to [(a, b, [dest])]
-        self.__empty_transitions = {} # map from source to [dest]
-    
-    def terminal(self, node, label):
-        assert node < self.__next_node
-        assert node not in self.__terminals, 'Node already has terminal'
-        self.__terminals[node] = label
-    
-    def new_node(self):
-        node = self.__next_node
-        self.__next_node += 1
-        self.__edges[node] = []
-        return node
-    
-    def connect(self, src, dest, edge=None):
-        '''
-        Define a connection between src and dest, with an optional edge
-        value (a character).
-        '''
-        assert src < self.__next_node
-        assert dest < self.__next_node
-        self.__edges[src].append([src, edge])
-
-    def __split(self):
-        '''
-        For a given source, split overlapping edges (character matches) so
-        that we are specific - if a character is associated with only one
-        state, it will only go to that state, even if it was associated
-        with a character range that overlapped transitions to another state.
-        This increases the number of different possible matches but reduces
-        the number of transitions associated with multiple states (which 
-        require backtracking).
-        
-        It's not clear this is ever needed, because of the extra edges
-        added to order choices.
-        '''
-        for src in self.__edges:
-            transition = []
-            for (a, b) in _Fragments([char for (dest_, char) 
-                                      in self.__edges[src] if char]):
-                # find the destinations for this character range
-                dests = [dest for (dest, char) 
-                         in self.__edges[src] if char and b in char]
-                transition.append((a, b, dests))
-            self.__transitions[src] = transition
-            self.__empty_transitions[src] = [dest for (dest, char) 
-                                             in self.__edges[src] if not char]
-        
-    def __compile(self):
-        '''
-        Generate a FSM (with stack - do I have the right terminology?) that
-        yields for each possible match.
-        '''
-        for src in self.__transitions:
-            transitions = self.__transitions[src]
-            transitions.sort(key=itemgetter(0))
-            index = [b for (_a, b, _dests) in triples]
-            l = len(index)
-            def lookup(c, l=l, index=index, triples=triples):
-                triple = bisect_left(index, c)
-                if triple < l:
-                    (a, b, end) = triples[triple]
-                    if a <= c <= b:
-                        return end
-                return None
-            self._transitions[start] = lookup
-
-
-class Graph(object):
+def unicode_parser(*regexps):
     '''
-    Evaluation order for transition:
-    - Transition with character, if defined
-    - Empty transition to largest numbered node 
-    these ensure we do deepest match first.
+    Parse a set of Unicode regular expressions, returning the associated Regexp.
+    '''
+    return Regexp([Labelled(label, __compiled_unicode_parser(text), UNICODE)
+                   for (label, text) in regexps], UNICODE)
+
+
+class Graph(LogMixin):
+    '''
+    Describes a NFA with epsilon (empty) transitions.
     '''
     
-    def __init__(self):
+    def __init__(self, alphabet):
+        super(Graph, self).__init__()
+        self.__alphabet = alphabet
         self.__next_node = 0
         self.__transitions = {} # map from source to (dest, edge)
         self.__empty_transitions = {} # map from source to set(dest)
         self.__terminals = {} # node to label
     
-    def terminal(self, node, label):
+    def terminate(self, node, label):
         assert node < self.__next_node
         assert node not in self.__terminals, 'Node already has terminal'
         assert node not in self.__transitions, 'Terminal node has transition'
-        assert node not in self.__empty_transitions, 'Terminal node has transition'
+        assert not self.__empty_transitions[node], 'Terminal node has transition'
         assert label is not None, 'Label cannot be None'
         self.__terminals[node] = label
     
@@ -646,50 +602,92 @@ class Graph(object):
         assert src not in self.__terminals, 'Source is terminal'
         if edge:
             assert src not in self.__transitions, 'Node already has transition'
-            self.__transitions[src] = (dest, edge)
+            self.__transitions[src] = [(dest, edge)]
         else:
             self.__empty_transitions[src].add(dest)
+            
+    def __iter__(self):
+        '''
+        An iterator over all nodes.
+        '''
+        return iter(range(self.__next_node))
+    
+    def transitions(self, src):
+        '''
+        An iterator over all non-empty transitions from src.
+        '''
+        return iter(self.__transitions.get(src, []))
+    
+    def empty_transitions(self, src):
+        '''
+        An iterator over all empty transitions from src.
+        '''
+        return iter(self.__empty_transitions.get(src, []))
+    
+    def terminal(self, node):
+        '''
+        The terminal for the give node, or None.
+        '''
+        return self.__terminals.get(node, None)
 
-    def compile(self):
-        '''
-        Generate a FSM (with stack - do I have the right terminology?) that
-        yields for each possible match.
-        '''
-        def make_matcher():
-            table = {}
-            for src in range(self.__next_node):
-                table[src] = []
-                if src in self.__transitions:
-                    (dest, char) = self.__transitions[src]
-                    table.append((char.__contains__, dest, 
-                                  self.__terminals.get(dest, None)))
-                    for dest in sorted(self.__empty_transitions[src]):
-                        table.append((None, dest, 
-                                      self.__terminals.get(dest, None)))
-            def matcher(stream):
-                saved = None
-                stack = deque()
-                stack.append(deque(table[0], []))
-                while stack:
-                    (transitions, match) = stack[0]
-                    if not transitions:
-                        # if we have no more transitions, drop
-                        stack.pop()
-                    else:
-                        (char, dest, label) = transitions.popleft()
-                        if char is None:
-                            # empty edge
-                            stack.append((table[dest], match))
-                            if label: yield (label, match)
-                        else:
-                            if saved is None:
-                                try: saved = next(stream)
-                                except: pass
-                            if saved in char:
-                                match = list(match)
-                                match.append(saved)
-                                stack.append((table[dest], match))
-                                # this never happens?
-                                if label: yield match
-            return matcher
+
+class NfaCompiler(LogMixin):
+    '''
+    Given a graph this constructs a transition table and an associated
+    matcher.  The matcher attempts to find longest matches but does not
+    guarantee termination (if a possible empty match is repeated).
+    
+    Note that the matcher returns a triple, including label.  This is not
+    the same interface as the matchers used in recursive descent parsing.
+    
+    Evaluation order for transition:
+    - Transition with character, if defined
+    - Empty transition to largest numbered node 
+    these ensure we do deepest match first.
+    '''
+    
+    def __init__(self, graph, alphabet):
+        super(NfaCompiler, self).__init__()
+        self.__graph = graph
+        self.__alphabet = alphabet
+        self.__table = {}
+        self.__build_table()
         
+    def __build_table(self):
+        for src in self.__graph:
+            self.__table[src] = []
+            for (dest, char) in self.__graph.transitions(src):
+                self.__table[src].append((char, dest, 
+                                          self.__graph.terminal(dest)))
+            for dest in sorted(self.__graph.empty_transitions(src), reverse=True):
+                self.__table[src].append((None, dest, 
+                                          self.__graph.terminal(dest)))
+    
+    def matcher(self, stream):
+        self._debug(str(self.__table))
+        stack = deque()
+        stack.append((deque(self.__table[0]), [], stream))
+        while stack:
+            self._debug(str(stack))
+            (transitions, match, stream) = stack[-1]
+            if not transitions:
+                self._debug('Discard empty transitions')
+                # if we have no more transitions, drop
+                stack.pop()
+            else:
+                self._debug(transitions)
+                (char, dest, label) = transitions.popleft()
+                if char is None:
+                    # empty edge
+                    stack.append((deque(self.__table[dest]), match, stream))
+                    if label: 
+                        yield (label, self.__alphabet.join(self.__alphabet.join(match)))
+                else:
+                    if stream and stream[0] in char:
+                        self._debug('Test for {0} in {1}'.format(stream[0], char))
+                        match = list(match)
+                        match.append(stream[0])
+                        stream = stream[1:]
+                        stack.append((deque(self.__table[dest]), match, stream))
+                        # this never happens?
+                        if label: yield (label, self.__alphabet.join(match), stream)

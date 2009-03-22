@@ -2,11 +2,12 @@
 from unittest import TestCase
 
 from logging import basicConfig, DEBUG
-from lepl.regexp2 import unicode_parser, Regexp, Character, UNICODE
+from lepl import *
+from lepl.regexp2 import unicode_single_parser, Regexp, Character, UNICODE
 
 
 def _test_parser(text):
-    return unicode_parser(None, text)
+    return unicode_single_parser('label', text)
 
 class CharactersTest(TestCase):
     
@@ -90,5 +91,49 @@ class CharactersTest(TestCase):
         assert 'a(a|b)*' == str(c), str(c)
         c = _test_parser('a([a-c]x|axb)*')
         assert 'a([a-c]x|axb)*' == str(c), str(c)
+
+
+class NfaTest(TestCase):
+    
+    def test_simple(self):
+        r = _test_parser('ab')
+        m = r.nfa()
+        s = list(m(Stream.from_string('abc')))
+        assert len(s) == 1, s
+        assert s[0] == ('label', 'ab'), s[0]
+    
+    def test_star(self):
+        r = _test_parser('a*b')
+        m = r.nfa()
+        s = list(m(Stream.from_string('aaabc')))
+        assert len(s) == 1, s
+        assert s[0] == ('label', 'aaab'), s[0]
+    
+    def test_choice(self):
+        r = _test_parser('(a|b)')
+        m = r.nfa()
+        s = list(m(Stream.from_string('ac')))
+        assert len(s) == 1, s
+        assert s[0] == ('label', 'a'), s[0]
+    
+    def test_star_choice(self):
+#        basicConfig(level=DEBUG)
+        r = _test_parser('(a|b)*')
+        m = r.nfa()
+        s = list(m(Stream.from_string('aababbac')))
+        assert len(s) == 8, s
+        assert s[0] == ('label', 'aababba'), s[0]
+    
+    def test_multiple_choice(self):
+        '''
+        Currently fails as backtracking doesn't backtrack on stream.
+        '''
+        #basicConfig(level=DEBUG)
+        r = _test_parser('(a|ab)b')
+        m = r.nfa()
+        s = list(m(Stream.from_string('abb')))
+        assert len(s) == 2, s
+        assert s[0] == ('label', 'ab'), s[0]
+        assert s[1] == ('label', 'abb'), s[0]
 
     
