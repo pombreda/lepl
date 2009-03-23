@@ -95,45 +95,37 @@ class CharactersTest(TestCase):
 
 class NfaTest(TestCase):
     
-    def test_simple(self):
-        r = _test_parser('ab')
+    def assert_matches(self, pattern, text, results):
+        r = _test_parser(pattern)
         m = r.nfa()
-        s = list(m(Stream.from_string('abc')))
-        assert len(s) == 1, s
-        assert s[0] == ('label', 'ab'), s[0]
+        s = list(m(Stream.from_string(text)))
+        assert len(s) == len(results), s
+        for (a, b) in zip(s, results):
+            assert a[1] == b, a[1] + ' != ' + b
+    
+    def test_simple(self):
+        self.assert_matches('ab', 'abc', ['ab'])
     
     def test_star(self):
-        r = _test_parser('a*b')
-        m = r.nfa()
-        s = list(m(Stream.from_string('aaabc')))
-        assert len(s) == 1, s
-        assert s[0] == ('label', 'aaab'), s[0]
+        self.assert_matches('a*b', 'aaabc', ['aaab'])
     
     def test_choice(self):
-        r = _test_parser('(a|b)')
-        m = r.nfa()
-        s = list(m(Stream.from_string('ac')))
-        assert len(s) == 1, s
-        assert s[0] == ('label', 'a'), s[0]
+        self.assert_matches('(a|b)', 'ac', ['a'])
     
     def test_star_choice(self):
-#        basicConfig(level=DEBUG)
-        r = _test_parser('(a|b)*')
-        m = r.nfa()
-        s = list(m(Stream.from_string('aababbac')))
-        assert len(s) == 8, s
-        assert s[0] == ('label', 'aababba'), s[0]
+        self.assert_matches('(a|b)*', 'aababbac', 
+                            ['aababba', 'aababb', 'aabab', 'aaba', 'aab', 'aa', 'a', ''])
     
     def test_multiple_choice(self):
-        '''
-        Currently fails as backtracking doesn't backtrack on stream.
-        '''
-        #basicConfig(level=DEBUG)
-        r = _test_parser('(a|ab)b')
-        m = r.nfa()
-        s = list(m(Stream.from_string('abb')))
-        assert len(s) == 2, s
-        assert s[0] == ('label', 'ab'), s[0]
-        assert s[1] == ('label', 'abb'), s[0]
+        self.assert_matches('(a|ab)b', 'abb', ['ab', 'abb'])
 
-    
+    def test_range(self):
+        self.assert_matches('[abc]*', 'bbcx', ['bbc', 'bb', 'b', ''])
+        
+    def test_range_overlap(self):
+        '''
+        Matches with 'b' are duplicated, since it appears in both ranges.
+        '''
+        self.assert_matches('([ab]|[bc])*', 'abc', 
+                            ['abc', 'ab', 'abc', 'ab', 'a', ''])
+
