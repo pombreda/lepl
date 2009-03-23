@@ -254,6 +254,10 @@ class Character(object):
             return False
         
     def build(self, graph, src, dest):
+        '''
+        Insert within an NFA graph (although at this level, it's not clear it's
+        NFA).
+        '''
         graph.connect(src, dest, self)
     
 
@@ -502,7 +506,7 @@ class Regexp(Choice):
                     graph.connect(before, src)
                     
     def nfa(self):
-        graph = Graph(self.alphabet)
+        graph = NfaGraph(self.alphabet)
         self.build(graph)
         return NfaCompiler(graph, self.alphabet).matcher
         
@@ -565,31 +569,76 @@ def unicode_parser(*regexps):
                    for (label, text) in regexps], UNICODE)
 
 
-class Graph(LogMixin):
+class DfaGraph(LogMixin):
+    '''
+    Describes a DFA.
+    '''
+    
+    def __init__(self, alphabet):
+        super(DfaGraph, self).__init__()
+        self._alphabet = alphabet
+        self._next_node = 0
+        self._transitions = {} # map from source to (dest, edge)
+        self._terminals = {} # node to label
+    
+    def terminate(self, node, label):
+        assert node < self._next_node
+        assert node not in self._terminals, 'Node already has terminal'
+        assert node not in self._transitions, 'Terminal node has transition'
+        assert label is not None, 'Label cannot be None'
+        self._terminals[node] = label
+    
+    def new_node(self):
+        node = self._next_node
+        self._next_node += 1
+        return node
+    
+    def connect(self, src, dest, edge):
+        '''
+        Define a connection between src and dest, with an edge
+        value (a character).
+        '''
+        assert src < self._next_node
+        assert dest < self._next_node
+        assert src not in self._terminals, 'Source is terminal'
+        assert src not in self._transitions, 'Node already has transition'
+        self._transitions[src] = [(dest, edge)]
+            
+    def __iter__(self):
+        '''
+        An iterator over all nodes.
+        '''
+        return iter(range(self._next_node))
+    
+    def transitions(self, src):
+        '''
+        An iterator over all non-empty transitions from src.
+        '''
+        return iter(self._transitions.get(src, []))
+    
+    def terminal(self, node):
+        '''
+        The terminal for the give node, or None.
+        '''
+        return self._terminals.get(node, None)
+
+
+class NfaGraph(DfaGraph):
     '''
     Describes a NFA with epsilon (empty) transitions.
     '''
     
     def __init__(self, alphabet):
-        super(Graph, self).__init__()
-        self.__alphabet = alphabet
-        self.__next_node = 0
-        self.__transitions = {} # map from source to (dest, edge)
-        self.__empty_transitions = {} # map from source to set(dest)
-        self.__terminals = {} # node to label
+        super(NfaGraph, self).__init__(alphabet)
+        self._empty_transitions = {} # map from source to set(dest)
     
     def terminate(self, node, label):
-        assert node < self.__next_node
-        assert node not in self.__terminals, 'Node already has terminal'
-        assert node not in self.__transitions, 'Terminal node has transition'
-        assert not self.__empty_transitions[node], 'Terminal node has transition'
-        assert label is not None, 'Label cannot be None'
-        self.__terminals[node] = label
+        assert not self._empty_transitions[node], 'Terminal node has empty transition'
+        super(NfaGraph, self).terminate(node, label)
     
     def new_node(self):
-        node = self.__next_node
-        self.__next_node += 1
-        self.__empty_transitions[node] = set()
+        node = super(NfaGraph, self).new_node()
+        self._empty_transitions[node] = set()
         return node
     
     def connect(self, src, dest, edge=None):
@@ -597,39 +646,20 @@ class Graph(LogMixin):
         Define a connection between src and dest, with an optional edge
         value (a character).
         '''
-        assert src < self.__next_node
-        assert dest < self.__next_node
-        assert src not in self.__terminals, 'Source is terminal'
         if edge:
-            assert src not in self.__transitions, 'Node already has transition'
-            self.__transitions[src] = [(dest, edge)]
+            super(NfaGraph, self).connect(src, dest, edge)
         else:
-            self.__empty_transitions[src].add(dest)
+            assert src < self._next_node
+            assert dest < self._next_node
+            assert src not in self._terminals, 'Source is terminal'
+            self._empty_transitions[src].add(dest)
             
-    def __iter__(self):
-        '''
-        An iterator over all nodes.
-        '''
-        return iter(range(self.__next_node))
-    
-    def transitions(self, src):
-        '''
-        An iterator over all non-empty transitions from src.
-        '''
-        return iter(self.__transitions.get(src, []))
-    
     def empty_transitions(self, src):
         '''
         An iterator over all empty transitions from src.
         '''
-        return iter(self.__empty_transitions.get(src, []))
+        return iter(self._empty_transitions.get(src, []))
     
-    def terminal(self, node):
-        '''
-        The terminal for the give node, or None.
-        '''
-        return self.__terminals.get(node, None)
-
 
 class NfaCompiler(LogMixin):
     '''
@@ -654,6 +684,9 @@ class NfaCompiler(LogMixin):
         self.__build_table()
         
     def __build_table(self):
+        '''
+        Rewrite the graph as a transition table, with appropriate ordering.
+        '''
         for src in self.__graph:
             self.__table[src] = []
             for (dest, char) in self.__graph.transitions(src):
@@ -664,6 +697,9 @@ class NfaCompiler(LogMixin):
                                           self.__graph.terminal(dest)))
     
     def matcher(self, stream):
+        '''
+        Create a matcher from the table.
+        '''
         self._debug(str(self.__table))
         stack = deque()
         stack.append((deque(self.__table[0]), [], stream))
@@ -681,7 +717,7 @@ class NfaCompiler(LogMixin):
                     # empty edge
                     stack.append((deque(self.__table[dest]), match, stream))
                     if label: 
-                        yield (label, self.__alphabet.join(self.__alphabet.join(match)))
+                        yield (label, self.__alphabet.join(self.__alphabet.join(match)), stream)
                 else:
                     if stream and stream[0] in char:
                         self._debug('Test for {0} in {1}'.format(stream[0], char))
@@ -690,4 +726,14 @@ class NfaCompiler(LogMixin):
                         stream = stream[1:]
                         stack.append((deque(self.__table[dest]), match, stream))
                         # this never happens?
-                        if label: yield (label, self.__alphabet.join(match), stream)
+                        if label:
+                            yield (label, self.__alphabet.join(match), stream)
+
+
+class DfaCompiler(LogMixin):
+    
+    def __init__(self, graph, alphabet):
+        self.__nfa = graph
+        self.__alphabet = alphabet
+        self.__dfa = Graph()
+    
