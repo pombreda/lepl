@@ -39,7 +39,6 @@ from bisect import bisect_left, bisect_right
 from itertools import chain
 from collections import deque
 from operator import itemgetter
-from sys import maxunicode
 from traceback import format_exc
 
 from lepl.matchers import *
