@@ -36,6 +36,7 @@ Third, it is extensible.
 
 
 from bisect import bisect_left, bisect_right
+from itertools import chain
 from collections import deque
 from operator import itemgetter
 from sys import maxunicode
@@ -65,6 +66,9 @@ class UnicodeAlphabet(object):
             self.max = chr(maxunicode)
         except: # Python 2.6
             self.max = unichr(maxunicode)
+        # these need not be part of a more general alphabet interface
+        self._escape = '\\'
+        self._escaped = '[]*()-?.+\\^'
     
     def before(self, c): 
         '''
@@ -80,28 +84,55 @@ class UnicodeAlphabet(object):
         ''' 
         return chr(ord(c)+1)
     
+    def _escape_text(self, text):
+        '''
+        Escape characters in the text (ie return a suitable expression to
+        match the given text as a literal value).
+        '''
+        return ''.join(self._escape_char(x) for x in text)
+    
+    def _escape_char(self, char):
+        if char in self._escaped:
+            return self._escape + char
+        else:
+            return char
+    
     def fmt_intervals(self, intervals):
         '''
         This must fully describe the data in the intervals (it is used to
         hash the data).
         '''
-        inrange = '-\\[]'
-        outrange = inrange + '*+()'
-        def escape(c, chars=inrange):
-            if c in chars: c = '\\' + c
-            return c
+        inrange = '-\\[]' # escaped inside []
+        outrange = inrange + '*+().' # escaped everywhere
         ranges = []
-        if len(intervals) == 1 and \
-                intervals[0][0] == intervals[0][1]:
-            return escape(intervals[0][0], outrange)
+        if len(intervals) == 1:
+            if intervals[0][0] == intervals[0][1]:
+                return self._escape_char(intervals[0][0])
+            elif intervals[0][0] == self.min and intervals[0][1] == self.max:
+                return '.'
+        if len(intervals) > 1 and intervals[0][0] == self.min:
+            intervals = self._invert(intervals)
+            hat = '^'
         else:
-            for (a, b) in intervals:
-                if a == b:
-                    ranges.append(escape(a))
-                else:
-                    ranges.append('{0!s}-{1!s}'.format(escape(a), escape(b)))
-            return '[{0}]'.format(''.join(ranges))
-        
+            hat = ''
+        for (a, b) in intervals:
+            if a == b:
+                ranges.append(self._escape_char(a))
+            else:
+                ranges.append('{0!s}-{1!s}'.format(
+                                self._escape_char(a), self._escape_char(b)))
+        return '[{0}{1}]'.format(hat, ''.join(ranges))
+    
+    def _invert(self, intervals):
+        inverted = []
+        last = intervals[0][1]
+        for (a, b) in intervals[1:]:
+            inverted.append((self.after(last), self.before(a)))
+            last = b
+        if last != self.max:
+            inverted.append(self.after(last), self.max)
+        return inverted
+
     def fmt_sequence(self, children):
         '''
         This must fully describe the data in the children (it is used to
@@ -164,8 +195,15 @@ class Character(object):
             self.__append(interval)
         self.__intervals = list(self.__intervals)
         self.__str = alphabet.fmt_intervals(self.__intervals)
-        self.__index = [interval[1] for interval in self.__intervals]
+        self.__build_index()
         self.state = None
+        
+    def append(self, interval):
+        self.__append(interval)
+        self.__build_index()
+        
+    def __build_index(self):
+        self.__index = [interval[1] for interval in self.__intervals]
         
     def __append(self, interval):
         '''
@@ -261,91 +299,95 @@ class Character(object):
         graph.connect(src, dest, self)
     
 
-#class _Fragments(object):
-#    '''
-#    Similar to Character, but each additional interval fragments the list
-#    of ranges.  Used internally to combine transitions.
-#    '''
-#    
-#    def __init__(self, characters):
-#        self.alphabet = alphabet
-#        self.__intervals = deque()
-#        for character in characters:
-#            assert type(character) is Character
-#            for interval in character:
-#                self.__append(interval, character.alphabet)
-#            
-#    def __append(self, interval, alphabet):
-#        '''
-#        Add an interval to the existing intervals.
-#        '''
-#        (a1, b1) = interval
-#        if b1 < a1: (a1, b1) = (b1, a1)
-#        intervals = deque()
-#        done = False
-#        while self.__intervals:
-#            (a0, b0) = self.__intervals.popleft()
-#            if a0 <= a1:
-#                if b0 < a1:
-#                    # old interval starts and ends before new interval
-#                    # so keep old interval and continue
-#                    intervals.append((a0, b0))
-#                elif b1 <= b0:
-#                    # old interval starts before or with and ends after or with 
-#                    # new interval
-#                    # so we have one, two or three new intervals
-#                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
-#                    intervals.append((a1, b1)) # common to both
-#                    if b1 < b0: intervals.append((alphabet.after(b1), b0)) # last part of old
-#                    done = True
-#                    break
-#                else:
-#                    # old interval starts before new, but partially overlaps
-#                    # so split old and continue
-#                    # (since it may overlap more intervals...)
-#                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
-#                    intervals.append((a1, b0)) # common to both
-#                    a1 = alphabet.after(b0)
-#            else:
-#                if b1 < a0:
-#                    # new interval starts and ends before old
-#                    intervals.append((a1, b1))
-#                    intervals.append((a0, b0))
-#                    done = True
-#                    break
-#                elif b0 <= b1:
-#                    # new interval starts before and ends after or with old 
-#                    # interval
-#                    # so split and continue if extends (since last part may 
-#                    # overlap...)
-#                    intervals.append((a1, alphabet.before(a0))) # first part of new
-#                    intervals.append((a0, b0)) # old
-#                    if b1 > b0:
-#                        a1 = alphabet.after(b0)
-#                    else:
-#                        done = True
-#                        break
-#                else:
-#                    # new interval starts before old, but partially overlaps,
-#                    # split and slurp rest
-#                    intervals.append((a1, alphabet.before(a0))) # first part of new
-#                    intervals.append((a0, b1)) # overlap
-#                    intervals.append((alphabet.after(b1), b0)) # last part of old
-#                    done = True
-#                    break
-#        if not done:
-#            intervals.append((a1, b1))
-#        intervals.extend(self.__intervals) # slurp remaining
-#        self.__intervals = intervals
-#        
-#    def len(self):
-#        return len(self.__intervals)
-#    
-#    def __getitem__(self, index):
-#        return self.__intervals[index]
-#    
-#    def __iter__(self):
-#        return iter(self.__intervals)
+class Fragments(object):
+    '''
+    Similar to Character, but each additional interval fragments the list
+    of ranges.  Used internally to combine transitions.
+    '''
+    
+    def __init__(self, alphabet, characters=None):
+        self.alphabet = alphabet
+        self.__intervals = deque()
+        if characters:
+            for character in characters:
+                self.append(character)
+                
+    def append(self, character):
+        assert type(character) is Character
+        for interval in character:
+            self.__append(interval, character.alphabet)
+        
+    def __append(self, interval, alphabet):
+        '''
+        Add an interval to the existing intervals.
+        '''
+        (a1, b1) = interval
+        if b1 < a1: (a1, b1) = (b1, a1)
+        intervals = deque()
+        done = False
+        while self.__intervals:
+            (a0, b0) = self.__intervals.popleft()
+            if a0 <= a1:
+                if b0 < a1:
+                    # old interval starts and ends before new interval
+                    # so keep old interval and continue
+                    intervals.append((a0, b0))
+                elif b1 <= b0:
+                    # old interval starts before or with and ends after or with 
+                    # new interval
+                    # so we have one, two or three new intervals
+                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
+                    intervals.append((a1, b1)) # common to both
+                    if b1 < b0: intervals.append((alphabet.after(b1), b0)) # last part of old
+                    done = True
+                    break
+                else:
+                    # old interval starts before new, but partially overlaps
+                    # so split old and continue
+                    # (since it may overlap more intervals...)
+                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
+                    intervals.append((a1, b0)) # common to both
+                    a1 = alphabet.after(b0)
+            else:
+                if b1 < a0:
+                    # new interval starts and ends before old
+                    intervals.append((a1, b1))
+                    intervals.append((a0, b0))
+                    done = True
+                    break
+                elif b0 <= b1:
+                    # new interval starts before and ends after or with old 
+                    # interval
+                    # so split and continue if extends (since last part may 
+                    # overlap...)
+                    intervals.append((a1, alphabet.before(a0))) # first part of new
+                    intervals.append((a0, b0)) # old
+                    if b1 > b0:
+                        a1 = alphabet.after(b0)
+                    else:
+                        done = True
+                        break
+                else:
+                    # new interval starts before old, but partially overlaps,
+                    # split and slurp rest
+                    intervals.append((a1, alphabet.before(a0))) # first part of new
+                    intervals.append((a0, b1)) # overlap
+                    intervals.append((alphabet.after(b1), b0)) # last part of old
+                    done = True
+                    break
+        if not done:
+            intervals.append((a1, b1))
+        intervals.extend(self.__intervals) # slurp remaining
+        self.__intervals = intervals
+        
+    def len(self):
+        return len(self.__intervals)
+    
+    def __getitem__(self, index):
+        return self.__intervals[index]
+    
+    def __iter__(self):
+        return iter(self.__intervals)
     
 
 class Sequence(Node):
@@ -474,7 +516,7 @@ class Labelled(Sequence):
         final = graph.new_node()
         super(Labelled, self).build(graph, before, after)
         graph.connect(after, final)
-        graph.terminate(final, self.label)
+        graph.terminate(final, [self.label])
         
 
 class Regexp(Choice):
@@ -514,25 +556,45 @@ class Regexp(Choice):
 def _make_unicode_parser():
     '''
     Construct a parser for Unicode based expressions.
+    
+    We need a clear policy on backslashes.  To be as backwars compatible as
+    possible I am going with:
+    0 - "Escaping" means prefixing with \.
+    1 - These characters are special: [, ], -, \, (, ), *, ?, ., +, ^.
+    2 - Special characters (ie literal, or unescaped special characters) may 
+        not have a meaning currently, or may only have a meaning in certain 
+        contexts.
+    2 - To use a special character literally, it must be escaped.
+    3 - If a special character is used without an escape, in a context
+        where it doesn't have a meaning, then it is an error.
+    4 - If a non-special character is escaped, that is also an error.
+    
+    This is not the same as the Python convention, but I believe it makes
+    automatic escaping of given text easier.
     '''
     
     dup = lambda x: (x, x)
+    dot = lambda x: (UNICODE.min, UNICODE.max)
     sequence = lambda x: Sequence(x, UNICODE)
     repeat = lambda x: Repeat(x, UNICODE)
     option = lambda x: Option(x, UNICODE)
     choice = lambda x: Choice(x, UNICODE)
     character = lambda x: Character(x, UNICODE)
     
-    escaped  = Drop('\\') + Any()
-    raw      = ~Lookahead('\\') + AnyBut("[]*()-?")
+    # these two definitions enforce the conditions above, providing only
+    # special characters appear as literals in the grammar
+    escaped  = Drop(UNICODE._escape) + Any(UNICODE._escaped)
+    raw      = ~Lookahead(UNICODE._escape) + AnyBut(UNICODE._escaped)
+    
     single   = escaped | raw
     
+    any      = Literal('.')                                     >> dot
     pair     = single & Drop('-') & single                      > tuple
     letter   = single                                           >> dup
     
     interval = pair | letter
     brackets = Drop('[') & interval[1:] & Drop(']')
-    char     = brackets | letter                                > character
+    char     = brackets | letter | any                          > character
 
     item     = Delayed()
     
@@ -569,24 +631,23 @@ def unicode_parser(*regexps):
                    for (label, text) in regexps], UNICODE)
 
 
-class DfaGraph(LogMixin):
+class BaseGraph(LogMixin):
     '''
-    Describes a DFA.
+    Describes a collection of connected nodes.
     '''
     
     def __init__(self, alphabet):
-        super(DfaGraph, self).__init__()
+        super(BaseGraph, self).__init__()
         self._alphabet = alphabet
         self._next_node = 0
         self._transitions = {} # map from source to (dest, edge)
         self._terminals = {} # node to label
     
-    def terminate(self, node, label):
+    def terminate(self, node, labels):
         assert node < self._next_node
-        assert node not in self._terminals, 'Node already has terminal'
-        assert node not in self._transitions, 'Terminal node has transition'
-        assert label is not None, 'Label cannot be None'
-        self._terminals[node] = label
+        if node not in self._terminals:
+            self._terminals[node] = set()
+        self._terminals[node].update(labels)
     
     def new_node(self):
         node = self._next_node
@@ -600,9 +661,9 @@ class DfaGraph(LogMixin):
         '''
         assert src < self._next_node
         assert dest < self._next_node
-        assert src not in self._terminals, 'Source is terminal'
-        assert src not in self._transitions, 'Node already has transition'
-        self._transitions[src] = [(dest, edge)]
+        if src not in self._transitions:
+            self._transitions[src] = []
+        self._transitions[src].append((dest, edge))
             
     def __iter__(self):
         '''
@@ -612,18 +673,19 @@ class DfaGraph(LogMixin):
     
     def transitions(self, src):
         '''
-        An iterator over all non-empty transitions from src.
+        An iterator over all non-empty transitions from src - returns
+        (dest, edge) pairs.
         '''
         return iter(self._transitions.get(src, []))
     
-    def terminal(self, node):
+    def terminals(self, node):
         '''
-        The terminal for the give node, or None.
+        An iterator over the terminals for the give node.
         '''
-        return self._terminals.get(node, None)
+        return iter(self._terminals.get(node, []))
 
 
-class NfaGraph(DfaGraph):
+class NfaGraph(BaseGraph):
     '''
     Describes a NFA with epsilon (empty) transitions.
     '''
@@ -631,10 +693,6 @@ class NfaGraph(DfaGraph):
     def __init__(self, alphabet):
         super(NfaGraph, self).__init__(alphabet)
         self._empty_transitions = {} # map from source to set(dest)
-    
-    def terminate(self, node, label):
-        assert not self._empty_transitions[node], 'Terminal node has empty transition'
-        super(NfaGraph, self).terminate(node, label)
     
     def new_node(self):
         node = super(NfaGraph, self).new_node()
@@ -660,6 +718,45 @@ class NfaGraph(DfaGraph):
         '''
         return iter(self._empty_transitions.get(src, []))
     
+    def connected(self, nodes):
+        '''
+        Return all nodes connected to the given node.
+        '''
+        connected = set()
+        stack = deque(nodes)
+        while stack:
+            src = stack.pop()
+            connected.add(src)
+            for dest in self.empty_transitions(src):
+                if dest not in connected:
+                    connected.add(dest)
+                    stack.append(dest)
+        return (frozenset(connected), 
+                chain(*[self.terminals(node) for node in connected]))
+    
+    def terminal(self, node):
+        '''
+        The NFA graph has single terminal.
+        '''
+        terminals = list(self.terminals(node))
+        if terminals:
+            assert len(terminals) == 1, 'Multiple terminals in NFA'
+            return terminals[0]
+        else:
+            return None
+        
+    def __str__(self):
+        lines = []
+        for node in self:
+            edges = []
+            for (dest, edge) in self.transitions(node):
+                edges.append('{0}:{1}'.format(edge, dest))
+            for dest in self.empty_transitions(node):
+                edges.append(str(dest))
+            label = '' if self.terminal(node) is None else (' ' + self.terminal(node))
+            lines.append('{0}{1} {2}'.format(node, label, ';'.join(edges)))
+        return ', '.join(lines)
+
 
 class NfaCompiler(LogMixin):
     '''
@@ -730,10 +827,125 @@ class NfaCompiler(LogMixin):
                             yield (label, self.__alphabet.join(match), stream)
 
 
-class DfaCompiler(LogMixin):
+class DfaGraph(BaseGraph):
+    '''
+    Describes a DFA where each node is a collection of NFA nodes.
+    '''
     
-    def __init__(self, graph, alphabet):
-        self.__nfa = graph
+    def __init__(self, alphabet):
+        super(DfaGraph, self).__init__(alphabet)
+        self._dfa_to_nfa = {} # map from dfa node to set(nfa nodes)
+        self._nfa_to_dfa = {} # map from set(nfa nodes) to dfa nodes
+        
+    def node(self, nfa_nodes):
+        '''
+        Add a node, defined as a set of nfa nodes.  If the set already exists,
+        (False, old node) is returned, with the existing DFA node.
+        Otherwise (True, new node) is returned.
+        '''
+        new = nfa_nodes not in self._nfa_to_dfa
+        if new:
+            dfa_node = self.new_node()
+            self._nfa_to_dfa[nfa_nodes] = dfa_node
+            self._dfa_to_nfa[dfa_node] = nfa_nodes
+        return (new, self._nfa_to_dfa[nfa_nodes])
+    
+    def nfa_nodes(self, node):
+        '''
+        An iterator over NFA nodes associated with the given DFA node.
+        '''
+        return iter(self._dfa_to_nfa[node]) 
+    
+    def __str__(self):
+        lines = []
+        for node in self:
+            edges = []
+            for (dest, edge) in self.transitions(node):
+                edges.append('{0}:{1}'.format(edge, dest))
+            nodes = [n for n in self.nfa_nodes(node)]
+            edges = ' ' + ';'.join(edges) if edges else ''
+            labels = list(self.terminals(node))
+            labels = ' ' + '/'.join(str(label) for label in labels) if labels else ''
+            lines.append('{0} {1}{2}{3}'.format(node, nodes, edges, labels))
+        return ', '.join(lines)
+
+
+class NfaToDfa(LogMixin):
+    '''
+    Convert a NFA graph to a DFA graph (uses the usual superset approach but
+    does combination of states in a way that seems to fit better with the idea 
+    of character ranges).
+    '''
+    
+    def __init__(self, nfa, alphabet):
+        super(NfaToDfa, self).__init__()
+        self.__nfa = nfa
         self.__alphabet = alphabet
-        self.__dfa = Graph()
+        self.dfa = DfaGraph(alphabet)
+        self.__build_graph()
+    
+    def __build_graph(self):
+        stack = deque() # (dfa node, set(nfa nodes), set(terminals))
+        # start with initial node
+        (nfa_nodes, terminals) = self.__nfa.connected([0])
+        (_, src) = self.dfa.node(nfa_nodes)
+        stack.append((src, nfa_nodes, terminals))
+        # continue until all states covered
+        while stack:
+            (src, nfa_nodes, terminals) = stack.pop()
+            self.dfa.terminate(src, terminals)
+            fragments = self.__fragment_transitions(nfa_nodes)
+            groups = self.__group_fragments(nfa_nodes, fragments)
+            self.__add_groups(src, groups, stack)
+    
+    def __fragment_transitions(self, nfa_nodes):
+        '''
+        From the given nodes we can accumulate all the transitions.  These
+        are associated with character matches (edges).  We separate the
+        character matches into non-overlapping fragments.
+        '''
+        fragments = Fragments(self.__alphabet)
+        for nfa_node in nfa_nodes:
+            for (_dest, edge) in self.__nfa.transitions(nfa_node):
+                fragments.append(edge)
+        return fragments
+    
+    def __group_fragments(self, nfa_nodes, fragments):
+        '''
+        It's possible that more than one fragment will lead to the same
+        set of target nodes.  So we group fragments (intervals) by target
+        nodes.  Each group will be a dfa node.  At the same time we can
+        accumulate terminals.
+        '''
+        groups = {} # map from set(nfa nodes) to ([intervals], set(terminals))
+        # this doesn't look very efficient
+        for interval in fragments:
+            nodes = set()
+            terminals = set()
+            for nfa_node in nfa_nodes:
+                for (dest, edge) in self.__nfa.transitions(nfa_node):
+                    if interval[0] in edge:
+                        (nodes_, terminals_) = self.__nfa.connected([dest])
+                        nodes.update(nodes_)
+                        terminals.update(terminals_)
+            nodes = frozenset(nodes)
+            if nodes not in groups:
+                groups[nodes] = ([], set())
+            groups[nodes][0].append(interval)
+            groups[nodes][1].update(terminals)
+        return groups
+
+    def __add_groups(self, src, groups, stack):
+        '''
+        The target nfa nodes identified above are now used to create dfa
+        nodes. 
+        '''
+        for nfa_nodes in groups:
+            (intervals, terminals) = groups[nfa_nodes]
+            char = Character(intervals, self.__alphabet)
+            (new, dest) = self.dfa.node(nfa_nodes)
+            self._debug('new: {0}, nodes:{1}'.format(new, nfa_nodes))
+            self.dfa.connect(src, dest, char)
+            if new:
+                stack.append((dest, nfa_nodes, terminals))
     

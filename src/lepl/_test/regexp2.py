@@ -1,9 +1,9 @@
 
 from unittest import TestCase
 
-from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG, getLogger
 from lepl import *
-from lepl.regexp2 import unicode_single_parser, Regexp, Character, UNICODE
+from lepl.regexp2 import *
 
 
 def _test_parser(text):
@@ -11,6 +11,13 @@ def _test_parser(text):
 
 class CharactersTest(TestCase):
     
+    def test_dot(self):
+        #basicConfig(level=DEBUG)
+        c = _test_parser('.')
+        assert '.' == str(c), str(c)
+        c = _test_parser('.\\.')
+        assert '.\\.' == str(c), str(c)
+
     def test_brackets(self):
         #basicConfig(level=DEBUG)
         c = _test_parser('a')
@@ -104,6 +111,7 @@ class NfaTest(TestCase):
             assert a[1] == b, a[1] + ' != ' + b
     
     def test_simple(self):
+#        basicConfig(level=DEBUG)
         self.assert_matches('ab', 'abc', ['ab'])
     
     def test_star(self):
@@ -133,3 +141,49 @@ class NfaTest(TestCase):
         self.assert_matches('a([x-z]|a(g|b))*(u|v)p',
                             'ayagxabvp', ['ayagxabvp'])
 
+
+class DfaGraphTest(TestCase):
+    
+    def assert_dfa_graph(self, regexp, desc):
+        r = _test_parser(regexp)
+        nfa = NfaGraph(UNICODE)
+        r.build(nfa)
+        print(str(nfa))
+        dfa = NfaToDfa(nfa, UNICODE).dfa
+        print(repr(str(dfa)))
+        assert str(dfa) == desc, str(dfa)
+
+    def test_dfa_no_empty(self):
+        self.assert_dfa_graph('abc',
+            '0 [0] a:1, 1 [3] b:2, 2 [4] c:3, 3 [1, 2] label') 
+        
+    def test_dfa_simple_repeat(self):
+        self.assert_dfa_graph('ab*c',
+            '0 [0] a:1, 1 [3, 4] b:1;c:2, 2 [1, 2] label')
+        
+    def test_dfa_simple_choice(self):
+        self.assert_dfa_graph('a(b|c)', 
+            '0 [0] a:1, 1 [3, 4] [b-c]:2, 2 [1, 2] label')
+        
+    def test_dfa_repeated_choice(self):
+        self.assert_dfa_graph('a(b|cd)*e', 
+            '0 [0] a:1, 1 [3, 4, 5] c:2;e:3;b:1, 2 [6] d:1, 3 [1, 2] label')
+        
+    def test_dfa_overlapping_choice(self):
+        self.assert_dfa_graph('a(bcd|bce)', 
+            '0 [0] a:1, 1 [3, 6] b:2, 2 [4, 7] c:3, 3 [8, 5] [d-e]:4, 4 [1, 2] label')
+
+    def test_dfa_conflicting_choice(self):
+        self.assert_dfa_graph('a(bc|b*d)', 
+            '0 [0] a:1, 1 [3, 5, 6] d:2;b:3, 2 [1, 2] label, 3 [4, 5, 6] b:4;[c-d]:2, 4 [5, 6] b:4;d:2')
+
+    def test_dfa_conflicting_choice_2(self):
+        self.assert_dfa_graph('a(bb|b*c)', 
+            '0 [0] a:1, 1 [3, 5, 6] c:2;b:3, 2 [1, 2] label, 3 [4, 5, 6] b:4;c:2, 4 [1, 2, 5, 6] b:5;c:2 label, 5 [5, 6] b:5;c:2')
+
+    def test_dfa_dot_option(self):
+        '''
+        This one's nice - the 'a' completely disappears.
+        '''
+        self.assert_dfa_graph('.*a?b', 
+            '0 [0, 3, 4] b:1;[^b]:0, 1 [0, 1, 2, 3, 4] b:1;[^b]:0 label')
