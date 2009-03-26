@@ -34,7 +34,7 @@ Second, it can yield intermediate matches.
 Third, it is extensible.
 '''
 
-
+from abc import ABCMeta, abstractmethod
 from bisect import bisect_left, bisect_right
 from itertools import chain
 from collections import deque
@@ -48,27 +48,132 @@ from lepl.trace import TraceResults
 from lepl.support import empty
 
 
-class UnicodeAlphabet(object):
+class Alphabet(metaclass=ABCMeta):
     '''
-    Various values needed to define the domain over which the regular 
-    expression is applied.  Here default unicode strings are supported.
+    Regular expressions are generalised over alphabets, which describe the set
+    of acceptable characters.
     
-    Characters in the alphabet must have an ordering defined (equality,
-    less than, and less than or equal to are used).
+    The characters in an alphabet must have an order, which is defined by 
+    `__lt__` on the character instances themselves.  In addition, `before(c)` 
+    and `after(c)` below should give the previous and subsequent characters 
+    in the ordering and `min` and `max` should give the two most extreme 
+    characters.
     
-    nbr returns true if two characters are adjacent.  It can always return
-    false, but the generated machine will be less compact. 
+    Internally, within the routines here, ranges of characters are used.
+    These are pairs of values `(a, b)` which are inclusive.  Each pair is
+    called an "interval".
+    
+    Alphabets include additional methods used for display and may also have
+    methods specific to a given instance (typically named with an initial
+    underscore).
+    '''
+    
+    def __init__(self, min, max):
+        self.__min = min
+        self.__max = max
+    
+    @property
+    def min(self):
+        '''
+        The "smallest" character.
+        '''
+        return self.__min
+
+    @property
+    def max(self):
+        '''
+        The "largest" character.
+        '''
+        return self.__max
+    
+    @abstractmethod
+    def before(self, c): 
+        '''
+        Must return the character before c in the alphabet.  Never called with
+        min (assuming input data are in range).
+        ''' 
+
+    @abstractmethod
+    def after(self, c): 
+        '''
+        Must return the character after c in the alphabet.  Never called with
+        max (assuming input data are in range).
+        ''' 
+    
+    @abstractmethod
+    def fmt_intervals(self, intervals):
+        '''
+        This must fully describe the data in the intervals (it is used to
+        hash the data).
+        '''
+    
+    def invert(self, intervals):
+        '''
+        Return a list of intervals that describes the complement of the given
+        interval.  Note - the input interval must be ordered (and the result
+        will be ordered too).
+        '''
+        if not intervals:
+            return [(self.min, self.max)]
+        inverted = []
+        (a, last) = intervals[0]
+        if a != self.min:
+            inverted.append((self.min, self.before(a)))
+        for (a, b) in intervals[1:]:
+            inverted.append((self.after(last), self.before(a)))
+            last = b
+        if last != self.max:
+            inverted.append((self.after(last), self.max))
+        return inverted
+
+    @abstractmethod
+    def fmt_sequence(self, children):
+        '''
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+    
+    @abstractmethod
+    def fmt_repeat(self, children):
+        '''
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+
+    @abstractmethod
+    def fmt_choice(self, children):
+        '''
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+
+    @abstractmethod
+    def fmt_option(self, children):
+        '''
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        
+    @abstractmethod
+    def join(self, chars):
+        '''
+        Join a list of characters into a string (or the equivalent).
+        '''
+
+
+class UnicodeAlphabet(Alphabet):
+    '''
+    An alphabet for unicode strings.
     '''
     
     def __init__(self):
-        self.min = chr(0)
         try:
-            self.max = chr(maxunicode)
+            max = chr(maxunicode)
         except: # Python 2.6
-            self.max = unichr(maxunicode)
-        # these need not be part of a more general alphabet interface
+            max = unichr(maxunicode)
+        super(UnicodeAlphabet, self).__init__(chr(0), max)
         self._escape = '\\'
-        self._escaped = '[]*()-?.+\\^'
+        self._escaped = '[]*()-?.+\\^$'
     
     def before(self, c): 
         '''
@@ -560,7 +665,7 @@ def _make_unicode_parser():
     We need a clear policy on backslashes.  To be as backwars compatible as
     possible I am going with:
     0 - "Escaping" means prefixing with \.
-    1 - These characters are special: [, ], -, \, (, ), *, ?, ., +, ^.
+    1 - These characters are special: [, ], -, \, (, ), *, ?, ., +, ^, $.
     2 - Special characters (ie literal, or unescaped special characters) may 
         not have a meaning currently, or may only have a meaning in certain 
         contexts.
@@ -575,6 +680,7 @@ def _make_unicode_parser():
     
     dup = lambda x: (x, x)
     dot = lambda x: (UNICODE.min, UNICODE.max)
+    invert = UNICODE.invert
     sequence = lambda x: Sequence(x, UNICODE)
     repeat = lambda x: Repeat(x, UNICODE)
     option = lambda x: Option(x, UNICODE)
@@ -594,7 +700,8 @@ def _make_unicode_parser():
     
     interval = pair | letter
     brackets = Drop('[') & interval[1:] & Drop(']')
-    char     = brackets | letter | any                          > character
+    inverted = Drop('[^') & interval[1:] & Drop(']')            >= invert      
+    char     = inverted | brackets | letter | any               > character
 
     item     = Delayed()
     

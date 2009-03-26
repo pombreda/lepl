@@ -566,7 +566,7 @@ class OperatorMixin(object):
         
     def __gt__(self, function):
         '''
-        **self in function** - Process or label the results.
+        **self > function** - Process or label the results.
         
         Create a named pair or apply a function to the results.  This is
         equivalent to `Apply()`.
@@ -581,11 +581,28 @@ class OperatorMixin(object):
             result.
             
             If a function is given it is called with the results as an
-            argument.  The return value is used as the new result.  This
-            is equivalent to `Apply()` with nolist=False.
+            argument.  The return value is used *within a list* as the new 
+            result.  This is equivalent to `Apply()` with raw=False.
         '''
         self.__check(APPLY, function, False)
         return Global()[APPLY](self, function) 
+    
+    def __ge__(self, function):
+        '''
+        **self >= function** - Process or label the results.
+        
+        Apply a function to the results.  
+        This is equivalent to `Apply(raw=True)`.
+        
+        :Parameters:
+        
+          function
+            This is called with the results as an argument.  The return value 
+            is used as the new result.  This is equivalent to `Apply()` with 
+            raw=True.
+        '''
+        self.__check(APPLY, function, False)
+        return Global()[APPLY](self, function, raw=True) 
     
     def __rshift__(self, function):
         '''

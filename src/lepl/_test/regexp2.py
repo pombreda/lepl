@@ -40,6 +40,8 @@ class CharactersTest(TestCase):
         assert '[,a-bq]' == str(c), str(c)
         c = _test_parser('[,a-bq]')
         assert '[,a-bq]' == str(c), str(c)
+        c = _test_parser('[^a]')
+        assert '[^a]' == str(c), str(c)
    
     def test_merge(self):
         c = _test_parser('[a-ce-g]')
@@ -148,9 +150,7 @@ class DfaGraphTest(TestCase):
         r = _test_parser(regexp)
         nfa = NfaGraph(UNICODE)
         r.build(nfa)
-        print(str(nfa))
         dfa = NfaToDfa(nfa, UNICODE).dfa
-        print(repr(str(dfa)))
         assert str(dfa) == desc, str(dfa)
 
     def test_dfa_no_empty(self):
@@ -185,5 +185,6 @@ class DfaGraphTest(TestCase):
         '''
         This one's nice - the 'a' completely disappears.
         '''
+#        basicConfig(level=DEBUG)
         self.assert_dfa_graph('.*a?b', 
             '0 [0, 3, 4] b:1;[^b]:0, 1 [0, 1, 2, 3, 4] b:1;[^b]:0 label')
