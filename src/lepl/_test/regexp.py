@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from logging import basicConfig, DEBUG, getLogger
 from lepl import *
-from lepl.regexp2 import *
+from lepl.regexp import *
 
 
 def _test_parser(text):

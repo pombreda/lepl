@@ -20,7 +20,7 @@
 A simple regular expression engine in pure Python.
 
 This takes a set of regular expressions (only the most basic functionality is
-supported) and generates a finite state machine that can match them against
+supported) and generates a finite state machines that can match them against
 a stream of values.
 
 Although simple (and slow compared to a C version), it has some advantages 
@@ -29,7 +29,7 @@ from being implemented in Python.
 First, it can use a variety of alphabets - it is not restricted to strings.  
 It could, for example, match lists of integers, or sequences of tokens.
 
-Second, it can yield intermediate matches.
+Second, the NFA implementation can yield intermediate matches.
 
 Third, it is extensible.
 '''
@@ -54,14 +54,14 @@ class Alphabet(metaclass=ABCMeta):
     of acceptable characters.
     
     The characters in an alphabet must have an order, which is defined by 
-    `__lt__` on the character instances themselves.  In addition, `before(c)` 
-    and `after(c)` below should give the previous and subsequent characters 
-    in the ordering and `min` and `max` should give the two most extreme 
-    characters.
+    `__lt__` on the character instances themselves (equality and inequality 
+    are also assumed to be defined).  In addition, `before(c)` and `after(c)` 
+    below should give the previous and subsequent characters in the ordering 
+    and `min` and `max` should give the two most extreme characters.
     
     Internally, within the routines here, ranges of characters are used.
-    These are pairs of values `(a, b)` which are inclusive.  Each pair is
-    called an "interval".
+    These are encoded as pairs of values `(a, b)` which are inclusive.  
+    Each pair is called an "interval".
     
     Alphabets include additional methods used for display and may also have
     methods specific to a given instance (typically named with an initial
@@ -216,7 +216,7 @@ class UnicodeAlphabet(Alphabet):
             elif intervals[0][0] == self.min and intervals[0][1] == self.max:
                 return '.'
         if len(intervals) > 1 and intervals[0][0] == self.min:
-            intervals = self._invert(intervals)
+            intervals = self.invert(intervals)
             hat = '^'
         else:
             hat = ''
@@ -228,16 +228,6 @@ class UnicodeAlphabet(Alphabet):
                                 self._escape_char(a), self._escape_char(b)))
         return '[{0}{1}]'.format(hat, ''.join(ranges))
     
-    def _invert(self, intervals):
-        inverted = []
-        last = intervals[0][1]
-        for (a, b) in intervals[1:]:
-            inverted.append((self.after(last), self.before(a)))
-            last = b
-        if last != self.max:
-            inverted.append(self.after(last), self.max)
-        return inverted
-
     def fmt_sequence(self, children):
         '''
         This must fully describe the data in the children (it is used to
