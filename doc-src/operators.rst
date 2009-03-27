@@ -1,4 +1,6 @@
 
+.. _operators:
+
 Operators
 =========
 
@@ -97,13 +99,21 @@ Operator  Description
   ``~`` (see :ref:`lookahead`).
 
 
+.. _ge:
+
 Operators That Apply Functions To Results
 -----------------------------------------
 
 ========  ===========
 Operator  Description
 ========  ===========
-``>``     Pass the results of the matcher (left) to the given function (right) and use the result as the new result.  If the function is a string a ``(string, result)`` pair is generated instead.  Identical to `Apply() <api/redirect.html#lepl.matchers.Apply>`_.
+``>=``    Pass the results of the matcher (left) to the given function (right) and use the result as the new result.  Identical to `Apply(raw=True) <api/redirect.html#lepl.matchers.Apply>`_.
+--------  -----------
+``>``     Pass the results of the matcher (left) to the given function 
+          (right) and use the result, *within a new list*,  as the result.
+          If the function is a string a ``(string, result)`` pair is 
+          generated instead.  
+          Identical to `Apply() <api/redirect.html#lepl.matchers.Apply>`_.
 --------  -----------
 ``>>``    As ``>``, but the function is applied to each result in turn 
           (instead of all results being supplied in a single list argument).

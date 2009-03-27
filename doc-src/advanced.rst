@@ -158,8 +158,11 @@ Automatic Memoisation
   <api/redirect.html#lepl.rewriters.optimize_or>`_ and
   `context_memoize(conservative)
   <api/redirect.html#lepl.rewriters.context_memoize>`_ rewriters, described
-  above.  It is used in the default :ref:`configuration` with
-  ``consverative=False``.
+  above.  In the default :ref:`configuration`, when the ``consverative``
+  parameter is omitted, `optimize_or(conservative=False)
+  <api/redirect.html#lepl.rewriters.optimize_or>`_ and
+  `context_memoize(conservative=True)
+  <api/redirect.html#lepl.rewriters.context_memoize>`_ are used.
 
 
 .. index:: search, backtracking
@@ -279,6 +282,8 @@ matcher(s).  For example::
 
 Here the `RMemo() <api/redirect.html#lepl.memo.RMemo>`_ avoids re-matching of
 the "bbbb", but has no effect on the matching of the "a"s.
+
+.. _left_recursion:
 
 The simplest way to apply a memoizer to all matchers is with the `memoize()
 <api/redirect.html#lepl.rewriters.memoize>`_ rewriter::

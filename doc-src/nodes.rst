@@ -66,6 +66,7 @@ results.  With LEPL they are easy to construct with ``> list``::
 
 
 .. index:: Node(), AST, parse tree, trees
+.. _trees:
 
 Trees
 -----

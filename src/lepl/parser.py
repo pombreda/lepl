@@ -69,7 +69,12 @@ class GeneratorWrapper(object):
         return self.__generator.send(value)
     
     def throw(self, value):
-        return self.__generator.throw(value)
+        # we don't use exceptions, so they are always "errors".  if we
+        # try passing them in they get re-thrown and lose the stack trace
+        # (i don't understand fully).  anyway, it seems to give more useful
+        # errors just to throw here.
+        #return self.__generator.throw(value)
+        raise value
                 
     def __iter__(self):
         return self
@@ -138,8 +143,6 @@ def trampoline(main, monitor=None):
                     if monitor: monitor.push(value)
                     append(value)
                     if monitor: monitor.before_next(value)
-                    if 69 == epoch:
-                        pass
                     value = next(value)
                     if monitor: monitor.after_next(value)
                 else:

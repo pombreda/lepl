@@ -156,7 +156,6 @@ def memoize(memoizer):
 
 
 def auto_memoize(conservative=None):
-    from lepl.memo import RMemo
     '''
     Generate an all-purpose memoizing rewriter.  It is typically called after
     flattening and composing transforms.
@@ -173,6 +172,7 @@ def auto_memoize(conservative=None):
     `context_memoize(True)` are used.  This gives conservative memoisation 
     with minimal rewriting of alternatives.
     '''
+    from lepl.memo import RMemo
     def rewriter(graph):
         graph = optimize_or(False if conservative is None else conservative)(graph)
         graph = context_memoize(True if conservative is None else conservative)(graph)

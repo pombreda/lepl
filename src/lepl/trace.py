@@ -158,8 +158,8 @@ class TraceResults(ExposedMonitor):
 
 class RecordDeepest(TraceResults):
     '''
-    A logger (implemented as a monitor - `lepl.monitor.MonitorInterface`)
-    that records the deepest match found furing a parse.
+    A logger (implemented as a monitor - `MonitorInterface`)
+    that records the deepest match found during a parse.
     '''
     
     def __init__(self, n_before=6, n_results_after=2, n_done_after=2):
