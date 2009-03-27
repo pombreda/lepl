@@ -24,12 +24,12 @@ converted to strings using str().
 from lepl.regexp.core import *
 
 
-class StrAlphabet(Alphabet):
+class StrAlphabet(BaseAlphabet):
     '''
     An alphabet for unicode strings.
     '''
     
-    def __init__(self, min, max, escape='\\', escaped='[]*()-?.+\\^$'):
+    def __init__(self, min, max, escape='\\', escaped='[]*()-?.+\\^$|'):
         super(StrAlphabet, self).__init__(min, max)
         self._escape = escape if escape else ''
         self._escaped = escaped if escaped else []
@@ -42,7 +42,7 @@ class StrAlphabet(Alphabet):
         return ''.join(self._escape_char(x) for x in text)
     
     def _escape_char(self, char):
-        if self._escape is not None and char in self._escaped:
+        if self._escape is not None and str(char) in self._escaped:
             return self._escape + str(char)
         else:
             return str(char)
@@ -125,7 +125,7 @@ def make_str_parser(alphabet):
     We need a clear policy on backslashes.  To be as backwards compatible as
     possible I am going with:
     0 - "Escaping" means prefixing with \.
-    1 - These characters are special: [, ], -, \, (, ), *, ?, ., +, ^, $.
+    1 - These characters are special: [, ], -, \, (, ), *, ?, ., +, ^, $, |.
     2 - Special characters (ie literal, or unescaped special characters) may 
         not have a meaning currently, or may only have a meaning in certain 
         contexts.

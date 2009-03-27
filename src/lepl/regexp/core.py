@@ -63,7 +63,12 @@ from lepl.trace import TraceResults
 from lepl.support import empty
 
 
-class Alphabet(metaclass=ABCMeta):
+# Python 2.6
+#class Alphabet(metaclass=ABCMeta):
+Alphabet = ABCMeta('Alphabet', (object, ), {})
+
+class BaseAlphabet(Alphabet):
+
     '''
     Regular expressions are generalised over alphabets, which describe the set
     of acceptable characters.

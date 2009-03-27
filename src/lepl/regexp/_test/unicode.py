@@ -11,7 +11,7 @@ def _test_parser(text):
 
 class CharactersTest(TestCase):
     
-    def test_dot(self):
+    def test_unicode_dot(self):
         #basicConfig(level=DEBUG)
         c = _test_parser('.')
         assert '.' == str(c), str(c)

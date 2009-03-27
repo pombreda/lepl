@@ -138,6 +138,8 @@ def trampoline(main, monitor=None):
                     if monitor: monitor.push(value)
                     append(value)
                     if monitor: monitor.before_next(value)
+                    if 69 == epoch:
+                        pass
                     value = next(value)
                     if monitor: monitor.after_next(value)
                 else:
@@ -170,6 +172,7 @@ def trampoline(main, monitor=None):
                     if monitor: monitor.exception(value)
                     if type(value) is not StopIteration and value != last_exc:
                         last_exc = value
+                        log.warn('Exception at epoch {0}'.format(epoch))
                         log.warn(format_exc())
                         for generator in stack:
                             log.warn('Stack: ' + generator.matcher.describe)
