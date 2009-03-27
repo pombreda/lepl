@@ -115,6 +115,7 @@ class DefaultNamespace(Namespace):
             AND:       And,
             OR:        Or,
             APPLY:     Apply,
+            APPLY_RAW: lambda a, b: Apply(a, b, raw=True),
             NOT:       Drop,
             ARGS:      lambda a, b: Apply(a, b, args=True),
             KARGS:     KApply,
@@ -155,6 +156,8 @@ OR = '|'
 '''Name for | operator.'''
 APPLY = '>'
 '''Name for > operator.'''
+APPLY_RAW = '>='
+'''Name for >= operator.'''
 NOT = '~'
 '''Name for ~ operator.'''
 ARGS = '*'
@@ -178,12 +181,13 @@ class Override(object):
 
     def __init__(self, space_opt=None, space_req=None, repeat=None,
                   add=None, and_=None, or_=None, not_=None, 
-                  apply=None, args=None, kargs=None, raise_=None,
-                  first=None, map=None):
+                  apply=None, apply_raw=None, args=None, kargs=None, 
+                  raise_=None, first=None, map=None):
         self.__frame ={SPACE_OPT: space_opt, SPACE_REQ: space_req,
                        REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
-                       NOT: not_, APPLY: apply, ARGS: args, KARGS: kargs, 
-                       RAISE: raise_, FIRST: first, MAP: map}
+                       NOT: not_, APPLY: apply, APPLY_RAW: apply_raw,
+                       ARGS: args, KARGS: kargs, RAISE: raise_, 
+                       FIRST: first, MAP: map}
         
     def __enter__(self):
         '''
@@ -601,8 +605,8 @@ class OperatorMixin(object):
             is used as the new result.  This is equivalent to `Apply()` with 
             raw=True.
         '''
-        self.__check(APPLY, function, False)
-        return Global()[APPLY](self, function, raw=True) 
+        self.__check(APPLY_RAW, function, False)
+        return Global()[APPLY_RAW](self, function) 
     
     def __rshift__(self, function):
         '''

@@ -26,12 +26,12 @@ a stream of values.
 Although simple (and slow compared to a C version), it has some advantages 
 from being implemented in Python.
 
-First, it can use a variety of alphabets - it is not restricted to strings.  
-It could, for example, match lists of integers, or sequences of tokens.
+ * It can use a variety of alphabets - it is not restricted to strings.  
+   It could, for example, match lists of integers, or sequences of tokens.
 
-Second, the NFA implementation can yield intermediate matches.
+ * The NFA implementation can yield intermediate matches.
 
-Third, it is extensible.
+ * It is extensible.
 
 The classes here form a layered series of representations for regular 
 expressions.
@@ -51,16 +51,13 @@ from the second layer.
 '''
 
 from abc import ABCMeta, abstractmethod
-from bisect import bisect_left, bisect_right
+from bisect import bisect_left
 from itertools import chain
 from collections import deque
-from operator import itemgetter
 from traceback import format_exc
 
-from lepl.matchers import *
-from lepl.node import *
-from lepl.trace import TraceResults
-from lepl.support import empty
+from lepl.node import Node
+from lepl.support import LogMixin
 
 
 # Python 2.6
@@ -814,6 +811,12 @@ class NfaToDfa(LogMixin):
         self.__build_graph()
     
     def __build_graph(self):
+        '''
+        This is the driver for the "usual" superset algorithm - we find
+        all states that correspond to a DFA state, then look at transitions
+        to other states.  This repeats until we have covered all the 
+        different combinations of NFA states that could occur.
+        '''
         stack = deque() # (dfa node, set(nfa nodes), set(terminals))
         # start with initial node
         (nfa_nodes, terminals) = self.__nfa.connected([0])

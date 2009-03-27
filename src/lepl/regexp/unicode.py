@@ -22,8 +22,8 @@ A regexp implementation for unicode strings.
 
 from sys import maxunicode
 
-from lepl.regexp.core import *
-from lepl.regexp.str import *
+from lepl.regexp.core import Regexp, Labelled
+from lepl.regexp.str import StrAlphabet, make_str_parser
 
 
 class UnicodeAlphabet(StrAlphabet):

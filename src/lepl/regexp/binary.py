@@ -22,8 +22,8 @@ A proof-of-concept regexp implementation for binary data strings.
 The hope is that one day we can parse binary data in the same way as text...
 '''
 
-from lepl.regexp.core import *
-from lepl.regexp.str import *
+from lepl.regexp.core import Regexp, Labelled
+from lepl.regexp.str import StrAlphabet, make_str_parser
 
 
 class BinaryAlphabet(StrAlphabet):

@@ -21,7 +21,9 @@ Some intermediate classes that support parsers for objects that can be
 converted to strings using str().
 '''
 
-from lepl.regexp.core import *
+from lepl.matchers import Drop, Any, Lookahead, AnyBut, Literal, Delayed, Eos
+from lepl.regexp.core \
+    import BaseAlphabet, Character, Sequence, Choice, Repeat, Option
 
 
 class StrAlphabet(BaseAlphabet):

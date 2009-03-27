@@ -3,8 +3,8 @@ from unittest import TestCase
 
 from logging import basicConfig, DEBUG, getLogger
 from lepl import *
+from lepl.regexp.core import NfaGraph, NfaToDfa
 from lepl.regexp.unicode import *
-
 
 def _test_parser(text):
     return unicode_single_parser('label', text)

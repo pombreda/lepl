@@ -33,32 +33,24 @@ class ExpressionExample(Example):
         self.examples([(lambda: parser('1 + 2 * (3 + 4 - 5)')[0],
 """Expression
  +- Factor
- |   +- Term
- |   |   `- number '1'
- |   `- ' '
+ |   `- Term
+ |       `- number '1'
  +- operator '+'
- +- ' '
  `- Factor
      +- Term
      |   `- number '2'
-     +- ' '
      +- operator '*'
-     +- ' '
      `- Term
          +- '('
          +- Expression
          |   +- Factor
-         |   |   +- Term
-         |   |   |   `- number '3'
-         |   |   `- ' '
+         |   |   `- Term
+         |   |       `- number '3'
          |   +- operator '+'
-         |   +- ' '
          |   +- Factor
-         |   |   +- Term
-         |   |   |   `- number '4'
-         |   |   `- ' '
+         |   |   `- Term
+         |   |       `- number '4'
          |   +- operator '-'
-         |   +- ' '
          |   `- Factor
          |       `- Term
          |           `- number '5'
@@ -69,16 +61,13 @@ class ExpressionExample(Example):
  |   `- Term
  |       `- number '12'
  +- operator '+'
- +- ' '
  +- Factor
  |   +- Term
  |   |   `- number '23'
  |   +- operator '*'
  |   `- Term
  |       `- number '45'
- +- ' '
  +- operator '+'
- +- ' '
  `- Factor
      `- Term
          `- number '34'""")])

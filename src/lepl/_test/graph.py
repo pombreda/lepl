@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from lepl.graph \
     import ArgAsAttributeMixin, preorder, postorder, reset, ConstructorWalker, \
-           Clone, make_proxy, TreeIndex, BEFORE
+           Clone, make_proxy
 
 
 class Node(ArgAsAttributeMixin):
@@ -125,31 +125,4 @@ class CloneTest(TestCase):
 #        print(repr(g3))
 
 
-class IndexTest(TestCase):
     
-    def test_traversal(self):
-        tree = Node('a', Node('b', 1, 2), 3, Node('c', Node('d'), 4, Node('e', 5, 6), 7))
-        class Record(TreeIndex):
-            def __init__(self):
-                super(Record, self).__init__(tree, Node)
-                self.all = ''
-                self.preorder = ''
-                self.postorder = ''
-                self.children = ''
-            def leaf(self, node):
-                self.all += str(node)
-                self.children += str(node)
-            def before(self, node):
-                self.preorder += node.label
-                self.all += node.label
-            def after(self, node):
-                self.postorder += node.label
-                self.all += node.label
-        r = Record()
-        r.run()
-        assert r.all == 'ab12b3cdd4e56e7ca', r.all
-        assert r.preorder == 'abcde', r.preorder
-        assert r.postorder == 'bdeca', r.postorder
-        assert r.children == '1234567', r.children
-
-        
