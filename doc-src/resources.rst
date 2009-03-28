@@ -11,7 +11,7 @@ Resource Management
 Generator Management
 --------------------
 
-.. warning::
+.. note::
 
   To use the techniques described in this section the `GeneratorManager()
   <api/redirect.html#lepl.manager.GeneratorManager>`_ monitor must be added to
@@ -65,7 +65,7 @@ can be configured to store only a limited number of generators.  When this
 number is exceeded, by the addition of a new generator, the oldest (ie. least
 recently used) non--active generator is closed.
 
-.. warning::
+.. note::
 
   A closed generator is not available for backtracking, so prematurely closing
   generators may mean that an otherwise valid grammar fails to match
