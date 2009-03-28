@@ -69,12 +69,16 @@ class GeneratorWrapper(object):
         return self.__generator.send(value)
     
     def throw(self, value):
-        # we don't use exceptions, so they are always "errors".  if we
-        # try passing them in they get re-thrown and lose the stack trace
-        # (i don't understand fully).  anyway, it seems to give more useful
-        # errors just to throw here.
-        #return self.__generator.throw(value)
-        raise value
+        # we don't use exceptions, apart from StopIteration, so they are 
+        # always "errors".  if we try passing them in they get re-thrown and 
+        # lose the stack trace (i don't understand fully).  
+        # anyway, it seems to give more useful errors just to throw here 
+        # (alternatively, we could alter the trampoline to throw immediately, 
+        # but i'd rather keep that more general).
+        if isinstance(value, StopIteration):
+            return self.__generator.throw(value)
+        else:
+            raise value
                 
     def __iter__(self):
         return self

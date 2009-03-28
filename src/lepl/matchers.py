@@ -1182,3 +1182,13 @@ def Literals(*matchers):
     # and I felt it better to keep the base matchers reasonably orthogonal.
     return Or(*lmap(Literal, matchers))
 
+
+def String(quote='"', escape='\\'):
+    '''
+    Match a string with quotes that can be escaped.
+    '''
+    q = Literal(quote)
+    content = AnyBut(q)
+    if escape: content = content | (Drop(escape) & q)
+    content = content[...] 
+    return Drop(q) & content & Drop(q)

@@ -17,31 +17,6 @@ life easier.
   the *unknown errors* you face when a parser fails to work with good input.
 
 
-.. index:: trampoline
-
-Trampoline Traceback
---------------------
-
-When an error occurs within a matcher the exception returned to the user is
-unhelpful.  It typically looks like:
-
-  File "/home/andrew/projects/personal/src/python/lepl/src/lepl/_example/debug.py", line 8, in <module>
-    parser.parse_string('some input')
-  File "/home/andrew/projects/personal/src/python/lepl/src/lepl/matchers.py", line 143, in parse_string
-    return self.string_parser(config)(string)
-  File "/home/andrew/projects/personal/src/python/lepl/src/lepl/parser.py", line 204, in single
-    return next(matcher(arg))[0]
-  File "/home/andrew/projects/personal/src/python/lepl/src/lepl/parser.py", line 161, in trampoline
-    raise value
-  File "/home/andrew/projects/personal/src/python/lepl/src/lepl/parser.py", line 152, in trampoline
-    value = stack[-1].throw(value)
-  File "/home/andrew/projects/personal/src/python/lepl/src/lepl/parser.py", line 72, in throw
-    return self.__generator.throw(value)
-  File "/home/andrew/projects/personal/src/python/lepl/src/lepl/memo.py", line 98, in generator
-    stream))
-
-
-
 .. index:: longest match, print_longest()
 .. _deepest_match:
 

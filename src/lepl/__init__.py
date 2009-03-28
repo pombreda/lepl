@@ -163,6 +163,7 @@ __all__ = [
         'Separator',
         'DropEmpty',
         'Literals',
+        'String',
         'GREEDY',
         'NON_GREEDY',
         'DEPTH_FIRST',

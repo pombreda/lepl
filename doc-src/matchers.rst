@@ -262,7 +262,7 @@ arguments as follows:
     A list of the results returned.
 
 
-.. index:: First(), Empty(), Regexp(), Delayed(), Commit(), Trace(), AnyBut(), Optional(), Star(), ZeroOrMore(), Plus(), OneOrMore(), Map(), Add(), Substitute(), Name(), Eof(), Eos(), Identity(), Newline(), Space(), Whitespace(), Digit(), Letter(), Upper(), Lower(), Printable(), Punctuation(), UnsignedInteger(), SignedInteger(), Integer(), UnsignedFloat(), SignedFloat(), SignedEFloat(), Float(), Word().
+.. index:: First(), Empty(), Regexp(), Delayed(), Commit(), Trace(), AnyBut(), Optional(), Star(), ZeroOrMore(), Plus(), OneOrMore(), Map(), Add(), Substitute(), Name(), Eof(), Eos(), Identity(), Newline(), Space(), Whitespace(), Digit(), Letter(), Upper(), Lower(), Printable(), Punctuation(), UnsignedInteger(), SignedInteger(), Integer(), UnsignedFloat(), SignedFloat(), SignedEFloat(), Float(), Word(), String().
 
 More
 ----
@@ -303,8 +303,9 @@ Many more matchers are described in the `API Documentation
 `UnsignedFloat() <api/redirect.html#lepl.matchers.UnsignedFloat>`_,
 `SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_,
 `SignedEFloat() <api/redirect.html#lepl.matchers.SignedEFloat>`_,
-`Float() <api/redirect.html#lepl.matchers.Float>`_, and
-`Word() <api/redirect.html#lepl.matchers.Word>`_.
+`Float() <api/redirect.html#lepl.matchers.Float>`_, 
+`Word() <api/redirect.html#lepl.matchers.Word>`_, and
+`String() <api/redirect.html#lepl.matchers.String>`_.
 
   
 

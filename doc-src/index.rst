@@ -13,9 +13,10 @@ grammars and it can also handle left--recursive grammars.
 The aim is a powerful, extensible parser that will also give solid, reliable
 results to first--time users.
 
-This release (2.2) adds the :ref:`>= <ge>` operator, fixes a few bugs and
-introduces a new pure--Python regular expression engine (not yet used
-anywhere).
+This release (2.2) adds :ref:`>= <ge>` and `String()
+<api/redirect.html#lepl.matchers.String>`_, fixes a few bugs, and introduces a
+new pure--Python regular expression framework (which will be put to use in the
+next release).
 
 
 Contents
@@ -36,6 +37,7 @@ Contents
    style
    download
    implementation
+   examples
    closing
 
 
