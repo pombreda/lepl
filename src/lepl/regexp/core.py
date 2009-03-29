@@ -532,7 +532,7 @@ class NfaCompiler(LogMixin):
         - match - the current match, as a list of tokens consumed from the stream
         - stream - the current stream
         map and matched are not both necessary (they are exclusive), but it 
-        simplifies the algorithm to spearate them.
+        simplifies the algorithm to separate them.
         '''
         self._debug(str(self.__table))
         stack = deque()
@@ -708,6 +708,9 @@ class NfaToDfa(LogMixin):
 
 
 class DfaCompiler(object):
+    '''
+    Create a lookup table for a DFA and a matcher to evaluate it.
+    '''
     
     def __init__(self, graph, alphabet):
         super(DfaCompiler, self).__init__()
@@ -738,6 +741,8 @@ class DfaCompiler(object):
             (state, terminals) = future
             match.append(stream[0])
             stream = stream[1:]
+            # match is strictly increasing, so storing the length is enough
+            # (no need to make an expensive copy)
             if terminals: longest = (terminals, len(match), stream)
         if longest:
             (terminals, l, stream) = longest
@@ -745,4 +750,3 @@ class DfaCompiler(object):
         else:
             return None
         
-
