@@ -140,6 +140,7 @@ class NfaTest(TestCase):
                             ['abc', 'ab', 'abc', 'ab', 'a', ''])
 
     def test_complex(self):
+        basicConfig(level=DEBUG)
         self.assert_matches('a([x-z]|a(g|b))*(u|v)p',
                             'ayagxabvp', ['ayagxabvp'])
 

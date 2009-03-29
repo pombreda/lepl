@@ -169,15 +169,16 @@ class Fragments(object):
     def append(self, character):
         assert type(character) is Character
         for interval in character:
-            self.__append(interval, character.alphabet)
+            self.__append(interval)
         
-    def __append(self, interval, alphabet):
+    def __append(self, interval):
         '''
         Add an interval to the existing intervals.
         '''
         (a1, b1) = interval
         if b1 < a1: (a1, b1) = (b1, a1)
         intervals = deque()
+        alphabet = self.alphabet
         done = False
         while self.__intervals:
             (a0, b0) = self.__intervals.popleft()
@@ -293,4 +294,94 @@ class IntervalMap(dict):
     def __contains__(self, interval):
         (a, b) = interval
         return self[a] is not None or self[b] is not None
+    
 
+class TaggedFragments(object):
+    '''
+    Similar to Fragments, but associates a value with each initial interval;
+    on retrieval returns a list of all values associated with fragment. 
+    '''
+    
+    def __init__(self, alphabet):
+        self.alphabet = alphabet
+        self.__intervals = deque()
+                
+    def append(self, character, value):
+        assert type(character) is Character
+        for interval in character:
+            self.__append(interval, [value])
+        
+    def __append(self, interval, v1):
+        '''
+        Add an interval to the existing intervals.
+        '''
+        (a1, b1) = interval
+        if b1 < a1: (a1, b1) = (b1, a1)
+        intervals = deque()
+        alphabet = self.alphabet
+        done = False
+        while self.__intervals:
+            ((a0, b0), v0) = self.__intervals.popleft()
+            if a0 <= a1:
+                if b0 < a1:
+                    # old interval starts and ends before new interval
+                    # so keep old interval and continue
+                    intervals.append(((a0, b0), v0))
+                elif b1 <= b0:
+                    # old interval starts before or with and ends after or with 
+                    # new interval
+                    # so we have one, two or three new intervals
+                    if a0 < a1: intervals.append(((a0, alphabet.before(a1)), v0)) # first part of old
+                    intervals.append(((a1, b1), v0+v1)) # common to both
+                    if b1 < b0: intervals.append(((alphabet.after(b1), b0), v0)) # last part of old
+                    done = True
+                    break
+                else:
+                    # old interval starts before new, but partially overlaps
+                    # so split old and continue
+                    # (since new may overlap more intervals...)
+                    if a0 < a1: intervals.append(((a0, alphabet.before(a1)), v0)) # first part of old
+                    intervals.append(((a1, b0), v0+v1)) # common to both
+                    a1 = alphabet.after(b0)
+            else:
+                if b1 < a0:
+                    # new interval starts and ends before old
+                    intervals.append(((a1, b1), v1))
+                    intervals.append(((a0, b0), v0))
+                    done = True
+                    break
+                elif b0 <= b1:
+                    # new interval starts before and ends after or with old 
+                    # interval
+                    # so split and continue if extends (since last part may 
+                    # overlap...)
+                    intervals.append(((a1, alphabet.before(a0)), v1)) # first part of new
+                    intervals.append(((a0, b0), v0+v1)) # old
+                    if b1 > b0:
+                        a1 = alphabet.after(b0)
+                    else:
+                        done = True
+                        break
+                else:
+                    # new interval starts before old, but partially overlaps,
+                    # split and slurp rest
+                    intervals.append(((a1, alphabet.before(a0)), v1)) # first part of new
+                    intervals.append(((a0, b1), v0+v1)) # overlap
+                    intervals.append(((alphabet.after(b1), b0), v0)) # last part of old
+                    done = True
+                    break
+        if not done:
+            intervals.append(((a1, b1), v1))
+        intervals.extend(self.__intervals) # slurp remaining
+        self.__intervals = intervals
+        
+    def len(self):
+        return len(self.__intervals)
+    
+    def __getitem__(self, index):
+        return self.__intervals[index]
+    
+    def __iter__(self):
+        return iter(self.__intervals)
+    
+    
