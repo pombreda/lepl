@@ -393,11 +393,7 @@ class Fragments(object):
 
 class Sequence(Node):
     '''
-    A sequence of Characters, etc.  This includes an index, which is internal 
-    state that describes progression through the sequence.
-    
-    Note that a Sequence instance is static - index does not change - but it
-    may be cloned with a different index value.
+    A sequence of Characters, etc.
     '''
     
     def __init__(self, children, alphabet):
@@ -413,10 +409,6 @@ class Sequence(Node):
         return self.__str
     
     def __hash__(self):
-        '''
-        A _Sequence is defined by the contents, the index, and the state of
-        the current child.
-        '''
         return hash(self.__str)
         
     def __eq__(self, other):
