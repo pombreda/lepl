@@ -140,7 +140,7 @@ class NfaTest(TestCase):
                             ['abc', 'ab', 'abc', 'ab', 'a', ''])
 
     def test_complex(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_matches('a([x-z]|a(g|b))*(u|v)p',
                             'ayagxabvp', ['ayagxabvp'])
 
@@ -199,3 +199,15 @@ class DfaTest(TestCase):
         
     def test_simple(self):
         self.assert_dfa('abc', 'abcd', 'abc')
+        
+    def test_dot_option(self):
+        self.assert_dfa('.*a?b', 'aaabc', 'aaab')
+        
+    def test_empty(self):
+        self.assert_dfa('a*', 'bc', '')
+        self.assert_dfa('a*', '', '')
+        
+    def test_conflicting_choice(self):
+        self.assert_dfa('a(bc|b*d)', 'abde', 'abd') 
+        self.assert_dfa('a(bc|b*d)', 'abce', 'abc') 
+    

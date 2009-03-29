@@ -721,7 +721,7 @@ class DfaCompiler(object):
         for src in self.__graph:
             row = IntervalMap()
             for (dest, char) in self.__graph.transitions(src):
-                labels = self.__graph.terminals(dest)
+                labels = list(self.__graph.terminals(dest))
                 for interval in char:
                     row[interval] = (dest, labels)
             self.__table[src] = row
@@ -729,7 +729,7 @@ class DfaCompiler(object):
     def matcher(self, stream):
         state = 0
         match = []
-        terminals = self.__empty_labels
+        longest = (self.__empty_labels, 0, stream) if self.__empty_labels else None
         while stream:
             char = stream[0]
             future = self.__table[state][char]
@@ -738,5 +738,11 @@ class DfaCompiler(object):
             (state, terminals) = future
             match.append(stream[0])
             stream = stream[1:]
-        return (terminals, self.__alphabet.join(match), stream)
+            if terminals: longest = (terminals, len(match), stream)
+        if longest:
+            (terminals, l, stream) = longest
+            return (terminals, self.__alphabet.join(match[0:l]), stream)
+        else:
+            return None
+        
 
