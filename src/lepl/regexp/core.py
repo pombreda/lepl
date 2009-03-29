@@ -329,9 +329,22 @@ class Regexp(Choice):
                     graph.connect(before, src)
                     
     def nfa(self):
+        '''
+        Generate a NFA-based matcher.
+        '''
         graph = NfaGraph(self.alphabet)
         self.build(graph)
         return NfaCompiler(graph, self.alphabet).matcher
+        
+    def dfa(self):
+        '''
+        Generate a DFA-based matcher (faster than NFA, but returns only a
+        single, greedy match).
+        '''
+        ngraph = NfaGraph(self.alphabet)
+        self.build(ngraph)
+        dgraph = NfaToDfa(ngraph, self.alphabet).dfa
+        return DfaCompiler(dgraph, self.alphabet).matcher
         
         
 class BaseGraph(LogMixin):
@@ -386,6 +399,9 @@ class BaseGraph(LogMixin):
         An iterator over the terminals for the give node.
         '''
         return iter(self._terminals.get(node, []))
+    
+    def __len__(self):
+        return self._next_node
 
 
 class NfaGraph(BaseGraph):
@@ -689,4 +705,38 @@ class NfaToDfa(LogMixin):
             self.dfa.connect(src, dest, char)
             if new:
                 stack.append((dest, nfa_nodes, terminals))
+
+
+class DfaCompiler(object):
     
+    def __init__(self, graph, alphabet):
+        super(DfaCompiler, self).__init__()
+        self.__graph = graph
+        self.__alphabet = alphabet
+        self.__table = [None] * len(graph)
+        self.__empty_labels = graph.terminals(0)
+        self.__build_table()
+        
+    def __build_table(self):
+        for src in self.__graph:
+            row = IntervalMap()
+            for (dest, char) in self.__graph.transitions(src):
+                labels = self.__graph.terminals(dest)
+                for interval in char:
+                    row[interval] = (dest, labels)
+            self.__table[src] = row
+            
+    def matcher(self, stream):
+        state = 0
+        match = []
+        terminals = self.__empty_labels
+        while stream:
+            char = stream[0]
+            future = self.__table[state][char]
+            if future is None: break
+            # update state
+            (state, terminals) = future
+            match.append(stream[0])
+            stream = stream[1:]
+        return (terminals, self.__alphabet.join(match), stream)
+

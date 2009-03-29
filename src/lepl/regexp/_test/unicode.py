@@ -189,3 +189,13 @@ class DfaGraphTest(TestCase):
 #        basicConfig(level=DEBUG)
         self.assert_dfa_graph('.*a?b', 
             '0 [0, 3, 4] b:1;[^b]:0, 1 [0, 1, 2, 3, 4] b:1;[^b]:0 label')
+
+
+class DfaTest(TestCase):
+    
+    def assert_dfa(self, regexp, text, results):
+        r = _test_parser(regexp).dfa()(text)
+        assert r[1] == results, r
+        
+    def test_simple(self):
+        self.assert_dfa('abc', 'abcd', 'abc')
