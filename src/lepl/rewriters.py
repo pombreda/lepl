@@ -68,7 +68,7 @@ class DelayedClone(Visitor):
             copy = self._clone(self._node, args, kargs)
             if self._node in self._delayeds:
                 # we already created a replacement for this node, but it's
-                # matcher may be contained None (from loop), so fix it
+                # matcher may contain None (from loop), so fix it
                 # up and return it.
                 self._delayeds[self._node].matcher = copy.matcher
                 copy = self._delayeds[self._node]
