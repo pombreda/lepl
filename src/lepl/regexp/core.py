@@ -177,6 +177,32 @@ class BaseAlphabet(Alphabet):
         '''
         Join a list of characters into a string (or the equivalent).
         '''
+        
+    @abstractmethod
+    def single_nfa_parser(self, regexp):
+        '''
+        Generate a NFA-based parser for a single regular expression.
+        '''
+        
+    @abstractmethod
+    def multiple_nfa_parser(self, regexps):
+        '''
+        Generate a NFA-based parser for a labelled list of regular expressions.  
+        The regexps argument has the form [(label, regexp)].
+        '''
+
+    @abstractmethod
+    def single_dfa_parser(self, regexp):
+        '''
+        Generate a DFA-based parser for a single regular expression.
+        '''
+        
+    @abstractmethod
+    def multiple_dfa_parser(self, regexps):
+        '''
+        Generate a DFA-based parser for a labelled list of regular expressions.  
+        The regexps argument has the form [(label, regexp)].
+        '''
 
 
 class Sequence(Node):
@@ -701,7 +727,7 @@ class NfaToDfa(LogMixin):
             (intervals, terminals) = groups[nfa_nodes]
             char = Character(intervals, self.__alphabet)
             (new, dest) = self.dfa.node(nfa_nodes)
-            self._debug('new: {0}, nodes:{1}'.format(new, nfa_nodes))
+#            self._debug('new: {0}, nodes:{1}'.format(new, nfa_nodes))
             self.dfa.connect(src, dest, char)
             if new:
                 stack.append((dest, nfa_nodes, terminals))
@@ -717,7 +743,7 @@ class DfaCompiler(object):
         self.__graph = graph
         self.__alphabet = alphabet
         self.__table = [None] * len(graph)
-        self.__empty_labels = graph.terminals(0)
+        self.__empty_labels = list(graph.terminals(0))
         self.__build_table()
         
     def __build_table(self):

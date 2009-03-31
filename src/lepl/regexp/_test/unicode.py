@@ -131,6 +131,7 @@ class NfaTest(TestCase):
 
     def test_range(self):
         self.assert_matches('[abc]*', 'bbcx', ['bbc', 'bb', 'b', ''])
+        self.assert_matches('[A-Z][a-z]*', 'Abc', ['Abc', 'Ab', 'A'])
         
     def test_range_overlap(self):
         '''

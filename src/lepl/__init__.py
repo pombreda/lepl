@@ -109,6 +109,7 @@ from lepl.parser import *
 from lepl.stream import *
 from lepl.manager import *
 from lepl.matchers import *
+from lepl.regexp.matchers import *
 from lepl.rewriters import *
 from lepl.trace import *
 
@@ -192,6 +193,9 @@ __all__ = [
         # memo,
         'RMemo',
         'LMemo',
+        # regexp.matchers
+        'NfaRegexp',
+        'DfaRegexp',
         # rewriters
         'memoize',
         'flatten',

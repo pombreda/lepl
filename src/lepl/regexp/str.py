@@ -23,7 +23,8 @@ converted to strings using str().
 
 from lepl.matchers import Drop, Any, Lookahead, AnyBut, Literal, Delayed, Eos
 from lepl.regexp.core \
-    import BaseAlphabet, Character, Sequence, Choice, Repeat, Option
+    import BaseAlphabet, Character, Sequence, Choice, Repeat, Option, \
+    Regexp, Labelled
 
 
 class StrAlphabet(BaseAlphabet):
@@ -35,6 +36,7 @@ class StrAlphabet(BaseAlphabet):
         super(StrAlphabet, self).__init__(min, max)
         self._escape = escape if escape else ''
         self._escaped = escaped if escaped else []
+        self._parser = make_str_parser(self)
     
     def _escape_text(self, text):
         '''
@@ -119,6 +121,33 @@ class StrAlphabet(BaseAlphabet):
         '''
         return char
 
+    def single_nfa_parser(self, regexp):
+        '''
+        Generate a NFA-based parser for a single regular expression.
+        '''
+        return self._build_single(regexp).nfa()
+        
+    def multiple_nfa_parser(self, regexps):
+        '''
+        Generate a NFA-based parser for a labelled list of regular expressions.  
+        The regexps argument has the form [(label, regexp)].
+        '''
+
+    def single_dfa_parser(self, regexp):
+        '''
+        Generate a DFA-based parser for a single regular expression.
+        '''
+        return self._build_single(regexp).dfa()
+        
+    def multiple_dfa_parser(self, regexps):
+        '''
+        Generate a DFA-based parser for a labelled list of regular expressions.  
+        The regexps argument has the form [(label, regexp)].
+        '''
+
+    def _build_single(self, regexp, label='label'):
+        return Regexp([Labelled(label, self._parser(regexp), self)], self) 
+       
 
 def make_str_parser(alphabet):
     '''
