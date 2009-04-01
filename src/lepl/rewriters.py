@@ -29,12 +29,18 @@ def clone(node, args, kargs):
     Clone including matcher-specific attributes.
     '''
     from lepl.graph import clone as old_clone
-    from lepl.matchers import Transformable
     copy = old_clone(node, args, kargs)
+    copy_standard_attributes(node, copy)
+    return copy
+
+def copy_standard_attributes(node, copy):
+    '''
+    Handle the additional attributes that matchers may have.
+    '''
+    from lepl.matchers import Transformable
     if isinstance(node, Transformable):
         copy.function = node.function
     copy.describe = node.describe 
-    return copy
 
 
 class DelayedClone(Visitor):    
@@ -113,8 +119,8 @@ def flatten(graph):
             new_args = []
             for arg in old_args:
                 if type(arg) is type(node) \
-                        and arg.function is _NULL_TRANSFORM \
-                        and node.function is _NULL_TRANSFORM:
+                        and arg.function.describe is _NULL_TRANSFORM \
+                        and node.function.describe is _NULL_TRANSFORM:
                     if attribute_name.startswith('*'):
                         new_args.extend(getattr(arg, attribute_name[1:]))
                     else:

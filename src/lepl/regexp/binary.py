@@ -48,7 +48,7 @@ class BinaryAlphabet(StrAlphabet):
         ''' 
         return c+1
     
-    def parse(self, c):
+    def from_char(self, c):
         c = int(c)
         assert c in (0, 1)
         return c

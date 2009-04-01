@@ -109,7 +109,7 @@ from lepl.parser import *
 from lepl.stream import *
 from lepl.manager import *
 from lepl.matchers import *
-from lepl.regexp.matchers import *
+from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.rewriters import *
 from lepl.trace import *
 

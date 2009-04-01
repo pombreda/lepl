@@ -36,7 +36,7 @@ class StrAlphabet(BaseAlphabet):
         super(StrAlphabet, self).__init__(min, max)
         self._escape = escape if escape else ''
         self._escaped = escaped if escaped else []
-        self._parser = make_str_parser(self)
+        self.__parser = make_str_parser(self)
     
     def _escape_text(self, text):
         '''
@@ -115,38 +115,17 @@ class StrAlphabet(BaseAlphabet):
     def join(self, chars):
         return ''.join(chars)
     
-    def parse(self, char):
+    def from_char(self, char):
         '''
         This must convert a single character.
         '''
         return char
-
-    def single_nfa_parser(self, regexp):
+    
+    def parse(self, regexp):
         '''
-        Generate a NFA-based parser for a single regular expression.
+        Generate a Sequence from the given text.
         '''
-        return self._build_single(regexp).nfa()
-        
-    def multiple_nfa_parser(self, regexps):
-        '''
-        Generate a NFA-based parser for a labelled list of regular expressions.  
-        The regexps argument has the form [(label, regexp)].
-        '''
-
-    def single_dfa_parser(self, regexp):
-        '''
-        Generate a DFA-based parser for a single regular expression.
-        '''
-        return self._build_single(regexp).dfa()
-        
-    def multiple_dfa_parser(self, regexps):
-        '''
-        Generate a DFA-based parser for a labelled list of regular expressions.  
-        The regexps argument has the form [(label, regexp)].
-        '''
-
-    def _build_single(self, regexp, label='label'):
-        return Regexp([Labelled(label, self._parser(regexp), self)], self) 
+        return self.__parser(regexp)
        
 
 def make_str_parser(alphabet):
@@ -169,8 +148,8 @@ def make_str_parser(alphabet):
     automatic escaping of given text easier.
     '''
     
-    dup = lambda x: (alphabet.parse(x), alphabet.parse(x))
-    tup = lambda x: (alphabet.parse(x[0]), alphabet.parse(x[1]))
+    dup = lambda x: (alphabet.from_char(x), alphabet.from_char(x))
+    tup = lambda x: (alphabet.from_char(x[0]), alphabet.from_char(x[1]))
     dot = lambda x: (alphabet.min, alphabet.max)
     invert = alphabet.invert
     sequence = lambda x: Sequence(x, alphabet)

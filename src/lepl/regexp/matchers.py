@@ -2,6 +2,7 @@
 
 from lepl.matchers import Transformable
 from lepl.parser import tagged
+from lepl.regexp.core import Regexp
 from lepl.regexp.unicode import UNICODE
 
 
@@ -9,9 +10,11 @@ class NfaRegexp(Transformable):
     
     def __init__(self, regexp, alphabet=UNICODE):
         super(NfaRegexp, self).__init__()
+        if isinstance(regexp, str):
+            regexp = Regexp.single(regexp, alphabet)
         self._arg(regexp=regexp)
         self._arg(alphabet=alphabet)
-        self.__matcher = alphabet.single_nfa_parser(regexp)
+        self.__matcher = regexp.nfa()
         
     def compose(self, transform):
         copy = NfaRegexp(self.regexp)
@@ -29,9 +32,11 @@ class DfaRegexp(Transformable):
     
     def __init__(self, regexp, alphabet=UNICODE):
         super(DfaRegexp, self).__init__()
+        if isinstance(regexp, str):
+            regexp = Regexp.single(regexp, alphabet)
         self._arg(regexp=regexp)
         self._arg(alphabet=alphabet)
-        self.__matcher = alphabet.single_dfa_parser(regexp)
+        self.__matcher = regexp.dfa()
         
     def compose(self, transform):
         copy = DfaRegexp(self.regexp)

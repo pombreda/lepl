@@ -245,6 +245,47 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
 
 _NULL_TRANSFORM = lambda r, i, o: (r, o)
 
+
+class Transformation(object):
+    '''
+    A transformation is a wrapper for a function that is applied by a 
+    `Transformable`.  As well as the function itself, an additional attribute,
+    called describe, records the composition of the function.  This allows
+    introspection of transformations.
+    
+    A Transformation takes three arguments (results, stream_in, stream_out)
+    and returns the tuple (results, stream_out).
+    '''
+    
+    def __init__(self, function=None, describe=None):
+        function = _NULL_TRANSFORM if function is None else function
+        self.function = function
+        self.describe = describe if describe else function
+        
+    def compose(self, transformation):
+        '''
+        Apply transformation to the results of this function.
+        '''
+        if self.function is _NULL_TRANSFORM:
+            return transformation
+        else:
+            def fun(results, stream_in, stream_out, 
+                    function1=self.function, function2=transformation.function):
+                (results, stream_out) = function1(results, stream_in, stream_out)
+                return function2(results, stream_in, stream_out)
+            describe = (transformation.describe, self.describe)
+            return Transformation(fun, describe)
+        
+    def __call__(self, results, stream_in, stream_out):
+        return self.function(results, stream_in, stream_out)
+        
+    def __str__(self):
+        return str(self.describe)
+        
+    def __repr__(self):
+        return repr(self.describe)
+        
+
 class Transformable(BaseMatcher):
     '''
     All subclasses invoke the function attribute on
@@ -252,23 +293,12 @@ class Transformable(BaseMatcher):
     This allows `Transform` instances to be merged directly.
     '''
 
-    def __init__(self, function=_NULL_TRANSFORM):
+    def __init__(self, function=Transformation()):
         super(Transformable, self).__init__()
+        if not isinstance(function, Transformation):
+            function = Transformation(function)
         self.function = function
 
-    def _compose(self, function):
-        '''
-        Generate the composition of the given function and the existing
-        function.
-        '''
-        if self.function is _NULL_TRANSFORM:
-            return function
-        else:
-            def fun(results, stream_in, stream_out, function1=self.function):
-                (results, stream_out) = function1(results, stream_in, stream_out)
-                return function(results, stream_in, stream_out)
-            return fun
-            
     def compose(self, transform):
         '''
         Combine with a transform, returning a new instance.
@@ -402,7 +432,7 @@ class _BaseCombiner(Transformable):
         Generate a new instance with the composed function from the Transform.
         '''
         copy = type(self)(*self.matchers)
-        copy.function = self._compose(transform.function)
+        copy.function = self.function.compose(transform.function)
         return copy
 
 
@@ -419,7 +449,6 @@ class And(_BaseCombiner):
         (result, stream) tuples).  Results from the different matchers are
         combined together as elements in a list.
         '''
-
         if self.matchers:
             stack = deque([([], self.matchers[0](stream_in), self.matchers[1:])])
             append = stack.append
@@ -567,7 +596,7 @@ class Literal(Transformable):
         Generate a new instance with the composed function from the Transform.
         '''
         copy = Literal(self.text)
-        copy.function = self._compose(transform.function)
+        copy.function = self.function.compose(transform.function)
         return copy
         
         
@@ -658,6 +687,8 @@ class Transform(Transformable):
         # it's ok that this overwrites the same thing from Transformable
         # (Transformable cannot have an argument because it is subclass to
         # matcher without explicit functions)
+        if not isinstance(function, Transformation):
+            function = Transformation(function)
         self._arg(function=function)
 
     @tagged
@@ -675,7 +706,7 @@ class Transform(Transformable):
             pass
         
     def compose(self, transform):
-        return Transform(self.matcher, self._compose(transform.function))
+        return Transform(self.matcher, self.function.compose(transform.function))
 
 
 class Regexp(BaseMatcher):
@@ -845,15 +876,13 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
 def Apply(matcher, function, raw=False, args=False):
     '''
     Apply an arbitrary function to the results of the matcher (**>**, **\***).
+    
+    Apply can be used via the standard operators by placing ``>`` 
+    (or ``*`` to set ``args=True``) to the right of a matcher.
 
-    The function should expect a list and can return any value (it should
-    return a list if ``raw=True``).
-
-    It can be used indirectly by placing ``>`` (or ``*`` to set ``args=True``)
-    to the right of the matcher.
-
-    The function will be applied to all the arguments (together), unless a
-    string is given, in which case named pairs will be created.
+    If the function is a `Transformation` it is used directly.  Otherwise
+    a `Transformation` is constructed via the `raw` and `args` parameters, 
+    as described below.
 
     **Note:** The creation of named pairs (when a string argument is
     used) behaves more like a mapping than a single function invocation.
@@ -875,24 +904,36 @@ def Apply(matcher, function, raw=False, args=False):
 
       function
         The modification to apply.
+        
+        If a `Transformation`, this is used directly.
+        
+        If a string is given, named pairs will be created (and raw and args
+        ignored).
+        
+        Otherwise the function should expect a list of results (unless 
+        ``args=True`` in which case the list is supplied as ``*args``)
+        and can return any value (unless ``raw=True`` in which case it should
+        return a list).
 
       raw
-        If false, no list will be added around the final result (default
-        is False because results should always be returned in a list).
+        If True the results are used directly.  Otherwise they are wrapped in
+        a list.  The default is False --- a list is added.
 
       args
-        If true, the results are passed to the function as separate
-        arguments (Python's '*args' behaviour) (default is False ---
+        If True, the results are passed to the function as separate
+        arguments (Python's '*args' behaviour).  The default is False ---
         the results are passed inside a list).
     '''
-    if isinstance(function, str):
-        function = lambda results, f=function: lmap(lambda x:(f, x), results)
-        raw = True
-    if not raw:
-        function = lambda results, f=function: [f(results)]
-    if args:
-        function = lambda results, f=function: f(*results)
-    function = lambda results, sin, sout, f=function: (f(results), sout)
+    if not isinstance(function, Transformation):
+        if isinstance(function, str):
+            function = lambda results, f=function: lmap(lambda x:(f, x), results)
+            raw = True
+            args = False
+        if not raw:
+            function = lambda results, f=function: [f(results)]
+        if args:
+            function = lambda results, f=function: f(*results)
+        function = lambda results, sin, sout, f=function: (f(results), sout)
     return Transform(matcher, function).tag('Apply')
 
 
@@ -1000,27 +1041,30 @@ def Map(matcher, function):
         return Apply(matcher, lambda l: list(map(function, l)), raw=True)
 
 
+
+def add(results, stream_in, stream_out):
+    if results:
+        result = results[0]
+        for extra in results[1:]:
+            try:
+                result = result + extra
+            except TypeError:
+                raise TypeError('An attempt was made to add two results '
+                                'that do not have consistent types: '
+                                '{0!r} + {1!r}'.format(result, extra))
+        result = [result]
+    else:
+        result = []
+    return (result, stream_out)
+
+
 def Add(matcher):
     '''
     Join tokens in the result using the "+" operator (**+**).
     This joins strings and merges lists.  
     It can be used indirectly by placing ``+`` between matchers.
     '''
-    def add(results):
-        if results:
-            result = results[0]
-            for extra in results[1:]:
-                try:
-                    result = result + extra
-                except TypeError:
-                    raise TypeError('An attempt was made to add two results '
-                                    'that do not have consistent types: '
-                                    '{0!r} + {1!r}'.format(result, extra))
-            result = [result]
-        else:
-            result = []
-        return result
-    return Apply(matcher, add, raw=True).tag('Add')
+    return Apply(matcher, Transformation(add)).tag('Add')
 
 
 def Drop(matcher):

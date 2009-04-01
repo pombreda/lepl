@@ -179,29 +179,9 @@ class BaseAlphabet(Alphabet):
         '''
         
     @abstractmethod
-    def single_nfa_parser(self, regexp):
+    def parse(self, regexp):
         '''
-        Generate a NFA-based parser for a single regular expression.
-        '''
-        
-    @abstractmethod
-    def multiple_nfa_parser(self, regexps):
-        '''
-        Generate a NFA-based parser for a labelled list of regular expressions.  
-        The regexps argument has the form [(label, regexp)].
-        '''
-
-    @abstractmethod
-    def single_dfa_parser(self, regexp):
-        '''
-        Generate a DFA-based parser for a single regular expression.
-        '''
-        
-    @abstractmethod
-    def multiple_dfa_parser(self, regexps):
-        '''
-        Generate a DFA-based parser for a labelled list of regular expressions.  
-        The regexps argument has the form [(label, regexp)].
+        Generate a Sequence from the given regexp text.
         '''
 
 
@@ -371,7 +351,16 @@ class Regexp(Choice):
         self.build(ngraph)
         dgraph = NfaToDfa(ngraph, self.alphabet).dfa
         return DfaCompiler(dgraph, self.alphabet).matcher
-        
+    
+    @staticmethod
+    def single(regexp, alphabet, label='label'):
+        '''
+        Generate an instance for a single expression or sequence.
+        '''
+        if isinstance(regexp, str):
+            regexp = alphabet.parse(regexp)
+        return Regexp([Labelled(label, regexp, alphabet)], alphabet) 
+
         
 class BaseGraph(LogMixin):
     '''
