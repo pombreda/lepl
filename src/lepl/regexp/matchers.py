@@ -10,11 +10,12 @@ class NfaRegexp(Transformable):
     
     def __init__(self, regexp, alphabet=UNICODE):
         super(NfaRegexp, self).__init__()
-        if isinstance(regexp, str):
+        if not isinstance(regexp, Regexp):
             regexp = Regexp.single(regexp, alphabet)
         self._arg(regexp=regexp)
         self._arg(alphabet=alphabet)
         self.__matcher = regexp.nfa()
+        self.tag(regexp)
         
     def compose(self, transform):
         copy = NfaRegexp(self.regexp)
@@ -32,11 +33,12 @@ class DfaRegexp(Transformable):
     
     def __init__(self, regexp, alphabet=UNICODE):
         super(DfaRegexp, self).__init__()
-        if isinstance(regexp, str):
+        if not isinstance(regexp, Regexp):
             regexp = Regexp.single(regexp, alphabet)
         self._arg(regexp=regexp)
         self._arg(alphabet=alphabet)
         self.__matcher = regexp.dfa()
+        self.tag(regexp)
         
     def compose(self, transform):
         copy = DfaRegexp(self.regexp)

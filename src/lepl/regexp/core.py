@@ -312,6 +312,7 @@ class Regexp(Choice):
     '''
     
     def __init__(self, children, alphabet):
+        print('regexp children', children)
         for child in children:
             assert isinstance(child, Labelled)
         super(Regexp, self).__init__(children, alphabet)
@@ -359,7 +360,7 @@ class Regexp(Choice):
         '''
         if isinstance(regexp, str):
             regexp = alphabet.parse(regexp)
-        return Regexp([Labelled(label, regexp, alphabet)], alphabet) 
+        return Regexp([Labelled(label, [regexp], alphabet)], alphabet) 
 
         
 class BaseGraph(LogMixin):

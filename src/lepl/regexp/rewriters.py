@@ -23,11 +23,15 @@ None).
 '''
 
 from itertools import count
+from traceback import format_exc
 
-from lepl.matchers import Any, Or, Add, add, Transformable, _NULL_TRANSFORM
-from lepl.regexp.core import Character, Choice
+from lepl.matchers \
+    import Any, Or, And, Add, add, Transformable, _NULL_TRANSFORM, Transform, \
+    Transformation
+from lepl.regexp.core import Choice, Sequence
+from lepl.regexp.interval import Character
 from lepl.regexp.matchers import NfaRegexp
-from lepl.rewriters import copy_standard_attributes
+from lepl.rewriters import copy_standard_attributes, clone, DelayedClone
 
 
 class RegexpContainer(object):
@@ -38,9 +42,9 @@ class RegexpContainer(object):
         self.tag = tag
 
     @staticmethod
-    def to_regexp(possible):
+    def to_regexp(possible, tag=None):
         if isinstance(possible, RegexpContainer):
-            if possible.tag:
+            if possible.tag != tag:
                 raise Tagged(possible.tag)
             else:
                 return possible.regexp
@@ -55,18 +59,24 @@ class RegexpContainer(object):
             return possible
         
     @staticmethod
-    def build(node, regexp):
+    def build(node, regexp, alphabet):
         '''
         If the node is a Transformable with a Transformation then we must
         stop at this point.
         '''
-        matcher = Regexp.single(regexp)
-        copy_standard_attributes(node, matcher)
+        matcher = single(node, regexp, alphabet)
+        print(matcher.describe)
         if isinstance(node, Transformable) \
                 and node.function.describe is not _NULL_TRANSFORM:
             return matcher
         else:
             return RegexpContainer(matcher, regexp)
+        
+
+def single(node, regexp, alphabet):
+    matcher = NfaRegexp(regexp, alphabet)
+    copy_standard_attributes(node, matcher, describe=False)
+    return matcher
 
         
 class Unsuitable(Exception):
@@ -76,7 +86,7 @@ class Tagged(Unsuitable):
     pass
 
 
-[_TAG_ADD_REQUIRED] = count()
+[_TAG_ADD_REQUIRED] = range(1)
 
 
 def make_clone(alphabet, old_clone):
@@ -95,7 +105,8 @@ def make_clone(alphabet, old_clone):
             regexp = Character([(alphabet.min, alphabet.max)], alphabet)
         else:
             regexp = Character(((char, char) for char in restrict), alphabet)
-        return RegexpContainer.build(regexp)
+        regexp = Sequence([regexp], alphabet)
+        return RegexpContainer.build(node, regexp, alphabet)
         
     def clone_or(orignal, node, *matchers):
         '''
@@ -103,9 +114,10 @@ def make_clone(alphabet, old_clone):
         regular expressions.
         '''
         try:
-            regexp = Choice(RegexpContainer.to_regexp(matcher) 
-                            for matcher in matchers)
-            return RegexpContainer.build(regexp)
+            regexp = Choice((RegexpContainer.to_regexp(matcher) 
+                             for matcher in matchers), alphabet)
+            print(regexp)
+            return RegexpContainer.build(node, regexp, alphabet)
         except Unsuitable:
             return original
 
@@ -116,20 +128,49 @@ def make_clone(alphabet, old_clone):
         an add transform is present.
         '''
         try:
-            regexp = Sequence(RegexpContainer.to_regexp(matcher) 
-                              for matcher in matchers)
+            regexp = Sequence((RegexpContainer.to_regexp(matcher) 
+                               for matcher in matchers), alphabet)
             if node.function.describe is add:
-                # TODO (also, Any)
-            return RegexpContainer.build(regexp)
+                # we can abuse original here, since it is discarded
+                original.function = Transformation()
+                return RegexpContainer(single(original, regexp, alphabet), 
+                                       regexp)
+            elif node.function.describe is _NULL_TRANSFORM:
+                return RegexpContainer(original, regexp, _TAG_ADD_REQUIRED)
+            else:
+                return original
         except Unsuitable:
             return original
     
-    # need to support repeat, literal, etc
+    def clone_transform(original, node, matcher, function, raw=False, args=False):
+        '''
+        We can assume that function is a transformation.  The null 
+        transformation has no effect on a regular expression; add joins into
+        a sequence.
+        '''
+        assert isinstance(function, Transformation)
+        try:
+            print('**********', matcher)
+            regexp = RegexpContainer.to_regexp(matcher, tag=_TAG_ADD_REQUIRED) 
+            print('transform', regexp, function.describe)
+            if function.describe is add:
+                return single(node, regexp, alphabet)
+            elif function.describe is _NULL_TRANSFORM:
+                return RegexpContainer(original, regexp, _TAG_ADD_REQUIRED)
+            else:
+                return original
+        except Unsuitable:
+            return original
+    
+    # TODO - need to support repeat, literal, etc
 
-    map = {Any: clone_any, Or: clone_or, And: clone_and}
+    map = {Any: clone_any, 
+           Or: clone_or, 
+           And: clone_and,
+           Transform: clone_transform}
     
     def clone(node, args, kargs):
-        original_args = [RegexpContainer.to_matcher(arg) for arg in arks]
+        original_args = [RegexpContainer.to_matcher(arg) for arg in args]
         original_kargs = dict((name, RegexpContainer.to_matcher(kargs[name]))
                               for name in kargs)
         original = old_clone(node, original_args, original_kargs)
@@ -141,9 +182,12 @@ def make_clone(alphabet, old_clone):
 
     return clone
 
-    def build(regexp, function=None):
-        # may want to switch between nfa and dfa here
-        # this expects regeexp to be text.  just changed force below for object
-        matcher = NfaRegexp(regexp, alphabet)
-        matcher.function = function
-        return matcher
+
+def regexp_rewriter(alphabet):
+    def rewriter(graph):
+        new_clone = make_clone(alphabet, clone)
+        graph = graph.postorder(DelayedClone(new_clone))
+        if isinstance(graph, RegexpContainer):
+            graph = graph.matcher
+        return graph 
+    return rewriter
