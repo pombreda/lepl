@@ -18,15 +18,19 @@ class NfaRegexp(Transformable):
         self.tag(regexp)
         
     def compose(self, transform):
+        return self.compose_transformation(transform.function)
+    
+    def compose_transformation(self, transformation):
         copy = NfaRegexp(self.regexp)
-        copy.function = self._compose(transform.function)
+        copy.function = self.function.compose(transformation)
         return copy
+        
     
     @tagged
-    def __call__(self, stream0):
-        matches = self.__matcher(stream0)
-        for (terminal, match, stream1) in matches:
-            yield ([match], stream1)
+    def __call__(self, stream_in):
+        matches = self.__matcher(stream_in)
+        for (terminal, match, stream_out) in matches:
+            yield self.function([match], stream_in, stream_out)
 
 
 class DfaRegexp(Transformable):
@@ -42,13 +46,13 @@ class DfaRegexp(Transformable):
         
     def compose(self, transform):
         copy = DfaRegexp(self.regexp)
-        copy.function = self._compose(transform.function)
+        copy.function = self.function.compose(transform.function)
         return copy
     
     @tagged
-    def __call__(self, stream0):
-        results = self.__matcher(stream0)
+    def __call__(self, stream_in):
+        results = self.__matcher(stream_in)
         if results:
-            (terminals, match, stream1) = results
-            yield ([match], stream1)
+            (terminals, match, stream_out) = results
+            yield self.function([match], stream_in, stream_out)
 

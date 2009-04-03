@@ -242,6 +242,24 @@ class Option(Sequence):
         graph.connect(before, after)
     
 
+class Empty(Sequence):
+    '''
+    Matches an empty sequence.
+    '''
+    
+    def __init__(self, alphabet):
+        super(Empty, self).__init__([], alphabet)
+    
+    def _build_str(self):
+        return self.alphabet.fmt_sequence([])
+    
+    def build(self, graph, before, after):
+        '''
+        Connect directly from start to end.
+        '''
+        graph.connect(before, after)
+    
+
 class Repeat(Sequence):
     '''
     A sequence of Characters (or sequences) that can repeat 0 or more times.
@@ -312,7 +330,6 @@ class Regexp(Choice):
     '''
     
     def __init__(self, children, alphabet):
-        print('regexp children', children)
         for child in children:
             assert isinstance(child, Labelled)
         super(Regexp, self).__init__(children, alphabet)
@@ -360,7 +377,9 @@ class Regexp(Choice):
         '''
         if isinstance(regexp, str):
             regexp = alphabet.parse(regexp)
-        return Regexp([Labelled(label, [regexp], alphabet)], alphabet) 
+        else:
+            regexp = [regexp]
+        return Regexp([Labelled(label, regexp, alphabet)], alphabet) 
 
         
 class BaseGraph(LogMixin):

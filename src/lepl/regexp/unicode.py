@@ -22,8 +22,9 @@ A regexp implementation for unicode strings.
 
 from sys import maxunicode
 
+from lepl.matchers import add
 from lepl.regexp.core import Regexp, Labelled
-from lepl.regexp.str import StrAlphabet, make_str_parser
+from lepl.regexp.str import StrAlphabet
 
 
 class UnicodeAlphabet(StrAlphabet):
@@ -54,26 +55,4 @@ class UnicodeAlphabet(StrAlphabet):
 
 
 UNICODE = UnicodeAlphabet()
-
-
-__compiled_unicode_parser = make_str_parser(UNICODE)
-'''
-Cache the parser to allow efficient re-use.
-'''
-
-def unicode_single_parser(label, text):
-    '''
-    Parse a Unicode regular expression, returning the associated Regexp.
-    '''
-    return Regexp([Labelled(label, __compiled_unicode_parser(text), UNICODE)], 
-                  UNICODE)
-
-
-def unicode_parser(*regexps):
-    '''
-    Parse a set of Unicode regular expressions, returning the associated Regexp.
-    '''
-    return Regexp([Labelled(label, __compiled_unicode_parser(text), UNICODE)
-                   for (label, text) in regexps], UNICODE)
-
 
