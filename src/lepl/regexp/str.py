@@ -21,10 +21,11 @@ Some intermediate classes that support parsers for objects that can be
 converted to strings using str().
 '''
 
-from lepl.matchers import Drop, Any, Lookahead, AnyBut, Literal, Delayed, Eos
 from lepl.regexp.core \
     import BaseAlphabet, Character, Sequence, Choice, Repeat, Option, \
     Regexp, Labelled
+from lepl.parser import Configuration
+
 
 
 class StrAlphabet(BaseAlphabet):
@@ -148,6 +149,9 @@ def make_str_parser(alphabet):
     automatic escaping of given text easier.
     '''
     
+    # Avoid dependency loops
+    from lepl.matchers import Drop, Any, Lookahead, AnyBut, Literal, Delayed, Eos
+    
     dup = lambda x: (alphabet.from_char(x), alphabet.from_char(x))
     tup = lambda x: (alphabet.from_char(x[0]), alphabet.from_char(x[1]))
     dot = lambda x: (alphabet.min, alphabet.max)
@@ -185,6 +189,9 @@ def make_str_parser(alphabet):
     item    += alts | group | star | opt
     
     expr     = (char | item)[:] & Drop(Eos())
-    parser = expr.string_parser()
+
+    # Empty config here avoids loops if the default config includes
+    # references to alphabets
+    parser = expr.string_parser(config=Configuration())
     return lambda text: parser(text)
 

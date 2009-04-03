@@ -4,7 +4,11 @@ from unittest import TestCase
 from logging import basicConfig, DEBUG, getLogger
 from lepl import *
 from lepl.regexp.core import NfaGraph, NfaToDfa, Regexp
-from lepl.regexp.unicode import *
+from lepl.regexp.unicode import UnicodeAlphabet
+
+
+UNICODE = UnicodeAlphabet.instance()
+
 
 def _test_parser(regexp):
     return Regexp.single(regexp, UNICODE, 'label')

@@ -22,7 +22,6 @@ A regexp implementation for unicode strings.
 
 from sys import maxunicode
 
-from lepl.matchers import add
 from lepl.regexp.core import Regexp, Labelled
 from lepl.regexp.str import StrAlphabet
 
@@ -31,6 +30,8 @@ class UnicodeAlphabet(StrAlphabet):
     '''
     An alphabet for unicode strings.
     '''
+    
+    __cached_instance = None
     
     def __init__(self):
         try:
@@ -52,7 +53,9 @@ class UnicodeAlphabet(StrAlphabet):
         max (assuming input data are in range).
         ''' 
         return chr(ord(c)+1)
-
-
-UNICODE = UnicodeAlphabet()
-
+    
+    @classmethod
+    def instance(cls):
+        if cls.__cached_instance is None:
+            cls.__cached_instance = UnicodeAlphabet()
+        return cls.__cached_instance

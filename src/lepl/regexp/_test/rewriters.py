@@ -4,7 +4,10 @@ from unittest import TestCase
 
 from lepl import *
 from lepl.regexp.rewriters import regexp_rewriter
-from lepl.regexp.unicode import UNICODE
+from lepl.regexp.unicode import UnicodeAlphabet
+
+
+UNICODE = UnicodeAlphabet.instance()
 
 
 class RewriteTest(TestCase):
@@ -35,14 +38,12 @@ class RewriteTest(TestCase):
     def test_literal(self):
         rx = Literal('abc')
         matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
-        print(matcher.matcher.describe)
         results = list(matcher('abcd'))
         assert results == [(['abc'], 'd')], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
         rx = Literal('abc') >> (lambda x: x+'e')
         matcher = rx.null_matcher(Configuration(rewriters=[compose_transforms,
                                                            regexp_rewriter(UNICODE)]))
-        print(matcher.matcher.describe)
         results = list(matcher('abcd'))
         assert results == [(['abce'], 'd')], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
@@ -56,7 +57,6 @@ class RewriteTest(TestCase):
         results = list(matcher('abcd'))
         assert results == expected, results
         matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
-        print(matcher.matcher.describe)
         results = list(matcher('abcd'))
         assert results == expected, results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
@@ -65,7 +65,6 @@ class RewriteTest(TestCase):
 #        basicConfig(level=DEBUG)
         rx = Literal('foo') | (Literal('ba') + Any('a')[1:,...])
         matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
-        print(matcher.matcher.describe)
         results = list(matcher('foo'))
         assert results == [(['foo'], '')], results
         results = list(matcher('baaaaax'))

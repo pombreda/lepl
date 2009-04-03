@@ -45,6 +45,8 @@ from lepl.node import Node, raise_error
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
 from lepl.parser import Configuration, make_parser, make_matcher, tagged
+from lepl.regexp.rewriters import regexp_rewriter
+from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.rewriters import flatten, auto_memoize, compose_transforms
 from lepl.stream import Stream
 from lepl.trace import TraceResults
@@ -56,6 +58,8 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     '''
     A base class that provides support to all matchers.
     '''
+    
+    __default_config = None
 
     def __init__(self):
         super(BaseMatcher, self).__init__()
@@ -225,8 +229,8 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         '''
         return self.null_matcher(config)(stream)
 
-    
-    def default_config(self):
+    @classmethod
+    def default_config(cls):
         '''
         Generate a default configuration instance.  Currently this flattens
         nested `And()` and `Or()` instances;
@@ -237,9 +241,11 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         not limit generators (which can be flushed using the 
         `Commit()` matcher).
         '''
-        return Configuration(
-            rewriters=[flatten, compose_transforms, auto_memoize()],
-            monitors=[TraceResults(False)])
+        if cls.__default_config is None:
+            cls.__default_config = Configuration(
+                        rewriters=[flatten, compose_transforms, auto_memoize()],
+                        monitors=[TraceResults(False)])
+        return cls.__default_config
 #        return Configuration()
     
 

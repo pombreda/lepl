@@ -3,13 +3,20 @@
 from lepl.matchers import Transformable
 from lepl.parser import tagged
 from lepl.regexp.core import Regexp
-from lepl.regexp.unicode import UNICODE
+from lepl.regexp.unicode import UnicodeAlphabet
 
 
 class NfaRegexp(Transformable):
+    '''
+    A matcher for NFA-based regular expressions.  This will yield alternative
+    matches.
     
-    def __init__(self, regexp, alphabet=UNICODE):
+    Typically used only in specialised situations (see `Regexp`).
+    '''
+    
+    def __init__(self, regexp, alphabet=None):
         super(NfaRegexp, self).__init__()
+        alphabet = UnicodeAlphabet() if alphabet is None else alphabet
         if not isinstance(regexp, Regexp):
             regexp = Regexp.single(regexp, alphabet)
         self._arg(regexp=regexp)
@@ -34,9 +41,16 @@ class NfaRegexp(Transformable):
 
 
 class DfaRegexp(Transformable):
+    '''
+    A matcher for DFA-based regular expressions.  This yields a single greedy
+    match.
     
-    def __init__(self, regexp, alphabet=UNICODE):
+    Typically used only in specialised situations (see `Regexp`).
+    '''
+    
+    def __init__(self, regexp, alphabet=None):
         super(DfaRegexp, self).__init__()
+        alphabet = UnicodeAlphabet() if alphabet is None else alphabet
         if not isinstance(regexp, Regexp):
             regexp = Regexp.single(regexp, alphabet)
         self._arg(regexp=regexp)

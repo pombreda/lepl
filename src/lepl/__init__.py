@@ -110,6 +110,8 @@ from lepl.stream import *
 from lepl.manager import *
 from lepl.matchers import *
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
+from lepl.regexp.rewriters import regexp_rewriter
+from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.rewriters import *
 from lepl.trace import *
 
@@ -196,6 +198,10 @@ __all__ = [
         # regexp.matchers
         'NfaRegexp',
         'DfaRegexp',
+        # regexp.rewriters
+        'regexp_rewriter',
+        # regexp.unicode
+        'UnicodeAlphabet',
         # rewriters
         'memoize',
         'flatten',

@@ -2,7 +2,10 @@
 from unittest import TestCase
 
 from lepl.regexp.interval import IntervalMap, TaggedFragments, Character
-from lepl.regexp.unicode import UNICODE
+from lepl.regexp.unicode import UnicodeAlphabet
+
+
+UNICODE = UnicodeAlphabet.instance()
 
 
 class IntervalMapTest(TestCase):

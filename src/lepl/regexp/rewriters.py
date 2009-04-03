@@ -26,16 +26,17 @@ from itertools import count
 from logging import getLogger
 from traceback import format_exc
 
-from lepl.matchers \
-    import Any, Or, And, Add, add, Transformable, _NULL_TRANSFORM, Transform, \
-    Transformation, Literal, DepthFirst, Apply
 from lepl.regexp.core import Choice, Sequence, Repeat, Option, Empty
-from lepl.regexp.interval import Character
 from lepl.regexp.matchers import NfaRegexp
+from lepl.regexp.interval import Character
 from lepl.rewriters import copy_standard_attributes, clone, DelayedClone
 
 
 class RegexpContainer(object):
+    '''
+    The container referred to above, which carries a regular expression and
+    an alternative matcher "up the tree" during rewriting.
+    '''
     
     def __init__(self, matcher, regexp, tag=None):
         self.matcher = matcher
@@ -65,6 +66,7 @@ class RegexpContainer(object):
         If the node is a Transformable with a Transformation then we must
         stop at this point.
         '''
+        from lepl.matchers import Transformable, _NULL_TRANSFORM
         matcher = single(node, regexp, alphabet)
         if isinstance(node, Transformable) \
                 and node.function.describe is not _NULL_TRANSFORM:
@@ -74,12 +76,23 @@ class RegexpContainer(object):
         
 
 def single(node, regexp, alphabet):
+    '''
+    Create a matcher for the given regular expression.
+    '''
+    # avoid dependency loops
+    from lepl.matchers import Transformation
     matcher = NfaRegexp(regexp, alphabet)
     copy_standard_attributes(node, matcher, describe=False)
     return matcher.compose_transformation(Transformation(empty_adapter))
 
 
 def empty_adapter(results, sin, sout):
+    '''
+    There is a fundamental mis-match between regular expressions and the 
+    recursive descent parser on how empty matchers are handled.  The main 
+    parser uses empty lists; regexp uses an empty string.  This is a hack
+    that converts from one to the other.  I do not see a better solution.
+    '''
     if results == ['']:
         results = []
     return (results, sout)
@@ -92,6 +105,8 @@ class Tagged(Unsuitable):
     pass
 
 
+# tag(s) used to indicate that a possible regexp has assumed something from
+# parent nodes (if this is not met we must use the original matcher)
 _TAG_ADD_REQUIRED = 1
 
 
@@ -101,6 +116,11 @@ def make_clone(alphabet, old_clone):
     # reproduce the normal argument list of the matcher being cloned.
     # they should return either a container or a matcher.
     
+    # Avoid dependency loops
+    from lepl.matchers \
+        import Any, Or, And, Add, add, Transformable, _NULL_TRANSFORM, \
+        Transform, Transformation, Literal, DepthFirst, Apply
+
     LOG = getLogger('lepl.regexp.rewriters.make_clone')
     
     def clone_any(orignal, node, restrict=None):
