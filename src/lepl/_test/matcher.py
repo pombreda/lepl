@@ -49,29 +49,29 @@ class StrTest(TestCase):
          DepthFirst(
           Any(restrict='0123456789'), 1, None, 
           rest=Any(restrict='0123456789')), 
-         <function <lambda> at 0x9e05a0>), 
-        <function <lambda> at 0x9e0af0>), 
+         [<function add at 0xa28d10>]), 
+        [<function <lambda> at 0xac5c00>]), 
        And(
         And(
          Literal('('), 
          Transform(
           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          <function <lambda> at 0x9e09e0>), 
+          [<function add at 0xa28d10>]), 
          Delayed(matcher=<loop>)), 
         Transform(
          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-         <function <lambda> at 0x9e0d10>), 
+         [<function add at 0xa28d10>]), 
         Literal(')'))), 
-      <function <lambda> at 0x9e0e20>), 
+      [<function <lambda> at 0xac5848>]), 
      Transform(
       DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-      <function <lambda> at 0xa16270>), 
+      [<function add at 0xa28d10>]), 
      DepthFirst(
       And(
-       Transform(Any(restrict='*/'), <function <lambda> at 0x9e0738>), 
+       Transform(Any(restrict='*/'), [<function <lambda> at 0xc2c050>]), 
        Transform(
         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        <function <lambda> at 0x9e0c88>), 
+        [<function add at 0xa28d10>]), 
        Transform(
         Or(
          Transform(
@@ -79,26 +79,26 @@ class StrTest(TestCase):
            DepthFirst(
             Any(restrict='0123456789'), 1, None, 
             rest=Any(restrict='0123456789')), 
-           <function <lambda> at 0x9e05a0>), 
-          <function <lambda> at 0x9e0af0>), 
+           [<function add at 0xa28d10>]), 
+          [<function <lambda> at 0xac5c00>]), 
          And(
           And(
            Literal('('), 
            Transform(
             DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            <function <lambda> at 0x9e09e0>), 
+            [<function add at 0xa28d10>]), 
            Delayed(matcher=<loop>)), 
           Transform(
            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           <function <lambda> at 0x9e0d10>), 
+           [<function add at 0xa28d10>]), 
           Literal(')'))), 
-        <function <lambda> at 0x9e0e20>)), 
+        [<function <lambda> at 0xac5848>])), 
       0, None, 
       rest=And(
-       Transform(Any(restrict='*/'), <function <lambda> at 0x9e0738>), 
+       Transform(Any(restrict='*/'), [<function <lambda> at 0xc2c050>]), 
        Transform(
         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        <function <lambda> at 0x9e0c88>), 
+        [<function add at 0xa28d10>]), 
        Transform(
         Or(
          Transform(
@@ -106,31 +106,31 @@ class StrTest(TestCase):
            DepthFirst(
             Any(restrict='0123456789'), 1, None, 
             rest=Any(restrict='0123456789')), 
-           <function <lambda> at 0x9e05a0>), 
-          <function <lambda> at 0x9e0af0>), 
+           [<function add at 0xa28d10>]), 
+          [<function <lambda> at 0xac5c00>]), 
          And(
           And(
            Literal('('), 
            Transform(
             DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            <function <lambda> at 0x9e09e0>), 
+            [<function add at 0xa28d10>]), 
            Delayed(matcher=<loop>)), 
           Transform(
            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           <function <lambda> at 0x9e0d10>), 
+           [<function add at 0xa28d10>]), 
           Literal(')'))), 
-        <function <lambda> at 0x9e0e20>)))), 
-    <function <lambda> at 0xa162f8>), 
+        [<function <lambda> at 0xac5848>])))), 
+    [<function <lambda> at 0xc2c270>]), 
    Transform(
     DepthFirst(
      Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-    <function <lambda> at 0xa16628>), 
+    [<function add at 0xa28d10>]), 
    DepthFirst(
     And(
-     Transform(Any(restrict='+-'), <function <lambda> at 0xa160d8>), 
+     Transform(Any(restrict='+-'), [<function <lambda> at 0xc2c380>]), 
      Transform(
       DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-      <function <lambda> at 0xa161e8>), 
+      [<function add at 0xa28d10>]), 
      Transform(
       And(
        Transform(
@@ -140,29 +140,29 @@ class StrTest(TestCase):
            DepthFirst(
             Any(restrict='0123456789'), 1, None, 
             rest=Any(restrict='0123456789')), 
-           <function <lambda> at 0x9e05a0>), 
-          <function <lambda> at 0x9e0af0>), 
+           [<function add at 0xa28d10>]), 
+          [<function <lambda> at 0xac5c00>]), 
          And(
           And(
            Literal('('), 
            Transform(
             DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            <function <lambda> at 0x9e09e0>), 
+            [<function add at 0xa28d10>]), 
            Delayed(matcher=<loop>)), 
           Transform(
            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           <function <lambda> at 0x9e0d10>), 
+           [<function add at 0xa28d10>]), 
           Literal(')'))), 
-        <function <lambda> at 0x9e0e20>), 
+        [<function <lambda> at 0xac5848>]), 
        Transform(
         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        <function <lambda> at 0xa16270>), 
+        [<function add at 0xa28d10>]), 
        DepthFirst(
         And(
-         Transform(Any(restrict='*/'), <function <lambda> at 0x9e0738>), 
+         Transform(Any(restrict='*/'), [<function <lambda> at 0xc2c050>]), 
          Transform(
           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          <function <lambda> at 0x9e0c88>), 
+          [<function add at 0xa28d10>]), 
          Transform(
           Or(
            Transform(
@@ -170,28 +170,28 @@ class StrTest(TestCase):
              DepthFirst(
               Any(restrict='0123456789'), 1, None, 
               rest=Any(restrict='0123456789')), 
-             <function <lambda> at 0x9e05a0>), 
-            <function <lambda> at 0x9e0af0>), 
+             [<function add at 0xa28d10>]), 
+            [<function <lambda> at 0xac5c00>]), 
            And(
             And(
              Literal('('), 
              Transform(
               DepthFirst(
                Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              <function <lambda> at 0x9e09e0>), 
+              [<function add at 0xa28d10>]), 
              Delayed(matcher=<loop>)), 
             Transform(
              DepthFirst(
               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             <function <lambda> at 0x9e0d10>), 
+             [<function add at 0xa28d10>]), 
             Literal(')'))), 
-          <function <lambda> at 0x9e0e20>)), 
+          [<function <lambda> at 0xac5848>])), 
         0, None, 
         rest=And(
-         Transform(Any(restrict='*/'), <function <lambda> at 0x9e0738>), 
+         Transform(Any(restrict='*/'), [<function <lambda> at 0xc2c050>]), 
          Transform(
           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          <function <lambda> at 0x9e0c88>), 
+          [<function add at 0xa28d10>]), 
          Transform(
           Or(
            Transform(
@@ -199,30 +199,30 @@ class StrTest(TestCase):
              DepthFirst(
               Any(restrict='0123456789'), 1, None, 
               rest=Any(restrict='0123456789')), 
-             <function <lambda> at 0x9e05a0>), 
-            <function <lambda> at 0x9e0af0>), 
+             [<function add at 0xa28d10>]), 
+            [<function <lambda> at 0xac5c00>]), 
            And(
             And(
              Literal('('), 
              Transform(
               DepthFirst(
                Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              <function <lambda> at 0x9e09e0>), 
+              [<function add at 0xa28d10>]), 
              Delayed(matcher=<loop>)), 
             Transform(
              DepthFirst(
               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             <function <lambda> at 0x9e0d10>), 
+             [<function add at 0xa28d10>]), 
             Literal(')'))), 
-          <function <lambda> at 0x9e0e20>)))), 
-      <function <lambda> at 0xa162f8>)), 
+          [<function <lambda> at 0xac5848>])))), 
+      [<function <lambda> at 0xc2c270>])), 
     0, None, 
     rest=And(
      Transform(
-      Any(restrict='+-'), <function <lambda> at 0xa160d8>), 
+      Any(restrict='+-'), [<function <lambda> at 0xc2c380>]), 
      Transform(
       DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-      <function <lambda> at 0xa161e8>), 
+      [<function add at 0xa28d10>]), 
      Transform(
       And(
        Transform(
@@ -232,29 +232,29 @@ class StrTest(TestCase):
            DepthFirst(
             Any(restrict='0123456789'), 1, None, 
             rest=Any(restrict='0123456789')), 
-           <function <lambda> at 0x9e05a0>), 
-          <function <lambda> at 0x9e0af0>), 
+           [<function add at 0xa28d10>]), 
+          [<function <lambda> at 0xac5c00>]), 
          And(
           And(
            Literal('('), 
            Transform(
             DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            <function <lambda> at 0x9e09e0>), 
+            [<function add at 0xa28d10>]), 
            Delayed(matcher=<loop>)), 
           Transform(
            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           <function <lambda> at 0x9e0d10>), 
+           [<function add at 0xa28d10>]), 
           Literal(')'))), 
-        <function <lambda> at 0x9e0e20>), 
+        [<function <lambda> at 0xac5848>]), 
        Transform(
         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        <function <lambda> at 0xa16270>), 
+        [<function add at 0xa28d10>]), 
        DepthFirst(
         And(
-         Transform(Any(restrict='*/'), <function <lambda> at 0x9e0738>), 
+         Transform(Any(restrict='*/'), [<function <lambda> at 0xc2c050>]), 
          Transform(
           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          <function <lambda> at 0x9e0c88>), 
+          [<function add at 0xa28d10>]), 
          Transform(
           Or(
            Transform(
@@ -262,28 +262,28 @@ class StrTest(TestCase):
              DepthFirst(
               Any(restrict='0123456789'), 1, None, 
               rest=Any(restrict='0123456789')), 
-             <function <lambda> at 0x9e05a0>), 
-            <function <lambda> at 0x9e0af0>), 
+             [<function add at 0xa28d10>]), 
+            [<function <lambda> at 0xac5c00>]), 
            And(
             And(
              Literal('('), 
              Transform(
               DepthFirst(
                Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              <function <lambda> at 0x9e09e0>), 
+              [<function add at 0xa28d10>]), 
              Delayed(matcher=<loop>)), 
             Transform(
              DepthFirst(
               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             <function <lambda> at 0x9e0d10>), 
+             [<function add at 0xa28d10>]), 
             Literal(')'))), 
-          <function <lambda> at 0x9e0e20>)), 
+          [<function <lambda> at 0xac5848>])), 
         0, None, 
         rest=And(
-         Transform(Any(restrict='*/'), <function <lambda> at 0x9e0738>), 
+         Transform(Any(restrict='*/'), [<function <lambda> at 0xc2c050>]), 
          Transform(
           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          <function <lambda> at 0x9e0c88>), 
+          [<function add at 0xa28d10>]), 
          Transform(
           Or(
            Transform(
@@ -291,24 +291,24 @@ class StrTest(TestCase):
              DepthFirst(
               Any(restrict='0123456789'), 1, None, 
               rest=Any(restrict='0123456789')), 
-             <function <lambda> at 0x9e05a0>), 
-            <function <lambda> at 0x9e0af0>), 
+             [<function add at 0xa28d10>]), 
+            [<function <lambda> at 0xac5c00>]), 
            And(
             And(
              Literal('('), 
              Transform(
               DepthFirst(
                Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              <function <lambda> at 0x9e09e0>), 
+              [<function add at 0xa28d10>]), 
              Delayed(matcher=<loop>)), 
             Transform(
              DepthFirst(
               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             <function <lambda> at 0x9e0d10>), 
+             [<function add at 0xa28d10>]), 
             Literal(')'))), 
-          <function <lambda> at 0x9e0e20>)))), 
-      <function <lambda> at 0xa162f8>)))), 
-  <function <lambda> at 0x9e4160>))''')
+          [<function <lambda> at 0xac5848>])))), 
+      [<function <lambda> at 0xc2c270>])))), 
+  [<function <lambda> at 0xc2c490>]))''')
         
     def test_simple(self):
         expression  = Delayed()
@@ -321,16 +321,16 @@ class StrTest(TestCase):
   Transform(
    DepthFirst(
     Any(restrict='0123456789'), 1, None, rest=Any(restrict='0123456789')), 
-   <function <lambda> at 0x9e4c00>), 
+   [<function add at 0xa4ed10>]), 
   And(
    And(
     Literal('('), 
     Transform(
      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-     <function <lambda> at 0x9e4958>), 
+     [<function add at 0xa4ed10>]), 
     Delayed(matcher=<loop>)), 
    Transform(
     DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-    <function <lambda> at 0x9e47c0>), 
+    [<function add at 0xa4ed10>]), 
    Literal(')'))))''')
  

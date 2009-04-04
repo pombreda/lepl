@@ -136,9 +136,9 @@ class MultipleMonitors(MonitorInterface):
     Combine several monitors into one.
     '''
     
-    def __init__(self, monitors=None):
+    def __init__(self, monitors):
         super(MonitorInterface, self).__init__()
-        self._monitors = [] if monitors is None else monitors
+        self._monitors = [monitor() for monitor in monitors]
         
     def append(self, monitor):
         self._monitors.append(monitor)

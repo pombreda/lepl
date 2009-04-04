@@ -102,6 +102,7 @@ Running this gives the result::
              `- ')'
 '''
 
+from lepl.config import Configuration
 from lepl.memo import * 
 from lepl.node import *
 from lepl.operators import * 
@@ -116,6 +117,8 @@ from lepl.rewriters import *
 from lepl.trace import *
 
 __all__ = [
+        # config
+        'Configuration',
         # match
         'Empty',
         'Repeat',

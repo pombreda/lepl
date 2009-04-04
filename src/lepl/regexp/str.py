@@ -24,7 +24,7 @@ converted to strings using str().
 from lepl.regexp.core \
     import BaseAlphabet, Character, Sequence, Choice, Repeat, Option, \
     Regexp, Labelled
-from lepl.parser import Configuration
+from lepl.config import Configuration
 
 
 

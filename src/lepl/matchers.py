@@ -38,16 +38,14 @@ from re import compile
 from sys import version
 from traceback import print_exc
 
+from lepl.config import Configuration
 from lepl.graph \
     import ArgAsAttributeMixin, PostorderWalkerMixin, ConstructorStr, GraphStr
 from lepl.manager import GeneratorManager
 from lepl.node import Node, raise_error
 from lepl.operators \
     import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
-from lepl.parser import Configuration, make_parser, make_matcher, tagged
-from lepl.regexp.rewriters import regexp_rewriter
-from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.rewriters import flatten, auto_memoize, compose_transforms
+from lepl.parser import make_parser, make_matcher, tagged
 from lepl.stream import Stream
 from lepl.trace import TraceResults
 from lepl.support import assert_type, lmap, LogMixin
@@ -84,7 +82,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         internally and returns a single result.
         '''
         return make_parser(self, Stream.from_file, 
-                           config if config else self.default_config())
+                           config if config else Configuration.default())
     
     def list_parser(self, config=None):
         '''
@@ -92,7 +90,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         internally and returns a single result.
         '''
         return make_parser(self, Stream.from_list, 
-                           config if config else self.default_config())
+                           config if config else Configuration.default())
     
     def path_parser(self, config=None):
         '''
@@ -100,7 +98,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         internally and returns a single result.
         '''
         return make_parser(self, Stream.from_path, 
-                           config if config else self.default_config())
+                           config if config else Configuration.default())
     
     def string_parser(self, config=None):
         '''
@@ -108,7 +106,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         internally and returns a single result.
         '''
         return make_parser(self, Stream.from_string, 
-                           config if config else self.default_config())
+                           config if config else Configuration.default())
     
     def null_parser(self, config=None):
         '''
@@ -116,7 +114,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         (this does not use streams).
         '''
         return make_parser(self, Stream.null, 
-                           config if config else self.default_config())
+                           config if config else Configuration.default())
     
     def parse_file(self, file, config=None):
         '''
@@ -160,7 +158,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         and uses a `Stream()` internally.
         '''
         return make_matcher(self, Stream.from_file, 
-                            config if config else self.default_config())
+                            config if config else Configuration.default())
     
     def list_matcher(self, config=None):
         '''
@@ -168,7 +166,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         and uses a `Stream()` internally.
         '''
         return make_matcher(self, Stream.from_list, 
-                            config if config else self.default_config())
+                            config if config else Configuration.default())
     
     def path_matcher(self, config=None):
         '''
@@ -176,7 +174,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         and uses a `Stream()` internally.
         '''
         return make_matcher(self, Stream.from_path, 
-                            config if config else self.default_config())
+                            config if config else Configuration.default())
     
     def string_matcher(self, config=None):
         '''
@@ -184,7 +182,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         and uses a `Stream()` internally.
         '''
         return make_matcher(self, Stream.from_string, 
-                            config if config else self.default_config())
+                            config if config else Configuration.default())
 
     def null_matcher(self, config=None):
         '''
@@ -192,7 +190,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         equence of matches (this does not use streams).
         '''
         return make_matcher(self, Stream.null, 
-                            config if config else self.default_config())
+                            config if config else Configuration.default())
 
     def match_file(self, file, config=None):
         '''
@@ -228,25 +226,6 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         (this does not use streams).
         '''
         return self.null_matcher(config)(stream)
-
-    @classmethod
-    def default_config(cls):
-        '''
-        Generate a default configuration instance.  Currently this flattens
-        nested `And()` and `Or()` instances;
-        adds memoisation (which allows left recursion, but may alter the order 
-        in which matches are returned for ambiguous grammars);
-        supports tracing (which is initially disabled, but can be enabled
-        using the `Trace()` matcher); and tracks but does
-        not limit generators (which can be flushed using the 
-        `Commit()` matcher).
-        '''
-        if cls.__default_config is None:
-            cls.__default_config = Configuration(
-                        rewriters=[flatten, compose_transforms, auto_memoize()],
-                        monitors=[TraceResults(False)])
-        return cls.__default_config
-#        return Configuration()
     
 
 _NULL_TRANSFORM = lambda r, i, o: (r, o)
@@ -254,42 +233,50 @@ _NULL_TRANSFORM = lambda r, i, o: (r, o)
 
 class Transformation(object):
     '''
-    A transformation is a wrapper for a function that is applied by a 
-    `Transformable`.  As well as the function itself, an additional attribute,
-    called describe, records the composition of the function.  This allows
-    introspection of transformations.
+    A transformation is a wrapper for a series of functions that are applied
+    to a result. 
     
-    A Transformation takes three arguments (results, stream_in, stream_out)
+    A function takes three arguments (results, stream_in, stream_out)
     and returns the tuple (results, stream_out).
     '''
     
-    def __init__(self, function=None, describe=None):
-        function = _NULL_TRANSFORM if function is None else function
-        self.function = function
-        self.describe = describe if describe else function
+    def __init__(self, functions=None):
+        '''
+        We accept wither a list of a functions or a single value.
+        '''
+        functions = [] if functions is None else functions
+        if not isinstance(functions, list):
+            functions = [functions]
+        self.functions = functions
         
     def compose(self, transformation):
         '''
         Apply transformation to the results of this function.
         '''
-        if self.function is _NULL_TRANSFORM:
-            return transformation
+        functions = list(self.functions)
+        functions.extend(transformation.functions)
+        if functions == self.functions:
+            return self
         else:
-            def fun(results, stream_in, stream_out, 
-                    function1=self.function, function2=transformation.function):
-                (results, stream_out) = function1(results, stream_in, stream_out)
-                return function2(results, stream_in, stream_out)
-            describe = (transformation.describe, self.describe)
-            return Transformation(fun, describe)
-        
+            return Transformation(functions)
+
     def __call__(self, results, stream_in, stream_out):
-        return self.function(results, stream_in, stream_out)
+        for function in self.functions:
+            (results, stream_out) = function(results, stream_in, stream_out)
+        return (results, stream_out)
         
     def __str__(self):
-        return str(self.describe)
+        return str(self.functions)
         
     def __repr__(self):
-        return repr(self.describe)
+        return repr(self.functions)
+    
+    def __bool__(self):
+        return bool(self.functions)
+    
+    # Python 2.6
+    def __nonzero__(self):
+        return self.__bool__()
         
 
 class Transformable(BaseMatcher):

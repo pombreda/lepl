@@ -119,8 +119,8 @@ def flatten(graph):
             new_args = []
             for arg in old_args:
                 if type(arg) is type(node) \
-                        and arg.function.describe is _NULL_TRANSFORM \
-                        and node.function.describe is _NULL_TRANSFORM:
+                        and not arg.function \
+                        and not node.function:
                     if attribute_name.startswith('*'):
                         new_args.extend(getattr(arg, attribute_name[1:]))
                     else:

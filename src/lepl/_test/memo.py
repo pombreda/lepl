@@ -18,7 +18,7 @@ class MemoTest(TestCase):
         
         p = string_matcher(seq, 
                 Configuration(rewriters=[memoize(RMemo)], 
-                              monitors=[TraceResults(True)]))
+                              monitors=[lambda: TraceResults(True)]))
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
@@ -35,7 +35,7 @@ class MemoTest(TestCase):
         
         p = seq.null_matcher(
                 Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[TraceResults(True)]))
+                              monitors=[lambda: TraceResults(True)]))
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
@@ -52,7 +52,7 @@ class MemoTest(TestCase):
         
         p = seq.string_matcher(
                 Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[TraceResults(True)]))
+                              monitors=[lambda: TraceResults(True)]))
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
@@ -69,7 +69,7 @@ class MemoTest(TestCase):
         
         p = string_matcher(seq, 
                 Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[TraceResults(True)]))
+                              monitors=[lambda: TraceResults(True)]))
         results = list(p('abcdef'))
         assert len(results) == 6, len(results)
         assert results[0][0] == ['a'], results[0][0]
@@ -102,7 +102,7 @@ class MemoTest(TestCase):
     
         p = string_matcher(sentence, 
                 Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[TraceResults(False)]))
+                              monitors=[lambda: TraceResults(False)]))
         
         count = 0
         for meaning in p('every boy or some girl and helen and john or pat knows '

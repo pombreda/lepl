@@ -29,6 +29,7 @@ def naturalLanguage():
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
     p = sentence.null_matcher(Configuration(rewriters=[auto_memoize(False)]))
+    #p = sentence.null_matcher(Configuration.dfa())
 #    print(p.matcher)
     assert len(list(p('every boy or some girl and helen and john or pat knows '
                       'and respects or loves every boy or some girl and pat or '
@@ -49,6 +50,8 @@ def time():
     # So not worth making RMemo transformable(!)
     # Seem to be back at 27 for auto_memoize(False) after fixing bugs
     # and slightly worse (28) for auto_memoize(True)
+    # DFA (and so NFA) makes things slower (40)
+    # (expected - converting literal to FSA)
     
 
 def profile():

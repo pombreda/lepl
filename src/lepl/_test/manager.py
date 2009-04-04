@@ -2,9 +2,10 @@
 from logging import basicConfig, DEBUG
 from unittest import TestCase
 
+from lepl.config import Configuration
 from lepl.manager import GeneratorManager
 from lepl.matchers import *
-from lepl.parser import string_matcher, Configuration
+from lepl.parser import string_matcher
 from lepl.support import LogMixin
 
 
@@ -34,7 +35,7 @@ class LimitedDepthTest(LogMixin, TestCase):
             queue_len = index * multiplier
             matcher = string_matcher(
                         Literal('*')[::direcn,...][n_match] & Eos(),
-                        Configuration(monitors=[GeneratorManager(queue_len)]))
+                        Configuration(monitors=[lambda: GeneratorManager(queue_len)]))
             self.assert_count(matcher, queue_len, index, results[index])
             
     def assert_count(self, matcher, queue_len, index, count):
@@ -45,7 +46,7 @@ class LimitedDepthTest(LogMixin, TestCase):
     def test_single(self):
         basicConfig(level=DEBUG)
         matcher = string_matcher(Literal('*')[:,...][3],
-                                 Configuration(monitors=[GeneratorManager(queue_len=5)]))('*' * 4)
+                                 Configuration(monitors=[lambda: GeneratorManager(queue_len=5)]))('*' * 4)
         results = list(matcher)
 #        print(results)
         

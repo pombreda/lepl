@@ -61,27 +61,26 @@ class RegexpContainer(object):
             return possible
         
     @staticmethod
-    def build(node, regexp, alphabet):
+    def build(node, regexp, alphabet, matcher_type=NfaRegexp):
         '''
         If the node is a Transformable with a Transformation then we must
         stop at this point.
         '''
         from lepl.matchers import Transformable, _NULL_TRANSFORM
-        matcher = single(node, regexp, alphabet)
-        if isinstance(node, Transformable) \
-                and node.function.describe is not _NULL_TRANSFORM:
+        matcher = single(node, regexp, alphabet, matcher_type)
+        if isinstance(node, Transformable) and node.function:
             return matcher
         else:
             return RegexpContainer(matcher, regexp)
         
 
-def single(node, regexp, alphabet):
+def single(node, regexp, alphabet, matcher_type=NfaRegexp):
     '''
     Create a matcher for the given regular expression.
     '''
     # avoid dependency loops
     from lepl.matchers import Transformation
-    matcher = NfaRegexp(regexp, alphabet)
+    matcher = matcher_type(regexp, alphabet)
     copy_standard_attributes(node, matcher, describe=False)
     return matcher.compose_transformation(Transformation(empty_adapter))
 
@@ -110,7 +109,7 @@ class Tagged(Unsuitable):
 _TAG_ADD_REQUIRED = 1
 
 
-def make_clone(alphabet, old_clone):
+def make_clone(alphabet, old_clone, matcher_type):
     
     # clone functions below take the "standard" clone and the node, and then
     # reproduce the normal argument list of the matcher being cloned.
@@ -135,7 +134,7 @@ def make_clone(alphabet, old_clone):
             char = Character(((char, char) for char in restrict), alphabet)
         LOG.debug('Any: cloned {0}'.format(char))
         regexp = Sequence([char], alphabet)
-        return RegexpContainer.build(node, regexp, alphabet)
+        return RegexpContainer.build(node, regexp, alphabet, matcher_type)
         
     def clone_or(original, node, *matchers):
         '''
@@ -147,7 +146,7 @@ def make_clone(alphabet, old_clone):
             regexp = Choice((RegexpContainer.to_regexp(matcher) 
                              for matcher in matchers), alphabet)
             LOG.debug('Or: cloned {0}'.format(regexp))
-            return RegexpContainer.build(node, regexp, alphabet)
+            return RegexpContainer.build(node, regexp, alphabet, matcher_type)
         except Unsuitable:
             LOG.debug('Or not rewritten: {0!r}'.format(original))
             return original
@@ -164,9 +163,9 @@ def make_clone(alphabet, old_clone):
             regexp = Sequence((RegexpContainer.to_regexp(matcher) 
                                for matcher in matchers), alphabet)
             LOG.debug('And: cloning {0}'.format(regexp))
-            if node.function.describe is add:
+            if len(node.function.functions) > 0 and node.function.functions[0] is add:
                 # we can abuse original here, since it is discarded
-                original.function = Transformation()
+                original.function = Transformation(node.function.functions[1:])
                 LOG.debug('And: OK')
                 return RegexpContainer(single(original, regexp, alphabet), 
                                        regexp)
@@ -174,7 +173,8 @@ def make_clone(alphabet, old_clone):
                 LOG.debug('And: add required')
                 return RegexpContainer(original, regexp, _TAG_ADD_REQUIRED)
             else:
-                LOG.debug('And: wrong transformation: {0!r}'.format(original))
+                LOG.debug('And: wrong transformation: {0!r}'.format(
+                            original.function.describe))
                 return original
         except Unsuitable:
             LOG.debug('And: not rewritten: {0!r}'.format(original))
@@ -190,9 +190,9 @@ def make_clone(alphabet, old_clone):
         try:
             regexp = RegexpContainer.to_regexp(matcher, tag=_TAG_ADD_REQUIRED)
             LOG.debug('Transform: cloning {0}'.format(regexp))
-            if function.describe is add:
+            if len(function.functions) > 0 and function.functions[0] is add:
                 # we can abuse original here, since it is discarded
-                original.function = Transformation()
+                original.function = Transformation(function.functions[1:])
                 LOG.debug('Transform: OK')
                 return RegexpContainer(single(original, regexp, alphabet),
                                        regexp)
@@ -215,25 +215,31 @@ def make_clone(alphabet, old_clone):
         chars = [Character([(c, c)], alphabet) for c in text]
         regexp = Sequence(chars, alphabet)
         LOG.debug('Literal: cloned {0}'.format(regexp))
-        return RegexpContainer.build(node, regexp, alphabet)
+        return RegexpContainer.build(node, regexp, alphabet, matcher_type)
     
     def clone_dfs(original, node, first, start, stop, rest=None):
         '''
-        We only convert DFS if start=0 or 1, stop=None and first and rest are
-        both regexps.
+        We only convert DFS if start=0 or 1, stop=1 or None and first and 
+        rest are both regexps.
         '''
         assert not isinstance(node, Transformable)
         try:
-            if start not in (0, 1) or stop is not None:
+            if start not in (0, 1) or stop not in (1, None):
                 raise Unsuitable()
             first = RegexpContainer.to_regexp(first)
             rest = RegexpContainer.to_regexp(rest)
             # we need to be careful here to get the depth first bit right
-            regexp = Sequence([first, Repeat([rest], alphabet)], alphabet)
-            if start == 0:
-                regexp = Choice([regexp, Empty(alphabet)], alphabet)
+            if stop is None:
+                regexp = Sequence([first, Repeat([rest], alphabet)], alphabet)
+                if start == 0:
+                    regexp = Choice([regexp, Empty(alphabet)], alphabet)
+            else:
+                regexp = first
+                if start == 0:
+                    regexp = Choice([regexp, Empty(alphabet)], alphabet)
             LOG.debug('DFS: cloned {0}'.format(regexp))
-            return RegexpContainer(original, regexp, _TAG_ADD_REQUIRED)
+            return RegexpContainer(original, regexp, 
+                                   _TAG_ADD_REQUIRED if stop is None else None)
         except Unsuitable:
             LOG.debug('DFS: not rewritten: {0!r}'.format(original))
             return original
@@ -259,9 +265,12 @@ def make_clone(alphabet, old_clone):
     return clone
 
 
-def regexp_rewriter(alphabet):
+def regexp_rewriter(alphabet, matcher=NfaRegexp):
+    '''
+    Create a rewriter that uses the given alphabet and matcher.
+    '''
     def rewriter(graph):
-        new_clone = make_clone(alphabet, clone)
+        new_clone = make_clone(alphabet, clone, matcher)
         graph = graph.postorder(DelayedClone(new_clone))
         if isinstance(graph, RegexpContainer):
             graph = graph.matcher

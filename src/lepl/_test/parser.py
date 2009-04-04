@@ -4,7 +4,7 @@ from types import MethodType
 from unittest import TestCase
 
 from lepl import *
-from lepl.parser import string_parser, string_matcher, Configuration
+from lepl.parser import string_parser, string_matcher
 from lepl.support import LogMixin
 
 

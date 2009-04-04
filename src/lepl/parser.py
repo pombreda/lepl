@@ -95,31 +95,6 @@ class GeneratorWrapper(object):
         return self.describe
         
 
-class Configuration(object):
-    '''
-    Encapsulate various parameters that describe how the matchers are
-    rewritten and evaluated.
-    '''
-    
-    def __init__(self, rewriters=None, monitors=None):
-        '''
-        `rewriters` Are functions that take and return a matcher tree.  They
-        can add memoisation, restructure the tree, etc.  They are applied left
-        to right.
-        
-        `monitors` Subclasses of `MonitorInterface` that will be
-        invoked by `trampoline()`.  Multiple values are combined into a single 
-        monitor.
-        '''
-        self.rewriters = [] if rewriters is None else rewriters 
-        if not monitors:
-            self.monitor = None
-        elif len(monitors) == 1:
-            self.monitor = monitors[0]
-        else:
-            self.monitor = MultipleMonitors(monitors)
-            
-        
 def trampoline(main, monitor=None):
     '''
     The main parser loop.  Evaluates matchers as coroutines.
@@ -188,24 +163,24 @@ def trampoline(main, monitor=None):
             monitor.pop(pop())
                     
                 
-def prepare(matcher, stream, conf):
+def prepare(matcher, stream, config):
     '''
     Rewrite the matcher and prepare the input for a parser.
     '''
-    for rewriter in conf.rewriters:
+    for rewriter in config.rewriters:
         matcher = rewriter(matcher)
-    parser = lambda arg: trampoline(matcher(stream(arg)), monitor=conf.monitor)
+    parser = lambda arg: trampoline(matcher(stream(arg)), monitor=config.monitor)
     parser.matcher = matcher
     return parser
 
 
-def make_parser(matcher, stream, conf):
+def make_parser(matcher, stream, config):
     '''
     Make a parser.  This takes a matcher node, a stream constructor, and a 
     configuration, and return a function that takes an input and returns a
     *single* parse.
     '''
-    matcher = prepare(matcher, stream, conf)
+    matcher = prepare(matcher, stream, config)
     def single(arg):
         try:
             return next(matcher(arg))[0]
@@ -215,82 +190,82 @@ def make_parser(matcher, stream, conf):
     return single
 
     
-def make_matcher(matcher, stream, conf):
+def make_matcher(matcher, stream, config):
     '''
     Similar to `make_parser`, but constructs a function that returns a 
     generator that provides a sequence of matches.
     '''
-    return prepare(matcher, stream, conf)
+    return prepare(matcher, stream, config)
 
     
-def file_parser(matcher, conf):
+def file_parser(matcher, config):
     '''
     Construct a parser for file objects that returns a single match and
     uses a `Stream()` internally.
     '''
-    return make_parser(matcher, Stream.from_file, conf)
+    return make_parser(matcher, Stream.from_file, config)
 
-def list_parser(matcher, conf):
+def list_parser(matcher, config):
     '''
     Construct a parser for lists that returns a single match and uses a 
     `Stream()` internally.
     '''
-    return make_parser(matcher, Stream.from_list, conf)
+    return make_parser(matcher, Stream.from_list, config)
 
-def path_parser(matcher, conf):
+def path_parser(matcher, config):
     '''
     Construct a parser for a file that returns a single match and uses a 
     `Stream()` internally.
     '''
-    return make_parser(matcher, Stream.from_path, conf)
+    return make_parser(matcher, Stream.from_path, config)
 
-def string_parser(matcher, conf):
+def string_parser(matcher, config):
     '''
     Construct a parser for strings that returns a single match and uses a 
     `Stream()` internally.
     '''
-    return make_parser(matcher, Stream.from_string, conf)
+    return make_parser(matcher, Stream.from_string, config)
 
-def null_parser(matcher, conf):
+def null_parser(matcher, config):
     '''
     Construct a parser for strings and lists returns a single match
     (this does not use streams).
     '''
-    return make_parser(matcher, Stream.null, conf)
+    return make_parser(matcher, Stream.null, config)
 
 
-def file_matcher(matcher, conf):
+def file_matcher(matcher, config):
     '''
     Construct a parser that returns a sequence of matches for file objects 
     and uses a `Stream()` internally.
     '''
-    return make_matcher(matcher, Stream.from_file, conf)
+    return make_matcher(matcher, Stream.from_file, config)
 
-def list_matcher(matcher, conf):
+def list_matcher(matcher, config):
     '''
     Construct a parser that returns a sequence of matches for lists 
     and uses a `Stream()` internally.
     '''
-    return make_matcher(matcher, Stream.from_list, conf)
+    return make_matcher(matcher, Stream.from_list, config)
 
-def path_matcher(matcher, conf):
+def path_matcher(matcher, config):
     '''
     Construct a parser that returns a sequence of matches for a file
     and uses a `Stream()` internally.
     '''
-    return make_matcher(matcher, Stream.from_path, conf)
+    return make_matcher(matcher, Stream.from_path, config)
 
-def string_matcher(matcher, conf):
+def string_matcher(matcher, config):
     '''
     Construct a parser that returns a sequence of matches for strings 
     and uses a `Stream()` internally.
     '''
-    return make_matcher(matcher, Stream.from_string, conf)
+    return make_matcher(matcher, Stream.from_string, config)
 
-def null_matcher(matcher, conf):
+def null_matcher(matcher, config):
     '''
     Construct a parser that returns a sequence of matches for strings
     and lists (this does not use streams).
     '''
-    return make_matcher(matcher, Stream.null, conf)
+    return make_matcher(matcher, Stream.null, config)
 
