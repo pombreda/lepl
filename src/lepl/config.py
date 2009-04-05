@@ -35,6 +35,8 @@ class Configuration(object):
     __managed = None
     __nfa = None
     __dfa = None
+    __nfa_basic = None
+    __dfa_basic = None
     
     def __init__(self, rewriters=None, monitors=None):
         '''
@@ -89,7 +91,7 @@ class Configuration(object):
                 Configuration(
                     rewriters=[flatten, compose_transforms, auto_memoize()],
                     monitors=[lambda: TraceResults(False), 
-                              lambda: GeneratorManager()])
+                              lambda: GeneratorManager(queue_len=0)])
         return cls.__managed
     
     @classmethod
@@ -135,5 +137,4 @@ class Configuration(object):
                                compose_transforms, auto_memoize()],
                     monitors=[lambda: TraceResults(False)])
         return cls.__dfa
-    
     

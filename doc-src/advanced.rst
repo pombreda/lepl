@@ -186,10 +186,16 @@ Rewriting as Regular Expressions
   <api/redirect.html#lepl.matchers.Literal>`_) with regular expressions so the
   function `regexp_rewriter()
   <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ takes a ``use``
-  parameter.  When his parameter is ``False`` regular expressions are only
+  parameter.  When this parameter is ``False`` regular expressions are only
   used if they are part of a matcher tree that includes repetition.  This is
   the case for the provided configurations above, so they can be used without
   worrying that they may slow down parsers.
+
+  There are various restrictions about which matchers can be translated to
+  regular expressions.  The most important are that regular expressions cannot
+  include recursive loops or transformations.  So rewriting of regular
+  expressions is typically restricted to those parts of the parser that
+  recognise individual words.
   
 
 .. index:: search, backtracking .. _backtracking:
