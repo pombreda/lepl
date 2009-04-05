@@ -198,7 +198,8 @@ Rewriting as Regular Expressions
   recognise individual words.
   
 
-.. index:: search, backtracking .. _backtracking:
+.. index:: search, backtracking
+.. _backtracking:
 
 Search and Backtracking
 -----------------------

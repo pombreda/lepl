@@ -97,17 +97,6 @@ We can see how this works with the simple generators `Word()
 
 Hopefully you can see the result and the remaining stream in both cases.
 
-.. warning::
-
-   In LEPL 1.0 the examples above called the matcher directly instead of using
-   the ``match`` method (eg. ``Integer()('123 four five')``).  This change was
-   necessary because matchers now use a "trampoline" for evaluation (see ...).
-   Calling ``match`` automatically invokes the trampoline so that you see the
-   final result.
-
-   (You don't need to understand the explanation above!  It's enough to know
-   that the method you call has changed.)
-
 We can make a more complicated matcher from these by joining them together
 with `And() <api/redirect.html#lepl.And>`_::
 

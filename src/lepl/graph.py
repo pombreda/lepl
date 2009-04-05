@@ -81,9 +81,9 @@ def dfs_edges(node, type_=SimpleGraphNode):
     Returns forward and reverse edges.  Also returns root node in correct 
     order for pre- (FORWARD) and post- (BACKWARD) ordering.
 
-    type_ selects which values returned by children() are returned as nodes.
-    These do not have to provide children() themselves (if they do not,
-    they are flagged with LEAF).
+    ``type_`` selects which values returned by ``children()`` are returned 
+    as nodes.  These do not have to provide ``children()`` themselves 
+    (if they do not, they are flagged with LEAF).
     '''
     while isinstance(node, type_):
         try:
@@ -391,9 +391,9 @@ class Visitor(object):
     '''
     The interface required by the walkers.
     
-    'loop' is value returned when a node is re-visited.
+    ``loop`` is value returned when a node is re-visited.
     
-    'type_' is set with the node type before constructor() is called.  This
+    ``type_`` is set with the node type before constructor() is called.  This
     allows constructor() itself to be invoked with the Python arguments used to
     construct the original graph.
     '''

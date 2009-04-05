@@ -115,9 +115,10 @@ class ExposedMonitor(MonitorInterface):
     
     Generators can interact with monitors if:
     
-    1 - The monitor extends this class
-    2 - The matcher has a monitor_class attribute whose value is equal to (or a 
-        subclass of) the monitor class it will interact with
+      1. The monitor extends this class
+    
+      2. The matcher has a monitor_class attribute whose value is equal to (or a 
+         subclass of) the monitor class it will interact with
     '''
     
     def push(self, generator):

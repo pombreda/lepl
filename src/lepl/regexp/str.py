@@ -135,15 +135,21 @@ def make_str_parser(alphabet):
     
     We need a clear policy on backslashes.  To be as backwards compatible as
     possible I am going with:
-    0 - "Escaping" means prefixing with \.
-    1 - These characters are special: [, ], -, \, (, ), *, ?, ., +, ^, $, |.
-    2 - Special characters (ie literal, or unescaped special characters) may 
-        not have a meaning currently, or may only have a meaning in certain 
-        contexts.
-    2 - To use a special character literally, it must be escaped.
-    3 - If a special character is used without an escape, in a context
-        where it doesn't have a meaning, then it is an error.
-    4 - If a non-special character is escaped, that is also an error.
+    
+      0. "Escaping" means prefixing with \.
+
+      1. These characters are special: [, ], -, \, (, ), *, ?, ., +, ^, $, |.
+
+      2. Special characters (ie literal, or unescaped special characters) may 
+         not have a meaning currently, or may only have a meaning in certain 
+         contexts.
+
+      3. To use a special character literally, it must be escaped.
+
+      4. If a special character is used without an escape, in a context
+         where it doesn't have a meaning, then it is an error.
+
+      5. If a non-special character is escaped, that is also an error.
     
     This is not the same as the Python convention, but I believe it makes
     automatic escaping of given text easier.

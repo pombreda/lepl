@@ -91,7 +91,7 @@ During the application of left--recursive grammars a matcher may be called with
 the same stream, but within different contexts (eg. consider ``a = Optional(a)
 & b``, where each repeated call to ``a`` is from an additional "step down").
 
-.. note::
+.. warning::
 
    Without memoisation left recursion will cause an infinite loop and crash the
    program.

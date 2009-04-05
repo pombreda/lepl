@@ -60,8 +60,8 @@ def dfa_only():
         Configuration(rewriters=[
             regexp_rewriter(UnicodeAlphabet.instance(), False, DfaRegexp)]))
 
-def parse_multiple(parser, count=NUMBER):
-    for i in range(count):
+def parse_multiple(parser):
+    for i in range(NUMBER):
         parser('1.23e4 + 2.34e5 * (3.45e6 + 4.56e7 - 5.67e8)')[0]
 
 def parse_default(): parse_multiple(default())
