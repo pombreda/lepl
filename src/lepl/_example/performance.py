@@ -6,7 +6,7 @@ from timeit import repeat
 from lepl import *
 from lepl._example.support import Example
 
-NUMBER = 100
+NUMBER = 30
 REPEAT = 3
 
 def build(config):
@@ -80,21 +80,31 @@ def time(number, name):
     setup = 'from __main__ import {0}'.format(name)
     return min(repeat(stmt, setup, number=number, repeat=REPEAT))
 
-def analyse(func):
+def analyse(func, time1_base=None, time2_base=None):
     collect()
     name = func.__name__
     time1 = time(NUMBER, name)
     time2 = time(1, 'parse_' + name)
-    print('{0:>20s} {1:5.2f} {2:5.2f}'.format(name, time1, time2))
+    print('{0:>20s} {1:5.2f} {2:7s}  {3:5.2f} {4:7s}'.format(name, 
+            time1, normalize(time1, time1_base), 
+            time2, normalize(time2, time2_base)))
+    return (time1, time2)
+
+def normalize(time, base):
+    if base:
+        return '({0:5.2f})'.format(time / base)
+    else:
+        return ''
 
 def main():
-    print('{0:d} iterations; total time in s\n'.format(NUMBER))
+    print('{0:d} iterations; total time in s (best of {1:d})\n'.format(
+            NUMBER, REPEAT))
+    (time1, time2) = analyse(basic)
     for config in [default, managed, nfa, dfa]:
-        analyse(config)
+        analyse(config, time1, time2)
     print()
-    for config in [basic, trace_only, manage_only,
-                   memo_only, nfa_only, dfa_only]:
-        analyse(config)
+    for config in [trace_only, manage_only, memo_only, nfa_only, dfa_only]:
+        analyse(config, time1, time2)
 
 if __name__ == '__main__':
     main()
