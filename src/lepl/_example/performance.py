@@ -1,13 +1,13 @@
 
 from gc import collect
 from logging import basicConfig, DEBUG, INFO
-from timeit import repeat
+from timeit import timeit
 
 from lepl import *
 from lepl._example.support import Example
 
 NUMBER = 30
-REPEAT = 3
+REPEAT = 5
 
 def build(config):
     
@@ -78,13 +78,20 @@ def parse_dfa_only(): parse_multiple(dfa_only())
 def time(number, name):
     stmt = '{0}()'.format(name)
     setup = 'from __main__ import {0}'.format(name)
-    return min(repeat(stmt, setup, number=number, repeat=REPEAT))
+    return timeit(stmt, setup, number=number)
 
 def analyse(func, time1_base=None, time2_base=None):
-    collect()
+    '''
+    We do our own repeating so we can GC between attempts
+    '''
     name = func.__name__
-    time1 = time(NUMBER, name)
-    time2 = time(1, 'parse_' + name)
+    (time1, time2) = ([], [])
+    for i in range(REPEAT):
+        collect()
+        time1.append(time(NUMBER, name))
+        collect()
+        time2.append(time(1, 'parse_' + name))
+    (time1, time2) = (min(time1), min(time2))
     print('{0:>20s} {1:5.2f} {2:7s}  {3:5.2f} {4:7s}'.format(name, 
             time1, normalize(time1, time1_base), 
             time2, normalize(time2, time2_base)))
