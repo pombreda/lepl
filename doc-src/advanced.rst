@@ -173,13 +173,23 @@ Rewriting as Regular Expressions
   <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ rewriter
   attempts to replace matchers with a regular expression.  This gives a
   significant increase in efficiency if the parser matches complex strings
-  (for example, `Float() <api/redirect.html#lepl.matchers.Float>`_), but is an
-  overhead for fast, simple matchers like `Literal()
-  <api/redirect.html#lepl.matchers.Literal>`_).  It is not used by default but
-  can be selected with `Configuration.nfa()
+  (for example, `Float() <api/redirect.html#lepl.matchers.Float>`_).
+
+  It is not used by default 
+  because it requires the data being matcher to be a particular type, but
+  for Unicode text it can be selected with `Configuration.nfa()
   <api/redirect.html#lepl.config.Configuration.nfa>`_ or `Configuration.dfa()
   <api/redirect.html#lepl.config.Configuration.dfa>`_ (the latter only gives a
   single, greedy match and so may change the results for ambiguous grammars).
+
+  It makes little sense to replace efficient, simple matchers like `Literal()
+  <api/redirect.html#lepl.matchers.Literal>`_) with regular expressions so the
+  function `regexp_rewriter()
+  <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ takes a ``use``
+  parameter.  When his parameter is ``False`` regular expressions are only
+  used if they are part of a matcher tree that includes repetition.  This is
+  the case for the provided configurations above, so they can be used without
+  worrying that they may slow down parsers.
   
 
 .. index:: search, backtracking .. _backtracking:

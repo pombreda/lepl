@@ -38,15 +38,11 @@ class RewriteTest(TestCase):
     def test_literal(self):
         rx = Literal('abc')
         matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
-        # a single Literal is *not* translated
-        assert not isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
-        
-        rx = Literal('abc') | Literal('x')
-        matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
         results = list(matcher('abcd'))
         assert results == [(['abc'], 'd')], results
         
-        rx = (Literal('abc') | Literal('x')) >> (lambda x: x+'e')
+        rx = Literal('abc') >> (lambda x: x+'e')
         matcher = rx.null_matcher(Configuration(rewriters=[compose_transforms,
                                                            regexp_rewriter(UNICODE)]))
         results = list(matcher('abcd'))
@@ -67,7 +63,7 @@ class RewriteTest(TestCase):
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
     
     def test_complex(self):
-#        basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         rx = Literal('foo') | (Literal('ba') + Any('a')[1:,...])
         matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
         results = list(matcher('foo'))

@@ -97,6 +97,8 @@ class Configuration(object):
         '''
         Rewrite fragments of the matcher graph as regular expressions.
         This uses a pushdown automaton and should return all possible matches.
+        
+        Note - this assumes that the value being parsed is Unicode text.
         '''
         if cls.__nfa is None:
             from lepl.regexp.rewriters import regexp_rewriter
@@ -106,7 +108,7 @@ class Configuration(object):
             cls.__nfa = \
                 Configuration(
                     rewriters=[flatten, compose_transforms,
-                               regexp_rewriter(UnicodeAlphabet.instance()),
+                               regexp_rewriter(UnicodeAlphabet.instance(), False),
                                compose_transforms, auto_memoize()],
                     monitors=[lambda: TraceResults(False)])
         return cls.__nfa
@@ -117,6 +119,8 @@ class Configuration(object):
         Rewrite fragments of the matcher graph as regular expressions.
         This uses a finite automaton and returns only the greediest match,
         so may produce changed results with ambiguous parsers.
+        
+        Note - this assumes that the value being parsed is Unicode text.
         '''
         if cls.__dfa is None:
             from lepl.regexp.matchers import DfaRegexp
@@ -127,7 +131,7 @@ class Configuration(object):
             cls.__dfa = \
                 Configuration(
                     rewriters=[flatten, compose_transforms,
-                               regexp_rewriter(UnicodeAlphabet.instance(), DfaRegexp),
+                               regexp_rewriter(UnicodeAlphabet.instance(), False, DfaRegexp),
                                compose_transforms, auto_memoize()],
                     monitors=[lambda: TraceResults(False)])
         return cls.__dfa

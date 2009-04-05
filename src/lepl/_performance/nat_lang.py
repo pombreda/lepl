@@ -28,18 +28,26 @@ def naturalLanguage():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    #p = sentence.null_matcher(Configuration(rewriters=[auto_memoize(False)]))
-    p = sentence.null_matcher(Configuration.dfa())
-#    print(p.matcher)
-    assert len(list(p('every boy or some girl and helen and john or pat knows '
-                      'and respects or loves every boy or some girl and pat or '
-                      'john and helen'))) == 392  
+    p = sentence.null_matcher(Configuration(rewriters=[auto_memoize(False)]))
+    #p = sentence.null_matcher(Configuration.dfa())
+    #p = sentence.null_matcher()
+    print(p.matcher)
+    for i in range(1000):
+        assert len(list(p('every boy or some girl and helen and john or pat knows '
+                          'and respects or loves every boy or some girl and pat or '
+                          'john and helen'))) == 392  
 
 
 def time():
     from timeit import Timer
     t = Timer("naturalLanguage()", "from __main__ import naturalLanguage")
-    print(t.timeit(number=100))
+    print(t.timeit(number=1))
+    # without compilation, and with smart dfa switch:
+    # with dfa: 12.4
+    # without dfa: 5.7
+    # default: 12.4
+    
+    # all numbers below included compilation!
     # using LMemo:
     # 6.3, 6.6 for 2.0 on laptop
     # 5.3 after simplifying generator wrapper

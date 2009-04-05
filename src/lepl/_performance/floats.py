@@ -24,7 +24,8 @@ def floats():
         line    = Trace(expr) & Eos()
     
     #basicConfig(level=DEBUG)
-    parser = line.string_parser(Configuration.nfa())
+#    parser = line.string_parser(Configuration.dfa())
+    parser = line.string_parser()
     
     #print(parser.matcher)
     for i in range(30):
@@ -39,8 +40,8 @@ def time():
     print(t.timeit(number=1))
     # 5.8 for default
     # second values after improving rewrite
-    # 4.9,3.5,2.8 for dfa
-    # 5.0,3.7,2.9 for nfa
+    # 4.9,3.5,2.8,1.3 for dfa
+    # 5.0,3.7,2.9,3.1 for nfa
     
     
 
