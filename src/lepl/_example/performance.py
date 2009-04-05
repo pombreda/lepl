@@ -1,4 +1,5 @@
 
+from gc import collect
 from logging import basicConfig, DEBUG, INFO
 from timeit import repeat
 
@@ -80,6 +81,7 @@ def time(number, name):
     return min(repeat(stmt, setup, number=number, repeat=REPEAT))
 
 def analyse(func):
+    collect()
     name = func.__name__
     time1 = time(NUMBER, name)
     time2 = time(1, 'parse_' + name)
