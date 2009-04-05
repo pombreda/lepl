@@ -1,11 +1,12 @@
 
 from logging import basicConfig, DEBUG, INFO
-from timeit import timeit
+from timeit import repeat
 
 from lepl import *
 from lepl._example.support import Example
 
-COUNT = 100
+NUMBER = 100
+REPEAT = 3
 
 def build(config):
     
@@ -58,7 +59,7 @@ def dfa_only():
         Configuration(rewriters=[
             regexp_rewriter(UnicodeAlphabet.instance(), False, DfaRegexp)]))
 
-def parse_multiple(parser, count=COUNT):
+def parse_multiple(parser, count=NUMBER):
     for i in range(count):
         parser('1.23e4 + 2.34e5 * (3.45e6 + 4.56e7 - 5.67e8)')[0]
 
@@ -73,19 +74,19 @@ def parse_memo_only(): parse_multiple(memo_only())
 def parse_nfa_only(): parse_multiple(nfa_only())
 def parse_dfa_only(): parse_multiple(dfa_only())
 
-def time(count, name):
+def time(number, name):
     stmt = '{0}()'.format(name)
     setup = 'from __main__ import {0}'.format(name)
-    return timeit(stmt, setup, number=count)
+    return min(repeat(stmt, setup, number=number, repeat=REPEAT))
 
 def analyse(func):
     name = func.__name__
-    time1 = time(COUNT, name)
+    time1 = time(NUMBER, name)
     time2 = time(1, 'parse_' + name)
     print('{0:>20s} {1:5.2f} {2:5.2f}'.format(name, time1, time2))
 
 def main():
-    print('{0:d} iterations; total time in s\n'.format(COUNT))
+    print('{0:d} iterations; total time in s\n'.format(NUMBER))
     for config in [default, managed, nfa, dfa]:
         analyse(config)
     print()
