@@ -228,9 +228,6 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         return self.null_matcher(config)(stream)
     
 
-_NULL_TRANSFORM = lambda r, i, o: (r, o)
-
-
 class Transformation(object):
     '''
     A transformation is a wrapper for a series of functions that are applied
@@ -255,6 +252,17 @@ class Transformation(object):
         '''
         functions = list(self.functions)
         functions.extend(transformation.functions)
+        if functions == self.functions:
+            return self
+        else:
+            return Transformation(functions)
+
+    def precompose(self, transformation):
+        '''
+        Insert the transformation before the existing functions.
+        '''
+        functions = list(transformation.functions)
+        functions.extend(self.functions)
         if functions == self.functions:
             return self
         else:
@@ -868,10 +876,11 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
             
 def Apply(matcher, function, raw=False, args=False):
     '''
-    Apply an arbitrary function to the results of the matcher (**>**, **\***).
+    Apply an arbitrary function to the results of the matcher (**>**, **>=**, **\***).
     
     Apply can be used via the standard operators by placing ``>`` 
-    (or ``*`` to set ``args=True``) to the right of a matcher.
+    (or ``>=`` to set ``raw=True``, or ``*`` to set ``args=True``) 
+    to the right of a matcher.
 
     If the function is a `Transformation` it is used directly.  Otherwise
     a `Transformation` is constructed via the `raw` and `args` parameters, 

@@ -34,7 +34,7 @@ class MemoExample(Example):
     
         p = sentence.null_matcher(
                 Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[TraceResults(False)]))
+                              monitors=[lambda: TraceResults(False)]))
         self.examples([(lambda: 
             len(list(p('every boy or some girl and helen and john or pat knows '
                        'and respects or loves every boy or some girl and pat or '

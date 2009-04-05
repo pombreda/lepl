@@ -28,8 +28,8 @@ def naturalLanguage():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    p = sentence.null_matcher(Configuration(rewriters=[auto_memoize(False)]))
-    #p = sentence.null_matcher(Configuration.dfa())
+    #p = sentence.null_matcher(Configuration(rewriters=[auto_memoize(False)]))
+    p = sentence.null_matcher(Configuration.dfa())
 #    print(p.matcher)
     assert len(list(p('every boy or some girl and helen and john or pat knows '
                       'and respects or loves every boy or some girl and pat or '

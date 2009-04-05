@@ -38,10 +38,15 @@ class RewriteTest(TestCase):
     def test_literal(self):
         rx = Literal('abc')
         matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
+        # a single Literal is *not* translated
+        assert not isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        
+        rx = Literal('abc') | Literal('x')
+        matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
         results = list(matcher('abcd'))
         assert results == [(['abc'], 'd')], results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
-        rx = Literal('abc') >> (lambda x: x+'e')
+        
+        rx = (Literal('abc') | Literal('x')) >> (lambda x: x+'e')
         matcher = rx.null_matcher(Configuration(rewriters=[compose_transforms,
                                                            regexp_rewriter(UNICODE)]))
         results = list(matcher('abcd'))

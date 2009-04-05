@@ -1,7 +1,7 @@
 
 '''
-What we want to do here is rewrite the tree of matchers from the bottom up
-using regular expressions.  this is complicated by a number of things.
+Rewrite the tree of matchers from the bottom up (as far as possible)
+using regular expressions.  This is complicated by a number of things.
 
 First, intermediate parts of regular expressions are not matchers, so we need 
 to keep them inside a special container type that we can detect and convert to
@@ -66,7 +66,7 @@ class RegexpContainer(object):
         If the node is a Transformable with a Transformation then we must
         stop at this point.
         '''
-        from lepl.matchers import Transformable, _NULL_TRANSFORM
+        from lepl.matchers import Transformable
         matcher = single(node, regexp, alphabet, matcher_type)
         if isinstance(node, Transformable) and node.function:
             return matcher
@@ -82,7 +82,7 @@ def single(node, regexp, alphabet, matcher_type=NfaRegexp):
     from lepl.matchers import Transformation
     matcher = matcher_type(regexp, alphabet)
     copy_standard_attributes(node, matcher, describe=False)
-    return matcher.compose_transformation(Transformation(empty_adapter))
+    return matcher.precompose_transformation(Transformation(empty_adapter))
 
 
 def empty_adapter(results, sin, sout):
@@ -98,18 +98,32 @@ def empty_adapter(results, sin, sout):
 
         
 class Unsuitable(Exception):
+    '''
+    Exception thrown when a sub-node does not contain a suitable matcher.
+    '''
     pass
 
 class Tagged(Unsuitable):
+    '''
+    Exception thrown when a sub-node does not contain a suitable matcher
+    because of an unexpected tag.
+    '''
     pass
 
 
 # tag(s) used to indicate that a possible regexp has assumed something from
 # parent nodes (if this is not met we must use the original matcher)
 _TAG_ADD_REQUIRED = 1
+'''
+The parent matcher must join results with `and`.
+'''
 
 
 def make_clone(alphabet, old_clone, matcher_type):
+    '''
+    Factory that generates a clone suitable for rewriting recursive descent
+    to regular expressions.
+    '''
     
     # clone functions below take the "standard" clone and the node, and then
     # reproduce the normal argument list of the matcher being cloned.
@@ -117,7 +131,7 @@ def make_clone(alphabet, old_clone, matcher_type):
     
     # Avoid dependency loops
     from lepl.matchers \
-        import Any, Or, And, Add, add, Transformable, _NULL_TRANSFORM, \
+        import Any, Or, And, Add, add, Transformable, \
         Transform, Transformation, Literal, DepthFirst, Apply
 
     LOG = getLogger('lepl.regexp.rewriters.make_clone')
@@ -169,12 +183,12 @@ def make_clone(alphabet, old_clone, matcher_type):
                 LOG.debug('And: OK')
                 return RegexpContainer(single(original, regexp, alphabet), 
                                        regexp)
-            elif node.function.describe is _NULL_TRANSFORM:
+            elif not node.function:
                 LOG.debug('And: add required')
                 return RegexpContainer(original, regexp, _TAG_ADD_REQUIRED)
             else:
                 LOG.debug('And: wrong transformation: {0!r}'.format(
-                            original.function.describe))
+                          original.function))
                 return original
         except Unsuitable:
             LOG.debug('And: not rewritten: {0!r}'.format(original))
@@ -196,11 +210,12 @@ def make_clone(alphabet, old_clone, matcher_type):
                 LOG.debug('Transform: OK')
                 return RegexpContainer(single(original, regexp, alphabet),
                                        regexp)
-            elif function.describe is _NULL_TRANSFORM:
+            elif not function:
                 LOG.debug('Transform: add required')
                 return RegexpContainer(original, regexp, _TAG_ADD_REQUIRED)
             else:
-                LOG.debug('Transform: wrong transformation: {0!r}'.format(original))
+                LOG.debug('Transform: wrong transformation: {0!r}'.format(
+                          original.function))
                 return original
         except Unsuitable:
             LOG.debug('Transform: not rewritten: {0!r}'.format(original))
@@ -210,12 +225,17 @@ def make_clone(alphabet, old_clone, matcher_type):
         '''
         Literal is transformable, so we need to be careful with any associated
         Transformation.
+        
+        We could return just the regexp matcher here.  But by itself a regexp
+        is slower than a literal.  So we return a container pair so that the
+        regexp is used only if it can be combined with something else.
         '''
         assert isinstance(node, Transformable)
         chars = [Character([(c, c)], alphabet) for c in text]
         regexp = Sequence(chars, alphabet)
         LOG.debug('Literal: cloned {0}'.format(regexp))
-        return RegexpContainer.build(node, regexp, alphabet, matcher_type)
+        return RegexpContainer(original, regexp)
+#        return RegexpContainer.build(node, regexp, alphabet, matcher_type)
     
     def clone_dfs(original, node, first, start, stop, rest=None):
         '''

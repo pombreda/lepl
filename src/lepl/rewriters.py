@@ -111,7 +111,7 @@ def flatten(graph):
     '''
     A rewriter that flattens `And` and `Or` lists.
     '''
-    from lepl.matchers import And, Or, _NULL_TRANSFORM
+    from lepl.matchers import And, Or
     def new_clone(node, old_args, kargs):
         table = {And: '*matchers', Or: '*matchers'}
         if type(node) in table:

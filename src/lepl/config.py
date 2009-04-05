@@ -94,6 +94,10 @@ class Configuration(object):
     
     @classmethod
     def nfa(cls):
+        '''
+        Rewrite fragments of the matcher graph as regular expressions.
+        This uses a pushdown automaton and should return all possible matches.
+        '''
         if cls.__nfa is None:
             from lepl.regexp.rewriters import regexp_rewriter
             from lepl.regexp.unicode import UnicodeAlphabet
@@ -109,6 +113,11 @@ class Configuration(object):
     
     @classmethod
     def dfa(cls):
+        '''
+        Rewrite fragments of the matcher graph as regular expressions.
+        This uses a finite automaton and returns only the greediest match,
+        so may produce changed results with ambiguous parsers.
+        '''
         if cls.__dfa is None:
             from lepl.regexp.matchers import DfaRegexp
             from lepl.regexp.rewriters import regexp_rewriter

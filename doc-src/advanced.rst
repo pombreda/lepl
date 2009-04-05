@@ -11,17 +11,17 @@ Configuration
 
 The configuration is used when generating a parser from the matchers graph.
 It is specified using `Configuration()
-<api/redirect.html#lepl.parser.Configuration>`_ which takes two arguments,
+<api/redirect.html#lepl.config.Configuration>`_ which takes two arguments,
 ``rewriters`` and ``monitors``.
 
 Most examples here use the default configuration, which is supplied by
-`default_config()
-<api/redirect.html#lepl.matchers.BaseMatcher.default_config>`_.  This is
-currently defined as::
+`Configuration.default()
+<api/redirect.html#lepl.config.Configuration.default>`_ .  This is currently
+defined as::
 
   Configuration(
     rewriters=[flatten, compose_transforms, auto_memoize()],
-    monitors=[TraceResults(False)])
+    monitors=[lambda: TraceResults(False)])
 
 The rewriters are described below (:ref:`rewriting`).
 
@@ -165,8 +165,24 @@ Automatic Memoisation
   <api/redirect.html#lepl.rewriters.context_memoize>`_ are used.
 
 
-.. index:: search, backtracking
-.. _backtracking:
+.. index:: regexp_rewriter()
+
+Rewriting as Regular Expressions
+
+  The `regexp_rewriter()
+  <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ rewriter
+  attempts to replace matchers with a regular expression.  This gives a
+  significant increase in efficiency if the parser matches complex strings
+  (for example, `Float() <api/redirect.html#lepl.matchers.Float>`_), but is an
+  overhead for fast, simple matchers like `Literal()
+  <api/redirect.html#lepl.matchers.Literal>`_).  It is not used by default but
+  can be selected with `Configuration.nfa()
+  <api/redirect.html#lepl.config.Configuration.nfa>`_ or `Configuration.dfa()
+  <api/redirect.html#lepl.config.Configuration.dfa>`_ (the latter only gives a
+  single, greedy match and so may change the results for ambiguous grammars).
+  
+
+.. index:: search, backtracking .. _backtracking:
 
 Search and Backtracking
 -----------------------
@@ -310,7 +326,7 @@ The simplest way to apply a memoizer to all matchers is with the `memoize()
     
   >>> p = sentence.null_matcher(
   >>>         Configuration(rewriters=[memoize(LMemo)], 
-  >>>                       monitors=[TraceResults(False)]))
+  >>>                       monitors=[lambda: TraceResults(False)]))
   >>> len(list(p('every boy or some girl and helen and john or pat knows '
   >>>            'and respects or loves every boy or some girl and pat or '
   >>>            'john and helen')))

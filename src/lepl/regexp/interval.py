@@ -17,9 +17,9 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Support for managing sets of intervals.  An interval is an open range
-implemented as a tuple pair.  For example (2,5) is an interval that
-represents the integers 2,3,4 and 5.
+Support for managing sets of intervals (not all used).  
+An interval is an open range implemented as a tuple pair.  For example (2,5) 
+is an interval that represents the integers 2,3,4 and 5.
 '''
 
 from bisect import bisect_left
@@ -247,6 +247,8 @@ class Fragments(object):
     
 class IntervalMap(dict):
     '''
+    Map from intervals to values.
+    
     Note - this is for open intervals!  This means it will not work as
     expected for continuous variables (which will overlap when two intervals
     share a single boundary value).  In other words, you cannot store 

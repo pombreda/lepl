@@ -211,10 +211,10 @@ so this example will fail::
   None
 
 
-.. index:: Apply(), >, *
+.. index:: Apply(), >, >=, *
 
-Apply (>, *)
-------------
+Apply (>, >=, *)
+----------------
 
 `[API] <api/redirect.html#lepl.matchers.Apply>`_ This matcher passes the
 results of another matcher to a function, then returns the value from the

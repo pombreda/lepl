@@ -20,16 +20,19 @@ simple matcher might recognise a letter, digit or space.  More complex
 matchers are built from these to recognise words, equations, etc.
 
 One a matcher has been built up in this way it can be used to create a
-*parser* to process text.  The parser contains the original matchers, but may
-also add additional processing (this provides advanced features like ...).
+*parser* to process text.
 
 Internally, when the parser is used to analyse some text, it passes the string
 to the matchers that were used as "building blocks".  These break the text
 into pieces that are then assembled into the final result.
 
+The assembly of the matched text can include extra processing that modifies
+the data however you like.
+
 So, ignoring the parser for a moment, we describe a structure (called a
 *grammar*) using matchers then use those matchers to break text into pieces
-that match that structure.
+that match that structure.  Finally, we process and assemble those pieces to
+give a final result.
 
 An example will make this clearer.  Imagine that we are given a username and a
 phone number, separated by a comma, and we want to split that into the two

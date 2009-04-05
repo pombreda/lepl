@@ -122,4 +122,4 @@ argument --- tracing is enabled when the selected matcher is called::
   `default configuration
   <api/redirect.html#lepl.matchers.BaseMatcher.default_config>`_, and can also
   be specified manually using a `Configuration()
-  <api/redirect.html#lepl.parser.Configuration>`_.
+  <api/redirect.html#lepl.config.Configuration>`_.
