@@ -63,7 +63,7 @@ def dfa_only():
 def slow(): 
     return build(
         Configuration(rewriters=[auto_memoize()],
-                      monitors=[lambda: Trace(False),
+                      monitors=[lambda: TraceResults(False),
                                 lambda: GeneratorManager(queue_len=0)]))
 
 def parse_multiple(parser):
