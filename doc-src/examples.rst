@@ -59,6 +59,7 @@ solution::
 
 
 .. index:: optimisation, efficiency, configuration
+.. _config_example:
 
 Configuration and Efficiency
 ----------------------------
@@ -226,6 +227,6 @@ I learnt the following from writing and running this test and others like it:
 
 For anyone interested in absolute speed, the values above are seconds required
 for 50 iterations on a Dual Core desktop, with sufficient memory to avoid
-paging, over--clocked to 2.8GHz.  So for that machine a single parse takes of
-the expression given in the code takes between 0.03 and 0.2 seconds.
+paging, over--clocked to 2.8GHz.  So for that machine a single parse of the
+expression given in the code takes between 0.03 and 0.2 seconds.
 

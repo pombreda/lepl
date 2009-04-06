@@ -154,6 +154,8 @@ Date        Version  Description
 2009-03-12  2.1.1    Fix flatten() and compose_transforms(); remove GeneratorManager from default configuration.
 ----------  -------  -----------
 2009-03-27  2.2      Added >=, String(), regexp framework.
+----------  -------  -----------
+2009-04-05  2.3      Compilation to regular expressions.
 ==========  =======  ===========
 
 

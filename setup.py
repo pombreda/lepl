@@ -18,8 +18,8 @@ grammars and it can also handle left-recursive grammars.
 The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
-This release (2.2) introduces the >= operator, a String() matcher, and a
-pure-Python regular expression framework.
+This release (2.3) provides optimisation via regular expressions.  A
+detailed example shows the benefits.
 
 
 Features
