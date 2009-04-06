@@ -6,8 +6,8 @@ from timeit import timeit
 from lepl import *
 from lepl._example.support import Example
 
-NUMBER = 50
-REPEAT = 5
+NUMBER = 10
+REPEAT = 10
 
 def build(config):
     
