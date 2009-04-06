@@ -7,7 +7,7 @@ from lepl import *
 from lepl._example.support import Example
 
 NUMBER = 10
-REPEAT = 10
+REPEAT = 5
 
 def build(config):
     
