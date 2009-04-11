@@ -28,6 +28,10 @@ for f in `ls -1 src/lepl/*.py | egrep -v "lex"`;
 do 
   echo "include $f" >> MANIFEST.in
 done
+for f in `ls -1 src/lepl/regexp/*.py | egrep -v "lex"`; 
+do 
+  echo "include $f" >> MANIFEST.in
+done
 for f in `ls -1 src/COPY*`; 
 do 
   echo "include $f" >> MANIFEST.in

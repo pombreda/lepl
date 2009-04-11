@@ -156,6 +156,10 @@ Date        Version  Description
 2009-03-27  2.2      Added >=, String(), regexp framework.
 ----------  -------  -----------
 2009-04-05  2.3      Compilation to regular expressions.
+----------  -------  -----------
+2009-04-05  2.3.1    Fix regexp packaging.
+----------  -------  -----------
+2009-04-05  2.3.2    Fix regexp packaging.
 ==========  =======  ===========
 
 

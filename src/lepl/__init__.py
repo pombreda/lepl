@@ -107,6 +107,7 @@ from lepl.memo import *
 from lepl.node import *
 from lepl.operators import * 
 from lepl.parser import *
+from lepl.regexp import *
 from lepl.stream import *
 from lepl.manager import *
 from lepl.matchers import *
@@ -213,7 +214,7 @@ __all__ = [
         'context_memoize',
         'optimize_or']
 
-__version__ = '2.3'
+__version__ = '2.3.2'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN
