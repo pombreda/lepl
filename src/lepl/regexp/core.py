@@ -358,7 +358,7 @@ class Regexp(Choice):
         '''
         graph = NfaGraph(self.alphabet)
         self.build(graph)
-        return NfaCompiler(graph, self.alphabet).matcher
+        return NfaCompiler(graph, self.alphabet)
         
     def dfa(self):
         '''
@@ -368,18 +368,31 @@ class Regexp(Choice):
         ngraph = NfaGraph(self.alphabet)
         self.build(ngraph)
         dgraph = NfaToDfa(ngraph, self.alphabet).dfa
-        return DfaCompiler(dgraph, self.alphabet).matcher
+        return DfaCompiler(dgraph, self.alphabet)
     
     @staticmethod
-    def single(regexp, alphabet, label='label'):
-        '''
-        Generate an instance for a single expression or sequence.
-        '''
+    def _coerce(regexp, alphabet):
         if isinstance(regexp, str):
             regexp = alphabet.parse(regexp)
         else:
             regexp = [regexp]
-        return Regexp([Labelled(label, regexp, alphabet)], alphabet) 
+        return regexp
+        
+    
+    @staticmethod
+    def single(alphabet, regexp, label='label'):
+        '''
+        Generate an instance for a single expression or sequence.
+        '''
+        return Regexp([Labelled(label, Regexp._coerce(regexp, alphabet), 
+                                alphabet)], alphabet)
+    
+    @staticmethod
+    def multiple(alphabet, regexps):
+        return Regexp([Labelled(label,  Regexp._coerce(regexp, alphabet), 
+                                alphabet) for (label, regexp) in regexps], 
+                      alphabet)
+        
 
         
 class BaseGraph(LogMixin):
@@ -770,24 +783,29 @@ class DfaCompiler(object):
                     row[interval] = (dest, labels)
             self.__table[src] = row
             
-    def matcher(self, stream):
+    def match(self, stream_in):
+        try:
+            (terminals, size, stream_out) = self.size_match(stream_in)
+            return (terminals, stream_in[0:size], stream_out)
+        except TypeError:
+            return None
+        
+    def size_match(self, stream):
         state = 0
-        match = []
-        longest = (self.__empty_labels, 0, stream) if self.__empty_labels else None
+        size = 0
+        longest = (self.__empty_labels, 0, stream) \
+                    if self.__empty_labels else None
         while stream:
-            char = stream[0]
-            future = self.__table[state][char]
+            future = self.__table[state][stream[0]]
             if future is None: break
             # update state
             (state, terminals) = future
-            match.append(stream[0])
+            size += 1
+            # it might be faster to use size as an index here  - it's a
+            # trade-odd depending on line length.  probably worth measuring.
             stream = stream[1:]
             # match is strictly increasing, so storing the length is enough
             # (no need to make an expensive copy)
-            if terminals: longest = (terminals, len(match), stream)
-        if longest:
-            (terminals, l, stream) = longest
-            return (terminals, self.__alphabet.join(match[0:l]), stream)
-        else:
-            return None
-        
+            if terminals: longest = (terminals, size, stream)
+        return longest
+    

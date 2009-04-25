@@ -1,0 +1,8 @@
+
+- added tokens/lexer
+
+- monitors don't need escaping with lambda
+
+- _match() instead of __call__()
+
+- regexp inverted ranges were broken

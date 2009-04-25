@@ -11,7 +11,7 @@ class ResourceExample(Example):
                         "[(['****'], ''), (['***', '*'], ''), (['**', '**'], ''), (['*', '***'], ''), (['****'], '')]")])
 
     def test_limit(self):
-        config = Configuration(monitors=[lambda: GeneratorManager(queue_len=1)])
+        config = Configuration(monitors=[GeneratorManager(queue_len=1)])
         matcher = (Literal('*')[:,...][2] & Eos()).match('*' * 4, config)
         self.examples([(lambda: list(matcher), 
                         "[(['****'], '')]")])

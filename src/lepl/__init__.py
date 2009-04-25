@@ -107,7 +107,10 @@ from lepl.memo import *
 from lepl.node import *
 from lepl.operators import * 
 from lepl.parser import *
+from lepl.regexp import *
 from lepl.stream import *
+from lepl.lexer.matchers import Token, LexerError
+from lepl.lexer.rewriters import lexer_rewriter
 from lepl.manager import *
 from lepl.matchers import *
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
@@ -183,12 +186,18 @@ __all__ = [
         'Error',
         'throw',
         # stream
-        'Stream',
+        'SequenceByLine',
         # operators
         'Override',
         'Separator',
+#        'UnsafeRepeat',
         # parser
         'Configuration',
+        # lexer.matchers
+        'Token',
+        'LexerError',
+        # lexer.rewriters
+        'lexer_rewriter',
         # manager
         'GeneratorManager',
         # trace

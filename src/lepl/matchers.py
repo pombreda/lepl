@@ -32,6 +32,7 @@ the same syntax (capitalized names) for both to keep the API uniform.
 For more background, please see the `manual <../index.html>`_.
 '''
 
+from abc import ABCMeta
 from collections import deque
 import string
 from re import compile
@@ -41,26 +42,43 @@ from traceback import print_exc
 from lepl.config import Configuration
 from lepl.graph \
     import ArgAsAttributeMixin, PostorderWalkerMixin, ConstructorStr, GraphStr
-from lepl.manager import GeneratorManager
+from lepl.manager import _GeneratorManager
 from lepl.node import Node, raise_error
 from lepl.operators \
-    import OperatorMixin, Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
+    import OperatorMixin, OPERATORS, DefaultNamespace, \
+    Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
 from lepl.parser import make_parser, make_matcher, tagged
-from lepl.stream import Stream
-from lepl.trace import TraceResults
+from lepl.stream import SequenceByLine
+from lepl.trace import _TraceResults
 from lepl.support import assert_type, lmap, LogMixin
 
 
-class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin, 
-                    LogMixin, Matcher):
+Consumer = ABCMeta('Consumer', (object, ), {})
+'''
+ABC used to identify matchers that actually consume from the stream.  These
+are the "leaf" matchers that "do the real work".
+
+This is a purely informative interface used, for example, to generate warnings 
+for the user.  Not implementing this interface will not block any functionality.  
+'''
+
+
+class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, LogMixin, Matcher):
     '''
     A base class that provides support to all matchers.
+    '''
+    pass
+    
+    
+class OperatorMatcher(OperatorMixin, BaseMatcher):
+    '''
+    A base class that provides support to all matchers with operators.
     '''
     
     __default_config = None
 
-    def __init__(self):
-        super(BaseMatcher, self).__init__()
+    def __init__(self, name=OPERATORS, namespace=DefaultNamespace):
+        super(OperatorMatcher, self).__init__(name=name, namespace=namespace)
 
     def __str__(self):
         visitor = ConstructorStr()
@@ -78,34 +96,34 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     
     def file_parser(self, config=None):
         '''
-        Construct a parser for file objects that uses a `Stream()` 
+        Construct a parser for file objects that uses a `SequenceByLine()` 
         internally and returns a single result.
         '''
-        return make_parser(self, Stream.from_file, 
+        return make_parser(self, SequenceByLine.from_file, 
                            config if config else Configuration.default())
     
     def list_parser(self, config=None):
         '''
-        Construct a parser for lists that uses a `Stream()` 
+        Construct a parser for lists that uses a `SequenceByLine()` 
         internally and returns a single result.
         '''
-        return make_parser(self, Stream.from_list, 
+        return make_parser(self, SequenceByLine.from_list, 
                            config if config else Configuration.default())
     
     def path_parser(self, config=None):
         '''
-        Construct a parser for a file that uses a `Stream()` 
+        Construct a parser for a file that uses a `SequenceByLine()` 
         internally and returns a single result.
         '''
-        return make_parser(self, Stream.from_path, 
+        return make_parser(self, SequenceByLine.from_path, 
                            config if config else Configuration.default())
     
     def string_parser(self, config=None):
         '''
-        Construct a parser for strings that uses a `Stream()` 
+        Construct a parser for strings that uses a `SequenceByLine()` 
         internally and returns a single result.
         '''
-        return make_parser(self, Stream.from_string, 
+        return make_parser(self, SequenceByLine.from_string, 
                            config if config else Configuration.default())
     
     def null_parser(self, config=None):
@@ -113,34 +131,34 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         Construct a parser for strings and lists that returns a single result
         (this does not use streams).
         '''
-        return make_parser(self, Stream.null, 
+        return make_parser(self, SequenceByLine.null, 
                            config if config else Configuration.default())
     
     def parse_file(self, file, config=None):
         '''
         Parse the contents of a file, returning a single match and using a
-        `Stream()` internally.
+        `SequenceByLine()` internally.
         '''
         return self.file_parser(config)(file)
         
     def parse_list(self, list_, config=None):
         '''
         Parse the contents of a list, returning a single match and using a
-        `Stream()` internally.
+        `SequenceByLine()` internally.
         '''
         return self.list_parser(config)(list_)
         
     def parse_path(self, path, config=None):
         '''
         Parse the contents of a file, returning a single match and using a
-        `Stream()` internally.
+        `SequenceByLine()` internally.
         '''
         return self.path_parser(config)(path)
         
     def parse_string(self, string, config=None):
         '''
         Parse the contents of a string, returning a single match and using a
-        `Stream()` internally.
+        `SequenceByLine()` internally.
         '''
         return self.string_parser(config)(string)
     
@@ -155,33 +173,33 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
     def file_matcher(self, config=None):
         '''
         Construct a parser for file objects that returns a sequence of matches
-        and uses a `Stream()` internally.
+        and uses a `SequenceByLine()` internally.
         '''
-        return make_matcher(self, Stream.from_file, 
+        return make_matcher(self, SequenceByLine.from_file, 
                             config if config else Configuration.default())
     
     def list_matcher(self, config=None):
         '''
         Construct a parser for lists that returns a sequence of matches
-        and uses a `Stream()` internally.
+        and uses a `SequenceByLine()` internally.
         '''
-        return make_matcher(self, Stream.from_list, 
+        return make_matcher(self, SequenceByLine.from_list, 
                             config if config else Configuration.default())
     
     def path_matcher(self, config=None):
         '''
         Construct a parser for a file that returns a sequence of matches
-        and uses a `Stream()` internally.
+        and uses a `SequenceByLine()` internally.
         '''
-        return make_matcher(self, Stream.from_path, 
+        return make_matcher(self, SequenceByLine.from_path, 
                             config if config else Configuration.default())
     
     def string_matcher(self, config=None):
         '''
         Construct a parser for strings that returns a sequence of matches
-        and uses a `Stream()` internally.
+        and uses a `SequenceByLine()` internally.
         '''
-        return make_matcher(self, Stream.from_string, 
+        return make_matcher(self, SequenceByLine.from_string, 
                             config if config else Configuration.default())
 
     def null_matcher(self, config=None):
@@ -189,34 +207,34 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, OperatorMixin,
         Construct a parser for strings and lists list objects that returns a s
         equence of matches (this does not use streams).
         '''
-        return make_matcher(self, Stream.null, 
+        return make_matcher(self, SequenceByLine.null, 
                             config if config else Configuration.default())
 
     def match_file(self, file, config=None):
         '''
         Parse the contents of a file, returning a sequence of matches and using a
-        `Stream()` internally.
+        `SequenceByLine()` internally.
         '''
         return self.file_matcher(config)(file)
         
     def match_list(self, list_, config=None):
         '''
         Parse a list, returning a sequence of matches and using a
-        `Stream()` internally.
+        `SequenceByLine()` internally.
         '''
         return self.list_matcher(config)(list_)
         
     def match_path(self, path, config=None):
         '''
         Parse a file, returning a sequence of matches and using a
-        `Stream()` internally.
+        `SequenceByLine()` internally.
         '''
         return self.path_matcher(config)(path)
         
     def match_string(self, string, config=None):
         '''
         Parse a string, returning a sequence of matches and using a
-        `Stream()` internally.
+        `SequenceByLine()` internally.
         '''
         return self.string_matcher(config)(string)
 
@@ -287,7 +305,7 @@ class Transformation(object):
         return self.__bool__()
         
 
-class Transformable(BaseMatcher):
+class Transformable(OperatorMatcher):
     '''
     All subclasses invoke the function attribute on
     (results, stream_in, stream_out) when returning their final value.
@@ -311,7 +329,7 @@ class Transformable(BaseMatcher):
         raise NotImplementedError()
 
 
-class _BaseSearch(BaseMatcher):
+class _BaseSearch(OperatorMatcher):
     '''
     Support for search (repetition) classes.
     '''
@@ -340,10 +358,10 @@ class DepthFirst(_BaseSearch):
     '''
 
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         stack = deque()
         try:
-            stack.append((0, [], stream, self.first(stream)))
+            stack.append((0, [], stream, self.first._match(stream)))
             while stack:
                 (count1, acc1, stream1, generator) = stack[-1]
                 extended = False
@@ -352,7 +370,8 @@ class DepthFirst(_BaseSearch):
                     try:
                         (value, stream2) = yield generator
                         acc2 = acc1 + value
-                        stack.append((count2, acc2, stream2, self.rest(stream2)))
+                        stack.append((count2, acc2, stream2, 
+                                      self.rest._match(stream2)))
                         extended = True
                     except StopIteration:
                         pass
@@ -371,10 +390,10 @@ class BreadthFirst(_BaseSearch):
     '''
     
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         queue = deque()
         try:
-            queue.append((0, [], stream, self.first(stream)))
+            queue.append((0, [], stream, self.first._match(stream)))
             while queue:
                 (count1, acc1, stream1, generator) = queue.popleft()
                 if count1 >= self.start and \
@@ -386,14 +405,15 @@ class BreadthFirst(_BaseSearch):
                         (value, stream2) = yield generator
                         acc2 = acc1 + value
                         if self.stop is None or count2 <= self.stop:
-                            queue.append((count2, acc2, stream2, self.rest(stream2)))
+                            queue.append((count2, acc2, stream2, 
+                                          self.rest._match(stream2)))
                 except StopIteration:
                     pass
         finally:
             self._cleanup(queue)
             
 
-class OrderByResultCount(BaseMatcher):
+class OrderByResultCount(OperatorMatcher):
     '''
     Modify a matcher to return results in length order.
     '''
@@ -404,8 +424,8 @@ class OrderByResultCount(BaseMatcher):
         self._karg(ascending=ascending)
         
     @tagged
-    def __call__(self, stream):
-        generator = self.matcher(stream)
+    def _match(self, stream):
+        generator = self.matcher._match(stream)
         results = []
         try:
             while True:
@@ -444,14 +464,16 @@ class And(_BaseCombiner):
     '''
     
     @tagged
-    def __call__(self, stream_in):
+    def _match(self, stream_in):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  Results from the different matchers are
         combined together as elements in a list.
         '''
         if self.matchers:
-            stack = deque([([], self.matchers[0](stream_in), self.matchers[1:])])
+            stack = deque([([], 
+                            self.matchers[0]._match(stream_in), 
+                            self.matchers[1:])])
             append = stack.append
             pop = stack.pop
             try:
@@ -461,7 +483,8 @@ class And(_BaseCombiner):
                         (value, stream_out) = yield generator
                         append((result, generator, matchers))
                         if matchers:
-                            append((result+value, matchers[0](stream_out), 
+                            append((result+value, 
+                                    matchers[0]._match(stream_out), 
                                     matchers[1:]))
                         else:
                             yield self.function(result+value, stream_in, stream_out)
@@ -484,14 +507,14 @@ class Or(_BaseCombiner):
     '''
     
     @tagged
-    def __call__(self, stream_in):
+    def _match(self, stream_in):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  The result will correspond to one of the
         sub-matchers (starting from the left).
         '''
         for matcher in self.matchers:
-            generator = matcher(stream_in)
+            generator = matcher._match(stream_in)
             try:
                 while True:
                     (results, stream_out) = (yield generator)
@@ -512,7 +535,7 @@ class First(_BaseCombiner):
     '''
     
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  The result will correspond to one of the
@@ -530,7 +553,7 @@ class First(_BaseCombiner):
             if matched: break
             
 
-class Any(BaseMatcher):
+class Any(OperatorMatcher, Consumer):
     '''
     Match a single token in the stream.  
     A set of valid tokens can be supplied.
@@ -553,7 +576,7 @@ class Any(BaseMatcher):
         self.tag(repr(restrict))
     
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  The result will be a single matching 
@@ -563,7 +586,7 @@ class Any(BaseMatcher):
             yield ([stream[0]], stream[1:])
             
             
-class Literal(Transformable):
+class Literal(Transformable, Consumer):
     '''
     Match a series of tokens in the stream (**''**).
     '''
@@ -578,7 +601,7 @@ class Literal(Transformable):
         self.tag(repr(text))
     
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
@@ -609,9 +632,11 @@ def coerce(arg, function=Literal):
     return function(arg) if isinstance(arg, str) else arg
 
 
-class Empty(BaseMatcher):
+class Empty(OperatorMatcher):
     '''
     Match any stream, consumes no input, and returns nothing.
+    
+    This is not a Consumer because it is stream-independent.
     '''
     
     def __init__(self, name=None):
@@ -621,7 +646,7 @@ class Empty(BaseMatcher):
             self.tag(name)
     
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  Match any character and progress to 
@@ -630,7 +655,7 @@ class Empty(BaseMatcher):
         yield ([], stream)
 
             
-class Lookahead(BaseMatcher):
+class Lookahead(OperatorMatcher, Consumer):
     '''
     Tests to see if the embedded matcher *could* match, but does not do the
     matching.  On success an empty list (ie no result) and the original
@@ -638,6 +663,9 @@ class Lookahead(BaseMatcher):
     
     When negated (preceded by ~) the behaviour is reversed - success occurs
     only if the embedded matcher would fail to match.
+    
+    This is a consumer because it's correct functioning depends directly on
+    the stream's contents.
     '''
     
     def __init__(self, matcher, negated=False):
@@ -653,13 +681,13 @@ class Lookahead(BaseMatcher):
             self.tag('~')
     
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
         '''
         try:
-            yield self.matcher(stream) # an evaluation, not a return
+            yield self.matcher._match(stream) # an evaluation, not a return
             success = True
         except StopIteration:
             success = False
@@ -693,13 +721,13 @@ class Transform(Transformable):
         self._arg(function=function)
 
     @tagged
-    def __call__(self, stream_in):
+    def _match(self, stream_in):
         '''
         Do the matching (return a generator that provides successive
         (result, stream) tuples).
         '''
         try:
-            generator = self.matcher(stream_in)
+            generator = self.matcher._match(stream_in)
             while True:
                 (results, stream_out) = yield generator
                 yield (self.function(results, stream_in, stream_out))
@@ -710,7 +738,7 @@ class Transform(Transformable):
         return Transform(self.matcher, self.function.compose(transform.function))
 
 
-class Regexp(BaseMatcher):
+class Regexp(OperatorMatcher):
     '''
     Match a regular expression.  If groups are defined, they are returned
     as results.  Otherwise, the entire expression is returned.
@@ -732,7 +760,7 @@ class Regexp(BaseMatcher):
         self.__pattern = compile(pattern)
         
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
@@ -749,7 +777,7 @@ class Regexp(BaseMatcher):
                 yield ([match.group()], stream[eaten:])
             
             
-class Delayed(BaseMatcher):
+class Delayed(OperatorMatcher):
     '''
     A placeholder that allows forward references (**+=**).  Before use a 
     matcher must be assigned via '+='.
@@ -762,13 +790,13 @@ class Delayed(BaseMatcher):
         super(Delayed, self).__init__()
         self._karg(matcher=matcher)
     
-    def __call__(self, stream):
+    def _match(self, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).
         '''
         if self.matcher:
-            return self.matcher(stream)
+            return self.matcher._match(stream)
         else:
             raise ValueError('Delayed matcher still unbound.')
         
@@ -780,7 +808,7 @@ class Delayed(BaseMatcher):
             return self
          
 
-class Commit(BaseMatcher):
+class Commit(OperatorMatcher):
     '''
     Commit to the current state - deletes all backtracking information.
     This only works if `GeneratorManager` is present (eg when 
@@ -789,10 +817,10 @@ class Commit(BaseMatcher):
     
     def __init__(self):
         super(Commit, self).__init__()
-        self.monitor_class = GeneratorManager
+        self.monitor_class = _GeneratorManager
     
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         if False:
             yield
     
@@ -803,7 +831,7 @@ class Commit(BaseMatcher):
         monitor.commit()
     
     
-class Trace(BaseMatcher):
+class Trace(OperatorMatcher):
     '''
     Enable trace logging for the sub-matcher.
     '''
@@ -812,12 +840,12 @@ class Trace(BaseMatcher):
         super(Trace, self).__init__()
         self._arg(matcher=matcher)
         self._karg(trace=trace)
-        self.monitor_class = TraceResults
+        self.monitor_class = _TraceResults
 
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         try:
-            generator = self.matcher(stream)
+            generator = self.matcher._match(stream)
             while True:
                 yield (yield generator)
         except StopIteration:
@@ -830,6 +858,22 @@ class Trace(BaseMatcher):
         monitor.switch(-1 if self.trace else 1)
         
     
+class Eof(OperatorMatcher):
+    '''
+    Match the end of a stream.  Returns nothing.
+    
+    This is not a consumer because it is independent of stream contents.
+    '''
+
+    def __init__(self):
+        super(Eof, self).__init__()
+
+    @tagged
+    def _match(self, stream):
+        if not stream:
+            yield ([], stream)
+
+
 # The following are functions rather than classes, but we use the class
 # syntax to give a uniform interface.
 
@@ -839,6 +883,20 @@ class Trace(BaseMatcher):
 # final matcher tree for any particular grammar.
 
  
+def SafeRepeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST, 
+                separator=None, add=False):
+    '''
+    A version of `Repeat` that puts an upper limit of 1000 repeats when
+    stop is undefined.
+    
+    This was an experiment to try fix the issue with infinite loops in 
+    bad grammars (it was used as the default implementation of []).  
+    It didn't fix the issue, so isn't used.
+    '''
+    stop = 1000 if stop is None else stop
+    return Repeat(matcher, start, stop, algorithm, separator, add)
+
+
 def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST, 
             separator=None, add=False):
     '''
@@ -1090,11 +1148,6 @@ def Name(matcher, name):
     return Map(matcher, name).tag("Name('{0}')" % name)
 
 
-def Eof():
-    '''Match the end of a stream.  Returns nothing.'''
-    return ~Lookahead(Any().tag('Eof')).tag('Eof')
-
-
 Eos = Eof
 '''Match the end of a stream.  Returns nothing.'''
 
@@ -1175,6 +1228,14 @@ def SignedFloat(decimal='.'):
     '''Match a signed sequence of digits that may include a decimal point.'''
     return Any('+-')[0:1] + UnsignedFloat(decimal)
     
+    
+def UnsignedEFloat(decimal='.', exponent='eE'):
+    '''
+    Match an `UnsignedFloat` followed by an optional exponent 
+    (e+02 etc).
+    '''
+    return UnsignedFloat() + (Any(exponent) + SignedInteger())[0:1]
+
     
 def SignedEFloat(decimal='.', exponent='eE'):
     '''

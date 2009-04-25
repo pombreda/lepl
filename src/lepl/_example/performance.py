@@ -40,11 +40,11 @@ def basic(): return build(Configuration())
 
 def trace_only(): 
     return build(
-        Configuration(monitors=[lambda: TraceResults(False)]))
+        Configuration(monitors=[TraceResults(False)]))
 
 def manage_only(): 
     return build(
-        Configuration(monitors=[lambda: GeneratorManager(queue_len=0)]))
+        Configuration(monitors=[GeneratorManager(queue_len=0)]))
 
 def memo_only(): 
     return build(
@@ -63,8 +63,8 @@ def dfa_only():
 def slow(): 
     return build(
         Configuration(rewriters=[auto_memoize()],
-                      monitors=[lambda: TraceResults(False),
-                                lambda: GeneratorManager(queue_len=0)]))
+                      monitors=[TraceResults(False),
+                                GeneratorManager(queue_len=0)]))
 
 def parse_multiple(parser):
     for i in range(NUMBER):
