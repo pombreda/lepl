@@ -18,7 +18,7 @@ class MemoTest(TestCase):
         
         p = string_matcher(seq, 
                 Configuration(rewriters=[memoize(RMemo)], 
-                              monitors=[lambda: TraceResults(True)]))
+                              monitors=[TraceResults(True)]))
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
@@ -35,7 +35,7 @@ class MemoTest(TestCase):
         
         p = seq.null_matcher(
                 Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[lambda: TraceResults(True)]))
+                              monitors=[TraceResults(True)]))
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
@@ -52,7 +52,7 @@ class MemoTest(TestCase):
         
         p = seq.string_matcher(
                 Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[lambda: TraceResults(True)]))
+                              monitors=[TraceResults(True)]))
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
@@ -69,7 +69,7 @@ class MemoTest(TestCase):
         
         p = string_matcher(seq, 
                 Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[lambda: TraceResults(True)]))
+                              monitors=[TraceResults(True)]))
         results = list(p('abcdef'))
         assert len(results) == 6, len(results)
         assert results[0][0] == ['a'], results[0][0]
@@ -102,13 +102,17 @@ class MemoTest(TestCase):
     
         p = string_matcher(sentence, 
                 Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[lambda: TraceResults(False)]))
+                              monitors=[TraceResults(False)]))
         
+        text = 'every boy or some girl and helen and john or pat knows ' \
+               'and respects or loves every boy or some girl and pat or ' \
+               'john and helen'
+#        text = 'every boy loves helen'
         count = 0
-        for meaning in p('every boy or some girl and helen and john or pat knows '
-                         'and respects or loves every boy or some girl and pat or '
-                         'john and helen'):
+        for meaning in p(text):
             count += 1
+            if count < 3:
+                print(meaning[0][0])
         print(count)
     
     

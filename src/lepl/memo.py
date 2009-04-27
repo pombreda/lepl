@@ -28,12 +28,12 @@ generators implemented here.
 
 from itertools import count
 
-from lepl.matchers import BaseMatcher
+from lepl.matchers import OperatorMatcher
 from lepl.parser import tagged, GeneratorWrapper
 from lepl.support import LogMixin, empty
 
 
-class RMemo(BaseMatcher):
+class RMemo(OperatorMatcher):
     '''
     A simple memoizer for grammars that do not have left recursion.  Since this
     fails with left recursion it's safer to always use LMemo (this is here
@@ -51,13 +51,13 @@ class RMemo(BaseMatcher):
         self.tag(self.matcher.describe)
         
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         if stream not in self.__table:
             # we have no cache for this stream, so we need to generate the
             # entry.  we do not care about nested calls with the same stream
             # because this memoization is not for left recursion.  that means
             # that we can return a table around this generator immediately.
-            self.__table[stream] = RTable(self.matcher(stream))
+            self.__table[stream] = RTable(self.matcher._match(stream))
         return self.__table[stream].generator(self.matcher, stream)
 
 
@@ -111,7 +111,7 @@ class _DummyMatcher(object):
         self.describe = '{0}({1})'.format(outer, inner)
         
         
-class LMemo(BaseMatcher):
+class LMemo(OperatorMatcher):
     '''
     A memoizer for grammars that do have left recursion.
     '''
@@ -123,10 +123,10 @@ class LMemo(BaseMatcher):
         self.__caches = {}
         
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         if stream not in self.__caches:
             self.__caches[stream] = PerStreamCache(self.matcher)
-        return self.__caches[stream](stream)
+        return self.__caches[stream]._match(stream)
         
 
 class PerStreamCache(LogMixin):
@@ -149,13 +149,13 @@ class PerStreamCache(LogMixin):
             return count > len(stream) 
         
     @tagged
-    def __call__(self, stream):
+    def _match(self, stream):
         if not self.__first:
             self.__counter += 1
             if self.__curtail(self.__counter, stream):
                 return empty()
             else:
-                cache = PerCallCache(self.__matcher(stream))
+                cache = PerCallCache(self.__matcher._match(stream))
                 if self.__first is None:
                     self.__first = cache
                 return cache.generator()
@@ -203,11 +203,14 @@ class PerCallCache(LogMixin):
             while True:
                 result = yield self.__generator
                 if self.__unstable:
-#                    self._warn('A view completed before the cache was complete: '
-#                               '{0}'.format(self.__generator.describe))
-                    raise Exception('A view completed before the cache was '
-                                    'complete: {0}'
-                                    .format(self.__generator.describe))
+                    self._warn('A view completed before the cache was complete: '
+                               '{0!r}. This typically means that the grammar '
+                               'contains a matcher that does not consume input '
+                               'within a loop and is usually an error.'
+                               .format(self.__generator))
+#                    raise Exception('A view completed before the cache was '
+#                                    'complete: {0!r}'
+#                                    .format(self.__generator))
                 self.__cache.append(result)
                 self.__returned = True
                 yield result

@@ -33,10 +33,6 @@ class Configuration(object):
     
     __default = None
     __managed = None
-    __nfa = None
-    __dfa = None
-    __nfa_basic = None
-    __dfa_basic = None
     
     def __init__(self, rewriters=None, monitors=None):
         '''
@@ -74,7 +70,7 @@ class Configuration(object):
             cls.__default = \
                 Configuration(
                     rewriters=[flatten, compose_transforms, auto_memoize()],
-                    monitors=[lambda: TraceResults(False)])
+                    monitors=[TraceResults(False)])
         return cls.__default
     
     @classmethod
@@ -90,33 +86,51 @@ class Configuration(object):
             cls.__managed = \
                 Configuration(
                     rewriters=[flatten, compose_transforms, auto_memoize()],
-                    monitors=[lambda: TraceResults(False), 
-                              lambda: GeneratorManager(queue_len=0)])
+                    monitors=[TraceResults(False), 
+                              GeneratorManager(queue_len=0)])
         return cls.__managed
     
+    @classmethod    
+    def tokens(cls, alphabet=None):
+        '''
+        The default configuration, plus support for `Token`.
+        
+        If alphabet is not specified, Unicode is assumed.
+        '''
+        from lepl.lexer.rewriters import lexer_rewriter
+        from lepl.memo import RMemo, LMemo
+        from lepl.regexp.unicode import UnicodeAlphabet
+        from lepl.rewriters import flatten, compose_transforms, auto_memoize, memoize
+        from lepl.trace import TraceResults
+        alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
+        return Configuration(
+                rewriters=[flatten, compose_transforms,
+                           lexer_rewriter(alphabet), auto_memoize()],
+                monitors=[TraceResults(False)])
+    
     @classmethod
-    def nfa(cls):
+    def nfa(cls, alphabet=None):
         '''
         Rewrite fragments of the matcher graph as regular expressions.
         This uses a pushdown automaton and should return all possible matches.
         
-        Note - this assumes that the value being parsed is Unicode text.
+        If alphabet is not specified, Unicode is assumed.
         '''
-        if cls.__nfa is None:
-            from lepl.regexp.rewriters import regexp_rewriter
-            from lepl.regexp.unicode import UnicodeAlphabet
-            from lepl.rewriters import flatten, compose_transforms, auto_memoize
-            from lepl.trace import TraceResults
-            cls.__nfa = \
-                Configuration(
-                    rewriters=[flatten, compose_transforms,
-                               regexp_rewriter(UnicodeAlphabet.instance(), False),
-                               compose_transforms, auto_memoize()],
-                    monitors=[lambda: TraceResults(False)])
-        return cls.__nfa
+        from lepl.lexer.rewriters import lexer_rewriter
+        from lepl.regexp.rewriters import regexp_rewriter
+        from lepl.regexp.unicode import UnicodeAlphabet
+        from lepl.rewriters import flatten, compose_transforms, auto_memoize
+        from lepl.trace import TraceResults
+        alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
+        return Configuration(
+                rewriters=[flatten, compose_transforms,
+                           regexp_rewriter(alphabet, False),
+                           compose_transforms, lexer_rewriter(alphabet),
+                           auto_memoize()],
+                monitors=[TraceResults(False)])
     
     @classmethod
-    def dfa(cls):
+    def dfa(cls, alphabet=None):
         '''
         Rewrite fragments of the matcher graph as regular expressions.
         This uses a finite automaton and returns only the greediest match,
@@ -124,17 +138,16 @@ class Configuration(object):
         
         Note - this assumes that the value being parsed is Unicode text.
         '''
-        if cls.__dfa is None:
-            from lepl.regexp.matchers import DfaRegexp
-            from lepl.regexp.rewriters import regexp_rewriter
-            from lepl.regexp.unicode import UnicodeAlphabet
-            from lepl.rewriters import flatten, compose_transforms, auto_memoize
-            from lepl.trace import TraceResults
-            cls.__dfa = \
-                Configuration(
-                    rewriters=[flatten, compose_transforms,
-                               regexp_rewriter(UnicodeAlphabet.instance(), False, DfaRegexp),
-                               compose_transforms, auto_memoize()],
-                    monitors=[lambda: TraceResults(False)])
-        return cls.__dfa
+        from lepl.regexp.matchers import DfaRegexp
+        from lepl.regexp.rewriters import regexp_rewriter
+        from lepl.regexp.unicode import UnicodeAlphabet
+        from lepl.rewriters import flatten, compose_transforms, auto_memoize
+        from lepl.trace import TraceResults
+        alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
+        return Configuration(
+                rewriters=[flatten, compose_transforms,
+                           regexp_rewriter(UnicodeAlphabet.instance(), False, DfaRegexp),
+                           compose_transforms, lexer_rewriter(alphabet),
+                           auto_memoize()],
+                monitors=[TraceResults(False)])
     

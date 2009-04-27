@@ -1,4 +1,6 @@
 
+from logging import basicConfig, DEBUG
+
 from lepl import *
 from lepl.rewriters import compose_transforms
 
@@ -28,9 +30,46 @@ def naturalLanguage():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    p = sentence.null_matcher(Configuration(rewriters=[auto_memoize(False)]))
+    p = sentence.null_matcher(Configuration.default())
     #p = sentence.null_matcher(Configuration.dfa())
     #p = sentence.null_matcher()
+    print(p.matcher)
+    for i in range(1000):
+        assert len(list(p('every boy or some girl and helen and john or pat knows '
+                          'and respects or loves every boy or some girl and pat or '
+                          'john and helen'))) == 392  
+
+
+def naturalLanguage2():
+    '''
+    This focuses on the LMemo cache.  It does not use any monitor or stream.
+    '''
+    
+    basicConfig(level=DEBUG)
+    
+    class VerbPhrase(Node): pass
+    class DetPhrase(Node): pass
+    class SimpleTp(Node): pass
+    class TermPhrase(Node): pass
+    class Sentence(Node): pass
+    
+    t           = Token('[a-z]+')
+    
+    verb        = t(Literals('knows', 'respects', 'loves'))    > 'verb'
+    join        = t(Literals('and', 'or'))                     > 'join'
+    proper_noun = t(Literals('helen', 'john', 'pat'))          > 'proper_noun'
+    determiner  = t(Literals('every', 'some'))                 > 'determiner'
+    noun        = t(Literals('boy', 'girl', 'man', 'woman'))   > 'noun'
+    
+    verbphrase  = Delayed()
+    verbphrase += verb | (verbphrase & join & verbphrase)      > VerbPhrase
+    det_phrase  = determiner & noun                            > DetPhrase
+    simple_tp   = proper_noun | det_phrase                     > SimpleTp
+    termphrase  = Delayed()
+    termphrase += simple_tp | (termphrase & join & termphrase) > TermPhrase
+    sentence    = termphrase & verbphrase & termphrase & Eos() > Sentence
+
+    p = sentence.null_matcher(Configuration.tokens())
     print(p.matcher)
     for i in range(1000):
         assert len(list(p('every boy or some girl and helen and john or pat knows '
@@ -46,6 +85,7 @@ def time():
     # with dfa: 12.4
     # without dfa: 5.7
     # default: 12.4
+    # with tokens: 13.3
     
     # all numbers below included compilation!
     # using LMemo:

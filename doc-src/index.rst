@@ -31,6 +31,7 @@ Contents
    errors
    resources
    debugging
+   lexer
    advanced
    style
    download

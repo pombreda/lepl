@@ -81,7 +81,7 @@ class RegexpContainer(object):
         '''
         from lepl.matchers import Transformable
         if use and not add_reqd:
-            matcher = single(node, regexp, alphabet, matcher_type, transform)
+            matcher = single(alphabet, node, regexp, matcher_type, transform)
             # if matcher is a Transformable with a Transformation other than
             # the standard empty_adapter then we must stop
             if len(matcher.function.functions) > 1:
@@ -92,7 +92,7 @@ class RegexpContainer(object):
         return RegexpContainer(matcher, regexp, use, add_reqd)
         
 
-def single(node, regexp, alphabet, matcher_type, transform=True):
+def single(alphabet, node, regexp, matcher_type, transform=True):
     '''
     Create a matcher for the given regular expression.
     '''
@@ -189,7 +189,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
                 original.function = Transformation(original.function.functions[1:])
                 LOG.debug('And: OK (final)')
                 # NEED TEST FOR THIS
-                return single(original, regexp, alphabet, matcher_type) 
+                return single(alphabet, original, regexp, matcher_type) 
             elif len(original.function.functions) == 1 \
                     and original.function.functions[0] is add:
                 # lucky!  we just combine and continue
@@ -226,7 +226,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
                 original.function = Transformation(function.functions[1:])
                 LOG.debug('Transform: OK (final)')
                 # NEED TEST FOR THIS
-                return single(original, regexp, alphabet, matcher_type) 
+                return single(alphabet, original, regexp, matcher_type) 
             elif len(function.functions) == 1 and function.functions[0] is add:
                 # exactly what we wanted!  combine and continue
                 LOG.debug('Transform: OK')

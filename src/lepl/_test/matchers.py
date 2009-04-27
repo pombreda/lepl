@@ -154,7 +154,7 @@ class RepeatTest(TestCase):
         result = [''.join(map(str, l)) for (l, s) in matcher.match_string(stream)]
         assert target == result, result
     
-class RangeMatch(BaseMatcher):
+class RangeMatch(OperatorMatcher):
     '''
     We test repetition by looking at "strings" of integers, where the 
     matcher for any particular value returns all values less than the
@@ -165,7 +165,7 @@ class RangeMatch(BaseMatcher):
         super(RangeMatch, self).__init__()
     
     @tagged
-    def __call__(self, values):
+    def _match(self, values):
         if values:
             for i in range(values[0]):
                 yield ([i], values[1:])
@@ -246,4 +246,4 @@ class TransformTest(BaseTest):
                            (Literal('foo') >> self.mkappend('b')) > self.mkappend(['c']), 
                            [[['foob', 'c']]])
         
-       
+        
