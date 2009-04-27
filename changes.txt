@@ -6,4 +6,3 @@
 - _match() instead of __call__()
 
 - regexp inverted ranges were broken
-
