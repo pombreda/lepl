@@ -160,6 +160,12 @@ Date        Version  Description
 2009-04-05  2.3.1    Fix regexp packaging.
 ----------  -------  -----------
 2009-04-05  2.3.2    Fix regexp packaging.
+----------  -------  -----------
+2009-04-28  2.3.3    Fix regexp packaging.
+----------  -------  -----------
+2009-04-28  2.3.4    Fix regexp packaging.
+----------  -------  -----------
+2009-04-28  2.3.5    Make all classes new style in 2.6.
 ==========  =======  ===========
 
 
