@@ -4,7 +4,7 @@ except:
     from distutils.core import setup
 
 setup(name='LEPL',
-      version='2.3.2',
+      version='2.3.3',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -19,7 +19,8 @@ The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
 Release 2.3 provides optimisation via regular expressions.  A detailed example
-shows the benefits.  Release 2.3.1 fixes a packaging error.
+shows the benefits.  Release 2.3.3 fixes a packaging error (I hope - this 
+release has been a complete disaster so far).
 
 
 Features
@@ -60,7 +61,7 @@ Features
       author='Andrew Cooke',
       author_email='andrew@acooke.org',
       url='http://www.acooke.org/lepl/',
-      packages=['lepl'],
+      packages=['lepl', 'lepl/regexp'],
       package_dir = {'':'src'},
       license = "LGPL",
       keywords = "parser",
