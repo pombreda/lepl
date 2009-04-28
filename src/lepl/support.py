@@ -35,7 +35,7 @@ def assert_type(name, value, type_, none_ok=False):
                     .format(name, repr(value), type_.__name__))
 
 
-class CircularFifo():
+class CircularFifo(object):
     '''
     A FIFO queue with a fixed maximum size that silently discards data on 
     overflow.  It supports iteration for reading current contents and so

@@ -10,7 +10,7 @@ from lepl.support import LogMixin
 
 class InstanceMethodTest(TestCase):
     
-    class Foo():
+    class Foo(object):
         class_attribute = 1
         def __init__(self):
             self.instance_attribute = 2

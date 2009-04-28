@@ -5,7 +5,7 @@ Experimental code - exploring generators and Python 3.
 
 # what happens when we pass various things to []?
 
-class CheckSlice():
+class CheckSlice(object):
     
     def __getattr__(self, attr):
         self.dump('__getattr__', attr)
@@ -50,7 +50,7 @@ class CheckSlice():
         self[1:2:3,',']
         
         
-class CheckDash():
+class CheckDash(object):
     
     def __init__(self, name):
         self.name = name
@@ -92,7 +92,7 @@ class CheckDash():
         a--'b'
         
 
-class CheckReturnYield():
+class CheckReturnYield(object):
     
     def counter(self, n, direct):
         if direct:
@@ -118,7 +118,7 @@ class CheckReturnYield():
             print(i)
             
             
-class CheckGeneratorProxy():
+class CheckGeneratorProxy(object):
     
     def __getattr__(self, name):
         return getattr(self.target, name)
@@ -128,7 +128,7 @@ class CheckGeneratorProxy():
         for i in self.numbers():
             print(i)
 
-class Numbers():
+class Numbers(object):
     
     def numbers(self):
         for i in range(5):
@@ -137,7 +137,7 @@ class Numbers():
             
 import inspect
 
-class InvisibleScope():
+class InvisibleScope(object):
     
     def __enter__(self):
         print('enter')

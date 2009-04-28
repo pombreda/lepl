@@ -25,7 +25,7 @@ from io import StringIO
 from lepl.support import open_stop
 
 
-class Stream():
+class Stream(object):
     '''
     A wrapper for the input data.
     
@@ -329,7 +329,7 @@ class Chunk(object):
         return self.__len
     
 
-class ListIO():
+class ListIO(object):
     '''
     Minimal wrapper for lists - returns entire list as single line.
     '''

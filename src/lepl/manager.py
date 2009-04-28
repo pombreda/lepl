@@ -165,7 +165,7 @@ class GeneratorManager(MonitorInterface):
                     reference.close()
             
 
-class GeneratorRef():
+class GeneratorRef(object):
     '''
     This contains the weak reference to the GeneratorWrapper and is stored
     in the GC priority queue.
