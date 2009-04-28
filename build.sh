@@ -37,7 +37,6 @@ do
   echo "include $f" >> MANIFEST.in
 done
 echo "include setup.py" >> MANIFEST.in
-echo "include MANIFEST.in" >> MANIFEST.in
 
 python setup.py sdist --formats=gztar,zip
 
