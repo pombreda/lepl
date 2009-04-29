@@ -26,12 +26,15 @@ from io import StringIO
 from lepl.support import open_stop
 
 
-class SimpleStream(metaclass=ABCMeta):
+# Python 2.6
+#class SimpleStream(metaclass=ABCMeta):
+SimpleStream = ABCMeta('SimpleStream', (object, ), {})
+'''ABC used to identify streams.'''
+
+
+class SimpleStreamInterface(SimpleStream):
     '''
     The minimal interface that matchers expect to be implemented.
-    
-    If I can work out how to make it work for 2.6 and 3, this will be an 
-    ABC, otherwise it's just documentation.
     '''
 
     @abstractmethod
@@ -87,7 +90,7 @@ SimpleStream.register(str)
 SimpleStream.register(list)
 
 
-class LocationStream(SimpleStream):
+class LocationStream(SimpleStreamInterface):
     '''
     Additional methods available on "real" streams.
     '''
