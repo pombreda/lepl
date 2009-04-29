@@ -1,4 +1,5 @@
 
+from __future__ import print_function
 from logging import basicConfig, DEBUG
 from math import sin, cos
 from operator import add, sub, mul, truediv
