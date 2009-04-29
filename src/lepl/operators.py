@@ -20,10 +20,9 @@
 Support for operator syntactic sugar (and operator redefinition).
 '''
 
-from collections import deque
-from threading import local
 from abc import ABCMeta
 
+from lepl.context import Namespace, NamespaceMixin, Global, Scope
 from lepl.support import open_stop
 
 
@@ -31,72 +30,6 @@ from lepl.support import open_stop
 #class Matcher(metaclass=ABCMeta):
 Matcher = ABCMeta('Matcher', (object, ), {})
 '''ABC used to identify matchers.'''
-
-
-class Namespace(local):
-    '''
-    A store for operator definitions.
-    
-    This subclasses threading.local so each thread effectively has its own 
-    instance (see test).
-    '''
-    
-    def __init__(self, base={}):
-        super(Namespace, self).__init__()
-        self.__stack = deque([base])
-        
-    def push(self, extra={}):
-        '''
-        Add further names, savign the current state to the stack.
-        '''
-        self.__stack.append(dict(self.current()))
-        for name in extra:
-            self.set_opt(name, extra[name])
-        
-    def pop(self):
-        '''
-        Return the previous state from the stack.
-        '''
-        self.__stack.pop()
-        
-    def __enter__(self):
-        '''
-        Allow use within a with context by duplicating the current state
-        and saving to the stack.  Returns self to allow manipulation via set.
-        '''
-        self.push()
-        return self
-        
-    def __exit__(self, *args):
-        '''
-        Restore the previous state from the stack on leaving the context.
-        '''
-        self.pop()
-        
-    def current(self):
-        '''
-        The current state (a map from names to operator implementations).
-        '''
-        return self.__stack[-1]
-    
-    def set(self, name, value):
-        '''
-        Set a value.
-        '''
-        self.current()[name] = value
-        
-    def set_opt(self, name, value):
-        '''
-        Set a value if it is not None.
-        '''
-        if value != None:
-            self.set(name, value)
-        
-    def __getitem__(self, name):
-        '''
-        Get a value.
-        '''
-        return self.current()[name]
 
 
 class DefaultNamespace(Namespace):
@@ -126,23 +59,10 @@ class DefaultNamespace(Namespace):
         })
     
 
-__GLOBAL = None
+OPERATORS = 'operators'
 '''
-The global singleton.
+The name used to retrieve operators definitions.
 '''
-
-def Global():
-    '''
-    Global (per-thread) binding from operator name to implementation.
-    
-    This provides an interface to `__GLOBAL`.
-    '''
-    # Delay creation to handle circular dependencies.
-    global __GLOBAL
-    if __GLOBAL is None:
-        __GLOBAL = DefaultNamespace()
-    return __GLOBAL
-
 
 SPACE_OPT = '/'
 '''Name for / operator.'''
@@ -174,32 +94,22 @@ MAP = '>>'
 '''Name for >> operator.'''
 
 
-class Override(object):
+class Override(Scope):
     '''
-    Allow an operator to be redefined within a with context.
+    Allow an operator to be redefined within a with context.  Uses the 
+    OPERATORS namespace.
     '''
 
     def __init__(self, space_opt=None, space_req=None, repeat=None,
                   add=None, and_=None, or_=None, not_=None, 
                   apply=None, apply_raw=None, args=None, kargs=None, 
                   raise_=None, first=None, map=None):
-        self.__frame ={SPACE_OPT: space_opt, SPACE_REQ: space_req,
-                       REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
-                       NOT: not_, APPLY: apply, APPLY_RAW: apply_raw,
-                       ARGS: args, KARGS: kargs, RAISE: raise_, 
-                       FIRST: first, MAP: map}
-        
-    def __enter__(self):
-        '''
-        On entering the context, add the new definitions.
-        '''
-        Global().push(self.__frame)
-        
-    def __exit__(self, *args):
-        '''
-        On leaving the context, return to previous definition.
-        '''
-        Global().pop()
+        super(Override, self).__init__(OPERATORS, DefaultNamespace,
+            {SPACE_OPT: space_opt, SPACE_REQ: space_req,
+             REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
+             NOT: not_, APPLY: apply, APPLY_RAW: apply_raw,
+             ARGS: args, KARGS: kargs, RAISE: raise_, 
+             FIRST: first, MAP: map})
 
 
 class Separator(Override):
@@ -207,6 +117,8 @@ class Separator(Override):
     Redefine ``[]`` and ``&`` to include the given matcher as a separator 
     (so it will be used between list items and between matchers separated by the & 
     operator)
+    
+    Uses the OPERATORS namespace.
     '''
     
     def __init__(self, separator):
@@ -225,6 +137,18 @@ class Separator(Override):
             return Repeat(m, st, sp, d, s, a)
         super(Separator, self).__init__(and_=and_, repeat=repeat)
         
+
+#class UnsafeRepeat(Override):
+#    '''
+#    Allow unlimited repetition (by default [] uses `SafeRepeat`). 
+#    '''
+#    
+#    def __init__(self):
+#        # Handle circular dependencies
+#        from lepl.matchers import Repeat
+#        super(UnsafeRepeat, self).__init__(repeat=Repeat)
+        
+        
         
 GREEDY = 'g'
 '''Flag (splice increment) for inefficient, guaranteed greedy matching.'''
@@ -236,13 +160,13 @@ BREADTH_FIRST = 'b'
 '''Flag (splice increment) for efficient, quasi-non-greedy, matching.'''
 
 
-class OperatorMixin(object):
+class OperatorMixin(NamespaceMixin):
     '''
     Define the operators used to combine elements in a grammar specification.
     '''
 
-    def __init__(self):
-        super(OperatorMixin, self).__init__()
+    def __init__(self, name, namespace):
+        super(OperatorMixin, self).__init__(name, namespace)
         
     def __add__(self, other):
         '''
@@ -258,7 +182,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(ADD, other, True)
-        return Global()[ADD](self, other)
+        return self._lookup(ADD)(self, other)
 
     def __radd__(self, other):
         '''
@@ -274,7 +198,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(ADD, other, True)
-        return Global()[ADD](other, self)
+        return self._lookup(ADD)(other, self)
 
     def __and__(self, other):
         '''
@@ -290,7 +214,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(AND, other, True)
-        return Global()[AND](self, other) 
+        return self._lookup(AND)(self, other) 
         
     def __rand__(self, other):
         '''
@@ -306,7 +230,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(AND, other, True)
-        return Global()[AND](other, self)
+        return self._lookup(AND)(other, self)
     
     def __div__(self, other):
         '''
@@ -334,7 +258,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(SPACE_OPT, other, True)
-        return Global()[SPACE_OPT](self, other)
+        return self._lookup(SPACE_OPT)(self, other)
         
     def __rtruediv__(self, other):
         '''
@@ -350,7 +274,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(SPACE_OPT, other, True)
-        return Global()[SPACE_OPT](other, self)
+        return self._lookup(SPACE_OPT)(other, self)
         
     def __floordiv__(self, other):
         '''
@@ -366,7 +290,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(SPACE_REQ, other, True)
-        return Global()[SPACE_REQ](self, other)
+        return self._lookup(SPACE_REQ)(self, other)
         
     def __rfloordiv__(self, other):
         '''
@@ -382,7 +306,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(SPACE_REQ, other, True)
-        return Global()[SPACE_REQ](other, self)
+        return self._lookup(SPACE_REQ)(other, self)
         
     def __or__(self, other):
         '''
@@ -399,7 +323,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(OR, other, True)
-        return Global()[OR](self, other) 
+        return self._lookup(OR)(self, other) 
         
     def __ror__(self, other):
         '''
@@ -416,7 +340,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(OR, other, True)
-        return Global()[OR](other, self) 
+        return self._lookup(OR)(other, self) 
         
     def __mod__(self, other):
         '''
@@ -432,7 +356,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(FIRST, other, True)
-        return Global()[FIRST](self, other) 
+        return self._lookup(FIRST)(self, other) 
         
     def __rmod__(self, other):
         '''
@@ -448,7 +372,7 @@ class OperatorMixin(object):
             match.
         '''
         self.__check(FIRST, other, True)
-        return Global()[FIRST](other, self) 
+        return self._lookup(FIRST)(other, self) 
         
     def __invert__(self):
         '''
@@ -460,7 +384,7 @@ class OperatorMixin(object):
         Note that `Lookahead()` overrides this method to have
         different semantics (negative lookahead).
         '''
-        return Global()[NOT](self) 
+        return self._lookup(NOT)(self) 
         
     def __getitem__(self, indices):
         '''
@@ -566,7 +490,7 @@ class OperatorMixin(object):
                 separator = index
             else:
                 raise TypeError(index)
-        return Global()[REPEAT](self, start, stop, step, separator, add)
+        return self._lookup(REPEAT)(self, start, stop, step, separator, add)
         
     def __gt__(self, function):
         '''
@@ -589,7 +513,7 @@ class OperatorMixin(object):
             result.  This is equivalent to `Apply()` with raw=False.
         '''
         self.__check(APPLY, function, False)
-        return Global()[APPLY](self, function) 
+        return self._lookup(APPLY)(self, function) 
     
     def __ge__(self, function):
         '''
@@ -606,7 +530,7 @@ class OperatorMixin(object):
             raw=True.
         '''
         self.__check(APPLY_RAW, function, False)
-        return Global()[APPLY_RAW](self, function) 
+        return self._lookup(APPLY_RAW)(self, function) 
     
     def __rshift__(self, function):
         '''
@@ -630,7 +554,7 @@ class OperatorMixin(object):
             The return values are used as the new result.
         '''
         self.__check(MAP, function, False)
-        return Global()[MAP](self, function) 
+        return self._lookup(MAP)(self, function) 
         
     def __mul__(self, function):
         '''
@@ -648,7 +572,7 @@ class OperatorMixin(object):
             The return values are used as the new result.
         '''
         self.__check(ARGS, function, False)
-        return Global()[ARGS](self, function) 
+        return self._lookup(ARGS)(self, function) 
         
     def __pow__(self, function):
         '''
@@ -675,7 +599,7 @@ class OperatorMixin(object):
                 A list of the results returned.
         '''
         self.__check(KARGS, function, False)
-        return Global()[KARGS](self, function) 
+        return self._lookup(KARGS)(self, function) 
     
     def __xor__(self, message):
         '''
@@ -688,7 +612,7 @@ class OperatorMixin(object):
           message
             The message for the SyntaxError.
         '''
-        return Global()[RAISE](self, message)
+        return self._lookup(RAISE)(self, message)
                              
     def __check(self, name, other, is_match):
         '''

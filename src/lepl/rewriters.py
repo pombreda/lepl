@@ -204,6 +204,7 @@ def left_loops(node):
     '''
     from lepl.matchers import Or, Lookahead
     stack = [[node]]
+    known = set([node]) # avoid getting lost in embedded loops
     while stack:
         ancestors = stack.pop()
         parent = ancestors[-1]
@@ -213,7 +214,9 @@ def left_loops(node):
                 if child is node:
                     yield family
                 else:
-                    stack.append(family)
+                    if child not in known:
+                        stack.append(family)
+                        known.add(child)
                 if not isinstance(parent, Or) and not isinstance(child, Lookahead):
                     break
     

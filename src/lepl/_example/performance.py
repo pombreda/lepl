@@ -6,7 +6,7 @@ from timeit import timeit
 from lepl import *
 from lepl._example.support import Example
 
-NUMBER = 50
+NUMBER = 10
 REPEAT = 5
 
 def build(config):
@@ -40,11 +40,11 @@ def basic(): return build(Configuration())
 
 def trace_only(): 
     return build(
-        Configuration(monitors=[lambda: TraceResults(False)]))
+        Configuration(monitors=[TraceResults(False)]))
 
 def manage_only(): 
     return build(
-        Configuration(monitors=[lambda: GeneratorManager(queue_len=0)]))
+        Configuration(monitors=[GeneratorManager(queue_len=0)]))
 
 def memo_only(): 
     return build(
@@ -60,6 +60,12 @@ def dfa_only():
         Configuration(rewriters=[
             regexp_rewriter(UnicodeAlphabet.instance(), False, DfaRegexp)]))
 
+def slow(): 
+    return build(
+        Configuration(rewriters=[auto_memoize()],
+                      monitors=[TraceResults(False),
+                                GeneratorManager(queue_len=0)]))
+
 def parse_multiple(parser):
     for i in range(NUMBER):
         parser('1.23e4 + 2.34e5 * (3.45e6 + 4.56e7 - 5.67e8)')[0]
@@ -74,6 +80,7 @@ def parse_manage_only(): parse_multiple(manage_only())
 def parse_memo_only(): parse_multiple(memo_only())
 def parse_nfa_only(): parse_multiple(nfa_only())
 def parse_dfa_only(): parse_multiple(dfa_only())
+def parse_slow(): parse_multiple(slow())
 
 def time(number, name):
     stmt = '{0}()'.format(name)
@@ -92,6 +99,8 @@ def analyse(func, time1_base=None, time2_base=None):
         collect()
         time2.append(time(1, 'parse_' + name))
     (time1, time2) = (min(time1), min(time2))
+    # remove the time needed to compile
+    time2 = time2 - (time1 / NUMBER)
     print('{0:>20s} {1:5.2f} {2:7s}  {3:5.2f} {4:7s}'.format(name, 
             time1, normalize(time1, time1_base), 
             time2, normalize(time2, time2_base)))
@@ -110,7 +119,7 @@ def main():
     for config in [default, managed, nfa, dfa]:
         analyse(config, time1, time2)
     print()
-    for config in [trace_only, manage_only, memo_only, nfa_only, dfa_only]:
+    for config in [trace_only, manage_only, memo_only, nfa_only, dfa_only, slow]:
         analyse(config, time1, time2)
 
 if __name__ == '__main__':
@@ -124,7 +133,7 @@ class PerformanceExample(Example):
         # run this to make sure nothing changes
         parsers = [default, managed, nfa, dfa,
                    basic, trace_only, manage_only,
-                   memo_only, nfa_only, dfa_only]
+                   memo_only, nfa_only, dfa_only, slow]
         examples = [(lambda: parser()('1.23e4 + 2.34e5 * (3.45e6 + 4.56e7 - 5.67e8)')[0],
 """Expression
  +- Factor

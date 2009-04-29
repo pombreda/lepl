@@ -11,7 +11,7 @@ UNICODE = UnicodeAlphabet.instance()
 
 
 def _test_parser(regexp):
-    return Regexp.single(regexp, UNICODE, 'label')
+    return Regexp.single(UNICODE, regexp, 'label')
 
 class CharactersTest(TestCase):
     
@@ -110,8 +110,8 @@ class NfaTest(TestCase):
     
     def assert_matches(self, pattern, text, results):
         r = _test_parser(pattern)
-        m = r.nfa()
-        s = list(m(Stream.from_string(text)))
+        m = r.nfa().matcher
+        s = list(m(SequenceByLine.from_string(text)))
         assert len(s) == len(results), s
         for (a, b) in zip(s, results):
             assert a[1] == b, a[1] + ' != ' + b
@@ -123,6 +123,9 @@ class NfaTest(TestCase):
     def test_star(self):
         self.assert_matches('a*b', 'aaabc', ['aaab'])
     
+    def test_plus(self):
+        self.assert_matches('[a-z]+', 'abc', ['abc', 'ab', 'a'])
+
     def test_choice(self):
         self.assert_matches('(a|b)', 'ac', ['a'])
     
@@ -199,7 +202,7 @@ class DfaGraphTest(TestCase):
 class DfaTest(TestCase):
     
     def assert_dfa(self, regexp, text, results):
-        r = _test_parser(regexp).dfa()(text)
+        r = _test_parser(regexp).dfa().match(text)
         assert r[1] == results, r
         
     def test_simple(self):
@@ -216,3 +219,4 @@ class DfaTest(TestCase):
         self.assert_dfa('a(bc|b*d)', 'abde', 'abd') 
         self.assert_dfa('a(bc|b*d)', 'abce', 'abc') 
     
+

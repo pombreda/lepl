@@ -161,9 +161,11 @@ def make_str_parser(alphabet):
     dup = lambda x: (alphabet.from_char(x), alphabet.from_char(x))
     tup = lambda x: (alphabet.from_char(x[0]), alphabet.from_char(x[1]))
     dot = lambda x: (alphabet.min, alphabet.max)
-    invert = alphabet.invert
+    # Character needed here to ensure intervals passed to invert are ordered 
+    invert = lambda x: alphabet.invert(Character(x, alphabet))
     sequence = lambda x: Sequence(x, alphabet)
     repeat = lambda x: Repeat(x, alphabet)
+    repeat2 = lambda x: sequence([sequence(x), Repeat(x, alphabet)])
     option = lambda x: Option(x, alphabet)
     choice = lambda x: Choice(x, alphabet)
     character = lambda x: Character(x, alphabet)
@@ -186,13 +188,14 @@ def make_str_parser(alphabet):
 
     item     = Delayed()
     
-    seq      = (char | item)[1:]                                > sequence
+    seq      = (char | item)[0:]                                > sequence
     group    = Drop('(') & seq & Drop(')')
     alts     = Drop('(') & seq[2:, Drop('|')] & Drop(')')       > choice
     star     = (alts | group | char) & Drop('*')                > repeat
+    plus     = (alts | group | char) & Drop('+')                > repeat2
     opt      = (alts | group | char) & Drop('?')                > option
     
-    item    += alts | group | star | opt
+    item    += alts | group | star | plus | opt
     
     expr     = (char | item)[:] & Drop(Eos())
 

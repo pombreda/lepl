@@ -65,12 +65,12 @@ class NfaRegexp(BaseRegexp):
     def __init__(self, regexp, alphabet=None):
         alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
         if not isinstance(regexp, Regexp):
-            regexp = Regexp.single(regexp, alphabet)
+            regexp = Regexp.single(alphabet, regexp)
         super(NfaRegexp, self).__init__(regexp, alphabet)
-        self.__matcher = regexp.nfa()
+        self.__matcher = regexp.nfa().matcher
 
     @tagged
-    def __call__(self, stream_in):
+    def _match(self, stream_in):
         matches = self.__matcher(stream_in)
         for (terminal, match, stream_out) in matches:
             yield self.function([match], stream_in, stream_out)
@@ -88,12 +88,12 @@ class DfaRegexp(BaseRegexp):
     def __init__(self, regexp, alphabet=None):
         alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
         if not isinstance(regexp, Regexp):
-            regexp = Regexp.single(regexp, alphabet)
+            regexp = Regexp.single(alphabet, regexp)
         super(DfaRegexp, self).__init__(regexp, alphabet)
-        self.__matcher = regexp.dfa()
+        self.__matcher = regexp.dfa().match
 
     @tagged
-    def __call__(self, stream_in):
+    def _match(self, stream_in):
         match = self.__matcher(stream_in)
         if match is not None:
             (terminals, match, stream_out) = match

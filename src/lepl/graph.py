@@ -166,6 +166,7 @@ def loops(node, type_=SimpleGraphNode):
     Each loop is a list that starts and ends with the given node.
     '''
     stack = [[node]]
+    known = set([node]) # avoid getting lost in sub-loops
     while stack:
         ancestors = stack.pop()
         parent = ancestors[-1]
@@ -176,7 +177,9 @@ def loops(node, type_=SimpleGraphNode):
                 if child is node:
                     yield family
                 else:
-                    stack.append(family)
+                    if child not in known:
+                        stack.append(family)
+                        known.add(child)
 
 
 class SimpleWalker(object):
@@ -644,9 +647,6 @@ class Proxy(object):
         
     def __getattr__(self, name):
         return getattr(self.__mutable_delegate[0], name)
-    
-    def __call__(self, *args, **kargs):
-        return self.__getattr__('__call__')(*args, **kargs)
     
 
 def make_proxy():

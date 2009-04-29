@@ -26,6 +26,24 @@ from lepl.graph import SimpleGraphNode, SimpleWalker, GraphStr, postorder, POSTO
 from lepl.support import LogMixin
 
 
+def on_tuple(arg, match, fail=None):
+    '''
+    Handle (str, value) arguments.  We need to avoid matching two character 
+    strings while remaining as accomodating as possible.
+    '''
+    matched = False
+    if isinstance(arg, tuple) or isinstance(arg, list):
+        try:
+            (name, value) = arg
+            matched = True
+            return match(name, value)
+        except:
+            pass
+    if fail:
+        return fail(arg)
+    else:
+        return None
+
 class Node(SimpleGraphNode, LogMixin):
     '''
     A base class for AST nodes.  This is designed to be applied to a list of 
@@ -46,13 +64,8 @@ class Node(SimpleGraphNode, LogMixin):
             if isinstance(arg, Node):
                 self.__add_attribute(arg.__class__.__name__, arg)
             else:
-                try:
-                    (name, value) = arg
-                    self.__add_attribute(name, value)
-                except:
-                    pass
+                on_tuple(arg, self.__add_attribute)
             self._children.append(arg)
-#        self._info('{0}'.format(self))
         
     def __add_attribute(self, name, value):
         if name not in self._names:
@@ -106,12 +119,11 @@ class CustomStr(GraphStr):
     '''
     
     def leaf(self, arg):
-        try:
-            (name, value) = arg
-            return lambda first, rest, name_: \
-                [first + name + (' ' if name else '') + repr(value)]
-        except Exception as e:
-            return super(CustomStr, self).leaf(arg)
+        return on_tuple(arg, 
+            lambda name, value:
+                lambda first, rest, name_:
+                    [first + name + (' ' if name else '') + repr(value)],
+            super(CustomStr, self).leaf)
 
 
 def make_dict(contents):
@@ -154,10 +166,8 @@ def _syntax_error_args(msg, stream_in, stream_out, results):
     Helper function for constructing format dictionary.
     '''
     try:
-        filename = stream_in.source()
-        (lineno, offset) = stream_in.location()
+        (lineno, offset, depth, line, filename) = stream_in.location()
         offset += 1 # appears to be 1-based?
-        line = stream_in.line()
     except:
         filename = '<unknown> - use stream for better error reporting'
         lineno = -1

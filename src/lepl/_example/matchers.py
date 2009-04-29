@@ -25,10 +25,6 @@ class MatcherExample(Example):
             (lambda: Or(Any('h'), Any()[3]).parse_string('hello world'), 
              "['h']"),
 
-#generator = Or(Any('h'), Any()[3])('hello world')
-#print( next(generator) )
-#print( next(generator) )
-
             (lambda: Repeat(Any(), 3, 3).parse_string('12345'), 
              "['1', '2', '3']"),
 

@@ -3,7 +3,7 @@
 Test for thread safety.
 '''
 
-from logging import basicConfig, INFO
+from logging import basicConfig, INFO, DEBUG
 from threading import Thread
 from unittest import TestCase
 
@@ -13,7 +13,7 @@ from lepl import *
 class ThreadTest(TestCase):
     
     def test_safety(self):
-        basicConfig(level=INFO)
+        basicConfig(level=DEBUG)
         matcher3 = Delayed()
         matcher4 = Delayed()
         matcher1 = Any()[::'b',...] & Eos()

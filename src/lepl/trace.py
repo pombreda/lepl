@@ -27,7 +27,18 @@ from lepl.monitor import ExposedMonitor
 from lepl.support import CircularFifo
 
 
-class TraceResults(ExposedMonitor):
+def TraceResults(enabled=False):
+    '''
+    A basic logger (implemented as a monitor - `MonitorInterface`)
+    that records the flow of control during parsing.  It can be controlled by 
+    `Trace()`.
+
+    This is a helper function that "escapes" the main class via a function
+    to simplify configuration.
+    '''
+    return lambda: _TraceResults(enabled)
+
+class _TraceResults(ExposedMonitor):
     '''
     A basic logger (implemented as a monitor - `MonitorInterface`)
     that records the flow of control during parsing.  It can be controlled by 
@@ -35,7 +46,7 @@ class TraceResults(ExposedMonitor):
     '''
     
     def __init__(self, enabled=False):
-        super(TraceResults, self).__init__()
+        super(_TraceResults, self).__init__()
         self.generator = None
         self.depth = -1
         self.action = None
@@ -83,48 +94,43 @@ class TraceResults(ExposedMonitor):
                 self.error(value, self.fmt_result(value))
         
     def fmt_result(self, value):
-        (stream, depth) = self.fmt_stream_depth() 
+        (stream, depth, locn) = self.fmt_stream() 
         return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> {6!r}' \
                 .format(self.epoch, 
                         stream,
-                        self.fmt_location(self.generator.stream),
+                        locn,
                         depth,
                         self.depth,
                         self.action,
                         value)
                 
-    def fmt_stream_depth(self):
+    def fmt_done(self):
+        (stream, depth, locn) = self.fmt_stream() 
+        return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> stop' \
+                .format(self.epoch, 
+                        stream,
+                        locn,
+                        depth,
+                        self.depth,
+                        self.action)
+                
+    def fmt_stream(self):
         try:
-            depth = self.generator.stream.depth()
+            (lineno, offset, depth, text, source) = self.generator.stream.location()
             stream = str(self.generator.stream)
+            if lineno < 0:
+                locn = '  eof  '
+            else:
+                locn = '{0:3d}.{1:<3d}'.format(lineno, offset)
         except:
             depth = -len(self.generator.stream)
             if len(self.generator.stream) > 10:
                 stream = repr(self.generator.stream[0:7]) + '...'
             else:
                 stream = repr(self.generator.stream)
-        return (stream, depth)
+            locn = '<unknown>'
+        return (stream, depth, locn)
         
-    def fmt_done(self):
-        (stream, depth) = self.fmt_stream_depth() 
-        return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> stop' \
-                .format(self.epoch, 
-                        stream,
-                        self.fmt_location(self.generator.stream),
-                        depth,
-                        self.depth,
-                        self.action)
-                
-    def fmt_location(self, stream):
-        try:
-            (line, char) = stream.location()
-            if line < 0:
-                return '  eof  '
-            else:
-                return '{0:3d}.{1:<3d}'.format(line, char)
-        except:
-            return '<unknown>'
-
     def yield_(self, value):
         if self.enabled > 0:
             self._info(self.fmt_final_result(value))
@@ -156,14 +162,25 @@ class TraceResults(ExposedMonitor):
         self.enabled += increment
     
 
-class RecordDeepest(TraceResults):
+def RecordDeepest(n_before=6, n_results_after=2, n_done_after=2):
+    '''
+    A logger (implemented as a monitor - `MonitorInterface`)
+    that records the deepest match found during a parse.
+
+    This is a helper function that "escapes" the main class via a function
+    to simplify configuration.
+    '''
+    return lambda: _RecordDeepest(n_before, n_results_after, n_done_after)
+
+
+class _RecordDeepest(_TraceResults):
     '''
     A logger (implemented as a monitor - `MonitorInterface`)
     that records the deepest match found during a parse.
     '''
     
     def __init__(self, n_before=6, n_results_after=2, n_done_after=2):
-        super(RecordDeepest, self).__init__(enabled=True)
+        super(_RecordDeepest, self).__init__(enabled=True)
         self.n_before = n_before
         self.n_results_after = n_results_after
         self.n_done_after = n_done_after

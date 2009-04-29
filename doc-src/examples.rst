@@ -76,6 +76,14 @@ the compilation and parsing times::
   REPEAT = 5
 
   def build(config):
+      '''
+      Construct a parser for simple arithmetic expressions using floating
+      point values (Float() is defined in terms of simpler matchers and
+      is quite complex; it is a good candidate for speed improvements by
+      compilation to a regular expression).
+
+      This is called for each kind of configuration we want to time.
+      '''
 
       class Term(Node): pass
       class Factor(Node): pass
@@ -96,38 +104,37 @@ the compilation and parsing times::
       parser = line.string_parser(config)
       return parser
 
+  # The timeit package requires simple no-argument functions, so below we
+  # define these for both building the parser with different configurations
+  # and then parsing the example text.
+
+  # These use the standard configuration options
   def default(): return build(Configuration.default())
   def managed(): return build(Configuration.managed())
   def nfa(): return build(Configuration.nfa())
   def dfa(): return build(Configuration.dfa())
   def basic(): return build(Configuration())
 
+  # These use hand-tweaked configurations that isolate individual features.
   def trace_only(): 
       return build(
 	  Configuration(monitors=[lambda: TraceResults(False)]))
-
   def manage_only(): 
       return build(
 	  Configuration(monitors=[lambda: GeneratorManager(queue_len=0)]))
-
   def memo_only(): 
       return build(
 	  Configuration(rewriters=[auto_memoize()]))
-
   def nfa_only(): 
       return build(
 	  Configuration(rewriters=[
 	      regexp_rewriter(UnicodeAlphabet.instance(), False)]))
-
   def dfa_only(): 
       return build(
 	  Configuration(rewriters=[
 	      regexp_rewriter(UnicodeAlphabet.instance(), False, DfaRegexp)]))
 
-  def parse_multiple(parser):
-      for i in range(NUMBER):
-	  parser('1.23e4 + 2.34e5 * (3.45e6 + 4.56e7 - 5.67e8)')[0]
-
+  # And the functions that timeit will call to do parsing.
   def parse_default(): parse_multiple(default())
   def parse_managed(): parse_multiple(managed())
   def parse_nfa(): parse_multiple(nfa())
@@ -139,14 +146,29 @@ the compilation and parsing times::
   def parse_nfa_only(): parse_multiple(nfa_only())
   def parse_dfa_only(): parse_multiple(dfa_only())
 
+  def parse_multiple(parser):
+      '''
+      Parse the expression NUMBER times with the given parser.
+      '''
+      for i in range(NUMBER):
+	  parser('1.23e4 + 2.34e5 * (3.45e6 + 4.56e7 - 5.67e8)')[0]
+
   def time(number, name):
+      '''
+      Call timit to time a named function.  The timeit interface is rather
+      odd - it takes a string, which we construct here.
+      '''
       stmt = '{0}()'.format(name)
       setup = 'from __main__ import {0}'.format(name)
       return timeit(stmt, setup, number=number)
 
   def analyse(func, time1_base=None, time2_base=None):
       '''
-      We do our own repeating so we can GC between attempts
+      Generate and print timing information for a particular function
+      (the function passed generates the configuration; because the parser
+      functions have related names we can time those too).
+
+      We do our own repeating so we can GC between attempts.
       '''
       name = func.__name__
       (time1, time2) = ([], [])
@@ -155,6 +177,7 @@ the compilation and parsing times::
 	  time1.append(time(NUMBER, name))
 	  collect()
 	  time2.append(time(1, 'parse_' + name))
+      # minimum time since there are annoying background processes
       (time1, time2) = (min(time1), min(time2))
       print('{0:>20s} {1:5.2f} {2:7s}  {3:5.2f} {4:7s}'.format(name, 
 	      time1, normalize(time1, time1_base), 
@@ -162,12 +185,19 @@ the compilation and parsing times::
       return (time1, time2)
 
   def normalize(time, base):
+      '''
+      Helper function for calculating and formatting relative times.
+      '''
       if base:
 	  return '({0:5.2f})'.format(time / base)
       else:
 	  return ''
 
   def main():
+      '''
+      Print timing information for compiling and using a parser with the
+      various configurations.
+      '''
       print('{0:d} iterations; total time in s (best of {1:d})\n'.format(
 	      NUMBER, REPEAT))
       (time1, time2) = analyse(basic)
@@ -197,6 +227,13 @@ Where the first column describes the configuration, the second and third
 columns reflect the time needed to compile the parser, and the third and
 fourth columns reflect the time needed to run the parser.  The values in
 parentheses are relative to the basic configuration.
+
+The parenthetic values are easiest to read.  Looking at the parser times
+(rightmost column) we can see that ``default`` is the second--slowest of all
+configurations, while only ``nfa_only`` and ``dfa_only`` are faster than
+giving an empty configuration (``basic``).  Of course, when interpreting these
+numbers it is important to remember the trade--offs involved --- the default
+configuration, although slower, can handle a much wider variety of grammars.
 
 I learnt the following from writing and running this test and others like it:
 
@@ -228,5 +265,5 @@ I learnt the following from writing and running this test and others like it:
 For anyone interested in absolute speed, the values above are seconds required
 for 50 iterations on a Dual Core desktop, with sufficient memory to avoid
 paging, over--clocked to 2.8GHz.  So for that machine a single parse of the
-expression given in the code takes between 0.03 and 0.2 seconds.
+expression given in the code takes between 0.003 and 0.2 seconds.
 

@@ -55,7 +55,19 @@ from lepl.monitor import MonitorInterface
 from lepl.support import LogMixin
 
 
-class GeneratorManager(MonitorInterface):
+def GeneratorManager(queue_len):
+    '''
+    A 'Monitor' (implements `MonitorInterface`, can be supplied
+    to `Configuration`) that tracks (and can limit the number of)
+    generators.
+
+    This is a helper function that "escapes" the main class via a function
+    to simplify configuration.
+    '''
+    return lambda: _GeneratorManager(queue_len)
+
+
+class _GeneratorManager(MonitorInterface):
     '''
     A 'Monitor' (implements `MonitorInterface`, can be supplied
     to `Configuration`) that tracks (and can limit the number of)
@@ -70,7 +82,7 @@ class GeneratorManager(MonitorInterface):
         limit is applied (although generators are still tracked and can be
         removed using `Commit()`.
         '''
-        super(GeneratorManager, self).__init__()
+        super(_GeneratorManager, self).__init__()
         self.__queue = []
         self.__queue_len = queue_len
         self.__known = WeakKeyDictionary() # map from generator to ref
