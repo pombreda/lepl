@@ -53,16 +53,6 @@ from lepl.trace import _TraceResults
 from lepl.support import assert_type, lmap, LogMixin
 
 
-Consumer = ABCMeta('Consumer', (object, ), {})
-'''
-ABC used to identify matchers that actually consume from the stream.  These
-are the "leaf" matchers that "do the real work".
-
-This is a purely informative interface used, for example, to generate warnings 
-for the user.  Not implementing this interface will not block any functionality.  
-'''
-
-
 class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, LogMixin, Matcher):
     '''
     A base class that provides support to all matchers.
@@ -553,7 +543,7 @@ class First(_BaseCombiner):
             if matched: break
             
 
-class Any(OperatorMatcher, Consumer):
+class Any(OperatorMatcher):
     '''
     Match a single token in the stream.  
     A set of valid tokens can be supplied.
@@ -586,7 +576,7 @@ class Any(OperatorMatcher, Consumer):
             yield ([stream[0]], stream[1:])
             
             
-class Literal(Transformable, Consumer):
+class Literal(Transformable):
     '''
     Match a series of tokens in the stream (**''**).
     '''
@@ -635,8 +625,6 @@ def coerce(arg, function=Literal):
 class Empty(OperatorMatcher):
     '''
     Match any stream, consumes no input, and returns nothing.
-    
-    This is not a Consumer because it is stream-independent.
     '''
     
     def __init__(self, name=None):
@@ -655,7 +643,7 @@ class Empty(OperatorMatcher):
         yield ([], stream)
 
             
-class Lookahead(OperatorMatcher, Consumer):
+class Lookahead(OperatorMatcher):
     '''
     Tests to see if the embedded matcher *could* match, but does not do the
     matching.  On success an empty list (ie no result) and the original
@@ -811,8 +799,8 @@ class Delayed(OperatorMatcher):
 class Commit(OperatorMatcher):
     '''
     Commit to the current state - deletes all backtracking information.
-    This only works if `GeneratorManager` is present (eg when 
-    parse_string is called) and the min_queue option is greater than zero.
+    This only works if the `GeneratorManager` monitor is present
+    (see `Configuration`) and the min_queue option is greater than zero.
     '''
     
     def __init__(self):
@@ -861,8 +849,6 @@ class Trace(OperatorMatcher):
 class Eof(OperatorMatcher):
     '''
     Match the end of a stream.  Returns nothing.
-    
-    This is not a consumer because it is independent of stream contents.
     '''
 
     def __init__(self):
@@ -900,7 +886,10 @@ def SafeRepeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
 def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST, 
             separator=None, add=False):
     '''
-    This is called by the [] operator.
+    This is called by the [] operator.  It repeats the given matcher between
+    start and stop number of times (inclusive).  If ``add`` is true then the
+    results are joined with `Add`. If ``separator`` is given then each
+    repetition is separated by that matcher.
     '''
     first = coerce(matcher)
     if separator is None:
@@ -934,7 +923,8 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
             
 def Apply(matcher, function, raw=False, args=False):
     '''
-    Apply an arbitrary function to the results of the matcher (**>**, **>=**, **\***).
+    Apply an arbitrary function to the results of the matcher 
+    (**>**, **>=**, **\***).
     
     Apply can be used via the standard operators by placing ``>`` 
     (or ``>=`` to set ``raw=True``, or ``*`` to set ``args=True``) 

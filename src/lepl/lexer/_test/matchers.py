@@ -102,7 +102,6 @@ class TokenRewriteTest(TestCase):
      `- Term
          `- value '5'""", '[' + str(results[0]) + ']'
         
-    # need to test for error when rewriter not used and error when Token missing
 
     def test_expression2(self):
         
@@ -149,7 +148,6 @@ class TokenRewriteTest(TestCase):
         parens  = open & expr & close
         value   = parens | call | float_
         
-        # omitting symbol around "/" didn't give an error below.
         ratio   = value & ~symbol('/') & factor         > Ratio
         prod    = value & ~symbol('*') & factor         > Product
         factor += prod | ratio | value
@@ -195,3 +193,16 @@ class ErrorTest(TestCase):
                             'are used then non-token matchers that consume ' \
                             'input must only appear "inside" Tokens.  The ' \
                             'non-Token matchers include: Any.', str(e)
+
+    def test_bad_space(self):
+        t = Token('a')
+        p = t.null_parser(Configuration(rewriters=[lexer_rewriter(
+                    UnicodeAlphabet.instance(), 'b')]))
+        assert p('a') == ['a'], p('a')
+        assert p('b') == None, p('b')
+        try:
+            p('c')
+            assert False, 'expected failure'
+        except RuntimeLexerError as e:
+            assert str(e) == 'Cannot lex "<unknown> - use stream for better error reporting" at -1/-1', str(e)
+            

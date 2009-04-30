@@ -17,12 +17,17 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Generate a stream of tokens that are identified by regular expressions.
+Generate and match a stream of tokens that are identified by regular expressions.
 '''
+
+from abc import ABCMeta
 
 from lepl.context import Namespace, NamespaceMixin, Scope
 from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream
-from lepl.matchers import OperatorMatcher, BaseMatcher, coerce
+from lepl.matchers \
+    import OperatorMatcher, BaseMatcher, coerce, Any, Literal, Lookahead, \
+    Regexp, And, Add, Or, Apply, Drop, KApply, Repeat, raise_error, First, Map
+from lepl.node import syntax_error_kargs
 from lepl.operators \
     import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, ARGS, KARGS, RAISE, \
     REPEAT, FIRST, MAP
@@ -37,6 +42,21 @@ TOKENS = 'tokens'
 '''
 The namespace used for global per-thread data for matchers defined here. 
 '''
+
+NonToken = ABCMeta('NonToken', (object, ), {})
+'''
+ABC used to identify matchers that actually consume from the stream.  These
+are the "leaf" matchers that "do the real work" and they cannot be used at
+the same level as Tokens, but must be embedded inside them.
+
+This is a purely informative interface used, for example, to generate warnings 
+for the user.  Not implementing this interface will not block any functionality.  
+'''
+
+NonToken.register(Any)
+NonToken.register(Literal)
+NonToken.register(Lookahead)
+NonToken.register(Regexp)
 
 
 class LexerError(Exception):
@@ -59,9 +79,6 @@ class TokenNamespace(Namespace):
     '''
     
     def __init__(self):
-        # Handle circular dependencies
-        from lepl.matchers import And, Add, Or, Apply, Drop, KApply, \
-            Repeat, raise_error, First, Map
         super(TokenNamespace, self).__init__({
             ADD:       lambda a, b: Add(And(a, b)),
             AND:       And,
@@ -78,11 +95,11 @@ class TokenNamespace(Namespace):
         })
         
 
-class TokenError(Exception):
-    pass
-
-
 class Token(OperatorMatcher):
+    '''
+    Introduce a token that will be recognised by the lexer.  A Token instance
+    can be specialised to match particular contents by calling as a function.
+    '''
     
     __count = 0
     
@@ -190,6 +207,14 @@ class Token(OperatorMatcher):
         Reset the ID counter.  This should not be needed in normal use.
         '''
         cls.__count = 0
+        
+        
+class RuntimeLexerError(LexerError):
+    
+    def __init__(self, stream):
+        super(RuntimeLexerError, self).__init__(
+            'Cannot lex "{filename}" at {lineno}/{offset}'.format(
+                **syntax_error_kargs(stream, None, None)))
 
 
 class Lexer(NamespaceMixin, BaseMatcher):
@@ -203,7 +228,24 @@ class Lexer(NamespaceMixin, BaseMatcher):
     '''
     
     def __init__(self, matcher, tokens, alphabet, skip, 
-                  t_regexp=None, s_regexp=None):
+                  error=None, t_regexp=None, s_regexp=None):
+        '''
+        matcher is the head of the original matcher graph, which will be called
+        with a tokenised stream. 
+        
+        tokens is the set of `Token` instances that define the lexer.
+        
+        alphabet is the alphabet for which the regexps are defined.
+        
+        skip is the regular expression for spaces (which are silently
+        dropped if not token can be matcher).
+        
+        error is the exception raised if skip fails to match.  It is passed
+        the stream.
+        
+        t_regexp and s_regexp are internally compiled state, use in cloning,
+        and should not be provided by non-cloning callers.
+        '''
         super(Lexer, self).__init__(TOKENS, TokenNamespace)
         if t_regexp is None:
             for token in tokens:
@@ -212,10 +254,12 @@ class Lexer(NamespaceMixin, BaseMatcher):
                                        [(t.id, t.regexp) for t in tokens]).dfa()
         if s_regexp is None:
             s_regexp = Regexp.single(alphabet, skip).dfa()
+        error = RuntimeLexerError if error is None else error
         self._arg(matcher=matcher)
         self._arg(tokens=tokens)
         self._arg(alphabet=alphabet)
         self._arg(skip=skip)
+        self._arg(error=error)
         self._arg(t_regexp=t_regexp)
         self._arg(s_regexp=s_regexp)
         
@@ -225,7 +269,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
         internally, but is (by default) an unfriendly integer value.  Note that 
         a lexed stream associates a chunk of input with a list of IDs - more 
         than one regexp may be a maximal match (and this is a feature, not a 
-            bug).
+        bug).
         '''
         for token in self.tokens:
             if token.id == id:
@@ -235,11 +279,11 @@ class Lexer(NamespaceMixin, BaseMatcher):
     def _match(self, stream):
         if isinstance(stream, LocationStream):
             tokens = lexed_location_stream(self.t_regexp, self.s_regexp,
-                                           stream, self.alphabet)
+                                           self.error, stream, self.alphabet)
         else:
             # might assert simple stream here?
             tokens = lexed_simple_stream(self.t_regexp, self.s_regexp, 
-                                         stream, self.alphabet)
+                                         self.error, stream, self.alphabet)
         generator = self.matcher._match(tokens)
         while True:
             (result, stream_out) = yield generator

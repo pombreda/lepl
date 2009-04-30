@@ -157,11 +157,35 @@ def make_error(msg):
     '''
     def fun(stream_in, stream_out, results):
         return Error(results,
-            *_syntax_error_args(msg, stream_in, stream_out, results))
+            *syntax_error_args(msg, stream_in, stream_out, results))
     return fun
 
 
-def _syntax_error_args(msg, stream_in, stream_out, results):
+STREAM_IN = 'stream_in'
+STREAM_OUT = 'stream_out'
+RESULTS = 'results'
+FILENAME = 'filename'
+LINENO = 'lineno'
+OFFSET = 'offset'
+LINE = 'line'
+
+
+def syntax_error_args(msg, stream_in, stream_out, results):
+    '''
+    Helper function for constructing format dictionary.
+    '''
+    kargs = syntax_error_kargs(stream_in, stream_out, results)
+    filename = kargs[FILENAME]
+    lineno = largs[LINENO]
+    offset = kargs[OFFSET]
+    line = kargs[LINE]
+    try:
+        return (msg.format(**kargs), (filename, lineno, offset, line))
+    except:
+        return (msg, (filename, lineno, offset, line))
+
+
+def syntax_error_kargs(stream_in, stream_out, results):
     '''
     Helper function for constructing format dictionary.
     '''
@@ -176,13 +200,10 @@ def _syntax_error_args(msg, stream_in, stream_out, results):
             line = '...' + stream_in
         except:
             line = ['...'] + stream_in
-    kargs = {'stream_in': stream_in, 'stream_out': stream_out, 
-             'results': results, 'filename': filename, 
-             'lineno': lineno, 'offset':offset, 'line':line}
-    try:
-        return (msg.format(**kargs), (filename, lineno, offset, line))
-    except:
-        return (msg, (filename, lineno, offset, line))
+    kargs = {STREAM_IN: stream_in, STREAM_OUT: stream_out, 
+             RESULTS: results, FILENAME: filename, 
+             LINENO: lineno, OFFSET:offset, LINE:line}
+    return kargs
 
 
 def raise_error(msg):

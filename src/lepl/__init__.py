@@ -109,7 +109,7 @@ from lepl.operators import *
 from lepl.parser import *
 from lepl.regexp import *
 from lepl.stream import *
-from lepl.lexer.matchers import Token, LexerError
+from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.lexer.rewriters import lexer_rewriter
 from lepl.manager import *
 from lepl.matchers import *
@@ -196,6 +196,7 @@ __all__ = [
         # lexer.matchers
         'Token',
         'LexerError',
+        'RuntimeLexerError',
         # lexer.rewriters
         'lexer_rewriter',
         # manager

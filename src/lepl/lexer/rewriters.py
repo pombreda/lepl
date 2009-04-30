@@ -22,8 +22,8 @@ Rewrite a matcher graph to include lexing.
 
 from collections import deque
 
-from lepl.lexer.matchers import Token, TOKENS, TokenNamespace, Lexer, LexerError
-from lepl.matchers import Consumer
+from lepl.lexer.matchers \
+    import Token, TOKENS, TokenNamespace, Lexer, LexerError, NonToken
 from lepl.operators import Matcher, Global
 from lepl.regexp.unicode import UnicodeAlphabet
 
@@ -36,12 +36,12 @@ def find_tokens(matcher):
     Should we also check that a Token occurs somewhere on every path to a
     leaf node?
     '''
-    (tokens, visited, consumers) = (set(), set(), set())
+    (tokens, visited, non_tokens) = (set(), set(), set())
     stack = deque([matcher])
     while stack:
         matcher = stack.popleft()
-        if isinstance(matcher, Consumer):
-            consumers.add(matcher)
+        if isinstance(matcher, NonToken):
+            non_tokens.add(matcher)
         if matcher not in visited:
             visited.add(matcher)
             if isinstance(matcher, Token):
@@ -52,13 +52,13 @@ def find_tokens(matcher):
                 for child in matcher.children():
                     if isinstance(child, Matcher):
                         stack.append(child)
-    if tokens and consumers:
+    if tokens and non_tokens:
         raise LexerError('The grammar contains a mix of Tokens and non-Token '
                          'matchers at the top level. If Tokens are used then '
                          'non-token matchers that consume input must only '
                          'appear "inside" Tokens.  The non-Token matchers '
                          'include: {0}.'
-                         .format('; '.join(c.__class__.__name__ for c in consumers)))
+                         .format('; '.join(n.__class__.__name__ for n in non_tokens)))
     return tokens
 
 
@@ -75,7 +75,7 @@ def assert_not_token(node, visited):
                 assert_not_token(child, visited)
 
 
-def lexer_rewriter(alphabet=None, skip=None):
+def lexer_rewriter(alphabet=None, skip=None, error=None):
     '''
     This is required when using Tokens.  It does the following:
     - Find all tokens in the matcher graph
@@ -84,11 +84,19 @@ def lexer_rewriter(alphabet=None, skip=None):
     - Check that all children have a token parent 
       (and optionally add a default token)
     Although possibly not in that order. 
+    
+    alphabet is the alphabet for which the regular expressions are defined.
+    
+    skip is a regular expression that is used to match space if no token can
+    be matched (space is then discarded)
+    
+    error is raised if no token or space can be matched (it is passed the
+    current stream).
     '''
     if alphabet is None:
         alphabet = UnicodeAlphabet.instance()
     if skip is None:
         skip = '.'
     def rewriter(matcher):
-        return Lexer(matcher, find_tokens(matcher), alphabet, skip)
+        return Lexer(matcher, find_tokens(matcher), alphabet, skip, error)
     return rewriter

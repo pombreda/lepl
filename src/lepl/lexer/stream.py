@@ -26,32 +26,39 @@ from collections import deque
 from lepl.stream import LocationStream, SimpleGeneratorStream
 
 
-def lexed_simple_stream(tokens, skip, stream, alphabet):
+def lexed_simple_stream(tokens, skip, error, stream, alphabet):
     '''
     Given a simple stream, create a simple stream of (terminals, match) pairs.
     '''
     def generator(stream=stream):
-        while stream:
-            try:
-                (terminals, match, stream) = tokens.match(stream)
-                yield (terminals, match)
-            except TypeError:
-                (terminals, size, stream) = skip.size_match(stream)
+        try:
+            while stream:
+                try:
+                    (terminals, match, stream) = tokens.match(stream)
+                    yield (terminals, match)
+                except TypeError:
+                    (terminals, size, stream) = skip.size_match(stream)
+        except:
+            raise error(stream)
     return SimpleGeneratorStream(generator())
 
 
-def lexed_location_stream(tokens, skip, stream, alphabet):
+def lexed_location_stream(tokens, skip, error, stream, alphabet):
     '''
     Given a location stream, create a location stream of regexp matches.
     '''
     def generator(stream_before):
-        while stream_before:
-            try:
-                (terminals, size, stream_after) = tokens.size_match(stream_before)
-                yield (terminals, size, stream_before)
-                stream_before = stream_after
-            except TypeError:
-                (terminals, size, stream_before) = skip.size_match(stream_before)
+        try:
+            while stream_before:
+                try:
+                    (terminals, size, stream_after) = tokens.size_match(stream_before)
+                    # stream_before here to give correct location
+                    yield (terminals, size, stream_before)
+                    stream_before = stream_after
+                except TypeError:
+                    (terminals, size, stream_before) = skip.size_match(stream_before)
+        except:
+            raise error(stream_before)
     return LocationGeneratorStream(generator(stream))
 
 
