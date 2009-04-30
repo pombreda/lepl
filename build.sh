@@ -24,11 +24,15 @@ fi
 
 rm MANIFEST.in
 find . -exec echo "exclude {}" \; | sed -e "s/\.\///" >> MANIFEST.in
-for f in `ls -1 src/lepl/*.py | egrep -v "lex"`; 
+for f in `ls -1 src/lepl/*.py`; 
 do 
   echo "include $f" >> MANIFEST.in
 done
-for f in `ls -1 src/lepl/regexp/*.py | egrep -v "lex"`; 
+for f in `ls -1 src/lepl/regexp/*.py`; 
+do 
+  echo "include $f" >> MANIFEST.in
+done
+for f in `ls -1 src/lepl/lexer/*.py`; 
 do 
   echo "include $f" >> MANIFEST.in
 done
