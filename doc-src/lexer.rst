@@ -38,6 +38,8 @@ This process allows spaces to separate tokens without them cluttering the
 grammar.
 
 
+.. index:: Token()
+
 Use
 ---
 
@@ -67,6 +69,71 @@ example::
 
   >>> sin = name('sin')
 
-Here the ``name`` `Token <api/redirect.html#lepl.lexer.matchers.Token>`_ defined above
-is further restricted to match only the string "sin" (this comes from the
-:ref:`calculator_example` example).
+Here the ``name`` `Token <api/redirect.html#lepl.lexer.matchers.Token>`_
+defined above is further restricted to match only the string "sin" (this comes
+from the :ref:`calculator_example` example).
+
+
+Limitations
+-----------
+
+Unlike regular matchers, `Tokens
+<api/redirect.html#lepl.lexer.matchers.Token>`_ only match the text once.
+They divide the input into fixed blocks that match the largest possible `Token
+<api/redirect.html#lepl.lexer.matchers.Token>`_; no alternatives are
+considered.
+
+For example, consider "1-2", which might be parsed as two integers (1 and -2),
+or as a subtraction expression (1 minus 2)::
+
+  >>> matchers = (Integer() | Literal('-'))[:] & Eos()
+  >>> list(matchers.match('1-2'))
+  [(['1', '-2'], ''), (['1', '-', '2'], '')]
+
+When `Tokens <api/redirect.html#lepl.lexer.matchers.Token>`_ are used, "-2" is
+preferred to "-" because it is a longer match, so we get only the single
+result::
+
+  >>> tokens = (Token(Integer()) | Token(r'\-'))[:] & Eos()
+  >>> list(tokens.match('1-2', config=Configuration.tokens()))
+  [(['1', '-2'], <SimpleGeneratorStream>)]
+
+(In the examples above, ``list()`` is used to expand the generator and the
+`Token <api/redirect.html#lepl.lexer.matchers.Token>`_ is given `r'\-'`
+because its argument is a regular expression, not a literal value.)
+
+
+.. index:: lexer_rewriter()
+
+Advanced Options
+----------------
+
+The `lexer_rewriter()
+<api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_ can take additional
+arguments that specify a regular expression for (discarded) spaces and an
+exception that is raised when neither the `Tokens
+<api/redirect.html#lepl.lexer.matchers.Token>`_ nor the space patter match the
+input.
+
+By default `Tokens <api/redirect.html#lepl.lexer.matchers.Token>`_ require
+that any sub--expression consumes the entire contents::
+
+  >>> abc = Token('abc')
+  >>> incomplete = abc(Literal('ab'))
+  >>> incomplete.parse('abc', config=Configuration.tokens())
+  None
+
+However, this constraint can be relaxed, in which case the matched portion is
+returned as a result::
+
+  >>> abc = Token('abc')
+  >>> incomplete = abc(Literal('ab'), complete=False)
+  >>> incomplete.parse('abc', config=Configuration.tokens())
+  ['ab']
+
+
+Example
+-------
+
+:ref:`calculator_example` is a complete, worked example using `Tokens
+<api/redirect.html#lepl.lexer.matchers.Token>`_.

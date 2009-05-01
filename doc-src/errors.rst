@@ -30,7 +30,7 @@ function invocation).  They should therefore be easy to extend to more complex
 schemes.
 
 
-.. index:: ^, make_error, **, throw, Error
+.. index:: ^, make_error(), **, throw(), Error()
 
 Example
 -------
@@ -105,7 +105,7 @@ Here is an example of both approaches in use::
   information see :ref:`memoisation`.
 
 
-.. index:: ^, Error, SyntaxError
+.. index:: ^, Error(), SyntaxError()
 
 Operators, Functions and Classes
 --------------------------------

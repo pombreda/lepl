@@ -3,7 +3,7 @@ Advanced Use
 ============
 
 
-.. index:: Configuration(), configuration, flatten, compose_transforms, auto_memoize, default configuration
+.. index:: Configuration(), configuration, flatten(), compose_transforms(), auto_memoize(), default configuration
 .. _configuration:
 
 Configuration
@@ -53,7 +53,7 @@ The work of modifying the matcher graph is done by functions called
 rewriters are available:
 
 
-.. index:: flatten
+.. index:: flatten()
 
 Flatten And, Or
 
@@ -72,7 +72,7 @@ Flatten And, Or
   This matcher is used in the default :ref:`configuration`.
 
 
-.. index:: compose_transforms
+.. index:: compose_transforms()
 
 Composing and Merging Transforms
 

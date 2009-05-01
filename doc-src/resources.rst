@@ -123,20 +123,18 @@ See also `First() <api/redirect.html#lepl.matchers.First>`_.
 If this is useful, I'd really appreciate a good, short example to put here.
 
 
-.. index:: Stream, Core, memory, file, StreamMixin
+.. index:: streams, SequenceByLine(), memory, file
 
 Streams
 -------
 
-LEPL can process simple strings and lists, but it can also use its own `Stream
-<api/redirect.html#lepl.stream.Stream>`_ class as a wrapper for the input.
+LEPL can process simple strings and lists, but it can also use its own
+`SequenceByLine <api/redirect.html#lepl.stream.SequenceByLine>`_ class as a
+wrapper for the input.
 
 Streams were more important in LEPL 1.0, when they were necessary to support
-resource management.  In LEPL 2.0 their status is unclear --- the efficiency
-work for release 2.1 will help clarify their role, if any.
-
-They do have an advantages when reading files, as they store the file path,
-which can be used in error messages.
+resource management.  They do have an advantages when reading files, as they
+store the file path, which can be used in error messages.
 
 Streams are created automatically by methods like `parse_string()
 <api/redirect.html#lepl.matchers.BaseMatcher.parse_string>`_, `string_parser()

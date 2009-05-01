@@ -71,7 +71,7 @@ that identify the values 'andrew' (a word) and '3333253' (an integer).
        detail.
 
 
-.. index:: matchers, Word(), Integer(), .match(), .parse_string()
+.. index:: matchers, Word(), Integer(), match(), parse_string()
 
 Matchers
 --------
@@ -131,7 +131,7 @@ methods for simplifying the output::
   ['hello', ' ', '123']
 
 
-.. index:: /, >, make_dict
+.. index:: /, >, make_dict()
 
 More Detail
 -----------

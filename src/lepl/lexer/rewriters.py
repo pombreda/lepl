@@ -21,6 +21,7 @@ Rewrite a matcher graph to include lexing.
 '''
 
 from collections import deque
+from logging import getLogger
 
 from lepl.lexer.matchers \
     import Token, TOKENS, TokenNamespace, Lexer, LexerError, NonToken
@@ -59,7 +60,6 @@ def find_tokens(matcher):
                          'appear "inside" Tokens.  The non-Token matchers '
                          'include: {0}.'
                          .format('; '.join(n.__class__.__name__ for n in non_tokens)))
-    print(tokens)
     return tokens
 
 
@@ -94,10 +94,18 @@ def lexer_rewriter(alphabet=None, skip=None, error=None):
     error is raised if no token or space can be matched (it is passed the
     current stream).
     '''
+
+    LOG = getLogger('lepl.lexer.rewriters.lexer_rewriter')
+
     if alphabet is None:
         alphabet = UnicodeAlphabet.instance()
     if skip is None:
         skip = '.'
     def rewriter(matcher):
-        return Lexer(matcher, find_tokens(matcher), alphabet, skip, error)
+        tokens = find_tokens(matcher)
+        if tokens:
+            return Lexer(matcher, tokens, alphabet, skip, error)
+        else:
+            LOG.info('Lexer rewriter used, but no tokens found.')
+            return matcher
     return rewriter

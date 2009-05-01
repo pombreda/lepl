@@ -262,7 +262,6 @@ class Lexer(NamespaceMixin, BaseMatcher):
         if t_regexp is None:
             for token in tokens:
                 token.compile(alphabet)
-            print(tokens)
             t_regexp = Regexp.multiple(alphabet, 
                                        [(t.id, t.regexp) for t in tokens]).dfa()
         if s_regexp is None:
