@@ -30,7 +30,7 @@ expressions might have the following different token types:
 
   * Function names (eg. sin, cos).
 
-  * Symboles (eg. ``(``, ``+``).
+  * Symbols (eg. ``(``, ``+``).
 
 Note that in the sketch above, a token is not defined for spaces.  By default,
 when the lexer runs, any character that doesn't match a token is discarded.
