@@ -107,12 +107,12 @@ from lepl.memo import *
 from lepl.node import *
 from lepl.operators import * 
 from lepl.parser import *
-from lepl.regexp import *
 from lepl.stream import *
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.lexer.rewriters import lexer_rewriter
 from lepl.manager import *
 from lepl.matchers import *
+from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
@@ -208,6 +208,8 @@ __all__ = [
         # memo,
         'RMemo',
         'LMemo',
+        # regexp.core
+        'RegexpError',
         # regexp.matchers
         'NfaRegexp',
         'DfaRegexp',

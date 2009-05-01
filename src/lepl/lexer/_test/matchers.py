@@ -205,4 +205,16 @@ class ErrorTest(TestCase):
             assert False, 'expected failure'
         except RuntimeLexerError as e:
             assert str(e) == 'Cannot lex "<unknown> - use stream for better error reporting" at -1/-1', str(e)
-            
+
+    def test_incomplete(self):
+        t = Token('[a-z]+')(Any())
+        p = t.null_parser(Configuration.tokens())
+        assert p('a') == ['a'], p('a')
+        # even though this matches the token, the Any() sub-matcher doesn't
+        # consume all the contents
+        assert p('ab') == None, p('ab')
+        t = Token('[a-z]+')(Any(), complete=False)
+        p = t.null_parser(Configuration.tokens())
+        assert p('a') == ['a'], p('a')
+        # whereas this is fine, since complete=False
+        assert p('ab') == ['a'], p('ab')

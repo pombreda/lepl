@@ -176,7 +176,7 @@ def syntax_error_args(msg, stream_in, stream_out, results):
     '''
     kargs = syntax_error_kargs(stream_in, stream_out, results)
     filename = kargs[FILENAME]
-    lineno = largs[LINENO]
+    lineno = kargs[LINENO]
     offset = kargs[OFFSET]
     line = kargs[LINE]
     try:

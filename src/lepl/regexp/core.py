@@ -324,6 +324,10 @@ class Labelled(Sequence):
         graph.terminate(final, [self.label])
         
 
+class RegexpError(Exception):
+    pass
+
+
 class Regexp(Choice):
     '''
     A collection of Labelled instances.
@@ -373,10 +377,12 @@ class Regexp(Choice):
     @staticmethod
     def _coerce(regexp, alphabet):
         if isinstance(regexp, str):
-            regexp = alphabet.parse(regexp)
+            coerced = alphabet.parse(regexp)
+            if not coerced:
+                raise RegexpError('Cannot parse regexp: {0!r}'.format(regexp))
         else:
-            regexp = [regexp]
-        return regexp
+            coerced = [regexp]
+        return coerced
         
     
     @staticmethod
@@ -389,6 +395,7 @@ class Regexp(Choice):
     
     @staticmethod
     def multiple(alphabet, regexps):
+        print(regexps)
         return Regexp([Labelled(label,  Regexp._coerce(regexp, alphabet), 
                                 alphabet) for (label, regexp) in regexps], 
                       alphabet)

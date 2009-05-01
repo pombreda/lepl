@@ -59,6 +59,7 @@ def find_tokens(matcher):
                          'appear "inside" Tokens.  The non-Token matchers '
                          'include: {0}.'
                          .format('; '.join(n.__class__.__name__ for n in non_tokens)))
+    print(tokens)
     return tokens
 
 
