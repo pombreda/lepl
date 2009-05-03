@@ -57,8 +57,8 @@ def lexed_location_stream(tokens, skip, error, stream, alphabet):
                     stream_before = stream_after
                 except TypeError:
                     (terminals, size, stream_before) = skip.size_match(stream_before)
-        except:
-            raise error(stream_before)
+        except TypeError:
+            yield error(stream_before)
     return LocationGeneratorStream(generator(stream))
 
 
@@ -112,7 +112,7 @@ class LocationGeneratorStream(LocationStream):
         return 'Wrapped stream'
     
     def __hash__(self):
-        hash(self.__simple)
+        return hash(self.__simple)
     
     def __eq__(self, other):
         return isinstance(other, LocationGeneratorStream) and \

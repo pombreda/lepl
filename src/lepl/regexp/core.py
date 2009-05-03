@@ -395,7 +395,6 @@ class Regexp(Choice):
     
     @staticmethod
     def multiple(alphabet, regexps):
-        print(regexps)
         return Regexp([Labelled(label,  Regexp._coerce(regexp, alphabet), 
                                 alphabet) for (label, regexp) in regexps], 
                       alphabet)

@@ -112,7 +112,8 @@ class MemoTest(TestCase):
         for meaning in p(text):
             count += 1
             if count < 3:
-                print(meaning[0][0])
-        print(count)
-    
+#                print(meaning[0][0])
+                pass
+#        print(count)
+        assert count == 392, count
     

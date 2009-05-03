@@ -181,6 +181,8 @@ class ErrorTest(TestCase):
             assert str(e) == 'A Token has not been compiled. You must use the ' \
                             'lexer_rewriter with Tokens. This can be done by ' \
                             'using Configuration.tokens().', str(e)
+        else:
+            assert False, 'wrong exception'
 
     def test_mixed(self):
         t = Token(Any()) & Any()
@@ -193,6 +195,8 @@ class ErrorTest(TestCase):
                             'are used then non-token matchers that consume ' \
                             'input must only appear "inside" Tokens.  The ' \
                             'non-Token matchers include: Any.', str(e)
+        else:
+            assert False, 'wrong exception'
 
     def test_bad_space(self):
         t = Token('a')
@@ -207,14 +211,18 @@ class ErrorTest(TestCase):
             assert str(e) == 'Cannot lex "<unknown> - use stream for better error reporting" at -1/-1', str(e)
 
     def test_incomplete(self):
-        t = Token('[a-z]+')(Any())
-        p = t.null_parser(Configuration.tokens())
-        assert p('a') == ['a'], p('a')
-        # even though this matches the token, the Any() sub-matcher doesn't
-        # consume all the contents
-        assert p('ab') == None, p('ab')
-        t = Token('[a-z]+')(Any(), complete=False)
-        p = t.null_parser(Configuration.tokens())
-        assert p('a') == ['a'], p('a')
-        # whereas this is fine, since complete=False
-        assert p('ab') == ['a'], p('ab')
+        try:
+            t = Token('[a-z]+')(Any())
+            p = t.string_parser(Configuration.tokens())
+            assert p('a') == ['a'], p('a')
+            # even though this matches the token, the Any() sub-matcher doesn't
+            # consume all the contents
+            assert p('ab') == None, p('ab')
+            t = Token('[a-z]+')(Any(), complete=False)
+            p = t.string_parser(Configuration.tokens())
+            assert p('a') == ['a'], p('a')
+            # whereas this is fine, since complete=False
+            assert p('ab') == ['a'], p('ab')
+        except Exception as e:
+            assert False, str(e)
+            
