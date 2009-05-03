@@ -166,6 +166,8 @@ Date        Version  Description
 2009-04-28  2.3.4    Fix regexp packaging.
 ----------  -------  -----------
 2009-04-28  2.3.5    Make all classes new style in 2.6.
+----------  -------  -----------
+2009-05-02  2.4      Added lexer.
 ==========  =======  ===========
 
 

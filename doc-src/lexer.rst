@@ -20,11 +20,11 @@ Introduction
 
 The lexer pre-processes the stream that is being parsed, dividing it into
 tokens that correspond to regular expressions.  The tokens, and their
-contents, can then be matched in the grammar.
+contents, can then be matched in the grammar using the `Token()
+<api/redirect.html#lepl.lexer.matchers.Token>`_ matcher.
 
-`Tokens <api/redirect.html#lepl.lexer.matchers.Token>`_ give a "rough"
-description of the text to be parsed.  A simple parser of numerical
-expressions might have the following different token types:
+Tokens give a "rough" description of the text to be parsed.  A simple parser
+of numerical expressions might have the following different token types:
 
   * Numeric values (eg. 1, 2.3, 4e5).
 
@@ -43,64 +43,116 @@ grammar.
 Use
 ---
 
-`Tokens <api/redirect.html#lepl.lexer.matchers.Token>`_ are used in two ways.
+Within a grammar, a `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_
+appears much like any other matcher.  For a full example, see
+:ref:`calculator_example`.
+
+However, to use tokens correctly, it is necessary to understand how they work
+in a little more detail.
+
+Tokens are used in two ways.
 First, they work like matchers (with the exceptions noted below) for the
 regular expression given as their argument.  For example::
 
   >>> name = Token('[A-Z][a-z]*')
   >>> number = Token(Integer())
 
-Here, ``name`` with match a string that starts with a capital letter and then
-has zero or more lower case letters.  The second `Token
+Here, ``name`` will match a string that starts with a capital letter and then
+has zero or more lower case letters.  The second `Token()
 <api/redirect.html#lepl.lexer.matchers.Token>`_, ``number``, is similar, but
-uses a matcher (`Integer() <api/redirect.html#lepl.matchers.Integer>`_) to
-define the regular expression that is matched.
+uses another matcher (`Integer() <api/redirect.html#lepl.matchers.Integer>`_)
+to define the regular expression that is matched.
 
 .. note::
 
-  Not all matchers can be used to define the pattern for a `Token
+  Not all matchers can be used to define the pattern for a `Token()
   <api/redirect.html#lepl.lexer.matchers.Token>`_ --- only those that LEPL
   knows how to convert into regular expressions.
 
-The second way in which `Tokens
-<api/redirect.html#lepl.lexer.matchers.Token>`_ are used is by specialisation,
-which gives an *additional* constraint.  This is easiest to see with another
-example::
+The second way in which tokens are used is by specialisation, which generates
+a *new* matcher with an *additional* constraint.  This is easiest to see with
+another example::
 
-  >>> sin = name('sin')
+  >>> params = ...
+  >>> function = Token('[a-z]*')
+  >>> sin = function('sine')
+  >>> cos = function('cosine')
+  >>> call = (sin | cos) & params
 
-Here the ``name`` `Token <api/redirect.html#lepl.lexer.matchers.Token>`_
-defined above is further restricted to match only the string "sin" (this comes
-from the :ref:`calculator_example` example).
+Here the ``function`` `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_
+is restricted to match the strings "sine" and "cosine", creating two *new*
+matchers, ``sin`` and ``cos``.
 
+The example above used simple strings (which are converted to `Literal()
+<api/redirect.html#lepl.matchers.Literal>`_ matchers) as the additional
+constraints, but any matcher expression can be used.
+
+For a more realistic example of multiple specialisations, see the use of
+``symbol`` in :ref:`calculator_example`.
+
+Note that specialisation is optional.  It's OK to use `Token()
+<api/redirect.html#lepl.lexer.matchers.Token>`_ as a simple matcher without
+adding any more constraints (providing that the use is consistent with the
+limitations outlined below).
+
+
+.. _limitations:
 
 Limitations
 -----------
 
-Unlike regular matchers, `Tokens
-<api/redirect.html#lepl.lexer.matchers.Token>`_ only match the text once.
-They divide the input into fixed blocks that match the largest possible `Token
-<api/redirect.html#lepl.lexer.matchers.Token>`_; no alternatives are
-considered.
+The lexer has two limitations: it cannot backtrack and `Token()
+<api/redirect.html#lepl.lexer.matchers.Token>`_ matchers cannot be mixed with
+non--Token matchers that consume input.
+
+The first limitation means that, unlike regular matchers, tokens only match
+text once.  The lexer divides the input into fixed blocks that match the
+largest possible fragment; no alternatives are considered.
 
 For example, consider "1-2", which might be parsed as two integers (1 and -2),
-or as a subtraction expression (1 minus 2)::
+or as a subtraction expression (1 minus 2).  An appropriate matcher will give
+both results, through backtracking::
 
   >>> matchers = (Integer() | Literal('-'))[:] & Eos()
   >>> list(matchers.match('1-2'))
   [(['1', '-2'], ''), (['1', '-', '2'], '')]
 
-When `Tokens <api/redirect.html#lepl.lexer.matchers.Token>`_ are used, "-2" is
-preferred to "-" because it is a longer match, so we get only the single
-result::
+But when tokens are used, "-2" is preferred to "-", because it is a longer
+match, so we get only the single result::
 
   >>> tokens = (Token(Integer()) | Token(r'\-'))[:] & Eos()
   >>> list(tokens.match('1-2', config=Configuration.tokens()))
   [(['1', '-2'], <SimpleGeneratorStream>)]
 
 (In the examples above, ``list()`` is used to expand the generator and the
-`Token <api/redirect.html#lepl.lexer.matchers.Token>`_ is given `r'\-'`
+`Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ is given ``r'\-'``
 because its argument is a regular expression, not a literal value.)
+
+The second limitation is more subtle.  The lexer is implemented via a
+:ref:`rewriter <rewriting>` which adds a `Lexer()
+<api/redirect.html#lepl.lexer.matchers.Lexer>`_ instance to the head of the
+matcher graph.  This divides the input into the "pieces" that the `Token()
+<api/redirect.html#lepl.lexer.matchers.Token>`_ matchers expect.
+
+So matchers receive a stream of labelled fragments from `Lexer()
+<api/redirect.html#lepl.lexer.matchers.Lexer>`_.  It is only "inside" each
+`Token() <api/redirect.html#lepl.lexer.matchers.Token>`_, when the fragment is
+passed to the sub--matcher, that the stream is returned to its original
+format.
+
+As a consequence, matchers that read the stream --- those that consume data,
+like `Any() <api/redirect.html#lepl.matchers.Any>`_ or `Literal()
+<api/redirect.html#lepl.matchers.Literal>`_ --- can only be used *inside*
+`Token() <api/redirect.html#lepl.lexer.matchers.Token>`_.  If they are used
+alongside the following error occurs::
+
+  >>> matcher = Token(Any()) & Any()
+  ...
+  >>> matcher.parse(...)
+  Lexer Error:
+  The grammar contains a mix of Tokens and non-Token matchers at the top level.
+  If Tokens are used then non-token matchers that consume input must only appear "inside" Tokens.
+  The non-Token matchers include: Any.
 
 
 .. index:: lexer_rewriter()
@@ -111,11 +163,10 @@ Advanced Options
 The `lexer_rewriter()
 <api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_ can take additional
 arguments that specify a regular expression for (discarded) spaces and an
-exception that is raised when neither the `Tokens
-<api/redirect.html#lepl.lexer.matchers.Token>`_ nor the space patter match the
-input.
+exception that is raised when neither the tokens nor the space pattern match
+the input.
 
-By default `Tokens <api/redirect.html#lepl.lexer.matchers.Token>`_ require
+By default Tokens require
 that any sub--expression consumes the entire contents::
 
   >>> abc = Token('abc')
@@ -137,3 +188,120 @@ Example
 
 :ref:`calculator_example` is a complete, worked example using `Tokens
 <api/redirect.html#lepl.lexer.matchers.Token>`_.
+
+
+The Lexer Process
+-----------------
+
+In the explanations above I try to describe the `Token()
+<api/redirect.html#lepl.lexer.matchers.Token>`_ matcher in a fairly
+declarative way.  However, I know that it is sometimes easier to understand
+how to use a tool by first understanding how the tool itself works.  So here I
+will sketch how the lexer is implemented by describing the steps involved when
+a Python program uses the LEPL parser, with the lexer, to parse some text.
+
+#. Python compilation
+
+   The program containing LEPL code (and the LEPL library) are compiled.
+
+#. Python execution
+
+   The program is then run.
+
+#. Creation of matcher graph
+
+   A function, or set of statements, that generates the LEPL matchers is
+   evaluated.  Matchers like `Token()
+   <api/redirect.html#lepl.lexer.matchers.Token>`_, `And()
+   <api/redirect.html#lepl.matchers.And>`_, etc., are objects that link to each
+   other.  The objects and their links form a graph (with a matcher object at
+   each node).
+
+   * Token numbering
+
+     Each time a `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ is
+     created it is assigned a unique number, which I will call the "tag".
+
+   * Regular expression extraction
+
+     Whenever a `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ is
+     created with another matcher as an argument LEPL attempts to convert the
+     matcher to a regular expression.  If it cannot do so, it raises an error.
+
+#. Parser compilation
+
+   At some point LEPL internally "compiles" the matcher graph to generate a
+   parser.  Exactly when this happens depends on how the matchers are used,
+   but in simple terms it occurs when a method that can take a
+   :ref:`configuration` is called.
+
+   "Compilation" is perhaps misleading --- the parser is not compiled to
+   Python byte codes, for example.  What happens is that the matcher graph is
+   processed in various ways.  The most important processing, in terms of the
+   lexer, is...
+
+#. Lexer rewriting
+
+   The `lexer_rewriter()
+   <api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_ uses the matcher
+   graph to construct a `Lexer()
+   <api/redirect.html#lepl.lexer.matchers.Lexer>`_ instance:
+
+   * `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ instances are
+     collected.
+
+   * The graph is checked to make sure that tokens and non-token matchers are
+     not used together (see :ref:`limitations` above).
+
+   * The regular expressions and tags associated with the tokens are collected
+     together.
+
+   * A regular expression matcher is generated, which can match the different
+     expressions and return the text and tag(s) associated with the longest
+     match.
+
+   * A `Lexer() <api/redirect.html#lepl.lexer.matchers.Lexer>`_ is added to
+     the "head" of the matcher graph.  It contains the regular expression
+     matcher.
+
+   The modified matcher graph is then complete and returned for evaluation.
+
+#. Parser evaluation
+
+   When the parser is finally called, by passing it some text to process, the
+   matcher graph has already been prepared for lexing, as described above.
+   The following processes then occur:
+
+   * A stream may be constructed that wraps the input text.  Whether this
+     happens depends on the method called.
+
+   * The input (as stream or text) is passed to the head of the matcher graph,
+     which is the `Lexer() <api/redirect.html#lepl.lexer.matchers.Lexer>`_
+     instance constructed earlier.
+
+   * The lexer generates a new stream, which encapsulates both the input text
+     and the regular expression matcher.  This new stream is a stream of
+     tagged fragments --- each fragment is a match from the regular expression
+     matcher, and it is associated with the list of tags that identifies which
+     tokens had regular expressions that matched the fragment (more than one
+     of the token regular expressions may match a single piece of text).
+
+   * The new stream of tagged fragments is passed to to the matcher graph in
+     the same way as normal.
+
+   * When a `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ receives
+     the stream it checks whether the first item in the stream is tagged with
+     its own tag.
+
+     * If the tag does not match, the token matcher fails.
+
+     * If the tag matches and the token contains a sub--matcher, then the
+       fragment of text is passed to the sub--matcher for processing.  If the
+       sub--matcher returns a reusult then that result is returned by the
+       token.  Alternatively, if the sub--matcher fails then the token fails
+       too.
+
+     * If the tag matches and the token has no sub--matcher, then the token
+       returns the fragment as the result of a successful match.
+
+   * Evaluation continues in the usual manner, returning a list of results.

@@ -14,8 +14,7 @@ grammars and it can also handle left--recursive grammars.
 The aim is a powerful, extensible parser that will also give solid, reliable
 results to first--time users.
 
-This release (2.3) provides optimisation via regular expressions.  A
-:ref:`detailed example <config_example>` shows the benefits.
+This release (2.4) adds a :ref:`lexer`.
 
 
 Contents
