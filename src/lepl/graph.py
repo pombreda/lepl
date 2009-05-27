@@ -17,7 +17,22 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Graph node classes and support graph traversal.
+Graph traversal - both for generic Python classes and for special node classes.
+
+The fundamental `dfs_edges` routine will traverse over (ie provides an iterator 
+that returns (flag, node) pairsm where flag describes the type of node and 
+ordering) a graph made of iterable Python objects.  Only the __iter__ method
+(implemented by all containers) is required.  However, in general this is too
+broad (for example, Strings are iterable, and single character strings contain 
+themselves), so the a type can be specified which identifies those nodes to
+be treated as "interior" nodes.   Children of interior nodes are returned as
+"leaf" nodes, but are not iterated over themselves.
+
+The `order` function provides a simpler interface to this traversal, allowing
+a particular order to be generated, and, for example, optionally excluding leaf
+nodes.
+
+
 
 The simplest node interface is `SimpleGraphNode`.  Implementations must
 provide an iterator over child nodes via 'children()'.

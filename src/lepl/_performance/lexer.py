@@ -13,8 +13,7 @@ def lexer():
         
     class BinaryExpression(Node):
         def __float__(self):
-            return self.op(float(self._children[0]), 
-                           float(self._children[1]))
+            return self.op(float(self[0]), float(self[1]))
     
     class Sum(BinaryExpression): op = add
     class Difference(BinaryExpression): op = sub
@@ -25,7 +24,7 @@ def lexer():
         funs = {'sin': sin,
                 'cos': cos}
         def __float__(self):
-            return self.funs[self._children[0]](self._children[1])
+            return self.funs[self[0]](self[1])
         
     # we use unsigned float then handle negative values explicitly;
     # this lets us handle the ambiguity between subtraction and
@@ -110,8 +109,8 @@ p.print_stats(35)
 
 if __name__ == '__main__':
 #    time()
-    profile()
-#    lexer()
+#    profile()
+    lexer()
 
     
     

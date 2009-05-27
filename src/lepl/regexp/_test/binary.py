@@ -15,17 +15,17 @@ class CharactersTest(TestCase):
         basicConfig(level=DEBUG)
         c = _test_parser('.')
         assert '.' == str(c), str(c)
-        assert 0 == c._children[0]._children[0][0][0], type(c._children[0]._children[0][0][0])
-        assert 1 == c._children[0]._children[0][0][1], type(c._children[0]._children[0][0][1])
+        assert 0 == c[0][0][0][0], type(c[0][0][0][0])
+        assert 1 == c[0][0][0][1], type(c[0][0][0][1])
 
     def test_brackets(self):
         #basicConfig(level=DEBUG)
         c = _test_parser('0')
         assert '0' == str(c), str(c)
         # this is the lower bound for the interval
-        assert 0 == c._children[0]._children[0][0][0], type(c._children[0]._children[0][0][0])
+        assert 0 == c[0][0][0][0], type(c[0][0][0][0])
         # and the upper - we really do have a digit
-        assert 0 == c._children[0]._children[0][0][1], type(c._children[0]._children[0][0][1])
+        assert 0 == c[0][0][0][1], type(c[0][0][0][1])
         c = _test_parser('1')
         assert '1' == str(c), str(c)
         c = _test_parser('0101')

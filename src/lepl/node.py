@@ -115,9 +115,33 @@ class Node(SimpleGraphNode, LogMixin):
     # Python 2.6
     def __nonzero__(self):
         return self.__bool__()
+    
+    def __eq__(self, other):
+        '''
+        Note that eq compares contents, but hash uses object identity.
+        '''
+        try:
+            siblings = iter(other)
+        except TypeError:
+            return False
+        for child in self:
+            try:
+                if child != next(siblings):
+                    return False
+            except StopIteration:
+                return False
+        try:
+            next(siblings)
+            return False
+        except StopIteration:
+            return True
+        
+    def __hash__(self):
+        '''
+        Note that eq compares contents, but hash uses object identity.
+        '''
+        return super(Node, self).__hash__()
 
-    
-    
     
 class MutableNode(Node):
     '''

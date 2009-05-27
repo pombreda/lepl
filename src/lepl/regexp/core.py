@@ -197,7 +197,7 @@ class Sequence(Node):
         self.__str = self._build_str()
         
     def _build_str(self):
-        return self.alphabet.fmt_sequence(self._children)
+        return self.alphabet.fmt_sequence(self)
         
     def __str__(self):
         return self.__str
@@ -205,20 +205,14 @@ class Sequence(Node):
     def __hash__(self):
         return hash(self.__str)
         
-    def __eq__(self, other):
-        try:
-            return self._children == other._children
-        except:
-            return False
-        
     def build(self, graph, before, after):
         '''
         Connect in sequence.
         '''
-        if self._children:
+        if self:
             src = before
-            last = self._children[-1]
-            for child in self._children:
+            last = self[-1]
+            for child in self:
                dest = after if child is last else graph.new_node()
                child.build(graph, src, dest)
                src = dest
@@ -232,7 +226,7 @@ class Option(Sequence):
     '''
     
     def _build_str(self):
-        return self.alphabet.fmt_option(self._children)
+        return self.alphabet.fmt_option(self)
     
     def build(self, graph, before, after):
         '''
@@ -266,7 +260,7 @@ class Repeat(Sequence):
     '''
     
     def _build_str(self):
-        return self.alphabet.fmt_repeat(self._children)            
+        return self.alphabet.fmt_repeat(self)            
     
     def build(self, graph, before, after):
         '''
@@ -283,7 +277,7 @@ class Choice(Sequence):
     '''
     
     def _build_str(self):
-        return self.alphabet.fmt_choice(self._children)
+        return self.alphabet.fmt_choice(self)
     
     def build(self, graph, before, after):
         '''
@@ -291,9 +285,9 @@ class Choice(Sequence):
         the sequence is tried in order (because evaluation tries empty
         transitions last).
         '''
-        if self._children:
-            last = self._children[-1]
-        for child in self._children:
+        if self:
+            last = self[-1]
+        for child in self:
             child.build(graph, before, after)
             if child is not last:
                 node = graph.new_node()
@@ -339,18 +333,18 @@ class Regexp(Choice):
         super(Regexp, self).__init__(children, alphabet)
         
     def _build_str(self):
-        return self.alphabet.fmt_sequence(self._children)
+        return self.alphabet.fmt_sequence(self)
 
     def build(self, graph):
         '''
         Each Labelled is an independent sequence.  We use empty transitions 
         to order the choices.
         '''
-        if self._children:
+        if self:
             before = graph.new_node()
-            last = self._children[-1]
+            last = self[-1]
             src = before
-            for child in self._children:
+            for child in self:
                 child.build(graph, src)
                 if child is not last:
                     src = graph.new_node()
