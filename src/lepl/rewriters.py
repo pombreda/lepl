@@ -209,7 +209,7 @@ def left_loops(node):
         ancestors = stack.pop()
         parent = ancestors[-1]
         if isinstance(parent, SimpleGraphNode):
-            for child in parent.children():
+            for child in parent:
                 family = list(ancestors) + [child]
                 if child is node:
                     yield family

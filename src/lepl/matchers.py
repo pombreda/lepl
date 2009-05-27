@@ -910,6 +910,7 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
         raise ValueError('Repeat or [...] must have a step (algorithm) '
                          'of d, b, g or n.')
     add = Add if add else Identity
+    # TODO - fix this!  it creates the entire table!
     return {DEPTH_FIRST:
                 add(DepthFirst(first, start, stop, rest)),
             BREADTH_FIRST: 

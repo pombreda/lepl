@@ -99,6 +99,10 @@ class LocationGeneratorStream(LocationStream):
         '''
         return bool(self.__simple)
     
+    # Python 2.6
+    def __nonzero__(self):
+        return self.__bool__()
+
     def __len__(self):
         '''
         Amount of remaining data.

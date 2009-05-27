@@ -50,7 +50,7 @@ def find_tokens(matcher):
                 if matcher.content:
                     assert_not_token(matcher.content, visited)
             else:
-                for child in matcher.children():
+                for child in matcher:
                     if isinstance(child, Matcher):
                         stack.append(child)
     if tokens and non_tokens:
@@ -72,7 +72,7 @@ def assert_not_token(node, visited):
         if isinstance(node, Token):
             raise LexerError('Nested token: {0}'.format(node))
         else:
-            for child in node.children():
+            for child in node:
                 assert_not_token(child, visited)
 
 

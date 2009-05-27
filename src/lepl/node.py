@@ -20,6 +20,7 @@
 Base classes for AST nodes (and associated functions).
 '''
 
+from traceback import print_exc
 from collections import Iterable, Mapping, deque
 
 from lepl.graph import SimpleGraphNode, SimpleWalker, GraphStr, POSTORDER
@@ -38,6 +39,7 @@ def _on_tuple(arg, match, fail=None):
             (name, value) = arg
             return match(name, value)
         except:
+            print_exc()
             pass
     if fail:
         return fail(arg)
@@ -85,12 +87,6 @@ class Node(SimpleGraphNode, LogMixin):
             setattr(self, name, [])
         getattr(self, name).append(value)
         
-    def children(self):
-        '''
-        An iterator over the indexed contents.
-        '''
-        return iter(self)
-        
     def __dir__(self):
         '''
         The names of all the attributes constructed from the results.
@@ -112,6 +108,15 @@ class Node(SimpleGraphNode, LogMixin):
     
     def __len__(self):
         return len(self._children)
+    
+    def __bool__(self):
+        return bool(self._children)
+    
+    # Python 2.6
+    def __nonzero__(self):
+        return self.__bool__()
+
+    
     
     
 class MutableNode(Node):

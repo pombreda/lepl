@@ -4,6 +4,7 @@ from unittest import TestCase
 from lepl import *
 from lepl.graph import preorder
 from lepl.matchers import Transform
+from lepl.operators import Matcher
 from lepl.rewriters import DelayedClone
 
 
@@ -18,7 +19,10 @@ class DelayedCloneTest(TestCase):
                 o = next(original)
                 d = next(duplicate)
                 assert type(o) == type(d), (o, d)
-                assert o is not d, (o, d)
+                if isinstance(o, Matcher):
+                    assert o is not d, (o, d)
+                else:
+                    assert o is d, (o, d)
         except StopIteration:
             self.assert_empty(original, 'original')
             self.assert_empty(duplicate, 'duplicate')
@@ -126,9 +130,11 @@ class ComposeTransformsTest(TestCase):
         factor      = term | Drop(Optional(term))
         
         p = factor.string_parser(Configuration(rewriters=[compose_transforms]))
-        ast = p('1')
-        assert str(ast[0]) == """Term
- `- number '1'""", ast[0]
+        ast = p('1')[0]
+        assert type(ast) == Term, type(ast)
+        assert ast[0] == ('number', '1'), ast[0]
+        assert str(ast) == """Term
+ `- number '1'""", ast
         
 
 class OptimizeOrTest(TestCase):

@@ -55,7 +55,7 @@ class SimpleGraphNode(object):
         '''
         super(SimpleGraphNode, self).__init__()
         
-    def children(self, type_=None):
+    def __iter__(self):
         '''
         Return an iterator over children (perhaps of a particular type), 
         in order.
@@ -67,8 +67,8 @@ FORWARD = 1    # forward edge
 BACKWARD = 2   # backward edge
 NONTREE = 4    # cyclic edge
 ROOT = 8       # root node (not an edge)
-NODE = 16      # child is a 'normal' node (not root or leaf)
-LEAF = 32      # child is a leaf node (does not implement children())
+NODE = 16      # child is a 'normal' node (of the given type)
+LEAF = 32      # child is a leaf node (not the given type)
 
 POSTORDER = BACKWARD | NONTREE
 PREORDER = FORWARD | NONTREE
@@ -87,7 +87,7 @@ def dfs_edges(node, type_=SimpleGraphNode):
     '''
     while isinstance(node, type_):
         try:
-            stack = [(node, node.children(), ROOT)]
+            stack = [(node, iter(node), ROOT)]
             yield node, node, FORWARD | ROOT
             visited = set([node])
             while stack:
@@ -98,15 +98,12 @@ def dfs_edges(node, type_=SimpleGraphNode):
                         if safe_in(child, visited, False):
                             yield parent, child, NONTREE
                         else:
-                            try:
-                                stack.append((child, child.children(), NODE))
-                                yield parent, child, FORWARD | NODE
-                                visited.add(child)
-                            except AttributeError:
-                                stack.append((child, empty(), LEAF))
-                                yield parent, child, FORWARD | LEAF
-                            except TypeError:
-                                pass # failed to add to visited
+                            stack.append((child, iter(child), NODE))
+                            yield parent, child, FORWARD | NODE
+                            visited.add(child)
+                    else:
+                        stack.append((child, empty(), LEAF))
+                        yield parent, child, FORWARD | LEAF
                 except StopIteration:
                     stack.pop()
                     if stack:
@@ -133,7 +130,8 @@ def reset(generator):
 
 def order(node, include, exclude=0, type_=SimpleGraphNode):
     '''
-    An ordered sequence of nodes.  The ordering is given by 'include'.
+    An ordered sequence of nodes.  The ordering is given by 'include' (see
+    the contants PREORDER etc above).
     '''
     while True:
         try:
@@ -145,18 +143,18 @@ def order(node, include, exclude=0, type_=SimpleGraphNode):
             yield # in response to the throw (ignored by caller)
             
 
-def preorder(node, type_=SimpleGraphNode):
+def preorder(node, exclude=0, type_=SimpleGraphNode):
     '''
     The nodes in preorder.
     '''
-    return order(node, PREORDER, type_=type_)
+    return order(node, PREORDER, exclude=exclude, type_=type_)
 
 
-def postorder(node, type_=SimpleGraphNode):
+def postorder(node, exclude=0, type_=SimpleGraphNode):
     '''
     The nodes in postorder.
     '''
-    return order(node, POSTORDER, type_=type_)
+    return order(node, POSTORDER, exclude=exclude, type_=type_)
 
 
 def loops(node, type_=SimpleGraphNode):
@@ -171,7 +169,7 @@ def loops(node, type_=SimpleGraphNode):
         ancestors = stack.pop()
         parent = ancestors[-1]
         if isinstance(parent, type_):
-            for child in parent.children():
+            for child in parent:
                 family = list(ancestors)
                 family.append(child)
                 if child is node:
@@ -204,7 +202,7 @@ class SimpleWalker(object):
         Apply the visitor to the nodes in the graph, in postorder.
         '''
         pending = {}
-        for (parent, node, kind) in dfs_edges(self.__root, type_=object):
+        for (parent, node, kind) in dfs_edges(self.__root, type_=SimpleGraphNode):
             if kind & POSTORDER:
                 if safe_in(node, pending):
                     args = pending[node]
@@ -327,17 +325,14 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
         '''
         return (self.__args(), self.__kargs())
     
-    def children(self, type_=None):
+    def __iter__(self):
         '''
         Return all children, in order.
         '''
         for arg in self.__args():
-            if type_ is None or isinstance(arg, type_):
-                yield arg
+            yield arg
         for name in self.__karg_names:
-            arg = getattr(self, name)
-            if type_ is None or isinstance(arg, type_):
-                yield arg
+            yield getattr(self, name)
 
 
 class NamedAttributeMixin(ConstructorGraphNode):
@@ -381,7 +376,7 @@ class NamedAttributeMixin(ConstructorGraphNode):
         '''
         return (self._args, {})
     
-    def children(self, type_=None):
+    def __iter__(self, type_=None):
         '''
         Return all children, in order.
         '''
@@ -438,7 +433,8 @@ class ConstructorWalker(object):
         Apply the visitor to each node in turn.
         '''
         results = {}
-        for node in postorder(self.__root, type_=ConstructorGraphNode):
+        for node in postorder(self.__root, type_=ConstructorGraphNode,
+                              exclude=LEAF):
             visitor.node(node)
             (args, kargs) = self.__arguments(node, visitor, results)
             results[node] = visitor.constructor(*args, **kargs)

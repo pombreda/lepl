@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from lepl.graph \
     import ArgAsAttributeMixin, preorder, postorder, reset, ConstructorWalker, \
-           Clone, make_proxy
+           Clone, make_proxy, LEAF
 
 
 class Node(ArgAsAttributeMixin):
@@ -40,18 +40,18 @@ def graph():
 class OrderTest(TestCase):
     
     def test_preorder(self):
-        result = [node.label for node in preorder(graph())]
+        result = [node.label for node in preorder(graph(), exclude=LEAF)]
         assert result == [1, 11, 111, 112, 12], result
         
     def test_postorder(self):
-        result = [node.label for node in postorder(graph())]
+        result = [node.label for node in postorder(graph(), exclude=LEAF)]
         assert result == [111, 112, 11, 12, 1], result
         
         
 class ResetTest(TestCase):
     
     def test_reset(self):
-        nodes = preorder(graph())
+        nodes = preorder(graph(), exclude=LEAF)
         assert next(nodes).label == 1
         assert next(nodes).label == 11
         reset(nodes)
@@ -104,7 +104,7 @@ class CloneTest(TestCase):
                      n1),
                 Node(12, n1))
         s1(g1)
-        s2(next(g1.children()))
+        s2(next(iter(g1)))
         g2 = ConstructorWalker(g1)(Clone())
         self.assert_same(repr(g1), repr(g2))
         
@@ -118,7 +118,7 @@ class CloneTest(TestCase):
                      n1),
                 Node(12, n1))
         s1(g1)
-        s2(next(g1.children()))
+        s2(next(iter(g1)))
         g2 = ConstructorWalker(g1)(Clone())
         g3 = ConstructorWalker(g2)(Clone())
         self.assert_same(repr(g1), repr(g3))
