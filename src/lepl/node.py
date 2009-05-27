@@ -22,7 +22,7 @@ Base classes for AST nodes (and associated functions).
 
 from collections import Iterable, Mapping, deque
 
-from lepl.graph import SimpleGraphNode, SimpleWalker, GraphStr, postorder, POSTORDER
+from lepl.graph import SimpleGraphNode, SimpleWalker, GraphStr, POSTORDER
 from lepl.support import LogMixin
 
 
