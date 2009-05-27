@@ -29,7 +29,11 @@ from lepl.support import open_stop
 # Python 2.6
 #class Matcher(metaclass=ABCMeta):
 Matcher = ABCMeta('Matcher', (object, ), {})
-'''ABC used to identify matchers.'''
+'''
+ABC used to identify matchers.  
+
+Note that graph traversal assumes subclasses are hashable and iterable.
+'''
 
 
 class DefaultNamespace(Namespace):

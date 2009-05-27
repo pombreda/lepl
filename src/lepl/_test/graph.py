@@ -40,18 +40,18 @@ def graph():
 class OrderTest(TestCase):
     
     def test_preorder(self):
-        result = [node.label for node in preorder(graph(), exclude=LEAF)]
+        result = [node.label for node in preorder(graph(), Node, exclude=LEAF)]
         assert result == [1, 11, 111, 112, 12], result
         
     def test_postorder(self):
-        result = [node.label for node in postorder(graph(), exclude=LEAF)]
+        result = [node.label for node in postorder(graph(), Node, exclude=LEAF)]
         assert result == [111, 112, 11, 12, 1], result
         
         
 class ResetTest(TestCase):
     
     def test_reset(self):
-        nodes = preorder(graph(), exclude=LEAF)
+        nodes = preorder(graph(), Node, exclude=LEAF)
         assert next(nodes).label == 1
         assert next(nodes).label == 11
         reset(nodes)

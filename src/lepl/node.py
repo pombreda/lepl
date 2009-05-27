@@ -23,7 +23,7 @@ Base classes for AST nodes (and associated functions).
 from traceback import print_exc
 from collections import Iterable, Mapping, deque
 
-from lepl.graph import SimpleGraphNode, SimpleWalker, GraphStr, POSTORDER
+from lepl.graph import SimpleWalker, GraphStr, POSTORDER
 from lepl.support import LogMixin
 
 
@@ -47,7 +47,7 @@ def _on_tuple(arg, match, fail=None):
         return None
 
 
-class Node(SimpleGraphNode, LogMixin):
+class Node(LogMixin):
     '''
     A base class for AST nodes.
     
@@ -60,9 +60,6 @@ class Node(SimpleGraphNode, LogMixin):
     kinds can be accessed as attributes. 
     
     It is designed to be applied to a list of results, via ``>``.
-    
-    In addition, by implementing the children() method, it supports the
-    `SimpleGraphNode` interface.
     '''
     
     def __init__(self, args):
@@ -71,7 +68,7 @@ class Node(SimpleGraphNode, LogMixin):
         the ``>`` operator.
         '''
         super(Node, self).__init__()
-        self.__postorder = SimpleWalker(self)
+        self.__postorder = SimpleWalker(self, Node)
         self._children = []
         self._names = []
         for arg in args:

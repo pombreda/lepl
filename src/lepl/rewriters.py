@@ -21,7 +21,8 @@ Rewriters modify the graph of matchers before it is used to generate a
 parser.
 '''
 
-from lepl.graph import Visitor, preorder, SimpleGraphNode, loops
+from lepl.graph import Visitor, preorder, loops
+from lepl.operators import Matcher
 
 
 def clone(node, args, kargs):
@@ -208,7 +209,7 @@ def left_loops(node):
     while stack:
         ancestors = stack.pop()
         parent = ancestors[-1]
-        if isinstance(parent, SimpleGraphNode):
+        if isinstance(parent, Matcher):
             for child in parent:
                 family = list(ancestors) + [child]
                 if child is node:
@@ -226,7 +227,7 @@ def either_loops(node, conservative):
     Select between the conservative and liberal loop detection algorithms.
     '''
     if conservative:
-        return loops(node)
+        return loops(node, Matcher)
     else:
         return left_loops(node)
     
@@ -248,8 +249,10 @@ def optimize_or(conservative=True):
     may classify some left--recursive loops as right--recursive.
     '''
     from lepl.matchers import Delayed, Or
+    from lepl.operators import Matcher
     def rewriter(graph):
-        for delayed in [x for x in preorder(graph) if type(x) is Delayed]:
+        for delayed in [x for x in preorder(graph, Matcher) 
+                        if isinstance(x, Delayed)]:
             for loop in either_loops(delayed, conservative):
                 for i in range(len(loop)):
                     if isinstance(loop[i], Or):
@@ -275,9 +278,11 @@ def context_memoize(conservative=True):
     '''
     from lepl.matchers import Delayed
     from lepl.memo import LMemo, RMemo
+    from lepl.operators import Matcher
     def rewriter(graph):
         dangerous = set()
-        for delayed in [x for x in preorder(graph) if type(x) is Delayed]:
+        for delayed in [x for x in preorder(graph, Matcher) 
+                        if isinstance(x, Delayed)]:
             for loop in either_loops(delayed, conservative):
                 for node in loop:
                     dangerous.add(node)

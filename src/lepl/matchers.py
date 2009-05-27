@@ -294,6 +294,12 @@ class Transformation(object):
     # Python 2.6
     def __nonzero__(self):
         return self.__bool__()
+    
+    def __iter__(self):
+        '''
+        Co-operate with graph routines.
+        '''
+        return iter([])
         
 
 class Transformable(OperatorMatcher):

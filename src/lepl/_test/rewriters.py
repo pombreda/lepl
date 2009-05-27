@@ -12,8 +12,8 @@ class DelayedCloneTest(TestCase):
     
     def assert_clone(self, matcher):
         copy = matcher.postorder(DelayedClone())
-        original = preorder(matcher)
-        duplicate = preorder(copy)
+        original = preorder(matcher, Matcher)
+        duplicate = preorder(copy, Matcher)
         try:
             while True:
                 o = next(original)
@@ -30,8 +30,8 @@ class DelayedCloneTest(TestCase):
     def assert_relative(self, matcher):
         copy = matcher.postorder(DelayedClone())
         def pairs(matcher):
-            for a in preorder(matcher):
-                for b in preorder(matcher):
+            for a in preorder(matcher, Matcher):
+                for b in preorder(matcher, Matcher):
                     yield (a, b)
         for ((a,b), (c,d)) in zip(pairs(matcher), pairs(copy)):
             if a is b:

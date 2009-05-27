@@ -3,7 +3,6 @@
 from lepl.graph import postorder
 from lepl.node import Node
 
-
 def make_error(msg):
     '''
     Create an error node using a format string.
@@ -92,7 +91,7 @@ def throw(node):
     Raise an error, if one exists in the results (AST trees are traversed).
     Otherwise, the results are returned (invoke with ``>>``).
     '''
-    for child in postorder(node):
+    for child in postorder(node, Node):
         if isinstance(node, Exception):
             raise node
     return node
