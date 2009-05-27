@@ -23,11 +23,11 @@ Generate and match a stream of tokens that are identified by regular expressions
 from abc import ABCMeta
 
 from lepl.context import Namespace, NamespaceMixin, Scope
+from lepl.error import syntax_error_kargs
 from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream
 from lepl.matchers \
     import OperatorMatcher, BaseMatcher, coerce, Any, Literal, Lookahead, \
     Regexp, And, Add, Or, Apply, Drop, KApply, Repeat, raise_error, First, Map
-from lepl.node import syntax_error_kargs
 from lepl.operators \
     import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, ARGS, KARGS, RAISE, \
     REPEAT, FIRST, MAP

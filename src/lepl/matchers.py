@@ -40,10 +40,11 @@ from sys import version
 from traceback import print_exc
 
 from lepl.config import Configuration
+from lepl.error import raise_error
 from lepl.graph \
     import ArgAsAttributeMixin, PostorderWalkerMixin, ConstructorStr, GraphStr
 from lepl.manager import _GeneratorManager
-from lepl.node import Node, raise_error
+from lepl.node import Node
 from lepl.operators \
     import OperatorMixin, OPERATORS, DefaultNamespace, \
     Matcher, GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST

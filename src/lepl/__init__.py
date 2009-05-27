@@ -103,6 +103,7 @@ Running this gives the result::
 '''
 
 from lepl.config import Configuration
+from lepl.error import *
 from lepl.memo import * 
 from lepl.node import *
 from lepl.operators import * 
@@ -122,6 +123,11 @@ from lepl.trace import *
 __all__ = [
         # config
         'Configuration',
+        # error
+        'make_error',
+        'raise_error',
+        'Error',
+        'throw',
         # match
         'Empty',
         'Repeat',
@@ -181,10 +187,6 @@ __all__ = [
         'Node',
         'make_dict',
         'join_with',
-        'make_error',
-        'raise_error',
-        'Error',
-        'throw',
         # stream
         'SequenceByLine',
         # operators

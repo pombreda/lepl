@@ -26,16 +26,16 @@ from lepl.graph import SimpleGraphNode, SimpleWalker, GraphStr, postorder, POSTO
 from lepl.support import LogMixin
 
 
-def on_tuple(arg, match, fail=None):
+def _on_tuple(arg, match, fail=None):
     '''
-    Handle (str, value) arguments.  We need to avoid matching two character 
-    strings while remaining as accomodating as possible.
+    If arg is a (str, value) pair, invoke match on the two components.
+    
+    We need to avoid matching two character strings while remaining as 
+    accommodating as possible.
     '''
-    matched = False
     if isinstance(arg, tuple) or isinstance(arg, list):
         try:
             (name, value) = arg
-            matched = True
             return match(name, value)
         except:
             pass
@@ -44,11 +44,23 @@ def on_tuple(arg, match, fail=None):
     else:
         return None
 
+
 class Node(SimpleGraphNode, LogMixin):
     '''
-    A base class for AST nodes.  This is designed to be applied to a list of 
-    results, via ``>``.  If the list contains labelled pairs ``(str, value)`` 
-    then these are added as (list) attributes; similarly for Node subclasses.
+    A base class for AST nodes.
+    
+    This is a container that combines named and indexed (integer) lookup.
+    Integer indexing accesses all contents in order; named attributes give
+    access to either (1) subclasses of Node by class name or (2) named
+    pairs of values (name, value).  In both cases the attribute is a list
+    (since there may be more than one value with that name in the given
+    args).  So all arguments can be accessed by [index], but only certain
+    kinds can be accessed as attributes. 
+    
+    It is designed to be applied to a list of results, via ``>``.
+    
+    In addition, by implementing the children() method, it supports the
+    `SimpleGraphNode` interface.
     '''
     
     def __init__(self, args):
@@ -64,7 +76,7 @@ class Node(SimpleGraphNode, LogMixin):
             if isinstance(arg, Node):
                 self.__add_attribute(arg.__class__.__name__, arg)
             else:
-                on_tuple(arg, self.__add_attribute)
+                _on_tuple(arg, self.__add_attribute)
             self._children.append(arg)
         
     def __add_attribute(self, name, value):
@@ -74,16 +86,14 @@ class Node(SimpleGraphNode, LogMixin):
         getattr(self, name).append(value)
         
     def children(self):
+        '''
+        An iterator over the indexed contents.
+        '''
         return iter(self)
         
     def __dir__(self):
         '''
         The names of all the attributes constructed from the results.
-        
-        I realise that this may break some assumptions necessary for 
-        introspection, but I can't find any other appropriate way to expose
-        this information (I want to avoid using a named method as that will
-        obscure a similarly named child).
         '''
         return self._names
     
@@ -94,7 +104,7 @@ class Node(SimpleGraphNode, LogMixin):
         return iter(self._children)
     
     def __str__(self):
-        visitor = CustomStr()
+        visitor = NodeTreeStr()
         return visitor.postprocess(self.__postorder(visitor))
     
     def __repr__(self):
@@ -113,17 +123,18 @@ class MutableNode(Node):
         self._children[index] = value
     
 
-class CustomStr(GraphStr):
+class NodeTreeStr(GraphStr):
     '''
-    Extend `GraphStr` to handle named pairs.
+    Extend `GraphStr` to handle named pairs - this generates an 'ASCII tree'
+    representation of the node graph.
     '''
     
     def leaf(self, arg):
-        return on_tuple(arg, 
+        return _on_tuple(arg, 
             lambda name, value:
                 lambda first, rest, name_:
                     [first + name + (' ' if name else '') + repr(value)],
-            super(CustomStr, self).leaf)
+            super(NodeTreeStr, self).leaf)
 
 
 def make_dict(contents):
@@ -148,98 +159,4 @@ def join_with(separator=''):
         return separator.join(results)
     return fun
     
-
-def make_error(msg):
-    '''
-    Create an error node using a format string.
-    
-    Invoke as ``** make_error('bad results: {results}')``, for example.
-    '''
-    def fun(stream_in, stream_out, results):
-        return Error(results,
-            *syntax_error_args(msg, stream_in, stream_out, results))
-    return fun
-
-
-STREAM_IN = 'stream_in'
-STREAM_OUT = 'stream_out'
-RESULTS = 'results'
-FILENAME = 'filename'
-LINENO = 'lineno'
-OFFSET = 'offset'
-LINE = 'line'
-
-
-def syntax_error_args(msg, stream_in, stream_out, results):
-    '''
-    Helper function for constructing format dictionary.
-    '''
-    kargs = syntax_error_kargs(stream_in, stream_out, results)
-    filename = kargs[FILENAME]
-    lineno = kargs[LINENO]
-    offset = kargs[OFFSET]
-    line = kargs[LINE]
-    try:
-        return (msg.format(**kargs), (filename, lineno, offset, line))
-    except:
-        return (msg, (filename, lineno, offset, line))
-
-
-def syntax_error_kargs(stream_in, stream_out, results):
-    '''
-    Helper function for constructing format dictionary.
-    '''
-    try:
-        (lineno, offset, depth, line, filename) = stream_in.location()
-        offset += 1 # appears to be 1-based?
-    except:
-        filename = '<unknown> - use stream for better error reporting'
-        lineno = -1
-        offset = -1
-        try:
-            line = '...' + stream_in
-        except:
-            line = ['...'] + stream_in
-    kargs = {STREAM_IN: stream_in, STREAM_OUT: stream_out, 
-             RESULTS: results, FILENAME: filename, 
-             LINENO: lineno, OFFSET:offset, LINE:line}
-    return kargs
-
-
-def raise_error(msg):
-    '''
-    As `make_error()`, but also raise the result.
-    '''
-    def fun(stream_in, stream_out, results):
-        error = make_error(msg)(stream_in, stream_out, results)
-        raise error
-    return fun
-
-
-class Error(Node, SyntaxError):
-    '''
-    Subclass `Node` and Python's SyntaxError to provide an AST
-    node that can be raised as an error via `throw`.
-    
-    Create with `make_error()`.
-    '''
-    
-    def __init__(self, results, msg, location):
-        Node.__init__(self, results)
-        SyntaxError.__init__(self, msg, location)
-        
-    def __str__(self):
-        return SyntaxError.__str__(self)
-
-
-def throw(node):
-    '''
-    Raise an error, if one exists in the results (AST trees are traversed).
-    Otherwise, the results are returned (invoke with ``>>``).
-    '''
-    for child in postorder(node):
-        if isinstance(node, Exception):
-            raise node
-    return node
-        
 
