@@ -37,7 +37,8 @@ def _on_tuple(arg, match, fail=None):
     if isinstance(arg, tuple) or isinstance(arg, list):
         try:
             (name, value) = arg
-            return match(name, value)
+            if isinstance(name, str):
+                return match(name, value)
         except:
             print_exc()
             pass

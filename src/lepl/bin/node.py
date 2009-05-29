@@ -14,25 +14,26 @@ I personally prefer big-endian for long hex strings - it seems obvious that
 0x123456 should be encoded as [0x12, 0x34, 0x56].  On the other hand, it
 also seems reasonable that the integer 1193046 (=0x123456) should be stored 
 small-endian as [0x56, 0x34, 0x12, 0x00] because that is how it is 
-stored in memory.  Unfortunately we cannot implement the above, since integer
+stored in memory.  Unfortunately we cannot implement both because integer
 values do not contain any flag to say how the user specified them (hex or
 decimal).
 
 A very similar issue - that integers do not carry any information to say
 how many leading zeroes were entered by the user - suggests a solution to
-the endiannness problem.  To solve the leading zeroes issue we accept 
-integers as strings, and do the conversion ourselves.  Since we are
-dealing with strings we can invent an entirely new encoding to specify
-endianness.  We will use little-endian for ints and the "usual" notation
-since this reflects the hardware (it appeals to the idea that we are 
-simply taking the chunk of memory in which the integer existed and using
-it directly).  For big endian, we will use a trailing type flag (ie change
-"ends") in strings.
+this problem.  To solve the leading zeroes issue we accept integers as strings
+and do the conversion ourselves.  Since we are dealing with strings we can 
+invent an entirely new encoding to specify endianness.  We will use 
+little-endian for ints and the "usual" notation since this reflects the 
+hardware (it appeals to the idea that we are simply taking the chunk of memory 
+in which the integer existed and using it directly).  For big endian, we will 
+use a trailing type flag (ie change "ends") in strings.
 
 So 1193046, "1193046", 0x123456, "0x123456" all encode to [0x56, 0x34, 0x12]
 (module some questions about implicit lengths).
 
-But "123456x0" encodes to [0x12, 0x34, 0x56].
+But "123456x0" encodes to [0x12, 0x34, 0x56].    This does have a slight
+wrinkle - 100b0 looks like a hex value (but is not, as it does not start with
+0x).
 
 There is a separate issue about arrays of values.  To avoid complicating
 things even further, an array must contain only byte values.  
@@ -70,7 +71,7 @@ def unpack_standard_form(arg):
     if isinstance(first, str) and standard_value(second):
         return arg
     # non-standard
-    raise ValueError('Not a standard form: %r' % arg)
+    raise ValueError('Not a standard form: {0!r}'.format(arg))
     
     
 def unpack(arg):

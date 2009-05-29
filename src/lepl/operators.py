@@ -564,7 +564,7 @@ class OperatorMixin(NamespaceMixin):
         '''
         **self * function** - Process the results (\*args).
         
-        Apply a function to each result in turn.  
+        Apply a function to the results (as distinct arguments).  
         This is equivalent to `Apply()` with ``args=True``.  
         It is similar to *self > function*, except that the function is 
         applies to multiple arguments (using Python's ``*args`` behaviour).

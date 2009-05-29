@@ -987,10 +987,14 @@ def Apply(matcher, function, raw=False, args=False):
             function = lambda results, f=function: lmap(lambda x:(f, x), results)
             raw = True
             args = False
-        if not raw:
-            function = lambda results, f=function: [f(results)]
         if args:
-            function = lambda results, f=function: f(*results)
+            if raw:
+                function = lambda results, f=function: f(*results)
+            else:
+                function = lambda results, f=function: [f(*results)]
+        else:
+            if not raw:
+                function = lambda results, f=function: [f(results)]
         function = lambda results, sin, sout, f=function: (f(results), sout)
     return Transform(matcher, function).tag('Apply')
 
