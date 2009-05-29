@@ -159,6 +159,16 @@ def safe_in(value, container, default=False):
         return value in container
     except TypeError:
         return default
+    
+    
+def safe_add(container, value):
+    '''
+    Ass items to a container, if they are hashable.
+    '''
+    try:
+        container.add(value)
+    except TypeError:
+        pass
 
 
 def fold(fun, start, sequence):

@@ -50,7 +50,7 @@ calls it in a way that replicates the original calls to the node constructors.
 
 from collections import Sequence, Hashable, deque
 
-from lepl.support import compose, safe_in, empty
+from lepl.support import compose, safe_in, safe_add, empty
 
 
 FORWARD = 1    # forward edge
@@ -78,7 +78,8 @@ def dfs_edges(node, type_):
         try:
             stack = [(node, iter(node), ROOT)]
             yield node, node, FORWARD | ROOT
-            visited = set([node])
+            visited = set()
+            safe_add(visited, node) # cannot track loops in unhashable objects
             while stack:
                 parent, children, ptype = stack[-1]
                 try:
@@ -89,7 +90,7 @@ def dfs_edges(node, type_):
                         else:
                             stack.append((child, iter(child), NODE))
                             yield parent, child, FORWARD | NODE
-                            visited.add(child)
+                            safe_add(visited, child)
                     else:
                         stack.append((child, empty(), LEAF))
                         yield parent, child, FORWARD | LEAF

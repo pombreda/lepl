@@ -36,7 +36,6 @@ def graph():
                      Node(112)),
                 Node(12))
         
-        
 class OrderTest(TestCase):
     
     def test_preorder(self):
@@ -125,4 +124,21 @@ class CloneTest(TestCase):
 #        print(repr(g3))
 
 
+class GenericOrderTest(TestCase):
     
+    def test_preorder(self):
+        graph = [1, [11, [111, 112], 12]]
+        result = [node for node in preorder(graph, list) if isinstance(node, int)]
+        assert result == [1, 11, 111, 112, 12], result
+        
+    def test_postorder(self):
+        '''
+        At first I was surprised about this (compare with Node results above),
+        but these are leaf nodes, so postorder doesn't change anything (there's
+        no difference between "before visiting" and "after visiting" a leaf). 
+        '''
+        graph = [1, [11, [111, 112], 12]]
+        result = [node for node in postorder(graph, list) if isinstance(node, int)]
+        assert result == [1, 11, 111, 112, 12], result
+        
+        
