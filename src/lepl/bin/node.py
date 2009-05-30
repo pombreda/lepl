@@ -119,10 +119,31 @@ def unpack(arg):
     else:
         return coerce_unknown_length(arg)
 
+
+def is_bigendian(value):
+    '''
+    Test for a big-endian format integer.
+    '''
+    if isinstance(value, str):
+        value = value.strip()
+        return value.endswith('0') and len(value) > 2 and not value[-2].isdigit()
+    else:
+        return False
+    
+
+def big_to_small(value):
+    '''
+    Convert big-endian to the standard (small-endian) format.
+    '''
+    value = value.strip()
+    return '0' + value[-2] + value[0:-2]
+
     
 def to_byte(v):
     if isinstance(v, str):
-        iv = int(v.strip(), 0)
+        if is_bigendian(v):
+            v = big_to_small(v)
+        iv = int(v, 0)
     else:
         iv = int(v)
     if iv < 0 or iv > 255:
@@ -138,11 +159,19 @@ def bytes_for_bits(bits):
     return (bits + 7) // 8
 
 
-def int_as_string(value):
+def is_d_prefix(value):
+    return value.startswith('0') and len(value) > 1 and value[1].lower() == 'd'
+
+
+def is_smallendian(value):
     '''
     Is the value a string formatted in the standard way for integers?
+    We allow the 'd' prefic for decimal.
     '''
     if isinstance(value, str):
+        value = value.strip()
+        if is_d_prefix(value):
+            value = value[2:]
         try:
             int(value, 0)
             return True
@@ -153,7 +182,16 @@ def int_as_string(value):
 
 def coerce_known_length(length, value):
     l = unpack_length(length)
-    if isinstance(value, int) or int_as_string(value):
+    
+    # we handle ints explicitly here via python, so decimal is converted with 
+    # no problems when a length is given.
+    bigendian = is_bigendian(value)
+    if bigendian:
+        value = big_to_small(value)
+    if isinstance(value, int) or is_smallendian(value) or bigendian:
+        # allow 'd' for decimal (not supported by Python, so drop here)
+        if isinstance(value, str) and is_d_prefix(value):
+            value = value[2:]
         a, v = [], int(value, 0) if isinstance(value, str) else value
         for i in range(bytes_for_bits(l)):
             a.append(v % 0x100)
@@ -162,7 +200,10 @@ def coerce_known_length(length, value):
             raise ValueError('Value contains more bits than length: %r/%r' % 
                              (value, length))
         else:
+            if bigendian:
+                a = reversed(a)
             return (l, bytes(a)) # little-endian
+        
     # for anything else, we'll use unknown length and then pad
     (_l, v) = coerce_unknown_length(value)
     if len(v) > bytes_for_bits(l):
@@ -188,9 +229,9 @@ def coerce_unknown_length(value):
         value = value.strip()
         # don't include decimal as doesn't naturally imply a bit length
         bigendian, format = None, {'b': (2, 1), 'o': (8, 3), 'x': (16, 4)}
-        if value.endswith('0') and not value[-2].isdigit():
+        if is_bigendian(value):
             (base, bits) = format.get(value[-2].lower(), (None, None))
-            iv, bigendian = int('0' + value[-2] + value[0:-2], 0), True
+            iv, bigendian = int(big_to_small(value), 0), True
         elif value.startswith('0') and not value[1].isdigit():
             (base, bits) = format.get(value[1].lower(), (None, None))
             iv, bigendian = int(value, 0), False

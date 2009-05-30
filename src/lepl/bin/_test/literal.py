@@ -11,7 +11,7 @@ class ParseTest(TestCase):
     '''
     
     def test_single(self):
-        b = parse('''(123, foo=0x123/2.0, \t\n     bar=1111100010001000b0)''')
+        b = parse('''(123, foo=0x123/2.0,\nbar=1111100010001000b0)''')
         assert b[0][0] == 8, str(b)
         assert b[0][1] == b'\x7b', str(b)
         assert b[1][1][0] == 16, str(b)
@@ -44,4 +44,7 @@ class ParseTest(TestCase):
          b = parse('([1,2]*3)')
          assert b[0][0] == 48, str(b)
          assert b[0][1] == b'\x01\x02\x01\x02\x01\x02', str(b)
+         b = parse('(a=[1,2]*3)')
+         assert b.a[0][0] == 48, str(b)
+         assert b.a[0][1] == b'\x01\x02\x01\x02\x01\x02', str(b)
 

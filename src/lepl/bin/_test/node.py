@@ -69,6 +69,9 @@ class UnpackTest(TestCase):
         self.assert_length_value(16, b'\x34\x12', coerce_known_length(16, 0x1234))
         self.assert_length_value(16, b'\x34\x12', coerce_known_length(16, '0x1234'))
         self.assert_length_value(16, b'\x12\x34', coerce_known_length(16, '1234x0'))
+        self.assert_length_value(16, b'\x34\x12', coerce_known_length(16, '4660'))
+        self.assert_length_value(16, b'\x34\x12', coerce_known_length(16, '0d4660'))
+        self.assert_length_value(16, b'\x12\x34', coerce_known_length(16, '4660d0'))
         
         
     

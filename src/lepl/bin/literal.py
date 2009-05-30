@@ -26,14 +26,14 @@ In more detail:
     name=value/length named value with given length
 '''
 
-from lepl.bin.node import Binary
+from lepl.bin.node import Binary, unpack_length
 
 
 def make_binary_parser():
     
     # avoid import loops
     from lepl import Word, Letter, Digit, UnsignedFloat, UnsignedInteger, \
-        Regexp, Drop, Separator, Delayed, Optional, Any
+        Regexp, DfaRegexp, Drop, Separator, Delayed, Optional, Any
         
     classes = {}
     
@@ -50,7 +50,8 @@ def make_binary_parser():
         
     # swap and create a tuple 
     # (because the spec has value/length, but we store (length, value)
-    stuple  = lambda ab: (ab[1], ab[0])
+    # we also unpack length so that it's distinct from str (names)
+    stuple  = lambda ab: (unpack_length(ab[1]), ab[0])
     
     # an attribute or class name
     name    = Word(Letter(), Letter() | Digit() | '_')
@@ -62,7 +63,7 @@ def make_binary_parser():
     decimal = UnsignedInteger()
 
     # the letters used for binary, octal and hex values (eg the 'x' in 0xffee)
-    b, o, x = Any('bB'), Any('oO'), Any('xX')
+    b, o, x, d = Any('bB'), Any('oO'), Any('xX'), Any('dD')
 
     # a binary number (without pre/postfix)
     binary  = Any('01')[1:]
@@ -72,6 +73,9 @@ def make_binary_parser():
 
     # a hex number (without pre/postfix)
     hex     = Regexp('[a-fA-F0-9]')[1:]
+    
+    # a decimal with pre or postfix - only used with lengths
+    dec     = '0' + d + decimal | decimal + d + '0'
 
     # little-endian literals have normal prefix syntax (eg 0xffee) 
     little  = decimal | '0' + (b + binary | o + octal | x + hex)
@@ -79,8 +83,9 @@ def make_binary_parser():
     # big-endian literals have postfix (eg ffeex0)
     big     = (binary + b | octal + o | hex + x) + '0'
 
-    # optional spaces - will be ignored
-    spaces  = Drop(Regexp(r'\s*'))
+    # optional spaces - will be ignored 
+    # (use DFA here because it's multi-line, so \n will match ok)
+    spaces  = Drop(DfaRegexp('[ \t\n\r]*'))
         
     with Separator(spaces):
         
@@ -100,10 +105,10 @@ def make_binary_parser():
         repeat = (values & Drop('*') & value)                 * mult
         
         # a value with a length is a tuple, but we need to swap the order
-        lvalue = value & Drop('/') & length                   > stuple
+        lvalue = (value | dec) & Drop('/') & length           > stuple
         
         # a named value is also a tuple
-        named  = name & Drop('=') & (value | lvalue)          > tuple
+        named  = name & Drop('=') & (value | lvalue | repeat) > tuple
         
         # an entry in the expression could be any of these
         entry  = named | lvalue | value | expr | values | repeat
