@@ -39,7 +39,7 @@ def make_binary_parser():
     
     def named_class(name, *args):
         '''
-        Given a name and some args, create an sub-class of Binary and 
+        Given a name and some args, create a sub-class of Binary and 
         create an instance with the given content.
         '''
         if name not in classes:
@@ -48,10 +48,8 @@ def make_binary_parser():
     
     mult    = lambda l, n: l * int(n) 
         
-    # swap and create a tuple 
-    # (because the spec has value/length, but we store (length, value)
-    # we also unpack length so that it's distinct from str (names)
-    stuple  = lambda ab: (unpack_length(ab[1]), ab[0])
+    # unpack length so that it's distinct from str (names)
+    len_tuple  = lambda ab: (ab[0], unpack_length(ab[1]))
     
     # an attribute or class name
     name    = Word(Letter(), Letter() | Digit() | '_')
@@ -105,7 +103,7 @@ def make_binary_parser():
         repeat = (values & Drop('*') & value)                 * mult
         
         # a value with a length is a tuple, but we need to swap the order
-        lvalue = (value | dec) & Drop('/') & length           > stuple
+        lvalue = (value | dec) & Drop('/') & length           > len_tuple
         
         # a named value is also a tuple
         named  = name & Drop('=') & (value | lvalue | repeat) > tuple
@@ -122,11 +120,11 @@ def make_binary_parser():
         binary = Optional(Drop('Binary')) & args              > Binary
         
         # alternatively, we can give a name and create a named sub-class
-        # (the '*' gives name and ags as two separate arguments to the
+        # (the '*' gives name and args as two separate arguments to the
         # function named_class, instead of bundling them in a list)
         other  = (name & args)                                * named_class
         
-        # and finally, we "tie the knot' by giving a definition for the
+        # and finally, we "tie the knot" by giving a definition for the
         # delayed matcher we introduced earlier, which is either a binary
         # node or a subclass
         expr  += spaces & (binary | other) & spaces

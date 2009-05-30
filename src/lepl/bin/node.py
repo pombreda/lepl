@@ -2,7 +2,15 @@
 '''
 A representation of a binary structure within Python.  This allows binary
 data to be accessed in a a hierarchical, structured manner with named fields.
-Internally, values a re stored as (length, bytes) pairs, where length is 
+
+Since this is based on `Node`, data can be stored in three ways: as anonymous
+values, named values, or nested nodes.
+
+In this way, the structure of data and the "kind" of each value are separated.
+
+Different kinds of values should implement the `Value` interface.
+
+Internally, values are stored as (length, bytes) pairs, where length is 
 measured in bits and bytes is a byte array that contains a value for those
 bits (possibly with zero padding).
 
@@ -45,218 +53,10 @@ this context.  It does assume that this is the dominant representation.
 '''
 
 
+from abc import ABCMeta, abstractmethod
+from traceback import print_exc
+
 from lepl.node import Node
-
-
-def unpack_standard_form(arg):
-    '''
-    Detect args that do not need coercion.
-    '''
-    def standard_value(value):
-        if isinstance(value, Binary):
-            return True
-        try:
-            (l, b) = value
-            if isinstance(l, int) and \
-                    isinstance(b, bytes) or isinstance(b, bytearray):
-                return True
-        except ValueError:
-            pass
-        return False
-    # anonymous value
-    if standard_value(arg):
-        return arg
-    # named value
-    (first, second) = arg
-    if isinstance(first, str) and standard_value(second):
-        return arg
-    # non-standard
-    raise ValueError('Not a standard form: {0!r}'.format(arg))
-    
-    
-def unpack(arg):
-    '''
-    This processes the argument list to `Binary`, generating an argument list 
-    suitable for `Node`.
-    
-    Possible forms are:
-      Binary - an anonymous sub-node, which will be named after its class
-      (name, Binary) - a named sub-node
-      (length, bytes) - a binary value
-      (name, (length, bytes)) - a named binary value
-    In addition, we try to support:
-      value - coerced to (length, bytes)
-      (name, value) - coerced to (name, (length, bytes))
-      (length, value) - coerce to (length, bytes)
-      (name, (length, value)) - coerced to (name, (length, bytes))
-    but there is considerable ambiguity here.
-    '''
-    try:
-        return unpack_standard_form(arg)
-    except ValueError:
-        pass
-    
-    # we only expand tuples (not arbitrary sequences) for the various possible
-    # structures because other sequences (eg lists of bytes) may be coerced as
-    # values
-    if isinstance(arg, tuple):
-        (first, second) = arg
-        # if first value is a string, we take it to be a name
-        if isinstance(first, str):
-             # if the second arg is also a tuple, we take it to be a 
-             # (length, value) pair
-             if isinstance(second, tuple):
-                 (length, value) = second
-                 return (first, coerce_known_length(length, value))
-             # otherwise, we take it to be a single value for which we
-             # must infer a length
-             else:
-                 return (first, coerce_unknown_length(second))
-        # we don't have a named pair, so assume first is a length
-        else:
-            return coerce_known_length(first, second)
-    # arg is not a tuple, so perhaps it's a raw value
-    else:
-        return coerce_unknown_length(arg)
-
-
-def is_bigendian(value):
-    '''
-    Test for a big-endian format integer.
-    '''
-    if isinstance(value, str):
-        value = value.strip()
-        return value.endswith('0') and len(value) > 2 and not value[-2].isdigit()
-    else:
-        return False
-    
-
-def big_to_small(value):
-    '''
-    Convert big-endian to the standard (small-endian) format.
-    '''
-    value = value.strip()
-    return '0' + value[-2] + value[0:-2]
-
-    
-def to_byte(v):
-    if isinstance(v, str):
-        if is_bigendian(v):
-            v = big_to_small(v)
-        iv = int(v, 0)
-    else:
-        iv = int(v)
-    if iv < 0 or iv > 255:
-        raise ValueError('Non-byte value: %r' % v)
-    else:
-        return iv
-    
-    
-def bytes_for_bits(bits):
-    '''
-    The number of bytes required to specify the given number of bits.
-    '''
-    return (bits + 7) // 8
-
-
-def is_d_prefix(value):
-    return value.startswith('0') and len(value) > 1 and value[1].lower() == 'd'
-
-
-def is_smallendian(value):
-    '''
-    Is the value a string formatted in the standard way for integers?
-    We allow the 'd' prefic for decimal.
-    '''
-    if isinstance(value, str):
-        value = value.strip()
-        if is_d_prefix(value):
-            value = value[2:]
-        try:
-            int(value, 0)
-            return True
-        except ValueError:
-            pass
-    return False
-
-
-def coerce_known_length(length, value):
-    l = unpack_length(length)
-    
-    # we handle ints explicitly here via python, so decimal is converted with 
-    # no problems when a length is given.
-    bigendian = is_bigendian(value)
-    if bigendian:
-        value = big_to_small(value)
-    if isinstance(value, int) or is_smallendian(value) or bigendian:
-        # allow 'd' for decimal (not supported by Python, so drop here)
-        if isinstance(value, str) and is_d_prefix(value):
-            value = value[2:]
-        a, v = [], int(value, 0) if isinstance(value, str) else value
-        for i in range(bytes_for_bits(l)):
-            a.append(v % 0x100)
-            v = v // 0x100
-        if v > 0:
-            raise ValueError('Value contains more bits than length: %r/%r' % 
-                             (value, length))
-        else:
-            if bigendian:
-                a = reversed(a)
-            return (l, bytes(a)) # little-endian
-        
-    # for anything else, we'll use unknown length and then pad
-    (_l, v) = coerce_unknown_length(value)
-    if len(v) > bytes_for_bits(l):
-        raise ValueError('Coerced value exceeds length: %r/%r < %r' % 
-                         (value, length, v))
-    if len(v) * 8 < l:
-        v = bytearray(v)
-        # is this documented anywhere - it inserts zeroes
-        v[0:0] = l - 8 * bytes_for_bits(v)
-    return (l, v)
-
-
-def coerce_unknown_length(value):
-    # these are strictly not necessary for the use above, since they will be
-    # considered standard form, but we'll include them in case this is used
-    # elsewhere
-    if isinstance(value, bytes):
-        return (len(value) * 8, value)
-    if isinstance(value, bytearray):
-        return (len(value) * 8, value)
-    # integers as strings with encoding have an implicit length
-    if isinstance(value, str):
-        value = value.strip()
-        # don't include decimal as doesn't naturally imply a bit length
-        bigendian, format = None, {'b': (2, 1), 'o': (8, 3), 'x': (16, 4)}
-        if is_bigendian(value):
-            (base, bits) = format.get(value[-2].lower(), (None, None))
-            iv, bigendian = int(big_to_small(value), 0), True
-        elif value.startswith('0') and not value[1].isdigit():
-            (base, bits) = format.get(value[1].lower(), (None, None))
-            iv, bigendian = int(value, 0), False
-        if bigendian is not None:
-            if not base:
-                raise ValueError('Unknown base: %r' % value)
-            a = []
-            while iv:
-                a.append(iv % 0x100)
-                iv = iv // 0x100
-            if not a:
-                a = [0]
-            if bigendian:
-                b = bytes(reversed(a))
-            else:
-                b = bytes(a)
-            return (bits * (len(value) - 2), b)
-        else:
-            value = int(value) # int handled below
-    # treat plain ints as byte values
-    if isinstance(value, int):
-        return (8, bytes([to_byte(value)]))
-    # otherwise, attempt to treat as a sequence of some kind
-    b = bytes([to_byte(v) for v in value])
-    return (8 * len(b), b)
 
 
 def unpack_length(length):
@@ -274,7 +74,7 @@ def unpack_length(length):
         return bytes * 8 + bits
     if isinstance(length, str):
         try:
-            length = int(length, 0) # support explicit base prefix
+            length = extended_int(length) # support explicit base prefix
         except ValueError:
             length = float(length)
     if isinstance(length, int):
@@ -284,8 +84,203 @@ def unpack_length(length):
     raise TypeError('Cannot infer length from %r' % length)
 
 
+def extended_int(value):
+    '''
+    Convert a string to an integer.
+    
+    This works like int(string, 0), but supports '0d' for decimals, and
+    accepts both 0x... and ...x0 forms.
+    '''
+    if isinstance(value, str):
+        value = value.strip()
+        # convert postfix to prefix
+        if value.endswith('0') and len(value) > 1 and not value[-2].isdigit():
+            value = '0' + value[-2] + value[0:-2]
+        # drop 0d for decimal
+        if value.startswith('0d') or value.startswith('0D'):
+            value = value[2:]
+        return int(value, 0)
+    else:
+        return int(value)
+
+
+def to_byte(value):
+    v = extended_int(value)
+    if v < 0 or v > 255:
+        raise ValueError('Non-byte value: %r' % value)
+    else:
+        return v
+    
+    
+def is_bigendian(value):
+    '''
+    Test for a big-endian format integer.
+    '''
+    if isinstance(value, str):
+        value = value.strip()
+        return value.endswith('0') and len(value) > 2 and not value[-2].isdigit()
+    else:
+        return False
+
+
+def bytes_for_bits(bits):
+    '''
+    The number of bytes required to specify the given number of bits.
+    '''
+    return (bits + 7) // 8
+
+
+def pad_bytes(value, length):
+    '''
+    Make sure value has sufficient bytes for length bits.
+    '''
+    if len(value) * 8 < length:
+        v = bytearray(v)
+        # is this documented anywhere - it inserts zeroes
+        v[0:0] = length - 8 * bytes_for_bits(v)
+        return v
+    else:
+        return value
+
+
+# Python 2.6
+#class Value(metaclass=ABCMeta):
+Value = ABCMeta('Value', (object, ), {})
+
+class BaseValue(Value):
+    '''
+    The interface values should implement.
+    '''
+    
+    @abstractmethod
+    def encode(self, encoding=None):
+        '''
+        Generate (len, bytes) encoded bits
+        '''
+
+
+class RawBits(BaseValue):
+    '''
+    Encapsulate binary data as a sequence of bytes and a number of bits
+    (the value corresponding to the lowest bits).
+    
+    The complexity below is to accept a wide range of arguments.  
+    '''
+    
+    def __init__(self, value, length=None):
+        '''
+        Generate a simple binary value of arbitrary length.
+        
+        The value can be given in a variety of formats; for some of those
+        the length can be inferred. 
+        '''
+        (self._value, self._length) = RawBits.coerce(value, length)
+        
+    def encode(self, encoding=None):
+        return (self._value, self._length)
+    
+    def __str__(self):
+        hx = ''.join(hex(x)[2:] for x in self._value)
+        return '{0}x0/{1}'.format(hx, self._length)
+    
+    def __repr__(self):
+        return str(self)
+        
+    @staticmethod
+    def coerce(value, length):
+        if length is not None:
+            length = unpack_length(length)
+        # handle direct bytes first
+        if isinstance(value, bytes) or isinstance(value, bytearray):
+            if length is None:
+                length = len(value) * 8
+            return (pad_bytes(value, length), length)
+        # otherwise, try more complex solutions
+        if length:
+            return RawBits.coerce_known_length(value, length)
+        else:
+            return RawBits.coerce_unknown_length(value)
+        
+    @staticmethod
+    def coerce_known_length(value, length):
+        # knowing length means we can handle integers
+        if isinstance(value, int) or isinstance(value, str):
+            bigendian = is_bigendian(value)
+            a, v = [], extended_int(value)
+            for i in range(bytes_for_bits(length)):
+                a.append(v % 0x100)
+                v = v // 0x100
+            if v > 0:
+                raise ValueError('Value contains more bits than length: %r/%r' % 
+                                 (value, length))
+            else:
+                if bigendian:
+                    a = reversed(a)
+                return (bytes(a), length) # little-endian
+            
+        # for anything else, we'll use unknown length and then pad
+        (v, _) = RawBits.coerce_unknown_length(value)
+        if len(v) > bytes_for_bits(length):
+            raise ValueError('Coerced value exceeds length: %r/%r < %r' % 
+                             (value, length, v))
+        return (pad_bytes(v, length), length)
+
+    @staticmethod
+    def coerce_unknown_length(value):
+        # integers as strings with encoding have an implicit length
+        # (except for decimals!)
+        if isinstance(value, str):
+            value = value.strip()
+            # don't include decimal as doesn't naturally imply a bit length
+            bigendian, format = None, {'b': (2, 1), 'o': (8, 3), 'x': (16, 4)}
+            if is_bigendian(value):
+                (base, bits) = format.get(value[-2].lower(), (None, None))
+                iv, bigendian = extended_int(value), True
+            elif value.startswith('0') and not value[1].isdigit():
+                (base, bits) = format.get(value[1].lower(), (None, None))
+                iv, bigendian = extended_int(value), False
+            if bigendian is not None:
+                if not base:
+                    raise ValueError('Base unsupported for unknown length: %r' % 
+                                     value)
+                a = []
+                while iv:
+                    a.append(iv % 0x100)
+                    iv = iv // 0x100
+                if not a:
+                    a = [0]
+                if bigendian:
+                    b = bytes(reversed(a))
+                else:
+                    b = bytes(a)
+                return (b, bits * (len(value) - 2))
+            else:
+                value = int(value) # int handled below
+        # treat plain ints as byte values
+        if isinstance(value, int):
+            return (bytes([to_byte(value)]), 8)
+        # otherwise, attempt to treat as a sequence of some kind
+        b = bytes([to_byte(v) for v in value])
+        return (b, 8 * len(b))
+
+
+def _wrapper(arg):
+    '''
+    A simple wrapper so that both (value, length) tuples and simple values
+    can be handled.
+    '''
+    if isinstance(arg, tuple):
+        try:
+            (value, length) = arg
+            return RawBits(value, length)
+        except ValueError:
+            pass
+        except TypeError:
+            pass
+    return RawBits(arg)
+    
+
 class Binary(Node):
 
-    def __init__(self, args, unpack=unpack):
-        self.___unpack = unpack
-        super(Binary, self).__init__([unpack(arg) for arg in args])
+    def __init__(self, args, unpack=_wrapper):
+        super(Binary, self).__init__(args, value=unpack)

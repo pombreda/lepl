@@ -27,25 +27,46 @@ from lepl.graph import SimpleWalker, GraphStr, POSTORDER
 from lepl.support import LogMixin
 
 
-def _on_tuple(arg, match, fail=None):
+def is_named(arg):
     '''
-    If arg is a (str, value) pair, invoke match on the two components.
+    Is this is "named tuple"?
+    '''
+    return (isinstance(arg, tuple) or isinstance(arg, list)) \
+            and len(arg) == 2 and isinstance(arg[0], str)
+            
+
+def dispatch(arg, value=None, node=None, named=None):
+    '''
+    Process `Node` arguments in a uniform manner.
     
-    We need to avoid matching two character strings while remaining as 
-    accommodating as possible.
+    `Node` can take constructor arguments in a variety of forms:
+      - subclasses of Node - these are "child nodes", named by class
+      - value - a simple value
+      - (name, value) - a named value
+      
+    This function allows processing of an argument without having to unpack
+    those different forms to access the subclass or value arguments.
+    When called it matches the argument can calls either value or node
+    directly (without any name).  They are called as follows:
+      - value for any value, named or not
+      - node for any sub-node
+      - named called for named values, after value, with (name, value)
     '''
-    if isinstance(arg, tuple) or isinstance(arg, list):
-        try:
-            (name, value) = arg
-            if isinstance(name, str):
-                return match(name, value)
-        except:
-            print_exc()
-            pass
-    if fail:
-        return fail(arg)
+    if is_named(arg):
+        if value:
+            arg = (arg[0], value(arg[1]))
+        if named:
+            named(arg[0], arg[1])
     else:
-        return None
+        if isinstance(arg, Node):
+            if node:
+                arg = node(arg)
+            if named:
+                named(arg.__class__.__name__, arg)
+        else:
+            if value:
+                arg = value(arg)
+    return arg
 
 
 class Node(LogMixin):
@@ -63,7 +84,7 @@ class Node(LogMixin):
     It is designed to be applied to a list of results, via ``>``.
     '''
     
-    def __init__(self, args):
+    def __init__(self, args, value=None, node=None):
         '''
         Expects a single list of arguments, as will be received if invoked with
         the ``>`` operator.
@@ -73,12 +94,9 @@ class Node(LogMixin):
         self._children = []
         self._names = []
         for arg in args:
-            if isinstance(arg, Node):
-                self.__add_attribute(arg.__class__.__name__, arg)
-            else:
-                _on_tuple(arg, self.__add_attribute)
-            self._children.append(arg)
-        
+            self._children.append(
+                    dispatch(arg, value, node, self.__add_attribute))
+            
     def __add_attribute(self, name, value):
         if name not in self._names:
             self._names.append(name)
@@ -157,11 +175,11 @@ class NodeTreeStr(GraphStr):
     '''
     
     def leaf(self, arg):
-        return _on_tuple(arg, 
-            lambda name, value:
-                lambda first, rest, name_:
-                    [first + name + (' ' if name else '') + repr(value)],
-            super(NodeTreeStr, self).leaf)
+        if is_named(arg):
+            return lambda first, rest, name_: \
+                    [first + arg[0] + (' ' if arg[0] else '') + repr(arg[1])]
+        else:
+            return super(NodeTreeStr, self).leaf(arg)
 
 
 def make_dict(contents):
