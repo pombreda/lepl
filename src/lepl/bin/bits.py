@@ -45,9 +45,10 @@ class BitString(object):
     with conversion between other types.  In other words, convert to and from
     this, and then chain conversions.
     
-    Bits are stored as a contiguous sequence in an array of bytes.  The bytes
-    are ordered by increasing array index; bits within a byte are ordered from
-    lsb to msb ("bit little endian" but "byte big endian").
+    Bits are stored as a contiguous sequence in an array of bytes (both bits
+    and bytes are "little endian" - this allows arbitrary lengths of bits,
+    at arbitrary offsets, to be given values without worrying about
+    alignment.
     
     The bit sequence starts at bit 'offset' in the first byte and there are
     a total of 'length' bits.  The number of bytes stored is the minimum
@@ -69,11 +70,11 @@ class BitString(object):
             raise TypeError('BitString wraps bytes: {0!r}'.format(value))
         if length < 0:
             raise ValueError('Negative length: {0!r}'.format(length))
-        if offset < 0:
-            raise ValueError('Negative offset: {0!r}'.format(offset))
-        self.__bytes = value[offset // 8:] if offset else value
-        self.__length = unpack_length(length) - offset // 8
-        self.__offset = offset % 8
+        if not 0 <= offset < 8 :
+            raise ValueError('Non-byte offset: {0!r}'.format(offset))
+        self.__bytes = value
+        self.__length = unpack_length(length) - offset
+        self.__offset = offset
         if len(value) != bytes_for_bits(self.__length, self.__offset):
             raise ValueError('Inconsistent length: {0!r}/{1!r}'
                              .format(value, length))
@@ -81,11 +82,17 @@ class BitString(object):
     def bytes(self, offset=0):
         '''
         Return a series of bytes values, which encode the data for len(self)
-        bits when offset=0.  When 0 < offset < 8 then the data are zero-padded
-        by offset bits first.
-        
+        bits when offset=0 (with final padding in the last byte if necessary).
         It is the caller's responsibility to discard any trailing bits.
+        
+        When 0 < offset < 8 then the data are zero-padded by offset bits first.
         '''
+        if self.__offset and offset == 0:
+            # normalize our own value
+            self.__bytes = \
+                bytes(ByteIterator(self.__bytes, self.__length, 
+                                   self.__offset, offset))
+            self.__offset = 0
         return ByteIterator(self.__bytes, self.__length, self.__offset, offset)
     
     def bits(self):
@@ -98,16 +105,20 @@ class BitString(object):
         '''
         For 64 bits or less, show bits grouped by byte (octet), with bytes
         running from left to right and bits running from right to left within
-        a byte.  This is the "usual" way of displaying bits, but means that
-        reading literally from left to right does *not* give the bit sequence.
+        a byte.  This is the "usual" way of displaying bits as byte values, but 
+        means that reading literally from left to right does *not* give the bit 
+        sequence.
         
         For more than 64 bits, give a hex encoding of bytes (right padded
         with zeros).
         
         In both cases, the length in bits is given after a trailing slash.
+        
+        Whatever the internal offset, values are displayed with no initial
+        padding.
         '''
         if self.__length > 64:
-            hx = ''.join(hex(x)[2:] for x in self.__bytes)
+            hx = ''.join(hex(x)[2:] for x in self.bytes())
             return '{0}x0/{1}'.format(hx, self.__length)
         else:
             chars = []
@@ -128,6 +139,9 @@ class BitString(object):
             return '{0}/{1}'.format(''.join(chars), self.__length)
     
     def __repr__(self):
+        '''
+        An explicit display of internal state, including padding and offset.
+        '''
         return 'BitString({0!r}, {1!r}, {2!r})'.format(self.__bytes, self.__length, self.__offset)
         
     def __len__(self):
@@ -164,116 +178,97 @@ class BitString(object):
         return BitString(bytes(bb), self.__length + len(other))
     
     def to_bytes(self, offset=0):
+        '''
+        Return a bytes() object, right-padded with zero bits of necessary.
+        '''
         if self.__offset == offset:
             return self.__bytes
         else:
             return bytes(self.bytes(offset))
     
     def to_int(self, big_endian=False):
+        '''
+        Convert the entire bit sequence (of any size) to an integer.
+        
+        Big endian conversion is only possible if the bits form a whole number
+        of bytes.
+        '''
+        if big_endian and self.__length % 8:
+            raise ValueError('Length is not a multiple of 8 bits, so big '
+                             'endian integer poorly defined: {0}'
+                             .format(self.__length))
         i = 0
-        value = self.__bytes
+        scale = 0
+        value = self.bytes()
         if not big_endian:
             value = reversed(value)
         for b in value:
-            i <<= 8
-            i += b
+            i += b << scale
+            scale += 8
         return i
     
     def to_str(self, encoding=None, errors='strict'):
         if encoding:
-            return self.__bytes.decode(encoding=encoding, errors=errors)
+            return bytes(self.bytes()).decode(encoding=encoding, errors=errors)
         else:
-            return self.__bytes.decode(errors=errors)
+            return bytes(self.bytes()).decode(errors=errors)
 
     @staticmethod
     def from_byte(value):
-        return BitString.from_int_length(value, 8)
+        return BitString.from_int(value, 8)
     
     @staticmethod
-    def from_int32(value):
-        return BitString.from_int_length(value, 32)
+    def from_int32(value, big_endian=None):
+        return BitString.from_int(value, 32, big_endian)
     
     @staticmethod
-    def from_int64(value):
-        return BitString.from_int_length(value, 64)
+    def from_int64(value, big_endian=None):
+        return BitString.from_int(value, 64, big_endian)
     
     @staticmethod
-    def from_bit(value):
-        if isinstance(value, bool):
-            value = 1 if value else 0
-        return BitString.from_int(value, 1)
-            
-    @staticmethod
-    def from_extended_int(value):
+    def from_int(value, length=None, big_endian=None):
         '''
-        An extended int is a string that has a leading or trailing base tag
-        (0b, 0o, 0x).  The position of the tag indicates byte endianness 
-        (leading is little, back big).  The number of characters indicates 
-        length.  Because we must define a contiguous set of bits, little
-        endian values must specify a whole number of bytes.
+        Value can be an int, or a string with a leading or trailing tag.
+        A plain int, or no tag, or leading tag, is byte little-endian by 
+        default.  Because we must define a contiguous set of bits, big endian 
+        values must specify a whole number of bytes.
         '''
-        if not isinstance(value, str):
-            raise TypeError('Extended int must be a string: {0!r}'.format(value))
-        value = value.strip()
-        # don't include decimal as doesn't naturally imply a bit length
-        bigendian, format = None, {'b': (2, 1), 'o': (8, 3), 'x': (16, 4)}
-        if is_bigendian(value):
-            (base, bits) = format.get(value[-2].lower(), (None, None))
-            iv, bigendian = extended_int(value), True
-        elif value.startswith('0') and not value[1].isdigit():
-            (base, bits) = format.get(value[1].lower(), (None, None))
-            iv, bigendian = extended_int(value), False
-        if bigendian is None:
-            raise ValueError('No base tag: {0!r}'.format(value))
-        if not base:
-            raise ValueError('Base unsupported for inferred length: {0!r}'
-                             .format(value)) 
-        length = bits * (len(value) - 2)
-        if length % 8 and not bigendian:
-            raise ValueError('A little-endian extended int with a length '
-                             'that is not an integer number of bytes cannot '
-                             'be encoded as a stream of bits: {0!r}/{1!r}'
-                             .format(value,  length))
-        a = []
-        for i in range(bytes_for_bits(length)):
-            print('iv', iv)
-            a.append(iv & 0xff)
-            iv >>= 8
-        if length % 8:
-            a[-1] <<= 8 - length % 8
-        print('a', a, 8 - length % 8)
-        if not a:
-            a = [0]
-        if bigendian:
-            b = bytes(reversed(a))
-        else:
-            b = bytes(a)
-        print('b', b)
-        return BitString(b, length, 8 - length % 8 if length % 8 else 0)
-        
-    @staticmethod
-    def from_int_length(value, length):
-        '''
-        This can be an int, or a string with a leading or trailing tag.
-        A plain int, or no tag, is byte little-endian.  Because we must define 
-        a contiguous set of bits, little endian values must specify a whole 
-        number of bytes.
-        '''
+        if isinstance(value, str):
+            value.strip()
+            # move postfix to prefix, saving endian hint
+            if value.endswith('0') and len(value) > 1 and \
+                    not value[-2].isdigit() \
+                    and not (len(value) == 3 and value.startswith('0')):
+                value = '0' + value[-2] + value[0:-2]
+                if big_endian is None:
+                    big_endian = True
+            # drop 0d for decimal
+            if value.startswith('0d') or value.startswith('0D'):
+                value = value[2:]
+            # infer implicit length
+            if len(value) > 1 and not value[1].isdigit() and length is None:
+                length = {'b':1, 'o':3, 'x':4}.get(value[1].lower(), None)
+                if not length:
+                    raise ValueError('Unexpected base: {0!r}'.format(value))
+                length *= len(value) - 2
+            value = int(value, 0)
+        # assume 32 bits if nothing else defined
+        if length is None:
+            length = 32
         length = unpack_length(length)
-        bigendian = is_bigendian(value)
-        if length % 8 and not bigendian:
-            raise ValueError('A little-endian int with a length that '
+        if length % 8 and big_endian:
+            raise ValueError('A big-endian int with a length that '
                              'is not an integer number of bytes cannot be '
                              'encoded as a stream of bits: {0!r}/{1!r}'
                              .format(value,  length))
-        a, v = bytearray(), extended_int(value)
+        a, v = bytearray(), value
         for i in range(bytes_for_bits(length)):
             a.append(v & 0xff)
             v >>= 8
         if v > 0:
             raise ValueError('Value contains more bits than length: %r/%r' % 
                              (value, length))
-        if bigendian:
+        if big_endian:
             a = reversed(a)
         return BitString(bytes(a), length)
         
@@ -326,55 +321,11 @@ def unpack_length(length):
     raise TypeError('Cannot infer length from %r' % length)
 
 
-def is_bigendian(value):
-    '''
-    Test for a big-endian format integer (trailing base tag).
-    '''
-    if isinstance(value, str):
-        value = value.strip()
-        return value.endswith('0') and len(value) > 2 and not value[-2].isdigit()
-    else:
-        return False
-
-
-def extended_int(value):
-    '''
-    Convert a string to an integer.
-    
-    This works like int(string, 0), but supports '0d' for decimals, and
-    accepts both 0x... and ...x0 forms.
-    '''
-    if isinstance(value, str):
-        value = value.strip()
-        # convert postfix to prefix
-        if value.endswith('0') and len(value) > 1 and not value[-2].isdigit():
-            value = '0' + value[-2] + value[0:-2]
-        # drop 0d for decimal
-        if value.startswith('0d') or value.startswith('0D'):
-            value = value[2:]
-        return int(value, 0)
-    else:
-        return int(value)
-
-
 def bytes_for_bits(bits, offset=0):
     '''
     The number of bytes required to specify the given number of bits.
     '''
     return (bits + 7 + offset) // 8
-
-
-def pad_bytes(value, length):
-    '''
-    Make sure value has sufficient bytes for length bits (and clone).
-    '''
-    if len(value) * 8 < length:
-        v = bytearray(value)
-        # is this documented anywhere - it inserts zeroes
-        v[0:0] = length - 8 * bytes_for_bits(len(v))
-        return bytes(v[0:bytes_for_bits(length)])
-    else:
-        return bytes(value[0:bytes_for_bits(length)])
 
 
 class BitIterator(object):
@@ -389,12 +340,9 @@ class BitIterator(object):
         return self
     
     def __next__(self):
-        print('offset', self.__offset)
         if self.__offset < self.__length:
             b = self.__bytes[self.__offset // 8]
-            print('b1', b)
             b >>= self.__offset % 8
-            print('b2', b)
             self.__offset += 1
             return ONE if b & 0x1 else ZERO
         else:
@@ -447,13 +395,11 @@ class ByteIterator(object):
             # need to correct for additional offset
             if self.__index < len(self.__bytes):
                 b = 0xff & (self.__bytes[self.__index] >> (self.__existing - self.__required))
-                print('from first byte', b, self.__bytes[self.__index], self.__existing, self.__required)
                 self.__index += 1
             else:
                 raise StopIteration()
             if self.__index < len(self.__bytes):
                 b |= 0xff & (self.__bytes[self.__index] << (8 - self.__existing + self.__required))
-                print('from second', b)
             return b
 
 
