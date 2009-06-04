@@ -60,17 +60,17 @@ class UnpackTest(TestCase):
     
     def test_coerce_known(self):
         self.assert_error(lambda: RawBits(1, 0))
-        self.assert_length_value(1, b'\x00', RawBits(0, 1))
-        self.assert_length_value(7, b'\x00', RawBits(0, 7))
-        self.assert_length_value(8, b'\x00', RawBits(0, 8))
-        self.assert_length_value(1, b'\x00', RawBits(0, 0.1))
-        self.assert_length_value(8, b'\x00', RawBits(0, 1.))
-        self.assert_length_value(16, b'\x34\x12', RawBits(0x1234, 16))
-        self.assert_length_value(16, b'\x34\x12', RawBits('0x1234', 16))
-        self.assert_length_value(16, b'\x12\x34', RawBits('1234x0', 16))
-        self.assert_length_value(16, b'\x34\x12', RawBits('4660', 16))
-        self.assert_length_value(16, b'\x34\x12', RawBits('0d4660', 16))
-        self.assert_length_value(16, b'\x12\x34', RawBits('4660d0', 16))
+        self.assert_length_value(1, b'\x00', RawBits((0, 1)))
+        self.assert_length_value(7, b'\x00', RawBits((0, 7)))
+        self.assert_length_value(8, b'\x00', RawBits((0, 8)))
+        self.assert_length_value(1, b'\x00', RawBits((0, 0.1)))
+        self.assert_length_value(8, b'\x00', RawBits((0, 1.)))
+        self.assert_length_value(16, b'\x34\x12', RawBits((0x1234, 16)))
+        self.assert_length_value(16, b'\x34\x12', RawBits(('0x1234', 16)))
+        self.assert_length_value(16, b'\x12\x34', RawBits(('1234x0', 16)))
+        self.assert_length_value(16, b'\x34\x12', RawBits(('4660', 16)))
+        self.assert_length_value(16, b'\x34\x12', RawBits(('0d4660', 16)))
+        self.assert_length_value(16, b'\x12\x34', RawBits(('4660d0', 16)))
         
 
 class BinaryTest(TestCase):

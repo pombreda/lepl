@@ -122,3 +122,11 @@ class ErrorTest(TestCase):
         except SyntaxError as e:
             assert e.msg == "unexpected text: foo", e.msg
             
+
+class ContentsTest(TestCase):
+    
+    def test_contents(self):
+        n = Node([1, ('two', 2), Node([3, ('four', 4)]), 5])
+        l = list(contents(n))
+        assert l == [1,2,3,4,5], l
+         

@@ -187,6 +187,7 @@ __all__ = [
         'Node',
         'make_dict',
         'join_with',
+        'contents',
         # stream
         'SequenceByLine',
         # operators

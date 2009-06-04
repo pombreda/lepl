@@ -23,7 +23,7 @@ Base classes for AST nodes (and associated functions).
 from traceback import print_exc
 from collections import Iterable, Mapping, deque
 
-from lepl.graph import SimpleWalker, GraphStr, POSTORDER
+from lepl.graph import SimpleWalker, GraphStr, POSTORDER, order, LEAF
 from lepl.support import LogMixin
 
 
@@ -166,6 +166,21 @@ class MutableNode(Node):
     
     def __setitem__(self, index, value):
         self._children[index] = value
+        
+        
+def contents(node):
+    '''
+    An iterator over the flattened contents of a graph of nodes, in order. 
+    '''
+    # what's a better way of doing this?
+    mutable = [None]
+    def pick(value, mutable=mutable):
+        mutable[0] = value
+    for arg in order(node, include=LEAF, type_=Node, exclude=POSTORDER):
+        mutable[0] = None
+        dispatch(arg, value=pick)
+        if mutable[0] is not None:
+            yield mutable[0]
     
 
 class NodeTreeStr(GraphStr):
