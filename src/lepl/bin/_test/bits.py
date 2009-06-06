@@ -1,7 +1,7 @@
 
 from unittest import TestCase
 
-from lepl.bin.bits import unpack_length, BitString
+from lepl.bin.bits import unpack_length, BitString, swap_table
 
 
 class BitStringTest(TestCase):
@@ -57,6 +57,11 @@ class BitStringTest(TestCase):
         self.assert_length_value(12, b'\xff\x03', BitString.from_int('0o1777'))
         self.assert_length_value(16, b'\x03\xff', BitString.from_int('03ffx0'))
         self.assert_length_value(3, b'\x04', BitString.from_int('0b100'))
+        self.assert_length_value(1, b'\x01', BitString.from_int('1b0'))
+        self.assert_length_value(2, b'\x02', BitString.from_int('01b0'))
+        self.assert_length_value(9, b'\x00\x01', BitString.from_int('000000001b0'))
+        self.assert_length_value(9, b'\x01\x01', BitString.from_int('100000001b0'))
+        self.assert_length_value(16, b'\x0f\x33', BitString.from_int('1111000011001100b0'))
         
     def test_from_sequence(self):
         self.assert_length_value(8, b'\x01', BitString.from_sequence([1], BitString.from_byte))
@@ -84,8 +89,54 @@ class BitStringTest(TestCase):
         
     def test_str(self):
         b = BitString.from_int32(0xabcd1234)
-        assert str(b) == '00110100 00010010 11001101 10101011/32', str(b)
+        assert str(b) == '00101100 01001000 10110011 11010101b0/32', str(b)
         b = BitString.from_int('0b110')
-        assert str(b) == '110/3', str(b)
+        assert str(b) == '011b0/3', str(b)
 
+    def test_invert(self):
+        self.assert_length_value(12, b'\x00\x0c', ~BitString.from_int('0x3ff'))
+    
+    def test_add(self):
+        acc = BitString()
+        for i in range(8):
+            acc += BitString.from_int('0o' + str(i))
+        # >>> hex(0o76543210)
+        # '0xfac688'
+        self.assert_length_value(24, b'\x88\xc6\xfa', acc)
+        acc = BitString()
+        for i in range(7):
+            acc += BitString.from_int('0o' + str(i))
+        self.assert_length_value(21, b'\x88\xc6\x1a', acc)
+    
+    def test_get_item(self):
+        a = BitString.from_int('01001100011100001111b0')
+        b = a[:]
+        assert a == b, (a, b)
+        b = a[0:]
+        assert a == b, (a, b)
+        b = a[-1::-1]
+        assert BitString.from_int('11110000111000110010b0') == b, b
+        b = a[0]
+        assert BitString.from_int('0b0') == b, (b, str(b), BitString.from_int('0b0'))
+        b = a[1]
+        assert BitString.from_int('1b0') == b, b
+        b = a[0:2]
+        assert BitString.from_int('01b0') == b, b
+        b = a[0:2]
+        assert BitString.from_int('0b10') == b, b
+        b = a[-5:]
+        assert BitString.from_int('01111b0') == b, b
+        b = a[-1:-6:-1]
+        assert BitString.from_int('11110b0') == b, b
+        b = a[1:-1]
+        assert BitString.from_int('100110001110000111b0') == b, b
         
+        
+class SwapTableTest(TestCase):
+    
+    def test_swap(self):
+        table = swap_table()
+        assert table[0x0f] == 0xf0, hex(table[0x0f])
+        assert table[0xff] == 0xff
+        assert table[0] == 0
+        assert table[10] == 80, table[10]
