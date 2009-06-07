@@ -22,11 +22,11 @@ classes that record their own constructor arguments (and so allow deep
 cloning of graphs). 
 
 The fundamental `dfs_edges` routine will traverse over (ie provides an iterator 
-that returns (flag, node) pairsm where flag describes the type of node and 
+that returns (flag, node) pairs, where flag describes the type of node and 
 ordering) a graph made of iterable Python objects.  Only the __iter__ method
 (implemented by all containers) is required.  However, in general this is too
 broad (for example, Strings are iterable, and single character strings contain 
-themselves), so the a type can be specified which identifies those nodes to
+themselves), so a type can be specified which identifies those nodes to
 be treated as "interior" nodes.   Children of interior nodes are returned as
 "leaf" nodes, but are not iterated over themselves.
 

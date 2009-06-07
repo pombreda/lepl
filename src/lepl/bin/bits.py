@@ -34,6 +34,9 @@ with 0x).
 '''
 
 
+STRICT = 'strict'
+
+
 def swap_table():
     '''
     Table of reversed bit patterns for 8 bits.
@@ -353,7 +356,7 @@ class BitString(object):
         return BitString(bytes(a), length)
         
     @staticmethod
-    def from_sequence(value, unpack):
+    def from_sequence(value, unpack=lambda x: x):
         '''
         Unpack is called for each item in turn (so should be, say, from_byte).
         '''
@@ -369,7 +372,7 @@ class BitString(object):
         return BitString(value, len(value) * 8)
             
     @staticmethod
-    def from_str(value, encoding=None, errors='strict'):
+    def from_str(value, encoding=None, errors=STRICT):
         if encoding:
             return BitString.from_bytes(value.encode(encoding=encoding, errors=errors))
         else:
@@ -383,21 +386,19 @@ def unpack_length(length):
     values (eg 3.1 or 3.10), but since we only care about bits 0-7 we can
     avoid any issues by requiring that range. 
     '''
-    def unpack_float(l):
-        bytes = int(l)
-        bits = int(10 * (l - bytes) + 0.5)
-        if bits < 0 or bits > 7:
-            raise ValueError('Bits specification must be between 0 and 7')
-        return bytes * 8 + bits
     if isinstance(length, str):
         try:
-            length = extended_int(length) # support explicit base prefix
+            length = int(length, 0)
         except ValueError:
             length = float(length)
     if isinstance(length, int):
         return length
     if isinstance(length, float):
-        return unpack_float(length)
+        bytes = int(length)
+        bits = int(10 * (length - bytes) + 0.5)
+        if bits < 0 or bits > 7:
+            raise ValueError('Bits specification must be between 0 and 7')
+        return bytes * 8 + bits
     raise TypeError('Cannot infer length from %r' % length)
 
 

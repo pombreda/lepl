@@ -539,8 +539,8 @@ class First(_BaseCombiner):
         sub-matchers (starting from the left).
         '''
         matched = False
-        for match in self.matchers:
-            generator = match(stream)
+        for matcher in self.matchers:
+            generator = matcher._match(stream)
             try:
                 while True:
                     yield (yield generator)

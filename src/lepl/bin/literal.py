@@ -3,37 +3,39 @@
 Specify and construct binary structures.
 
 This is necessary for tests and may be useful in its own right.  Note that it
-is also quite easy to construct `Binary` nodes directly in Python.
+is also quite easy to construct `Node` instances with `BitString` data directly 
+in Python.
 
 The construction of binary values is a two-stage process.  First, we describe
 a Python structure.  Then we encode that structure as a binary value.  As is
-standard in this package, the Python construct consists of `Binary` nodes.
+standard in LEPL, the Python construct consists of `Node` instances.
 
 The description of values has the form:
-  Binary(byte=0xff/8, array=[1,2,3]/2.4, 0x1234/2., Binary(...), (...))
+  Node(byte=0xff/8, 0*100, Node(...), (...))
   
 In more detail:
   () is used for grouping, must exist outside the entire description, and
-     defines a binary node.  If preceded by a name, then that is used to create 
-     a subclass of Binary (unless it is "Binary", in which case it is the 
+     defines a Node.  If preceded by a name, then that is used to create 
+     a subclass of Node (unless it is "Node", in which case it is the 
      default).  For now, repeated names are not validated in any way for 
      consistency.
-  [] defines an array of bytes
   name=value/length is used for defining a value, in various ways:
     value anonymous value (byte or array)
     value/length anonymous value with specified length
     name=value named byte or array
     name=value/length named value with given length
+  * repeats a value, so a*b repeats 'a', b number of times.
 '''
 
-from lepl.bin.node import Binary, unpack_length
+from lepl.bin.bits import BitString, unpack_length
+from lepl.node import Node
 
 
 def make_binary_parser():
     
     # avoid import loops
     from lepl import Word, Letter, Digit, UnsignedFloat, UnsignedInteger, \
-        Regexp, DfaRegexp, Drop, Separator, Delayed, Optional, Any
+        Regexp, DfaRegexp, Drop, Separator, Delayed, Optional, Any, First
         
     classes = {}
     
@@ -43,10 +45,10 @@ def make_binary_parser():
         create an instance with the given content.
         '''
         if name not in classes:
-            classes[name] = type(name, (Binary,), {})
+            classes[name] = type(name, (Node,), {})
         return classes[name](args)
     
-    mult    = lambda l, n: l * int(n) 
+    mult    = lambda l, n: BitString.from_sequence([l] * int(n, 0)) 
         
     # unpack length so that it's distinct from str (names)
     len_tuple  = lambda ab: (ab[0], unpack_length(ab[1]))
@@ -55,13 +57,13 @@ def make_binary_parser():
     name    = Word(Letter(), Letter() | Digit() | '_')
 
     # lengths can be integers (bits) or floats (bytes.bits)
-    length  = UnsignedFloat()
+    # but if we have a float, we do not want to parse as an int
+    # (or we will get a conversion error due to too small length)
+    length  = First(UnsignedInteger() + '.' + Optional(UnsignedInteger()),
+                    UnsignedInteger())
 
-    # a literal decimal - treated as a byte
+    # a literal decimal
     decimal = UnsignedInteger()
-
-    # the letters used for binary, octal and hex values (eg the 'x' in 0xffee)
-    b, o, x, d = Any('bB'), Any('oO'), Any('xX'), Any('dD')
 
     # a binary number (without pre/postfix)
     binary  = Any('01')[1:]
@@ -72,8 +74,11 @@ def make_binary_parser():
     # a hex number (without pre/postfix)
     hex     = Regexp('[a-fA-F0-9]')[1:]
     
-    # a decimal with pre or postfix - only used with lengths
-    dec     = '0' + d + decimal | decimal + d + '0'
+    # the letters used for binary, octal and hex values (eg the 'x' in 0xffee)
+    b, o, x, d = Any('bB'), Any('oO'), Any('xX'), Any('dD')
+
+    # a decimal with optional pre/postfix
+    dec     = '0' + d + decimal | decimal + d + '0' | decimal
 
     # little-endian literals have normal prefix syntax (eg 0xffee) 
     little  = decimal | '0' + (b + binary | o + octal | x + hex)
@@ -92,24 +97,21 @@ def make_binary_parser():
         # them before they are defined.
         expr   = Delayed()
         
-        # a value can be big or little-endian
-        value  = big | little
+        # an implict length value can be big or little-endian
+        ivalue = (big | little)                               * BitString.from_int
         
-        # a list of values is defined with [...] - we drop those and pass
-        # the whole thing to list so that they are grouped together in the
-        # results
-        values = Drop('[') & value[1:,Drop(',')] & Drop(']')  > list
+        # a value with a length can also be decimal
+        lvalue = ((big | little | dec) & Drop('/') & length)  * BitString.from_int
         
-        repeat = (values & Drop('*') & value)                 * mult
+        value  = lvalue | ivalue
         
-        # a value with a length is a tuple, but we need to swap the order
-        lvalue = (value | dec) & Drop('/') & length           > len_tuple
+        repeat = (value & Drop('*') & little)                 * mult
         
         # a named value is also a tuple
-        named  = name & Drop('=') & (value | lvalue | repeat) > tuple
+        named  = name & Drop('=') & (expr | value | repeat)   > tuple
         
         # an entry in the expression could be any of these
-        entry  = named | lvalue | value | expr | values | repeat
+        entry  = named | value | repeat | expr
         
         # and an expression itself consists of a comma-separated list of
         # one or more entries, surrounded by paremtheses
@@ -117,7 +119,7 @@ def make_binary_parser():
         
         # the Binary node may be expliti or implicit and takes the list of
         # entries as an argument list
-        binary = Optional(Drop('Binary')) & args              > Binary
+        node   = Optional(Drop('Node')) & args                > Node
         
         # alternatively, we can give a name and create a named sub-class
         # (the '*' gives name and args as two separate arguments to the
@@ -127,7 +129,7 @@ def make_binary_parser():
         # and finally, we "tie the knot" by giving a definition for the
         # delayed matcher we introduced earlier, which is either a binary
         # node or a subclass
-        expr  += spaces & (binary | other) & spaces
+        expr  += spaces & (node | other) & spaces
     
     return expr.string_parser()
 
