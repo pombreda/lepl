@@ -62,7 +62,7 @@ class CloneTest(TestCase):
     
     def test_simple(self):
         g1 = graph()
-        g2 = ConstructorWalker(g1)(Clone())
+        g2 = ConstructorWalker(g1, Node)(Clone())
         assert repr(g1) == repr(g2)
         assert g1 is not g2
     
@@ -90,7 +90,7 @@ class CloneTest(TestCase):
                      n),
                 Node(12))
         s(g1)
-        g2 = ConstructorWalker(g1)(Clone())
+        g2 = ConstructorWalker(g1, Node)(Clone())
         self.assert_same(repr(g1), repr(g2))
 
     def test_loops(self):
@@ -104,7 +104,7 @@ class CloneTest(TestCase):
                 Node(12, n1))
         s1(g1)
         s2(next(iter(g1)))
-        g2 = ConstructorWalker(g1)(Clone())
+        g2 = ConstructorWalker(g1, Node)(Clone())
         self.assert_same(repr(g1), repr(g2))
         
     def test_loops_with_proxy(self):
@@ -118,8 +118,8 @@ class CloneTest(TestCase):
                 Node(12, n1))
         s1(g1)
         s2(next(iter(g1)))
-        g2 = ConstructorWalker(g1)(Clone())
-        g3 = ConstructorWalker(g2)(Clone())
+        g2 = ConstructorWalker(g1, Node)(Clone())
+        g3 = ConstructorWalker(g2, Node)(Clone())
         self.assert_same(repr(g1), repr(g3))
 #        print(repr(g3))
 

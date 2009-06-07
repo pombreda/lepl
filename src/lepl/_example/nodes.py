@@ -144,11 +144,12 @@ class TreeExample(Example):
          |       |   `- number '5'
          |       `- ''
          +- ''
-         `- ')'"""),
-                    (example2, 
-"[Factor(...), '', ('operator', '+'), ' ', Factor(...)]"),
-                    (example2b, 
-"[Factor(...), '', ('operator', '+'), ' ', Factor(...)]"),
-                    (example3, 
-"[('Factor', [Factor(...), Factor(...)]), ('operator', ['+'])]"),
-                    (example4, '2')])
+         `- ')'""")#,
+#                    (example2, 
+#"[Factor(...), '', ('operator', '+'), ' ', Factor(...)]"),
+#                    (example2b, 
+#"[Factor(...), '', ('operator', '+'), ' ', Factor(...)]"),
+#                    (example3, 
+#"[('Factor', [Factor(...), Factor(...)]), ('operator', ['+'])]"),
+#                    (example4, '2')
+                    ])

@@ -11,7 +11,7 @@ from lepl.rewriters import DelayedClone
 class DelayedCloneTest(TestCase):
     
     def assert_clone(self, matcher):
-        copy = matcher.postorder(DelayedClone())
+        copy = matcher.postorder(DelayedClone(), Matcher)
         original = preorder(matcher, Matcher)
         duplicate = preorder(copy, Matcher)
         try:
@@ -28,7 +28,7 @@ class DelayedCloneTest(TestCase):
             self.assert_empty(duplicate, 'duplicate')
     
     def assert_relative(self, matcher):
-        copy = matcher.postorder(DelayedClone())
+        copy = matcher.postorder(DelayedClone(), Matcher)
         def pairs(matcher):
             for a in preorder(matcher, Matcher):
                 for b in preorder(matcher, Matcher):
@@ -132,7 +132,7 @@ class ComposeTransformsTest(TestCase):
         p = factor.string_parser(Configuration(rewriters=[compose_transforms]))
         ast = p('1')[0]
         assert type(ast) == Term, type(ast)
-        assert ast[0] == ('number', '1'), ast[0]
+        assert ast[0] == '1', ast[0]
         assert str(ast) == """Term
  `- number '1'""", ast
         

@@ -23,7 +23,7 @@ Base classes for AST nodes (and associated functions).
 from traceback import print_exc
 from collections import Iterable, Mapping, deque
 
-from lepl.graph import SimpleWalker, GraphStr, POSTORDER, order, LEAF
+from lepl.graph import SimpleWalker, GraphStr, POSTORDER, order, LEAF, ConstructorGraphNode, ConstructorWalker
 from lepl.support import LogMixin
 
 
@@ -69,7 +69,7 @@ def dispatch(arg, value=None, node=None, named=None):
     return arg
 
 
-class Node(LogMixin):
+class _Node(LogMixin):
     '''
     A base class for AST nodes.
     
@@ -157,6 +157,129 @@ class Node(LogMixin):
         Note that eq compares contents, but hash uses object identity.
         '''
         return super(Node, self).__hash__()
+
+    
+class Node(LogMixin, ConstructorGraphNode):
+    '''
+    A base class for AST nodes.
+
+    It is designed to be applied to a list of results, via ``>``.
+    '''
+    
+    def __init__(self, args):
+        '''
+        Expects a single list of arguments, as will be received if invoked with
+        the ``>`` operator.
+        '''
+        super(Node, self).__init__()
+        self.__postorder = ConstructorWalker(self, Node)
+        self.__children = []
+        self.__paths = []
+        self.__names = set()
+        for arg in args:
+            if is_named(arg):
+                self.__add_named_child(arg[0], arg[1])
+            elif isinstance(arg, Node):
+                self.__add_named_child(arg.__class__.__name__, arg)
+            else:
+                self.__add_anon_child(arg)
+        
+    def __add_named_child(self, name, value):
+        index = self.__add_attribute(name, value)
+        self.__children.append(value)
+        self.__paths.append((name, index))
+        
+    def __add_anon_child(self, value):
+        index = len(self.__children)
+        self.__children.append(value)
+        self.__paths.append(index)
+            
+    def __add_attribute(self, name, value):
+        if name not in self.__names:
+            self.__names.add(name)
+            setattr(self, name, [])
+        attr = getattr(self, name)
+        index = len(attr)
+        attr.append(value)
+        return index
+        
+    def __dir__(self):
+        '''
+        The names of all the attributes constructed from the results.
+        '''
+        return iter(self._names)
+    
+    def __getitem__(self, index):
+        return self.__children[index]
+    
+    def __iter__(self):
+        return iter(self.__children)
+    
+    def __str__(self):
+        visitor = NodeTreeStr()
+        return visitor.postprocess(self.__postorder(visitor))
+    
+    def __repr__(self):
+        return self.__class__.__name__ + '(...)'
+    
+    def __len__(self):
+        return len(self.__children)
+    
+    def __bool__(self):
+        return bool(self.__children)
+    
+    # Python 2.6
+    def __nonzero__(self):
+        return self.__bool__()
+    
+    def __eq__(self, other):
+        '''
+        Note that eq compares contents, but hash uses object identity.
+        '''
+        try:
+            siblings = iter(other)
+        except TypeError:
+            return False
+        for child in self:
+            try:
+                if child != next(siblings):
+                    return False
+            except StopIteration:
+                return False
+        try:
+            next(siblings)
+            return False
+        except StopIteration:
+            return True
+        
+    def __hash__(self):
+        '''
+        Note that eq compares contents, but hash uses object identity.
+        '''
+        return super(Node, self).__hash__()
+
+    def _constructor_args(self):
+        '''
+        Regenerate the constructor arguments (returns (args, kargs)).
+        '''
+        args = []
+        for (path, value) in zip(self.__paths, self.__children):
+            if isinstance(path, int):
+                args.append(value)
+            else:
+                name = path[0]
+                if name == value.__class__.__name__:
+                    args.append(value)
+                else:
+                    args.append((name, value))
+        return (args, {})
+    
+    def _clone(self, *args, **kargs):
+        '''
+        The ocnstrucrg args convention is separate args, but the Node
+        constructor has them all in a list.
+        '''
+        return type(self)(args, **kargs)
 
     
 class MutableNode(Node):

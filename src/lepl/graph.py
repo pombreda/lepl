@@ -193,6 +193,12 @@ class ConstructorGraphNode(object):
         Regenerate the constructor arguments (returns (args, kargs)).
         '''
         raise Exception('Not implemented')
+    
+    def _clone(self, *args, **kargs):
+        '''
+        Generate a new instance, given the arguments.
+        '''
+        return type(self)(*args, **kargs)
 
 
 class ArgAsAttributeMixin(ConstructorGraphNode):
@@ -324,16 +330,16 @@ class ConstructorWalker(object):
     arguments as type constructors.
     '''
     
-    def __init__(self, root):
+    def __init__(self, root, type_):
         self.__root = root
+        self.__type = type_
         
     def __call__(self, visitor):
         '''
         Apply the visitor to each node in turn.
         '''
         results = {}
-        for node in postorder(self.__root, ConstructorGraphNode,
-                              exclude=LEAF):
+        for node in postorder(self.__root, self.__type, exclude=LEAF):
             visitor.node(node)
             (args, kargs) = self.__arguments(node, visitor, results)
             results[node] = visitor.constructor(*args, **kargs)
@@ -349,7 +355,7 @@ class ConstructorWalker(object):
         return (new_args, new_kargs)
     
     def __value(self, node, visitor, results):
-        if isinstance(node, ConstructorGraphNode):
+        if isinstance(node, self.__type):
             if node in results:
                 return results[node]
             else:
@@ -408,13 +414,15 @@ class PostorderWalkerMixin(object):
     def __init__(self):
         super(PostorderWalkerMixin, self).__init__()
         self.__postorder = None
+        self.__postorder_type = None
         
-    def postorder(self, visitor):
+    def postorder(self, visitor, type_):
         '''
         A shortcut that allows a visitor to be applied postorder.
         '''
-        if self.__postorder is None:
-            self.__postorder = ConstructorWalker(self)
+        if self.__postorder is None or self.__postorder_type != type_:
+            self.__postorder = ConstructorWalker(self, type_)
+            self.__postorder_type = type_
         return self.__postorder(visitor)
 
 
@@ -602,7 +610,7 @@ def clone(node, args, kargs):
     The basic clone function that is supplied to `Clone`.
     '''
     try:
-        return type(node)(*args, **kargs)
+        return node._clone(*args, **kargs)
     except TypeError as e:
         raise TypeError('Error cloning {0} with ({1}, {2}): {3}'.format(
                         type(node), args, kargs, e))

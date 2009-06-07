@@ -112,7 +112,7 @@ def flatten(graph):
     '''
     A rewriter that flattens `And` and `Or` lists.
     '''
-    from lepl.matchers import And, Or
+    from lepl.matchers import And, Or, Matcher
     def new_clone(node, old_args, kargs):
         table = {And: '*matchers', Or: '*matchers'}
         if type(node) in table:
@@ -131,7 +131,7 @@ def flatten(graph):
         else:
             new_args = old_args
         return clone(node, new_args, kargs)
-    return graph.postorder(DelayedClone(new_clone))
+    return graph.postorder(DelayedClone(new_clone), Matcher)
 
 
 def compose_transforms(graph):
@@ -139,7 +139,7 @@ def compose_transforms(graph):
     A rewriter that joins adjacent transformations into a single
     operation, avoiding trampolining in some cases.
     '''
-    from lepl.matchers import Transform, Transformable
+    from lepl.matchers import Transform, Transformable, Matcher
     def new_clone(node, args, kargs):
         # must always clone to expose the matcher (which was cloned earlier - 
         # it is not node.matcher)
@@ -149,7 +149,7 @@ def compose_transforms(graph):
             return copy.matcher.compose(copy)
         else:
             return copy
-    return graph.postorder(DelayedClone(new_clone))
+    return graph.postorder(DelayedClone(new_clone), Matcher)
 
 
 def memoize(memoizer):
@@ -158,7 +158,7 @@ def memoize(memoizer):
     graph.
     '''
     def rewriter(graph):
-        return graph.postorder(DelayedClone(post_clone(memoizer)))
+        return graph.postorder(DelayedClone(post_clone(memoizer)), Matcher)
     return rewriter
 
 
@@ -300,6 +300,6 @@ def context_memoize(conservative=True):
                 return LMemo(copy)
             else:
                 return RMemo(copy)
-        return graph.postorder(DelayedClone(new_clone))
+        return graph.postorder(DelayedClone(new_clone), Matcher)
     return rewriter
 

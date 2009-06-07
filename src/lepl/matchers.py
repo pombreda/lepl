@@ -73,7 +73,7 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
 
     def __str__(self):
         visitor = ConstructorStr()
-        return visitor.postprocess(self.postorder(visitor))
+        return visitor.postprocess(self.postorder(visitor, Matcher))
     
     def __repr__(self):
         return '<%s>' % self.__class__.__name__

@@ -26,6 +26,7 @@ from itertools import count
 from logging import getLogger
 from traceback import format_exc
 
+from lepl.operators import Matcher
 from lepl.regexp.core import Choice, Sequence, Repeat, Option, Empty
 from lepl.regexp.matchers import NfaRegexp
 from lepl.regexp.interval import Character
@@ -315,7 +316,7 @@ def regexp_rewriter(alphabet, use=True, matcher=NfaRegexp):
     '''
     def rewriter(graph):
         new_clone = make_clone(alphabet, clone, matcher, use)
-        graph = graph.postorder(DelayedClone(new_clone))
+        graph = graph.postorder(DelayedClone(new_clone), Matcher)
         if isinstance(graph, RegexpContainer):
             graph = graph.matcher
         return graph 

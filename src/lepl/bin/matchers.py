@@ -1,7 +1,7 @@
 
 from lepl.bin.bits import unpack_length, BitString, STRICT
 from lepl.matchers import OperatorMatcher, Transformable
-
+from lepl.parser import tagged
 
 
 class _Constant(Transformable):
