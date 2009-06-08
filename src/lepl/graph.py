@@ -194,12 +194,6 @@ class ConstructorGraphNode(object):
         '''
         raise Exception('Not implemented')
     
-    def _clone(self, *args, **kargs):
-        '''
-        Generate a new instance, given the arguments.
-        '''
-        return type(self)(*args, **kargs)
-
 
 class ArgAsAttributeMixin(ConstructorGraphNode):
     '''
@@ -610,7 +604,7 @@ def clone(node, args, kargs):
     The basic clone function that is supplied to `Clone`.
     '''
     try:
-        return node._clone(*args, **kargs)
+        return type(node)(*args, **kargs)
     except TypeError as e:
         raise TypeError('Error cloning {0} with ({1}, {2}): {3}'.format(
                         type(node), args, kargs, e))

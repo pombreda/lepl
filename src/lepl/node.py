@@ -150,16 +150,6 @@ class Node(LogMixin, ConstructorGraphNode):
                     args.append((name, value))
         return (args, {})
     
-    def _clone(self, *args, **kargs):
-        '''
-        The ocnstrucrg args convention is separate args, but the Node
-        constructor has them all in a list.
-        
-        (The reason why Node takes a single list argument is so that it plays
-        nicely with '>' in a grammar - that is critical, hence this hack).
-        '''
-        return type(self)(args, **kargs)
-
     
 class MutableNode(Node):
     '''
