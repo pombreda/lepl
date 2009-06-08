@@ -139,6 +139,7 @@ __all__ = [
         'Empty',
         'Lookahead',
         'Apply',
+        'args',
         'KApply',
         'Regexp', 
         'Delayed', 

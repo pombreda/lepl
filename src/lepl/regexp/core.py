@@ -191,7 +191,7 @@ class Sequence(Node):
     '''
     
     def __init__(self, children, alphabet):
-        super(Sequence, self).__init__(children)
+        super(Sequence, self).__init__(*children)
         self.alphabet = alphabet
         self.state = None
         self.__str = self._build_str()

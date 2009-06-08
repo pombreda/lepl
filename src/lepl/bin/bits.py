@@ -34,6 +34,9 @@ with 0x).
 '''
 
 
+from lepl.matchers import ApplyArgs
+
+
 STRICT = 'strict'
 
 
@@ -377,8 +380,8 @@ class BitString(object):
             return BitString.from_bytes(value.encode(encoding=encoding, errors=errors))
         else:
             return BitString.from_bytes(value.encode(errors=errors))
-
-
+        
+        
 def unpack_length(length):
     '''
     Length is in bits, unless a decimal is specified, in which case it

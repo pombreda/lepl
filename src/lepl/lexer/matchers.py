@@ -29,7 +29,7 @@ from lepl.matchers \
     import OperatorMatcher, BaseMatcher, coerce, Any, Literal, Lookahead, \
     Regexp, And, Add, Or, Apply, Drop, KApply, Repeat, raise_error, First, Map
 from lepl.operators \
-    import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, ARGS, KARGS, RAISE, \
+    import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, KARGS, RAISE, \
     REPEAT, FIRST, MAP
 from lepl.parser import tagged
 from lepl.regexp.matchers import BaseRegexp, Regexp
@@ -86,7 +86,6 @@ class TokenNamespace(Namespace):
             APPLY:     Apply,
             APPLY_RAW: lambda a, b: Apply(a, b, raw=True),
             NOT:       Drop,
-            ARGS:      lambda a, b: Apply(a, b, args=True),
             KARGS:     KApply,
             RAISE:     lambda a, b: KApply(a, raise_error(b)),
             REPEAT:    Repeat,

@@ -35,7 +35,8 @@ def make_binary_parser():
     
     # avoid import loops
     from lepl import Word, Letter, Digit, UnsignedFloat, UnsignedInteger, \
-        Regexp, DfaRegexp, Drop, Separator, Delayed, Optional, Any, First
+        Regexp, DfaRegexp, Drop, Separator, Delayed, Optional, Any, First, \
+        args
         
     classes = {}
     
@@ -46,7 +47,7 @@ def make_binary_parser():
         '''
         if name not in classes:
             classes[name] = type(name, (Node,), {})
-        return classes[name](args)
+        return classes[name](*args)
     
     mult    = lambda l, n: BitString.from_sequence([l] * int(n, 0)) 
         
@@ -95,41 +96,39 @@ def make_binary_parser():
         # the grammar is recursive - expressions can contain expressions - so
         # we use a delayed matcher here as a placeholder, so that we can use
         # them before they are defined.
-        expr   = Delayed()
+        expr = Delayed()
         
         # an implict length value can be big or little-endian
-        ivalue = (big | little)                               * BitString.from_int
+        ivalue = big | little                               > args(BitString.from_int)
         
         # a value with a length can also be decimal
-        lvalue = ((big | little | dec) & Drop('/') & length)  * BitString.from_int
+        lvalue = (big | little | dec) & Drop('/') & length  > args(BitString.from_int)
         
-        value  = lvalue | ivalue
+        value = lvalue | ivalue
         
-        repeat = (value & Drop('*') & little)                 * mult
+        repeat = value & Drop('*') & little                 > args(mult)
         
         # a named value is also a tuple
-        named  = name & Drop('=') & (expr | value | repeat)   > tuple
+        named = name & Drop('=') & (expr | value | repeat)  > tuple
         
         # an entry in the expression could be any of these
-        entry  = named | value | repeat | expr
+        entry = named | value | repeat | expr
         
         # and an expression itself consists of a comma-separated list of
         # one or more entries, surrounded by paremtheses
-        args   = Drop('(') & entry[1:,Drop(',')] & Drop(')')
+        entries = Drop('(') & entry[1:,Drop(',')] & Drop(')')
         
         # the Binary node may be expliti or implicit and takes the list of
         # entries as an argument list
-        node   = Optional(Drop('Node')) & args                > Node
+        node = Optional(Drop('Node')) & entries             > Node
         
         # alternatively, we can give a name and create a named sub-class
-        # (the '*' gives name and args as two separate arguments to the
-        # function named_class, instead of bundling them in a list)
-        other  = (name & args)                                * named_class
+        other = name & entries                              > args(named_class)
         
         # and finally, we "tie the knot" by giving a definition for the
         # delayed matcher we introduced earlier, which is either a binary
         # node or a subclass
-        expr  += spaces & (node | other) & spaces
+        expr += spaces & (node | other) & spaces
     
     return expr.string_parser()
 

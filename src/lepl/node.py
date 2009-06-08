@@ -42,7 +42,7 @@ class Node(LogMixin, ConstructorGraphNode):
     It is designed to be applied to a list of results, via ``>``.
     '''
     
-    def __init__(self, args):
+    def __init__(self, *args):
         '''
         Expects a single list of arguments, as will be received if invoked with
         the ``>`` operator.

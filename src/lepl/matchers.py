@@ -54,6 +54,25 @@ from lepl.trace import _TraceResults
 from lepl.support import assert_type, lmap, LogMixin
 
 
+# Python 2.6
+#class ApplyRaw(metaclass=ABCMeta):
+ApplyRaw = ABCMeta('ApplyRaw', (object, ), {})
+'''
+ABC used to control `Apply`, so that the result is not wrapped in a list.  
+'''
+
+
+# Python 2.6
+#class ApplyArgs(metaclass=ABCMeta):
+ApplyArgs = ABCMeta('ApplyArgs', (object, ), {})
+'''
+ABC used to control `Apply`, os that the results list is supplied as "*args".  
+'''
+
+ApplyArgs.register(Node)
+
+
+
 class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, LogMixin, Matcher):
     '''
     A base class that provides support to all matchers.
@@ -286,7 +305,7 @@ class Transformation(object):
         return str(self.functions)
         
     def __repr__(self):
-        return repr(self.functions)
+        return 'Transformation({0!r})'.format(self.functions)
     
     def __bool__(self):
         return bool(self.functions)
@@ -975,13 +994,17 @@ def Apply(matcher, function, raw=False, args=False):
 
       raw
         If True the results are used directly.  Otherwise they are wrapped in
-        a list.  The default is False --- a list is added.
+        a list.  The default is False --- a list is added.  This is set to
+        true if the target function is an `ApplyRaw` instance.
 
       args
         If True, the results are passed to the function as separate
         arguments (Python's '*args' behaviour).  The default is False ---
-        the results are passed inside a list).
+        the results are passed inside a list).  This is set to true if the
+        target function is an `ApplyArgs` instance.
     '''
+    raw = raw or (type(function) is type and issubclass(function, ApplyRaw))
+    args = args or (type(function) is type and issubclass(function, ApplyArgs))
     if not isinstance(function, Transformation):
         if isinstance(function, str):
             function = lambda results, f=function: lmap(lambda x:(f, x), results)
@@ -997,6 +1020,15 @@ def Apply(matcher, function, raw=False, args=False):
                 function = lambda results, f=function: [f(results)]
         function = lambda results, sin, sout, f=function: (f(results), sout)
     return Transform(matcher, function).tag('Apply')
+
+
+def args(function):
+    '''
+    A decorator that has the same effect as ApplyArgs for functions/methods.
+    '''
+    def wrapper(args):
+        return function(*args)
+    return wrapper
 
 
 def KApply(matcher, function, raw=False):

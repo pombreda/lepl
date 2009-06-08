@@ -54,7 +54,6 @@ class DefaultNamespace(Namespace):
             APPLY:     Apply,
             APPLY_RAW: lambda a, b: Apply(a, b, raw=True),
             NOT:       Drop,
-            ARGS:      lambda a, b: Apply(a, b, args=True),
             KARGS:     KApply,
             RAISE:     lambda a, b: KApply(a, raise_error(b)),
             REPEAT:    Repeat,
@@ -84,8 +83,6 @@ APPLY_RAW = '>='
 '''Name for >= operator.'''
 NOT = '~'
 '''Name for ~ operator.'''
-ARGS = '*'
-'''Name for * operator.'''
 KARGS = '**'
 '''Name for ** operator.'''
 RAISE = '^'
@@ -106,14 +103,13 @@ class Override(Scope):
 
     def __init__(self, space_opt=None, space_req=None, repeat=None,
                   add=None, and_=None, or_=None, not_=None, 
-                  apply=None, apply_raw=None, args=None, kargs=None, 
+                  apply=None, apply_raw=None, kargs=None, 
                   raise_=None, first=None, map=None):
         super(Override, self).__init__(OPERATORS, DefaultNamespace,
             {SPACE_OPT: space_opt, SPACE_REQ: space_req,
              REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
              NOT: not_, APPLY: apply, APPLY_RAW: apply_raw,
-             ARGS: args, KARGS: kargs, RAISE: raise_, 
-             FIRST: first, MAP: map})
+             KARGS: kargs, RAISE: raise_, FIRST: first, MAP: map})
 
 
 class Separator(Override):
@@ -559,24 +555,6 @@ class OperatorMixin(NamespaceMixin):
         '''
         self.__check(MAP, function, False)
         return self._lookup(MAP)(self, function) 
-        
-    def __mul__(self, function):
-        '''
-        **self * function** - Process the results (\*args).
-        
-        Apply a function to the results (as distinct arguments).  
-        This is equivalent to `Apply()` with ``args=True``.  
-        It is similar to *self > function*, except that the function is 
-        applies to multiple arguments (using Python's ``*args`` behaviour).
-        
-        :Parameters:
-        
-          function
-            A function that is called with the results as arguments.
-            The return values are used as the new result.
-        '''
-        self.__check(ARGS, function, False)
-        return self._lookup(ARGS)(self, function) 
         
     def __pow__(self, function):
         '''
