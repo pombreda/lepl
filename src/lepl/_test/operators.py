@@ -3,6 +3,8 @@
 Test for thread safety.
 '''
 
+from operator import add
+
 from logging import basicConfig, INFO, DEBUG
 from threading import Thread
 from unittest import TestCase
@@ -35,3 +37,19 @@ class ThreadTest(TestCase):
         assert 'caaa' == matcher4.parse_string(text)[0], matcher4.parse_string(text)
         assert 'cbbb' == matcher5.parse_string(text)[0], matcher5.parse_string(text)
         assert text == matcher6.parse_string(text)[0], matcher6.parse_string(text)
+
+
+class SpaceTest(TestCase):
+    
+    def word(self):
+        return Literal("a") & Literal("bc")[1:,...]
+
+    def test_spaces(self):
+        with Separator(~Space()):
+            s1 = self.word()[1:].string_parser()
+            assert not s1("abc"), s1('abc')
+            assert s1("a bc")
+            with Separator(None):
+                s2 = self.word()[1:].string_parser()
+                assert s2("abc")
+                assert not s2("a bc")
