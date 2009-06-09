@@ -40,6 +40,27 @@ from lepl.matchers import ApplyArgs
 STRICT = 'strict'
 
 
+class Int(int):
+    '''
+    An integer with a length (the number of bits).  This extends Python's type
+    system so that we can distinguish between different integer types, which
+    may have different encodings.
+    '''
+    
+    def __new__(cls, value, length):
+        return super(Int, cls).__new__(cls, str(value), 0)
+    
+    def __init__(self, value, length):
+        super(Int, self).__init__()
+        self.__length = length
+        
+    def __len__(self):
+        return self.__length
+
+    def __repr__(self):
+        return 'Int({0},{1})'.format(super(Int, self).__str__(), self.__length)
+
+
 def swap_table():
     '''
     Table of reversed bit patterns for 8 bits.
@@ -66,7 +87,7 @@ class BitString(object):
     with conversion between other types.  In other words, convert to and from
     this, and then chain conversions.
     
-    Bits are stored as a contiguous sequence in an array of bytes (both bits
+    BitStr are stored as a contiguous sequence in an array of bytes (both bits
     and bytes are "little endian" - this allows arbitrary lengths of bits,
     at arbitrary offsets, to be given values without worrying about
     alignment.
@@ -225,7 +246,7 @@ class BitString(object):
         for b in value:
             i += b << scale
             scale += 8
-        return i
+        return (i, self.__length)
     
     def to_str(self, encoding=None, errors='strict'):
         if encoding:
@@ -337,9 +358,13 @@ class BitString(object):
                 # binary value is backwards!
                 value = value[0:2] + value[-1:1:-1]
             value = int(value, 0)
-        # assume 32 bits if nothing else defined
         if length is None:
-            length = 32
+            if isinstance(value, Int):
+                # support round-tripping of sized integers
+                length = len(value)
+            else:
+                # assume 32 bits if nothing else defined
+                length = 32
         length = unpack_length(length)
         if length % 8 and big_endian and bits != 1:
             raise ValueError('A big-endian int with a length that '
@@ -369,7 +394,7 @@ class BitString(object):
         return accumulator
             
     @staticmethod
-    def from_bytes(value):
+    def from_bytearray(value):
         if not isinstance(value, bytes):
             value = bytes(value)
         return BitString(value, len(value) * 8)
@@ -377,9 +402,9 @@ class BitString(object):
     @staticmethod
     def from_str(value, encoding=None, errors=STRICT):
         if encoding:
-            return BitString.from_bytes(value.encode(encoding=encoding, errors=errors))
+            return BitString.from_bytearray(value.encode(encoding=encoding, errors=errors))
         else:
-            return BitString.from_bytes(value.encode(errors=errors))
+            return BitString.from_bytearray(value.encode(errors=errors))
         
         
 def unpack_length(length):
@@ -400,7 +425,7 @@ def unpack_length(length):
         bytes = int(length)
         bits = int(10 * (length - bytes) + 0.5)
         if bits < 0 or bits > 7:
-            raise ValueError('Bits specification must be between 0 and 7')
+            raise ValueError('BitStr specification must be between 0 and 7')
         return bytes * 8 + bits
     raise TypeError('Cannot infer length from %r' % length)
 

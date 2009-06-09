@@ -12,8 +12,8 @@ class ParseExample(Example):
         b = parse('''
 Frame(
   Header(
-    preamble  = 10101010b0*7,
-    start     = 10101011b0,
+    preamble  = 0b10101010*7,
+    start     = 0b10101011,
     destn     = 123456x0,
     source    = 890abcx0,
     ethertype = 0800x0

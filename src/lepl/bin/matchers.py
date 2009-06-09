@@ -31,6 +31,25 @@ class _Constant(Transformable):
         except IndexError:
             pass
         
+    def compose(self, transform):
+        '''
+        Generate a new instance with the composed function from the Transform.
+        '''
+        copy = type(self)(self.value)
+        copy.function = self.function.compose(transform.function)
+        return copy
+
+        
+class Const(_Constant):
+
+    def __init__(self, value, length=None):
+        '''
+        Match a given value, which is parsed as for `BitString.from_int`.
+        '''
+        if not isinstance(value, BitString):
+            value = BitString.from_int(value, length)
+        super(Const, self).__init__(value)
+        
         
 class _Variable(Transformable):
     
@@ -60,7 +79,7 @@ class _Variable(Transformable):
         return bits
     
     
-class _Bytes(_Variable):
+class _ByteArray(_Variable):
     '''
     Match a given number of bytes.
     '''
@@ -71,7 +90,7 @@ class _Bytes(_Variable):
         '''
         if not isinstance(length, int):
             raise TypeError('Number of bytes must be an integer')
-        super(_Bytes, self).__init__(length)
+        super(_ByteArray, self).__init__(length)
     
     def _convert(self, bits):
         return bits.to_bytes()
@@ -89,7 +108,7 @@ class BEnd(_Variable):
         length = unpack_length(length)
         if length % 8:
             raise ValueError('Big endian int must a length that is a multiple of 8.')
-        super(_BigEndian, self).__init__(length)
+        super(BEnd, self).__init__(length)
     
     def _convert(self, bits):
         return bits.to_int(big_endian=True)
@@ -104,7 +123,7 @@ class LEnd(_Variable):
         return bits.to_int()
     
 
-def Bits(value):
+def BitStr(value):
     '''
     Match or read a bit string (to read a value, give the number of bits).
     '''
@@ -124,14 +143,14 @@ def Byte(value=None):
         return _Constant(BitString.from_byte(value))
 
 
-def Bytes(value):
+def ByteArray(value):
     '''
     Match or read an array of bytes (to read a value, give the number of bytes).
     '''
     if isinstance(value, int):
-        return _Bytes(value)
+        return _ByteArray(value)
     else:
-        return _Constant(BitString.from_bytes(value))
+        return _Constant(BitString.from_bytearray(value))
     
     
 def _bint(length):
@@ -186,7 +205,7 @@ Match or read an 64-bit little-endian integer (if a value is given, it must matc
 '''
 
 
-class _String(_Bytes):
+class _String(_ByteArray):
     
     def __init__(self, length, encoding=None, errors=STRICT):
         super(_String, self).__init__(length)

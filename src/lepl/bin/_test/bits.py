@@ -1,7 +1,19 @@
 
 from unittest import TestCase
 
-from lepl.bin.bits import unpack_length, BitString, swap_table
+from lepl.bin.bits import Int, unpack_length, BitString, swap_table
+
+
+class IntTest(TestCase):
+    
+    def test_int(self):
+        one = Int(1, 1)
+        assert type(one) == Int
+        assert 1 == one
+        assert len(one) == 1
+        assert str(one) == '1'
+        assert repr(one) == 'Int(1,1)'
+        assert 3 * one == 3
 
 
 class BitStringTest(TestCase):
@@ -41,9 +53,9 @@ class BitStringTest(TestCase):
         self.assert_error(lambda: BitString.from_byte(256))
     
     def test_from_byte(self):
-        self.assert_length_value(8, b'\x00', BitString.from_bytes(b'\x00'))
-        self.assert_length_value(16, b'ab', BitString.from_bytes(b'ab'))
-        self.assert_length_value(16, b'ab', BitString.from_bytes(bytearray(b'ab')))
+        self.assert_length_value(8, b'\x00', BitString.from_bytearray(b'\x00'))
+        self.assert_length_value(16, b'ab', BitString.from_bytearray(b'ab'))
+        self.assert_length_value(16, b'ab', BitString.from_bytearray(bytearray(b'ab')))
         
     def test_from_int(self):
         self.assert_length_value(3, b'\x00', BitString.from_int('0o0'))
