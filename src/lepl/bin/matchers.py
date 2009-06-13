@@ -1,10 +1,10 @@
 
 from lepl.bin.bits import unpack_length, BitString, STRICT
-from lepl.matchers import OperatorMatcher, Transformable
+from lepl.matchers import OperatorMatcher
 from lepl.parser import tagged
 
 
-class _Constant(Transformable):
+class _Constant(OperatorMatcher):
 
     def __init__(self, value):
         '''
@@ -27,18 +27,10 @@ class _Constant(Transformable):
         '''
         try:
             if self.value == stream[0:len(self.value)]:
-                yield self.function([self.value], stream, stream[len(self.value):])
+                yield ([self.value], stream[len(self.value):])
         except IndexError:
             pass
         
-    def compose(self, transform):
-        '''
-        Generate a new instance with the composed function from the Transform.
-        '''
-        copy = type(self)(self.value)
-        copy.function = self.function.compose(transform.function)
-        return copy
-
         
 class Const(_Constant):
 
@@ -51,7 +43,7 @@ class Const(_Constant):
         super(Const, self).__init__(value)
         
         
-class _Variable(Transformable):
+class _Variable(OperatorMatcher):
     
     def __init__(self, length):
         '''
@@ -70,8 +62,7 @@ class _Variable(Transformable):
         provided by the stream interface.
         '''
         try:
-            yield self.function([self._convert(stream[0:length])], stream, 
-                                stream[length:])
+            yield ([self._convert(stream[0:self.length])], stream[self.length:])
         except IndexError:
             pass
 

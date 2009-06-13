@@ -143,6 +143,22 @@ class BitStringTest(TestCase):
         b = a[1:-1]
         assert BitString.from_int('100110001110000111b0') == b, b
         
+    def assert_round_trip(self, start, stop=None, length=None):
+        if stop is None:
+            stop = start
+        result = BitString.from_int(start, length=length).to_int()
+        assert result == stop, (result, stop)
+        if length is not None:
+            assert len(result) == length, (result, length)
+        
+    def test_to_int(self):
+        self.assert_round_trip(0)
+        self.assert_round_trip(1)
+        self.assert_round_trip(1, length=1)
+        self.assert_round_trip(467)
+        self.assert_round_trip(467, length=16)
+        self.assert_round_trip(467, length=19)
+
         
 class SwapTableTest(TestCase):
     

@@ -47,7 +47,7 @@ class SpaceTest(TestCase):
     def test_spaces(self):
         with Separator(~Space()):
             s1 = self.word()[1:].string_parser()
-            assert not s1("abc"), s1('abc')
+            assert not s1("abc")
             assert s1("a bc")
             with Separator(None):
                 s2 = self.word()[1:].string_parser()

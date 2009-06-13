@@ -36,9 +36,7 @@ from lepl.support import LogMixin, empty
 class RMemo(OperatorMatcher):
     '''
     A simple memoizer for grammars that do not have left recursion.  Since this
-    fails with left recursion it's safer to always use LMemo (this is here
-    largely as documentation - the code is non-trivial and it helps to have 
-    both cases available).
+    fails with left recursion it's safer to always use LMemo.
     
     Making this class Transformable did not improve performance (it's better
     to place the transformation on critical classes like Or and And). 

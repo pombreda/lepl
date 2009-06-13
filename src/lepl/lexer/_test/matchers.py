@@ -1,10 +1,11 @@
 
 from math import sin, cos
-from logging import basicConfig, DEBUG
 from operator import add, sub, truediv, mul
 from unittest import TestCase
 
-from lepl import *
+from lepl import Token, Literal, Float, LexerError, Configuration, \
+    lexer_rewriter, Node, Delayed, Any, Eos, TraceResults, UnsignedFloat, \
+    Or, UnicodeAlphabet, RuntimeLexerError
 
 
 class RegexpCompilationTest(TestCase):
@@ -186,7 +187,7 @@ class ErrorTest(TestCase):
     def test_mixed(self):
         t = Token(Any()) & Any()
         try:
-            p = t.null_parser(Configuration.tokens())
+            t.null_parser(Configuration.tokens())
             assert False, 'expected failure'
         except LexerError as e:
             assert str(e) == 'The grammar contains a mix of Tokens and ' \

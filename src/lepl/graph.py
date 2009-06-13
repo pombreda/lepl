@@ -147,6 +147,15 @@ def postorder(node, type_, exclude=0):
     return order(node, POSTORDER, type_, exclude=exclude)
 
 
+def leaves(node, type_=None):
+    '''
+    The leaf nodes.
+    '''
+    if type_ is None:
+        type_ = type(node)
+    return order(node, FORWARD, type_, exclude=NODE|ROOT)
+
+
 def loops(node, type_):
     '''
     Return all loops from the given node.

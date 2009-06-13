@@ -31,8 +31,9 @@ So 1193046, "1193046", 0x123456, "0x123456" all encode to [0x56, 0x34, 0x12]
 But "123456x0" encodes to [0x12, 0x34, 0x56].  This does have a slight
 wrinkle - 100b0 looks like a hex value (but is not, as it does not start 
 with 0x).
-'''
 
+Note: No attempt is made to handle sign (complements etc).
+'''
 
 from lepl.matchers import ApplyArgs
 
@@ -238,15 +239,13 @@ class BitString(object):
             raise ValueError('Length is not a multiple of 8 bits, so big '
                              'endian integer poorly defined: {0}'
                              .format(self.__length))
-        i = 0
-        scale = 0
-        value = self.bytes()
+        b8 = self.bytes()
         if not big_endian:
-            value = reversed(value)
-        for b in value:
-            i += b << scale
-            scale += 8
-        return (i, self.__length)
+            b8 = reversed(list(b8))
+        value = 0
+        for b in b8:
+            value = (value << 8) + b
+        return Int(value, self.__length)
     
     def to_str(self, encoding=None, errors='strict'):
         if encoding:
@@ -267,7 +266,7 @@ class BitString(object):
         return BitString(bytes(inv), self.__length) 
     
     def __getitem__(self, index):
-        if isinstance(index, int):
+        if not isinstance(index, slice):
             index = slice(index, index+1, None)
         (start, stop, step) = index.indices(self.__length)
         if step == 1:
@@ -292,6 +291,9 @@ class BitString(object):
             if a != b:
                 return False
         return True
+    
+    def __hash__(self):
+        return hash(self.__bytes) ^ self.__length
     
     @staticmethod
     def from_byte(value):
