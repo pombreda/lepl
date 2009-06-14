@@ -4,7 +4,7 @@ except:
     from distutils.core import setup
 
 setup(name='LEPL',
-      version='2.4',
+      version='3.0b1',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -18,10 +18,8 @@ grammars and it can also handle left-recursive grammars.
 The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
-Release 2.4 adds a lexer.  This can simplify some applications (typically by
-separating the handling of spaces from the main grammar) and may also improve
-efficiency.
-
+Release 3.0 simplifies core interfaces related to Nodes and graphs.  It also
+includes initial support for parsing (and encoding) binary data.
 
 Features
 --------
@@ -29,12 +27,16 @@ Features
 * **Parsers are Python code**, defined in Python itself.  No separate
   grammar is necessary.
 
-* **Friendly syntax** using Python's operators.
+* **Friendly syntax** using Python's operators allows grammars
+  to be defined in a declarative style close to BNF.
 
 * Integrated, optional **lexer** simplifies handling whitespace.
 
-* Built-in **AST support** (a generic Node class).  Improved
-  support for the visitor pattern and tree re--writing.
+* Built-in **AST support** with support for iteration, traversal and
+  re--writing.
+
+* Generic, pure-Python approach supports parsing a wide variety of data
+  including **byte streams**.
 
 * **Well documented** and easy to extend.
 
@@ -43,19 +45,19 @@ Features
   and large data sets.  LEPL avoids this problem by using Python
   generators as coroutines (aka "trampolining").
 
-* Support for ambiguous grammars (**complete backtracking**).  A
-  parser can return more than one result (aka **"parse forests"**).
-
-* **Packrat parsing**.  Parsers can be made much more efficient with
-  automatic memoisation.
-
 * **Parser rewriting**.  The parser can itself be manipulated by
   Python code.  This gives unlimited opportunities for future
   expansion and optimisation.
 
-* **Left recursive grammars**.  Memoisation can detect and control
-  left--recursive grammars.  Together with LEPL's support for
-  ambiguity this means that "any" grammar can be supported.
+* Support for ambiguous grammars (**complete backtracking**).  A
+  parser can return more than one result (aka **"parse forests"**).
+
+* Parsers can be made much more **efficient** with automatic memoisation
+  ("packrat parsing").
+
+* Memoisation can detect and control **left-recursive grammars**.  Together
+  with LEPL's support for ambiguity this means that "any" grammar can be
+  supported.
 
 * Pluggable trace and resource management, including **"deepest match"
   diagnostics** and the ability to limit backtracking.

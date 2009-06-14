@@ -9,7 +9,8 @@ Overview
 
 * Friendly syntax using Python's :ref:`operators <operators>`.
 
-* Built-in :ref:`AST support <trees>`.
+* Built-in :ref:`AST support <trees>` with support for iteration, traversal
+  and re--writing.
 
 * Well documented and easy to extend.
 
@@ -22,46 +23,25 @@ Overview
   more than one result ("complete backtracking", "parse forests").
 
 * Parsers can be made much more efficient with automatic :ref:`memoisation
-  <memoisation>` ("packrat parsing" and support for left recursive grammars).
+  <memoisation>` ("packrat parsing").
+
+* :ref:`Left recursive grammars <left_recursion>`.  Memoisation can detect and
+  control left--recursive grammars.  Together with LEPL's support for
+  ambiguity this means that "any" grammar can be supported.
 
 * The parser can itself be :ref:`manipulated <rewriting>` by Python code.
   This gives unlimited opportunities for future expansion and optimisation.
 
-* :ref:`Left recursive grammars <left_recursion>`.  Memoisation can detect and
-  control left--recursive grammars.
-
 * Pluggable trace and resource management, including :ref:`deepest match
   <deepest_match>` diagnostics and the ability to :ref:`limit backtracking
   <resources>`.
-
-
-API Documentation
------------------
-
-The `API documentation <api/index.html>`_ is available online.
-
-
-Download
---------
-
-See :ref:`install` for complete instructions.
-
-Python 2.6 users can get the latest stable version using ``easy_install
-lepl``.  Packages and documentation are available from the `support site
-<http://lepl.googlecode.com/>`_.
-
 
 .. _example:
 
 Example
 -------
 
-Using LEPL you can define a grammar (that describes how some text is
-structured) and then generate Python data (lists, dicts, and even trees of
-objects) from a string formatted according to that grammar.  You can also
-generate helpful errors when the input does not match the structure expected.
-
-In this example a tree of objects is generated from an arithmetic expression::
+To generate an AST for an arithmetic expression::
 
   >>> from lepl import *
 
