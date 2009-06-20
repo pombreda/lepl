@@ -68,6 +68,20 @@ class OrTest(BaseTest):
 
     def test_bar(self):
         self.assert_direct('a', Any('x') | Any('a') | Any(), [['a'],['a']])
+        
+        
+class FirstTest(BaseTest):
+    
+    def test_first(self):
+        s = Space()
+        aline = '#define' & ~s[1:] & Word() & ~s[1:] & Word() > list
+        bline = AnyBut(s[0:] & Newline())[1:]
+        line = aline % ~bline
+        parser = line[0:,~(s[0:] & Newline())]
+        n = len(list(parser.match('#define A 1\ncrap n stuff\n#define B 22\n')))
+        assert n == 16, n
+        r = parser.parse('#define A 1\ncrap n stuff\n#define B 22\n')
+        assert r == [['#define', 'A', '1'], ['#define', 'B', '22']], r
 
 
 class LookaheadTest(BaseTest):
