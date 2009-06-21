@@ -2,10 +2,13 @@
 LEPL - A Parser Library for Python 3 (and 2.6)
 ==============================================
 
-* Download instructions
-* Quick Reference
 * `API Documentation <api>`_
+
 * :ref:`Documentation Contents <contents>`
+
+  * :ref:`Tutorial <tutorial>`
+  * :ref:`Manual <manual>`
+  * :ref:`Support <support>`
 
 Features
 --------
@@ -115,23 +118,11 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    intro
-   started
-   matchers
-   operators
-   nodes
-   errors
-   resources
-   debugging
-   lexer
-   advanced
-   style
-   download
-   implementation
-   examples
-   closing
+   manual
+   support
 
 
 Indices and tables

@@ -5,3 +5,5 @@ syntax: regexp
 ^\.pydevproject$
 syntax: regexp
 ^doc$
+syntax: glob
+*~

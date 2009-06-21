@@ -76,7 +76,7 @@ def assert_not_token(node, visited):
                 assert_not_token(child, visited)
 
 
-def lexer_rewriter(alphabet=None, skip=None, error=None):
+def lexer_rewriter(alphabet=None, skip='[ \t\r\n]', error=None):
     '''
     This is required when using Tokens.  It does the following:
     - Find all tokens in the matcher graph
@@ -99,8 +99,6 @@ def lexer_rewriter(alphabet=None, skip=None, error=None):
 
     if alphabet is None:
         alphabet = UnicodeAlphabet.instance()
-    if skip is None:
-        skip = '.'
     def rewriter(matcher):
         tokens = find_tokens(matcher)
         if tokens:

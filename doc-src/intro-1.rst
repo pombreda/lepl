@@ -1,6 +1,8 @@
 
-An Introduction to Parsing with LEPL - Part 1
-=============================================
+Part 1 - A Simple Parser
+========================
+
+.. index:: parsing
 
 What is Parsing?
 ----------------
@@ -22,6 +24,8 @@ That example is a little ambitious for a simple introduction.  Here we will
 look at a simpler problem.  We will write a program that can take a simple
 mathematical expression, like "1+2*3", understand the structure, and work out
 the answer.  For example, when given "2+2" we want the result "4".
+
+.. index:: SignedFloat(), import
 
 Recognising a Number
 --------------------
@@ -65,6 +69,8 @@ Which seems clear enough --- "cabbage" is not a number.
 But things are often not as simple as they first appear.  For example: why is
 "123" a single number, and not three different numbers joined together?
 
+.. index:: ambiguity
+
 Ambiguity
 ---------
 
@@ -102,7 +108,7 @@ Remaining Text
 
 You may have noticed that the results from ``match()`` above differ from
 ``parse()`` in two ways.  First, of course, we have a variety of different
-matches.  But second, we also get the "rest of the string".  For example, the
+matches.  But second, we also get "the rest of the string".  For example, the
 result ``(['12'], '3')`` contains both the match ``['12']`` and the remaining
 text ``'3'``.
 
@@ -116,6 +122,8 @@ text that we've seen above.
 
 Don't worry if this doesn't make much sense yet --- it will become clearer
 below.
+
+.. index:: &, And(), Literal()
 
 Matching a Sum
 --------------
@@ -146,7 +154,7 @@ matches whatever value it is given::
   [(['hello'], ' world')]
 
 In the final use of ``Literal()``, just above, we can see that ``match()``
-returns the remaining string, just as I described earlier.
+also returns the remaining string, just as I described earlier.
 
 Perhaps now it is clearer why the remaining text is important?  Using ``&``
 tells LEPL to give that remaining text to the next matcher.  So when "12+34"
@@ -154,14 +162,32 @@ is given to the ``SignedFloat()`` it matches "12" and leaves "+34"; the "+34"
 is then given to ``Literal('+')``, which matches "+" and leaves "34"; the "34"
 is then given to the second ``SignedFloat()`` which completes the task.
 
-But we still haven't added those numbers.  To do that we need to do something
-with the results.
+Implicit Literals
+-----------------
+
+Often we can just use an ordinary string, instead of ``Literal()``, and LEPL
+will still understand what we mean::
+
+  >>> add = SignedFloat() & '+' & SignedFloat()
+  >>> add.parse('12+30')
+  ['12', '+', '30']
+
+Unfortunately this doesn't always work, and predicting exactly when it's going
+to fail can be difficult (technically, the string must be an argument to a
+matcher's overloaded operator or constructor).  So if you get a strange error
+on a line with strings, try adding a ``Literal()`` around the text --- after a
+while you'll get a feeling for when it is needed, and when not.
+
+Anyway, we still haven't added those numbers.  To do that we need to do
+something with the results.
+
+.. index:: ~, Drop()
 
 Ignoring Values
 ---------------
 
-To make adding the two values simple, we need to get rid of the "+" (please
-just trust me on this; it will be clear why in a few more sections).
+To simplify adding the two values, we need to get rid of the "+" (please just
+trust me on this; it will be clear why in a few more sections).
 
 It is quite common when parsing data that we do not need to see all the values
 we have matched.  That doesn't mean that it isn't important to do the match
@@ -183,6 +209,8 @@ Just like ``&``, this is shorthand for another matcher, in this case
   >>> add = SignedFloat() & Drop(Literal('+')) & SignedFloat()
   >>> add.parse('12+30')
   ['12', '30']
+
+.. index:: >>
 
 Creating Numbers
 ----------------
@@ -227,15 +255,15 @@ this in a different, but equivalent way::
   >>> add.parse('12+30')
   ['12', 30.0]
 
-But as a general rule it is usually better to process results as soon as
-possible.  This usually keeps the parser simpler.
+But as a general rule it is better to process results as soon as possible.
+This usually keeps the parser simpler.
 
 Adding Values
 -------------
 
-Now that we have just the two numbers, we can add them.  We have a list of
-numbers that we need to add, and Python has a function that does exactly this,
-called ``sum()``::
+Now that we have just the two numbers, we can add them.  How?  Well, we have a
+list of numbers that we need to add, and Python has a function that does
+exactly this, called ``sum()``::
 
   >>> sum([1,2,3])
   6
@@ -248,6 +276,11 @@ So we can send our results to that function::
   [42.0]
 
 which gives the answer we wanted!
+
+The difference between ``>`` and ``>>`` is quite subtle, but important: ``>``
+sends the entire list of results to a function as a single argument (so the
+function must take a list of values), while ``>>`` sends each result
+separately (so the function must take a single value).
 
 We have come a long way --- from nothing to a parser that can add two numbers.
 In the next section we will make this more robust, allowing us to have spaces

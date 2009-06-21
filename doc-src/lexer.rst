@@ -9,11 +9,6 @@ The use of LEPL's lexer is optional.  In the preceding sections it has not
 been used.  However, for many applications it will both simplify the grammar
 and give a more efficient parser.
 
-.. note::
-
-   The lexer was added to LEPL in version 2.4.  It is therefore less mature
-   than other parts of the system.
-
 
 Introduction
 ------------
@@ -44,8 +39,8 @@ Use
 ---
 
 Within a grammar, a `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_
-appears much like any other matcher.  For a full example, see
-:ref:`calculator_example`.
+appears much like any other matcher.  For a full example, see 
+:ref:`tutorial`.
 
 However, to use tokens correctly, it is necessary to understand how they work
 in a little more detail.
@@ -88,7 +83,7 @@ The example above used simple strings (which are converted to `Literal()
 constraints, but any matcher expression can be used.
 
 For a more realistic example of multiple specialisations, see the use of
-``symbol`` in :ref:`calculator_example`.
+``symbol`` in :ref:`tutorial`.
 
 Note that specialisation is optional.  It's OK to use `Token()
 <api/redirect.html#lepl.lexer.matchers.Token>`_ as a simple matcher without
@@ -186,9 +181,11 @@ returned as a result::
 Example
 -------
 
-:ref:`calculator_example` is a complete, worked example using `Tokens
+:ref:`tutorial` contains a complete, worked example using `Tokens
 <api/redirect.html#lepl.lexer.matchers.Token>`_.
 
+
+.. _lexer_process:
 
 The Lexer Process
 -----------------

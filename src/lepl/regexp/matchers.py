@@ -59,7 +59,10 @@ class NfaRegexp(BaseRegexp):
     A matcher for NFA-based regular expressions.  This will yield alternative
     matches.
     
-    Typically used only in specialised situations (see `Regexp`).
+    This doesn't suffer from the same limitations as `Regexp` (it can "see"
+    all the input data, if necessary), but currently has quite basic syntax 
+    and no grouping (the syntax may improve, but grouping will not be added - 
+    use LEPL itself for complex problems).
     '''
     
     def __init__(self, regexp, alphabet=None):

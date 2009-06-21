@@ -81,19 +81,6 @@ that would be
 
 
 
-.. _localdocs:
-
-Documentation
--------------
-
-You are currently reading the `Manual <http://www.acooke.org/lepl>`_.  The `API
-Documentation <http://www.acooke.org/lepl/api>`_ is also available.
-
-The simplest way to view the documentation is via the `web
-<http://www.acooke.org/lepl>`_.  However, you can also install a local copy.
-Simply download and unpack the appropriate files (see :ref:`download`, below).
-
-
 .. _download:
 
 Download
@@ -104,71 +91,6 @@ the `Support Site <http://code.google.com/p/lepl/downloads>`_.
 
 **Stable** source packages are also available from the `Python Package Index
 <http://pypi.python.org/pypi/LEPL/>`_ for the use of setuptools.
-
-
-
-Support
--------
-
-I am using `Google Code <http://lepl.googlecode.com/>`_ for support
-services.  Currently these are:
-
-* A `mailing list / discussion group <http://groups.google.com/group/lepl>`_.
-
-* An `issue tracker <http://code.google.com/p/lepl/issues>`_.
-
-To ask questions, report bugs, and generally discuss LEPL, please post to the
-`group <http://groups.google.com/group/lepl>`_.
-
-
-Release History
----------------
-
-==========  =======  ===========
-Date        Version  Description
-==========  =======  ===========
-2009-01-29  1.0b1    Fighting with setuptools etc.
-----------  -------  -----------
-2009-01-29  1.0b2    Now with source, documentation and inline licence.
-----------  -------  -----------
-2009-01-30  1.0b3    Fixed version number confusion (was 0.1bx in some places).
-----------  -------  -----------
-2009-01-31  1.0rc1   With support.
-----------  -------  -----------
-2009-02-04  1.0      No significant changes from rc1.
-----------  -------  -----------
-2009-02-23  2.0b1    New trampolining core; matcher graph rewriting; memoisation.
-----------  -------  -----------
-2009-03-04  2.0b2    Fixed major bug in LMemo for 2.6; general tidying.
-----------  -------  -----------
-2009-03-05  2.0      Improved documentation.
-----------  -------  -----------
-2009-03-05  2.0.1    Fixed stupid bug introduced at last minute in 2.0.
-----------  -------  -----------
-2009-03-06  2.0.2    A few more small bug fixes.
-----------  -------  -----------
-2009-03-08  2.1b     Improved efficiency.
-----------  -------  -----------
-2009-03-08  2.1      Minor bugfixes and documentation.
-----------  -------  -----------
-2009-03-12  2.1.1    Fix flatten() and compose_transforms(); remove GeneratorManager from default configuration.
-----------  -------  -----------
-2009-03-27  2.2      Added >=, String(), regexp framework.
-----------  -------  -----------
-2009-04-05  2.3      Compilation to regular expressions.
-----------  -------  -----------
-2009-04-05  2.3.1    Fix regexp packaging.
-----------  -------  -----------
-2009-04-05  2.3.2    Fix regexp packaging.
-----------  -------  -----------
-2009-04-28  2.3.3    Fix regexp packaging.
-----------  -------  -----------
-2009-04-28  2.3.4    Fix regexp packaging.
-----------  -------  -----------
-2009-04-28  2.3.5    Make all classes new style in 2.6.
-----------  -------  -----------
-2009-05-02  2.4      Added lexer.
-==========  =======  ===========
 
 
 .. index:: Python version
@@ -191,32 +113,3 @@ It does not work with Python 2.5.  Incompatibilities include:
   * changed heapq API
   * except syntax
 
-
-.. index:: licence, LGPL
-.. _licence:
-
-Licence
--------
-
-LEPL is licensed under the `Lesser Gnu Public Licence
-<http://www.gnu.org/licenses/lgpl.html>`_.  It is copyright 2009 Andrew Cooke
-(andrew@acooke.org).
-
-This documentation is licensed under the `Gnu Free Documentation Licence
-<http://www.gnu.org/licenses/fdl.html>`_.  It is copyright 2009 Andrew Cooke
-(andrew@acooke.org).
-
-::
-  
-    LEPL is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-  
-    LEPL is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-  
-    You should have received a copy of the GNU Lesser General Public License
-    along with LEPL.  If not, see <http://www.gnu.org/licenses/>.

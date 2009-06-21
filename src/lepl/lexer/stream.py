@@ -22,6 +22,8 @@ The token streams.
 
 
 from collections import deque
+from logging import getLogger
+from traceback import format_exc
 
 from lepl.stream import LocationStream, SimpleGeneratorStream
 
@@ -30,15 +32,19 @@ def lexed_simple_stream(tokens, skip, error, stream, alphabet):
     '''
     Given a simple stream, create a simple stream of (terminals, match) pairs.
     '''
+    LOG = getLogger('lepl.lexer.stream.lexed_simple_stream')
     def generator(stream=stream):
         try:
             while stream:
                 try:
                     (terminals, match, stream) = tokens.match(stream)
+                    LOG.debug('Token: {0!r} {1!r}'.format(terminals, match))
                     yield (terminals, match)
                 except TypeError:
                     (terminals, size, stream) = skip.size_match(stream)
+                    LOG.debug('Space: {0!r} {1!r}'.format(terminals, match))
         except:
+            LOG.debug(format_exc())
             raise error(stream)
     return SimpleGeneratorStream(generator())
 
@@ -47,17 +53,21 @@ def lexed_location_stream(tokens, skip, error, stream, alphabet):
     '''
     Given a location stream, create a location stream of regexp matches.
     '''
+    LOG = getLogger('lepl.lexer.stream.lexed_location_stream')
     def generator(stream_before):
         try:
             while stream_before:
                 try:
                     (terminals, size, stream_after) = tokens.size_match(stream_before)
                     # stream_before here to give correct location
+                    LOG.debug('Token: {0!r} {1!r}'.format(terminals, size))
                     yield (terminals, size, stream_before)
                     stream_before = stream_after
                 except TypeError:
                     (terminals, size, stream_before) = skip.size_match(stream_before)
+                    LOG.debug('Space: {0!r} {1!r}'.format(terminals, size))
         except TypeError:
+            LOG.debug(format_exc())
             yield error(stream_before)
     return LocationGeneratorStream(generator(stream))
 

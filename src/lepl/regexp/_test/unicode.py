@@ -104,6 +104,16 @@ class CharactersTest(TestCase):
         assert 'a(a|b)*' == str(c), str(c)
         c = _test_parser('a([a-c]x|axb)*')
         assert 'a([a-c]x|axb)*' == str(c), str(c)
+        
+    def test_bad_escape(self):
+        basicConfig(level=DEBUG)
+        c = _test_parser(r'\+')
+        assert '\\+' == str(c), str(c)
+        try:
+            c = _test_parser('+')
+            assert False, 'Expected error'
+        except RegexpError:
+            pass
 
 
 class NfaTest(TestCase):
