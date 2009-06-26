@@ -294,7 +294,7 @@ a Python program uses the LEPL parser, with the lexer, to parse some text.
 
      * If the tag matches and the token contains a sub--matcher, then the
        fragment of text is passed to the sub--matcher for processing.  If the
-       sub--matcher returns a reusult then that result is returned by the
+       sub--matcher returns a result then that result is returned by the
        token.  Alternatively, if the sub--matcher fails then the token fails
        too.
 

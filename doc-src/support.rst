@@ -30,6 +30,6 @@ Documentation <http://www.acooke.org/lepl/api>`_ is also available.
 
 The simplest way to view the documentation is via the `web
 <http://www.acooke.org/lepl>`_.  However, you can also install a local copy.
-Simply download and unpack the appropriate files (see :ref:`download`, below).
+Simply download and unpack the appropriate files (see :ref:`download`).
 
 

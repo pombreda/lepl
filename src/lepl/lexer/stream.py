@@ -42,7 +42,7 @@ def lexed_simple_stream(tokens, skip, error, stream, alphabet):
                     yield (terminals, match)
                 except TypeError:
                     (terminals, size, stream) = skip.size_match(stream)
-                    LOG.debug('Space: {0!r} {1!r}'.format(terminals, match))
+                    LOG.debug('Space: {0!r} {1!r}'.format(terminals, skip))
         except:
             LOG.debug(format_exc())
             raise error(stream)
@@ -68,7 +68,7 @@ def lexed_location_stream(tokens, skip, error, stream, alphabet):
                     LOG.debug('Space: {0!r} {1!r}'.format(terminals, size))
         except TypeError:
             LOG.debug(format_exc())
-            yield error(stream_before)
+            raise error(stream_before)
     return LocationGeneratorStream(generator(stream))
 
 

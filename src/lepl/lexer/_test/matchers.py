@@ -45,9 +45,25 @@ class TokenRewriteTest(TestCase):
     
     def test_string_arg(self):
         word = Token('[a-z]+')
-        parser = (word[:]).null_parser(Configuration(rewriters=[lexer_rewriter()]))
+        parser = (word[:]).null_parser(Configuration(rewriters=[lexer_rewriter(skip='.')]))
         results = parser('abc defXghi')
         assert results == ['abc', 'def', 'ghi'], results
+        
+    def test_bad_error_msg(self):
+        word = Token('[a-z]+')
+        parser = (word[:]).null_parser(Configuration(rewriters=[lexer_rewriter()]))
+        try:
+            results = parser('abc defXghi')
+        except RuntimeLexerError as e:
+            assert str(e) == 'Cannot lex "<unknown> - use stream for better error reporting" at -1/-1'
+        
+    def test_good_error_msg(self):
+        word = Token('[a-z]+')
+        parser = (word[:]).string_parser(Configuration(rewriters=[lexer_rewriter()]))
+        try:
+            results = parser('abc defXghi')
+        except RuntimeLexerError as e:
+            assert str(e) == 'Cannot lex "str: \'abc defXghi\'" at 1/8', str(e)
         
     def test_expression(self):
         

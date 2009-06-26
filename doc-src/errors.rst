@@ -67,28 +67,29 @@ Here is an example of both approaches in use::
   >>> parser = line.string_parser()
 
   >>> parser('1 + 2 * (3 + 4 - 5')[0]
-    File "<string>", line 1
+    File "str: '1 + 2 * (3 + 4 - 5'", line 1
       1 + 2 * (3 + 4 - 5
-              ^
-  lepl.node.Error: no ) for '(3 + 4...'
+	      ^
+  lepl.error.Error: no ) for '(3 + 4...'
 
   >>> parser('1 + 2 * 3 + 4 - 5)')[0]
-    File "<string>", line 1
+    File "str: '1 + 2 * 3 + 4 - 5)'", line 1
       1 + 2 * 3 + 4 - 5)
-                      ^
-  lepl.node.Error: no ( before ')'
+		      ^
+  lepl.error.Error: no ( before ')'
 
   >>> parser('1 + 2 * (3 + four - 5)')[0]
-    File "<string>", line 1
+    File "str: '1 + 2 * (3 + four - 5)'", line 1
       1 + 2 * (3 + four - 5)
-                   ^
-  lepl.node.Error: unexpected text: four
+		   ^
+  lepl.error.Error: unexpected text: four
 
   >>> parser('1 + 2 ** (3 + 4 - 5)')[0]
-    File "<string>", line 1
+    File "str: '1 + 2 ** (3 + 4 - 5)'", line 1
       1 + 2 ** (3 + 4 - 5)
-             ^
-  lepl.node.Error: unexpected text: *
+	     ^
+  lepl.error.Error: unexpected text: *
+
 
 .. note::
 

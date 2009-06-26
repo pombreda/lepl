@@ -113,6 +113,12 @@ class LocationStream(SimpleStreamInterface):
         raise Exception('This stream does not support Regexp.')
     
 
+def _sample(prefix, rest, size=40):
+    text = prefix + rest
+    if len(text) > size:
+        text = prefix + rest[0:size-len(prefix)-3] + '...'
+    return text
+
 
 class SequenceByLine(LocationStream):
     '''
@@ -205,14 +211,16 @@ class SequenceByLine(LocationStream):
         '''
         Wrap a string.
         '''
-        return SequenceByLine(Line(StringIO(text), source='<string>'))
+        return SequenceByLine(Line(StringIO(text), 
+                                   source=_sample('str: ', repr(text))))
     
     @staticmethod
     def from_list(data):
         '''
         We can parse any list (not just lists of characters as strings).
         '''
-        return SequenceByLine(Line(ListIO(data), source='<list>'))
+        return SequenceByLine(Line(ListIO(data), 
+                                   source=_sample('list: ', repr(data))))
     
     @staticmethod
     def from_file(file):

@@ -1,4 +1,10 @@
 
+'''
+Matchers specifically for binary data (most LEPL matchers can be used with
+binary data, but additional support is needed when the matching involves a 
+literal comparison or generation of a binary result). 
+'''
+
 from lepl.bin.bits import unpack_length, BitString, STRICT
 from lepl.matchers import OperatorMatcher
 from lepl.parser import tagged

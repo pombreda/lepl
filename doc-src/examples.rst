@@ -155,7 +155,7 @@ the compilation and parsing times::
 
   def time(number, name):
       '''
-      Call timit to time a named function.  The timeit interface is rather
+      Call timeit to time a named function.  The timeit interface is rather
       odd - it takes a string, which we construct here.
       '''
       stmt = '{0}()'.format(name)

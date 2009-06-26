@@ -1,9 +1,9 @@
 
-Part 3 - Abstract Syntax Trees
-==============================
+Part 3 - Recursion, Abstract Syntax Trees
+=========================================
 
-Resume
-------
+Recap
+-----
 
 In the previous section we defined a parser that could add two numbers, even
 if the expression contained spaces.  Our final version used tokens::
@@ -232,7 +232,7 @@ in the next section.
 Node Attributes
 ---------------
 
-Node attributes won't play a big part in our arithemtic parser, so here's a
+Node attributes won't play a big part in our arithmetic parser, so here's a
 small illustration of how they can be used::
 
   >>> letter = Letter() > 'letter'

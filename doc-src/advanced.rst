@@ -99,7 +99,7 @@ Composing and Merging Transforms
 
 Global Memoizer
 
-  The `memoize() <api/redirect.html#lepl.rewriters.memoize>`_ rewriter applys
+  The `memoize() <api/redirect.html#lepl.rewriters.memoize>`_ rewriter applies
   a single memoizer to all matchers.  For more information see
   :ref:`memoisation` below.
 
@@ -135,7 +135,7 @@ Optimize Or For Left Recursion
 Context--Sensitive Memoisation
 
   The `context_memoize(conservative)
-  <api/redirect.html#lepl.rewriters.context_memoize>`_ rewriter applys a
+  <api/redirect.html#lepl.rewriters.context_memoize>`_ rewriter applies a
   memoizer to all matchers.  Whether `LMemo()
   <api/redirect.html#lepl.memo.LMemo>`_ or the `RMemo()
   <api/redirect.html#lepl.memo.RMemo>`_ depends on whether the matcher is part
@@ -158,7 +158,7 @@ Automatic Memoisation
   <api/redirect.html#lepl.rewriters.optimize_or>`_ and
   `context_memoize(conservative)
   <api/redirect.html#lepl.rewriters.context_memoize>`_ rewriters, described
-  above.  In the default :ref:`configuration`, when the ``consverative``
+  above.  In the default :ref:`configuration`, when the ``conservative``
   parameter is omitted, `optimize_or(conservative=False)
   <api/redirect.html#lepl.rewriters.optimize_or>`_ and
   `context_memoize(conservative=True)
@@ -176,14 +176,14 @@ Rewriting as Regular Expressions
   (for example, `Float() <api/redirect.html#lepl.matchers.Float>`_).
 
   It is not used by default 
-  because it requires the data being matcher to be a particular type, but
+  because it requires the data being matched to be a particular type, but
   for Unicode text it can be selected with `Configuration.nfa()
   <api/redirect.html#lepl.config.Configuration.nfa>`_ or `Configuration.dfa()
   <api/redirect.html#lepl.config.Configuration.dfa>`_ (the latter only gives a
   single, greedy match and so may change the results for ambiguous grammars).
 
   It makes little sense to replace efficient, simple matchers like `Literal()
-  <api/redirect.html#lepl.matchers.Literal>`_) with regular expressions so the
+  <api/redirect.html#lepl.matchers.Literal>`_ with regular expressions so the
   function `regexp_rewriter()
   <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ takes a ``use``
   parameter.  When this parameter is ``False`` regular expressions are only

@@ -25,7 +25,7 @@ Features
   and re--writing.
 
 * Generic, pure-Python approach supports parsing a wide variety of data
-  including :ref:`byte streams <bytes>`.
+  including :ref:`binary data <binary>`.
 
 * Well documented and easy to extend.
 

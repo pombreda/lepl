@@ -1,6 +1,10 @@
 '''
+Convert structured Python data to a binary stream.
+
 Writing a good API for binary encoding of arbitrary objects does not seem to
 be easy.  In addition, this is my first attempt.  My apologies in advance.
+This is a very basic library - the hope is that something like ASN.1 can
+then be built on this (if someone buys me a copy of the spec...!)
 
 The most obvious solution might be to require everything that must be encoded
 implement some method.  Given Python's dynamic nature, ABCs, etc, this might
@@ -12,19 +16,20 @@ The next simplest approach seems to be to use some kind of separate dispatch
 intermediate format.  That is what I do here.  The intermediate format
 is the pair (type, BitString), where "type" can be any value (but will be the
 type of the value in all implementations here - value could be used, but we're
-trying to give some impression of a structured, logically coherent approach).
+trying to give some impression of a layered approach).
 
 Encoding a structure then requires three steps:
 
-1 - Defining a serialisation of composite structures.  Only acyclic structures
-    are considered (I am more interested in network protocols than pickling,
-    which already has a Python solution)
+1. Defining a serialisation of composite structures.  Only acyclic structures
+   are considered (I am more interested in network protocols than pickling,
+   which already has a Python solution)
     
-2 - Converting individual values to the intermediate representation.
+2. Converting individual values in the serial stream to the intermediate 
+   representation.
 
-3 - Encoding the intermediate representation into a final BitString.   
+3. Encoding the intermediate representation into a final BitString.   
 
-Support for each of these steps is provided by lepl.  Stage 1 comes from the
+Support for each of these steps is provided by LEPL.  Stage 1 comes from the
 graph and node modules; 2 is provided below (leveraging BitString's class 
 methods); 3 is only supported in a simple way below, with the expectation
 that future modules might extend both encoding and matching to, for example, 

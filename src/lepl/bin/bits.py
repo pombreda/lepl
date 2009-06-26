@@ -88,7 +88,7 @@ class BitString(object):
     with conversion between other types.  In other words, convert to and from
     this, and then chain conversions.
     
-    BitStr are stored as a contiguous sequence in an array of bytes (both bits
+    BitStr are stored as a contiguous sequence in an array of bytes.  Both bits
     and bytes are "little endian" - this allows arbitrary lengths of bits,
     at arbitrary offsets, to be given values without worrying about
     alignment.

@@ -1,9 +1,9 @@
 
-Part 4 - The Basis for an Interpreter
-=====================================
+Part 4 - Evaluation, Efficiency
+===============================
 
-Resume
-------
+Recap
+-----
 
 In the previous sections we have developed a parser that could generate a
 simple AST for repeated addition and subtraction::
@@ -26,7 +26,7 @@ simple AST for repeated addition and subtraction::
 In this part of the tutorial we will extend this further, to handle
 multiplication and parentheses.  Instead of calculating the value of the
 expression as we parse the data we will improve our AST so that it can do the
-calulation.
+calculation.
 
 In a simple example like this the two approaches --- processing the results
 while generating them, or waiting until afterwards and using the AST --- are
@@ -66,7 +66,7 @@ series of layers.  Which is much easier to show than explain in words::
   ... parens = symbol('(') & group3 & symbol(')')
   >>> group1 = parens | number
 
-  >>> # second layer, next nost tightly grouped, is multiplication
+  >>> # second layer, next most tightly grouped, is multiplication
   ... mul = group1 & symbol('*') & group2 > Node
   >>> div = group1 & symbol('/') & group2 > Node
   >>> group2 += mul | div | group1
@@ -132,7 +132,7 @@ different result::
   >>> # first layer, most tightly grouped, is parens and numbers
   ... parens = symbol('(') & group3 & symbol(')')
   >>> group1 = parens | number
-  >>> # second layer, next nost tightly grouped, is multiplication
+  >>> # second layer, next most tightly grouped, is multiplication
   ... mul = group1 & symbol('*') & group2 > Node
   >>> div = group1 & symbol('/') & group2 > Node
 
@@ -240,7 +240,7 @@ operator.  So below, for example, we have ``add = group3...`` instead of ``add
   >>> # first layer, most tightly grouped, is parens and numbers
   ... parens = symbol('(') & group3 & symbol(')')
   >>> group1 = parens | number
-  >>> # second layer, next nost tightly grouped, is multiplication
+  >>> # second layer, next most tightly grouped, is multiplication
 
   ... mul = group2 & symbol('*') & group2 > Node      # changed!
   >>> div = group2 & symbol('/') & group2 > Node      # changed!
@@ -264,7 +264,7 @@ operator.  So below, for example, we have ``add = group3...`` instead of ``add
 Here, not only do we get a short match first, but we also get 5 different
 matches when we force the entire input to be matched.  If you look at those
 matches in detail you'll see that they are all logically equivalent,
-correpsonding to the different ways you can divide up an expression like
+corresponding to the different ways you can divide up an expression like
 "1+2+3" --- as "(1+2)+3" or "1+(2+3)".
 
 A rough rule of thumb to help avoid this case is to avoid expressions where
@@ -314,7 +314,7 @@ Understanding speed variations in detail requires an in--depth understanding
 of LEPL's implementation but, as the examples above show, two good rules of
 thumb are:
 
-* Try to get the best (longest) parse as the first resut, without needing to
+* Try to get the best (longest) parse as the first result, without needing to
   add ``Eos()`` (but then add ``Eos()`` anyway, in case there's some corner
   case you didn't expect).
 
@@ -357,7 +357,7 @@ the parentheses can go too)::
   >>> # first layer, most tightly grouped, is parens and numbers
   ... parens = ~symbol('(') & group3 & ~symbol(')')
   >>> group1 = parens | number
-  >>> # second layer, next nost tightly grouped, is multiplication
+  >>> # second layer, next most tightly grouped, is multiplication
   ... mul = group1 & ~symbol('*') & group2 > Mul
   >>> div = group1 & ~symbol('/') & group2 > Div
   >>> group2 += mul | div | group1
@@ -422,7 +422,7 @@ for each node type::
   >>> parens = ~symbol('(') & group3 & ~symbol(')')
   >>> group1 = parens | number
 
-  >>> # second layer, next nost tightly grouped, is multiplication
+  >>> # second layer, next most tightly grouped, is multiplication
   ... ml = group1 & ~symbol('*') & group2 > Mul
   >>> dv = group1 & ~symbol('/') & group2 > Div
   >>> group2 += ml | dv | group1
@@ -456,10 +456,9 @@ for each node type::
 Yowzah!
 
 Hopefully you can see how powerful this --- it wouldn't be too much extra work
-to extend it to include loops, and then perhaps variable bindings (you would
-need to start passing round an "environment" that maps names to values, and
-which can puh and pop variables).  Soon you could have an interpreter for your
-own small language...
+to extend it to include variable bindings (you would need to start passing
+round an "environment" that maps names to values, and which can push and pop
+variables).  Soon you could have an interpreter for your own small language...
 
 Summary
 -------
@@ -470,6 +469,6 @@ What have we learnt in this section?
 
 * For efficient parsing, we should be aware of ambiguity and left--recursion.
 
-* We can subclass ``Node`` to add fucntionality to AST nodes.
+* We can subclass ``Node`` to add functionality to AST nodes.
 
 Thanks for reading!

@@ -1,4 +1,6 @@
 
+.. _binary:
+
 Binary Data
 ===========
 
@@ -37,8 +39,8 @@ Literal Representation
 Binary values can be expressed in a variety of ways.  Conversion from a
 literal form to LEPL's internal model may require passing through an
 intermediate byte-based form.  If so, LEPL preserves bit order within a byte
-(ie the least significant bit of a Python ``byte`` corrresponds to the least
-significant bit in LEPL's abstract model.  However, the `order` of bytes will
+(ie the least significant bit of a Python ``byte`` corresponds to the least
+significant bit in LEPL's abstract model).  However, the `order of bytes` will
 vary, depending on whether the encoding is little- or big-endian.
 
 The following table summarises the representations support by LEPL:
@@ -170,10 +172,10 @@ bits (3x8+4).
 BitString()
 -----------
 
-The ``BitString()`` class is an implementation of LEPL's abstract model
+The `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ class is an implementation of LEPL's abstract model
 described above.  It has similar semantics to Python's strings, in that a
 single entry (a bit - the equivalent of a character in a string) is still a
-``BitString``::
+`BitString() <api/redirect.html#lepl.bin.bits.BitString>`_::
 
   >>> from lepl.bin.bits import BitString
   >>> b = BitString.from_int('00110101b0')
@@ -202,27 +204,27 @@ described earlier.
 Matching
 --------
 
-A ``BitString()`` can be passed to a LEPL matcher in the same way as a Python
-string.  The matchers will "automatically" match and contruct the binary data.
+A `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ can be passed to a LEPL matcher in the same way as a Python
+string.  The matchers will "automatically" match and construct the binary data.
 
 The ``lepl.bin.matchers`` package defines some additional matchers to help
-match literal binary values.  These include ``Const()`` for matching a
+match literal binary values.  These include `Const() <api/redirect.html#lepl.bin.matchers.Const>`_ for matching a
 constant value, and ``BEnd(length)`` for matching a big-endian value of a
 certain length (``LEnd(length)`` is similar for little-endian values).
 
-The example below is rather details, but it shows ``Const()`` and ``BEnd()``
+The example below is rather detailed, but it shows `Const() <api/redirect.html#lepl.bin.matchers.Const>`_ and `BEnd() <api/redirect.html#lepl.bin.matchers.BEnd>`_
 in use::
 
-	  from lepl.bin.bits import BitString
-	  from lepl.bin.encode import dispatch_table, simple_serialiser
-	  from lepl.bin.literal import parse
-	  from lepl.bin.matchers import BEnd, Const
-	  from lepl.node import Node
+  from lepl.bin.bits import BitString
+  from lepl.bin.encode import dispatch_table, simple_serialiser
+  from lepl.bin.literal import parse
+  from lepl.bin.matchers import BEnd, Const
+  from lepl.node import Node
 
-	  # first, define some test data - we'll use a simple definition
-	  # language, but you could also construct this directly in Python
-	  # (Frame, Header etc are auto-generated subclasses of Node). 
-	  mac = parse('''
+  # first, define some test data - we'll use a simple definition
+  # language, but you could also construct this directly in Python
+  # (Frame, Header etc are auto-generated subclasses of Node). 
+  mac = parse('''
   Frame(
     Header(
       preamble  = 0b10101010*7,
@@ -236,22 +238,22 @@ in use::
   )
   ''')
 
-	  # next, define a parser for the header structure
-	  # this is mainly literal values, but we make the two addresses
-	  # big-endian integers, which will be read from the data
+  # next, define a parser for the header structure
+  # this is mainly literal values, but we make the two addresses
+  # big-endian integers, which will be read from the data
 
-	  # this looks very like "normal" lepl because it is - there's 
-	  # nothing in lepl that forces the data being parsed to be text. 
+  # this looks very like "normal" lepl because it is - there's 
+  # nothing in lepl that forces the data being parsed to be text. 
 
-	  preamble  = ~Const('0b10101010')[7]
-	  start     = ~Const('0b10101011')
-	  destn     = BEnd(6.0)                > 'destn'
-	  source    = BEnd(6.0)                > 'source'
-	  ethertype = ~Const('0800x0') 
-	  header    = preamble & start & destn & source & ethertype > Node
+  preamble  = ~Const('0b10101010')[7]
+  start     = ~Const('0b10101011')
+  destn     = BEnd(6.0)                > 'destn'
+  source    = BEnd(6.0)                > 'source'
+  ethertype = ~Const('0800x0') 
+  header    = preamble & start & destn & source & ethertype > Node
 
-	  # so, what do the test data look like?
-	  print(mac)
+  # so, what do the test data look like?
+  print(mac)
   # Frame
   #  +- Header
   #  |   +- preamble BitString(b'\xaa\xaa\xaa\xaa\xaa\xaa\xaa', 56, 0)
@@ -267,22 +269,22 @@ in use::
   #  `- CRC
   #      `- BitString(b'\x00\x00\x00\xea', 32, 0)    
 
-	  # we can serialize that to a BitString        
-	  b = simple_serialiser(mac, dispatch_table())
-	  assert str(b) == 'aaaaaaaaaaaaaaab123456789abc801234000eax0/240'
+  # we can serialise that to a BitString        
+  b = simple_serialiser(mac, dispatch_table())
+  assert str(b) == 'aaaaaaaaaaaaaaab123456789abc801234000eax0/240'
 
-	  # and then we can parse it
-	  p = header.parse(b)[0]
-	  print(p)
+  # and then we can parse it
+  p = header.parse(b)[0]
+  print(p)
   # Node
   #  +- destn Int(1108152157446,48)
   #  `- source Int(7731092785932,48)
 
-	  # the destination address
-	  assert hex(p.destn[0]) == '0x10203040506'
+  # the destination address
+  assert hex(p.destn[0]) == '0x10203040506'
 
-	  # the source address
-	  assert hex(p.source[0]) == '0x708090a0b0c'
+  # the source address
+  assert hex(p.source[0]) == '0x708090a0b0c'
 
 Binary Literals
 ---------------
@@ -299,7 +301,7 @@ in the example above).
 Sized Integers
 --------------
 
-The results of the parsing are sized integers (``Int()``).  These include both
+The results of the parsing are sized integers (`Int() <api/redirect.html#lepl.bin.bits.Int>`_).  These include both
 an integer value and a bit count.  They are subclasses of Python's ``int``
-type and so can be used in normal code (length information is not proagated
+type and so can be used in normal code (length information is not propagated
 through calculations).

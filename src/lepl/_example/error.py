@@ -41,31 +41,25 @@ class ErrorTest(Example):
     def test_errors(self):
         parser = self.make_parser()
         self.examples([(lambda: parser('1 + 2 * (3 + 4 - 5')[0],
-                       """  File "<string>", line 1
+                       """  File "str: '1 + 2 * (3 + 4 - 5'", line 1
     1 + 2 * (3 + 4 - 5
             ^
 lepl.error.Error: no ) for '(3 + 4...'
 """),
                        (lambda: parser('1 + 2 * 3 + 4 - 5)')[0],
-                        """  File "<string>", line 1
-    1 + 2 * 3 + 4 - 5)
-                    ^
-lepl.error.Error: no ( before ')'
-"""),
-                       (lambda: parser('1 + 2 * 3 + 4 - 5)')[0],
-                        """  File "<string>", line 1
+                        """  File "str: '1 + 2 * 3 + 4 - 5)'", line 1
     1 + 2 * 3 + 4 - 5)
                     ^
 lepl.error.Error: no ( before ')'
 """),
                        (lambda: parser('1 + 2 * (3 + four - 5)')[0],
-                        """  File "<string>", line 1
+                        """  File "str: '1 + 2 * (3 + four - 5)'", line 1
     1 + 2 * (3 + four - 5)
                  ^
 lepl.error.Error: unexpected text: four
 """),
                        (lambda: parser('1 + 2 ** (3 + 4 - 5)')[0],
-                        """  File "<string>", line 1
+                        """  File "str: '1 + 2 ** (3 + 4 - 5)'", line 1
     1 + 2 ** (3 + 4 - 5)
            ^
 lepl.error.Error: unexpected text: *
