@@ -54,36 +54,40 @@ that future modules might extend both encoding and matching to, for example,
 ASN.1.
 '''
 
-from functools import reduce
-from operator import add
+if bytes is str:
+    print('Binary parsing unsupported in this Python version')
+else:
 
-from lepl.bin.bits import BitString, STRICT
-from lepl.graph import leaves
-from lepl.node import Node
-
-
-def dispatch_table(big_endian=True, encoding=None, errors=STRICT):
-    return {int: lambda n: BitString.from_int(n, ordered=big_endian),
-            str: lambda s: BitString.from_str(s, encoding, errors),
-            bytes: lambda b: BitString.from_bytearray(b),
-            bytearray: lambda b: BitString.from_bytearray(b),
-            BitString: lambda x: x}
-
-
-def make_converter(table):
-    def converter(value):
-        type_ = type(value)
-        if type_ in table:
-            return (type_, table[type_](value))
-        for key in table:
-            if isinstance(value, key):
-                return (type_, table[key](value))
-        raise TypeError('Cannot convert {0!r}:{1!r}'.format(value, type_))
-    return converter
-
-
-def simple_serialiser(node, table):
-    stream = leaves(node, Node)
-    converter = make_converter(table)
-    result = BitString()
-    return reduce(add, [converter(value)[1] for value in stream])
+    from functools import reduce
+    from operator import add
+    
+    from lepl.bin.bits import BitString, STRICT
+    from lepl.graph import leaves
+    from lepl.node import Node
+    
+    
+    def dispatch_table(big_endian=True, encoding=None, errors=STRICT):
+        return {int: lambda n: BitString.from_int(n, ordered=big_endian),
+                str: lambda s: BitString.from_str(s, encoding, errors),
+                bytes: lambda b: BitString.from_bytearray(b),
+                bytearray: lambda b: BitString.from_bytearray(b),
+                BitString: lambda x: x}
+    
+    
+    def make_converter(table):
+        def converter(value):
+            type_ = type(value)
+            if type_ in table:
+                return (type_, table[type_](value))
+            for key in table:
+                if isinstance(value, key):
+                    return (type_, table[key](value))
+            raise TypeError('Cannot convert {0!r}:{1!r}'.format(value, type_))
+        return converter
+    
+    
+    def simple_serialiser(node, table):
+        stream = leaves(node, Node)
+        converter = make_converter(table)
+        result = BitString()
+        return reduce(add, [converter(value)[1] for value in stream])

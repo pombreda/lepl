@@ -22,5 +22,3 @@ Parse (and construct) binary data.
 Only Python 3.0+ is supported. 
 '''
 
-if bytes is str:
-    raise Exception('Bit parsing not supported in this version of Python')
