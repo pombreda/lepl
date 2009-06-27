@@ -47,6 +47,8 @@ Date        Version  Description
 2009-04-28  2.3.5    Make all classes new style in 2.6.
 ----------  -------  -----------
 2009-05-02  2.4      Added lexer.
+----------  -------  -----------
+2009-06-27  3.0a1    New tutorial; bin package; modified Nodes, `*args` (general clean-up of API).
 ==========  =======  ===========
 
 

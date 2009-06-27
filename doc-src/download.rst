@@ -100,7 +100,8 @@ Supported Versions
 ------------------
 
 The code was written using Python 3.0.  It was then backported to Python 2.6
-and appears to work fine there.
+and appears to work fine there, ***except for the binary parsing*** (which
+only works on Python 3+).
 
 However, it's not regularly tested on anything other than 3.0.
 

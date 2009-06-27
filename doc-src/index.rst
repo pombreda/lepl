@@ -25,7 +25,7 @@ Features
   and re--writing.
 
 * Generic, pure-Python approach supports parsing a wide variety of data
-  including :ref:`binary data <binary>`.
+  including :ref:`binary data <binary>` (Python 3+ only).
 
 * Well documented and easy to extend.
 

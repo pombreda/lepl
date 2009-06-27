@@ -6,6 +6,9 @@ Binary Data
 
 .. warning::
 
+   This package does not work with Python 2.6 (and never will do - the
+   ``bytes()`` type is not usable until version 3.0).
+
    The ``bin`` package is very new and still under active development.  The 
    API may change significantly (even between minor releases).  And the
    code is more likely to contain bugs than other parts of LEPL.

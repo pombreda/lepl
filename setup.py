@@ -38,7 +38,7 @@ Features
   re--writing.
 
 * Generic, pure-Python approach supports parsing a wide variety of data
-  including **bytes**.
+  including **bytes** (Python 3+ only).
 
 * **Well documented** and easy to extend.
 
