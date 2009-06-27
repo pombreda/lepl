@@ -1,4 +1,5 @@
 
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.bin.bits import BitString
@@ -64,6 +65,7 @@ class ParseTest(TestCase):
         self.bassert(b[1].foo[0], 0x2301, 16)
     
     def test_named(self):
+        basicConfig(level=DEBUG)
         b = parse('A(B(1), B(2))')
         self.bassert(b.B[0][0], 1)
         self.bassert(b.B[1][0], 2)
