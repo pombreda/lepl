@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -41,7 +41,8 @@ def copy_standard_attributes(node, copy, describe=True, transform=True):
     from lepl.matchers import Transformable
     if isinstance(node, Transformable) and transform:
         copy.function = node.function
-    if describe: copy.describe = node.describe 
+    if describe:
+        copy.describe = node.describe 
 
 
 class DelayedClone(Visitor):    
@@ -51,13 +52,14 @@ class DelayedClone(Visitor):
     avoid duplications.
     '''
     
-    def __init__(self, clone=clone):
+    def __init__(self, clone_=clone):
         super(DelayedClone, self).__init__()
-        self._clone = clone
+        self._clone = clone_
         self._delayeds = {}
         self._visited = {}
+        self._node = None
     
-    def loop(self, node):
+    def loop(self, _node):
         '''
         This is called for nodes that are arguments to Delayed.  Since we
         do not know those values yet, we return None.  We will fix the Delayed
@@ -66,9 +68,15 @@ class DelayedClone(Visitor):
         return None
     
     def node(self, node):
+        '''
+        Store the current node.
+        '''
         self._node = node
         
     def constructor(self, *args, **kargs):
+        '''
+        Clone the node, taking care to handle loops.
+        '''
         # delayed import to avoid dependency loops
         from lepl.matchers import Delayed
         if isinstance(self._node, Delayed):
@@ -89,6 +97,9 @@ class DelayedClone(Visitor):
         return copy
     
     def leaf(self, value):
+        '''
+        Leaf values are unchanged.
+        '''
         return value
     
     
@@ -101,6 +112,9 @@ def post_clone(function):
     '''
     from lepl.matchers import Delayed
     def new_clone(node, args, kargs):
+        '''
+        Apply function as well as clone.
+        '''
         copy = clone(node, args, kargs)
         if not isinstance(node, Delayed):
             copy = function(copy)
@@ -112,8 +126,11 @@ def flatten(graph):
     '''
     A rewriter that flattens `And` and `Or` lists.
     '''
-    from lepl.matchers import And, Or, Matcher
+    from lepl.matchers import And, Or
     def new_clone(node, old_args, kargs):
+        '''
+        The flattening cloner.
+        '''
         table = {And: '*matchers', Or: '*matchers'}
         if type(node) in table:
             attribute_name = table[type(node)]
@@ -139,8 +156,11 @@ def compose_transforms(graph):
     A rewriter that joins adjacent transformations into a single
     operation, avoiding trampolining in some cases.
     '''
-    from lepl.matchers import Transform, Transformable, Matcher
+    from lepl.matchers import Transform, Transformable
     def new_clone(node, args, kargs):
+        '''
+        The joining cloner.
+        '''
         # must always clone to expose the matcher (which was cloned earlier - 
         # it is not node.matcher)
         copy = clone(node, args, kargs)
@@ -158,6 +178,9 @@ def memoize(memoizer):
     graph.
     '''
     def rewriter(graph):
+        '''
+        Embed the memoizer within the cloner.
+        '''
         return graph.postorder(DelayedClone(post_clone(memoizer)), Matcher)
     return rewriter
 
@@ -179,10 +202,14 @@ def auto_memoize(conservative=None):
     `context_memoize(True)` are used.  This gives conservative memoisation 
     with minimal rewriting of alternatives.
     '''
-    from lepl.memo import RMemo
     def rewriter(graph):
-        graph = optimize_or(False if conservative is None else conservative)(graph)
-        graph = context_memoize(True if conservative is None else conservative)(graph)
+        '''
+        Apply the two sub-rewriters in turn.
+        '''
+        graph = optimize_or(False if conservative is None 
+                            else conservative)(graph)
+        graph = context_memoize(True if conservative is None 
+                                else conservative)(graph)
         return graph
     return rewriter
 
@@ -218,7 +245,8 @@ def left_loops(node):
                     if child not in known:
                         stack.append(family)
                         known.add(child)
-                if not isinstance(parent, Or) and not isinstance(child, Lookahead):
+                if not isinstance(parent, Or) and \
+                        not isinstance(child, Lookahead):
                     break
     
                     
@@ -249,8 +277,10 @@ def optimize_or(conservative=True):
     may classify some left--recursive loops as right--recursive.
     '''
     from lepl.matchers import Delayed, Or
-    from lepl.operators import Matcher
     def rewriter(graph):
+        '''
+        The Or-rewriting rewriter.
+        '''
         for delayed in [x for x in preorder(graph, Matcher) 
                         if isinstance(x, Delayed)]:
             for loop in either_loops(delayed, conservative):
@@ -278,8 +308,10 @@ def context_memoize(conservative=True):
     '''
     from lepl.matchers import Delayed
     from lepl.memo import LMemo, RMemo
-    from lepl.operators import Matcher
     def rewriter(graph):
+        '''
+        Detect loops and clone appropriately.
+        '''
         dangerous = set()
         for delayed in [x for x in preorder(graph, Matcher) 
                         if isinstance(x, Delayed)]:

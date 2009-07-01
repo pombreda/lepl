@@ -116,7 +116,7 @@ But when tokens are used, "-2" is preferred to "-", because it is a longer
 match, so we get only the single result::
 
   >>> tokens = (Token(Integer()) | Token(r'\-'))[:] & Eos()
-  >>> list(tokens.match('1-2', config=Configuration.tokens()))
+  >>> list(tokens.match('1-2'))
   [(['1', '-2'], <SimpleGeneratorStream>)]
 
 (In the examples above, ``list()`` is used to expand the generator and the
@@ -166,7 +166,7 @@ that any sub--expression consumes the entire contents::
 
   >>> abc = Token('abc')
   >>> incomplete = abc(Literal('ab'))
-  >>> incomplete.parse('abc', config=Configuration.tokens())
+  >>> incomplete.parse('abc')
   None
 
 However, this constraint can be relaxed, in which case the matched portion is
@@ -174,7 +174,7 @@ returned as a result::
 
   >>> abc = Token('abc')
   >>> incomplete = abc(Literal('ab'), complete=False)
-  >>> incomplete.parse('abc', config=Configuration.tokens())
+  >>> incomplete.parse('abc')
   ['ab']
 
 

@@ -18,8 +18,7 @@ class LexerExample(Example):
         number = value >> float
         add = number & ~symbol('+') & number > sum
         self.examples([
-            (lambda: add.parse('12+30', config=Configuration.tokens()),
-             '[42.0]')])
+            (lambda: add.parse('12+30'), '[42.0]')])
 
     def test_bad(self):
         
@@ -32,6 +31,5 @@ class LexerExample(Example):
         number = value >> float
         add = number & ~symbol('+') & number > sum
         self.examples([
-            (lambda: add.parse('12+30', config=Configuration.tokens()),
-             'None')])
+            (lambda: add.parse('12+30'), 'None')])
 

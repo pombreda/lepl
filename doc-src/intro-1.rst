@@ -251,9 +251,9 @@ that each is complete by itself).
 Note that, because ``>>`` works on each result in turn, we could have written
 this in a different, but equivalent way::
 
-  >>> add = SignedFloat() & Drop(Literal('+')) & SignedFloat() >> float
+  >>> add = (SignedFloat() & Drop(Literal('+')) & SignedFloat()) >> float
   >>> add.parse('12+30')
-  ['12', 30.0]
+  [12.0, 30.0]
 
 But as a general rule it is better to process results as soon as possible.
 This usually keeps the parser simpler.

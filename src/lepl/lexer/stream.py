@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -20,54 +20,60 @@
 The token streams.
 '''
 
-
-from collections import deque
 from logging import getLogger
-from traceback import format_exc
+#from traceback import format_exc
 
 from lepl.stream import LocationStream, SimpleGeneratorStream
 
 
-def lexed_simple_stream(tokens, skip, error, stream, alphabet):
+def lexed_simple_stream(tokens, skip, error, stream):
     '''
     Given a simple stream, create a simple stream of (terminals, match) pairs.
     '''
-    LOG = getLogger('lepl.lexer.stream.lexed_simple_stream')
+    log = getLogger('lepl.lexer.stream.lexed_simple_stream')
     def generator(stream=stream):
+        '''
+        This creates the sequence of tokens returned by the stream.
+        '''
         try:
             while stream:
                 try:
                     (terminals, match, stream) = tokens.match(stream)
-                    LOG.debug('Token: {0!r} {1!r}'.format(terminals, match))
+                    log.debug('Token: {0!r} {1!r}'.format(terminals, match))
                     yield (terminals, match)
                 except TypeError:
-                    (terminals, size, stream) = skip.size_match(stream)
-                    LOG.debug('Space: {0!r} {1!r}'.format(terminals, skip))
-        except:
-            LOG.debug(format_exc())
+                    (terminals, _size, stream) = skip.size_match(stream)
+                    log.debug('Space: {0!r} {1!r}'.format(terminals, skip))
+        except TypeError:
+            #log.debug(format_exc())
             raise error(stream)
     return SimpleGeneratorStream(generator())
 
 
-def lexed_location_stream(tokens, skip, error, stream, alphabet):
+def lexed_location_stream(tokens, skip, error, stream):
     '''
     Given a location stream, create a location stream of regexp matches.
     '''
-    LOG = getLogger('lepl.lexer.stream.lexed_location_stream')
+    log = getLogger('lepl.lexer.stream.lexed_location_stream')
     def generator(stream_before):
+        '''
+        This creates the sequence of tokens returned by the stream.
+        '''
         try:
             while stream_before:
                 try:
-                    (terminals, size, stream_after) = tokens.size_match(stream_before)
+                    (terminals, size, stream_after) = \
+                            tokens.size_match(stream_before)
                     # stream_before here to give correct location
-                    LOG.debug('Token: {0!r} {1!r}'.format(terminals, size))
+                    log.debug('Token: {0!r} {1!r}'.format(terminals, size))
                     yield (terminals, size, stream_before)
                     stream_before = stream_after
                 except TypeError:
-                    (terminals, size, stream_before) = skip.size_match(stream_before)
-                    LOG.debug('Space: {0!r} {1!r}'.format(terminals, size))
+                    (terminals, size, stream_before) = \
+                            skip.size_match(stream_before)
+                    log.debug('Space: {0!r} {1!r}'.format(terminals, size))
         except TypeError:
-            LOG.debug(format_exc())
+            #log.debug(format_exc())
             raise error(stream_before)
     return LocationGeneratorStream(generator(stream))
 
@@ -84,23 +90,26 @@ class LocationGeneratorStream(LocationStream):
         else:
             self.__simple = SimpleGeneratorStream(generator, join)
         
-    def __translate(self, triplet):
-        (terminals, size, stream) = triplet
-        return (terminals, stream[0:size]) 
-    
     def __getitem__(self, spec):
         '''
         [n] returns a character (string of length 1)
         [n:] returns a new SimpleStream instance that starts at the offset n
         [n:m] returns a sequence (ie string, list, etc)
         '''
+        def translate(triplet):
+            '''Helper'''
+            (terminals, size, stream) = triplet
+            return (terminals, stream[0:size]) 
         if isinstance(spec, int):
-            return self.__translate(self.__simple[spec])
+            return translate(self.__simple[spec])
         elif isinstance(spec, slice) and isinstance(spec.start, int):
             if spec.step is None and spec.stop is None:
-                return LocationGeneratorStream(None, None, self.__simple.__getitem__(spec))
+                return LocationGeneratorStream(None, None, 
+                                               self.__simple.__getitem__(spec))
             elif spec.step is None and isinstance(spec.stop, int):
-                return list(map(self.__translate, self.__simple.__getitem__(spec)))
+                # pylint: disable-msg=W0141
+                return list(map(translate, 
+                                self.__simple.__getitem__(spec)))
         raise IndexError()
     
     def __bool__(self):
@@ -129,6 +138,8 @@ class LocationGeneratorStream(LocationStream):
         return hash(self.__simple)
     
     def __eq__(self, other):
+        # pylint: disable-msg=W0212
+        # (we test for the type and it's the same as us)
         return isinstance(other, LocationGeneratorStream) and \
             self.__simple == other.__simple
     
@@ -139,7 +150,10 @@ class LocationGeneratorStream(LocationStream):
         
         The line number is -1 if this is past the end of the file.
         '''
-        return self.__simple[0][2].location()
+        try:
+            return self.__simple[0][2].location()
+        except IndexError:
+            return (-1, -1, -1, None, None)
    
     def text(self):
         '''

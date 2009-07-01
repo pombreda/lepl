@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -28,10 +28,8 @@ rewritten beforehand.
 
 from collections import deque
 from logging import getLogger
-from traceback import print_exc, format_exc
-from types import MethodType, GeneratorType
+from traceback import format_exc
 
-from lepl.monitor import MultipleMonitors
 from lepl.stream import SequenceByLine
     
     
@@ -40,6 +38,9 @@ def tagged(call):
     Decorator for generators to add extra attributes.
     '''
     def tagged_call(matcher, stream):
+        '''
+        Wrap the result.
+        '''
         return GeneratorWrapper(call(matcher, stream), matcher, stream)
     return tagged_call
 
@@ -61,29 +62,41 @@ class GeneratorWrapper(object):
     def __next__(self):
         return next(self.__generator)
             
-    # for 2.6
     def next(self):
+        '''
+        For Python 2.6
+        '''
         return self.__next__()
     
     def send(self, value):
+        '''
+        Pass a value back "into" the generator (standard Python method).
+        '''
         return self.__generator.send(value)
     
     def throw(self, value):
-        # we don't use exceptions, apart from StopIteration, so they are 
-        # always "errors".  if we try passing them in they get re-thrown and 
-        # lose the stack trace (i don't understand fully).  
-        # anyway, it seems to give more useful errors just to throw here 
-        # (alternatively, we could alter the trampoline to throw immediately, 
-        # but i'd rather keep that more general).
-        if isinstance(value, StopIteration):
-            return self.__generator.throw(value)
-        else:
-            raise value
+        '''
+        Raise an exception in the generator (standard Python method).
+        '''
+#        We don't use exceptions, apart from StopIteration, so they are 
+#        always "errors".  if we try passing them in they get re-thrown and 
+#        lose the stack trace (i don't understand fully).  
+#        Anyway, it seems to give more useful errors just to throw here 
+#        (alternatively, we could alter the trampoline to throw immediately, 
+#        but i'd rather keep that more general).
+#        if isinstance(value, StopIteration):
+#            return self.__generator.throw(value)
+#        else:
+#            raise value
+        return self.__generator.throw(value)
                 
     def __iter__(self):
         return self
                 
     def close(self):
+        '''
+        Close the generator (used in with contexts; standard Pythin method).
+        '''
         self.__generator.close()
         
     def __repr__(self):
@@ -91,7 +104,8 @@ class GeneratorWrapper(object):
         Lazily evaluated for speed - saves 1/3 of time spent in constructor
         '''
         if not self.describe:
-            self.describe = '{0}({1})'.format(self.matcher.describe, self.stream)
+            self.describe = '{0}({1})'.format(self.matcher.describe, 
+                                              self.stream)
         return self.describe
         
 
@@ -110,48 +124,85 @@ def trampoline(main, monitor=None):
     pop = stack.pop
     try:
         value = main
-        exception = False
+        exception_being_raised = False
         epoch = 0
         log = getLogger('lepl.parser.trampoline')
         last_exc = None
         while True:
             epoch += 1
             try:
-                if monitor: monitor.next_iteration(epoch, value, exception, stack)
+                if monitor:
+                    monitor.next_iteration(epoch, value, 
+                                           exception_being_raised, stack)
+                # is the value a coroutine that should be added to out stack
+                # and evaluated?
                 if type(value) is GeneratorWrapper:
-                    if monitor: monitor.push(value)
+                    if monitor:
+                        monitor.push(value)
+                    # add to the stack
                     append(value)
-                    if monitor: monitor.before_next(value)
+                    if monitor:
+                        monitor.before_next(value)
+                    # and evaluate
                     value = next(value)
-                    if monitor: monitor.after_next(value)
+                    if monitor:
+                        monitor.after_next(value)
+                # if we don't have a coroutine then we have a result that
+                # must be passed up the stack.
                 else:
+                    # drop top of the stack (which returned the value)
                     popped = pop()
-                    if monitor: monitor.pop(popped)
+                    if monitor:
+                        monitor.pop(popped)
+                    # if we still have coroutines left, pass the value in
                     if stack:
-                        if exception:
-                            exception = False
-                            if monitor: monitor.before_throw(stack[-1], value)
+                        # handle exceptions that are being raised
+                        if exception_being_raised:
+                            exception_being_raised = False
+                            if monitor:
+                                monitor.before_throw(stack[-1], value)
+                            # raise it inside the coroutine
                             value = stack[-1].throw(value)
-                            if monitor: monitor.after_throw(value)
+                            if monitor:
+                                monitor.after_throw(value)
+                        # handle ordinary values
                         else:
-                            if monitor: monitor.before_send(stack[-1], value)
+                            if monitor:
+                                monitor.before_send(stack[-1], value)
+                            # inject it into the coroutine
                             value = stack[-1].send(value)
-                            if monitor: monitor.after_send(value)
+                            if monitor:
+                                monitor.after_send(value)
+                    # otherwise, the stack is completely unwound so return
+                    # to main caller 
                     else:
-                        if exception:
-                            if monitor: monitor.raise_(value)
+                        if exception_being_raised:
+                            if monitor:
+                                monitor.raise_(value)
                             raise value
                         else:
-                            if monitor: monitor.yield_(value)
+                            if monitor:
+                                monitor.yield_(value)
                             yield value
+                        # this allows us to restart with a new evaluation
+                        # (backtracking) if called again.
                         value = main
-            except Exception as e:
-                if exception: # raising to caller
+            # pylint: disable-msg=W0703
+            # (we really do want to catch everything)
+            except Exception as exception:
+                # an exception occurred while we were handling an exception
+                # - that's not expected, so we bail to the main caller
+                if exception_being_raised: # raising to caller
                     raise
+                # an exception was raised by a coroutine.  internally,
+                # LEPL only uses StopIteration, so we warn about anything
+                # else (this might want to change if third party matchers
+                # use exceptions in a more constructive way?)  
                 else:
-                    value = e
-                    exception = True
-                    if monitor: monitor.exception(value)
+                    value = exception
+                    exception_being_raised = True
+                    if monitor:
+                        monitor.exception(value)
                     if type(value) is not StopIteration and value != last_exc:
                         last_exc = value
                         log.warn('Exception at epoch {0}'.format(epoch))
@@ -161,6 +212,7 @@ def trampoline(main, monitor=None):
                         for generator in stack:
                             log.warn('Stack: ' + generator.matcher.describe)
     finally:
+        # record the remaining stack
         while monitor and stack:
             monitor.pop(pop())
                     
@@ -173,6 +225,9 @@ def make_matcher(matcher, stream, config):
     '''
     for rewriter in config.rewriters:
         matcher = rewriter(matcher)
+    # pylint bug here? (E0601)
+    # pylint: disable-msg=W0212
+    # (_match is meant to be hidden)
     parser = lambda arg: trampoline(matcher._match(stream(arg)), 
                                     monitor=config.monitor)
     parser.matcher = matcher
@@ -187,6 +242,9 @@ def make_parser(matcher, stream, config):
     '''
     matcher = make_matcher(matcher, stream, config)
     def single(arg):
+        '''
+        Adapt a matcher to behave s expected for the parser interface.
+        '''
         try:
             return next(matcher(arg))[0]
         except StopIteration:

@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -23,9 +23,8 @@ Rewrite a matcher graph to include lexing.
 from collections import deque
 from logging import getLogger
 
-from lepl.lexer.matchers \
-    import Token, TOKENS, TokenNamespace, Lexer, LexerError, NonToken
-from lepl.operators import Matcher, Global
+from lepl.lexer.matchers import Token, Lexer, LexerError, NonToken
+from lepl.operators import Matcher
 from lepl.regexp.unicode import UnicodeAlphabet
 
 
@@ -59,7 +58,8 @@ def find_tokens(matcher):
                          'non-token matchers that consume input must only '
                          'appear "inside" Tokens.  The non-Token matchers '
                          'include: {0}.'
-                         .format('; '.join(n.__class__.__name__ for n in non_tokens)))
+                         .format('; '.join(n.__class__.__name__ 
+                                           for n in non_tokens)))
     return tokens
 
 
@@ -95,15 +95,18 @@ def lexer_rewriter(alphabet=None, skip='[ \t\r\n]', error=None):
     current stream).
     '''
 
-    LOG = getLogger('lepl.lexer.rewriters.lexer_rewriter')
+    log = getLogger('lepl.lexer.rewriters.lexer_rewriter')
 
     if alphabet is None:
         alphabet = UnicodeAlphabet.instance()
     def rewriter(matcher):
+        '''
+        Either construct the lexer, or warn that none found.
+        '''
         tokens = find_tokens(matcher)
         if tokens:
             return Lexer(matcher, tokens, alphabet, skip, error)
         else:
-            LOG.info('Lexer rewriter used, but no tokens found.')
+            log.info('Lexer rewriter used, but no tokens found.')
             return matcher
     return rewriter

@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -22,10 +22,11 @@ Support for operator syntactic sugar (and operator redefinition).
 
 from abc import ABCMeta
 
-from lepl.context import Namespace, NamespaceMixin, Global, Scope
+from lepl.context import Namespace, NamespaceMixin, Scope
 from lepl.support import open_stop
 
 
+# pylint: disable-msg=C0103, W0105
 # Python 2.6
 #class Matcher(metaclass=ABCMeta):
 Matcher = ABCMeta('Matcher', (object, ), {})
@@ -103,13 +104,13 @@ class Override(Scope):
 
     def __init__(self, space_opt=None, space_req=None, repeat=None,
                   add=None, and_=None, or_=None, not_=None, 
-                  apply=None, apply_raw=None, kargs=None, 
-                  raise_=None, first=None, map=None):
+                  apply_=None, apply_raw=None, kargs=None, 
+                  raise_=None, first=None, map_=None):
         super(Override, self).__init__(OPERATORS, DefaultNamespace,
             {SPACE_OPT: space_opt, SPACE_REQ: space_req,
              REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
-             NOT: not_, APPLY: apply, APPLY_RAW: apply_raw,
-             KARGS: kargs, RAISE: raise_, FIRST: first, MAP: map})
+             NOT: not_, APPLY: apply_, APPLY_RAW: apply_raw,
+             KARGS: kargs, RAISE: raise_, FIRST: first, MAP: map_})
 
 
 class Separator(Override):

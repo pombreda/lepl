@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -60,16 +60,19 @@ class Configuration(object):
         Generate a default configuration instance.  Currently this flattens
         nested `And()` and `Or()` instances;
         adds memoisation (which allows left recursion, but may alter the order 
-        in which matches are returned for ambiguous grammars); and
-        supports tracing (which is initially disabled, but can be enabled
+        in which matches are returned for ambiguous grammars);
+        adds a lexer if any tokens are found (assuming unicode input);
+        and supports tracing (which is initially disabled, but can be enabled
         using the `Trace()` matcher).
         '''
         if cls.__default is None:
+            from lepl.lexer.rewriters import lexer_rewriter
             from lepl.rewriters import flatten, compose_transforms, auto_memoize
             from lepl.trace import TraceResults
             cls.__default = \
                 Configuration(
-                    rewriters=[flatten, compose_transforms, auto_memoize()],
+                    rewriters=[flatten, compose_transforms, lexer_rewriter(),
+                               auto_memoize()],
                     monitors=[TraceResults(False)])
         return cls.__default
     
@@ -80,27 +83,29 @@ class Configuration(object):
         default configuration.
         '''
         if cls.__managed is None:
+            from lepl.lexer.rewriters import lexer_rewriter
             from lepl.manager import GeneratorManager
             from lepl.rewriters import flatten, compose_transforms, auto_memoize
             from lepl.trace import TraceResults
             cls.__managed = \
                 Configuration(
-                    rewriters=[flatten, compose_transforms, auto_memoize()],
+                    rewriters=[flatten, compose_transforms, lexer_rewriter(),
+                               auto_memoize()],
                     monitors=[TraceResults(False), 
                               GeneratorManager(queue_len=0)])
         return cls.__managed
     
     @classmethod    
-    def tokens(cls, alphabet=None):
+    def tokens(cls, alphabet):
         '''
-        The default configuration, plus support for `Token`.
+        Tokens for a unicode alphabet are already suppored by the default
+        configuration; this allows other alphabets to be supported.
         
         If alphabet is not specified, Unicode is assumed.
         '''
         from lepl.lexer.rewriters import lexer_rewriter
-        from lepl.memo import RMemo, LMemo
         from lepl.regexp.unicode import UnicodeAlphabet
-        from lepl.rewriters import flatten, compose_transforms, auto_memoize, memoize
+        from lepl.rewriters import flatten, compose_transforms, auto_memoize
         from lepl.trace import TraceResults
         alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
         return Configuration(
@@ -138,6 +143,7 @@ class Configuration(object):
         
         Note - this assumes that the value being parsed is Unicode text.
         '''
+        from lepl.lexer.rewriters import lexer_rewriter
         from lepl.regexp.matchers import DfaRegexp
         from lepl.regexp.rewriters import regexp_rewriter
         from lepl.regexp.unicode import UnicodeAlphabet
@@ -146,7 +152,8 @@ class Configuration(object):
         alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
         return Configuration(
                 rewriters=[flatten, compose_transforms,
-                           regexp_rewriter(UnicodeAlphabet.instance(), False, DfaRegexp),
+                           regexp_rewriter(UnicodeAlphabet.instance(), 
+                                           False, DfaRegexp),
                            compose_transforms, lexer_rewriter(alphabet),
                            auto_memoize()],
                 monitors=[TraceResults(False)])

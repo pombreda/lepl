@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -290,11 +290,11 @@ class Lexer(NamespaceMixin, BaseMatcher):
     def _match(self, stream):
         if isinstance(stream, LocationStream):
             tokens = lexed_location_stream(self.t_regexp, self.s_regexp,
-                                           self.error, stream, self.alphabet)
+                                           self.error, stream)
         else:
             # might assert simple stream here?
             tokens = lexed_simple_stream(self.t_regexp, self.s_regexp, 
-                                         self.error, stream, self.alphabet)
+                                         self.error, stream)
         generator = self.matcher._match(tokens)
         while True:
             (result, stream_out) = yield generator

@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -20,8 +20,6 @@
 Library routines / utilities (some unused).
 '''
 
-from traceback import print_exc
-
 from logging import getLogger
 
 
@@ -29,8 +27,10 @@ def assert_type(name, value, type_, none_ok=False):
     '''
     If the value is not of the given type, raise a syntax error.
     '''
-    if none_ok and value is None: return
-    if isinstance(value, type_): return
+    if none_ok and value is None:
+        return
+    if isinstance(value, type_):
+        return
     raise TypeError('{0} (value {1}) must be of type {2}.'
                     .format(name, repr(value), type_.__name__))
 
@@ -70,8 +70,13 @@ class CircularFifo(object):
         return dropped
     
     def pop(self, index=0):
-        if index != 0: raise IndexError('FIFO is only a FIFO')
-        if self.__size < 1: raise IndexError('FIFO empty')
+        '''
+        Remove and return the next item.
+        '''
+        if index != 0:
+            raise IndexError('FIFO is only a FIFO')
+        if self.__size < 1:
+            raise IndexError('FIFO empty')
         popped = self.__buffer[(self.__next - self.__size) % len(self.__buffer)]
         self.__size -= 1
         return popped
@@ -87,6 +92,10 @@ class CircularFifo(object):
             index = (index + 1) % capacity
             
     def clear(self):
+        '''
+        Clear the data (we just set the size to zero - this doesn't release
+        any references).
+        '''
         self.__size = 0
 
 
@@ -103,24 +112,33 @@ def lmap(function, values):
     '''
     A map that returns a list rather than an iterator.
     '''
+    # pylint: disable-msg=W0141
     return list(map(function, values))
 
 
-def compose(f, g):
+def compose(fun_a, fun_b):
     '''
-    Functional composition.
+    Functional composition (assumes fun_a takes a single argument).
     '''
     def fun(*args, **kargs):
-        return f(g(*args, **kargs))
+        '''
+        This assumes fun_a takes a single argument.
+        '''
+        return fun_a(fun_b(*args, **kargs))
     return fun
 
 
-def compose_tuple(f, g):
+def compose_tuple(fun_a, fun_b):
     '''
-    Functional composition.
+    Functional composition (assumes fun_b returns a sequence which is supplied
+    to fun_a via *args).
     '''
     def fun(*args, **kargs):
-        return f(*g(*args, **kargs))
+        '''
+        Supply result from fun_b as *arg.
+        '''
+        # pylint: disable-msg=W0142
+        return fun_a(*fun_b(*args, **kargs))
     return fun
 
 
@@ -128,7 +146,8 @@ def empty():
     '''
     An empty generator.
     '''
-    if False: yield None
+    if False:
+        yield None
     
     
 class LogMixin(object):
@@ -146,6 +165,10 @@ class LogMixin(object):
         self.describe = self.__class__.__name__
         
     def tag(self, *args):
+        '''
+        Construct a tag from the class name and an optional set of extra values.
+        '''
+        # pylint: disable-msg=W0141
         self.describe = '{0}({1})'.format(self.__class__.__name__, 
                                           ','.join(map(str, args)))
         return self

@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -17,7 +17,34 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-A stream interface to the input, implemented using singly linked lists.
+Stream interfaces for the input, with an implementation using singly linked 
+lists.
+
+This package defines both interfaces (via ABCs) and implementations.
+
+The simplest interface is `SimpleStream` / `SimpleStreamInterface`.  The 
+ambiguity comes from providing backwards compatibility with 2.6 - the ABC
+is `SimpleStream`, and existing classes can register against that, but the
+required methods are defined in `SimpleStreamInterface`, which is what 
+implementations should subclass.
+
+`SimpleStream` / `SimpleStreamInterface` requires only a subset of the 
+standard Python collection interface, and so is compatible with str, list,
+etc.
+
+A `SimpleStream` / `SimpleStreamInterface` implementation is all that is
+expected by the basic `parse` and `match` methods (and `null_parser`
+and `null_matcher`).
+
+`LocationStream` then extends `SimpleStreamInterface` to add extra methods
+that provide useful information for debugging and error messages (location 
+in file etc).  Implementation of `LocationStream` are created by the
+type-specific parse/match methods (`string_parser` etc).
+
+`SequenceByLine` is an implementation of `LocationStream` that avoids 
+keeping all data in memory in most cases).  It is implemented as a linked
+list of lines; when a line is no longer referenced it can be garbage
+collected (no backreferences exist).
 '''
 
 from abc import ABCMeta, abstractmethod
@@ -26,8 +53,9 @@ from io import StringIO
 from lepl.support import open_stop
 
 
-# Python 2.6
 #class SimpleStream(metaclass=ABCMeta):
+# Python 2.6
+# pylint: disable-msg=W0105, C0103
 SimpleStream = ABCMeta('SimpleStream', (object, ), {})
 '''ABC used to identify streams.'''
 
@@ -114,6 +142,9 @@ class LocationStream(SimpleStreamInterface):
     
 
 def _sample(prefix, rest, size=40):
+    '''
+    Provide a small sample of a string.
+    '''
     text = prefix + rest
     if len(text) > size:
         text = prefix + rest[0:size-len(prefix)-3] + '...'
@@ -179,6 +210,8 @@ class SequenceByLine(LocationStream):
         return self.__line.hash(self.__offset)
     
     def __eq__(self, other):
+        # pylint: disable-msg=W0212
+        # (we test to ensure we are accessing the same class first)
         return isinstance(other, SequenceByLine) and \
             self.__line == other.__line and \
             self.__offset == other.__offset
@@ -223,11 +256,12 @@ class SequenceByLine(LocationStream):
                                    source=_sample('list: ', repr(data))))
     
     @staticmethod
-    def from_file(file):
+    def from_file(file_):
         '''
         Wrap a file.
         '''
-        return SequenceByLine(Line(file, source=gettatr(file, 'name', '<file>'))) 
+        return SequenceByLine(Line(file_, 
+                                   source=getattr(file_, 'name', '<file>'))) 
         
     @staticmethod
     def null(stream):
@@ -269,7 +303,8 @@ class Line(object):
         line appropriate for start then data are pulled in from the next
         line.
         '''
-        if stop == 0: return ''
+        if stop == 0:
+            return ''
         if self.__empty:
             if start == 0 and stop is None:
                 return ''
@@ -286,7 +321,8 @@ class Line(object):
         elif stop <= size:
             return self.__text[start:stop]
         else:
-            return self.__text[start:] + self.next().read(0, start-size, stop-size)
+            return self.__text[start:] + \
+                    self.next().read(0, start-size, stop-size)
         
     def next(self):
         '''
@@ -316,13 +352,18 @@ class Line(object):
         if offset == 0:
             return (self, 0)
         elif self.__empty:
-            raise IndexException('No line available')
+            raise IndexError('No line available')
         elif offset < len(self.__text):
             return (self, offset)
         else: 
+            # pylint: disable-msg=W0212
+            # (we know it's the same as this)
             return self.next().__to(offset - len(self.__text))
 
     def getitem(self, spec, offset=0):    
+        '''
+        Similar to __getitem__, but with offset.
+        '''
         if isinstance(spec, int):
             return self.read(offset, spec, spec+1)[0]
         elif isinstance(spec, slice) and spec.step is None:
@@ -388,18 +429,26 @@ class Line(object):
         return self.__len
     
     def hash(self, offset=0):
+        '''
+        Like __hash__, but takes an offset.
+        '''
         return self.__hash ^ offset ^ self.__lineno
     
 
 class ListIO():
     '''
-    Minimal wrapper for lists - returns entire list as single line.
+    Minimal wrapper for lists - returns entire list as single line.  This is
+    sufficiently like a file for use by `Line`.
     '''
     
     def __init__(self, data):
         self.__data = data
         
     def close(self):
+        '''
+        On closing we simply discard the enclosed list; this will trigger a 
+        StopIteration on read.
+        '''
         self.__data = None
 
     def __iter__(self):
@@ -412,15 +461,20 @@ class ListIO():
         else:
             raise StopIteration()
 
-    # for 2.6
     def next(self):
+        '''
+        For Python 2.6
+        '''
         return self.__next__()        
 
 
 class SimpleGeneratorStream(SimpleStream):
     '''
     Wrap a generator in the SimpleStream interface (is there nothing in the 
-    standard lib for this?).
+    standard lib for this?).  This takes a source of strings and presents
+    them as a continuous string (or array), but unpacks as little as
+    possible and does not retain "previous" lines (or -ve indices).  It's
+    very similar to `Line` above (can they be unified?).
     
     We try to unroll gradually, but if __len__ is called then we do a full
     unrolling and store the list.
@@ -500,6 +554,8 @@ class SimpleGeneratorStream(SimpleStream):
             raise IndexError()
         else:
             accumulator.append(self.__value)
+            # pylint: disable-msg=W0212
+            # (we know it's the same class as ourselves)
             return self.__next().__accumulate(accumulator, stop-1)
     
     def __bool__(self):

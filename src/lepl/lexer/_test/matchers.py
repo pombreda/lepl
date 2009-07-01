@@ -1,4 +1,26 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Wide range of tests for lexer.
+'''
+
+from logging import basicConfig, DEBUG
 from math import sin, cos
 from operator import add, sub, truediv, mul
 from unittest import TestCase
@@ -14,16 +36,28 @@ class RegexpCompilationTest(TestCase):
     '''
     
     def test_literal(self):
+        '''
+        Simple literal should compile directly.
+        '''
         token = Token(Literal('abc'))
         token.compile()
         assert token.regexp == 'abc', repr(token.regexp)
         
     def test_float(self):
+        '''
+        A float is more complex, but still compiles.
+        '''
         token = Token(Float())
         token.compile()
-        assert token.regexp == '([\\+\\-]|)([0-9]([0-9])*(\\.|)|([0-9]([0-9])*|)\\.[0-9]([0-9])*)([Ee]([\\+\\-]|)[0-9]([0-9])*|)', repr(token.regexp)
+        assert token.regexp == \
+            '([\\+\\-]|)([0-9]([0-9])*(\\.|)|([0-9]([0-9])*|)\\.' \
+            '[0-9]([0-9])*)([Ee]([\\+\\-]|)[0-9]([0-9])*|)', \
+            repr(token.regexp)
         
     def test_impossible(self):
+        '''
+        Cannot compile arbitrary functions.
+        '''
         try:
             token = Token(Float() > (lambda x: x))
             token.compile()
@@ -38,37 +72,62 @@ class TokenRewriteTest(TestCase):
     '''
     
     def test_defaults(self):
+        '''
+        Basic configuration.
+        '''
         reals = (Token(Float()) >> float)[:]
         parser = reals.null_parser(Configuration(rewriters=[lexer_rewriter()]))
         results = parser('1 2.3')
         assert results == [1.0, 2.3], results
     
     def test_string_arg(self):
+        '''
+        Skip anything(not just spaces)
+        '''
         word = Token('[a-z]+')
-        parser = (word[:]).null_parser(Configuration(rewriters=[lexer_rewriter(skip='.')]))
+        parser = (word[:]).null_parser(
+                        Configuration(rewriters=[lexer_rewriter(skip='.')]))
         results = parser('abc defXghi')
         assert results == ['abc', 'def', 'ghi'], results
         
     def test_bad_error_msg(self):
+        '''
+        An ugly error message (can't we improve this?)
+        '''
+        basicConfig(level=DEBUG)
         word = Token('[a-z]+')
-        parser = (word[:]).null_parser(Configuration(rewriters=[lexer_rewriter()]))
+        parser = (word[:]).null_parser(
+                        Configuration(rewriters=[lexer_rewriter()]))
         try:
-            results = parser('abc defXghi')
-        except RuntimeLexerError as e:
-            assert str(e) == 'Cannot lex "<unknown> - use stream for better error reporting" at -1/-1'
+            parser('abc defXghi')
+            assert False, 'expected error'
+        except RuntimeLexerError as err:
+            assert str(err) == 'Cannot lex "<unknown> - ' \
+                'use stream for better error reporting" at -1/-1', str(err)
         
     def test_good_error_msg(self):
+        '''
+        Better error message with streams.
+        '''
+        basicConfig(level=DEBUG)
         word = Token('[a-z]+')
-        parser = (word[:]).string_parser(Configuration(rewriters=[lexer_rewriter()]))
+        parser = (word[:]).string_parser(
+                        Configuration(rewriters=[lexer_rewriter()]))
         try:
-            results = parser('abc defXghi')
-        except RuntimeLexerError as e:
-            assert str(e) == 'Cannot lex "str: \'abc defXghi\'" at 1/8', str(e)
+            parser('abc defXghi')
+            assert False, 'expected error'
+        except RuntimeLexerError as err:
+            assert str(err) == 'Cannot lex "str: \'abc defXghi\'" at 1/8', \
+                str(err)
         
-    def test_expression(self):
+    def test_expr_with_functions(self):
+        '''
+        Expression with function calls and appropriate binding.
+        '''
         
-#        basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         
+        # pylint: disable-msg=C0111, C0321
         class Call(Node): pass
         class Term(Node): pass
         class Factor(Node): pass
@@ -79,11 +138,11 @@ class TokenRewriteTest(TestCase):
         symbol = Token('[^a-zA-Z0-9\\. ]')
         
         expr    = Delayed()
-        open    = ~symbol('(')
+        open_   = ~symbol('(')
         close   = ~symbol(')')
         funcn   = name                                  > 'name'
-        call    = funcn & open & expr & close           > Call
-        term    = call | value | open & expr & close    > Term
+        call    = funcn & open_ & expr & close          > Call
+        term    = call | value | open_ & expr & close   > Term
         muldiv  = symbol(Any('*/'))                     > 'operator'
         factor  = term & (muldiv & term)[:]             > Factor
         addsub  = symbol(Any('+-'))                     > 'operator'
@@ -121,6 +180,9 @@ class TokenRewriteTest(TestCase):
         
 
     def test_expression2(self):
+        '''
+        As before, but with evaluation.
+        '''
         
 #        basicConfig(level=DEBUG)
         
@@ -128,7 +190,9 @@ class TokenRewriteTest(TestCase):
         # using the nodes instead we allow future expansion into a full
         # interpreter
         
+        # pylint: disable-msg=C0111, C0321
         class BinaryExpression(Node):
+            op = lambda x, y: None
             def __float__(self):
                 return self.op(float(self[0]), float(self[1]))
         
@@ -154,26 +218,26 @@ class TokenRewriteTest(TestCase):
         expr    = Delayed()
         factor  = Delayed()
         
-        float_  = Or(number                             >> float,
-                     ~symbol('-') & number              >> (lambda x: -float(x)))
+        float_  = Or(number                            >> float,
+                     ~symbol('-') & number             >> (lambda x: -float(x)))
         
-        open    = ~symbol('(')
+        open_   = ~symbol('(')
         close   = ~symbol(')')
         trig    = name(Or('sin', 'cos'))
-        call    = trig & open & expr & close            > Call
-        parens  = open & expr & close
+        call    = trig & open_ & expr & close          > Call
+        parens  = open_ & expr & close
         value   = parens | call | float_
         
-        ratio   = value & ~symbol('/') & factor         > Ratio
-        prod    = value & ~symbol('*') & factor         > Product
+        ratio   = value & ~symbol('/') & factor        > Ratio
+        prod    = value & ~symbol('*') & factor        > Product
         factor += prod | ratio | value
         
-        diff    = factor & ~symbol('-') & expr          > Difference
-        sum     = factor & ~symbol('+') & expr          > Sum
-        expr   += sum | diff | factor | value
+        diff    = factor & ~symbol('-') & expr         > Difference
+        sum_    = factor & ~symbol('+') & expr         > Sum
+        expr   += sum_ | diff | factor | value
         
         line    = expr & Eos()
-        parser  = line.null_parser(Configuration.tokens())
+        parser  = line.null_parser()
         
         def myeval(text):
             return float(parser(text)[0])
@@ -186,59 +250,58 @@ class TokenRewriteTest(TestCase):
 
 
 class ErrorTest(TestCase):
-
-    def test_no_rewriter(self):
-        t = Token(Any())
-        p = t.null_parser()
-        try:
-            p('hello world')
-            assert False, 'expected failure'
-        except LexerError as e:
-            assert str(e) == 'A Token has not been compiled. You must use the ' \
-                            'lexer_rewriter with Tokens. This can be done by ' \
-                            'using Configuration.tokens().', str(e)
-        else:
-            assert False, 'wrong exception'
+    '''
+    Test various error messages.
+    '''
 
     def test_mixed(self):
-        t = Token(Any()) & Any()
+        '''
+        Cannot mix tokens and non-tokens at same level.
+        '''
+        bad = Token(Any()) & Any()
         try:
-            t.null_parser(Configuration.tokens())
+            bad.null_parser()
             assert False, 'expected failure'
-        except LexerError as e:
-            assert str(e) == 'The grammar contains a mix of Tokens and ' \
-                            'non-Token matchers at the top level. If Tokens ' \
-                            'are used then non-token matchers that consume ' \
-                            'input must only appear "inside" Tokens.  The ' \
-                            'non-Token matchers include: Any.', str(e)
+        except LexerError as err:
+            assert str(err) == 'The grammar contains a mix of Tokens and ' \
+                               'non-Token matchers at the top level. If ' \
+                               'Tokens are used then non-token matchers ' \
+                               'that consume input must only appear "inside" ' \
+                               'Tokens.  The non-Token matchers include: ' \
+                               'Any.', str(err)
         else:
             assert False, 'wrong exception'
 
     def test_bad_space(self):
-        t = Token('a')
-        p = t.null_parser(Configuration(rewriters=[lexer_rewriter(
-                    UnicodeAlphabet.instance(), 'b')]))
-        assert p('a') == ['a'], p('a')
-        assert p('b') == None, p('b')
+        '''
+        An unexpected character fails to match.
+        '''
+        token = Token('a')
+        parser = token.null_parser(Configuration(rewriters=[lexer_rewriter(
+                                        UnicodeAlphabet.instance(), 'b')]))
+        assert parser('a') == ['a'], parser('a')
+        assert parser('b') == None, parser('b')
         try:
-            p('c')
+            parser('c')
             assert False, 'expected failure'
-        except RuntimeLexerError as e:
-            assert str(e) == 'Cannot lex "<unknown> - use stream for better error reporting" at -1/-1', str(e)
+        except RuntimeLexerError as err:
+            assert str(err) == 'Cannot lex "<unknown> - use stream for ' \
+                'better error reporting" at -1/-1', str(err)
 
     def test_incomplete(self):
-        try:
-            t = Token('[a-z]+')(Any())
-            p = t.string_parser(Configuration.tokens())
-            assert p('a') == ['a'], p('a')
-            # even though this matches the token, the Any() sub-matcher doesn't
-            # consume all the contents
-            assert p('ab') == None, p('ab')
-            t = Token('[a-z]+')(Any(), complete=False)
-            p = t.string_parser(Configuration.tokens())
-            assert p('a') == ['a'], p('a')
-            # whereas this is fine, since complete=False
-            assert p('ab') == ['a'], p('ab')
-        except Exception as e:
-            assert False, str(e)
+        '''
+        A token is not completely consumed (this doesn't raise error messages,
+        it just fails to match).
+        '''
+        token = Token('[a-z]+')(Any())
+        parser = token.string_parser()
+        assert parser('a') == ['a'], parser('a')
+        # even though this matches the token, the Any() sub-matcher doesn't
+        # consume all the contents
+        assert parser('ab') == None, parser('ab')
+        token = Token('[a-z]+')(Any(), complete=False)
+        parser = token.string_parser()
+        assert parser('a') == ['a'], parser('a')
+        # whereas this is fine, since complete=False
+        assert parser('ab') == ['a'], parser('ab')
             

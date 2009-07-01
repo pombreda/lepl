@@ -119,9 +119,6 @@ Operator  Description
           (instead of all results being supplied in a single list argument).
           Identical to `Map() <api/redirect.html#lepl.matchers.Map>`_.
 --------  -----------
-``*``     As ``>``, but the results are passed as ``*args`` (so each is
-          received as a separate argument).
---------  -----------
 ``**``    As ``>``, but the results are passed as the named parameter 
           *results*.  Additional keyword arguments are *stream_in* (the
           stream passed to the matcher), *stream_out* (the stream returned
