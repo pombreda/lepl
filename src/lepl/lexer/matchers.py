@@ -26,7 +26,7 @@ from lepl.context import Namespace, NamespaceMixin, Scope
 from lepl.error import syntax_error_kargs
 from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream
 from lepl.matchers \
-    import OperatorMatcher, BaseMatcher, coerce, Any, Literal, Lookahead, \
+    import OperatorMatcher, BaseMatcher, coerce_, Any, Literal, Lookahead, \
     Regexp, And, Add, Or, Apply, Drop, KApply, Repeat, raise_error, First, Map
 from lepl.operators \
     import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, KARGS, RAISE, \
@@ -178,7 +178,7 @@ class Token(OperatorMatcher):
         match the Token contents.
         '''
         complete = self.complete if complete is None else complete
-        return Token(self.regexp, coerce(content), self.id, self.alphabet, 
+        return Token(self.regexp, coerce_(content), self.id, self.alphabet, 
                      complete, self.compiled)
     
     @tagged

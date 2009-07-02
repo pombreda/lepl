@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -24,6 +24,8 @@ Frost and Hafiz 2006 which allows left-recursive grammars to be used).
 Note that neither paper describes the extension to backtracking with
 generators implemented here. 
 '''
+
+# for some reason (parsing of yields?) pyulint cannot process this file
 
 
 from itertools import count
@@ -50,13 +52,16 @@ class RMemo(OperatorMatcher):
         
     @tagged
     def _match(self, stream):
-        if stream not in self.__table:
-            # we have no cache for this stream, so we need to generate the
-            # entry.  we do not care about nested calls with the same stream
-            # because this memoization is not for left recursion.  that means
-            # that we can return a table around this generator immediately.
-            self.__table[stream] = RTable(self.matcher._match(stream))
-        return self.__table[stream].generator(self.matcher, stream)
+        try:
+            if stream not in self.__table:
+                # we have no cache for this stream, so we need to generate the
+                # entry.  we do not care about nested calls with the same stream
+                # because this memoization is not for left recursion.  that means
+                # that we can return a table around this generator immediately.
+                self.__table[stream] = RTable(self.matcher._match(stream))
+            return self.__table[stream].generator(self.matcher, stream)
+        except TypeError: # unhashable type; cannot cache
+            return self.matcher._match(stream)
 
 
 class RTable(LogMixin):
@@ -92,7 +97,8 @@ class RTable(LogMixin):
         '''
         for i in count():
             yield (yield GeneratorWrapper(self.__read(i), 
-                            _DummyMatcher(self.__class__.__name__, matcher.describe), 
+                            _DummyMatcher(self.__class__.__name__, 
+                                          matcher.describe), 
                             stream))
 
 

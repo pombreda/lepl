@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -20,10 +20,7 @@
 Base classes for AST nodes (and associated functions).
 '''
 
-from traceback import print_exc
-from collections import Iterable, Mapping, deque
-
-from lepl.graph import SimpleWalker, GraphStr, POSTORDER, order, LEAF, ConstructorGraphNode, ConstructorWalker
+from lepl.graph import GraphStr, ConstructorGraphNode, ConstructorWalker
 from lepl.support import LogMixin
 
 
@@ -61,16 +58,26 @@ class Node(LogMixin, ConstructorGraphNode):
                 self.__add_anon_child(arg)
         
     def __add_named_child(self, name, value):
+        '''
+        Add a value associated with a name (either a named pair or the class
+        of a Node subclass).
+        '''
         index = self.__add_attribute(name, value)
         self.__children.append(value)
         self.__paths.append((name, index))
         
     def __add_anon_child(self, value):
+        '''
+        Add a nameless value.
+        '''
         index = len(self.__children)
         self.__children.append(value)
         self.__paths.append(index)
             
     def __add_attribute(self, name, value):
+        '''
+        Attributes are associated with lists of (named) values.
+        '''
         if name not in self.__names:
             self.__names.add(name)
             setattr(self, name, [])
@@ -83,7 +90,7 @@ class Node(LogMixin, ConstructorGraphNode):
         '''
         The names of all the attributes constructed from the results.
         '''
-        return iter(self._names)
+        return iter(self.__names)
     
     def __getitem__(self, index):
         return self.__children[index]
@@ -157,7 +164,7 @@ class MutableNode(Node):
     '''
     
     def __setitem__(self, index, value):
-        self._children[index] = value
+        self.__children[index] = value
         
         
 class NodeTreeStr(GraphStr):
@@ -167,6 +174,9 @@ class NodeTreeStr(GraphStr):
     '''
     
     def leaf(self, arg):
+        '''
+        Leaf nodes are either named or simple values.
+        '''
         if is_named(arg):
             return lambda first, rest, name_: \
                     [first + arg[0] + (' ' if arg[0] else '') + repr(arg[1])]
@@ -193,6 +203,9 @@ def join_with(separator=''):
     Invoke as ``> join_with(',')``, for example.
     '''
     def fun(results):
+        '''
+        Delay evaluation.
+        '''
         return separator.join(results)
     return fun
     

@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -48,7 +48,7 @@ on constructors described above: the walker takes a visitor sub-class and
 calls it in a way that replicates the original calls to the node constructors.
 '''
 
-from collections import Sequence, Hashable, deque
+from collections import Sequence, deque
 
 from lepl.support import compose, safe_in, safe_add, empty
 
@@ -125,7 +125,7 @@ def order(node, include, type_, exclude=0):
     '''
     while True:
         try:
-            for parent, child, direction in dfs_edges(node, type_):
+            for (_parent, child, direction) in dfs_edges(node, type_):
                 if (direction & include) and not (direction & exclude):
                     yield child
             return
@@ -256,7 +256,8 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
         assert len(kargs) == 1
         for name in kargs:
             assert isinstance(kargs[name], Sequence), kargs[name] 
-            self.__arg_names.append('*' + self.__set_attribute(name, kargs[name]))
+            self.__arg_names.append('*' + 
+                                    self.__set_attribute(name, kargs[name]))
         
     def _kargs(self, kargs):
         '''
@@ -267,6 +268,9 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
             self.__karg_names.append(self.__set_attribute(name, kargs[name]))
         
     def __args(self):
+        '''
+        All (non-keyword) arguments.
+        '''
         args = [getattr(self, name)
                 for name in self.__arg_names if not name.startswith('*')]
         for name in self.__arg_names:
@@ -275,6 +279,9 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
         return args
         
     def __kargs(self):
+        '''
+        All keyword argmuents.
+        '''
         return dict((name, getattr(self, name)) for name in self.__karg_names)
         
     def _constructor_args(self):
@@ -305,21 +312,38 @@ class Visitor(object):
     '''
     
     def loop(self, value):
+        '''
+        Called on nodes that belong to a loop (eg. in the `ConstructorWalker`
+        nodes are visited in postorder, and this is called when a node is
+        *first* found as a constructor argument (before bing found in the
+        "postorder" traversal)).
+        
+        By default, do nothing.
+        '''
         pass
     
     def node(self, node):
+        '''
+        Called when first visiting a node.
+        
+        By default, do nothing.
+        '''
         pass
         
     def constructor(self, *args, **kargs):
         '''
         Called for node instances.  The args and kargs are the values for
         the corresponding child nodes, as returned by this visitor.
+        
+        By default, do nothing.
         '''
         pass
     
     def leaf(self, value):
         '''
         Called for children that are not node instances.
+        
+        By default, do nothing.
         '''
         pass
     
@@ -331,6 +355,8 @@ class ConstructorWalker(object):
     This is based directly on the catamorphism of the graph.  The visitor 
     encodes the type information.  It may help to see the constructor 
     arguments as type constructors.
+    
+    Nodes should be subclasses of `ConstructorGraphNode`.
     '''
     
     def __init__(self, root, type_):
@@ -345,10 +371,17 @@ class ConstructorWalker(object):
         for node in postorder(self.__root, self.__type, exclude=LEAF):
             visitor.node(node)
             (args, kargs) = self.__arguments(node, visitor, results)
+            # pylint: disable-msg=W0142
             results[node] = visitor.constructor(*args, **kargs)
         return results[self.__root]
     
     def __arguments(self, node, visitor, results):
+        '''
+        Collect arguments for the constructor.
+        '''
+        # pylint: disable-msg=W0212
+        # (this is the ConstructorGraphNode interface; it's purposefully
+        # like that to avoid conflicting with Node attributes)
         (old_args, old_kargs) = node._constructor_args()
         (new_args, new_kargs) = ([], {})
         for arg in old_args:
@@ -358,6 +391,9 @@ class ConstructorWalker(object):
         return (new_args, new_kargs)
     
     def __value(self, node, visitor, results):
+        '''
+        Get a value for a particular constructor argument.
+        '''
         if isinstance(node, self.__type):
             if node in results:
                 return results[node]
@@ -405,6 +441,7 @@ class SimpleWalker(object):
                 elif kind & NONTREE:
                     pending[parent].append(visitor.loop(node))
                 else:
+                    # pylint: disable-msg=W0142
                     pending[parent].append(visitor.constructor(*args))
         return pending[self.__root][0]
     
@@ -429,6 +466,13 @@ class PostorderWalkerMixin(object):
         return self.__postorder(visitor)
 
 
+class _LineOverflow(Exception):
+    '''
+    Used internally in `ConstructorStr`.
+    '''
+    pass
+
+
 class ConstructorStr(Visitor):
     '''
     Reconstruct the constructors used to generate the graph as a string
@@ -440,6 +484,7 @@ class ConstructorStr(Visitor):
     def __init__(self, line_length=80):
         super(ConstructorStr, self).__init__()
         self.__line_length = line_length
+        self.__name = None
         
     def node(self, node):
         '''
@@ -459,10 +504,12 @@ class ConstructorStr(Visitor):
         '''
         contents = []
         for arg in args:
-            if contents: contents[-1][1] += ', '
+            if contents:
+                contents[-1][1] += ', '
             contents.extend([indent+1, line] for (indent, line) in arg)
         for name in kargs:
-            if contents: contents[-1][1] += ', '
+            if contents:
+                contents[-1][1] += ', '
             arg = kargs[name]
             contents.append([arg[0][0]+1, name + '=' + arg[0][1]])
             contents.extend([indent+1, line] for (indent, line) in arg[1:])
@@ -497,12 +544,18 @@ class ConstructorStr(Visitor):
         return self.__format(lines)
     
     def __compress(self, lines, start, stop):
+        '''
+        Try a compact version first.
+        '''
         try:
             return self.__all_on_one_line(lines, start, stop)
-        except:
+        except _LineOverflow:
             return self.__bunch_up(lines, start, stop)
         
     def __bunch_up(self, lines, start, stop):
+        '''
+        Scrunch adjacent lines together.
+        '''
         (indent, _) = lines[start]
         while start+1 < stop:
             if indent == lines[start][0] and \
@@ -518,27 +571,55 @@ class ConstructorStr(Visitor):
         return (stop, indent-1)
 
     def __all_on_one_line(self, lines, start, stop):
+        '''
+        Try all on one line.
+        '''
         (indent, text) = lines[start-1]
         size = indent + len(text) 
         for (_, extra) in lines[start:stop]:
             size += len(extra)
             if size > self.__line_length:
-                raise Exception('too long')
+                raise _LineOverflow()
             text += extra
         lines[start-1] = [indent, text]
         del lines[start:stop]
         return (start-1, indent)
 
     def __format(self, lines):
+        '''
+        Join lines together, given the indent.
+        '''
         return '\n'.join(' ' * indent + line for (indent, line) in lines)
                 
                 
 class GraphStr(Visitor):
     '''
     Generate an ASCII graph of the nodes.
+    
+    This should be used with `ConstructorWalker` and works rather like
+    cloning, except that instead of generating a new set of nodes we
+    generate a nested set of functions.  This set of functions has the
+    same structure as the tree of nodes (we break cycles via loop).
+    The leaf functions take prefixes and return an ASCII picture of
+    what the leaf values should look like (including the prefixes).
+    Functions higher up the tree are similar, except instead of returning
+    a picture directly they extend the prefix and then call the functions
+    that are their children.
+    
+    Once we have an entire tree of functions, we can call the root with
+    an empty prefix and the functions will "cascade" down, building the
+    prefixes necessary and passing them to the root functions that
+    generate the final ASCII data.
     '''
     
+    def __init__(self):
+        super(GraphStr, self).__init__()
+        self.__type = None
+    
     def loop(self, value):
+        '''
+        Mark loops (what else could we do?)
+        '''
         return lambda first, rest, name: [first + name + ' <loop>']
     
     def node(self, node):
@@ -553,16 +634,24 @@ class GraphStr(Visitor):
         graph when given the appropriate prefixes.
         '''
         def fun(first, rest, name, type_=self.__type):
+            '''
+            Build the ASCII pircture; this is rather terse...  First is the
+            prefix to the first line; rest is the prefix to the rest.  Args
+            and Kargs are the equivalent functions for the constructor
+            arguments; we evaluate them here as we "expend" the ASCII
+            picture.
+            '''
             spec = []
             for arg in args:
                 spec.append((' +- ', ' |  ', '', arg))
             for arg in kargs:
                 spec.append((' +- ', ' |  ', arg, kargs[arg]))
+            # fix the last branch
             if spec:
                 spec[-1] = (' `- ', '    ', spec[-1][2], spec[-1][3])
             yield first + name + (' ' if name else '') + type_
-            for (a, b, c, f) in spec:
-                for line in f(a, b, c):
+            for (first_, rest_, name_, fun_) in spec:
+                for line in fun_(first_, rest_, name_):
                     yield rest + line
         return fun
     
@@ -574,11 +663,11 @@ class GraphStr(Visitor):
         return lambda first, rest, name: \
             [first + name + (' ' if name else '') + repr(value)]
     
-    def postprocess(self, f):
+    def postprocess(self, fun):
         '''
         Invoke the functions generated above and join the resulting lines.
         '''
-        return '\n'.join(f('', '', ''))
+        return '\n'.join(fun('', '', ''))
     
 
 class Proxy(object):
@@ -603,8 +692,11 @@ def make_proxy():
     be proxied later; the proxy itself can be place in the graph immediately.
     '''
     mutable_delegate = [None]
-    def setter(x):
-        mutable_delegate[0] = x
+    def setter(value):
+        '''
+        This is called later to "tie the knot".
+        '''
+        mutable_delegate[0] = value
     return (setter, Proxy(mutable_delegate))
 
 
@@ -613,10 +705,11 @@ def clone(node, args, kargs):
     The basic clone function that is supplied to `Clone`.
     '''
     try:
+        # pylint: disable-msg=W0142
         return type(node)(*args, **kargs)
-    except TypeError as e:
+    except TypeError as err:
         raise TypeError('Error cloning {0} with ({1}, {2}): {3}'.format(
-                        type(node), args, kargs, e))
+                        type(node), args, kargs, err))
 
 
 class Clone(Visitor):
@@ -624,26 +717,39 @@ class Clone(Visitor):
     Clone the graph, applying a particular clone function.
     '''
     
-    def __init__(self, clone=clone):
+    def __init__(self, clone_=clone):
         super(Clone, self).__init__()
-        self._clone = clone
+        self._clone = clone_
         self._proxies = {}
+        self._node = None
     
     def loop(self, node):
+        '''
+        Wrap loop nodes in proxies.
+        '''
         if node not in self._proxies:
             self._proxies[node] = make_proxy()
         return self._proxies[node][1]
     
     def node(self, node):
+        '''
+        Store the current node.
+        '''
         self._node = node
-        
+    
     def constructor(self, *args, **kargs):
+        '''
+        Clone the node, back-patching proxies as necessary.
+        '''
         node = self._clone(self._node, args, kargs)
         if self._node in self._proxies:
             self._proxies[self._node][0](node)
         return node
     
     def leaf(self, value):
+        '''
+        Don't clone leaf nodes.
+        '''
         return value
     
 
@@ -654,5 +760,4 @@ def post_clone(function):
     map on the graph).
     '''
     return compose(function, clone)
-
 

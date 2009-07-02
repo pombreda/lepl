@@ -1,7 +1,30 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Error handling (generating an error while parsing).
+
+This is not that complete or well thought through; it needs to be revised.
+'''
 
 from lepl.graph import postorder
 from lepl.node import Node
+
 
 def make_error(msg):
     '''
@@ -10,6 +33,9 @@ def make_error(msg):
     Invoke as ``** make_error('bad results: {results}')``, for example.
     '''
     def fun(stream_in, stream_out, results):
+        '''
+        Create the error node when results are available.
+        '''
         return Error(results,
             *syntax_error_args(msg, stream_in, stream_out, results))
     return fun
@@ -33,10 +59,8 @@ def syntax_error_args(msg, stream_in, stream_out, results):
     lineno = kargs[LINENO]
     offset = kargs[OFFSET]
     line = kargs[LINE]
-    try:
-        return (msg.format(**kargs), (filename, lineno, offset, line))
-    except:
-        return (msg, (filename, lineno, offset, line))
+    # pylint: disable-msg=W0142
+    return (msg.format(**kargs), (filename, lineno, offset, line))
 
 
 def syntax_error_kargs(stream_in, stream_out, results):
@@ -44,15 +68,15 @@ def syntax_error_kargs(stream_in, stream_out, results):
     Helper function for constructing format dictionary.
     '''
     try:
-        (lineno, offset, depth, line, filename) = stream_in.location()
+        (lineno, offset, _depth, line, filename) = stream_in.location()
         offset += 1 # appears to be 1-based?
-    except:
+    except AttributeError:
         filename = '<unknown> - use stream for better error reporting'
         lineno = -1
         offset = -1
         try:
             line = '...' + stream_in
-        except:
+        except TypeError:
             line = ['...'] + stream_in
     kargs = {STREAM_IN: stream_in, STREAM_OUT: stream_out, 
              RESULTS: results, FILENAME: filename, 
@@ -65,8 +89,10 @@ def raise_error(msg):
     As `make_error()`, but also raise the result.
     '''
     def fun(stream_in, stream_out, results):
-        error = make_error(msg)(stream_in, stream_out, results)
-        raise error
+        '''
+        Delay raising the error until called in the parser.
+        '''
+        raise make_error(msg)(stream_in, stream_out, results)
     return fun
 
 
@@ -79,7 +105,8 @@ class Error(Node, SyntaxError):
     '''
     
     def __init__(self, results, msg, location):
-        Node.__init__(self, results)
+        # pylint: disable-msg=W0142
+        Node.__init__(self, *results)
         SyntaxError.__init__(self, msg, location)
         
     def __str__(self):
@@ -92,8 +119,8 @@ def throw(node):
     Otherwise, the results are returned (invoke with ``>>``).
     '''
     for child in postorder(node, Node):
-        if isinstance(node, Exception):
-            raise node
+        if isinstance(child, Exception):
+            raise child
     return node
         
 

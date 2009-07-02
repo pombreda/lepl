@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -19,7 +19,7 @@
 '''
 Manage resources.
 
-We can attempt to control resource consumption by closing generators - the 
+We can attempt to control resource consumption by closing generators - the
 problem is which generators to close?
 
 At first it seems that the answer is going to be connected to tree traversal,
@@ -52,9 +52,9 @@ from heapq import heappushpop, heappop, heappush
 from weakref import ref, WeakKeyDictionary
 
 from lepl.monitor import MonitorInterface
-from lepl.support import LogMixin
 
 
+# pylint: disable-msg=C0103
 def GeneratorManager(queue_len):
     '''
     A 'Monitor' (implements `MonitorInterface`, can be supplied
@@ -86,6 +86,7 @@ class _GeneratorManager(MonitorInterface):
         self.__queue = []
         self.__queue_len = queue_len
         self.__known = WeakKeyDictionary() # map from generator to ref
+        self.epoch = 0
         
     def next_iteration(self, epoch, value, exception, stack):
         '''
@@ -203,10 +204,16 @@ class GeneratorRef(object):
         return self.__hash
     
     def pop(self, epoch):
+        '''
+        When no longer used, safe epoch and decrement count.
+        '''
         self.__last_known_epoch = epoch
         self.__count -= 1
         
     def push(self):
+        '''
+        Added to stack, so increment count.
+        '''
         self.__count += 1
         
     def reusable(self, generator):
@@ -215,21 +222,28 @@ class GeneratorRef(object):
         '''
         wrapped = self.__wrapper()
         if not wrapped:
-            assert self.__count == 0, 'GCed but still on stack?! {0}'.format(self.__describe)
+            assert self.__count == 0, \
+                'GCed but still on stack?! {0}'.format(self.__describe)
             return False
         else:
-            assert wrapped is generator, 'Hash collision? {0}/{1}'.format(generator, wrapped)
+            assert wrapped is generator, \
+                'Hash collision? {0}/{1}'.format(generator, wrapped)
             return True
     
     def deletable(self, epoch):
+        '''
+        Check we can delete the wrapper.
+        '''
         if not self.__wrapper():
-            assert self.__count == 0, 'GCed but still on stack?! {0}'.format(self.__describe)
+            assert self.__count == 0, \
+                'GCed but still on stack?! {0}'.format(self.__describe)
             # already disposed by system
             self.gced = True
             return True
         else:
             # not on stack and ordering in queue was correct
-            if self.__count == 0 and self.order_epoch == self.__last_known_epoch:
+            if self.__count == 0 \
+                    and self.order_epoch == self.__last_known_epoch:
                 return True
             # still on stack, or ordering was incorrect
             else:
@@ -239,6 +253,9 @@ class GeneratorRef(object):
                 return False
             
     def close(self):
+        '''
+        This terminates the enclosed generator.
+        '''
         generator = self.__wrapper()
         if generator:
             generator.close()

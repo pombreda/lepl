@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -22,8 +22,7 @@ converted to strings using str().
 '''
 
 from lepl.regexp.core \
-    import BaseAlphabet, Character, Sequence, Choice, Repeat, Option, \
-    Regexp, Labelled
+    import BaseAlphabet, Character, Sequence, Choice, Repeat, Option
 from lepl.config import Configuration
 
 
@@ -33,22 +32,20 @@ class StrAlphabet(BaseAlphabet):
     An alphabet for unicode strings.
     '''
     
-    def __init__(self, min, max, escape='\\', escaped='[]*()-?.+\\^$|'):
-        super(StrAlphabet, self).__init__(min, max)
-        self._escape = escape if escape else ''
-        self._escaped = escaped if escaped else []
+    # pylint: disable-msg=E1002
+    # (pylint bug?  this chains back to a new style abc)
+    def __init__(self, min_, max_, escape='\\', escaped='[]*()-?.+\\^$|'):
+        super(StrAlphabet, self).__init__(min_, max_)
+        self.escape = escape if escape else ''
+        self.escaped = escaped if escaped else []
         self.__parser = make_str_parser(self)
     
-    def _escape_text(self, text):
+    def __escape_char(self, char):
         '''
-        Escape characters in the text (ie return a suitable expression to
-        match the given text as a literal value).
+        Escape a character if necessary.
         '''
-        return ''.join(self._escape_char(x) for x in text)
-    
-    def _escape_char(self, char):
-        if self._escape is not None and str(char) in self._escaped:
-            return self._escape + str(char)
+        if self.escape is not None and str(char) in self.escaped:
+            return self.escape + str(char)
         else:
             return str(char)
     
@@ -60,7 +57,7 @@ class StrAlphabet(BaseAlphabet):
         ranges = []
         if len(intervals) == 1:
             if intervals[0][0] == intervals[0][1]:
-                return self._escape_char(intervals[0][0])
+                return self.__escape_char(intervals[0][0])
             elif intervals[0][0] == self.min and intervals[0][1] == self.max:
                 return '.'
         if len(intervals) > 1 and intervals[0][0] == self.min:
@@ -68,16 +65,20 @@ class StrAlphabet(BaseAlphabet):
             hat = '^'
         else:
             hat = ''
+        # pylint: disable-msg=C0103
+        # (sorry. but i use this (a, b) convention throughout the regexp lib) 
         for (a, b) in intervals:
             if a == b:
-                ranges.append(self._escape_char(a))
+                ranges.append(self.__escape_char(a))
             else:
                 ranges.append('{0!s}-{1!s}'.format(
-                                self._escape_char(a), self._escape_char(b)))
+                                self.__escape_char(a), self.__escape_char(b)))
         return '[{0}{1}]'.format(hat, self.join(ranges))
     
     def fmt_sequence(self, children):
         '''
+        Generate a string representation of a sequence.
+        
         This must fully describe the data in the children (it is used to
         hash the data).
         '''
@@ -85,17 +86,21 @@ class StrAlphabet(BaseAlphabet):
     
     def fmt_repeat(self, children):
         '''
+        Generate a string representation of a repetition.
+        
         This must fully describe the data in the children (it is used to
         hash the data).
         '''
-        s = self.fmt_sequence(children)
+        string = self.fmt_sequence(children)
         if len(children) == 1 and type(children[0]) in (Character, Choice):
-            return s + '*'
+            return string + '*'
         else:
-            return '({0})*'.format(s)
+            return '({0})*'.format(string)
 
     def fmt_choice(self, children):
         '''
+        Generate a string representation of a choice.
+        
         This must fully describe the data in the children (it is used to
         hash the data).
         '''
@@ -104,16 +109,21 @@ class StrAlphabet(BaseAlphabet):
 
     def fmt_option(self, children):
         '''
+        Generate a string representation of an option.
+        
         This must fully describe the data in the children (it is used to
         hash the data).
         '''
-        s = self.fmt_sequence(children)
+        string = self.fmt_sequence(children)
         if len(children) == 1 and type(children[0]) in (Character, Choice):
-            return s + '?'
+            return string + '?'
         else:
-            return '({0})?'.format(s)
+            return '({0})?'.format(string)
         
     def join(self, chars):
+        '''
+        Join characters together.
+        '''
         return ''.join(chars)
     
     def from_char(self, char):
@@ -156,7 +166,8 @@ def make_str_parser(alphabet):
     '''
     
     # Avoid dependency loops
-    from lepl.matchers import Drop, Any, Lookahead, AnyBut, Literal, Delayed, Eos
+    from lepl.matchers \
+        import Drop, Any, Lookahead, AnyBut, Literal, Delayed, Eos
     
     dup = lambda x: (alphabet.from_char(x), alphabet.from_char(x))
     tup = lambda x: (alphabet.from_char(x[0]), alphabet.from_char(x[1]))
@@ -172,19 +183,19 @@ def make_str_parser(alphabet):
     
     # these two definitions enforce the conditions above, providing only
     # special characters appear as literals in the grammar
-    escaped  = Drop(alphabet._escape) + Any(alphabet._escaped)
-    raw      = ~Lookahead(alphabet._escape) + AnyBut(alphabet._escaped)
+    escaped  = Drop(alphabet.escape) + Any(alphabet.escaped)
+    raw      = ~Lookahead(alphabet.escape) + AnyBut(alphabet.escaped)
     
     single   = escaped | raw
     
-    any      = Literal('.')                                     >> dot
+    any_     = Literal('.')                                     >> dot
     letter   = single                                           >> dup
     pair     = single & Drop('-') & single                      > tup
     
     interval = pair | letter
     brackets = Drop('[') & interval[1:] & Drop(']')
     inverted = Drop('[^') & interval[1:] & Drop(']')            >= invert      
-    char     = inverted | brackets | letter | any               > character
+    char     = inverted | brackets | letter | any_              > character
 
     item     = Delayed()
     
@@ -201,6 +212,5 @@ def make_str_parser(alphabet):
 
     # Empty config here avoids loops if the default config includes
     # references to alphabets
-    parser = expr.string_parser(config=Configuration())
-    return lambda text: parser(text)
+    return expr.string_parser(config=Configuration())
 

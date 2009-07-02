@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -51,19 +51,19 @@ from the second layer.
 '''
 
 from abc import ABCMeta, abstractmethod
-from bisect import bisect_left
 from collections import deque
 from itertools import chain
-from traceback import format_exc
 
 from lepl.node import Node
 from lepl.regexp.interval import Character, TaggedFragments, IntervalMap
 from lepl.support import LogMixin
 
 
+# pylint: disable-msg=C0103
 # Python 2.6
 #class Alphabet(metaclass=ABCMeta):
 Alphabet = ABCMeta('Alphabet', (object, ), {})
+
 
 class BaseAlphabet(Alphabet):
 
@@ -86,9 +86,9 @@ class BaseAlphabet(Alphabet):
     underscore).
     '''
     
-    def __init__(self, min, max):
-        self.__min = min
-        self.__max = max
+    def __init__(self, min_, max_):
+        self.__min = min_
+        self.__max = max_
     
     @property
     def min(self):
@@ -191,12 +191,16 @@ class Sequence(Node):
     '''
     
     def __init__(self, children, alphabet):
+        # pylint: disable-msg=W0142
         super(Sequence, self).__init__(*children)
         self.alphabet = alphabet
         self.state = None
         self.__str = self._build_str()
         
     def _build_str(self):
+        '''
+        Construct a string representation of self.
+        '''
         return self.alphabet.fmt_sequence(self)
         
     def __str__(self):
@@ -213,9 +217,9 @@ class Sequence(Node):
             src = before
             last = self[-1]
             for child in self:
-               dest = after if child is last else graph.new_node()
-               child.build(graph, src, dest)
-               src = dest
+                dest = after if child is last else graph.new_node()
+                child.build(graph, src, dest)
+                src = dest
         else:
             graph.connect(before, after)
 
@@ -226,6 +230,9 @@ class Option(Sequence):
     '''
     
     def _build_str(self):
+        '''
+        Construct a string representation of self.
+        '''
         return self.alphabet.fmt_option(self)
     
     def build(self, graph, before, after):
@@ -245,6 +252,9 @@ class Empty(Sequence):
         super(Empty, self).__init__([], alphabet)
     
     def _build_str(self):
+        '''
+        Construct a string representation of self.
+        '''
         return self.alphabet.fmt_sequence([])
     
     def build(self, graph, before, after):
@@ -260,6 +270,9 @@ class Repeat(Sequence):
     '''
     
     def _build_str(self):
+        '''
+        Construct a string representation of self.
+        '''
         return self.alphabet.fmt_repeat(self)            
     
     def build(self, graph, before, after):
@@ -277,6 +290,9 @@ class Choice(Sequence):
     '''
     
     def _build_str(self):
+        '''
+        Construct a string representation of self.
+        '''
         return self.alphabet.fmt_choice(self)
     
     def build(self, graph, before, after):
@@ -306,11 +322,12 @@ class Labelled(Sequence):
         super(Labelled, self).__init__(children, alphabet)
         self.label = label
         
-    def build(self, graph, before):
+    def build(self, graph, before, _after=None):
         '''
         A sequence, but with an extra final empty transition to force
         any loops before termination.
         '''
+        assert not _after
         after = graph.new_node()
         final = graph.new_node()
         super(Labelled, self).build(graph, before, after)
@@ -319,6 +336,9 @@ class Labelled(Sequence):
         
 
 class RegexpError(Exception):
+    '''
+    An error associated with (problems in) the regexp implementation.
+    '''
     pass
 
 
@@ -333,13 +353,18 @@ class Regexp(Choice):
         super(Regexp, self).__init__(children, alphabet)
         
     def _build_str(self):
+        '''
+        Construct a string representation of self.
+        '''
         return self.alphabet.fmt_sequence(self)
 
-    def build(self, graph):
+    def build(self, graph, _before=None, _after=None):
         '''
         Each Labelled is an independent sequence.  We use empty transitions 
         to order the choices.
         '''
+        assert not _before
+        assert not _after
         if self:
             before = graph.new_node()
             last = self[-1]
@@ -370,6 +395,9 @@ class Regexp(Choice):
     
     @staticmethod
     def _coerce(regexp, alphabet):
+        '''
+        Coerce to a regexp.
+        '''
         if isinstance(regexp, str):
             coerced = alphabet.parse(regexp)
             if not coerced:
@@ -389,6 +417,9 @@ class Regexp(Choice):
     
     @staticmethod
     def multiple(alphabet, regexps):
+        '''
+        Generate an instance for several expressions.
+        '''
         return Regexp([Labelled(label,  Regexp._coerce(regexp, alphabet), 
                                 alphabet) for (label, regexp) in regexps], 
                       alphabet)
@@ -408,12 +439,18 @@ class BaseGraph(LogMixin):
         self._terminals = {} # node to label
     
     def terminate(self, node, labels):
+        '''
+        Indicate that the node terminates with the given labels.
+        '''
         assert node < self._next_node
         if node not in self._terminals:
             self._terminals[node] = set()
         self._terminals[node].update(labels)
     
     def new_node(self):
+        '''
+        Get a new node.
+        '''
         node = self._next_node
         self._next_node += 1
         return node
@@ -462,6 +499,9 @@ class NfaGraph(BaseGraph):
         self._empty_transitions = {} # map from source to set(dest)
     
     def new_node(self):
+        '''
+        Get a new (unconnected) node.
+        '''
         node = super(NfaGraph, self).new_node()
         self._empty_transitions[node] = set()
         return node
@@ -520,7 +560,8 @@ class NfaGraph(BaseGraph):
                 edges.append('{0}:{1}'.format(edge, dest))
             for dest in self.empty_transitions(node):
                 edges.append(str(dest))
-            label = '' if self.terminal(node) is None else (' ' + self.terminal(node))
+            label = '' if self.terminal(node) is None \
+                       else (' ' + self.terminal(node))
             lines.append('{0}{1} {2}'.format(node, label, ';'.join(edges)))
         return ', '.join(lines)
 
@@ -554,18 +595,18 @@ class NfaCompiler(LogMixin):
         for src in self.__graph:
             # construct an interval map of possible destinations and terminals
             # given a character
-            fragments = TaggedFragments(self.__alphabet) # interval to [(dest, terminal)]
+            fragments = TaggedFragments(self.__alphabet)
             for (dest, char) in self.__graph.transitions(src):
                 fragments.append(char, (dest, self.__graph.terminal(dest)))
-            map = IntervalMap()
+            map_ = IntervalMap()
             for (interval, dts) in fragments:
-                map[interval] = dts
+                map_[interval] = dts
             # collect empty transitions
             empties = [(dest, self.__graph.terminal(dest))
                        # ordering here is reverse of what is required, which
                        # is ok because we use empties[-1] below
                        for dest in sorted(self.__graph.empty_transitions(src))]
-            self.__table[src] = (map, empties)
+            self.__table[src] = (map_, empties)
     
     def matcher(self, stream):
         '''
@@ -574,7 +615,7 @@ class NfaCompiler(LogMixin):
         The stack holds the current state, which is consumed from left to
         right.  The state is:
         
-          - map - a map from character to [(dest state, terminals)]
+          - map_ - a map from character to [(dest state, terminals)]
 
           - matched - the [(dest state, terminals)] generated by the map for
             a given character
@@ -585,25 +626,25 @@ class NfaCompiler(LogMixin):
 
           - stream - the current stream
 
-        map and matched are not both necessary (they are exclusive), but it 
+        map_ and matched are not both necessary (they are exclusive), but it 
         simplifies the algorithm to separate them.
         '''
         self._debug(str(self.__table))
         stack = deque()
-        (map, empties) = self.__table[0]
-        stack.append((map, None, empties, [], stream))
+        (map_, empties) = self.__table[0]
+        stack.append((map_, None, empties, [], stream))
         while stack:
             #self._debug(str(stack))
-            (map, matched, empties, match, stream) = stack.pop()
-            if not map and not matched and not empties:
+            (map_, matched, empties, match, stream) = stack.pop()
+            if not map_ and not matched and not empties:
                 # if we have no more transitions, drop
                 pass
-            elif map:
+            elif map_:
                 # re-add empties with old match
                 stack.append((None, [], empties, match, stream))
                 # and try matching a character
                 if stream:
-                    matched = map[stream[0]]
+                    matched = map_[stream[0]]
                     if matched:
                         stack.append((None, matched, None,
                                       match + [stream[0]], stream[1:]))
@@ -611,10 +652,10 @@ class NfaCompiler(LogMixin):
                 (dest, terminal) = matched[-1]
                 # add back reduced matched
                 if len(matched) > 1: # avoid discard iteration
-                    stack.append((map, matched[:-1], empties, match, stream))
+                    stack.append((map_, matched[:-1], empties, match, stream))
                # and expand this destination
-                (map, empties) = self.__table[dest]
-                stack.append((map, None, empties, match, stream))
+                (map_, empties) = self.__table[dest]
+                stack.append((map_, None, empties, match, stream))
                 # this doesn't happen with current nfa
                 if terminal:
                     yield (terminal, self.__alphabet.join(match), stream)
@@ -623,10 +664,10 @@ class NfaCompiler(LogMixin):
                 (dest, terminal) = empties[-1]
                 # add back reduced empties
                 if len(empties) > 1: # avoid discard iteration
-                    stack.append((map, matched, empties[:-1], match, stream))
+                    stack.append((map_, matched, empties[:-1], match, stream))
                 # and expand this destination
-                (map, empties) = self.__table[dest]
-                stack.append((map, None, empties, match, stream))
+                (map_, empties) = self.__table[dest]
+                stack.append((map_, None, empties, match, stream))
                 if terminal:
                     yield (terminal, self.__alphabet.join(match), stream)
 
@@ -669,7 +710,8 @@ class DfaGraph(BaseGraph):
             nodes = [n for n in self.nfa_nodes(node)]
             edges = ' ' + ';'.join(edges) if edges else ''
             labels = list(self.terminals(node))
-            labels = ' ' + '/'.join(str(label) for label in labels) if labels else ''
+            labels = ' ' + '/'.join(str(label) for label in labels) \
+                     if labels else ''
             lines.append('{0} {1}{2}{3}'.format(node, nodes, edges, labels))
         return ', '.join(lines)
 
@@ -705,7 +747,7 @@ class NfaToDfa(LogMixin):
             (src, nfa_nodes, terminals) = stack.pop()
             self.dfa.terminate(src, terminals)
             fragments = self.__fragment_transitions(nfa_nodes)
-            groups = self.__group_fragments(nfa_nodes, fragments)
+            groups = self.__group_fragments(fragments)
             self.__add_groups(src, groups, stack)
     
     def __fragment_transitions(self, nfa_nodes):
@@ -722,14 +764,15 @@ class NfaToDfa(LogMixin):
                 fragments.append(edge, (nodes, list(terminals)))
         return fragments
     
-    def __group_fragments(self, nfa_nodes, fragments):
+    def __group_fragments(self, fragments):
         '''
         For each fragment, we for the complete set of possible destinations
         and associated terminals.  Since it is possible that more than one 
         fragment will lead to the same set of target nodes we group all
         related fragments together.
         '''
-        groups = {} # map from set(nfa nodes) to (set(intervals), set(terminals))
+        # map from set(nfa nodes) to (set(intervals), set(terminals))
+        groups = {} 
         for (interval, nts) in fragments:
             if len(nts) > 1:
                 # collect all nodes and terminals for fragment
@@ -775,6 +818,9 @@ class DfaCompiler(object):
         self.__build_table()
         
     def __build_table(self):
+        '''
+        Construct a transition table.
+        '''
         for src in self.__graph:
             row = IntervalMap()
             for (dest, char) in self.__graph.transitions(src):
@@ -784,6 +830,9 @@ class DfaCompiler(object):
             self.__table[src] = row
             
     def match(self, stream_in):
+        '''
+        Match against the stream.
+        '''
         try:
             (terminals, size, stream_out) = self.size_match(stream_in)
             return (terminals, stream_in[0:size], stream_out)
@@ -791,13 +840,17 @@ class DfaCompiler(object):
             return None
         
     def size_match(self, stream):
+        '''
+        Match against the stream, but return the length of the match.
+        '''
         state = 0
         size = 0
         longest = (self.__empty_labels, 0, stream) \
                     if self.__empty_labels else None
         while stream:
             future = self.__table[state][stream[0]]
-            if future is None: break
+            if future is None:
+                break
             # update state
             (state, terminals) = future
             size += 1
@@ -806,6 +859,7 @@ class DfaCompiler(object):
             stream = stream[1:]
             # match is strictly increasing, so storing the length is enough
             # (no need to make an expensive copy)
-            if terminals: longest = (terminals, size, stream)
+            if terminals:
+                longest = (terminals, size, stream)
         return longest
     

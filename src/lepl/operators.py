@@ -128,14 +128,17 @@ class Separator(Override):
         then any previous defined separator is effectively removed.
         '''
         # Handle circular dependencies
-        from lepl.matchers import Regexp, And, Repeat, coerce
+        from lepl.matchers import Regexp, And, Repeat, coerce_
         if separator is None:
             and_ = And
             repeat = Repeat
         else:
-            separator = coerce(separator, Regexp)
+            separator = coerce_(separator, Regexp)
             and_ = lambda a, b: And(a, separator, b)
             def repeat(m, st=0, sp=None, d=0, s=None, a=False):
+                '''
+                Wrap `Repeat` to adapt the separator.
+                '''
                 if s is None:
                     s = separator
                 elif not a:

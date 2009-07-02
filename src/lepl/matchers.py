@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -31,6 +31,10 @@ the same syntax (capitalized names) for both to keep the API uniform.
 
 For more background, please see the `manual <../index.html>`_.
 '''
+
+
+# for some reason (parsing of yields?) pyulint cannot process this file
+
 
 from abc import ABCMeta
 from collections import deque
@@ -358,10 +362,10 @@ class _BaseSearch(OperatorMatcher):
         with 'rest' (if undefined, 'first' is used).
         '''
         super(_BaseSearch, self).__init__()
-        self._arg(first=coerce(first))
+        self._arg(first=coerce_(first))
         self._arg(start=start)
         self._arg(stop=stop)
-        self._karg(rest=coerce(first if rest is None else rest))
+        self._karg(rest=coerce_(first if rest is None else rest))
         
     def _cleanup(self, queue):
         for (count, acc, stream, generator) in queue:
@@ -436,7 +440,7 @@ class OrderByResultCount(OperatorMatcher):
     
     def __init__(self, matcher, ascending=True):
         super(OrderByResultCount, self).__init__()
-        self._arg(matcher=coerce(matcher, Literal))
+        self._arg(matcher=coerce_(matcher, Literal))
         self._karg(ascending=ascending)
         
     @tagged
@@ -462,7 +466,7 @@ class _BaseCombiner(Transformable):
     
     def __init__(self, *matchers):
         super(_BaseCombiner, self).__init__()
-        self._args(matchers=lmap(coerce, matchers))
+        self._args(matchers=lmap(coerce_, matchers))
         
     def compose(self, transform):
         '''
@@ -640,7 +644,7 @@ class Literal(Transformable):
         return copy
         
         
-def coerce(arg, function=Literal):
+def coerce_(arg, function=Literal):
     '''
     Many arguments can take a string which is implicitly converted (via this
     function) to a literal (or similar).
@@ -689,7 +693,7 @@ class Lookahead(OperatorMatcher):
         a string it is coerced to a literal match.
         '''
         super(Lookahead, self).__init__()
-        self._arg(matcher=coerce(matcher))
+        self._arg(matcher=coerce_(matcher))
         self._karg(negated=negated)
         if negated:
             self.tag('~')
@@ -726,7 +730,7 @@ class Transform(Transformable):
 
     def __init__(self, matcher, function):
         super(Transform, self).__init__(function)
-        self._arg(matcher=coerce(matcher))
+        self._arg(matcher=coerce_(matcher))
         # it's ok that this overwrites the same thing from Transformable
         # (Transformable cannot have an argument because it is subclass to
         # matcher without explicit functions)
@@ -818,7 +822,7 @@ class Delayed(OperatorMatcher):
         if self.matcher:
             raise ValueError('Delayed matcher already bound.')
         else:
-            self.matcher = coerce(matcher)
+            self.matcher = coerce_(matcher)
             return self
          
 
@@ -917,11 +921,11 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
     results are joined with `Add`. If ``separator`` is given then each
     repetition is separated by that matcher.
     '''
-    first = coerce(matcher)
+    first = coerce_(matcher)
     if separator is None:
         rest = first
     else:
-        rest = And(coerce(separator, Regexp), first)
+        rest = And(coerce_(separator, Regexp), first)
     if start is None: start = 0
     assert_type('The start index for Repeat or [...]', start, int)
     assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
@@ -1085,21 +1089,21 @@ def AnyBut(exclude=None):
     The argument should be a list of tokens (or a string of suitable 
     characters) to exclude, or a matcher.  If omitted all tokens are accepted.
     '''
-    return ~Lookahead(coerce(exclude, Any)) & Any().tag('AnyBut')
+    return ~Lookahead(coerce_(exclude, Any)) & Any().tag('AnyBut')
             
 
 def Optional(matcher):
     '''
     Match zero or one instances of a matcher (**[0:1]**).
     '''
-    return coerce(matcher)[0:1]
+    return coerce_(matcher)[0:1]
 
 
 def Star(matcher):
     '''
     Match zero or more instances of a matcher (**[0:]**)
     '''
-    return coerce(matcher)[:]
+    return coerce_(matcher)[:]
 
 
 ZeroOrMore = Star
@@ -1112,7 +1116,7 @@ def Plus(matcher):
     '''
     Match one or more instances of a matcher (**[1:]**)
     ''' 
-    return coerce(matcher)[1:]
+    return coerce_(matcher)[1:]
 
 
 OneOrMore = Plus
@@ -1188,7 +1192,7 @@ Eos = Eof
 
 def Identity(matcher):
     '''Functions identically to the matcher given as an argument.'''
-    return coerce(matcher)
+    return coerce_(matcher)
 
 
 def Newline():
@@ -1296,8 +1300,8 @@ def Word(chars=AnyBut(Whitespace()), body=None):
      case letter, for example, while ``Word(AnyBut(Space()))`` (the default)
      matches any sequence of non-space characters. 
      '''
-     chars = coerce(chars, Any)
-     body = chars if body is None else coerce(body, Any)
+     chars = coerce_(chars, Any)
+     body = chars if body is None else coerce_(body, Any)
      return chars + body[0:,...]
  
  

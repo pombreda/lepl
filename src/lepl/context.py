@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -27,6 +27,9 @@ from threading import local
 
 
 class ContextError(Exception):
+    '''
+    Exception raised on problems with context.
+    '''
     pass
 
 
@@ -42,9 +45,15 @@ class NamespaceMap(local):
         super(NamespaceMap, self).__init__()
         self.__map = {}
         
-    def get(self, name, namespace):
+    def get(self, name, default=None):
+        '''
+        This gets the namespace associated with the name, creating a new
+        namespace from the second arguent if necessary.
+        '''
+        from lepl.operators import DefaultNamespace
         if name not in self.__map:
-            self.__map[name] = DefaultNamespace() if namespace is None else namespace()
+            self.__map[name] = DefaultNamespace() if default is None \
+                                                  else default()
         return self.__map[name] 
 
 
@@ -56,12 +65,13 @@ class Namespace(object):
     def __init__(self, base=None):
         self.__stack = deque([{} if base is None else base])
         
-    def push(self, extra={}):
+    def push(self, extra=None):
         '''
         Copy the current state to the stack and modify it.  Values in extra
         that map to None are ignored.
         '''
         self.__stack.append(dict(self.current()))
+        extra = {} if extra is None else extra
         for name in extra:
             self.set_if_not_none(name, extra[name])
         
@@ -78,8 +88,8 @@ class Namespace(object):
         '''
         self.push()
         return self
-        
-    def __exit__(self, *args):
+       
+    def __exit__(self, *_args):
         '''
         Restore the previous state from the stack on leaving the context.
         '''
@@ -127,19 +137,24 @@ class OnceOnlyNamespace(Namespace):
         self.__once_only.add(name)
         
     def set(self, name, value):
+        '''
+        Set a value (if it has not already been set).
+        '''
         if name in self.__once_only and self.get(name, None) is not None:
             raise ContextError('{0} can only be set once'.format(name))
         else:
             super(OnceOnlyNamespace, self).set(name, value)
         
 
+# pylint: disable-msg=W0105
 __GLOBAL = None
 '''
 A map from name to the appropriate global (for this thread) singleton.
 '''
 
 
-def Global(name, namespace):
+# pylint: disable-msg=C0103, W0603
+def Global(name, default=None):
     '''
     Global (per-thread) binding from operator name to implementation, by
     namespace.
@@ -149,11 +164,11 @@ def Global(name, namespace):
     # Delay creation to handle circular dependencies.
     LOG = getLogger('lepl.context.Global')
     assert name
-    LOG.debug('Getting {0}/{1}'.format(name, namespace))
+    LOG.debug('Getting {0}/{1}'.format(name, default))
     global __GLOBAL
     if __GLOBAL is None:
         __GLOBAL = NamespaceMap()
-    return __GLOBAL.get(name, namespace)
+    return __GLOBAL.get(name, default)
 
 
 class NamespaceMixin(object):
@@ -167,6 +182,9 @@ class NamespaceMixin(object):
         self.__namespace = namespace
         
     def _lookup(self, name, default=None):
+        '''
+        Retrieve the named namespace from the global (per thread) store.
+        '''
         return Global(self.__name, self.__namespace).get(name, default)
 
 
@@ -186,7 +204,7 @@ class Scope(object):
         '''
         Global(self.__name, self.__namespace).push(self.__frame)
         
-    def __exit__(self, *args):
+    def __exit__(self, *_args):
         '''
         On leaving the context, return to previous definition.
         '''
