@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -37,6 +37,9 @@ class Character(object):
     intervals as necessary.
     '''
     
+    # pylint: disable-msg=C0103 
+    # (use (a,b) variables consistently)
+    
     def __init__(self, intervals, alphabet):
         self.alphabet = alphabet
         self.__intervals = deque()
@@ -44,14 +47,21 @@ class Character(object):
             self.__append(interval)
         self.__intervals = list(self.__intervals)
         self.__str = alphabet.fmt_intervals(self.__intervals)
-        self.__build_index()
+        self.__index = []
         self.state = None
+        self.__build_index()
         
     def append(self, interval):
+        '''
+        Add an interval to the range.
+        '''
         self.__append(interval)
         self.__build_index()
         
     def __build_index(self):
+        '''
+        Pre-construct the index used for bisection.
+        '''
         self.__index = [interval[1] for interval in self.__intervals]
         
     def __append(self, interval):
@@ -61,10 +71,13 @@ class Character(object):
         This maintains self.__intervals in the normalized form described above.
         '''
         (a1, b1) = interval
-        if b1 < a1: (a1, b1) = (b1, a1)
+        if b1 < a1:
+            (a1, b1) = (b1, a1)
         intervals = deque()
         done = False
         while self.__intervals:
+            # pylint: disable-msg=E1103
+            # (pylint fails to infer type)
             (a0, b0) = self.__intervals.popleft()
             if a0 <= a1:
                 if b0 < a1 and b0 != self.alphabet.before(a1):
@@ -112,6 +125,9 @@ class Character(object):
         return self.__str
     
     def len(self):
+        '''
+        The number of intervals in the range.
+        '''
         return len(self.__intervals)
     
     def __getitem__(self, index):
@@ -135,10 +151,9 @@ class Character(object):
         return hash(self.__str)
     
     def __eq__(self, other):
-        try:
-            return self.__str == other.__str
-        except:
-            return False
+        # pylint: disable-msg=W0212
+        # (test for same class)
+        return isinstance(other, Character) and self.__str == other.__str
         
     def build(self, graph, src, dest):
         '''
@@ -159,6 +174,9 @@ class Fragments(object):
     Used internally to combine transitions.
     '''
     
+    # pylint: disable-msg=C0103 
+    # (use (a,b) variables consistently)
+    
     def __init__(self, alphabet, characters=None):
         self.alphabet = alphabet
         self.__intervals = deque()
@@ -167,6 +185,9 @@ class Fragments(object):
                 self.append(character)
                 
     def append(self, character):
+        '''
+        Add a character to the intervals.
+        '''
         assert type(character) is Character
         for interval in character:
             self.__append(interval)
@@ -176,7 +197,8 @@ class Fragments(object):
         Add an interval to the existing intervals.
         '''
         (a1, b1) = interval
-        if b1 < a1: (a1, b1) = (b1, a1)
+        if b1 < a1:
+            (a1, b1) = (b1, a1)
         intervals = deque()
         alphabet = self.alphabet
         done = False
@@ -191,17 +213,25 @@ class Fragments(object):
                     # old interval starts before or with and ends after or with 
                     # new interval
                     # so we have one, two or three new intervals
-                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
-                    intervals.append((a1, b1)) # common to both
-                    if b1 < b0: intervals.append((alphabet.after(b1), b0)) # last part of old
+                    if a0 < a1:
+                         # first part of old
+                        intervals.append((a0, alphabet.before(a1)))
+                    # common to both
+                    intervals.append((a1, b1)) 
+                    if b1 < b0:
+                         # last part of old
+                        intervals.append((alphabet.after(b1), b0))
                     done = True
                     break
                 else:
                     # old interval starts before new, but partially overlaps
                     # so split old and continue
                     # (since it may overlap more intervals...)
-                    if a0 < a1: intervals.append((a0, alphabet.before(a1))) # first part of old
-                    intervals.append((a1, b0)) # common to both
+                    if a0 < a1:
+                        # first part of old
+                        intervals.append((a0, alphabet.before(a1)))
+                    # common to both 
+                    intervals.append((a1, b0)) 
                     a1 = alphabet.after(b0)
             else:
                 if b1 < a0:
@@ -215,8 +245,10 @@ class Fragments(object):
                     # interval
                     # so split and continue if extends (since last part may 
                     # overlap...)
-                    intervals.append((a1, alphabet.before(a0))) # first part of new
-                    intervals.append((a0, b0)) # old
+                    # first part of new
+                    intervals.append((a1, alphabet.before(a0))) 
+                    # overlap
+                    intervals.append((a0, b0)) 
                     if b1 > b0:
                         a1 = alphabet.after(b0)
                     else:
@@ -225,9 +257,12 @@ class Fragments(object):
                 else:
                     # new interval starts before old, but partially overlaps,
                     # split and slurp rest
-                    intervals.append((a1, alphabet.before(a0))) # first part of new
-                    intervals.append((a0, b1)) # overlap
-                    intervals.append((alphabet.after(b1), b0)) # last part of old
+                    # first part of new
+                    intervals.append((a1, alphabet.before(a0))) 
+                    # overlap
+                    intervals.append((a0, b1)) 
+                    # last part of old
+                    intervals.append((alphabet.after(b1), b0)) 
                     done = True
                     break
         if not done:
@@ -236,6 +271,9 @@ class Fragments(object):
         self.__intervals = intervals
         
     def len(self):
+        '''
+        The number of intervals contained.
+        '''
         return len(self.__intervals)
     
     def __getitem__(self, index):
@@ -255,7 +293,12 @@ class IntervalMap(dict):
     (1,2) and (2,3) together because both contain 2.
     '''
     
+    # pylint: disable-msg=C0103 
+    # (use (a,b) variables consistently)
+    
     def __init__(self):
+        super(IntervalMap, self).__init__()
+        self.__intervals = []
         # None is used as a flag to indicate that a new index is needed
         self.__index = None
         
@@ -265,6 +308,7 @@ class IntervalMap(dict):
         '''
         second = lambda x: x[1]
         self.__intervals = list(sorted(self.keys(), key=second))
+        # pylint: disable-msg=W0141
         self.__index = list(map(second, self.__intervals))
     
     def __setitem__(self, interval, value):
@@ -304,11 +348,17 @@ class TaggedFragments(object):
     on retrieval returns a list of all values associated with fragment. 
     '''
     
+    # pylint: disable-msg=C0103 
+    # (use (a,b) variables consistently)
+    
     def __init__(self, alphabet):
         self.alphabet = alphabet
         self.__intervals = deque()
                 
     def append(self, character, value):
+        '''
+        Add a range and tag.
+        '''
         assert type(character) is Character
         for interval in character:
             self.__append(interval, [value])
@@ -318,7 +368,8 @@ class TaggedFragments(object):
         Add an interval to the existing intervals.
         '''
         (a1, b1) = interval
-        if b1 < a1: (a1, b1) = (b1, a1)
+        if b1 < a1:
+            (a1, b1) = (b1, a1)
         intervals = deque()
         alphabet = self.alphabet
         done = False
@@ -333,17 +384,25 @@ class TaggedFragments(object):
                     # old interval starts before or with and ends after or with 
                     # new interval
                     # so we have one, two or three new intervals
-                    if a0 < a1: intervals.append(((a0, alphabet.before(a1)), v0)) # first part of old
-                    intervals.append(((a1, b1), v0+v1)) # common to both
-                    if b1 < b0: intervals.append(((alphabet.after(b1), b0), v0)) # last part of old
+                    if a0 < a1:
+                        # first part of old
+                        intervals.append(((a0, alphabet.before(a1)), v0))
+                    # common to both
+                    intervals.append(((a1, b1), v0+v1)) 
+                    if b1 < b0:
+                        # last part of old 
+                        intervals.append(((alphabet.after(b1), b0), v0)) 
                     done = True
                     break
                 else:
                     # old interval starts before new, but partially overlaps
                     # so split old and continue
                     # (since new may overlap more intervals...)
-                    if a0 < a1: intervals.append(((a0, alphabet.before(a1)), v0)) # first part of old
-                    intervals.append(((a1, b0), v0+v1)) # common to both
+                    if a0 < a1:
+                        # first part of old
+                        intervals.append(((a0, alphabet.before(a1)), v0))
+                    # common to both 
+                    intervals.append(((a1, b0), v0+v1)) 
                     a1 = alphabet.after(b0)
             else:
                 if b1 < a0:
@@ -357,8 +416,10 @@ class TaggedFragments(object):
                     # interval
                     # so split and continue if extends (since last part may 
                     # overlap...)
-                    intervals.append(((a1, alphabet.before(a0)), v1)) # first part of new
-                    intervals.append(((a0, b0), v0+v1)) # old
+                    # first part of new
+                    intervals.append(((a1, alphabet.before(a0)), v1))
+                    # old 
+                    intervals.append(((a0, b0), v0+v1)) 
                     if b1 > b0:
                         a1 = alphabet.after(b0)
                     else:
@@ -367,9 +428,12 @@ class TaggedFragments(object):
                 else:
                     # new interval starts before old, but partially overlaps,
                     # split and slurp rest
-                    intervals.append(((a1, alphabet.before(a0)), v1)) # first part of new
-                    intervals.append(((a0, b1), v0+v1)) # overlap
-                    intervals.append(((alphabet.after(b1), b0), v0)) # last part of old
+                    # first part of new
+                    intervals.append(((a1, alphabet.before(a0)), v1))
+                    # overlap 
+                    intervals.append(((a0, b1), v0+v1)) 
+                    # last part of old
+                    intervals.append(((alphabet.after(b1), b0), v0)) 
                     done = True
                     break
         if not done:
@@ -378,6 +442,9 @@ class TaggedFragments(object):
         self.__intervals = intervals
         
     def len(self):
+        '''
+        The number of intervals contained.
+        '''
         return len(self.__intervals)
     
     def __getitem__(self, index):

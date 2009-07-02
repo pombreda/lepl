@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -31,32 +31,38 @@ class BinaryAlphabet(StrAlphabet):
     An alphabet for binary strings.
     '''
     
+    # pylint: disable-msg=E1002
+    # (pylint bug?  this chains back to a new style abc)
     def __init__(self):
         super(BinaryAlphabet, self).__init__(0, 1)
     
-    def before(self, c): 
+    def before(self, char): 
         '''
         Must return the character before c in the alphabet.  Never called with
         min (assuming input data are in range).
         ''' 
-        return c-1
+        return char-1
     
-    def after(self, c): 
+    def after(self, char): 
         '''
         Must return the character after c in the alphabet.  Never called with
         max (assuming input data are in range).
         ''' 
-        return c+1
+        return char+1
     
-    def from_char(self, c):
-        c = int(c)
-        assert c in (0, 1)
-        return c
+    def from_char(self, char):
+        '''
+        Convert to 0 or 1.
+        '''
+        char = int(char)
+        assert char in (0, 1)
+        return char
 
 
 BINARY = BinaryAlphabet()
 
 
+# pylint: disable-msg=W0105, C0103
 __compiled_binary_parser = make_str_parser(BINARY)
 '''
 Cache the parser to allow efficient re-use.

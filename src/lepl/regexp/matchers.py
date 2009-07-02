@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -34,6 +34,8 @@ class BaseRegexp(Transformable):
     Common code for all matchers.
     '''
     
+    # pylint: disable-msg=E1101
+    # (using _arg to set attributes)
     def __init__(self, regexp, alphabet=None):
         super(BaseRegexp, self).__init__()
         self._arg(regexp=regexp)
@@ -41,14 +43,23 @@ class BaseRegexp(Transformable):
         self.tag(regexp)
         
     def compose(self, transform):
+        '''
+        Implement the Transformable interface.
+        '''
         return self.compose_transformation(transform.function)
     
     def compose_transformation(self, transformation):
+        '''
+        Create a new copy that combines both transformations.
+        '''
         copy = type(self)(self.regexp, self.alphabet)
         copy.function = self.function.compose(transformation)
         return copy
     
     def precompose_transformation(self, transformation):
+        '''
+        Like compose, but does the given transformation first.
+        '''
         copy = type(self)(self.regexp, self.alphabet)
         copy.function = self.function.precompose(transformation)
         return copy
@@ -74,8 +85,11 @@ class NfaRegexp(BaseRegexp):
 
     @tagged
     def _match(self, stream_in):
+        '''
+        Actually do the work of matching.
+        '''
         matches = self.__matcher(stream_in)
-        for (terminal, match, stream_out) in matches:
+        for (_terminal, match, stream_out) in matches:
             yield self.function([match], stream_in, stream_out)
 
         
@@ -97,8 +111,11 @@ class DfaRegexp(BaseRegexp):
 
     @tagged
     def _match(self, stream_in):
+        '''
+        Actually do the work of matching.
+        '''
         match = self.__matcher(stream_in)
         if match is not None:
-            (terminals, match, stream_out) = match
+            (_terminals, match, stream_out) = match
             yield self.function([match], stream_in, stream_out)
 
