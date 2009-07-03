@@ -1,13 +1,39 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Tests for the lepl.rewriters module.
+'''
+
 from unittest import TestCase
 
-from lepl import *
+from lepl import Any, Delayed, Configuration, compose_transforms, Optional, \
+    Node, Drop, optimize_or, And
 from lepl.graph import preorder
 from lepl.matchers import Transform
 from lepl.operators import Matcher
 from lepl.rewriters import DelayedClone
 
 
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0321
+# (dude this is just a test)
+
+    
 class DelayedCloneTest(TestCase):
     
     def assert_clone(self, matcher):
@@ -122,8 +148,6 @@ class ComposeTransformsTest(TestCase):
     def test_node(self):
         
         class Term(Node): pass
-        class Factor(Node): pass
-        class Expression(Node): pass
 
         number      = Any('1')                             > 'number'
         term        = number                               > Term
@@ -143,13 +167,13 @@ class OptimizeOrTest(TestCase):
         matcher = Delayed()
         matcher += matcher | Any()
         assert isinstance(matcher.matcher.matchers[0], Delayed)
-        p = matcher.string_parser(Configuration(rewriters=[optimize_or(True)]))
+        matcher.string_parser(Configuration(rewriters=[optimize_or(True)]))
         assert isinstance(matcher.matcher.matchers[0], Any)
         
     def test_liberal(self):
         matcher = Delayed()
         matcher += matcher | Any()
         assert isinstance(matcher.matcher.matchers[0], Delayed)
-        p = matcher.string_parser(Configuration(rewriters=[optimize_or(False)]))
+        matcher.string_parser(Configuration(rewriters=[optimize_or(False)]))
         assert isinstance(matcher.matcher.matchers[0], Any)
         

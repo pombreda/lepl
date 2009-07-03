@@ -1,10 +1,35 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Tests for the lepl.stream module.
+'''
+
 from random import choice
 from unittest import TestCase
 
 from lepl.stream import SimpleStream, SequenceByLine, SimpleGeneratorStream
 
 
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324
+# (dude this is just a test)
+
+    
 class StreamTest(TestCase):
     
     def test_single_line(self):
@@ -32,6 +57,7 @@ class StreamTest(TestCase):
         s1 = SequenceByLine.from_string('abc\npqs')
         assert s1[6] == 's', s1[6]
         try:
+            # pylint: disable-msg=W0104
             s1[7]
             assert False, 'expected error'
         except IndexError:
@@ -59,12 +85,12 @@ class SimpleStreamTester(object):
         self.__from_list = from_list
         
     def build(self, n):
-        l = [choice(self.__values) for i in range(n)]
+        l = [choice(self.__values) for _i in range(n)]
         s = self.__from_list(l)
         assert isinstance(s, SimpleStream)
         return (l, s)
     
-    def test_single_index(self, n=3, with_len=True):
+    def test_single_index(self, n=3):
         (l, s) = self.build(n)
         for i in range(n):
             assert l[i] == s[i]
@@ -86,7 +112,8 @@ class SimpleStreamTester(object):
         for i in range(n):
             (lo, so) = (l[i:], s[i:])
             while lo:
-                if with_len: assert len(lo) == len(so), str(lo) + '/' + str(so)
+                if with_len:
+                    assert len(lo) == len(so), str(lo) + '/' + str(so)
                 assert lo[0] == so[0]
                 (lo, so) = (lo[1:], so[1:])
             assert not so

@@ -1,14 +1,40 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Tests for the lepl.graph module.
+'''
+
 from unittest import TestCase
 
 
-from lepl.graph \
-    import ArgAsAttributeMixin, preorder, postorder, reset, ConstructorWalker, \
-           Clone, make_proxy, LEAF, leaves
+from lepl.graph import ArgAsAttributeMixin, preorder, postorder, reset, \
+    ConstructorWalker, Clone, make_proxy, LEAF, leaves
 from lepl.node import Node
 
 
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141
+# (dude this is just a test)
+
+    
 class SimpleNode(ArgAsAttributeMixin):
+    
+    # pylint: disable-msg=E1101
     
     def __init__(self, label, *nodes):
         super(SimpleNode, self).__init__()
@@ -128,8 +154,8 @@ class CloneTest(TestCase):
 class GenericOrderTest(TestCase):
     
     def test_preorder(self):
-        graph = [1, [11, [111, 112], 12]]
-        result = [node for node in preorder(graph, list) if isinstance(node, int)]
+        g = [1, [11, [111, 112], 12]]
+        result = [node for node in preorder(g, list) if isinstance(node, int)]
         assert result == [1, 11, 111, 112, 12], result
         
     def test_postorder(self):
@@ -138,8 +164,8 @@ class GenericOrderTest(TestCase):
         but these are leaf nodes, so postorder doesn't change anything (there's
         no difference between "before visiting" and "after visiting" a leaf). 
         '''
-        graph = [1, [11, [111, 112], 12]]
-        result = [node for node in postorder(graph, list) if isinstance(node, int)]
+        g = [1, [11, [111, 112], 12]]
+        result = [node for node in postorder(g, list) if isinstance(node, int)]
         assert result == [1, 11, 111, 112, 12], result
         
         

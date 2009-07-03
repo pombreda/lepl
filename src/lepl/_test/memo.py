@@ -1,11 +1,36 @@
 
-from logging import basicConfig, INFO, DEBUG
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Tests for the lepl.memo module.
+'''
+
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl import *
-from lepl.parser import string_parser, string_matcher
+from lepl import Configuration, RMemo, Delayed, Any, TraceResults, memoize, \
+    Optional, LMemo, string_matcher, Node, Literals, Eos
 
 
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321
+# (dude this is just a test)
+
+    
 class MemoTest(TestCase):
     
     def test_right(self):
@@ -109,10 +134,10 @@ class MemoTest(TestCase):
                'john and helen'
 #        text = 'every boy loves helen'
         count = 0
-        for meaning in p(text):
+        for _meaning in p(text):
             count += 1
             if count < 3:
-#                print(meaning[0][0])
+#                print(_meaning[0][0])
                 pass
 #        print(count)
         assert count == 392, count

@@ -1,23 +1,49 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Tests for the lepl.matchers module.
+'''
+
 from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.matchers import * 
+from lepl.matchers import Configuration, Any, Or, AnyBut, Newline, Literal, \
+    Eof, Integer, Word, Digit, Regexp, Commit, Space, Repeat, Delayed, \
+    OperatorMatcher, And, Lookahead
 from lepl.node import Node
-from lepl.parser import string_parser, tagged
-from lepl.support import LogMixin
+from lepl.parser import tagged
 
 
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141
+# (dude this is just a test)
+
+    
 class BaseTest(TestCase):
     
     def assert_direct(self, stream, match, target):
-        result = [x for (x, s) in match.match_string(stream, config=Configuration())]
+        result = [x for (x, _s) in match.match_string(stream, config=Configuration())]
         assert target == result, result
     
     def assert_list(self, stream, match, target):
         matcher = match.list_matcher()
 #        print(matcher.matcher)
-        result = [x for (x, s) in matcher(stream)]
+        result = [x for (x, _s) in matcher(stream)]
         assert target == result, result
     
 
@@ -39,7 +65,7 @@ class AndTest(BaseTest):
         
     def assert_join(self, stream, match, target):
         result = [''.join(map(str, l)) 
-                  for (l, s) in match.match_list(stream)]
+                  for (l, _s) in match.match_list(stream)]
         assert target == result, result
 
     def test_add(self):
@@ -112,7 +138,7 @@ class RepeatTest(TestCase):
         
     def assert_simple(self, stream, start, stop, step, target):
         result = [''.join(map(str, l)) 
-                  for (l, s) in Repeat(RangeMatch(), start, stop, step).match_list(stream)]
+                  for (l, _s) in Repeat(RangeMatch(), start, stop, step).match_list(stream)]
         assert target == result, result
         
     def test_mixin(self):
@@ -137,7 +163,7 @@ class RepeatTest(TestCase):
             pass
     
     def assert_mixin(self, match, stream, target):
-        result = [''.join(map(str, l)) for (l, s) in match.match_list(stream)]
+        result = [''.join(map(str, l)) for (l, _s) in match.match_list(stream)]
         assert target == result, result
        
     def test_separator(self):
@@ -151,7 +177,7 @@ class RepeatTest(TestCase):
         
     def assert_separator(self, stream, start, stop, step, target):
         result = [''.join(l) 
-                  for (l, s) in Repeat(Any('abc'), start, stop, step, Any(',')).match_string(stream)]
+                  for (l, _s) in Repeat(Any('abc'), start, stop, step, Any(',')).match_string(stream)]
         assert target == result, result
         
     def test_separator_mixin(self):
@@ -165,7 +191,7 @@ class RepeatTest(TestCase):
         self.assert_separator_mixin(abc[2:3:'b',','], 'a,b,c,a', ['a,b', 'a,b,c'])
 
     def assert_separator_mixin(self, matcher, stream, target):
-        result = [''.join(map(str, l)) for (l, s) in matcher.match_string(stream)]
+        result = [''.join(map(str, l)) for (l, _s) in matcher.match_string(stream)]
         assert target == result, result
     
 class RangeMatch(OperatorMatcher):

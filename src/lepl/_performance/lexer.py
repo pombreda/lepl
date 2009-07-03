@@ -1,6 +1,29 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Performance related tests.
+'''
+
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, W0614, W0401
+
+
 from __future__ import print_function
-from logging import basicConfig, DEBUG
 from math import sin, cos
 from operator import add, sub, mul, truediv
 
@@ -40,11 +63,11 @@ def lexer():
     float_  = Or(number                             >> float,
                  ~symbol('-') & number              >> (lambda x: -float(x)))
     
-    open    = ~symbol('(')
+    open_   = ~symbol('(')
     close   = ~symbol(')')
     trig    = name(Or('sin', 'cos'))
-    call    = trig & open & expr & close            > Call
-    parens  = open & expr & close
+    call    = trig & open_ & expr & close           > Call
+    parens  = open_ & expr & close
     value   = parens | call | float_
     
     # omitting symbol around "/" didn't give an error below.
@@ -53,8 +76,8 @@ def lexer():
     factor += prod | ratio | value
     
     diff    = factor & ~symbol('-') & expr          > Difference
-    sum     = factor & ~symbol('+') & expr          > Sum
-    expr   += sum | diff | factor | value
+    sum_    = factor & ~symbol('+') & expr          > Sum
+    expr   += sum_ | diff | factor | value
     
     line    = expr & Eos()
     parser  = line.null_parser(Configuration.tokens())
@@ -66,7 +89,7 @@ def lexer():
     for i in range(1,1001):
         print('.', end='')
         p = i % 100 == 0
-        if p: print
+        if p: print()
         x = myeval('1')
         if p: print(x)
         x = myeval('1 + 2*3')

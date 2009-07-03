@@ -51,26 +51,27 @@ Trampolining is most visible in the source in two areas:
 #. Each matcher in the `matchers <api/redirect.html#lepl.matchers>`_ package
    is modified to ``yield`` sub-matchers rather than evaluating them directly.
 
-The second area above, individual matchers, nearly always follows the same
+The second case above, individual matchers, nearly always follows the same
 pattern.  Code that originally looked like::
 
-  def __call__(self, stream1):
-    (result, stream2) = self.matcher(stream1)
+  def _match(self, stream1):
+    (result, stream2) = self.matcher._match(stream1)
     # do something here (eg process results)
     yield (result, stream2)
 
-where the a submatcher (``self.matcher``) is invoked and the result modified,
+where the submatcher (``self.matcher``) is invoked and the result modified,
 becomes::
 
-  def __call__(self, stream1):
-    (result, stream2) = yield self.matcher(stream1)
+  def _match(self, stream1):
+    (result, stream2) = yield self.matcher._match(stream1)
     # do something here (eg process results)
     yield (result, stream2)
     
-The first ``yield`` returns the generator (constructed by ``matcher(stream)``)
+The first ``yield`` returns the generator (constructed by ``._match(stream)``)
 to the trampoline.  This is then evaluated (which may mean evaluating other
 generators, yielded by the generator we returned), and the final result
-returned from the trampoline via ``generator.send(result, stream2)``.
+returned to the matcher from the trampoline via ``generator.send(result,
+stream2)``.
 
 It is clear, then, that the impact on existing code was fairly small.
 

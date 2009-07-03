@@ -1,10 +1,36 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Tests for the lepl.node module.
+'''
+
 from logging import basicConfig, DEBUG, INFO
 from unittest import TestCase
 
-from lepl import *
+from lepl import Delayed, Digit, Any, Node, make_error, throw, Or, Space, \
+    AnyBut, Eos
 
 
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321
+# (dude this is just a test)
+
+    
 class NodeTest(TestCase):
 
     def test_node(self):
@@ -62,10 +88,6 @@ class ListTest(TestCase):
     def test_list(self):
         basicConfig(level=DEBUG)
         
-        class Term(Node): pass
-        class Factor(Node): pass
-        class Expression(Node): pass
-
         expression  = Delayed()
         number      = Digit()[1:,...]                   > 'number'
         term        = (number | '(' / expression / ')') > list
@@ -102,22 +124,21 @@ class ErrorTest(TestCase):
         line        = expression / Eos()
        
         parser = line.string_parser()
-        ast = parser('1 + 2 * (3 + 4 - 5)')
         
         try:
-            ast = parser('1 + 2 * 3 + 4 - 5)')[0]
+            parser('1 + 2 * 3 + 4 - 5)')[0]
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "no ( before ')'", e.msg
 
         try:
-            ast = parser('1 + 2 * (3 + 4 - 5')
+            parser('1 + 2 * (3 + 4 - 5')
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "no ) for '(3 + 4...'", e.msg
             
         try:
-            ast = parser('1 + 2 * foo')
+            parser('1 + 2 * foo')
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "unexpected text: foo", e.msg

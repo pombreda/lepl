@@ -1,18 +1,40 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
 '''
-Test for thread safety.
+Tests for the lepl.operators module.
 '''
 
-from operator import add
-
-from logging import basicConfig, INFO, DEBUG
+from logging import basicConfig, DEBUG
 from threading import Thread
 from unittest import TestCase
 
-from lepl import *
+from lepl import Delayed, Any, Eos, Drop, Separator, Literal, Space
 
 
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102
+# (dude this is just a test)
+
+    
 class ThreadTest(TestCase):
+    '''
+    Test for thread safety.
+    '''
     
     def test_safety(self):
         basicConfig(level=DEBUG)
@@ -21,6 +43,7 @@ class ThreadTest(TestCase):
         matcher1 = Any()[::'b',...] & Eos()
         with Separator(Drop(Any('a')[:])):
             matcher2 = Any()[::'b',...] & Eos()
+            # pylint: disable-msg=W0613
             def target(matcher3=matcher3, matcher4=matcher4):
                 matcher3 += Any()[::'b',...] & Eos()
                 with Separator(Drop(Any('b')[:])):
