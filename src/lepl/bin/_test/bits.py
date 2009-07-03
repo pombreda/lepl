@@ -1,4 +1,25 @@
 
+# Copyright 2009 Andrew Cooke
+
+# This file is part of LEPL.
+# 
+#     LEPL is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     LEPL is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU Lesser General Public License for more details.
+# 
+#     You should have received a copy of the GNU Lesser General Public License
+#     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+Tests for the lepl.bin.bits module.
+'''
+
 if bytes is str:
     print('Binary parsing unsupported in this Python version')
 else:
@@ -8,6 +29,10 @@ else:
     
     from lepl.bin.bits import Int, unpack_length, BitString, swap_table
     
+    
+    # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324
+    # (dude this is just a test)
+
     
     class IntTest(TestCase):
         
@@ -57,7 +82,7 @@ else:
             self.assert_length_value(8, b'\xff', BitString.from_byte(255))
             self.assert_error(lambda: BitString.from_byte(256))
         
-        def test_from_byte(self):
+        def test_from_bytearray(self):
             self.assert_length_value(8, b'\x00', BitString.from_bytearray(b'\x00'))
             self.assert_length_value(16, b'ab', BitString.from_bytearray(b'ab'))
             self.assert_length_value(16, b'ab', BitString.from_bytearray(bytearray(b'ab')))

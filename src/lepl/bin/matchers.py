@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -31,8 +31,17 @@ else:
     from lepl.parser import tagged
     
     
-    class _Constant(OperatorMatcher):
+    # pylint: disable-msg=C0103
+    # (consistent interface for matchers)
     
+    class _Constant(OperatorMatcher):
+        '''
+        Support class for matching constant values.
+        '''
+    
+        # pylint: disable-msg=E1101
+        # (using _arg to set attributes dynamically)
+        
         def __init__(self, value):
             '''
             Match a given bit string.
@@ -60,22 +69,25 @@ else:
             
             
     class Const(_Constant):
+        '''
+        Match a given value, which is parsed as for `BitString.from_int`.
+        '''
     
         def __init__(self, value, length=None):
-            '''
-            Match a given value, which is parsed as for `BitString.from_int`.
-            '''
             if not isinstance(value, BitString):
                 value = BitString.from_int(value, length)
             super(Const, self).__init__(value)
             
             
     class _Variable(OperatorMatcher):
+        '''
+        Support class for matching a given number of bits.
+        '''
         
+        # pylint: disable-msg=E1101
+        # (using _arg to set attributes dynamically)
+
         def __init__(self, length):
-            '''
-            Match a given number of bits.
-            '''
             super(_Variable, self).__init__()
             self._arg(length=unpack_length(length))
             
@@ -89,17 +101,21 @@ else:
             provided by the stream interface.
             '''
             try:
-                yield ([self._convert(stream[0:self.length])], stream[self.length:])
+                yield ([self._convert(stream[0:self.length])], 
+                       stream[self.length:])
             except IndexError:
                 pass
     
         def _convert(self, bits):
+            '''
+            By default, just return the bits.
+            '''
             return bits
         
         
     class _ByteArray(_Variable):
         '''
-        Match a given number of bytes.
+        Support class for matching a given number of bytes.
         '''
         
         def __init__(self, length):
@@ -111,6 +127,9 @@ else:
             super(_ByteArray, self).__init__(length)
         
         def _convert(self, bits):
+            '''
+            Convert from bits to bytes,
+            '''
             return bits.to_bytes()
         
     
@@ -125,10 +144,14 @@ else:
             '''
             length = unpack_length(length)
             if length % 8:
-                raise ValueError('Big endian int must a length that is a multiple of 8.')
+                raise ValueError('Big endian int must a length that is a '
+                                 'multiple of 8.')
             super(BEnd, self).__init__(length)
         
         def _convert(self, bits):
+            '''
+            Convert to int.
+            '''
             return bits.to_int(big_endian=True)
         
     
@@ -138,6 +161,9 @@ else:
         '''
         
         def _convert(self, bits):
+            '''
+            Convert to int.
+            '''
             return bits.to_int()
         
     
@@ -163,7 +189,8 @@ else:
     
     def ByteArray(value):
         '''
-        Match or read an array of bytes (to read a value, give the number of bytes).
+        Match or read an array of bytes (to read a value, give the number 
+        of bytes).
         '''
         if isinstance(value, int):
             return _ByteArray(value)
@@ -176,61 +203,88 @@ else:
         Factory method for big-endian values. 
         '''
         def matcher(value=None):
+            '''
+            Generate the matcher, given a value.
+            '''
             if value is None:
                 return BEnd(length)
             else:
-                return _Constant(BitString.from_int(value, length=length, big_endian=True))
+                return _Constant(BitString.from_int(value, length=length, 
+                                                    big_endian=True))
+        return matcher
     
     def _lint(length):
         '''
         Factory method for little-endian values. 
         '''
         def matcher(value=None):
+            '''
+            Generate the matcher, given a value.
+            '''
             if value is None:
                 return LEnd(length)
             else:
-                return _Constant(BitString.from_int(value, length=length, big_endian=False))
+                return _Constant(BitString.from_int(value, length=length, 
+                                                    big_endian=False))
+        return matcher
     
+    
+    # pylint: disable-msg=W0105
     
     BInt16 = _bint(16)
     '''
-    Match or read an 16-bit big-endian integer (if a value is given, it must match).
+    Match or read an 16-bit big-endian integer (if a value is given, it 
+    must match).
     '''
     
     LInt16 = _lint(16)
     '''
-    Match or read an 16-bit little-endian integer (if a value is given, it must match).
+    Match or read an 16-bit little-endian integer (if a value is given, it 
+    must match).
     '''
     
     BInt32 = _bint(32)
     '''
-    Match or read an 32-bit big-endian integer (if a value is given, it must match).
+    Match or read an 32-bit big-endian integer (if a value is given, it 
+    must match).
     '''
     
     LInt32 = _lint(32)
     '''
-    Match or read an 32-bit little-endian integer (if a value is given, it must match).
+    Match or read an 32-bit little-endian integer (if a value is given, it 
+    must match).
     '''
     
     BInt64 = _bint(64)
     '''
-    Match or read an 64-bit big-endian integer (if a value is given, it must match).
+    Match or read an 64-bit big-endian integer (if a value is given, it 
+    must match).
     '''
     
     LInt64 = _lint(64)
     '''
-    Match or read an 64-bit little-endian integer (if a value is given, it must match).
+    Match or read an 64-bit little-endian integer (if a value is given, it 
+    must match).
     '''
     
     
     class _String(_ByteArray):
+        '''
+        Support class for reading a string.
+        '''
         
+        # pylint: disable-msg=E1101
+        # (using _arg to set attributes dynamically)
+
         def __init__(self, length, encoding=None, errors=STRICT):
             super(_String, self).__init__(length)
             self._arg(encoding=encoding)
             self._arg(errors=errors)
         
         def _convert(self, bits):
+            '''
+            Convert to string.
+            '''
             return bits.to_str(encoding=self.encoding, errors=self.errors)
         
         
@@ -241,5 +295,6 @@ else:
         if isinstance(value, int):
             return _String(value, encoding=encoding, errors=errors)
         else:
-            return _Constant(BitString.from_str(value, encoding=encoding, errors=errors))
+            return _Constant(BitString.from_str(value, encoding=encoding, 
+                                                errors=errors))
     

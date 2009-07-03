@@ -20,6 +20,8 @@
 Generate and match a stream of tokens that are identified by regular expressions.
 '''
 
+# pylint currently cannot parse this file
+
 from abc import ABCMeta
 
 from lepl.context import Namespace, NamespaceMixin, Scope

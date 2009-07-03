@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -56,8 +56,6 @@ if bytes is str:
     print('Binary parsing unsupported in this Python version')
 else:
 
-    from lepl.matchers import ApplyArgs
-    
     
     STRICT = 'strict'
     
@@ -80,13 +78,15 @@ else:
             return self.__length
     
         def __repr__(self):
-            return 'Int({0},{1})'.format(super(Int, self).__str__(), self.__length)
+            return 'Int({0},{1})'.format(super(Int, self).__str__(), 
+                                         self.__length)
     
     
     def swap_table():
         '''
         Table of reversed bit patterns for 8 bits.
         '''
+        # pylint: disable-msg=C0103
         table = [0] * 256
         power = [1 << n for n in range(8)]
         for n in range(8):
@@ -159,7 +159,8 @@ else:
     #                bytes(ByteIterator(self.__bytes, self.__length, 
     #                                   self.__offset, offset))
     #            self.__offset = 0
-            return ByteIterator(self.__bytes, self.__length, self.__offset, offset)
+            return ByteIterator(self.__bytes, self.__length, 
+                                self.__offset, offset)
         
         def bits(self):
             '''
@@ -181,8 +182,8 @@ else:
             padding.
             '''
             if self.__length > 64:
-                hx = ''.join(hex(x)[2:] for x in self.bytes())
-                return '{0}x0/{1}'.format(hx, self.__length)
+                hex_ = ''.join(hex(x)[2:] for x in self.bytes())
+                return '{0}x0/{1}'.format(hex_, self.__length)
             else:
                 chars = []
                 byte = []
@@ -205,21 +206,25 @@ else:
             '''
             An explicit display of internal state, including padding and offset.
             '''
-            return 'BitString({0!r}, {1!r}, {2!r})'.format(self.__bytes, self.__length, self.__offset)
+            return 'BitString({0!r}, {1!r}, {2!r})' \
+                .format(self.__bytes, self.__length, self.__offset)
             
         def __len__(self):
             return self.__length
         
         def zero(self):
-            for b in self.__bytes:
-                if b != 0:
+            '''
+            Are all bits zero?
+            '''
+            for byte in self.__bytes:
+                if byte != 0:
                     return False
             return True
         
         def offset(self):
             '''
-            The internal offset.  This is not useful as an external API, but helps
-            with debugging.
+            The internal offset.  This is not useful as an external API, but 
+            helps with debugging.
             '''
             return self.__offset
         
@@ -230,15 +235,15 @@ else:
             '''
             Combine two sequences, appending then together.
             '''
-            bb = bytearray(self.to_bytes())
+            bbs = bytearray(self.to_bytes())
             matching_offset = self.__length % 8
-            for b in other.bytes(matching_offset):
+            for byte in other.bytes(matching_offset):
                 if matching_offset:
-                    bb[-1] |= b
+                    bbs[-1] |= byte
                     matching_offset = False
                 else:
-                    bb.append(b)
-            return BitString(bytes(bb), self.__length + len(other))
+                    bbs.append(byte)
+            return BitString(bytes(bbs), self.__length + len(other))
         
         def to_bytes(self, offset=0):
             '''
@@ -260,17 +265,22 @@ else:
                 raise ValueError('Length is not a multiple of 8 bits, so big '
                                  'endian integer poorly defined: {0}'
                                  .format(self.__length))
-            b8 = self.bytes()
+            bbs = self.bytes()
             if not big_endian:
-                b8 = reversed(list(b8))
+                bbs = reversed(list(bbs))
             value = 0
-            for b in b8:
-                value = (value << 8) + b
+            for byte in bbs:
+                value = (value << 8) + byte
             return Int(value, self.__length)
         
         def to_str(self, encoding=None, errors='strict'):
+            '''
+            Convert to string.
+            '''
+            # do we really need to do this in two separate calls?
             if encoding:
-                return bytes(self.bytes()).decode(encoding=encoding, errors=errors)
+                return bytes(self.bytes()).decode(encoding=encoding, 
+                                                  errors=errors)
             else:
                 return bytes(self.bytes()).decode(errors=errors)
     
@@ -293,23 +303,27 @@ else:
             if step == 1:
                 start += self.__offset
                 stop += self.__offset
-                bb = bytearray(self.__bytes[start // 8:bytes_for_bits(stop)])
+                bbs = bytearray(self.__bytes[start // 8:bytes_for_bits(stop)])
                 if start % 8:
-                    bb[0] &= 0xff << start % 8
+                    bbs[0] &= 0xff << start % 8
                 if stop % 8:
-                    bb[-1] &= 0xff >> 8 - stop % 8
-                return BitString(bytes(bb), stop - start, start % 8)
+                    bbs[-1] &= 0xff >> 8 - stop % 8
+                return BitString(bytes(bbs), stop - start, start % 8)
             else:
                 acc = BitString()
-                for b in BitIterator(self.__bytes, start, stop, step, self.__offset):
-                    acc += b
+                for byte in BitIterator(self.__bytes, start, stop, step, 
+                                        self.__offset):
+                    acc += byte
                 return acc
             
         def __eq__(self, other):
-            if not isinstance(other, BitString) or self.__length != other.__length:
+            # pylint: disable-msg=W0212
+            # (we check the type)
+            if not isinstance(other, BitString) \
+                    or self.__length != other.__length:
                 return False
-            for (a, b) in zip(self.bytes(), other.bytes()):
-                if a != b:
+            for (bb1, bb2) in zip(self.bytes(), other.bytes()):
+                if bb1 != bb2:
                     return False
             return True
         
@@ -318,14 +332,23 @@ else:
         
         @staticmethod
         def from_byte(value):
+            '''
+            Create a BitString from a byte.
+            '''
             return BitString.from_int(value, 8)
         
         @staticmethod
         def from_int32(value, big_endian=None):
+            '''
+            Create a BitString from a 32 bit integer.
+            '''
             return BitString.from_int(value, 32, big_endian)
         
         @staticmethod
         def from_int64(value, big_endian=None):
+            '''
+            Create a BitString from a 64 bit integer.
+            '''
             return BitString.from_int(value, 64, big_endian)
         
         @staticmethod
@@ -394,17 +417,17 @@ else:
                                  'is not an integer number of bytes cannot be '
                                  'encoded as a stream of bits: {0!r}/{1!r}'
                                  .format(value,  length))
-            a, v = bytearray(), value
-            for i in range(bytes_for_bits(length)):
-                a.append(v & 0xff)
-                v >>= 8
-            if v > 0:
-                raise ValueError('Value contains more bits than length: %r/%r' % 
+            bbs, val = bytearray(), value
+            for _index in range(bytes_for_bits(length)):
+                bbs.append(val & 0xff)
+                val >>= 8
+            if val > 0:
+                raise ValueError('Value contains more bits than length: %r/%r' %
                                  (value, length))
             # binary was swapped earlier
             if big_endian and bits != 1:
-                a = reversed(a)
-            return BitString(bytes(a), length)
+                bbs = reversed(bbs)
+            return BitString(bytes(bbs), length)
             
         @staticmethod
         def from_sequence(value, unpack=lambda x: x):
@@ -418,14 +441,21 @@ else:
                 
         @staticmethod
         def from_bytearray(value):
+            '''
+            Create a BitString from a bytearray.
+            '''
             if not isinstance(value, bytes):
                 value = bytes(value)
             return BitString(value, len(value) * 8)
                 
         @staticmethod
         def from_str(value, encoding=None, errors=STRICT):
+            '''
+            Create a BitString from a string.
+            '''
             if encoding:
-                return BitString.from_bytearray(value.encode(encoding=encoding, errors=errors))
+                return BitString.from_bytearray(value.encode(encoding=encoding, 
+                                                             errors=errors))
             else:
                 return BitString.from_bytearray(value.encode(errors=errors))
             
@@ -445,11 +475,11 @@ else:
         if isinstance(length, int):
             return length
         if isinstance(length, float):
-            bytes = int(length)
-            bits = int(10 * (length - bytes) + 0.5)
+            nbytes = int(length)
+            bits = int(10 * (length - nbytes) + 0.5)
             if bits < 0 or bits > 7:
                 raise ValueError('BitStr specification must be between 0 and 7')
-            return bytes * 8 + bits
+            return nbytes * 8 + bits
         raise TypeError('Cannot infer length from %r' % length)
     
     
@@ -461,6 +491,9 @@ else:
     
     
     class BitIterator(object):
+        '''
+        A sequence of bits (used by BitString).
+        '''
         
         def __init__(self, value, start, stop, step, offset):
             assert 0 <= offset < 8
@@ -478,14 +511,17 @@ else:
             if (self.__step > 0 and self.__index < self.__stop) \
                 or (self.__step < 0 and self.__index > self.__stop):
                 index = self.__index + self.__offset
-                b = self.__bytes[index // 8] >> index % 8
+                byte = self.__bytes[index // 8] >> index % 8
                 self.__index += self.__step
-                return ONE if b & 0x1 else ZERO
+                return ONE if byte & 0x1 else ZERO
             else:
                 raise StopIteration()
             
     
     class ByteIterator(object):
+        '''
+        A sequence of bytes (used by BitString).
+        '''
         
         def __init__(self, value, length, existing, required):
             assert 0 <= required < 8
@@ -507,9 +543,9 @@ else:
             if self.__required == self.__existing:
                 # byte aligned
                 if self.__index < len(self.__bytes):
-                    b = self.__bytes[self.__index]
+                    byte = self.__bytes[self.__index]
                     self.__index += 1
-                    return b
+                    return byte
                 else:
                     raise StopIteration()
             elif self.__required > self.__existing:
@@ -517,35 +553,40 @@ else:
                 if self.__index < 0:
                     if self.__total < self.__length:
                         # initial offset chunk
-                        b = 0xff & (self.__bytes[0] << (self.__required - self.__existing))
+                        byte = 0xff & (self.__bytes[0] << 
+                                       (self.__required - self.__existing))
                         self.__index = 0
                         self.__total = 8 - self.__required
-                        return b
+                        return byte
                     else:
                         raise StopIteration()
                 else:
                     if self.__total < self.__length:
-                        b = 0xff & (self.__bytes[self.__index] >> (8 - self.__required + self.__existing))
+                        byte = 0xff & (self.__bytes[self.__index] >> 
+                                       (8 - self.__required + self.__existing))
                         self.__index += 1
                         self.__total += self.__required
                     else:
                         raise StopIteration()
                     if self.__total < self.__length:
-                        b |= 0xff & self.__bytes[self.__index] << (self.__required - self.__existing)
+                        byte |= 0xff & (self.__bytes[self.__index] << 
+                                        (self.__required - self.__existing))
                         self.__total += 8 - self.__required
-                    return b
+                    return byte
             else:
                 # need to correct for additional offset
                 if self.__total < self.__length:
-                    b = 0xff & (self.__bytes[self.__index] >> (self.__existing - self.__required))
+                    byte = 0xff & (self.__bytes[self.__index] >> 
+                                   (self.__existing - self.__required))
                     self.__index += 1
                     self.__total += 8 - self.__existing + self.__required
                 else:
                     raise StopIteration()
                 if self.__total < self.__length:
-                    b |= 0xff & (self.__bytes[self.__index] << (8 - self.__existing + self.__required))
+                    byte |= 0xff & (self.__bytes[self.__index] << 
+                                    (8 - self.__existing + self.__required))
                     self.__total += self.__existing - self.__required
-                return b
+                return byte
     
     
     ONE = BitString(b'\x01', 1)

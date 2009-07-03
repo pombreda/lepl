@@ -226,7 +226,7 @@ def make_matcher(matcher, stream, config):
     for rewriter in config.rewriters:
         matcher = rewriter(matcher)
     # pylint bug here? (E0601)
-    # pylint: disable-msg=W0212
+    # pylint: disable-msg=W0212, E0601
     # (_match is meant to be hidden)
     parser = lambda arg: trampoline(matcher._match(stream(arg)), 
                                     monitor=config.monitor)

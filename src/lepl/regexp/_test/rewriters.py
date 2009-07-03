@@ -31,7 +31,7 @@ from lepl.regexp.unicode import UnicodeAlphabet
 UNICODE = UnicodeAlphabet.instance()
 
 
-# pylint: disable-msg=C0103, C0111, C0301
+# pylint: disable-msg=C0103, C0111, C0301, C0324
 # (dude this is just a test)
 
 
