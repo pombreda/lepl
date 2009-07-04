@@ -44,6 +44,8 @@ For more background, please see the `manual <../index.html>`_.
 from abc import ABCMeta
 from collections import deque
 from re import compile as compile_
+from string import whitespace, digits, letters, ascii_letters, \
+    ascii_uppercase, ascii_lowercase, printable, punctuation
 from sys import version
 from traceback import print_exc
 
@@ -1258,7 +1260,7 @@ def Space(space=' \t'):
     return Any(space)
 
 
-def Whitespace(space=string.whitespace):
+def Whitespace(space=whitespace):
     '''
     Match a single space (by default from string.whitespace,
     which includes newlines).
@@ -1268,32 +1270,32 @@ def Whitespace(space=string.whitespace):
 
 def Digit():
     '''Match any single digit.'''
-    return Any(string.digits)
+    return Any(digits)
 
 
 def Letter():
     '''Match any ASCII letter (A-Z, a-z).'''
-    return Any(string.ascii_letters)
+    return Any(ascii_letters)
 
 
 def Upper():
     '''Match any ASCII uppercase letter (A-Z).'''
-    return Any(string.ascii_uppercase)
+    return Any(ascii_uppercase)
 
     
 def Lower():
     '''Match any ASCII lowercase letter (A-Z).'''
-    return Any(string.ascii_lowercase)
+    return Any(ascii_lowercase)
 
 
 def Printable():
     '''Match any printable character (string.printable).'''
-    return Any(string.printable)
+    return Any(printable)
 
 
 def Punctuation():
     '''Match any punctuation character (string.punctuation).'''
-    return Any(string.punctuation)
+    return Any(punctuation)
 
 
 def UnsignedInteger():
