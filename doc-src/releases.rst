@@ -49,6 +49,8 @@ Date        Version  Description
 2009-05-02  2.4      Added lexer.
 ----------  -------  -----------
 2009-06-27  3.0a1    New tutorial; bin package; modified Nodes, `*args` (general clean-up of API).
+----------  -------  -----------
+2009-07-04  3.0a2    Various small fixes via pylint.
 ==========  =======  ===========
 
 
