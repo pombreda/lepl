@@ -44,7 +44,7 @@ For more background, please see the `manual <../index.html>`_.
 from abc import ABCMeta
 from collections import deque
 from re import compile as compile_
-from string import whitespace, digits, letters, ascii_letters, \
+from string import whitespace, digits, ascii_letters, \
     ascii_uppercase, ascii_lowercase, printable, punctuation
 from sys import version
 from traceback import print_exc
