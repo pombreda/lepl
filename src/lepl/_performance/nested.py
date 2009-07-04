@@ -23,8 +23,7 @@ Performance related tests.
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, W0614, W0401
 
 
-from logging import basicConfig, DEBUG
-from random import choice, random
+from random import choice
 
 from lepl import *
 
@@ -34,7 +33,7 @@ def make_data(size):
     Generate a string about 2^(size+1) in size of nested parens with newlines.
     '''
     data = ""
-    for i in range(size):
+    for _i in range(size):
         if choice([True, False]):
             data = '(' + data + ')' + data
         else:

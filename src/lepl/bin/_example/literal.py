@@ -74,9 +74,9 @@ else:
             self._assert('0xfe01', '10000000 01111111')
             self._assert('fe01x0', '01111111 10000000')
             
-        def _assert(self, repr, value):
+        def _assert(self, repr_, value):
             try:
-                b = BitString.from_int(repr)
+                b = BitString.from_int(repr_)
                 assert str(b) == value + 'b0/' + str(len(b)), str(b)
             except ValueError:
                 assert value is None

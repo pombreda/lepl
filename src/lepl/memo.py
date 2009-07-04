@@ -26,6 +26,7 @@ generators implemented here.
 '''
 
 # for some reason (parsing of yields?) pyulint cannot process this file
+# (but running from the command line gives partial data)
 
 
 from itertools import count
@@ -44,6 +45,9 @@ class RMemo(OperatorMatcher):
     to place the transformation on critical classes like Or and And). 
     '''
     
+    # pylint: disable-msg=E1101
+    # (using _args to define attributes)
+    
     def __init__(self, matcher):
         super(RMemo, self).__init__()
         self._arg(matcher=matcher)
@@ -52,12 +56,18 @@ class RMemo(OperatorMatcher):
         
     @tagged
     def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
+        # pylint: disable-msg=W0212
+        # (_match is an internal interface)
         try:
             if stream not in self.__table:
                 # we have no cache for this stream, so we need to generate the
                 # entry.  we do not care about nested calls with the same stream
-                # because this memoization is not for left recursion.  that means
-                # that we can return a table around this generator immediately.
+                # because this memoization is not for left recursion.  that 
+                # means that we can return a table around this generator 
+                # immediately.
                 self.__table[stream] = RTable(self.matcher._match(stream))
             return self.__table[stream].generator(self.matcher, stream)
         except TypeError: # unhashable type; cannot cache
@@ -71,6 +81,7 @@ class RTable(LogMixin):
     '''
     
     def __init__(self, generator):
+        super(RTable, self).__init__()
         self.__generator = generator
         self.__table = []
         self.__stopped = False
@@ -120,6 +131,9 @@ class LMemo(OperatorMatcher):
     A memoizer for grammars that do have left recursion.
     '''
     
+    # pylint: disable-msg=E1101
+    # (using _args to define attributes)
+    
     def __init__(self, matcher):
         super(LMemo, self).__init__()
         self._arg(matcher=matcher)
@@ -128,6 +142,9 @@ class LMemo(OperatorMatcher):
         
     @tagged
     def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
         if stream not in self.__caches:
             self.__caches[stream] = PerStreamCache(self.matcher)
         return self.__caches[stream]._match(stream)
@@ -147,6 +164,9 @@ class PerStreamCache(LogMixin):
         self.__first = None
         
     def __curtail(self, count, stream):
+        '''
+        Do we stop at this point?
+        '''
         if count == 1:
             return False
         else:
@@ -154,6 +174,9 @@ class PerStreamCache(LogMixin):
         
     @tagged
     def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
         if not self.__first:
             self.__counter += 1
             if self.__curtail(self.__counter, stream):
@@ -207,10 +230,11 @@ class PerCallCache(LogMixin):
             while True:
                 result = yield self.__generator
                 if self.__unstable:
-                    self._warn('A view completed before the cache was complete: '
-                               '{0!r}. This typically means that the grammar '
-                               'contains a matcher that does not consume input '
-                               'within a loop and is usually an error.'
+                    self._warn('A view completed before the cache was '
+                               'complete: {0!r}. This typically means that '
+                               'the grammar contains a matcher that does not '
+                               'consume input within a loop and is usually '
+                               'an error.'
                                .format(self.__generator))
 #                    raise Exception('A view completed before the cache was '
 #                                    'complete: {0!r}'

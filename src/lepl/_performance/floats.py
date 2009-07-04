@@ -23,8 +23,6 @@ Performance related tests.
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, W0614, W0401
 
 
-from logging import basicConfig, DEBUG
-
 from lepl import *
 from lepl.rewriters import compose_transforms
 
@@ -52,7 +50,7 @@ def floats():
     parser = line.string_parser()
     
     #print(parser.matcher)
-    for i in range(30):
+    for _i in range(30):
         results = parser('1.2e3 + 2.3e4 * (3.4e5 + 4.5e6 - 5.6e7)')
         assert isinstance(results[0], Expression)
     print(results[0])

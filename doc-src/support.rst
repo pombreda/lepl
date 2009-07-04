@@ -19,6 +19,7 @@ To ask questions, report bugs, and generally discuss LEPL, please post to the
 
    download
    releases
+   licence
 
 .. _localdocs:
 

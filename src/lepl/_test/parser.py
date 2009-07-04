@@ -26,7 +26,7 @@ from unittest import TestCase
 from lepl import Literal, Any, flatten, Configuration
 
 
-# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, E1101
 # (dude this is just a test)
 
     

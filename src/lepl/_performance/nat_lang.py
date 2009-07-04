@@ -58,7 +58,7 @@ def naturalLanguage():
     #p = sentence.null_matcher(Configuration.dfa())
     #p = sentence.null_matcher()
     print(p.matcher)
-    for i in range(1000):
+    for _i in range(1000):
         assert len(list(p('every boy or some girl and helen and john or pat knows '
                           'and respects or loves every boy or some girl and pat or '
                           'john and helen'))) == 392  
@@ -95,7 +95,7 @@ def naturalLanguage2():
 
     p = sentence.null_matcher(Configuration.tokens())
     print(p.matcher)
-    for i in range(1000):
+    for _i in range(1000):
         assert len(list(p('every boy or some girl and helen and john or pat knows '
                           'and respects or loves every boy or some girl and pat or '
                           'john and helen'))) == 392  

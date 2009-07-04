@@ -24,7 +24,6 @@ Performance related tests.
 
 
 from logging import basicConfig, DEBUG
-from random import choice, random
 
 from lepl import *
 

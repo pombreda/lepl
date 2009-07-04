@@ -129,8 +129,7 @@ class SimpleStringTest(TestCase):
         return SimpleStreamTester(['a', 'b', 'c'], ''.join)
     
     def test_single_index(self):
-        self.get_tester().test_single_index(with_len=False)
-        self.get_tester().test_single_index(with_len=True)
+        self.get_tester().test_single_index()
         
     def test_range(self):
         self.get_tester().test_range(with_len=False)
@@ -151,8 +150,7 @@ class SimpleListTest(TestCase):
         return SimpleStreamTester([1,2,3], list)
     
     def test_single_index(self):
-        self.get_tester().test_single_index(with_len=False)
-        self.get_tester().test_single_index(with_len=True)
+        self.get_tester().test_single_index()
         
     def test_range(self):
         self.get_tester().test_range(with_len=False)
@@ -170,8 +168,7 @@ class SimpleGeneratorStreamTest(TestCase):
                                   lambda l: SimpleGeneratorStream(iter(l)))
     
     def test_single_index(self):
-        self.get_tester().test_single_index(with_len=False)
-        self.get_tester().test_single_index(with_len=True)
+        self.get_tester().test_single_index()
         
     def test_range(self):
         self.get_tester().test_range(with_len=False)

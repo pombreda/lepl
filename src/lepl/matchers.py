@@ -34,12 +34,16 @@ For more background, please see the `manual <../index.html>`_.
 
 
 # for some reason (parsing of yields?) pyulint cannot process this file
+# (can get partial analysis from command line)
 
+# pylint: disable-msg=C0103,W0212
+# (consistent interfaces)
+# pylint: disable-msg=E1101
+# (_args create attributes)
 
 from abc import ABCMeta
 from collections import deque
-import string
-from re import compile
+from re import compile as compile_
 from sys import version
 from traceback import print_exc
 
@@ -58,6 +62,7 @@ from lepl.trace import _TraceResults
 from lepl.support import assert_type, lmap, LogMixin
 
 
+# pylint: disable-msg=W0105
 # Python 2.6
 #class ApplyRaw(metaclass=ABCMeta):
 ApplyRaw = ABCMeta('ApplyRaw', (object, ), {})
@@ -77,7 +82,8 @@ ApplyArgs.register(Node)
 
 
 
-class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, LogMixin, Matcher):
+class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, 
+                    LogMixin, Matcher):
     '''
     A base class that provides support to all matchers.
     '''
@@ -148,12 +154,12 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         return make_parser(self, SequenceByLine.null, 
                            config if config else Configuration.default())
     
-    def parse_file(self, file, config=None):
+    def parse_file(self, file_, config=None):
         '''
         Parse the contents of a file, returning a single match and using a
         `SequenceByLine()` internally.
         '''
-        return self.file_parser(config)(file)
+        return self.file_parser(config)(file_)
         
     def parse_list(self, list_, config=None):
         '''
@@ -224,12 +230,12 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         return make_matcher(self, SequenceByLine.null, 
                             config if config else Configuration.default())
 
-    def match_file(self, file, config=None):
+    def match_file(self, file_, config=None):
         '''
-        Parse the contents of a file, returning a sequence of matches and using a
-        `SequenceByLine()` internally.
+        Parse the contents of a file, returning a sequence of matches and using 
+        a `SequenceByLine()` internally.
         '''
-        return self.file_matcher(config)(file)
+        return self.file_matcher(config)(file_)
         
     def match_list(self, list_, config=None):
         '''
@@ -368,7 +374,10 @@ class _BaseSearch(OperatorMatcher):
         self._karg(rest=coerce_(first if rest is None else rest))
         
     def _cleanup(self, queue):
-        for (count, acc, stream, generator) in queue:
+        '''
+        Utility called by subclasses.
+        '''
+        for (_count, _acc, _stream, generator) in queue:
             generator.close()
         
         
@@ -379,6 +388,9 @@ class DepthFirst(_BaseSearch):
 
     @tagged
     def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
         stack = deque()
         try:
             stack.append((0, [], stream, self.first._match(stream)))
@@ -411,6 +423,9 @@ class BreadthFirst(_BaseSearch):
     
     @tagged
     def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
         queue = deque()
         try:
             queue.append((0, [], stream, self.first._match(stream)))
@@ -445,6 +460,9 @@ class OrderByResultCount(OperatorMatcher):
         
     @tagged
     def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
         generator = self.matcher._match(stream)
         results = []
         try:
@@ -507,7 +525,8 @@ class And(_BaseCombiner):
                                     matchers[0]._match(stream_out), 
                                     matchers[1:]))
                         else:
-                            yield self.function(result+value, stream_in, stream_out)
+                            yield self.function(result+value, stream_in, 
+                                                stream_out)
                     except StopIteration:
                         pass
             finally:
@@ -631,7 +650,8 @@ class Literal(Transformable):
         '''
         try:
             if self.text == stream[0:len(self.text)]:
-                yield self.function([self.text], stream, stream[len(self.text):])
+                yield self.function([self.text], stream, 
+                                    stream[len(self.text):])
         except IndexError:
             pass
         
@@ -753,7 +773,8 @@ class Transform(Transformable):
             pass
         
     def compose(self, transform):
-        return Transform(self.matcher, self.function.compose(transform.function))
+        return Transform(self.matcher, 
+                         self.function.compose(transform.function))
 
 
 class Regexp(OperatorMatcher):
@@ -775,7 +796,7 @@ class Regexp(OperatorMatcher):
         super(Regexp, self).__init__()
         self._arg(pattern=pattern)
         self.tag(repr(pattern))
-        self.__pattern = compile(pattern)
+        self.__pattern = compile_(pattern)
         
     @tagged
     def _match(self, stream):
@@ -839,13 +860,22 @@ class Commit(OperatorMatcher):
     
     @tagged
     def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
         if False:
             yield
     
     def on_push(self, monitor):
+        '''
+        Do nothing on entering matcher.
+        '''
         pass
     
     def on_pop(self, monitor):
+        '''
+        On leaving, commit.
+        '''
         monitor.commit()
     
     
@@ -862,6 +892,9 @@ class Trace(OperatorMatcher):
 
     @tagged
     def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
         try:
             generator = self.matcher._match(stream)
             while True:
@@ -870,9 +903,15 @@ class Trace(OperatorMatcher):
             pass
         
     def on_push(self, monitor):
+        '''
+        On entering, switch monitor on.
+        '''
         monitor.switch(1 if self.trace else -1)
         
     def on_pop(self, monitor):
+        '''
+        On leaving, switch monitor off.
+        '''
         monitor.switch(-1 if self.trace else 1)
         
     
@@ -886,6 +925,9 @@ class Eof(OperatorMatcher):
 
     @tagged
     def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
         if not stream:
             yield ([], stream)
 
@@ -939,7 +981,6 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
         raise ValueError('Repeat or [...] must have a step (algorithm) '
                          'of d, b, g or n.')
     add = Add if add else Identity
-    # TODO - fix this!  it creates the entire table!
     return {DEPTH_FIRST:
                 add(DepthFirst(first, start, stop, rest)),
             BREADTH_FIRST: 
@@ -1011,7 +1052,8 @@ def Apply(matcher, function, raw=False, args=False):
     args = args or (type(function) is type and issubclass(function, ApplyArgs))
     if not isinstance(function, Transformation):
         if isinstance(function, str):
-            function = lambda results, f=function: lmap(lambda x:(f, x), results)
+            function = lambda results, f=function: lmap(lambda x:(f, x), 
+                                                        results)
             raw = True
             args = False
         if args:
@@ -1031,6 +1073,9 @@ def args(function):
     A decorator that has the same effect as ApplyArgs for functions/methods.
     '''
     def wrapper(args):
+        '''
+        Apply args as *args.
+        '''
         return function(*args)
     return wrapper
 
@@ -1071,6 +1116,9 @@ def KApply(matcher, function, raw=False):
         other matchers.
         '''
     def fun(results, stream_in, stream_out):
+        '''
+        Apply args as **kargs.
+        '''
         kargs = {'results': results,
                  'stream_in': stream_in,
                  'stream_out': stream_out}
@@ -1134,13 +1182,18 @@ def Map(matcher, function):
     '''
     # list() necessary so we can use '+' on result
     if isinstance(function, str):
-        return Apply(matcher, lambda l: list(map(lambda x: (function, x), l)), raw=True)
+        return Apply(matcher, lambda l: list(map(lambda x: (function, x), l)), 
+                     raw=True)
     else:
         return Apply(matcher, lambda l: list(map(function, l)), raw=True)
 
 
 
 def add(results, stream_in, stream_out):
+    '''
+    The transformation used in `Add` - we carefully use "+" in as generic
+    a manner as possible.
+    '''
     if results:
         result = results[0]
         for extra in results[1:]:
@@ -1254,6 +1307,9 @@ def SignedInteger():
 
     
 Integer = SignedInteger
+'''
+The default integer is a signed one.
+'''
 
 
 def UnsignedFloat(decimal='.'):
@@ -1284,25 +1340,28 @@ def SignedEFloat(decimal='.', exponent='eE'):
 
     
 Float = SignedEFloat
+'''
+The default float is signed with exponents.
+'''
 
 
 def Word(chars=AnyBut(Whitespace()), body=None):
-     '''
-     Match a sequence of non-space characters, joining them together. 
+    '''
+    Match a sequence of non-space characters, joining them together. 
      
-     chars and body, if given as strings, define possible characters to use
-     for the first and rest of the characters in the word, respectively.
-     If body is not given, then chars is used for the entire word.
-     They can also specify matchers, which typically should match only a
-     single character.
-     
-     So ``Word(Upper(), Lower())`` would match names that being with an upper
-     case letter, for example, while ``Word(AnyBut(Space()))`` (the default)
-     matches any sequence of non-space characters. 
-     '''
-     chars = coerce_(chars, Any)
-     body = chars if body is None else coerce_(body, Any)
-     return chars + body[0:,...]
+    chars and body, if given as strings, define possible characters to use
+    for the first and rest of the characters in the word, respectively.
+    If body is not given, then chars is used for the entire word.
+    They can also specify matchers, which typically should match only a
+    single character.
+    
+    So ``Word(Upper(), Lower())`` would match names that being with an upper
+    case letter, for example, while ``Word(AnyBut(Space()))`` (the default)
+    matches any sequence of non-space characters. 
+    '''
+    chars = coerce_(chars, Any)
+    body = chars if body is None else coerce_(body, Any)
+    return chars + body[0:,...]
  
  
 def DropEmpty(matcher):
@@ -1314,6 +1373,9 @@ def DropEmpty(matcher):
     zero).
     '''
     def drop(results):
+        '''
+        Only drop "False" values.
+        '''
         return [result for result in results if result]
     return Apply(matcher, drop, raw=True)
 

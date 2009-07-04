@@ -425,6 +425,8 @@ class SimpleWalker(object):
         '''
         Apply the visitor to the nodes in the graph, in postorder.
         '''
+        # pylint: disable-msg=W0142
+        # (*args)
         pending = {}
         for (parent, node, kind) in dfs_edges(self.__root, self.__type):
             if kind & POSTORDER:
@@ -441,7 +443,6 @@ class SimpleWalker(object):
                 elif kind & NONTREE:
                     pending[parent].append(visitor.loop(node))
                 else:
-                    # pylint: disable-msg=W0142
                     pending[parent].append(visitor.constructor(*args))
         return pending[self.__root][0]
     

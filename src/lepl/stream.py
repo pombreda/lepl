@@ -349,6 +349,8 @@ class Line(object):
         '''
         Return an (line, offset) pair for the given offset.
         '''
+        # pylint: disable-msg=W0212
+        # (we know it's the same as this)
         if offset == 0:
             return (self, 0)
         elif self.__empty:
@@ -356,8 +358,6 @@ class Line(object):
         elif offset < len(self.__text):
             return (self, offset)
         else: 
-            # pylint: disable-msg=W0212
-            # (we know it's the same as this)
             return self.next().__to(offset - len(self.__text))
 
     def getitem(self, spec, offset=0):    
