@@ -24,8 +24,9 @@ from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.config import Configuration
+from lepl.functions import Eos
 from lepl.manager import GeneratorManager
-from lepl.matchers import Literal, Eos
+from lepl.matchers import Literal
 from lepl.parser import string_matcher
 from lepl.support import LogMixin
 

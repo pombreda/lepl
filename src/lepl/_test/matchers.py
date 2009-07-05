@@ -23,11 +23,10 @@ Tests for the lepl.matchers module.
 from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.matchers import Configuration, Any, Or, AnyBut, Newline, Literal, \
-    Eof, Integer, Word, Digit, Regexp, Commit, Space, Repeat, Delayed, \
-    OperatorMatcher, And, Lookahead
+from lepl.functions import Word, Newline, Space, AnyBut, Digit, Integer
+from lepl.matchers import Configuration, Any, Or, Literal, Eof, Regexp, \
+    Commit, Delayed, And, Lookahead, Columns, Trace
 from lepl.node import Node
-from lepl.parser import tagged
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141
@@ -37,7 +36,7 @@ from lepl.parser import tagged
 class BaseTest(TestCase):
     
     def assert_direct(self, stream, match, target):
-        result = [x for (x, _s) in match.match_string(stream, config=Configuration())]
+        result = [x for (x, _s) in match.match_string(stream)]
         assert target == result, result
     
     def assert_list(self, stream, match, target):
@@ -50,14 +49,14 @@ class BaseTest(TestCase):
 class AndTest(BaseTest):
 
     def test_simple(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_join([1], Any(), ['1'])
         self.assert_join([1,2], And(Any(), Any()), ['12'])
         self.assert_join([1,2,3], And(Any(), Any()), ['12'])
         self.assert_join([1], And(Any(), Any()), [])
         
     def test_and(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_join([1,2], Any() & Any(), ['12'])
         self.assert_join([1,2,3], Any() & Any(), ['12'])
         self.assert_join([1,2,3], Any() & Any() & Any(), ['123'])
@@ -69,7 +68,7 @@ class AndTest(BaseTest):
         assert target == result, result
 
     def test_add(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_list(['1','2'], Any() + Any(), [['12']])
         self.assert_list(['1','2','3'], Any() + Any(), [['12']])
         self.assert_list(['1','2','3'], Any() + Any() + Any(), [['123']])
@@ -79,11 +78,11 @@ class AndTest(BaseTest):
 class CoercionTest(BaseTest):
     
     def test_right(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_direct('12', Any() + '2', [['12']])
          
     def test_left(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_direct('12', '1' + Any(), [['12']])
          
 
@@ -121,113 +120,6 @@ class LookaheadTest(BaseTest):
         self.assert_direct('ab', Any() + ~Lookahead('b') + Any(), [])
 
 
-class RepeatTest(TestCase):
-
-    def test_simple(self):
-        basicConfig(level=DEBUG)
-        self.assert_simple([1], 1, 1, 'd', ['0'])
-        self.assert_simple([1], 1, 2, 'd', ['0'])
-        self.assert_simple([2], 1, 1, 'd', ['0','1'])
-        self.assert_simple([2], 1, 2, 'd', ['0','1'])
-        self.assert_simple([2], 0, 2, 'd', ['0','1', ''])
-        self.assert_simple([1,2], 1, 1, 'd', ['0'])
-        self.assert_simple([1,2], 1, 2, 'd', ['00','01', '0'])
-        self.assert_simple([1,2], 2, 2, 'd', ['00','01'])
-        self.assert_simple([1,2], 1, 2, 'b', ['0', '00','01'])
-        self.assert_simple([1,2], 1, 2, 'g', ['00', '01','0'])
-        
-    def assert_simple(self, stream, start, stop, step, target):
-        result = [''.join(map(str, l)) 
-                  for (l, _s) in Repeat(RangeMatch(), start, stop, step).match_list(stream)]
-        assert target == result, result
-        
-    def test_mixin(self):
-        basicConfig(level=DEBUG)
-        r = RangeMatch()
-        self.assert_mixin(r[1:1], [1], ['0'])
-        self.assert_mixin(r[1:2], [1], ['0'])
-        self.assert_mixin(r[1:1], [2], ['0','1'])
-        self.assert_mixin(r[1:2], [2], ['0','1'])
-        self.assert_mixin(r[0:], [2], ['0','1', ''])
-        self.assert_mixin(r[:], [2], ['0','1', ''])
-        self.assert_mixin(r[0:2], [2], ['0','1', ''])
-        self.assert_mixin(r[1], [1,2], ['0'])
-        self.assert_mixin(r[1:2], [1,2], ['00','01', '0'])
-        self.assert_mixin(r[2], [1,2], ['00','01'])
-        self.assert_mixin(r[1:2:'b'], [1,2], ['0', '00','01'])
-        self.assert_mixin(r[1:2:'d'], [1,2], ['00', '01','0'])
-        try:        
-            self.assert_mixin(r[1::'x'], [1,2,3], [])
-            assert False, 'expected error'
-        except ValueError:
-            pass
-    
-    def assert_mixin(self, match, stream, target):
-        result = [''.join(map(str, l)) for (l, _s) in match.match_list(stream)]
-        assert target == result, result
-       
-    def test_separator(self):
-        basicConfig(level=DEBUG)
-        self.assert_separator('a', 1, 1, 'd', ['a'])
-        self.assert_separator('a', 1, 1, 'b', ['a'])
-        self.assert_separator('a,a', 1, 2, 'd', ['a,a', 'a'])
-        self.assert_separator('a,a', 1, 2, 'b', ['a', 'a,a'])
-        self.assert_separator('a,a,a,a', 2, 3, 'd', ['a,a,a', 'a,a'])
-        self.assert_separator('a,a,a,a', 2, 3, 'b', ['a,a', 'a,a,a'])
-        
-    def assert_separator(self, stream, start, stop, step, target):
-        result = [''.join(l) 
-                  for (l, _s) in Repeat(Any('abc'), start, stop, step, Any(',')).match_string(stream)]
-        assert target == result, result
-        
-    def test_separator_mixin(self):
-        basicConfig(level=DEBUG)
-        abc = Any('abc')
-        self.assert_separator_mixin(abc[1:1:'d',','], 'a', ['a'])
-        self.assert_separator_mixin(abc[1:1:'b',','], 'a', ['a'])
-        self.assert_separator_mixin(abc[1:2:'d',','], 'a,b', ['a,b', 'a'])
-        self.assert_separator_mixin(abc[1:2:'b',','], 'a,b', ['a', 'a,b'])
-        self.assert_separator_mixin(abc[2:3:'d',','], 'a,b,c,a', ['a,b,c', 'a,b'])
-        self.assert_separator_mixin(abc[2:3:'b',','], 'a,b,c,a', ['a,b', 'a,b,c'])
-
-    def assert_separator_mixin(self, matcher, stream, target):
-        result = [''.join(map(str, l)) for (l, _s) in matcher.match_string(stream)]
-        assert target == result, result
-    
-class RangeMatch(OperatorMatcher):
-    '''
-    We test repetition by looking at "strings" of integers, where the 
-    matcher for any particular value returns all values less than the
-    current value. 
-    '''
-    
-    def __init__(self):
-        super(RangeMatch, self).__init__()
-    
-    @tagged
-    def _match(self, values):
-        if values:
-            for i in range(values[0]):
-                yield ([i], values[1:])
-
-
-class SpaceTest(BaseTest):
-    
-    def test_space(self):
-        self.assert_direct('  ', Space(), [[' ']])
-        self.assert_direct('  ', Space()[0:], [[' ', ' '], [' '], []])
-        self.assert_direct('  ', Space()[0:,...], [['  '], [' '], []])
-        
-    def test_slash(self):
-        ab = Any('ab')
-        self.assert_direct('ab', ab / ab, [['a', 'b']])
-        self.assert_direct('a b', ab / ab, [['a', ' ', 'b']])
-        self.assert_direct('a  b', ab / ab, [['a', '  ', 'b']])
-        self.assert_direct('ab', ab // ab, [])
-        self.assert_direct('a b', ab // ab, [['a', ' ', 'b']])
-        self.assert_direct('a  b', ab // ab, [['a', '  ', 'b']])
-
- 
 class CommitTest(BaseTest):
     
     def test_commit(self):
@@ -629,3 +521,26 @@ class StrTest(TestCase):
     DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
     Transformation([<function add at 0x7f4dc50f9d10>])), 
    Literal(')'))))''')
+
+
+class ColumnsTest(BaseTest):
+    
+    def test_columns(self):
+        self.assert_direct('0123456789', 
+                           Columns(((0,3), Any()[3,...]),
+                                   ((0,4), Any()[4:,...]),
+                                   ((5,8), Any()[3:,...])),
+                           [['012', '0123', '567']])
+
+    def test_table(self):
+        basicConfig(level=DEBUG)
+        self.assert_direct(
+'''0123456789
+abcdefghij
+''', 
+                           Columns(((0,3), Any()[3:,...]),
+                                   ((0,4), Any()[4:,...]),
+                                   ((5,8), Any()[3:,...]))[:],
+                           [['012', '0123', '567',
+                             'abc', 'abcd', 'fgh']])
+

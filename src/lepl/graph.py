@@ -249,7 +249,7 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
       
     def _args(self, **kargs):
         '''
-        Set a *arg as an attribute (the signature uses kars so that the 
+        Set a *arg as an attribute (the signature uses kargs so that the 
         attribute name does not need to be quoted).  The name (without '*')
         is added to self.__arg_names.
         '''

@@ -44,8 +44,8 @@ class DefaultNamespace(Namespace):
     
     def __init__(self):
         # Handle circular dependencies
-        from lepl.matchers import And, Space, Add, Or, Apply, Drop, KApply, \
-            Repeat, raise_error, First, Map
+        from lepl.matchers import And, Or, raise_error, First
+        from lepl.functions import Space, Add, Apply, KApply, Drop, Repeat, Map
         super(DefaultNamespace, self).__init__({
             SPACE_OPT: lambda a, b: And(a, Space()[0:,...], b),
             SPACE_REQ: lambda a, b: And(a, Space()[1:,...], b),
@@ -113,11 +113,9 @@ class Override(Scope):
              KARGS: kargs, RAISE: raise_, FIRST: first, MAP: map_})
 
 
-class Separator(Override):
+class _BaseSeparator(Override):
     '''
-    Redefine ``[]`` and ``&`` to include the given matcher as a separator 
-    (so it will be used between list items and between matchers separated by the & 
-    operator)
+    Support class for `Separator` and similar classes.
     
     Uses the OPERATORS namespace.
     '''
@@ -128,36 +126,83 @@ class Separator(Override):
         then any previous defined separator is effectively removed.
         '''
         # Handle circular dependencies
-        from lepl.matchers import Regexp, And, Repeat, coerce_
+        from lepl.functions import Repeat
+        from lepl.matchers import Regexp, And, coerce_
         if separator is None:
             and_ = And
             repeat = Repeat
         else:
             separator = coerce_(separator, Regexp)
-            and_ = lambda a, b: And(a, separator, b)
-            def repeat(m, st=0, sp=None, d=0, s=None, a=False):
-                '''
-                Wrap `Repeat` to adapt the separator.
-                '''
-                if s is None:
-                    s = separator
-                elif not a:
-                    s = And(separator, s, separator)
-                return Repeat(m, st, sp, d, s, a)
-        super(Separator, self).__init__(and_=and_, repeat=repeat)
+            (and_, repeat) = self._replacements(separator)
+        super(_BaseSeparator, self).__init__(and_=and_, repeat=repeat)
+
+    def _replacements(self, _separator):
+        '''
+        Sub-classes should return (And, Repeat)
+        '''
+        raise Exception('Unimplemented')
+    
+    def _repeat(self, separator):
+        '''
+        A simple Repeat with separator.
+        '''
+        from lepl.functions import Repeat
+        from lepl.matchers import And
+        def repeat(m, st=0, sp=None, d=0, s=None, a=False):
+            '''
+            Wrap `Repeat` to adapt the separator.
+            '''
+            if s is None:
+                s = separator
+            elif not a:
+                s = And(separator, s, separator)
+            return Repeat(m, st, sp, d, s, a)
+        return repeat
+    
+
+class Separator(_BaseSeparator):
+    '''
+    Redefine ``[]`` and ``&`` to include the given matcher as a separator 
+    (so it will be used between list items and between matchers separated by the & 
+    operator)
+    
+    Uses the OPERATORS namespace.
+    '''
+    
+    def _replacements(self, separator):
+        '''
+        Require the separator on each `And`.
+        '''
+        # Handle circular dependencies
+        from lepl.matchers import And
+        return (lambda a, b: And(a, separator, b),
+                self._repeat(separator))
         
 
-#class UnsafeRepeat(Override):
-#    '''
-#    Allow unlimited repetition (by default [] uses `SafeRepeat`). 
-#    '''
-#    
-#    def __init__(self):
-#        # Handle circular dependencies
-#        from lepl.matchers import Repeat
-#        super(UnsafeRepeat, self).__init__(repeat=Repeat)
-        
-        
+class SmartSeparator1(_BaseSeparator):
+    '''
+    Similar to `Separator`, but tried to be clever about whether the 
+    separator is needed.  It replaces `&` with a matcher that only uses 
+    the separator if the second sub-matcher consumes some input.
+    
+    Uses the OPERATORS namespace.
+    '''
+    
+    def _replacements(self, separator):
+        '''
+        Require the separator on each `And`.
+        '''
+        # Handle circular dependencies
+        from lepl.matchers import Consumer, And, Or
+        def and_(a, b):
+            '''
+            Either work as normal if b consumes something, or don't use the
+            separator if b doesn't consume anything.
+            '''
+            return Or(And(a, And(separator, Consumer(b))),
+                      And(a, Consumer(b, False)))
+        return (and_, self._repeat(separator))
+   
         
 GREEDY = 'g'
 '''Flag (splice increment) for inefficient, guaranteed greedy matching.'''

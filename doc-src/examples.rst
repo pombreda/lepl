@@ -268,3 +268,11 @@ paging, over--clocked to 2.8GHz.  So for that machine a single parse of the
 expression given in the code takes between 0.003 and 0.2 seconds.
 
 
+
+.. index:: tables, columns, tabular data, Columns()
+.. _table_example:
+
+Tabular Data
+------------
+
+This is a simple example that shows how we can use 

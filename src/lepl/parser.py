@@ -104,7 +104,7 @@ class GeneratorWrapper(object):
         Lazily evaluated for speed - saves 1/3 of time spent in constructor
         '''
         if not self.describe:
-            self.describe = '{0}({1})'.format(self.matcher.describe, 
+            self.describe = '{0}({1!r})'.format(self.matcher.describe, 
                                               self.stream)
         return self.describe
         
@@ -243,7 +243,7 @@ def make_parser(matcher, stream, config):
     matcher = make_matcher(matcher, stream, config)
     def single(arg):
         '''
-        Adapt a matcher to behave s expected for the parser interface.
+        Adapt a matcher to behave as expected for the parser interface.
         '''
         try:
             return next(matcher(arg))[0]

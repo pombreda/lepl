@@ -106,6 +106,7 @@ Running this gives the result::
 
 from lepl.config import Configuration
 from lepl.error import *
+from lepl.functions import *
 from lepl.memo import * 
 from lepl.node import *
 from lepl.operators import * 
@@ -140,6 +141,8 @@ __all__ = [
         'Literal',
         'Empty',
         'Lookahead',
+        'Columns',
+        # functions
         'Apply',
         'args',
         'KApply',
@@ -182,6 +185,7 @@ __all__ = [
         'DropEmpty',
         'Literals',
         'String',
+        'SkipTo',
         'GREEDY',
         'NON_GREEDY',
         'DEPTH_FIRST',
@@ -195,7 +199,7 @@ __all__ = [
         # operators
         'Override',
         'Separator',
-#        'UnsafeRepeat',
+        'SmartSeparator1',
         # parser
         'Configuration',
         # lexer.matchers
@@ -230,7 +234,7 @@ __all__ = [
         'context_memoize',
         'optimize_or']
 
-__version__ = '3.0a1'
+__version__ = '3.0a2'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

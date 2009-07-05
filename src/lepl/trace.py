@@ -82,10 +82,10 @@ class _TraceResults(ExposedMonitor):
         if self.enabled > 0:
             self.generator = generator
             if type(value) is StopIteration:
-                self.action = ' stop -> {0}({1!s})'.format(
+                self.action = ' stop -> {0}({1!r})'.format(
                             generator.matcher.describe, generator.stream)
             else:
-                self.action = '{2!r} -> {0}({1!s})'.format(
+                self.action = '{2!r} -> {0}({1!r})'.format(
                             generator.matcher.describe, generator.stream, value)
     
     def after_throw(self, value):

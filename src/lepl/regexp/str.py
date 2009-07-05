@@ -166,8 +166,8 @@ def make_str_parser(alphabet):
     '''
     
     # Avoid dependency loops
-    from lepl.matchers \
-        import Drop, Any, Lookahead, AnyBut, Literal, Delayed, Eos
+    from lepl.functions import Drop, Eos, AnyBut
+    from lepl.matchers import Any, Lookahead, Literal, Delayed
     
     dup = lambda x: (alphabet.from_char(x), alphabet.from_char(x))
     tup = lambda x: (alphabet.from_char(x[0]), alphabet.from_char(x[1]))

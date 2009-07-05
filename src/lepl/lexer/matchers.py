@@ -26,13 +26,12 @@ from abc import ABCMeta
 
 from lepl.context import Namespace, NamespaceMixin, Scope
 from lepl.error import syntax_error_kargs
+from lepl.functions import Add, Apply, Drop, KApply, Repeat, Map
 from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream
-from lepl.matchers \
-    import OperatorMatcher, BaseMatcher, coerce_, Any, Literal, Lookahead, \
-    Regexp, And, Add, Or, Apply, Drop, KApply, Repeat, raise_error, First, Map
-from lepl.operators \
-    import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, KARGS, RAISE, \
-    REPEAT, FIRST, MAP
+from lepl.matchers import OperatorMatcher, BaseMatcher, coerce_, Any, \
+    Literal, Lookahead, Regexp, And, Or, raise_error, First
+from lepl.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
+    KARGS, RAISE, REPEAT, FIRST, MAP
 from lepl.parser import tagged
 from lepl.regexp.matchers import BaseRegexp, Regexp
 from lepl.regexp.rewriters import regexp_rewriter

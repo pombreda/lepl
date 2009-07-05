@@ -154,7 +154,8 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
     # they should return either a container or a matcher.
     
     # Avoid dependency loops
-    from lepl.matchers import Any, Or, And, add, Transformable, \
+    from lepl.functions import add
+    from lepl.matchers import Any, Or, And, Transformable, \
         Transform, Transformation, Literal, DepthFirst
 
     log = getLogger('lepl.regexp.rewriters.make_clone')

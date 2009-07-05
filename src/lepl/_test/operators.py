@@ -20,11 +20,11 @@
 Tests for the lepl.operators module.
 '''
 
-from logging import basicConfig, DEBUG
 from threading import Thread
 from unittest import TestCase
 
-from lepl import Delayed, Any, Eos, Drop, Separator, Literal, Space
+from lepl import Delayed, Any, Eos, Drop, Separator, Literal, Space, \
+    SmartSeparator1, Optional
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102
@@ -37,7 +37,6 @@ class ThreadTest(TestCase):
     '''
     
     def test_safety(self):
-        basicConfig(level=DEBUG)
         matcher3 = Delayed()
         matcher4 = Delayed()
         matcher1 = Any()[::'b',...] & Eos()
@@ -76,3 +75,19 @@ class SpaceTest(TestCase):
                 s2 = self.word()[1:].string_parser()
                 assert s2("abc")
                 assert not s2("a bc")
+
+
+class SmartSpace1Test(TestCase):
+    
+    def test_smart_spaces(self):
+        with SmartSeparator1(Space()):
+            parser = 'a' &  Optional('b') & 'c' & Eos()
+        assert parser.parse('a b c')
+        assert parser.parse('a c')
+        assert not parser.parse('a b c ')
+        assert not parser.parse('a c ')
+        assert not parser.parse('a bc')
+        assert not parser.parse('ab c')
+        assert not parser.parse('abc')
+        assert not parser.parse('ac')
+        assert not parser.parse('a  c')
