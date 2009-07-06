@@ -508,8 +508,8 @@ def String(quote='"', escape='\\'):
     content = AnyBut(q)
     if escape:
         content = Or(content, And(Drop(escape), q))
-    content = Add(content) 
-    return Drop(q) & content & Drop(q)
+    content = Repeat(content, add_=True) 
+    return And(Drop(q), content, Drop(q))
 
 
 def SkipTo(matcher, include=True):

@@ -50,8 +50,8 @@ class RegexpCompilationTest(TestCase):
         token = Token(Float())
         token.compile()
         assert token.regexp == \
-            '([\\+\\-]|)([0-9]([0-9])*(\\.|)|([0-9]([0-9])*|)\\.' \
-            '[0-9]([0-9])*)([Ee]([\\+\\-]|)[0-9]([0-9])*|)', \
+            '([\\+\\-]|)(([0-9]([0-9])*|)\\.[0-9]([0-9])*|' \
+            '[0-9]([0-9])*(\\.|))([Ee]([\\+\\-]|)[0-9]([0-9])*|)', \
             repr(token.regexp)
         
     def test_impossible(self):
