@@ -23,7 +23,8 @@ Tests for the lepl.regexp.rewriters module.
 from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl import Any, NfaRegexp, Configuration, Literal, compose_transforms
+from lepl import Any, NfaRegexp, Configuration, Literal, compose_transforms, \
+    Add, And, Integer, Float
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
 
@@ -53,8 +54,15 @@ class RewriteTest(TestCase):
         assert results == [(['a'], 'q')], results
         assert isinstance(matcher.matcher, NfaRegexp)
         
-    def test_and(self):
+    def test_plus(self):
         rx = Any('a') + Any('b') 
+        matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
+        results = list(matcher('abq'))
+        assert results == [(['ab'], 'q')], results
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        
+    def test_add(self):
+        rx = Add(And(Any('a'), Any('b'))) 
         matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
         results = list(matcher('abq'))
         assert results == [(['ab'], 'q')], results
@@ -99,3 +107,18 @@ class RewriteTest(TestCase):
         results = list(matcher('ba'))
         assert results == [], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+
+    def test_integer(self):
+        rx = Integer()
+        matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
+        results = list(matcher('12x'))
+        assert results == [(['12'], 'x'), (['1'], '2x')], results
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        
+    def test_float(self):
+        rx = Float()
+        matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
+        results = list(matcher('1.2x'))
+        assert results == [(['1.2'], 'x'), (['1.'], '2x'), (['1'], '.2x')], results
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        

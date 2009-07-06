@@ -965,7 +965,7 @@ class _Columns(OperatorMatcher):
     and only succeeds if all matchers succeed.  The results are returned in
     a list, in the same order as the matchers are specified.
     
-    A range if indices is given a tuple (start, stop) which works like an
+    A range if indices is given as a tuple (start, stop) which works like an
     array index.  So (0, 4) selects the first four characters (like [0:4]).
     Alternatively, a number of characters can be given, in which case they
     start where the previous column finished (or at zero for the first).
@@ -974,7 +974,7 @@ class _Columns(OperatorMatcher):
     separate stream.  If a matcher should consume the entire column then
     it should check for `Eos`.
     
-    Finally, the skip method allows control of how much input is consumed.  If 
+    Finally, the skip parameter allows control of how much input is consumed.  If 
     it is unset the remaining stream starts after the final column matched. 
     
     Note that with backtracking this matcher can be quite expensive, because
@@ -1050,7 +1050,7 @@ def Columns(*columns, **kargs):
     '''
     Provide a cleaner syntax to `_Columns` (we can't do this directly
     because the clone function isn't smart enough to unpack complex
-    arguments. 
+    arguments). 
     '''
     from lepl.functions import SkipTo, Newline, Eos
     if _SKIP in kargs:

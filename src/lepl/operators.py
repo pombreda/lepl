@@ -186,6 +186,8 @@ class SmartSeparator1(_BaseSeparator):
     the separator if the second sub-matcher consumes some input.
     
     Uses the OPERATORS namespace.
+    
+    See also `SmartSeparator2`
     '''
     
     def _replacements(self, separator):

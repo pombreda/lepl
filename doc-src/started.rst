@@ -250,7 +250,7 @@ LEPL can be extended in several ways:
 
 * You can write your own matchers (see the LEPL source for examples; they
   should inherit from `BaseMatcher
-  <api/redirect.html#lepl.matchers.BaseMatcher>`_ to take full advantage of
+  <api/redirect.html#lepl.functions.BaseMatcher>`_ to take full advantage of
   the operator syntax).
 
 * You can even change the definition of operators (``&``, ``/`` etc; see

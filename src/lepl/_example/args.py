@@ -49,7 +49,7 @@ class ArgsExample(Example):
             tuple_ = Drop('(') & value[:, comma] & Drop(')') > tuple
             value += list_ | tuple_ | item  
             arg    = value                                   >> 'arg'
-            karg   = (ident & Drop('=') & value              > tuple) >> 'karg'
+            karg   = ((ident & Drop('=') & value)            > tuple) >> 'karg'
             expr   = (karg | arg)[:, comma] & Drop(Eos())    > Node
             
         parser = expr.string_parser()

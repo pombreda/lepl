@@ -85,7 +85,7 @@ Use Delayed() For Recursive Definitions
 
 Sometimes a grammar needs to refer to matchers before they are defined.  The
 `Delayed() <api/redirect.html#lepl.match.Delayed>`_ matcher acts as a
-placeholder which can be passed to other matchers.  It can be defined later
+placeholder which can be passed to other functions.  It can be defined later
 using ``+=``::
 
   >>> expr   = Delayed()

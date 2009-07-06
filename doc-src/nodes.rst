@@ -60,7 +60,7 @@ results.  With LEPL they are easy to construct with ``> list``::
 
   (Since ``list`` is idempotent (or a fixed point or something) ---
   ``list(list(x)) == list(x)`` --- the operator ``>``
-  (`lepl.matchers.Apply(raw=false)`) actually has to add wrap the result of
+  (`lepl.functions.Apply(raw=false)`) actually has to add wrap the result of
   any function in a list.  If this comment is confusing, please ignore it, but
   it may help explain an otherwise annoying design detail.)
 

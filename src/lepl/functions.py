@@ -232,21 +232,21 @@ def AnyBut(exclude=None):
     The argument should be a list of tokens (or a string of suitable 
     characters) to exclude, or a matcher.  If omitted all tokens are accepted.
     '''
-    return ~Lookahead(coerce_(exclude, Any)) & Any().tag('AnyBut')
+    return And(~Lookahead(coerce_(exclude, Any)), Any()).tag('AnyBut')
             
 
 def Optional(matcher):
     '''
     Match zero or one instances of a matcher (**[0:1]**).
     '''
-    return coerce_(matcher)[0:1]
+    return Repeat(coerce_(matcher), stop=1)
 
 
 def Star(matcher):
     '''
     Match zero or more instances of a matcher (**[0:]**)
     '''
-    return coerce_(matcher)[:]
+    return Repeat(coerce_(matcher))
 
 
 ZeroOrMore = Star
@@ -259,7 +259,7 @@ def Plus(matcher):
     '''
     Match one or more instances of a matcher (**[1:]**)
     ''' 
-    return coerce_(matcher)[1:]
+    return Repeat(coerce_(matcher), start=1)
 
 
 OneOrMore = Plus
@@ -308,18 +308,29 @@ def Add(matcher):
     '''
     Join tokens in the result using the "+" operator (**+**).
     This joins strings and merges lists.  
-    It can be used indirectly by placing ``+`` between matchers.
     '''
     return Apply(matcher, Transformation(add)).tag('Add')
 
 
+def Join(*matchers):
+    '''
+    Combine many matchers together with Add(And(...)).
+    It can be used indirectly by placing ``+`` between matchers.
+    '''
+    return Add(And(*matchers))
+
+
 def Drop(matcher):
-    '''Do the match, but return nothing (**~**).  The ~ prefix is equivalent.'''
+    '''
+    Do the match, but return nothing (**~**).  The ~ prefix is equivalent.
+    '''
     return Apply(matcher, lambda l: [], raw=True).tag('Drop')
 
 
 def Substitute(matcher, value):
-    '''Replace each return value with that given.'''
+    '''
+    Replace each return value with that given.
+    '''
     return Map(matcher, lambda x: value).tag('Substitute')
 
 
@@ -345,7 +356,7 @@ def Identity(matcher):
 
 def Newline():
     '''Match newline (Unix) or carriage return newline (Windows)'''
-    return Literal('\n') | Literal('\r\n')
+    return Or(Literal('\n'), Literal('\r\n'))
 
 
 def Space(space=' \t'):
@@ -393,12 +404,12 @@ def Punctuation():
 
 def UnsignedInteger():
     '''Match a  simple sequence of digits.'''
-    return Digit()[1:, ...]
+    return Repeat(Digit(), start=1, add_=True)
 
 
 def SignedInteger():
     '''Match a sequence of digits with an optional initial sign.'''
-    return Any('+-')[0:1] + UnsignedInteger()
+    return Add(And(Optional(Any('+-')), UnsignedInteger()))
 
     
 Integer = SignedInteger
@@ -409,13 +420,15 @@ The default integer is a signed one.
 
 def UnsignedFloat(decimal='.'):
     '''Match a sequence of digits that may include a decimal point.'''
-    return (UnsignedInteger() + Optional(Any(decimal))) \
-        | (UnsignedInteger()[0:1] + Any(decimal) + UnsignedInteger())
+    return Or(Join(Optional(UnsignedInteger()), 
+                   Any(decimal), UnsignedInteger()),
+              Join(UnsignedInteger(), Optional(Any(decimal))))
+              
 
     
 def SignedFloat(decimal='.'):
     '''Match a signed sequence of digits that may include a decimal point.'''
-    return Any('+-')[0:1] + UnsignedFloat(decimal)
+    return Join(Optional(Any('+-')), UnsignedFloat(decimal))
     
     
 def UnsignedEFloat(decimal='.', exponent='eE'):
@@ -423,7 +436,8 @@ def UnsignedEFloat(decimal='.', exponent='eE'):
     Match an `UnsignedFloat` followed by an optional exponent 
     (e+02 etc).
     '''
-    return UnsignedFloat() + (Any(exponent) + SignedInteger())[0:1]
+    return Join(UnsignedFloat(decimal), 
+                Optional(And(Any(exponent), SignedInteger())))
 
     
 def SignedEFloat(decimal='.', exponent='eE'):
@@ -431,7 +445,8 @@ def SignedEFloat(decimal='.', exponent='eE'):
     Match a `SignedFloat` followed by an optional exponent 
     (e+02 etc).
     '''
-    return SignedFloat() + (Any(exponent) + SignedInteger())[0:1]
+    return Join(SignedFloat(decimal), 
+                Optional(Join(Any(exponent), SignedInteger())))
 
     
 Float = SignedEFloat
@@ -456,7 +471,7 @@ def Word(chars=AnyBut(Whitespace()), body=None):
     '''
     chars = coerce_(chars, Any)
     body = chars if body is None else coerce_(body, Any)
-    return chars + body[0:,...]
+    return Add(And(chars, Star(body)))
  
  
 def DropEmpty(matcher):
@@ -491,8 +506,9 @@ def String(quote='"', escape='\\'):
     '''
     q = Literal(quote)
     content = AnyBut(q)
-    if escape: content = content | (Drop(escape) & q)
-    content = content[...] 
+    if escape:
+        content = Or(content, And(Drop(escape), q))
+    content = Add(content) 
     return Drop(q) & content & Drop(q)
 
 
@@ -502,9 +518,6 @@ def SkipTo(matcher, include=True):
     default) the matcher.  Returns all the skipped data, joined.
     '''
     if include:
-        return Add(AnyBut(matcher)[:, ...] & matcher)
+        return Add(And(Star(AnyBut(matcher)), matcher))
     else:
-        return AnyBut(matcher)[:, ...] & Lookahead(matcher)
-
-
-        
+        return And(Add(Star(AnyBut(matcher))), Lookahead(matcher))

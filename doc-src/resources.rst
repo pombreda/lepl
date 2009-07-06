@@ -110,15 +110,15 @@ An alternative to the above, automatic management of generators, is to
 explicitly remove non--active generators as part of the search process.  This
 is similar to Prolog's *cut*, I believe.
 
-The `Commit() <api/redirect.html#lepl.matchers.Commit>`_ matcher does this: it
+The `Commit() <api/redirect.html#lepl.functions.Commit>`_ matcher does this: it
 discards all non--active generators.
 
-For `Commit() <api/redirect.html#lepl.matchers.Commit>`_ to work the
+For `Commit() <api/redirect.html#lepl.functions.Commit>`_ to work the
 `GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_ must
 maintain references to generators.  This occurs when the ``queue_len`` value
 is 0, which stores references but does not cause :ref:`limiting`.
 
-See also `First() <api/redirect.html#lepl.matchers.First>`_.
+See also `First() <api/redirect.html#lepl.functions.First>`_.
 
 If this is useful, I'd really appreciate a good, short example to put here.
 
@@ -137,14 +137,14 @@ resource management.  They do have an advantages when reading files, as they
 store the file path, which can be used in error messages.
 
 Streams are created automatically by methods like `parse_string()
-<api/redirect.html#lepl.matchers.BaseMatcher.parse_string>`_, `string_parser()
-<api/redirect.html#lepl.matchers.BaseMatcher.string_parser>`_, `match_string()
-<api/redirect.html#lepl.matchers.BaseMatcher.match_string>`_,
+<api/redirect.html#lepl.functions.BaseMatcher.parse_string>`_, `string_parser()
+<api/redirect.html#lepl.functions.BaseMatcher.string_parser>`_, `match_string()
+<api/redirect.html#lepl.functions.BaseMatcher.match_string>`_,
 `string_matcher()
-<api/redirect.html#lepl.matchers.BaseMatcher.string_matcher>`_ etc.  But the
-methods `parse() <api/redirect.html#lepl.matchers.BaseMatcher.parse>`_,
-`null_parser() <api/redirect.html#lepl.matchers.BaseMatcher.null_parser>`_,
-`match() <api/redirect.html#lepl.matchers.BaseMatcher.match>`_,
-`null_matcher() <api/redirect.html#lepl.matchers.BaseMatcher.null_matcher>`_
+<api/redirect.html#lepl.functions.BaseMatcher.string_matcher>`_ etc.  But the
+methods `parse() <api/redirect.html#lepl.functions.BaseMatcher.parse>`_,
+`null_parser() <api/redirect.html#lepl.functions.BaseMatcher.null_parser>`_,
+`match() <api/redirect.html#lepl.functions.BaseMatcher.match>`_,
+`null_matcher() <api/redirect.html#lepl.functions.BaseMatcher.null_matcher>`_
 do not do so.
 

@@ -16,24 +16,9 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,C0321,C0324,C0103,W0621,W0703
-# (the code style is for documentation, not "real")
-
 '''
-Examples from the documentation.
+Contributed code.  For now I'm keeping it in a sepaarte module to simplify
+licencing/copyright.  This may change in the future.
 '''
 
-from unittest import TestCase
-from traceback import format_exception_only, print_exc
 
-
-class Example(TestCase):
-    
-    def examples(self, examples):
-        for (example, target) in examples:
-            try:
-                result = str(example())
-            except Exception as e:
-                print_exc()
-                result = ''.join(format_exception_only(type(e), e))
-            assert target == result, '"' + result + '" != "' + target + '"'

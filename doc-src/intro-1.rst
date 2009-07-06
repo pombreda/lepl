@@ -47,13 +47,13 @@ is all you will need.
 In the rest of the examples below I will assume that you have already imported
 this module.
 
-The second line creates a matcher --- `SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_ --- and uses it to
+The second line creates a matcher --- `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ --- and uses it to
 match the text "123".  The result is a list that contains the text "123".
 
-In other words, `SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_ looked at "123" and recognised that it was a
+In other words, `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ looked at "123" and recognised that it was a
 number.
 
-What would happen if we gave `SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_ something that wasn't a number?
+What would happen if we gave `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ something that wasn't a number?
 We can try it and see::
 
   >>> SignedFloat().parse('cabbage')
@@ -75,7 +75,7 @@ Ambiguity
 ---------
 
 In fact, LEPL doesn't know that "123" is a single number.  Because of the way
-`SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_ is defined internally, it gives the `longest` number it can
+`SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ is defined internally, it gives the `longest` number it can
 find.  But that doesn't mean it is the only possibility.  We can see all the
 different possibilities by calling ``match()`` instead of ``parse()``:
 
@@ -99,7 +99,7 @@ Or we can create a list directly:
   >>> list(SignedFloat().match('123'))
   [(['123'], ''), (['12'], '3'), (['1'], '23')]
 
-Either way we can see that `SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_ is giving us a choice of
+Either way we can see that `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ is giving us a choice of
 different results.  It can match the number "123", or the number "12", or the
 number "1".
 
@@ -158,9 +158,9 @@ also returns the remaining string, just as I described earlier.
 
 Perhaps now it is clearer why the remaining text is important?  Using ``&``
 tells LEPL to give that remaining text to the next matcher.  So when "12+34"
-is given to the `SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_ it matches "12" and leaves "+34"; the "+34"
+is given to the `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ it matches "12" and leaves "+34"; the "+34"
 is then given to ``Literal('+')``, which matches "+" and leaves "34"; the "34"
-is then given to the second `SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_ which completes the task.
+is then given to the second `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ which completes the task.
 
 Implicit Literals
 -----------------
@@ -204,7 +204,7 @@ We can indicate that a match should be ignored by preceding the matcher with
   ['12', '30']
 
 Just like ``&``, this is shorthand for another matcher, in this case
-`Drop() <api/redirect.html#lepl.matchers.Drop>`_::
+`Drop() <api/redirect.html#lepl.functions.Drop>`_::
 
   >>> add = SignedFloat() & Drop(Literal('+')) & SignedFloat()
   >>> add.parse('12+30')
@@ -299,14 +299,14 @@ What have we learnt so far?
 * To use LEPL we must first use import the lepl module: ``from lepl import
   *``.
 
-* LEPL builds up a parser using matchers.
+* LEPL builds up a parser using functions.
 
 * Matchers can return one value (with ``parse()``) or all possible values
   (with ``match()``).
 
 * We can join matchers together with ``&`` or ``And()``.
 
-* We can ignore the results of a matcher with ``~`` or `Drop() <api/redirect.html#lepl.matchers.Drop>`_.
+* We can ignore the results of a matcher with ``~`` or `Drop() <api/redirect.html#lepl.functions.Drop>`_.
 
 * We can process each value in a list of results with ``>>``.
 

@@ -113,7 +113,7 @@ which makes LEPL robust to left--recursive grammars.
 Parser Rewriting
 ----------------
 
-A parser is constructed from a set of matchers.  The matchers form a directed
+A parser is constructed from a set of functions.  The matchers form a directed
 (possibly cyclic) graph.  By storing the constructor arguments for the
 matcher objects (and knowing their types, which are constructors in Python) we
 can reconstruct (and, more generally, rewrite) the graph.

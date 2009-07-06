@@ -27,7 +27,7 @@ The rewriters are described below (:ref:`rewriting`).
 
 The monitor (which is passed to `trampoline()
 <api/redirect.html#lepl.parser.trampoline>`_) enables the `Trace()
-<api/redirect.html#lepl.matchers.Trace>`_.
+<api/redirect.html#lepl.functions.Trace>`_.
 
 
 .. index:: rewriting
@@ -58,14 +58,14 @@ rewriters are available:
 Flatten And, Or
 
   The `flatten <api/redirect.html#lepl.rewriters.flatten>`_ rewriter
-  combines nested `And() <api/redirect.html#lepl.matchers.And>`_ and `Or()
-  <api/redirect.html#lepl.matchers.Or>`_ matchers.  This helps improve
+  combines nested `And() <api/redirect.html#lepl.functions.And>`_ and `Or()
+  <api/redirect.html#lepl.functions.Or>`_ functions.  This helps improve
   efficiency.
 
   Nested matchers typically occur because each ``&`` and ``|`` operator
   generates a new matcher, so a sequence of matchers separated by ``&``, for
-  example, generates several `And() <api/redirect.html#lepl.matchers.And>`_
-  matchers.  This rewriter moves them into a single matcher, as might be
+  example, generates several `And() <api/redirect.html#lepl.functions.And>`_
+  functions.  This rewriter moves them into a single matcher, as might be
   expected from reading the grammar.  This should not change the "meaning" of
   the grammar or the results returned.
 
@@ -76,10 +76,10 @@ Flatten And, Or
 
 Composing and Merging Transforms
 
-  The `Transform() <api/redirect.html#lepl.matchers.Transform>`_ matcher is
+  The `Transform() <api/redirect.html#lepl.functions.Transform>`_ matcher is
   the "workhorse" that underlies `Apply()
-  <api/redirect.html#lepl.matchers.Apply>`_, ``>``, etc.  It changes the
-  results returned by other matchers.
+  <api/redirect.html#lepl.functions.Apply>`_, ``>``, etc.  It changes the
+  results returned by other functions.
 
   Because transforms are not involved in the work of matching --- they just
   modify the final results --- the effects of adjacent instances can be
@@ -100,7 +100,7 @@ Composing and Merging Transforms
 Global Memoizer
 
   The `memoize() <api/redirect.html#lepl.rewriters.memoize>`_ rewriter applies
-  a single memoizer to all matchers.  For more information see
+  a single memoizer to all functions.  For more information see
   :ref:`memoisation` below.
 
 
@@ -110,20 +110,20 @@ Global Memoizer
 Optimize Or For Left Recursion
 
   When a left--recursive rule occurs in an `Or()
-  <api/redirect.html#lepl.matchers.Or>`_ matcher it is usually most efficient
+  <api/redirect.html#lepl.functions.Or>`_ matcher it is usually most efficient
   to make it the right--most alternative.  This allows other rules to consume
   input before the recursive rule is (re-)called.
 
   The `optimize_or(conservative)
   <api/redirect.html#lepl.rewriters.optimize_or>`_ rewriter tries to detect
   left--recursive rules and re-arranges `Or()
-  <api/redirect.html#lepl.matchers.Or>`_ matcher contents appropriately.
+  <api/redirect.html#lepl.functions.Or>`_ matcher contents appropriately.
 
   The ``conservative`` parameter supplied to this rewriter (and a few more
   below) indicates how left--recursive rules are detected.  If true, all
   recursive paths are assumed to be left recursive.  If false then only those
   matchers that are in the left--most position of multiple arguments are used
-  (except for `Or() <api/redirect.html#lepl.matchers.Or>`_).
+  (except for `Or() <api/redirect.html#lepl.functions.Or>`_).
 
   This matcher is used in the default :ref:`configuration` via the
   `auto_memoize(conservative)
@@ -136,7 +136,7 @@ Context--Sensitive Memoisation
 
   The `context_memoize(conservative)
   <api/redirect.html#lepl.rewriters.context_memoize>`_ rewriter applies a
-  memoizer to all matchers.  Whether `LMemo()
+  memoizer to all functions.  Whether `LMemo()
   <api/redirect.html#lepl.memo.LMemo>`_ or the `RMemo()
   <api/redirect.html#lepl.memo.RMemo>`_ depends on whether the matcher is part
   of a left--recursive rule.
@@ -173,7 +173,7 @@ Rewriting as Regular Expressions
   <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ rewriter
   attempts to replace matchers with a regular expression.  This gives a
   significant increase in efficiency if the parser matches complex strings
-  (for example, `Float() <api/redirect.html#lepl.matchers.Float>`_).
+  (for example, `Float() <api/redirect.html#lepl.functions.Float>`_).
 
   It is not used by default 
   because it requires the data being matched to be a particular type, but
@@ -221,7 +221,7 @@ option, indicating that the matching is *greedy*.
 
 *Non-greedy* (generous?) matching is achieved by specifying an array slice
 increment of ``'b'`` (or `BREADTH_FIRST
-<api/redirect.html#lepl.matchers.BREADTH_FIRST>`_)::
+<api/redirect.html#lepl.functions.BREADTH_FIRST>`_)::
 
   >>> any = Any()[::'b',...]
   >>> split = any & any & Eos()
@@ -231,12 +231,12 @@ increment of ``'b'`` (or `BREADTH_FIRST
   [['****'], ['*', '***'], ['**', '**'], ['***', '*'], ['****']]
 
 The greedy and non--greedy repetitions are implemented by depth (default,
-``'d'``, or `DEPTH_FIRST <api/redirect.html#lepl.matchers.DEPTH_FIRST>`_),
+``'d'``, or `DEPTH_FIRST <api/redirect.html#lepl.functions.DEPTH_FIRST>`_),
 and breadth--first searches (``'b'`` or `BREADTH_FIRST
-<api/redirect.html#lepl.matchers.BREADTH_FIRST>`_), respectively.
+<api/redirect.html#lepl.functions.BREADTH_FIRST>`_), respectively.
 
 In addition, by specifying a slice increment of ``'g'`` (`GREEDY
-<api/redirect.html#lepl.matchers.GREEDY>`_), you can request a *guaranteed
+<api/redirect.html#lepl.functions.GREEDY>`_), you can request a *guaranteed
 greedy* match.  This evaluates all possibilities, before returning them in
 reverse length order.  Typically this will be identical to depth--first
 search, but it is possible for backtracking to produce a longer match in
@@ -244,7 +244,7 @@ complex cases --- this final option, by evaluating all cases, re--orders the
 results as necessary.
 
 Specifying ``'n'`` (`NON_GREEDY
-<api/redirect.html#lepl.matchers.NON_GREEDY>`_) gets the reverse ordering.
+<api/redirect.html#lepl.functions.NON_GREEDY>`_) gets the reverse ordering.
 
 The tree implicit in the descriptions "breadth--first" and "depth--first" is
 not the AST, nor the tree of matchers, but a tree based on matchers and
@@ -254,23 +254,23 @@ to the various streams returned by the current match (none if this is a final
 node, one for a simple match, several if the matcher backtracks).
 
 So far so good.  Unfortunately the process is more complicated for `And()
-<api/redirect.html#lepl.matchers.And>`_ and `Or()
-<api/redirect.html#lepl.matchers.Or>`_.
+<api/redirect.html#lepl.functions.And>`_ and `Or()
+<api/redirect.html#lepl.functions.Or>`_.
 
-In the case of `And() <api/redirect.html#lepl.matchers.And>`_, the first
+In the case of `And() <api/redirect.html#lepl.functions.And>`_, the first
 matcher is matched first.  The child nodes correspond to the various (with
 backtracking) results of this match.  At each child node, the second matcher
 is applied, generating new children.  This repeats until the scope of the
-`And() <api/redirect.html#lepl.matchers.And>`_ terminates at a depth in the
+`And() <api/redirect.html#lepl.functions.And>`_ terminates at a depth in the
 tree corresponding to the children of the last matcher.  Since `And()
-<api/redirect.html#lepl.matchers.And>`_ fails unless all matchers match, only
+<api/redirect.html#lepl.functions.And>`_ fails unless all matchers match, only
 the final child nodes are possible results.  As a consequence, both breadth
 and depth first searches would return the same ordering.  The `And()
-<api/redirect.html#lepl.matchers.And>`_ match is therefore unambiguous and the
+<api/redirect.html#lepl.functions.And>`_ match is therefore unambiguous and the
 implementation has no way to specify the (essentially meaningless) choice
 between the two searches.
 
-In the case of `Or() <api/redirect.html#lepl.matchers.Or>`_ we must select
+In the case of `Or() <api/redirect.html#lepl.functions.Or>`_ we must select
 both the matcher and the result from the results available for that matcher.
 A natural approach is to assign the first generation of children to the choice
 of matcher, and the second level to the choice of result for the (parent)

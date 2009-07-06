@@ -32,7 +32,7 @@ Explicit Spaces
 ---------------
 
 The simplest way to handle spaces is to add them to the parser.  LEPL includes
-the `Space() <api/redirect.html#lepl.matchers.Space>`_ matcher which recognises a single space::
+the `Space() <api/redirect.html#lepl.functions.Space>`_ matcher which recognises a single space::
 
   >>> number = SignedFloat() >> float
   >>> add = number & ~Space() & ~Literal('+') & ~Space() & number > sum
@@ -55,7 +55,7 @@ would like to match any number of spaces.  There are various ways of doing
 this.  If you are used to using regular expressions you may realise that this
 is what the "*" symbol does.  And in LEPL we have something similar.
 
-The `Star() <api/redirect.html#lepl.matchers.Star>`_ matcher repeats its argument as may times as necessary
+The `Star() <api/redirect.html#lepl.functions.Star>`_ matcher repeats its argument as may times as necessary
 (including none at all).  This is what we need for our spaces::
 
   >>> number = SignedFloat() >> float
@@ -76,7 +76,7 @@ Note that I included a ``~`` in the definition of ``spaces`` so that they are
 Repetition
 ----------
 
-As well as `Star() <api/redirect.html#lepl.matchers.Star>`_, LEPL supports a more general way of specifying
+As well as `Star() <api/redirect.html#lepl.functions.Star>`_, LEPL supports a more general way of specifying
 repetitions.  This uses Python's array syntax, which looks a bit odd at first,
 but turns out to be a really neat, compact, powerful way of describing what we
 want.
@@ -124,7 +124,7 @@ array index "step" of 'b' (short for "breadth--first search"; the default is
   >>> list(a[2:4:'b'].match('aaaaa'))
   [(['a', 'a'], 'aaa'), (['a', 'a', 'a'], 'aa'), (['a', 'a', 'a', 'a'], 'a')]
 
-Putting all that together, `Star() <api/redirect.html#lepl.matchers.Star>`_ is the same as ``[:]`` (which starts at
+Putting all that together, `Star() <api/redirect.html#lepl.functions.Star>`_ is the same as ``[:]`` (which starts at
 zero, takes as many as possible, and returns the longest match first).
 
 So we can write our parser like this::
@@ -139,7 +139,7 @@ So we can write our parser like this::
   >>> add.parse('12+     30')
   [42.0]
 
-That's perhaps not as clear as using `Star() <api/redirect.html#lepl.matchers.Star>`_, but personally I prefer this
+That's perhaps not as clear as using `Star() <api/redirect.html#lepl.functions.Star>`_, but personally I prefer this
 approach so I'll continue to use it below.
 
 .. index:: ...
@@ -333,7 +333,7 @@ symbols::
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
 
 I said that we defined tokens with regular expressions, but the definition of
-``value`` above seems to use the matcher `SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_.  This is because
+``value`` above seems to use the matcher `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_.  This is because
 LEPL can automatically convert some matchers into regular expressions, saving
 us the work (it really does convert them, piece by piece, so it is not limited
 to the built--in matchers, but it is limited by how the matcher is constructed
@@ -396,11 +396,11 @@ The string at the end of each "DEBUG" log line is the text of the token that
 was found.
 
 So we can see that the lexer (the part of LEPL that generates the tokens) is
-identifying two tokens, both of which are `SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_ matches.  It has
+identifying two tokens, both of which are `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ matches.  It has
 ignored the possibility of matching "+" as a ``symbol`` because `regular
 expressions return the longest match` and "+" is shorter than "+30".
 
-If you're not sure that "+30" is a valid `SignedFloat() <api/redirect.html#lepl.matchers.SignedFloat>`_ it's easy to
+If you're not sure that "+30" is a valid `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ it's easy to
 check::
 
   >>> SignedFloat().parse('+30')

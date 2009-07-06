@@ -211,11 +211,11 @@ A `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ can be passed to a 
 string.  The matchers will "automatically" match and construct the binary data.
 
 The ``lepl.bin.matchers`` package defines some additional matchers to help
-match literal binary values.  These include `Const() <api/redirect.html#lepl.bin.matchers.Const>`_ for matching a
+match literal binary values.  These include `Const() <api/redirect.html#lepl.bin.functions.Const>`_ for matching a
 constant value, and ``BEnd(length)`` for matching a big-endian value of a
 certain length (``LEnd(length)`` is similar for little-endian values).
 
-The example below is rather detailed, but it shows `Const() <api/redirect.html#lepl.bin.matchers.Const>`_ and `BEnd() <api/redirect.html#lepl.bin.matchers.BEnd>`_
+The example below is rather detailed, but it shows `Const() <api/redirect.html#lepl.bin.functions.Const>`_ and `BEnd() <api/redirect.html#lepl.bin.functions.BEnd>`_
 in use::
 
   from lepl.bin.bits import BitString

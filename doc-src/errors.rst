@@ -114,13 +114,13 @@ Operators, Functions and Classes
 ===============  ========  ========
 Name             Type      Action
 ===============  ========  ========
-``^``            Operator  Raises an exception, given a format string.  Formatting has the same named parameters as the `KApply()  <api/redirect.html#lepl.matchers.KApply>`_ matcher (results, stream_in, stream_out); implemented as KApply(`raise_error <api/redirect.html#lepl.node.raise_error>`_)
+``^``            Operator  Raises an exception, given a format string.  Formatting has the same named parameters as the `KApply()  <api/redirect.html#lepl.functions.KApply>`_ matcher (results, stream_in, stream_out); implemented as KApply(`raise_error <api/redirect.html#lepl.node.raise_error>`_)
 ---------------  --------  --------
 ``raise_error``  Function  See above.  `API <api/redirect.html#lepl.node.raise_error>`_
 ---------------  --------  --------
 ``Error``        Class     Creates a parse tree node that can be used to trigger a later exception (`Error <api/redirect.html#lepl.node.Error>`_ is a subclass of both `Node <api/redirect.html#lepl.node.Node>`_ and ``SyntaxError``).  `API <api/redirect.html#lepl.node.Error>`_ 
 ---------------  --------  --------
-``throw``        Function  Walks the parse tree (typically this is a sub--tree associated with a matcher's result and `throw <api/redirect.html#lepl.node.throw>`_ is invoked by `Apply() <api/redirect.html#lepl.matchers.Apply>`_) and raises the first `Error <api/redirect.html#lepl.node.Error>`_ found.  `API <api/redirect.html#lepl.node.make_throw>`_.
+``throw``        Function  Walks the parse tree (typically this is a sub--tree associated with a matcher's result and `throw <api/redirect.html#lepl.node.throw>`_ is invoked by `Apply() <api/redirect.html#lepl.functions.Apply>`_) and raises the first `Error <api/redirect.html#lepl.node.Error>`_ found.  `API <api/redirect.html#lepl.node.make_throw>`_.
 ---------------  --------  --------
 ``make_error``   Function  Creates an `Error <api/redirect.html#lepl.node.Error>`_ node, given a format string.  `API <api/redirect.html#lepl.node.make_error>`_.
 ===============  ========  ========

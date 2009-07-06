@@ -120,6 +120,6 @@ argument --- tracing is enabled when the selected matcher is called::
   configured with the `TraceResults
   <api/redirect.html#lepl.trace.TraceResults>`_ monitor.  This is done by the
   `default configuration
-  <api/redirect.html#lepl.matchers.BaseMatcher.default_config>`_, and can also
+  <api/redirect.html#lepl.functions.BaseMatcher.default_config>`_, and can also
   be specified manually using a `Configuration()
   <api/redirect.html#lepl.config.Configuration>`_.
