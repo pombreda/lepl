@@ -165,6 +165,7 @@ might have a sequence of "a"s separated by "x"s, which we want to ignore::
   ['a', 'a', 'a']
 
 .. index:: Separator()
+.. _separators:
 
 Separators
 ----------

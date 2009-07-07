@@ -2,6 +2,12 @@
 Release History
 ===============
 
+.. toctree::
+   :maxdepth: 2
+
+
+Summary
+-------
 
 ==========  =======  ===========
 Date        Version  Description
@@ -54,3 +60,32 @@ Date        Version  Description
 ==========  =======  ===========
 
 
+.. 3-0_
+
+3.0
+---
+
+This release is based on two quite separate themes, both of which have
+required modifications to the LEPL core code to the extent that a new major
+version is necessary.
+
+First, the handling of whitespace has been revised, extended, and documented.
+The preferred approach in most cases, using the :ref:`lexer`, is described in
+detail in a new :ref:`tutorial <tutorial>`.  In addition, for those cases
+where spaces are significant, :ref:`columns <table_example>` and two new
+:ref:`"smart separators" <spaces>` have been added.
+
+The separator work highlighted a source of confusion in the standard matchers:
+many used ``&`` and ``[]``, which are modified by separators.  As a
+consequence, the library was revised to remove all these uses.  Separators
+should now only affect spaces in a clearly predictable way (there is a small
+trade-off between usefulness and predictability; the library is now more
+predictable, which is probably for the best).
+
+The second theme is the parsing of :ref:`binary data <binary>`.  This is
+somewhat obscure, but provides some fairly original functionality (with room
+for significant expansion in future releases).
+
+While writing the binary parser I needed to revisit and revise core routines
+related to graphs.  Various internal interfaces have been simplified; the most
+visible being the ``Node()`` class, which is now more "Pythonesque".

@@ -22,8 +22,8 @@ Contributed matchers.
 
 from copy import copy
 
-from lepl.functions import Repeat
-from lepl.matchers import And, Or, _BaseSearch, Transform
+from lepl.functions import Repeat, Optional
+from lepl.matchers import And, Or, _BaseSearch, Transform, Empty
 from lepl.operators import _BaseSeparator
 
 
@@ -60,9 +60,6 @@ class SmartSeparator2(_BaseSeparator):
                         required = required.first
             return required, optional
 
-        def optional(matcher):
-            return Repeat(matcher, 0, 1, 'd', None, False)
-
         def and_(a, b):
             (requireda, optionala) = non_optional_copy(a)
             (requiredb, optionalb) = non_optional_copy(b)
@@ -70,12 +67,16 @@ class SmartSeparator2(_BaseSeparator):
             if not (optionala or optionalb):
                 return And(a, separator, b)
             else:
-                return Or(
+                matcher = Or(
                     *filter((lambda x: x is not None), [
-                        And(optional(And(requireda, separator)), requiredb) 
+                        And(Optional(And(requireda, separator)), requiredb) 
                             if optionala else None,
-                        And(requireda, optional(And(separator, requiredb))) 
+                        And(requireda, Optional(And(separator, requiredb))) 
                             if optionalb else None]))
-
+                if optionala and optionalb:
+                    # making this explicit allows chaining (we can detect it
+                    # when called again in a tree of "ands"
+                    matcher = Optional(matcher)
+                return matcher
         return (and_, self._repeat(separator))
     

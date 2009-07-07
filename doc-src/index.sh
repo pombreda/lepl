@@ -7,7 +7,9 @@
 
 sed -i -r 's/``(Literal|Columns)\(\)``/`\1() <api\/redirect.html#lepl.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(SkipTo|SignedFloat|Literal|Drop|Star|Space)\(\)``/`\1() <api\/redirect.html#lepl.functions.\1>`_/g' *.rst
-sed -i -r 's/``(Separator)\(\)``/`\1() <api\/redirect.html#lepl.operators.\1>`_/g' *.rst
+sed -i -r 's/``(Separator|SmartSeparator1)\(\)``/`\1() <api\/redirect.html#lepl.operators.\1>`_/g' *.rst
+sed -i -r 's/``(SmartSeparator2)\(\)``/`\1() <api\/redirect.html#lepl.contrib.matchers.\1>`_/g' *.rst
+sed -i -r 's/``(Token)\(\)``/`\1() <api\/redirect.html#lepl.lexer.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(BitString|Int)\(\)``/`\1() <api\/redirect.html#lepl.bin.bits.\1>`_/g' *.rst
 sed -i -r 's/``(Const|BEnd|LEnd)\(\)``/`\1() <api\/redirect.html#lepl.bin.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(Configuration)\(\)``/`\1() <api\/redirect.html#lepl.bin.config.\1>`_/g' *.rst

@@ -201,8 +201,10 @@ class SmartSeparator1(_BaseSeparator):
             Either work as normal if b consumes something, or don't use the
             separator if b doesn't consume anything.
             '''
-            return Or(And(a, And(separator, Consumer(b))),
-                      And(a, Consumer(b, False)))
+            return Or(And(Consumer(a), separator, Consumer(b)),
+                      And(Consumer(a), Consumer(b, False)),
+                      And(Consumer(a, False), Consumer(b)),
+                      And(Consumer(a, False), Consumer(b, False)))
         return (and_, self._repeat(separator))
    
         

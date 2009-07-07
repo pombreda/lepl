@@ -105,6 +105,7 @@ Running this gives the result::
 '''
 
 from lepl.config import Configuration
+from lepl.contrib.matchers import SmartSeparator2
 from lepl.error import *
 from lepl.functions import *
 from lepl.memo import * 
@@ -126,6 +127,8 @@ from lepl.trace import *
 __all__ = [
         # config
         'Configuration',
+        # contrib.matchers
+        'SmartSeparator2',
         # error
         'make_error',
         'raise_error',

@@ -163,3 +163,141 @@ Note that there was no need to specify a separator in ``word[1:]``, and that
 this is a rare example of a string being coerced to something other than a
 `Literal() <api/redirect.html#lepl.matchers.Literal>`_ (here `Regexp()
 <api/redirect.html#lepl.functions.Regexp>`_ is used).
+
+
+.. index:: Separator(), SmartSeparator1(), SmartSeparator2()
+.. _spaces:
+
+Spaces
+------
+
+There's a wide variety of ways to handle spaces in LEPL.  A large part of the
+:ref:`Tutorial <tutorial>` is spent discussing this, and it's probably the
+first place to look for a basic understanding.
+
+The main conclusion of the :ref:`Tutorial <tutorial>` is that the :ref:`lexer`
+(ie using ``Token()``) is the best approach in most circumstances.  It usually
+hits the sweet spot between flexibility and simplicity.
+
+But sometimes tokens are not the right solution.  One case is
+:ref:`table_example`, when the ``Columns()`` matcher is a good fit.  Another
+is when spaces are *required*.
+
+It is something of a "beginner's mistake" to enforce the use of spaces in the
+grammar --- it makes the parsing more complex (and more fragile, even to
+"good" input), and typically doesn't help the end user much.  But even so, it
+is sometimes necessary.
+
+In such cases, the only real solution is to specify all the spaces.  Since
+this is tedious to do by hand, LEPL includes various *separators*.  The
+:ref:`Tutorial <separators>` introduced the basic ``Separator()``, which adds
+a space wherever `&` is used (and also in `[]` repetition).  But this is often
+not sufficent when optional matchers are used, because the spaces remain even
+when the optional matcher is ignored.
+
+So, to help automate the (rare) case of *required* spaces, *automatic*
+addition of spaces for each `&`, and *optional* matchers, two "smart"
+separators are also available.  The first, ``SmartSeparator1()``, checks
+whether a matcher is used by seeing whether it consumes input; spaces are only
+added when `&` is between two matchers that both "move along" the input
+stream.  The second, ``SmartSeparator2()``, takes a more pro--active approach
+and examines the matchers to see whether they inherit from the base class used
+in LEPL to implement "optionality".
+
+All separators are implemented using :ref:`operators replacement
+<replacement>`, described above.
+
+If you really, really need such functionality, the best thing to do is try
+these various separators and see which has the behaviour you require (but
+please first consider whether you absolutely need to check that spaces are
+present, or whether you can do what you want more simply and reliably with the
+:ref:`lexer`).
+
+The following tables show the results of some simple tests for different
+separators, spaces, and matchers.  They also illustrate two separate, but
+related, issues: the difference between ``And()`` and ``&`` when separators
+are present; and how matchers like ``Eos()`` function (which is not optional,
+but consumes no input).
+
+
+
+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|Optional('a') & Optional('b')                                                                                                                                                                 |
++----------+-----------------------------------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+
+|          |Separator                                                  |SmartSeparator1                                            |SmartSeparator2                                            |
+|          +-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+
+|          |And(..., Eos())              |... & Eos()                  |And(..., Eos())              |... & Eos()                  |And(..., Eos())              |... & Eos()                  |
+|          +--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|          |' '           |' '[:]        |' '           |' '[:]        |' '           |' '[:]        |' '           |' '[:]        |' '           |' '[:]        |' '           |' '[:]        |
++==========+==============+==============+==============+==============+==============+==============+==============+==============+==============+==============+==============+==============+
+|'a b '    |              |              |yes           |yes           |              |              |              |              |              |              |yes           |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'a b'     |yes           |yes           |              |yes           |yes           |yes           |yes           |yes           |yes           |yes           |              |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'ab'      |              |yes           |              |yes           |              |yes           |              |yes           |              |yes           |              |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|' b'      |yes           |yes           |              |yes           |              |              |              |              |              |              |              |              |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'b'       |              |yes           |              |yes           |yes           |yes           |yes           |yes           |yes           |yes           |              |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'a '      |yes           |yes           |              |yes           |              |              |              |              |              |              |yes           |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'a'       |              |yes           |              |yes           |yes           |yes           |yes           |yes           |yes           |yes           |              |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|''        |              |yes           |              |yes           |yes           |yes           |yes           |yes           |yes           |yes           |yes           |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|' '       |yes           |yes           |              |yes           |              |              |              |              |              |              |              |              |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+
+
+
+
+Each table has a "yes" when the parser (at the top of the table) matchers the
+input stream (on the left).  Pay careful attention to spaces in the input.
+
+Different columns of results correspond to the different spearators, whether
+they are matching a single space or "zero or more" spaces, and whether the
+final ``Eos()`` matcher is added with ``&`` (which will include the spaces
+from the separator) or ``And()`` (which won't).
+
+So, for example, the final column on the right, below, has results for the
+parser::
+
+    with SmartSeparator2(Literal(' ')[:]):
+        parser = Optional('a') & Optional('b') & 'c' & Eos()
+
+(where ``Literal( )`` is missing from the column heading to save space).
+
+
+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|Optional('a') & Optional('b') & 'c'                                                                                                                                                           |
++----------+-----------------------------------------------------------+-----------------------------------------------------------+-----------------------------------------------------------+
+|          |Separator                                                  |SmartSeparator1                                            |SmartSeparator2                                            |
+|          +-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+
+|          |And(..., Eos())              |... & Eos()                  |And(..., Eos())              |... & Eos()                  |And(..., Eos())              |... & Eos()                  |
+|          +--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|          |' '           |' '[:]        |' '           |' '[:]        |' '           |' '[:]        |' '           |' '[:]        |' '           |' '[:]        |' '           |' '[:]        |
++==========+==============+==============+==============+==============+==============+==============+==============+==============+==============+==============+==============+==============+
+|'a b c '  |              |              |yes           |yes           |              |              |              |              |              |              |yes           |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'a b c'   |yes           |yes           |              |yes           |yes           |yes           |yes           |yes           |yes           |yes           |              |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|' b c'    |yes           |yes           |              |yes           |              |              |              |              |              |              |              |              |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'b c'     |              |yes           |              |yes           |yes           |yes           |yes           |yes           |yes           |yes           |              |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'ab c'    |              |yes           |              |yes           |              |yes           |              |yes           |              |yes           |              |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'a c'     |              |yes           |              |yes           |yes           |yes           |yes           |yes           |yes           |yes           |              |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'a  c'    |yes           |yes           |              |yes           |              |yes           |              |yes           |              |yes           |              |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'c'       |              |yes           |              |yes           |yes           |yes           |yes           |yes           |yes           |yes           |              |yes           |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|' c'      |              |yes           |              |yes           |              |              |              |              |              |              |              |              |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+|'  c'     |yes           |yes           |              |yes           |              |              |              |              |              |              |              |              |
++----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
+
