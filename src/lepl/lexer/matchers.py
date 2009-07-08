@@ -74,7 +74,7 @@ class TokenNamespace(Namespace):
     matchers to be configured separately (because they process different 
     types).
     
-    At one point this also defined alphabet and skip, used by the rewriter,
+    At one point this also defined alphabet and discard, used by the rewriter,
     but because those are global values it makes mosre sense to supply them
     directly to the rewriter.
     '''
@@ -239,7 +239,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
     specified explicitly by the user.
     '''
     
-    def __init__(self, matcher, tokens, alphabet, skip, 
+    def __init__(self, matcher, tokens, alphabet, discard, 
                   error=None, t_regexp=None, s_regexp=None):
         '''
         matcher is the head of the original matcher graph, which will be called
@@ -249,10 +249,10 @@ class Lexer(NamespaceMixin, BaseMatcher):
         
         alphabet is the alphabet for which the regexps are defined.
         
-        skip is the regular expression for spaces (which are silently
+        discard is the regular expression for spaces (which are silently
         dropped if not token can be matcher).
         
-        error is the exception raised if skip fails to match.  It is passed
+        error is the exception raised if discard fails to match.  It is passed
         the stream.
         
         t_regexp and s_regexp are internally compiled state, use in cloning,
@@ -265,12 +265,12 @@ class Lexer(NamespaceMixin, BaseMatcher):
             t_regexp = Regexp.multiple(alphabet, 
                                        [(t.id, t.regexp) for t in tokens]).dfa()
         if s_regexp is None:
-            s_regexp = Regexp.single(alphabet, skip).dfa()
+            s_regexp = Regexp.single(alphabet, discard).dfa()
         error = RuntimeLexerError if error is None else error
         self._arg(matcher=matcher)
         self._arg(tokens=tokens)
         self._arg(alphabet=alphabet)
-        self._arg(skip=skip)
+        self._arg(discard=discard)
         self._arg(error=error)
         self._arg(t_regexp=t_regexp)
         self._arg(s_regexp=s_regexp)

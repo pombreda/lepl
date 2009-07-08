@@ -86,7 +86,7 @@ class TokenRewriteTest(TestCase):
         '''
         word = Token('[a-z]+')
         parser = (word[:]).null_parser(
-                        Configuration(rewriters=[lexer_rewriter(skip='.')]))
+                        Configuration(rewriters=[lexer_rewriter(discard='.')]))
         results = parser('abc defXghi')
         assert results == ['abc', 'def', 'ghi'], results
         

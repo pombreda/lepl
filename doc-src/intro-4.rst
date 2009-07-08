@@ -18,7 +18,7 @@ simple AST for repeated addition and subtraction::
   >>> add = number & symbol('+') & expr > Node
   >>> sub = number & symbol('-') & expr > Node
   >>> expr += add | sub | number
-  >>> expr.parse('1+2-3 +4-5', Configuration.tokens())
+  >>> expr.parse('1+2-3 +4-5')
   [Node(...)]
 
 (remember that I will not repeat the import statement in the examples below).
@@ -75,7 +75,7 @@ series of layers.  Which is much easier to show than explain in words::
   ... add = group2 & symbol('+') & group3 > Node
   >>> sub = group2 & symbol('-') & group3 > Node
   >>> group3 += add | sub | group2
-  >>> ast = group3.parse('1+2*(3-4)+5/6+7', Configuration.tokens())[0]
+  >>> ast = group3.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
   Node
    +- 1.0
@@ -144,7 +144,7 @@ different result::
 
   >>> group3 += group2 | add | sub      # changed!
 
-  >>> ast = group3.parse('1+2*(3-4)+5/6+7', Configuration.tokens())[0]
+  >>> ast = group3.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
   1.0
 
@@ -152,7 +152,7 @@ This isn't as bad as it looks.  LEPL does find the result we are expecting,
 it's just not the first result found, which is what ``parse()`` shows.  We can
 see how many results are found::
 
-  >>> len(list(group3.match('1+2*(3-4)+5/6+7', Configuration.tokens())))
+  >>> len(list(group3.match('1+2*(3-4)+5/6+7')))
   6
 
 and it turns out the result we expect is the last one.
@@ -194,7 +194,7 @@ You can understand what has happened by tracing out how the text is matched:
    explicit configuration.
 
 There's an easy fix for this, which is to explicitly say that the parser must
-match the entire output (``Eos()`` matches "end of string" or "end of
+match the entire output (`Eos() <api/redirect.html#lepl.functions.Eos>`_ matches "end of string" or "end of
 stream").  This works because the sequence described above fails (as some
 input remains), so the next alternative is tried (which in this case would be
 the ``mul`` in ``group2``, since ``group1`` has run out of alternatives).
@@ -202,7 +202,7 @@ Eventually an arrangement of matchers is found that matches the complete
 input::
 
   >>> expr = group3 & Eos()
-  >>> print(expr.parse('1+2*(3-4)+5/6+7', Configuration.tokens())[0])
+  >>> print(expr.parse('1+2*(3-4)+5/6+7')[0])
   Node
    +- 1.0
    +- '+'
@@ -224,7 +224,7 @@ input::
 	   |   `- 6.0
 	   +- '+'
 	   `- 7.0
-  >>> len(list(expr.match('1+2*(3-4)+5/6+7', Configuration.tokens())))
+  >>> len(list(expr.match('1+2*(3-4)+5/6+7')))
   1
 
 The second mistake is to duplicate the recursive call on both sides of the
@@ -252,13 +252,13 @@ operator.  So below, for example, we have ``add = group3...`` instead of ``add
   >>> sub = group3 & symbol('-') & group3 > Node      # changed!
 
   >>> group3 += add | sub | group2
-  >>> ast = group3.parse('1+2*(3-4)+5/6+7', Configuration.tokens())[0]
+  >>> ast = group3.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
   1.0
-  >>> len(list(group3.match('1+2*(3-4)+5/6+7', Configuration.tokens())))
+  >>> len(list(group3.match('1+2*(3-4)+5/6+7')))
   12
   >>> expr = group3 & Eos()
-  >>> len(list(expr.match('1+2*(3-4)+5/6+7', Configuration.tokens())))
+  >>> len(list(expr.match('1+2*(3-4)+5/6+7')))
   5
 
 Here, not only do we get a short match first, but we also get 5 different
@@ -276,7 +276,7 @@ problematic definitions above is a good hint that something is wrong.
 Efficiency
 ----------
 
-The issues above do not result in incorrect results (once we add ``Eos()``),
+The issues above do not result in incorrect results (once we add `Eos() <api/redirect.html#lepl.functions.Eos>`_),
 but they do make the parser less efficient.  To see this we first need to
 separate the parsing process into two separate stages.
 
@@ -291,17 +291,17 @@ data.  So if we want to measure this we should make sure to generate the
 parser first, as described above.  We will do this by calling
 ``string_parser()``::
 
-  >>> parser = group3.string_parser(Configuration.tokens())
+  >>> parser = group3.string_parser()
   >>> timeit('parser("1+2*(3-4)+5/6+7")',
   ...     'from __main__ import parser', number=100)
   3.6650979518890381
 
-  >>> parser = expr.string_parser(Configuration.tokens())
+  >>> parser = expr.string_parser()
   >>> timeit('parser("1+2*(3-4)+5/6+7")',
   ...     'from __main__ import parser', number=100)
   4.6738321781158447
 
-  >>> parser = expr.string_parser(Configuration.tokens())
+  >>> parser = expr.string_parser()
   >>> timeit('parser("1+2*(3-4)+5/6+7")',
   ...     'from __main__ import parser', number=100)
   4.9616038799285889
@@ -315,7 +315,7 @@ of LEPL's implementation but, as the examples above show, two good rules of
 thumb are:
 
 * Try to get the best (longest) parse as the first result, without needing to
-  add ``Eos()`` (but then add ``Eos()`` anyway, in case there's some corner
+  add `Eos() <api/redirect.html#lepl.functions.Eos>`_ (but then add `Eos() <api/redirect.html#lepl.functions.Eos>`_ anyway, in case there's some corner
   case you didn't expect).
 
 * Avoid ambiguity.
@@ -365,7 +365,7 @@ the parentheses can go too)::
   ... add = group2 & ~symbol('+') & group3 > Add
   >>> sub = group2 & ~symbol('-') & group3 > Sub
   >>> group3 += add | sub | group2
-  >>> ast = group3.parse('1+2*(3-4)+5/6+7', Configuration.tokens())[0]
+  >>> ast = group3.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
   Add
    +- 1.0
@@ -433,7 +433,7 @@ for each node type::
   >>> group3 += ad | sb | group2
 
   >>> # and test
-  ... ast = group3.parse('1+2*(3-4)+5/6+7', Configuration.tokens())[0]
+  ... ast = group3.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
   Add
    +- 1.0

@@ -318,8 +318,8 @@ token contents.
 By itself, this doesn't make handling spaces any simpler, but we can also tell
 LEPL to ignore certain values.  So if we define tokens for the different
 "words" we will need, we can then tell LEPL to discard any spaces that occur
-between (in fact, by default, spaces are skipped, so we don't need to actually
-say that below).
+between (in fact, by default, spaces are discarded, so we don't need to
+actually say that below).
 
 For more detailed information on tokens, see :ref:`lexer` in the manual (and
 particularly, :ref:`lexer_process`).
@@ -350,25 +350,18 @@ With those tokens we can now try to rewrite our parser::
 
   >>> number = value >> float
   >>> add = number & ~symbol('+') & number > sum
-  >>> print(add.parse('12+30', config=Configuration.tokens()))
+  >>> print(add.parse('12+30'))
   None
 
 Ooops.  That is not what we wanted!
 
-Before we fix the problem, though, I need to explain a few details above.
+Before we fix the problem, though, I need to explain a detail above.
 
-First, ``symbol('+')`` is the same as ``symbol(Literal('+'))`` and means that
-we require a symbol token `and` that the text in that token matches "+".  A
-token used like this can contain any LEPL matcher as a constraint (well,
-anything except ``Token()`` itself).
-
-Second, I needed to add ``Configuration.tokens()`` to the ``parse()`` call.
-This tells LEPL to do all the necessary work to get the lexer working.
-There's a reason why this isn't done automatically --- it is supposed to
-remind you that you are assuming a certain `alphabet`.  But I am not sure
-that's a very good reason, so this might change (an alphabet is the set of all
-possible characters that the regular expression might meet, and the default is
-the entire unicode character set, which is normally what you want anyway).
+The matcher, ``symbol('+')`` is the same as ``symbol(Literal('+'))`` and means
+that we require a symbol token `and` that the text in that token matches "+".
+A token used like this can contain any LEPL matcher as a constraint (well,
+anything except `Token() <api/redirect.html#lepl.lexer.functions.Token>`_
+itself).
 
 .. index:: debugging
 
@@ -388,7 +381,7 @@ that and see what is being returned::
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = value >> float
   >>> add = number & ~symbol('+') & number > sum
-  >>> print(add.parse('12+30', config=Configuration.tokens()))
+  >>> print(add.parse('12+30'))
   DEBUG:lepl.lexer.stream.lexed_simple_stream:Token: [2] '12'
   DEBUG:lepl.lexer.stream.lexed_simple_stream:Token: [2] '+30'
   None
@@ -431,9 +424,9 @@ don't really care about a leading "+" I've only included the "-" case below::
   >>> number = Or(value >> float,
   ...             ~symbol('-') & value >> negfloat)
   >>> add = number & ~symbol('+') & number > sum
-  >>> add.parse('12+30', config=Configuration.tokens())
+  >>> add.parse('12+30')
   [42.0]
-  >>> add.parse('12 + -30', config=Configuration.tokens())
+  >>> add.parse('12 + -30')
   [-18.0]
 
 There are two important changes here.
@@ -444,7 +437,7 @@ just a compact way of defining a function.
 
 Second, I checked for a ``value`` preceded by ``-`` (which will appear as a
 ``symbol`` token) and, for that case, called ``negfloat``.  ``Or()`` works
-like you'd expect and, in a similar way to ``And()`` and ``&``, also has a
+like you'd expect and, in a similar way to `And() <api/redirect.html#lepl.matchers.And>`_ and ``&``, also has a
 shortcut: ``|``.
 
 Summary

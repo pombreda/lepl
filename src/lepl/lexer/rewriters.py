@@ -76,7 +76,7 @@ def assert_not_token(node, visited):
                 assert_not_token(child, visited)
 
 
-def lexer_rewriter(alphabet=None, skip='[ \t\r\n]', error=None):
+def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None):
     '''
     This is required when using Tokens.  It does the following:
     - Find all tokens in the matcher graph
@@ -88,7 +88,7 @@ def lexer_rewriter(alphabet=None, skip='[ \t\r\n]', error=None):
     
     alphabet is the alphabet for which the regular expressions are defined.
     
-    skip is a regular expression that is used to match space if no token can
+    discard is a regular expression that is used to match space if no token can
     be matched (space is then discarded)
     
     error is raised if no token or space can be matched (it is passed the
@@ -105,7 +105,7 @@ def lexer_rewriter(alphabet=None, skip='[ \t\r\n]', error=None):
         '''
         tokens = find_tokens(matcher)
         if tokens:
-            return Lexer(matcher, tokens, alphabet, skip, error)
+            return Lexer(matcher, tokens, alphabet, discard, error)
         else:
             log.info('Lexer rewriter used, but no tokens found.')
             return matcher

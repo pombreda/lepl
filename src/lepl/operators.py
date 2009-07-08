@@ -187,7 +187,7 @@ class SmartSeparator1(_BaseSeparator):
     
     Uses the OPERATORS namespace.
     
-    See also `SmartSeparator2`
+    See also `SmartSeparator2`, which is less general, but more efficient.
     '''
     
     def _replacements(self, separator):
@@ -198,8 +198,7 @@ class SmartSeparator1(_BaseSeparator):
         from lepl.matchers import Consumer, And, Or
         def and_(a, b):
             '''
-            Either work as normal if b consumes something, or don't use the
-            separator if b doesn't consume anything.
+            Add space only in the case when both consume something.
             '''
             return Or(And(Consumer(a), separator, Consumer(b)),
                       And(Consumer(a), Consumer(b, False)),

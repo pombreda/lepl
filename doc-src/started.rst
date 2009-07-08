@@ -229,10 +229,10 @@ We can write our own function to do this, then call it with ``>``::
 
 
   >>> def combine(results):
-  >>>     all = {}
-  >>>     for result in results:
-  >>>         all[result['name']] = result['phone']
-  >>>     return all
+  ...     all = {}
+  ...     for result in results:
+  ...         all[result['name']] = result['phone']
+  ...     return all
   
   >>> spaces  = Space()[0:]
   >>> name    = Word()              > 'name'

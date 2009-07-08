@@ -2,9 +2,6 @@
 Release History
 ===============
 
-.. toctree::
-   :maxdepth: 2
-
 
 Summary
 -------

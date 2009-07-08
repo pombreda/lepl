@@ -304,7 +304,7 @@ What have we learnt so far?
 * Matchers can return one value (with ``parse()``) or all possible values
   (with ``match()``).
 
-* We can join matchers together with ``&`` or ``And()``.
+* We can join matchers together with ``&`` or `And() <api/redirect.html#lepl.matchers.And>`_.
 
 * We can ignore the results of a matcher with ``~`` or `Drop() <api/redirect.html#lepl.functions.Drop>`_.
 

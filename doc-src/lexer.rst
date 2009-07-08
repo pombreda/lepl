@@ -27,10 +27,11 @@ of numerical expressions might have the following different token types:
 
   * Symbols (eg. ``(``, ``+``).
 
-Note that in the sketch above, a token is not defined for spaces.  By default,
-when the lexer runs, any character that doesn't match a token is discarded.
-This process allows spaces to separate tokens without them cluttering the
-grammar.
+Note that in the sketch above, a token is not defined for spaces.  The lexer
+includes a spearate pattern that is used only if all others fail --- if this
+matches, the matching text is discarded (otherwise, the lexer raise an error).
+By default this "discard pattern" matches whitespace, so spaces are
+automatically discarded and do not need to be specified in the grammar.
 
 
 .. index:: Token()
@@ -150,16 +151,16 @@ alongside the following error occurs::
   The non-Token matchers include: Any.
 
 
-.. index:: lexer_rewriter()
+.. index:: lexer_rewriter(), Configuration()
 
 Advanced Options
 ----------------
 
-The `lexer_rewriter()
-<api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_ can take additional
-arguments that specify a regular expression for (discarded) spaces and an
-exception that is raised when neither the tokens nor the space pattern match
-the input.
+The lexer can be configured by providing an explicit :ref:`configuration` that
+includes the `lexer_rewriter()
+<api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_.  This can take
+additional arguments that specify the discard pattern and an exception that is
+raised when neither the tokens nor the discard pattern match the input.
 
 By default Tokens require
 that any sub--expression consumes the entire contents::

@@ -26,7 +26,7 @@ from logging import getLogger
 from lepl.stream import LocationStream, SimpleGeneratorStream
 
 
-def lexed_simple_stream(tokens, skip, error, stream):
+def lexed_simple_stream(tokens, discard, error, stream):
     '''
     Given a simple stream, create a simple stream of (terminals, match) pairs.
     '''
@@ -42,15 +42,15 @@ def lexed_simple_stream(tokens, skip, error, stream):
                     log.debug('Token: {0!r} {1!r}'.format(terminals, match))
                     yield (terminals, match)
                 except TypeError:
-                    (terminals, _size, stream) = skip.size_match(stream)
-                    log.debug('Space: {0!r} {1!r}'.format(terminals, skip))
+                    (terminals, _size, stream) = discard.size_match(stream)
+                    log.debug('Space: {0!r} {1!r}'.format(terminals, discard))
         except TypeError:
             #log.debug(format_exc())
             raise error(stream)
     return SimpleGeneratorStream(generator())
 
 
-def lexed_location_stream(tokens, skip, error, stream):
+def lexed_location_stream(tokens, discard, error, stream):
     '''
     Given a location stream, create a location stream of regexp matches.
     '''
@@ -70,7 +70,7 @@ def lexed_location_stream(tokens, skip, error, stream):
                     stream_before = stream_after
                 except TypeError:
                     (terminals, size, stream_before) = \
-                            skip.size_match(stream_before)
+                            discard.size_match(stream_before)
                     log.debug('Space: {0!r} {1!r}'.format(terminals, size))
         except TypeError:
             #log.debug(format_exc())

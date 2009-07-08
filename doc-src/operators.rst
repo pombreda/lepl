@@ -56,7 +56,7 @@ Binary Operators Between Matchers
 ========  ===========
 Operator  Description
 ========  ===========
-``&``     Joins matchers in sequence.  The result is a single list containing the results from all functions.  Identical to `And() <api/redirect.html#lepl.functions.And>`_.
+``&``     Joins matchers in sequence.  The result is a single list containing the results from all functions.  Identical (without separators) to `And() <api/redirect.html#lepl.functions.And>`_.
 --------  -----------
 ``+``     As ``&``, but the results are then joined together with the standard
           Python ``+`` operator.
@@ -90,7 +90,7 @@ Operator  Description
 
 --------  -----------
 ``[]``    Repeats the matcher, with optional concatenation and separator.
-          Identical to `Repeat() <api/redirect.html#lepl.functions.Repeat>`_.
+          Identical to (without separators) `Repeat() <api/redirect.html#lepl.functions.Repeat>`_.
 ========  ===========
 
 .. note:
@@ -176,11 +176,11 @@ There's a wide variety of ways to handle spaces in LEPL.  A large part of the
 first place to look for a basic understanding.
 
 The main conclusion of the :ref:`Tutorial <tutorial>` is that the :ref:`lexer`
-(ie using ``Token()``) is the best approach in most circumstances.  It usually
+(ie using `Token() <api/redirect.html#lepl.lexer.functions.Token>`_) is the best approach in most circumstances.  It usually
 hits the sweet spot between flexibility and simplicity.
 
 But sometimes tokens are not the right solution.  One case is
-:ref:`table_example`, when the ``Columns()`` matcher is a good fit.  Another
+:ref:`table_example`, when the `Columns() <api/redirect.html#lepl.matchers.Columns>`_ matcher is a good fit.  Another
 is when spaces are *required*.
 
 It is something of a "beginner's mistake" to enforce the use of spaces in the
@@ -188,23 +188,25 @@ grammar --- it makes the parsing more complex (and more fragile, even to
 "good" input), and typically doesn't help the end user much.  But even so, it
 is sometimes necessary.
 
-In such cases, the only real solution is to specify all the spaces.  Since
-this is tedious to do by hand, LEPL includes various *separators*.  The
-:ref:`Tutorial <separators>` introduced the basic ``Separator()``, which adds
-a space wherever `&` is used (and also in `[]` repetition).  But this is often
-not sufficent when optional matchers are used, because the spaces remain even
-when the optional matcher is ignored.
+In such cases, the only real solution is to specify all the spaces.  One
+option is to use the ``\`` and ``\\`` operators (which match zero-- and
+one--or--more spaces respectively).  Alternatively, to give more control, LEPL
+includes various *separators*.  The :ref:`Tutorial <separators>` introduced
+the basic `Separator() <api/redirect.html#lepl.operators.Separator>`_, which
+requires a user--specified space wherever `&` is used (and also in `[]`
+repetition).  But even this is often not sufficent when optional matchers are
+used, because the spaces remain even when the optional matcher is ignored.
 
 So, to help automate the (rare) case of *required* spaces, *automatic*
 addition of spaces for each `&`, and *optional* matchers, two "smart"
-separators are also available.  The first, ``SmartSeparator1()``, checks
+separators are also available.  The first, `SmartSeparator1() <api/redirect.html#lepl.operators.SmartSeparator1>`_, checks
 whether a matcher is used by seeing whether it consumes input; spaces are only
 added when `&` is between two matchers that both "move along" the input
-stream.  The second, ``SmartSeparator2()``, takes a more pro--active approach
+stream.  The second, `SmartSeparator2() <api/redirect.html#lepl.contrib.matchers.SmartSeparator2>`_, takes a more pro--active approach
 and examines the matchers to see whether they inherit from the base class used
 in LEPL to implement "optionality".
 
-All separators are implemented using :ref:`operators replacement
+All separators are implemented using :ref:`operator replacement
 <replacement>`, described above.
 
 If you really, really need such functionality, the best thing to do is try
@@ -214,12 +216,10 @@ present, or whether you can do what you want more simply and reliably with the
 :ref:`lexer`).
 
 The following tables show the results of some simple tests for different
-separators, spaces, and matchers.  They also illustrate two separate, but
-related, issues: the difference between ``And()`` and ``&`` when separators
-are present; and how matchers like ``Eos()`` function (which is not optional,
+separators, spaces, and functions.  They also illustrate two separate, but
+related, issues: the difference between `And() <api/redirect.html#lepl.matchers.And>`_ and ``&`` when separators
+are present; and how matchers like `Eos() <api/redirect.html#lepl.functions.Eos>`_ function (which is not optional,
 but consumes no input).
-
-
 
 
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -251,24 +251,21 @@ but consumes no input).
 +----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
 
 
-
-
 Each table has a "yes" when the parser (at the top of the table) matchers the
 input stream (on the left).  Pay careful attention to spaces in the input.
 
 Different columns of results correspond to the different spearators, whether
 they are matching a single space or "zero or more" spaces, and whether the
-final ``Eos()`` matcher is added with ``&`` (which will include the spaces
-from the separator) or ``And()`` (which won't).
+final `Eos() <api/redirect.html#lepl.functions.Eos>`_ matcher is added with ``&`` (which will include the spaces
+from the separator) or `And() <api/redirect.html#lepl.matchers.And>`_ (which won't).
 
-So, for example, the final column on the right, below, has results for the
+So, for example, the final column on the right, below, has results for this
 parser::
 
     with SmartSeparator2(Literal(' ')[:]):
         parser = Optional('a') & Optional('b') & 'c' & Eos()
 
 (where ``Literal( )`` is missing from the column heading to save space).
-
 
 
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -297,7 +294,5 @@ parser::
 |'c'       |              |yes           |              |yes           |yes           |yes           |yes           |yes           |yes           |yes           |              |yes           |
 +----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
 |' c'      |              |yes           |              |yes           |              |              |              |              |              |              |              |              |
-+----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
-|'  c'     |yes           |yes           |              |yes           |              |              |              |              |              |              |              |              |
 +----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
 

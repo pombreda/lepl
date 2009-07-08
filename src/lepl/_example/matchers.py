@@ -43,6 +43,8 @@ class MatcherExample(Example):
              "['h', 'e']"),
             (lambda: And(Any('h'), Any('x')).parse_string('hello world'), 
              "None"),
+            (lambda: (Any('h') & Any('e')).parse_string('hello world'), 
+             "['h', 'e']"),
 
             (lambda: Or(Any('x'), Any('h'), Any('z')).parse_string('hello world'), 
              "['h']"),
@@ -69,6 +71,8 @@ class MatcherExample(Example):
              "[]"),
 
             (lambda: (Drop('hello') / 'world').parse_string('hello world'), 
+             "[' ', 'world']"),
+            (lambda: (~Literal('hello') / 'world').parse_string('hello world'), 
              "[' ', 'world']"),
             (lambda: (Lookahead('hello') / 'world').parse_string('hello world'), 
              "None")])
@@ -102,6 +106,22 @@ class MatcherExample(Example):
         self.examples([
             (lambda: Apply(Any()[:,...], show).parse_string('hello world'), 
              "[['hello world']]"),
+            (lambda: (Any()[:,...] > show).parse_string('hello world'), 
+             "[['hello world']]"),
             (lambda: Apply(Any()[:,...], show, raw=True).parse_string('hello world'),
+             "['hello world']"),
+            (lambda: (Any()[:,...] >= show).parse_string('hello world'),
              "['hello world']")])
 
+
+    def test_apply_raw(self):
+        
+        def format3(a, b, c):
+            return 'a: {0}; b: {1}; c: {2}'.format(a, b, c)
+        
+        self.examples([
+            (lambda: Apply(Any()[3], format3, args=True).parse('xyz'),
+              "['a: x; b: y; c: z']"),
+            (lambda: (Any()[3] > args(format3)).parse('xyz'),
+              "['a: x; b: y; c: z']")])
+        

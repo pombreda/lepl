@@ -15,7 +15,7 @@ if the expression contained spaces.  Our final version used tokens::
   >>> number = Or(value >> float,
   ...             ~symbol('-') & value >> negfloat)
   >>> add = number & ~symbol('+') & number > sum
-  >>> add.parse('12 + -30', config=Configuration.tokens())
+  >>> add.parse('12 + -30')
   [-18.0]
 
 (remember that I will not repeat the import statement in the examples below).
@@ -39,7 +39,7 @@ So here's what we're starting with::
   >>> number = Or(value >> float,
   ...             ~symbol('-') & value >> negfloat)
   >>> add = number & symbol('+') & number
-  >>> add.parse('12 + -30', config=Configuration.tokens())
+  >>> add.parse('12 + -30')
   [12.0, '+', -30.0]
 
 Adding Subtraction
@@ -59,9 +59,9 @@ to go with::
   >>> add = number & symbol('+') & number
   >>> sub = number & symbol('-') & number
   >>> expr = add | sub
-  >>> expr.parse('12 + -30', config=Configuration.tokens())
+  >>> expr.parse('12 + -30')
   [12.0, '+', -30.0]
-  >>> expr.parse('12 -30', config=Configuration.tokens())
+  >>> expr.parse('12 -30')
   [12.0, '-', 30.0]
 
 That should be clear enough, I hope.  Remember that ``|`` is another way of
@@ -134,7 +134,7 @@ That might sound odd, but it's really simple to use::
 Note the use of ``+=`` when we give the final definition.  This works
 perfectly::
 
-  >>> expr.parse('1+2-3 +4-5', Configuration.tokens())
+  >>> expr.parse('1+2-3 +4-5')
   [1.0, '+', 2.0, '-', 3.0, '+', 4.0, '-', 5.0]
 
 .. index:: AST, abstract syntax tree, Node()
@@ -159,12 +159,12 @@ results for the addition and subtraction to ``Node``::
   >>> add = number & symbol('+') & expr > Node
   >>> sub = number & symbol('-') & expr > Node
   >>> expr += add | sub | number
-  >>> expr.parse('1+2-3 +4-5', Configuration.tokens())
+  >>> expr.parse('1+2-3 +4-5')
   [Node(...)]
 
 OK, not so exciting, but let's look at that first result::
 
-  >>> ast = expr.parse('1+2-3 +4-5', Configuration.tokens())[0]
+  >>> ast = expr.parse('1+2-3 +4-5')[0]
   >>> print(ast)
   Node
    +- 1.0

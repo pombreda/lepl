@@ -172,8 +172,8 @@ number of bits.  A float value, however, is taken as bytes, with the `decimal
 portion as the number of bits`.  So, for example, ``3.4`` is equivalent to 28
 bits (3x8+4).
 
-BitString()
------------
+BitString
+---------
 
 The `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ class is an implementation of LEPL's abstract model
 described above.  It has similar semantics to Python's strings, in that a

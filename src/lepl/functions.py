@@ -87,7 +87,7 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
             }[algorithm]
             
             
-def Apply(matcher, function, raw=False, args_=False):
+def Apply(matcher, function, raw=False, args=False):
     '''
     Apply an arbitrary function to the results of the matcher 
     (**>**, **>=**, **\***).
@@ -143,15 +143,15 @@ def Apply(matcher, function, raw=False, args_=False):
         target function is an `ApplyArgs` instance.
     '''
     raw = raw or (type(function) is type and issubclass(function, ApplyRaw))
-    args_ = args_ or (type(function) is type 
+    args = args or (type(function) is type 
                       and issubclass(function, ApplyArgs))
     if not isinstance(function, Transformation):
         if isinstance(function, str):
             function = lambda results, f=function: \
                             lmap(lambda x: (f, x), results)
             raw = True
-            args_ = False
-        if args_:
+            args = False
+        if args:
             if raw:
                 function = lambda results, f=function: f(*results)
             else:

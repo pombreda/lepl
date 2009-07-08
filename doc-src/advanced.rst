@@ -170,10 +170,10 @@ Automatic Memoisation
 Rewriting as Regular Expressions
 
   The `regexp_rewriter()
-  <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ rewriter
-  attempts to replace matchers with a regular expression.  This gives a
-  significant increase in efficiency if the parser matches complex strings
-  (for example, `Float() <api/redirect.html#lepl.functions.Float>`_).
+  <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ attempts to
+  replace matchers with a regular expression.  This gives a significant
+  increase in efficiency if the parser matches complex strings (for example,
+  `Float() <api/redirect.html#lepl.functions.Float>`_).
 
   It is not used by default 
   because it requires the data being matched to be a particular type, but
@@ -197,6 +197,18 @@ Rewriting as Regular Expressions
   expressions is typically restricted to those parts of the parser that
   recognise individual words.
   
+
+.. index:: lexer_rewriter()
+
+Identifying Tokens and Building a Lexer
+
+  `lexer_rewriter() <api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_
+  checks whether `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ matchers are used in the parser and, if so,
+  constructs an appropriate :ref:`lexer`.
+
+  This is included in the default :ref:`configuration`, but can be specified
+  manually if the :ref:`lexer` settings need to be changed.
+
 
 .. index:: search, backtracking
 .. _backtracking:

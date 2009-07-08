@@ -62,6 +62,11 @@ as a whole to succeed::
 
   >>> And(Any('h'), Any('x')).parse_string('hello world')
   None
+  >>> (Any('h') & Any('e')).parse_string('hello world')
+  ['h', 'e']
+
+The last example above shows how ``&`` can also be used --- it is equivalent
+unless a :ref:`separator <spaces>` is being used.
 
 
 .. index:: Or(), |
@@ -99,16 +104,24 @@ of the grammar.
 Repeat ([...])
 --------------
 
-`[API] <api/redirect.html#lepl.functions.Repeat>`_ This matcher repeats another
-matcher a given number of times.  For example::
+`[API] <api/redirect.html#lepl.functions.Repeat>`_ This matcher repeats
+another matcher a given number of times.  The second and third arguments are
+the minimum and maximum number of times that the matcher must repeat (these
+are the first two indices of ``[]`` when that operator is used). 
+
+For example::
 
   >>> Repeat(Any(), 3, 3).parse_string('12345')
+  ['1', '2', '3']
+  >>> Any()[3:3].parse_string('12345')
   ['1', '2', '3']
 
 If only a lower bound to the number of repeats is given the match will be
 repeated as often as possible::
 
   >>> Repeat(Any(), 3).parse_string('12345')
+  ['1', '2', '3', '4', '5']
+  >>> Any()[3:].parse_string('12345')
   ['1', '2', '3', '4', '5']
 
 If the match cannot be repeated the requested number of times no result is
@@ -117,8 +130,8 @@ returned::
   >>> Repeat(Any(), 3).parse_string('12')
   None
 
-When used as with the "match" methods, different numbers of matches are
-available on subsequent calls (backtracking)::
+When used with the "match" methods, different numbers of matches are available
+on subsequent calls (backtracking)::
 
   >>> matcher = Repeat(Any(), 3).match('12345')
   >>> next(matcher)
@@ -131,7 +144,7 @@ available on subsequent calls (backtracking)::
   StopIteration
 
 By default a depth--first search is used (giving the longest match first).
-Specifying an third argument (the increment when used with ``[]`` syntax) of
+Specifying a fourth argument (the increment when used with ``[]`` syntax) of
 ``'b'`` gives breadth--first search (shortest first)::
 
   >>> matcher = Repeat(Any(), 3, None, 'b').match('12345')
@@ -196,6 +209,8 @@ matcher, but discards the results::
 
   >>> (Drop('hello') / 'world').parse_string('hello world')
   [' ', 'world']
+  >>> (~Literal('hello') / 'world').parse_string('hello world')
+  [' ', 'world']
 
 (The empty string in the first result is from ``/`` which joins two matchers
 together, with optional spaces between).
@@ -211,10 +226,10 @@ so this example will fail::
   None
 
 
-.. index:: Apply(), >, >=, *
+.. index:: Apply(), >, >=, args()
 
-Apply (>, >=, *)
-----------------
+Apply (>, >=, args)
+-------------------
 
 `[API] <api/redirect.html#lepl.functions.Apply>`_ This matcher passes the
 results of another matcher to a function, then returns the value from the
@@ -227,6 +242,12 @@ function as a new result::
   results: ['hello world']
   [['hello world']]
 
+The ``>`` operator is equivalent::
+
+  >>> (Any()[:,...] > show).parse_string('hello world')
+  results: ['hello world']
+  [['hello world']]
+
 The returned result is placed in a new list, which is not always what is
 wanted (it is useful when you want :ref:`nestedlists`); setting ``raw=True``
 uses the result directly::
@@ -234,11 +255,25 @@ uses the result directly::
   >>> Apply(Any()[:,...], show, raw=True).parse_string('hello world')
   results: ['hello world']
   ['hello world']
+  >>> (Any()[:,...] >= show).parse_string('hello world')
+  results: ['hello world']
+  ['hello world']
 
 Setting another optional argument, ``args``, to ``True`` changes the way the
 function is called.  Instead of passing the results as a single list each is
 treated as a separate argument.  This is familiar as the way ``*args`` works
-in Python (hence the shortcut operator, ``*``).
+in Python::
+
+  >>> def format3(a, b, c):
+  ...   return 'a: {0}; b: {1}; c: {2}'.format(a, b, c)
+  >>> Apply(Any()[3], format3, args=True).parse('xyz')
+  ['a: x; b: y; c: z']
+
+There's no operator equivaluent for this, but a little helper function called
+`args() <api/redirect.html#lepl.functions.args>`_ allows ``>`` to be reused:
+
+  >>> (Any()[3] > args(format3)).parse('xyz')
+  ['a: x; b: y; c: z']
 
 
 .. index:: **

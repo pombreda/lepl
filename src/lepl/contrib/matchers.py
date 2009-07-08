@@ -27,13 +27,16 @@ from lepl.matchers import And, Or, _BaseSearch, Transform, Empty
 from lepl.operators import _BaseSeparator
 
 
+# (c) 2009 "mereandor" / mereandor at gmail dot com (Roman), Andrew Cooke
+
 class SmartSeparator2(_BaseSeparator):
     '''
-    A substitude Separator with different semantics for optional matchers.
+    A substitute `Separator` with different semantics for optional matchers.
+    This identifies optional matchers by type (whether they subclass 
+    `_BaseSearch`) and then constructs a replacement that adds space only
+    when both matchers are used.
     
-    (c) 2009 "mereandor" <mereandor@gmail.com> (Roman), Andrew Cooke
-
-    See also `SmartSeparator1`
+    See also `SmartSeparator1`, which is more general but less efficient.
     '''
     
     def _replacements(self, separator):
@@ -45,6 +48,9 @@ class SmartSeparator2(_BaseSeparator):
             '''
             Check whether a matcher is optional and, if so, make it not so.
             '''
+            # both of the "copy" calls below make me nervous - it's not the
+            # way the rest of lepl works - but i don't have any specific
+            # criticism, or a good alternative.
             required, optional = matcher, False
             if isinstance(matcher, Transform):
                 temp, optional = non_optional_copy(matcher.matcher)
@@ -75,7 +81,7 @@ class SmartSeparator2(_BaseSeparator):
                             if optionalb else None]))
                 if optionala and optionalb:
                     # making this explicit allows chaining (we can detect it
-                    # when called again in a tree of "ands"
+                    # when called again in a tree of "ands")
                     matcher = Optional(matcher)
                 return matcher
         return (and_, self._repeat(separator))
