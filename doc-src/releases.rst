@@ -57,7 +57,7 @@ Date        Version  Description
 ==========  =======  ===========
 
 
-.. 3-0_
+.. release_3_0:
 
 3.0
 ---
