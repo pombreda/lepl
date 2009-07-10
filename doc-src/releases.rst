@@ -56,6 +56,8 @@ Date        Version  Description
 2009-07-04  3.0a2    Various small fixes via pylint.
 ----------  -------  -----------
 2009-07-07  3.0b1    Smart separators.
+----------  -------  -----------
+2009-07-07  3.0b2    Fix packaging issues with b1.
 ==========  =======  ===========
 
 
@@ -87,4 +89,4 @@ for significant expansion in future releases).
 
 While writing the binary parser I needed to revisit and revise core routines
 related to graphs.  Various internal interfaces have been simplified; the most
-visible being the ``Node()`` class, which is now more "Pythonesque".
+visible being the `Node() <api/redirect.html#lepl.node.Node>`_ class, which is now more "Pythonesque".

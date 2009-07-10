@@ -46,9 +46,9 @@ Features
 * Parsers can be made much more efficient with automatic :ref:`memoisation
   <memoisation>` ("packrat parsing").
 
-* :ref:`Left recursive grammars <left_recursion>`.  Memoisation can detect and
-  control left--recursive grammars.  Together with LEPL's support for
-  ambiguity this means that "any" grammar can be supported.
+* Memoisation can detect and control :ref:`left recursive grammars
+  <left_recursion>`.  Together with LEPL's support for ambiguity this means
+  that "any" grammar can be supported.
 
 * Pluggable trace and resource management, including :ref:`deepest match
   <deepest_match>` diagnostics and the ability to :ref:`limit backtracking

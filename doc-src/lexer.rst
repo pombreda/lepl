@@ -5,9 +5,9 @@
 Lexer
 =====
 
-The use of LEPL's lexer is optional.  In the preceding sections it has not
-been used.  However, for many applications it will both simplify the grammar
-and give a more efficient parser.
+The use of LEPL's lexer is optional.  It has not been used in earlier chapters
+of this manual.  However, for many applications it will both simplify the
+grammar and give a more efficient parser.
 
 
 Introduction
@@ -101,9 +101,14 @@ The lexer has two limitations: it cannot backtrack and `Token()
 <api/redirect.html#lepl.lexer.functions.Token>`_ matchers cannot be mixed with
 non--Token matchers that consume input.
 
-The first limitation means that, unlike regular matchers, tokens only match
-text once.  The lexer divides the input into fixed blocks that match the
-largest possible fragment; no alternatives are considered.
+The first limitation means that the regular expressions associated with tokens
+only match text once.  The lexer divides the input into fixed blocks that
+match the largest possible fragment; no alternatives are considered.
+
+This does not mean that a particular `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ is only called once, or that
+it will return only a single result.  Backtracking is still possible, but the
+parser is restricted to exploring different interpretations of a single,
+unchanging token stream.
 
 For example, consider "1-2", which might be parsed as two integers (1 and -2),
 or as a subtraction expression (1 minus 2).  An appropriate matcher will give
@@ -156,27 +161,31 @@ alongside the following error occurs::
 Advanced Options
 ----------------
 
-The lexer can be configured by providing an explicit :ref:`configuration` that
-includes the `lexer_rewriter()
-<api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_.  This can take
-additional arguments that specify the discard pattern and an exception that is
-raised when neither the tokens nor the discard pattern match the input.
+Configuration
 
-By default Tokens require
-that any sub--expression consumes the entire contents::
+  The lexer can be configured by providing an explicit :ref:`configuration`
+  that includes the `lexer_rewriter()
+  <api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_.  This can take
+  additional arguments that specify the discard pattern and an exception that
+  is raised when neither the tokens nor the discard pattern match the input.
 
-  >>> abc = Token('abc')
-  >>> incomplete = abc(Literal('ab'))
-  >>> incomplete.parse('abc')
-  None
+Completeness
 
-However, this constraint can be relaxed, in which case the matched portion is
-returned as a result::
+  By default Tokens require
+  that any sub--expression consumes the entire contents::
 
-  >>> abc = Token('abc')
-  >>> incomplete = abc(Literal('ab'), complete=False)
-  >>> incomplete.parse('abc')
-  ['ab']
+    >>> abc = Token('abc')
+    >>> incomplete = abc(Literal('ab'))
+    >>> incomplete.parse('abc')
+    None
+
+  However, this constraint can be relaxed, in which case the matched portion is
+  returned as a result::
+
+    >>> abc = Token('abc')
+    >>> incomplete = abc(Literal('ab'), complete=False)
+    >>> incomplete.parse('abc')
+    ['ab']
 
 
 Example
@@ -226,6 +235,23 @@ a Python program uses the LEPL parser, with the lexer, to parse some text.
      created with another matcher as an argument LEPL attempts to convert the
      matcher to a regular expression.  If it cannot do so, it raises an error.
 
+   * Token specialisation
+
+     A token is "specialised" when it is given a sub--matcher::
+
+       >>> function = Token('[a-z]*')
+       >>> sin = function('sine')
+
+     In the example above, the first line creates a new `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_, with a
+     unique tag and a regular expression, as explained just above.  On the
+     second line the token is specialised.  This creates another `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_,
+     which contains the given sub--matcher (a `Literal() <api/redirect.html#lepl.matchers.Literal>`_ in this case), but
+     with the same tag and regular expression as the "parent".
+
+     I call a token like this, which has the same tag and regular expression
+     as the parent, but also contains a sub--matcher, a "specialised token" in
+     the description below.
+
 #. Parser compilation
 
    At some point LEPL internally "compiles" the matcher graph to generate a
@@ -246,13 +272,15 @@ a Python program uses the LEPL parser, with the lexer, to parse some text.
    <api/redirect.html#lepl.lexer.functions.Lexer>`_ instance:
 
    * `Token() <api/redirect.html#lepl.lexer.functions.Token>`_ instances are
-     collected.
+     collected.  
 
    * The graph is checked to make sure that tokens and non-token matchers are
      not used together (see :ref:`limitations` above).
 
    * The regular expressions and tags associated with the tokens are collected
-     together.
+     together.  Duplicate tags and expressions (from specialised tokens) are
+     ignored --- at this part of the process, a specialised token is no
+     different to the original unspecialised parent.
 
    * A regular expression matcher is generated, which can match the different
      expressions and return the text and tag(s) associated with the longest
@@ -293,13 +321,14 @@ a Python program uses the LEPL parser, with the lexer, to parse some text.
 
      * If the tag does not match, the token matcher fails.
 
-     * If the tag matches and the token contains a sub--matcher, then the
-       fragment of text is passed to the sub--matcher for processing.  If the
-       sub--matcher returns a result then that result is returned by the
-       token.  Alternatively, if the sub--matcher fails then the token fails
-       too.
+     * If the tag matches and the token contains a sub--matcher (ie, if it is
+       a specialised token), then the fragment of text is passed to the
+       sub--matcher for processing.  If the sub--matcher returns a result then
+       that result is returned by the token.  Alternatively, if the
+       sub--matcher fails then the token fails too.
 
-     * If the tag matches and the token has no sub--matcher, then the token
-       returns the fragment as the result of a successful match.
+     * If the tag matches and the token has no sub--matcher (ie, if it is not
+       specialised), then the token returns the entire fragment as the result
+       of a successful match.
 
    * Evaluation continues in the usual manner, returning a list of results.

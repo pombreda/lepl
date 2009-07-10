@@ -20,7 +20,7 @@ Most examples here use the default configuration, which is supplied by
 defined as::
 
   Configuration(
-    rewriters=[flatten, compose_transforms, auto_memoize()],
+    rewriters=[flatten, compose_transforms, lexer_rewriter(), auto_memoize()],
     monitors=[lambda: TraceResults(False)])
 
 The rewriters are described below (:ref:`rewriting`).
@@ -47,6 +47,19 @@ a parser.
   make "compiled" parsers more efficient --- but it can also introduce quite
   subtle errors.  The addition of user--defined rewriters is not encouraged
   unless you are *very* familiar with LEPL.
+
+.. note::
+
+  LEPL presents all matchers via a uniform interface, but in practice there
+  are two distinct types: core classes and functions.  Only the core class
+  instances are present in the graph described above.  The functions are
+  evaluated during the definition of the grammar and return (usually after
+  evaluating a whole chain of related functions) core class instances.
+
+  So the functions can be considered "syntactic sugar", while the core classes
+  are the "real matchers".  From the user's point of view, however, this
+  distinction is somewhat arbitrary, which is why the functions have
+  capitalised names and look like class constructors.
 
 The work of modifying the matcher graph is done by functions called
 *rewriters*.  They are specified in the :ref:`configuration`.  The following

@@ -7,7 +7,7 @@ Part 1 - Basic Matching
 What is Parsing?
 ----------------
 
-When we talk about "parsing some data" we generally have some data (often in
+When we talk about "parsing something" we generally have some data (often in
 the form of text) and a description of the way that data is organised, and we
 want to bring those two together so that we can break the data into known
 pieces.
@@ -47,8 +47,11 @@ is all you will need.
 In the rest of the examples below I will assume that you have already imported
 this module.
 
-The second line creates a matcher --- `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ --- and uses it to
-match the text "123".  The result is a list that contains the text "123".
+The second line creates a matcher --- `SignedFloat()
+<api/redirect.html#lepl.functions.SignedFloat>`_ (clicking on that link will
+take you to the `API documentation <api>`_ that describes all LEPL's modules,
+including the source code) --- and uses it to match the text "123".  The
+result is a list that contains the text "123".
 
 In other words, `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ looked at "123" and recognised that it was a
 number.
@@ -99,9 +102,11 @@ Or we can create a list directly:
   >>> list(SignedFloat().match('123'))
   [(['123'], ''), (['12'], '3'), (['1'], '23')]
 
-Either way we can see that `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_ is giving us a choice of
+Either way we can see that `SignedFloat()
+<api/redirect.html#lepl.functions.SignedFloat>`_ is giving us a choice of
 different results.  It can match the number "123", or the number "12", or the
-number "1".
+number "1".  Those are all the different numbers possible if you start with
+the first character.
 
 Remaining Text
 --------------
@@ -143,7 +148,12 @@ shorthand for::
   >>> add.parse('12+30')
   ['12', '+', '30']
 
-which is sometimes useful.
+.. note::
+
+   Later, when we meet :ref:`separators <separators>`, we'll see that
+   `And() <api/redirect.html#lepl.matchers.And>`_ and ``&`` aren't always exactly the same.  That's because ``&``
+   is an operator and operators can be redefined in LEPL (in the case of
+   separators, for example, we redefine ``&`` to add extra spaces).
 
 The parser above also used `Literal() <api/redirect.html#lepl.matchers.Literal>`_.  Like its name suggests, this
 matches whatever value it is given::
@@ -277,10 +287,12 @@ So we can send our results to that function::
 
 which gives the answer we wanted!
 
-The difference between ``>`` and ``>>`` is quite subtle, but important: ``>``
-sends the entire list of results to a function as a single argument (so the
-function must take a list of values), while ``>>`` sends each result
-separately (so the function must take a single value).
+.. note::
+
+   The difference between ``>`` and ``>>`` is quite subtle, but important:
+   ``>`` sends the entire list of results to a function as a single argument
+   (so the function must take a list of values), while ``>>`` sends each
+   result separately (so the function must take a single value).
 
 We have come a long way --- from nothing to a parser that can add two numbers.
 In the next section we will make this more robust, allowing us to have spaces
@@ -299,7 +311,7 @@ What have we learnt so far?
 * To use LEPL we must first use import the lepl module: ``from lepl import
   *``.
 
-* LEPL builds up a parser using functions.
+* LEPL builds up a parser using functions (which I call "matchers").
 
 * Matchers can return one value (with ``parse()``) or all possible values
   (with ``match()``).

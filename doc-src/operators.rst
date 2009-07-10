@@ -160,9 +160,12 @@ space--separated words in a transparent manner:
   ['hello', ' ', 'world']
 
 Note that there was no need to specify a separator in ``word[1:]``, and that
-this is a rare example of a string being coerced to something other than a
-`Literal() <api/redirect.html#lepl.matchers.Literal>`_ (here `Regexp()
+this the argument of `Separator() <api/redirect.html#lepl.operators.Separator>`_ is a rare example of a string being
+coerced to something other than a `Literal()
+<api/redirect.html#lepl.matchers.Literal>`_ (here `Regexp()
 <api/redirect.html#lepl.functions.Regexp>`_ is used).
+
+The use of separators to handle spaces is discussed in more detail below.
 
 
 .. index:: Separator(), SmartSeparator1(), SmartSeparator2()
@@ -192,10 +195,11 @@ In such cases, the only real solution is to specify all the spaces.  One
 option is to use the ``\`` and ``\\`` operators (which match zero-- and
 one--or--more spaces respectively).  Alternatively, to give more control, LEPL
 includes various *separators*.  The :ref:`Tutorial <separators>` introduced
-the basic `Separator() <api/redirect.html#lepl.operators.Separator>`_, which
-requires a user--specified space wherever `&` is used (and also in `[]`
-repetition).  But even this is often not sufficent when optional matchers are
-used, because the spaces remain even when the optional matcher is ignored.
+the basic `Separator() <api/redirect.html#lepl.operators.Separator>`_ (as
+described in the previous section, above), which requires a user--specified
+space wherever `&` is used (and also in `[]` repetition).  But even this is
+often not sufficent when optional matchers are used, because the spaces remain
+even when the optional matcher is ignored.
 
 So, to help automate the (rare) case of *required* spaces, *automatic*
 addition of spaces for each `&`, and *optional* matchers, two "smart"

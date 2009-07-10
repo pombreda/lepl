@@ -5,7 +5,7 @@
 A Tutorial for LEPL
 ===================
 
-Hi.  Thanks for looking at this --- I hope you find it useful.
+Hi.  Thanks for considering LEPL --- I hope you find it useful.
 
 In this tutorial I will try to explain what parsing is and how LEPL can help.
 Even if you already understand the basics of parsing you should probably skim

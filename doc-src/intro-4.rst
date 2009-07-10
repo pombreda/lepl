@@ -160,7 +160,7 @@ and it turns out the result we expect is the last one.
 You can understand what has happened by tracing out how the text is matched:
 
 * ``group3`` is defined as ``group2 | add | sub``, so ``group2`` is tried
-  first (``Or()`` evaluates from left to right)
+  first (`Or() <api/redirect.html#lepl.matchers.Or>`_ evaluates from left to right)
 
 * ``group2`` is defined as ``group1 | mul | div``, so ``group1`` is tried
   first
@@ -169,7 +169,7 @@ You can understand what has happened by tracing out how the text is matched:
 
 * ``parens`` fails to match, because the input does not start with "("
 
-* so the next alternative in the ``Or()`` for ``group1`` is tried, which is
+* so the next alternative in the `Or() <api/redirect.html#lepl.matchers.Or>`_ for ``group1`` is tried, which is
   ``number``
 
 * ``number`` succeeds and has nothing following it
@@ -182,7 +182,7 @@ You can understand what has happened by tracing out how the text is matched:
    The exercise above, while useful, is not always completely accurate,
    because LEPL may modify the matchers before using them.  You are most
    likely to see this when using a grammar with left--recursion (see below)
-   --- LEPL may re-arrange the order of matchers inside ``Or()`` so that the
+   --- LEPL may re-arrange the order of matchers inside `Or() <api/redirect.html#lepl.matchers.Or>`_ so that the
    left--recursive case comes last.
 
    With the default configuration LEPL should always maintain the basic logic
@@ -191,10 +191,11 @@ You can understand what has happened by tracing out how the text is matched:
    above.
 
    If the order is critical you can control LEPL's optimisations by giving an
-   explicit configuration.
+   explicit :ref:`configuration`.
 
-There's an easy fix for this, which is to explicitly say that the parser must
-match the entire output (`Eos() <api/redirect.html#lepl.functions.Eos>`_ matches "end of string" or "end of
+There's an easy fix for this (but see comments on efficiency below), which is
+to explicitly say that the parser must match the entire output (`Eos()
+<api/redirect.html#lepl.functions.Eos>`_ matches "end of string" or "end of
 stream").  This works because the sequence described above fails (as some
 input remains), so the next alternative is tried (which in this case would be
 the ``mul`` in ``group2``, since ``group1`` has run out of alternatives).
@@ -322,13 +323,14 @@ thumb are:
 
 One final tip: avoid left--recursion.  In the parser above, we have recursion
 where, for example, ``add = group2 & symbol('+') & group3``, because that can
-lead back to ``group3``.  That is right--recursion, because ``group3`` is on
-the right.  Left recursion would be ``add = group3 & symbol('+') & group2``,
-with ``group3`` on the left.  This is particularly nasty because the parser
-can "go round in circles" without doing any matching (if this isn't clear,
-trace out how LEPL will try to match ``group3``).  LEPL includes checks and
-corrections for this, but they're not perfect (as we can see above --- the
-last and slowest example is left recursive).
+lead back to ``group3`` (which is where we found ``add``...).  That is
+right--recursion, because ``group3`` is on the right.  Left recursion would be
+``add = group3 & symbol('+') & group2``, with ``group3`` on the left.  This is
+particularly nasty because the parser can "go round in circles" without doing
+any matching (if this isn't clear, trace out how LEPL will try to match
+``group3``).  LEPL includes checks and corrections for this, but they're not
+perfect (as we can see above --- the last and slowest example is left
+recursive).
 
 .. index:: Node()
 
@@ -388,7 +390,7 @@ We can make the AST "evaluate itself" by adding an appropriate action to each
 node.  If we do this via ``__float__`` then ``float()`` provides a uniform
 interface to access the value of both float values and nodes.
 
-I'll also make use of the `operators package
+I'll also make use of the `operator package
 <http://docs.python.org/3.0/library/operator.html>`_ to provide the operation
 for each node type::
 

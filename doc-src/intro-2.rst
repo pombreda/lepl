@@ -55,8 +55,9 @@ would like to match any number of spaces.  There are various ways of doing
 this.  If you are used to using regular expressions you may realise that this
 is what the "*" symbol does.  And in LEPL we have something similar.
 
-The `Star() <api/redirect.html#lepl.functions.Star>`_ matcher repeats its argument as may times as necessary
-(including none at all).  This is what we need for our spaces::
+The `Star() <api/redirect.html#lepl.functions.Star>`_ matcher repeats its
+argument as many times as necessary (including none at all).  This is what we
+need for our spaces::
 
   >>> number = SignedFloat() >> float
   >>> spaces = ~Star(Space())
@@ -105,6 +106,8 @@ matches first).
 If we give a range with a missing start value then the minimum number of
 matches is zero:
 
+  >>> list(a[:1].match('aaaaa'))
+  [(['a'], 'aaaa'), ([], 'aaaaa')]
   >>> list(a[0:1].match('aaaaa'))
   [(['a'], 'aaaa'), ([], 'aaaaa')]
 
@@ -118,14 +121,15 @@ And if the end value is missing as many as possible will be matched:
   [(['a', 'a', 'a', 'a', 'a'], ''), (['a', 'a', 'a', 'a'], 'a')]
 
 Finally, we can get the shortest number of matches first by specifying an
-array index "step" of 'b' (short for "breadth--first search"; the default is
-'d' for "depth--first")::
+array index "step" of ``'b'`` (short for "breadth--first search"; the default
+is ``'d'`` for "depth--first")::
 
   >>> list(a[2:4:'b'].match('aaaaa'))
   [(['a', 'a'], 'aaa'), (['a', 'a', 'a'], 'aa'), (['a', 'a', 'a', 'a'], 'a')]
 
-Putting all that together, `Star() <api/redirect.html#lepl.functions.Star>`_ is the same as ``[:]`` (which starts at
-zero, takes as many as possible, and returns the longest match first).
+Putting all that together, `Star() <api/redirect.html#lepl.functions.Star>`_
+is the same as ``[:]`` (which starts at zero, takes as many as possible, and
+returns the longest match first).
 
 So we can write our parser like this::
 
@@ -164,6 +168,7 @@ might have a sequence of "a"s separated by "x"s, which we want to ignore::
   >>> a[3,Drop('x')].parse('axaxa')
   ['a', 'a', 'a']
 
+
 .. index:: Separator()
 .. _separators:
 
@@ -188,17 +193,18 @@ added wherever there is a ``&``.  And, of course, we can do that in LEPL::
 
 Which works as before, but can save some typing in longer programs.
 
-`Separator() <api/redirect.html#lepl.operators.Separator>`_ is implemented as a redefinition of the matchers used by ``&``
-and ``[]`` to include spaces.  The matcher associated with any operator can be
-redefined in LEPL, but doing so is pretty advanced and outside the scope of
-this tutorial.
+`Separator() <api/redirect.html#lepl.operators.Separator>`_ is implemented as
+by redefining the ``&`` and ``[]`` operators to include spaces.  The matcher
+associated with any operator can be redefined in LEPL, but doing so is pretty
+advanced and outside the scope of this tutorial.
 
-Because `Separator() <api/redirect.html#lepl.operators.Separator>`_ changes everything "inside" the "with" it's usually
-best to define matchers that `don't` need spaces beforehand.
+Because `Separator() <api/redirect.html#lepl.operators.Separator>`_ changes
+everything "inside" the "with" it's usually best to define matchers that
+`don't` need spaces beforehand.
 
-.. note::
+.. warning::
 
-   Separator() only modifies ``&`` and ``[]``, which can lead to (at least)
+   `Separator() <api/redirect.html#lepl.operators.Separator>`_ only modifies ``&`` and ``[]``, which can lead to (at least)
    two surprising results.
 
    First, there's nothing added before or after any pattern that's defined.
@@ -210,6 +216,9 @@ best to define matchers that `don't` need spaces beforehand.
    then `every` ``&`` in the separator's context `must` have a space.  This
    can be surprising if you have, for example, ``& Eos()`` because it means
    that there `must` be a space before the end of the stream.
+
+   You can avoid spaces in two ways.  Either define matchers that don't need
+   spaces *before* you use `Separator() <api/redirect.html#lepl.operators.Separator>`_, or use `And() <api/redirect.html#lepl.matchers.And>`_ instead.
 
 .. index:: regular expressions
 
@@ -237,6 +246,7 @@ fact, LEPL supports three kinds of regular expressions, and I will describe
 these below.  But please note that all the options below have limitations ---
 LEPL is a parser in its own right and does not need powerful regular
 expressions.
+
 
 .. index:: Regexp()
 
@@ -277,9 +287,9 @@ The last example above shows how groups can be used to define results.
 DfaRegexp()
 -----------
 
-The ``DfaRegexp`` calls LEPL's own regular expression library.  It understands
-simple regular expressions and is not limited in the amount of data it can
-match.  However, it does not support grouping, references, etc.
+The `DfaRegexp() <api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_ matcher calls LEPL's own regular expression library.  It
+understands simple regular expressions and is not limited in the amount of
+data it can match.  However, it does not support grouping, references, etc.
 
   >>> DfaRegexp('a*b').parse('aabbcc')
   ['aab']
@@ -290,9 +300,9 @@ NfaRegexp()
 -----------
 
 This is implemented by LEPL's own regular expression library and, like
-``DfaRegexp()``, is not limited in the amount of data it can access.
+`DfaRegexp() <api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_, is not limited in the amount of data it can access.
 
-``NfaRegexp()`` differs from "normal" regular expressions in that it can
+`NfaRegexp() <api/redirect.html#lepl.regexp.matchers.NfaRegexp>`_ differs from "normal" regular expressions in that it can
 return multiple matches (usually a regular expression returns only the
 "longest match")::
 
@@ -321,8 +331,7 @@ LEPL to ignore certain values.  So if we define tokens for the different
 between (in fact, by default, spaces are discarded, so we don't need to
 actually say that below).
 
-For more detailed information on tokens, see :ref:`lexer` in the manual (and
-particularly, :ref:`lexer_process`).
+For more detailed information on tokens, see :ref:`lexer` in the manual.
 
 
 First, let's define the tokens we will match.  We don't have to be very
@@ -334,12 +343,13 @@ symbols::
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
 
 I said that we defined tokens with regular expressions, but the definition of
-``value`` above seems to use the matcher `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_.  This is because
-LEPL can automatically convert some matchers into regular expressions, saving
-us the work (it really does convert them, piece by piece, so it is not limited
-to the built--in matchers, but it is limited by how the matcher is constructed
--- it cannot see "inside" arbitrary function calls, for example, so any
-matcher that includes ``>`` or ``>>`` won't work).
+``value`` above seems to use the matcher `SignedFloat()
+<api/redirect.html#lepl.functions.SignedFloat>`_.  This is because LEPL can
+automatically convert some matchers into regular expressions, saving us the
+work (it really does convert them, piece by piece, so it is not limited to the
+built--in matchers, but it is limited by how the matcher is constructed -- it
+cannot see "inside" arbitrary function calls, for example, so any matcher that
+includes ``>`` or ``>>`` won't work).
 
 The second token, defined with the regular expression "[^0-9a-zA-Z \\t\\r\\n]"
 means "any single character that is not a digit, letter, or space".  Obviously
@@ -358,10 +368,11 @@ Ooops.  That is not what we wanted!
 Before we fix the problem, though, I need to explain a detail above.
 
 The matcher, ``symbol('+')`` is the same as ``symbol(Literal('+'))`` and means
-that we require a symbol token `and` that the text in that token matches "+".
-A token used like this can contain any LEPL matcher as a constraint (well,
-anything except `Token() <api/redirect.html#lepl.lexer.functions.Token>`_
-itself).
+that we require a symbol token `and` that the text in that token matches "+"
+(this is what I was referring to when I said that we match both the *type* of
+token and it's *contents*).  A token used like this can contain any LEPL
+matcher as a constraint (well, anything except `Token()
+<api/redirect.html#lepl.lexer.functions.Token>`_ itself).
 
 .. index:: debugging
 
@@ -415,8 +426,9 @@ Tokens (Second Attempt)
 -----------------------
 
 We can avoid the problem above by using unsigned numbers.  But that means that
-we need to worry about possible signs in the parser itself.  Since people
-don't really care about a leading "+" I've only included the "-" case below::
+we need to worry about signs that are "part of the number" in the parser
+itself.  Since people don't really care about a leading "+" I've only included
+the "-" case below::
 
   >>> value = Token(UnsignedFloat())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
@@ -436,9 +448,9 @@ expression <http://docs.python.org/3.0/glossary.html#term-lambda>`_ which is
 just a compact way of defining a function.
 
 Second, I checked for a ``value`` preceded by ``-`` (which will appear as a
-``symbol`` token) and, for that case, called ``negfloat``.  ``Or()`` works
-like you'd expect and, in a similar way to `And() <api/redirect.html#lepl.matchers.And>`_ and ``&``, also has a
-shortcut: ``|``.
+``symbol`` token) and, for that case, called ``negfloat``.  `Or() <api/redirect.html#lepl.matchers.Or>`_ works
+like you'd expect and, in a similar way to `And()
+<api/redirect.html#lepl.matchers.And>`_ and ``&``, also has a shortcut: ``|``.
 
 Summary
 -------

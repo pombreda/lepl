@@ -94,9 +94,9 @@ the other possibilities::
   >>> next(matcher)
   (['h', 'e', 'l'], 'lo world')
 
-This shows how `Or() <api/redirect.html#lepl.functions.Or>`_ --- backtracking
-may call the matcher times before a result is found that "fits" with the rest
-of the grammar.
+This shows how `Or() <api/redirect.html#lepl.functions.Or>`_ supports
+"backtracking".  LEPL may call a matcher times before a result is found that
+"fits" with the rest of the grammar.
 
 
 .. index:: Repeat(), [], backtracking, breadth-first, depth-first
@@ -107,7 +107,7 @@ Repeat ([...])
 `[API] <api/redirect.html#lepl.functions.Repeat>`_ This matcher repeats
 another matcher a given number of times.  The second and third arguments are
 the minimum and maximum number of times that the matcher must repeat (these
-are the first two indices of ``[]`` when that operator is used). 
+are the first two indices of the related ``[]`` operator).
 
 For example::
 
@@ -212,7 +212,7 @@ matcher, but discards the results::
   >>> (~Literal('hello') / 'world').parse_string('hello world')
   [' ', 'world']
 
-(The empty string in the first result is from ``/`` which joins two matchers
+(The empty string in the result is from ``/`` which joins two matchers
 together, with optional spaces between).
 
 This is different to `Lookahead()
@@ -363,7 +363,7 @@ possible matches, the generator will exit.
 Most simple matchers will return a generator that yields a single value.
 Generators that return multiple values are used in backtracking.  For example,
 the `Or() <api/redirect.html#lepl.functions.Or>`_ generator may yield once for
-each sub--match in turn (in practice some sub-matches may return generators
+each sub--match in turn (in practice some sub-matchers may return generators
 that themselves return many values, while others may fail immediately, so it
 is not a direct 1--to--1 correspondence).
 

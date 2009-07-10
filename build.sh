@@ -40,6 +40,10 @@ for f in `ls -1 src/lepl/bin/*.py`;
 do 
   echo "include $f" >> MANIFEST.in
 done
+for f in `ls -1 src/lepl/contrib/*.py`; 
+do 
+  echo "include $f" >> MANIFEST.in
+done
 for f in `ls -1 src/COPY*`; 
 do 
   echo "include $f" >> MANIFEST.in

@@ -48,7 +48,7 @@ generators, either implicitly or explicitly.
 
 .. [#] The discussion here omits some details from the implementation.  The
        `GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_
-       actually stores `GeneratorWrapper
+       actually stores `GeneratorWrapper()
        <api/redirect.html#lepl.resources.GeneratorWrapper>`_ instances, which
        are added to generators via the `tagged
        <api/redirect.html#lepl.resources.tagged>`_ decorator.
@@ -129,7 +129,7 @@ Streams
 -------
 
 LEPL can process simple strings and lists, but it can also use its own
-`SequenceByLine <api/redirect.html#lepl.stream.SequenceByLine>`_ class as a
+`SequenceByLine() <api/redirect.html#lepl.stream.SequenceByLine>`_ class as a
 wrapper for the input.
 
 Streams were more important in LEPL 1.0, when they were necessary to support

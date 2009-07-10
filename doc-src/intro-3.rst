@@ -65,7 +65,7 @@ to go with::
   [12.0, '-', 30.0]
 
 That should be clear enough, I hope.  Remember that ``|`` is another way of
-writing ``Or()``.
+writing `Or() <api/redirect.html#lepl.matchers.Or>`_.
 
 .. index:: recursion
 
@@ -73,13 +73,14 @@ Recursion
 ---------
 
 One limitation of our parser is that it doesn't handle repeated addition and
-subtraction.  There's a neat trick that can fix that: we can replace the
-second ``number`` with ``expr``, which will allow us to match more and more
-additions / subtractions.  The only problem with that is that we have no way
-to stop --- each time we try to match ``add``, say, we need to match another
-``expr``, which means matching another ``add`` or ``sub``...  To allow the
-cycle to end we must allow ``expr`` to be a simple ``number`` (which we needed
-anyway, if we want our expression parser to be general).
+subtraction.  There's a neat trick that can fix that: in the definition of
+``add`` and ``sub`` we can replace the second ``number`` with ``expr``, which
+will allow us to match more and more additions / subtractions.  The only
+problem with that is that we have no way to stop --- each time we try to match
+``add``, say, we need to match another ``expr``, which means matching another
+``add`` or ``sub``...  To allow the cycle to end we must allow ``expr`` to be
+a simple ``number`` (which we needed anyway, if we want our expression parser
+to be general enough to match a single value).
 
 What I've just described above is easy to implement, but unfortunately won't
 work::
@@ -110,14 +111,15 @@ More generally, the problem is that we have a circular set of references,
 because we have a recursive grammar.
 
 But it's unfair to call this a "problem".  Recursive grammars are very useful.
-The real problem is that I haven't shown how to handle this in LEPL.
+The real problem is that I haven't shown how to handle recursive definitions
+in LEPL.
 
 .. index:: Delayed(), recursion
 
 Delayed Matchers
 ----------------
 
-The solution to our problem is to use the ``Delayed()`` matcher.  This lets us
+The solution to our problem is to use the `Delayed() <api/redirect.html#lepl.matchers.Delayed>`_ matcher.  This lets us
 introduce something, so that we can use it, and then add a definition later.
 That might sound odd, but it's really simple to use::
 
@@ -148,7 +150,7 @@ course) is that we needed something complicated enough for this to be
 worthwhile.
 
 The simplest way of building an AST is almost trivial.  We just send the
-results for the addition and subtraction to ``Node``::
+results for the addition and subtraction to `Node() <api/redirect.html#lepl.node.Node>`_::
 
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
@@ -188,6 +190,7 @@ tutorial from zero, this is a major achievement.  Congratulations!
 At the top is the parent node, which has three children: the value ``1.0``;
 the symbol ``'+'``; a ``Node`` with a first child of ``2.0`` etc.)
 
+
 .. index:: nodes, Node()
 
 Nodes
@@ -223,9 +226,10 @@ Both mixed together::
   >>> fb.foo
   [23, 'again']
 
-Note how ``('name', value)`` pairs have a special meaning in the ``Node()``
+Note how ``('name', value)`` pairs have a special meaning in the `Node() <api/redirect.html#lepl.node.Node>`_
 constructor.  LEPL has a feature that helps exploit this, which I will explain
 in the next section.
+
 
 .. index:: node attributes
 
@@ -239,7 +243,7 @@ small illustration of how they can be used::
   >>> digit = Digit() > 'digit'
   >>> example = (letter | digit)[:] > Node
 
-This uses ``Letter()`` and ``Digit()`` (both standard LEPL matchers) to match
+This uses `Letter() <api/redirect.html#lepl.functions.Letter>`_ and `Digit() <api/redirect.html#lepl.functions.Digit>`_ (both standard LEPL matchers) to match
 (single) letters and digits.  Each character is sent to a label (eg. ``>
 'letter'``).  This is a special case programmed into the ``>`` operator: when
 the target is a string (like ``'letter'`` or ``'digit```) then a ``('name',
@@ -256,29 +260,32 @@ pairs become attributes::
 
 .. index:: *args, ApplyArgs
 
-*args
------
+\*args
+------
 
-You may have been wondering how a ``Node()`` constructor works.  Earlier I
-said that ``>`` sends a list of results as a single argument, but, as we've
-seen in some of the examples above, ``Node()`` actually takes a series of
-values.  So in this case it seems as though ``>`` is calling ``Node()`` with
-"*args" (ie. ``Node(*results)`` rather than ``Node(results)``, if ``results``
-is the list of results).
+You may have been wondering how a `Node() <api/redirect.html#lepl.node.Node>`_
+constructor works.  Earlier I said that ``>`` sends a list of results as a
+single argument, but, as we've seen in some of the examples above, `Node()
+<api/redirect.html#lepl.node.Node>`_ actually takes a series of values.  So in
+this case it seems as though ``>`` is calling `Node()
+<api/redirect.html#lepl.node.Node>`_ with "\*args" (ie. ``Node(*results)``
+rather than ``Node(results)``, if ``results`` is the list of results).
 
 (If this makes no sense, you may need to read the `Python documentation
 <http://docs.python.org/3.0/reference/compound_stmts.html#index-664>`_.)
 
-This is correct --- LEPL is calling ``Node()`` with "*args".  ``Node()`` is
-being treated in a special way because it is registered with the ``ApplyArgs``
-ABC, and any ``ApplyArgs`` subclass is called in this way.
+This is correct --- LEPL is calling `Node()
+<api/redirect.html#lepl.node.Node>`_ with "\*args".  `Node()
+<api/redirect.html#lepl.node.Node>`_ is being treated in a special way because
+it is registered with the ``ApplyArgs`` ABC, and any ``ApplyArgs`` subclass is
+called in this way.
 
-An alternative way to get ``>`` to make a "*args" style call is to use the
-``args`` wrapper::
+An alternative way to get ``>`` to make a "\*args" style call is to use the
+`args() <api/redirect.html#lepl.functions.args>`_ wrapper::
 
   >>> matcher > args(target)
 
-In the code snippet above, ``target`` with be called as ``target(*results)``.
+In the code snippet above, ``target`` will be called as ``target(*results)``.
 
 .. index:: visitors, graphs, iterators
 
@@ -301,9 +308,9 @@ Summary
 
 What more have we learnt?
 
-* Recursive grammars are supported with ``Delayed()``.
+* Recursive grammars are supported with `Delayed() <api/redirect.html#lepl.matchers.Delayed>`_.
 
-* ``Node`` can be used to construct ASTs.
+* `Node() <api/redirect.html#lepl.node.Node>`_ can be used to construct ASTs.
 
 * Nodes combine list and dict behaviour.
 

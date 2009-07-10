@@ -4,7 +4,9 @@
 Getting Started
 ===============
 
-This chapter works through a simple example using LEPL.
+This chapter works through a simple example using LEPL.  For a longer, more
+detailed example, see the :ref:`Tutorial <tutorial>`.  There are also some
+additional :ref:`examples` at the end of this manual.
 
 After reading this chapter you should have a better understanding of what
 matchers and parsers do, and how they can be constructed.
@@ -185,7 +187,7 @@ Repetition
 ----------
 
 Next we will extend the matcher so that we can process a list of several
-usernames and phone numbers.
+usernames and phone numbers::
 
   >>> spaces  = Space()[0:]
   >>> name    = Word()              > 'name'
@@ -244,16 +246,30 @@ We can write our own function to do this, then call it with ``>``::
   >>> matcher.parse_string('andrew, 3333253\n bob, 12345')
   [{'bob': '12345', 'andrew': '3333253'}]
 
+
+Summary and Going Further
+-------------------------
+
 LEPL can be extended in several ways:
 
-* You can define and call functions to process results, as shown above.
+* You can contruct new matchers by combining existing ones.  You will do this
+  all the time using LEPL --- almost every line in the examples above defines
+  a new matcher.
+
+* You can define and call functions to process results (using ``>``).  This is
+  quite common, too, and there's an example just above.
 
 * You can write your own matchers (see the LEPL source for examples; they
   should inherit from `BaseMatcher
   <api/redirect.html#lepl.functions.BaseMatcher>`_ to take full advantage of
-  the operator syntax).
+  the operator syntax).  Hopefully this is not often needed.  If you think you
+  do need to write a new matcher, feel free to discuss it on the `mailing list
+  <http://groups.google.com/group/lepl>`_ --- someone might have already
+  written something, or it's possible I will think it worth adding to LEPL
+  myself.
 
-* You can even change the definition of operators (``&``, ``/`` etc; see
-  :ref:`replacement`).
+* You can also change the definition of operators (``&``, ``/`` etc; see
+  :ref:`replacement`).  Again, this is unusual to do directly, but forms the
+  basis for :ref:`separators`.
 
 
