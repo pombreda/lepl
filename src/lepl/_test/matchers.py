@@ -533,7 +533,7 @@ class ColumnsTest(BaseTest):
                            [['012', '0123', '567']])
 
     def test_table(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_direct(
 '''0123456789
 abcdefghij

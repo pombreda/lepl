@@ -34,7 +34,7 @@ class ExpressionExample(Example):
     
     def test_expression(self):
         
-        basicConfig(level=INFO)
+        #basicConfig(level=INFO)
         
         class Term(Node): pass
         class Factor(Node): pass

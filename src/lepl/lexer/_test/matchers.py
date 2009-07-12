@@ -94,7 +94,7 @@ class TokenRewriteTest(TestCase):
         '''
         An ugly error message (can't we improve this?)
         '''
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         word = Token('[a-z]+')
         parser = (word[:]).null_parser(
                         Configuration(rewriters=[lexer_rewriter()]))
@@ -109,7 +109,7 @@ class TokenRewriteTest(TestCase):
         '''
         Better error message with streams.
         '''
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         word = Token('[a-z]+')
         parser = (word[:]).string_parser(
                         Configuration(rewriters=[lexer_rewriter()]))
@@ -125,7 +125,7 @@ class TokenRewriteTest(TestCase):
         Expression with function calls and appropriate binding.
         '''
         
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         # pylint: disable-msg=C0111, C0321
         class Call(Node): pass
@@ -184,7 +184,7 @@ class TokenRewriteTest(TestCase):
         As before, but with evaluation.
         '''
         
-#        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         # we could do evaluation directly in the parser actions. but by
         # using the nodes instead we allow future expansion into a full

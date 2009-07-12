@@ -241,5 +241,5 @@ __version__ = '3.0b2'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN
-#    basicConfig(level=WARN)
+    #basicConfig(level=WARN)
     getLogger('lepl').warn('You are using a BETA version of LEPL.')

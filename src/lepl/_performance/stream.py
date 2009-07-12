@@ -33,7 +33,7 @@ def stream():
     Compared to nat_lang, this focuses on the stream.  It does not use any 
     monitor.  Note multiple lines.
     '''
-    basicConfig(level=DEBUG)
+    #basicConfig(level=DEBUG)
     
     class VerbPhrase(Node): pass
     class DetPhrase(Node): pass

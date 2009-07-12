@@ -34,7 +34,7 @@ class LexerExample(Example):
     def test_add(self):
         
         #basicConfig(level=DEBUG)
-        basicConfig(level=INFO)
+        #basicConfig(level=INFO)
         #getLogger('lepl.lexer.stream.lexed_simple_stream').setLevel(DEBUG)
         
         value = Token(UnsignedFloat())
@@ -47,7 +47,7 @@ class LexerExample(Example):
     def test_bad(self):
         
         #basicConfig(level=DEBUG)
-        basicConfig(level=INFO)
+        #basicConfig(level=INFO)
         getLogger('lepl.lexer.stream.lexed_simple_stream').setLevel(DEBUG)
         
         value = Token(SignedFloat())

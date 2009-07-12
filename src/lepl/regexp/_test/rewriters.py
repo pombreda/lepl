@@ -96,7 +96,7 @@ class RewriteTest(TestCase):
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
     
     def test_complex(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         rx = Literal('foo') | (Literal('ba') + Any('a')[1:,...])
         matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
         results = list(matcher('foo'))

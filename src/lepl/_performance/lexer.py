@@ -32,7 +32,7 @@ from lepl import *
 
 def lexer():
     
-#    basicConfig(level=DEBUG)
+    #basicConfig(level=DEBUG)
         
     class BinaryExpression(Node):
         def __float__(self):

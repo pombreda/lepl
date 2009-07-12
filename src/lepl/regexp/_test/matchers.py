@@ -33,7 +33,7 @@ from lepl import Separator, Regexp, NfaRegexp, Trace, DfaRegexp
 class MatchersTest(TestCase):
     
     def test_nfa(self):
-#        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         with Separator(~Regexp(r'\s*')):
             word = NfaRegexp('[A-Z][a-z]*')
@@ -53,7 +53,7 @@ class MatchersTest(TestCase):
         assert len(results) == 6, results
         
     def test_dfa(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         with Separator(~Regexp(r'\s*')):
             word = DfaRegexp('[A-Z][a-z]*')

@@ -69,7 +69,7 @@ def naturalLanguage2():
     This focuses on the LMemo cache.  It does not use any monitor or stream.
     '''
     
-    basicConfig(level=DEBUG)
+    #basicConfig(level=DEBUG)
     
     class VerbPhrase(Node): pass
     class DetPhrase(Node): pass

@@ -34,7 +34,7 @@ from lepl import Delayed, Digit, Any, Node, make_error, throw, Or, Space, \
 class NodeTest(TestCase):
 
     def test_node(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         class Term(Node): pass
         class Factor(Node): pass
@@ -86,7 +86,7 @@ class NodeTest(TestCase):
 class ListTest(TestCase):
 
     def test_list(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         expression  = Delayed()
         number      = Digit()[1:,...]                   > 'number'
@@ -103,7 +103,7 @@ class ListTest(TestCase):
 class ErrorTest(TestCase):
 
     def test_error(self):
-        basicConfig(level=INFO)
+        #basicConfig(level=INFO)
         
         class Term(Node): pass
         class Factor(Node): pass

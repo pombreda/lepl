@@ -73,7 +73,8 @@ generators, yielded by the generator we returned), and the final result
 returned to the matcher from the trampoline via ``generator.send(result,
 stream2)``.
 
-It is clear, then, that the impact on existing code was fairly small.
+It is clear, then, that during the transition from versions 1 to 2 (when
+trampolining was introduced), the impact on existing code was fairly small.
 
 
 .. index:: memoisation, Norvig, Frost, Hafiz, left-recursion
@@ -113,10 +114,10 @@ which makes LEPL robust to left--recursive grammars.
 Parser Rewriting
 ----------------
 
-A parser is constructed from a set of functions.  The matchers form a directed
-(possibly cyclic) graph.  By storing the constructor arguments for the
-matcher objects (and knowing their types, which are constructors in Python) we
-can reconstruct (and, more generally, rewrite) the graph.
+A parser is constructed from a set matchers that form a directed (possibly
+cyclic) graph.  By storing the constructor arguments for the matcher objects
+(and knowing their types, which are constructors in Python) we can reconstruct
+(and, more generally, rewrite) the graph.
 
 The base classes for the graph are in the `graph
 <api/redirect.html#lepl.graph>`_ package (the `node
@@ -125,13 +126,8 @@ classes so many of the tools used internally within LEPL may also be useful to
 process ASTs).  Matcher graph rewriting occurs during parser construction
 (see the `parser <api/redirect.html#lepl.parser>`_ package).
 
-Parser rewriting allows memoisation to be transparently added to all nodes.
-
-There is also support for flattening nested lists of `Or()
-<api/redirect.html#lepl.Or>`_ and `And() <api/redirect.html#lepl.And>`_
-matchers (typically the result of using ``|`` and ``&`` operators, which are
-applied pair--wise; this is really just proof of concept --- it's not
-particularly useful).
+Parser rewriting allows memoisation to be transparently added to all nodes,
+for example.
 
 Tree traversal (without rewriting) is also useful; it is used to generate
 various textual representations of the matchers (and the pretty ASCII trees

@@ -35,7 +35,7 @@ from lepl._test.matchers import BaseTest
 class RepeatTest(TestCase):
 
     def test_simple(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_simple([1], 1, 1, 'd', ['0'])
         self.assert_simple([1], 1, 2, 'd', ['0'])
         self.assert_simple([2], 1, 1, 'd', ['0','1'])
@@ -53,7 +53,7 @@ class RepeatTest(TestCase):
         assert target == result, result
         
     def test_mixin(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         r = RangeMatch()
         self.assert_mixin(r[1:1], [1], ['0'])
         self.assert_mixin(r[1:2], [1], ['0'])
@@ -78,7 +78,7 @@ class RepeatTest(TestCase):
         assert target == result, result
        
     def test_separator(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_separator('a', 1, 1, 'd', ['a'])
         self.assert_separator('a', 1, 1, 'b', ['a'])
         self.assert_separator('a,a', 1, 2, 'd', ['a,a', 'a'])
@@ -92,7 +92,7 @@ class RepeatTest(TestCase):
         assert target == result, result
         
     def test_separator_mixin(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         abc = Any('abc')
         self.assert_separator_mixin(abc[1:1:'d',','], 'a', ['a'])
         self.assert_separator_mixin(abc[1:1:'b',','], 'a', ['a'])
@@ -146,6 +146,6 @@ class SkipToTest(BaseTest):
         self.assert_direct('aabcc', SkipTo('b', False), [['aa']])
     
     def test_next_line(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_direct('''abc
 d''', Trace(~SkipTo(Newline()) + 'd'), [['d']])

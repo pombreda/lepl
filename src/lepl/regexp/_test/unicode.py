@@ -131,7 +131,7 @@ class CharactersTest(TestCase):
         assert 'a([a-c]x|axb)*' == str(c), str(c)
         
     def test_bad_escape(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         c = _test_parser(r'\+')
         assert '\\+' == str(c), str(c)
         try:
@@ -152,7 +152,7 @@ class NfaTest(TestCase):
             assert a[1] == b, a[1] + ' != ' + b
     
     def test_simple(self):
-#        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_matches('ab', 'abc', ['ab'])
     
     def test_star(self):
@@ -229,7 +229,7 @@ class DfaGraphTest(TestCase):
         '''
         This one's nice - the 'a' completely disappears.
         '''
-#        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_dfa_graph('.*a?b', 
             '0 [0, 3, 4] b:1;[^b]:0, 1 [0, 1, 2, 3, 4] b:1;[^b]:0 label')
 

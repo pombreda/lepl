@@ -35,7 +35,7 @@ class MemoTest(TestCase):
     
     def test_right(self):
         
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         seq    = Delayed()
         letter = Any()
@@ -52,7 +52,7 @@ class MemoTest(TestCase):
     
     def test_left1a(self):
         
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         seq    = Delayed()
         letter = Any()
@@ -69,7 +69,7 @@ class MemoTest(TestCase):
         
     def test_left1b(self):
         
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         seq    = Delayed()
         letter = Any()
@@ -86,7 +86,7 @@ class MemoTest(TestCase):
     
     def test_left2(self):
         
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         seq    = Delayed()
         letter = Any()
@@ -103,7 +103,7 @@ class MemoTest(TestCase):
     
     def test_complex(self):
         
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         class VerbPhrase(Node): pass
         class DetPhrase(Node): pass

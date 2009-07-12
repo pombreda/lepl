@@ -5,6 +5,8 @@
 Patterns
 ========
 
+Some guidelines for writing good parsers.
+
 
 .. index:: operators
 
@@ -14,6 +16,9 @@ Operators are Matchers
 Remember that operators are just shorthand for matchers (``&`` instead of
 `And() <api/redirect.html#lepl.match.And>`_ etc).  You don't have to use
 operators --- see the discussion on :ref:`caveatsandlimitations`.
+
+But remember that ``&`` and ``And()`` *do differ* when using
+:ref:`separators`.
 
 
 .. index:: Or()

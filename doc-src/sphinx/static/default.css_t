@@ -229,7 +229,7 @@ div.topic {
 
 div.warning {
     background-color: transparent;
-    border: 1px solid #800;
+    border: 1px solid #d20;
 }
 
 p.admonition-title {
@@ -267,4 +267,12 @@ table.docutils td, table.docutils th, columns, col {
 div.sphinxsidebar ul ul,
 div.sphinxsidebar ul.want-points {
     list-style: circle;
+}
+
+strong {
+    color: #d20;
+}
+
+a strong {
+    color: {{ theme_linkcolor }};
 }

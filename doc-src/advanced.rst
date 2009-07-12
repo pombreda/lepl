@@ -25,9 +25,9 @@ defined as::
 
 The rewriters are described below (:ref:`rewriting`).
 
-The monitor (which is passed to `trampoline()
-<api/redirect.html#lepl.parser.trampoline>`_) enables the `Trace()
-<api/redirect.html#lepl.functions.Trace>`_.
+The monitors are combined and passed to `trampoline()
+<api/redirect.html#lepl.parser.trampoline>`_.  `TraceResults() <api/redirect.html#lepl.trace.TraceResults>`_ enables the
+`Trace() <api/redirect.html#lepl.functions.Trace>`_ matcher.
 
 
 .. index:: rewriting
@@ -43,10 +43,11 @@ a parser.
 
 .. note::
 
-  This is very powerful --- it allows LEPL to use some of the techniques that
-  make "compiled" parsers more efficient --- but it can also introduce quite
-  subtle errors.  The addition of user--defined rewriters is not encouraged
-  unless you are *very* familiar with LEPL.
+  Modifying the matcher graph is a very powerful tool --- it allows LEPL to
+  use some of the techniques that make "compiled" parsers more efficient ---
+  but it can also introduce quite subtle errors.  The addition of
+  user--defined rewriters is not encouraged unless you are *very* familiar
+  with LEPL.
 
 .. note::
 
@@ -188,21 +189,13 @@ Rewriting as Regular Expressions
   increase in efficiency if the parser matches complex strings (for example,
   `Float() <api/redirect.html#lepl.functions.Float>`_).
 
-  It is not used by default 
-  because it requires the data being matched to be a particular type, but
-  for Unicode text it can be selected with `Configuration.nfa()
-  <api/redirect.html#lepl.config.Configuration.nfa>`_ or `Configuration.dfa()
-  <api/redirect.html#lepl.config.Configuration.dfa>`_ (the latter only gives a
-  single, greedy match and so may change the results for ambiguous grammars).
-
   It makes little sense to replace efficient, simple matchers like `Literal()
   <api/redirect.html#lepl.matchers.Literal>`_ with regular expressions so the
   function `regexp_rewriter()
   <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ takes a ``use``
   parameter.  When this parameter is ``False`` regular expressions are only
-  used if they are part of a matcher tree that includes repetition.  This is
-  the case for the provided configurations above, so they can be used without
-  worrying that they may slow down parsers.
+  used if they are part of a matcher tree that includes repetition.  This
+  (``False``) is the case for the configurations above.
 
   There are various restrictions about which matchers can be translated to
   regular expressions.  The most important are that regular expressions cannot
@@ -210,6 +203,15 @@ Rewriting as Regular Expressions
   expressions is typically restricted to those parts of the parser that
   recognise individual words.
   
+  This rewriter is not used by default because tests showed that in many cases
+  it was no faster than the normal approach, while it runs the risk of
+  changing the meaning of the grammar, adds significant complexity to the
+  system, and requires the data being matched to be a particular type.  But
+  for Unicode text it can be selected with `Configuration.nfa()
+  <api/redirect.html#lepl.config.Configuration.nfa>`_ or `Configuration.dfa()
+  <api/redirect.html#lepl.config.Configuration.dfa>`_ (the latter only gives a
+  single, greedy match and so may change the results for ambiguous grammars).
+
 
 .. index:: lexer_rewriter()
 
@@ -242,7 +244,7 @@ all the alternative parses for a given input::
   [['****'], ['***', '*'], ['**', '**'], ['*', '***'], ['****']]
 
 This shows that successive parses match less of the input with the first
-option, indicating that the matching is *greedy*.
+matcher, indicating that the matching is *greedy*.
 
 *Non-greedy* (generous?) matching is achieved by specifying an array slice
 increment of ``'b'`` (or `BREADTH_FIRST

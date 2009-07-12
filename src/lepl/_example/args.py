@@ -32,7 +32,7 @@ from lepl._example.support import Example
 class ArgsExample(Example):
     
     def test_args(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
     
         comma  = Drop(',') 
         none   = Literal('None')                        >> (lambda x: None)

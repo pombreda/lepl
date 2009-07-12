@@ -8,7 +8,7 @@ LEPL - A Parser Library for Python 3 (and 2.6)
 
   * :ref:`Tutorial <tutorial>`
   * :ref:`Manual <manual>`
-  * :ref:`Support <support>`
+  * :ref:`Download etc <support>`
 
 LEPL is written and maintained by `Andrew Cooke <http://www.acooke.org>`_.
 

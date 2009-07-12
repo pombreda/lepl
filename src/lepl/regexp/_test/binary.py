@@ -36,7 +36,7 @@ def _test_parser(text):
 class CharactersTest(TestCase):
     
     def test_dot(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         c = _test_parser('.')
         assert '.' == str(c), str(c)
         assert 0 == c[0][0][0][0], type(c[0][0][0][0])

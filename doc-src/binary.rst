@@ -16,8 +16,8 @@ Binary Data
    This documentation is rather short and incomplete; it will be extended as
    the package is developed further.
 
-The ``bin`` package supports parsing and (re-)construction of binary data.  It
-uses the core LEPL engine which, because of Python's relaxed typing and
+The ``bin`` package supports both parsing and (re-)constructing binary data.
+It uses the core LEPL engine which, because of Python's relaxed typing and
 calling conventions, is not restricted to parsing text.  But it also adds
 additional support to help address problems that are unique to handling binary
 data.
@@ -115,7 +115,7 @@ The following table summarises the representations support by LEPL:
 
 .. note::
 
-   Big-endian encoded values must be a while number of bytes.  This is because
+   Big-endian encoded values must be a whole number of bytes.  This is because
    the byte order must be reversed during translation to LEPL's internal
    model, and this process is undefined if the data do not completely define a
    series of bytes.

@@ -9,6 +9,7 @@ sed -i -r 's/``(Delayed|Literal|Columns|And|Or)\(\)``/`\1() <api\/redirect.html#
 sed -i -r 's/``(Letter|Digit|Rexgexp|args|SkipTo|SignedFloat|Literal|Drop|Star|Space|Eos)\(\)``/`\1() <api\/redirect.html#lepl.functions.\1>`_/g' *.rst
 sed -i -r 's/``(Node)\(\)``/`\1() <api\/redirect.html#lepl.node.\1>`_/g' *.rst
 sed -i -r 's/``(Separator|SmartSeparator1)\(\)``/`\1() <api\/redirect.html#lepl.operators.\1>`_/g' *.rst
+sed -i -r 's/``(TraceResults)\(\)``/`\1() <api\/redirect.html#lepl.trace.\1>`_/g' *.rst
 sed -i -r 's/``(SmartSeparator2)\(\)``/`\1() <api\/redirect.html#lepl.contrib.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(Token)\(\)``/`\1() <api\/redirect.html#lepl.lexer.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(BitString|Int)\(\)``/`\1() <api\/redirect.html#lepl.bin.bits.\1>`_/g' *.rst

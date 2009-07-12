@@ -94,7 +94,7 @@ else:
             self.bassert(b[1].foo[0], 0x2301, 16)
         
         def test_named(self):
-            basicConfig(level=DEBUG)
+            #basicConfig(level=DEBUG)
             b = parse('A(B(1), B(2))')
             self.bassert(b.B[0][0], 1)
             self.bassert(b.B[1][0], 2)

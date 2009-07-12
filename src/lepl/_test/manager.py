@@ -48,7 +48,7 @@ class LimitedDepthTest(LogMixin, TestCase):
         These show something is happening.  Whether they are exactly correct
         is another matter altogether...
         '''
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         # there was a major bug here that made this test vary often
         # it should now be fixed
         self.assert_range(3, 'g', [15,1,1,1,3,3,6,6,10,10,10,15,15,15,15], 4)
@@ -69,7 +69,7 @@ class LimitedDepthTest(LogMixin, TestCase):
         assert found == count, (queue_len, index, found, count)
 
     def test_single(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         matcher = string_matcher(Literal('*')[:,...][3],
                                  Configuration(monitors=[GeneratorManager(queue_len=5)]))('*' * 4)
         list(matcher)

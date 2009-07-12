@@ -33,7 +33,7 @@ class ErrorTest(Example):
     
     def make_parser(self):
 
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         class Term(Node): pass
         class Factor(Node): pass

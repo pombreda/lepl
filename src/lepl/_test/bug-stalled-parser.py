@@ -33,7 +33,7 @@ class LeftRecursiveTest(TestCase):
 #        This stalls because Lookahead consumes nothing.  Can we detect this 
 #        case?
 #        '''
-#        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
 #        
 #        item     = Delayed()
 #        item    += item[1:3] | ~Lookahead('\\')
@@ -50,7 +50,7 @@ class LeftRecursiveTest(TestCase):
 #        This stalls because Lookahead consumes nothing.  Can we detect this 
 #        case?
 #        '''
-#        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
 #        
 #        item     = Delayed()
 #        item    += item[1:] | ~Lookahead('\\')

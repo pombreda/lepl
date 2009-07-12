@@ -136,7 +136,7 @@ else:
             assert str(b) == '011b0/3', str(b)
     
         def test_invert(self):
-            basicConfig(level=DEBUG)
+            #basicConfig(level=DEBUG)
             self.assert_length_value(12, b'\x00\x0c', ~BitString.from_int('0x3ff'))
         
         def test_add(self):
