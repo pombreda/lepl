@@ -7,3 +7,6 @@ syntax: regexp
 ^doc$
 syntax: glob
 *~
+syntax: glob
+dist
+
