@@ -20,3 +20,23 @@
 Examples from the documentation.  These are both extra tests and indicate
 when the documentation needs to be updated.
 '''
+
+# we need to import all files used in the automated self-test
+
+import lepl._example.args
+import lepl._example.columns
+import lepl._example.error
+import lepl._example.expression
+import lepl._example.hello
+import lepl._example.lexer
+import lepl._example.manager
+import lepl._example.matchers
+import lepl._example.memo
+import lepl._example.nodes
+import lepl._example.operators
+import lepl._example.performance
+import lepl._example.phone
+import lepl._example.search
+import lepl._example.separators
+import lepl._example.support
+import lepl._example.trace

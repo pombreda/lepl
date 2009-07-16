@@ -19,3 +19,9 @@
 '''
 Tests for the lepl.lexer package.
 '''
+
+
+# we need to import all files used in the automated self-test
+
+import lepl.lexer._test.matchers
+

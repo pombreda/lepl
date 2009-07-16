@@ -100,7 +100,7 @@ class MatcherExample(Example):
     def test_show(self):
         
         def show(results):
-            print('results:', results)
+#            print('results:', results)
             return results
 
         self.examples([

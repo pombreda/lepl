@@ -23,8 +23,9 @@
 Examples from the documentation.
 '''
 
+from logging import getLogger
 from unittest import TestCase
-from traceback import format_exception_only, print_exc
+from traceback import format_exception_only, format_exc
 
 
 class Example(TestCase):
@@ -34,6 +35,6 @@ class Example(TestCase):
             try:
                 result = str(example())
             except Exception as e:
-                print_exc()
+                getLogger('lepl._example.support.Example').debug(format_exc())
                 result = ''.join(format_exception_only(type(e), e))
             assert target == result, '"' + result + '" != "' + target + '"'

@@ -19,3 +19,11 @@
 '''
 Tests for the lepl.bin package.
 '''
+
+
+# we need to import all files used in the automated self-test
+
+import lepl.bin._test.bits
+import lepl.bin._test.encode
+import lepl.bin._test.literal
+import lepl.bin._test.matchers

@@ -75,7 +75,7 @@ else:
             header    = preamble & start & destn & source & ethertype > Node
             
             # so, what do the test data look like?
-            print(mac)
+#            print(mac)
     # Frame
     #  +- Header
     #  |   +- preamble BitString(b'\xaa\xaa\xaa\xaa\xaa\xaa\xaa', 56, 0)
@@ -97,7 +97,7 @@ else:
     
             # and then we can parse it
             p = header.parse(b)[0]
-            print(p)
+#            print(p)
     # Node
     #  +- destn Int(1108152157446,48)
     #  `- source Int(7731092785932,48)

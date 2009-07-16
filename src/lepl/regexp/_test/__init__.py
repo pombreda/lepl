@@ -19,3 +19,13 @@
 '''
 Tests for the lepl.regexp package.
 '''
+
+
+# we need to import all files used in the automated self-test
+
+import lepl.regexp._test.binary
+import lepl.regexp._test.interval
+import lepl.regexp._test.matchers
+import lepl.regexp._test.rewriters
+import lepl.regexp._test.unicode
+

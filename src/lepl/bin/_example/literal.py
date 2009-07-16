@@ -52,7 +52,7 @@ else:
       CRC(234d0/4.)
     )
     ''')
-            print(b)
+#            print(b)
             
             
     class RepresentationExample(Example):

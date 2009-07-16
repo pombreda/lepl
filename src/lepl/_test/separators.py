@@ -26,6 +26,9 @@ from lepl import And, Optional, Space, Separator, SmartSeparator1, \
     SmartSeparator2, Eos
 
 
+PRINT = False
+
+
 STREAMS_3 = ['a b c ',
            'a b c',
            ' b c',
@@ -60,8 +63,9 @@ class AbcSeparatorTest(TestCase):
         ok = True
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse(stream) is not None
-            print('{0!r:9} : {1!r:5} {2!r:5}'
-                  .format(stream, parsed, parsed == expected))
+            if PRINT:
+                print('{0!r:9} : {1!r:5} {2!r:5}'
+                      .format(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -71,32 +75,39 @@ class AbcSeparatorTest(TestCase):
         ok = True
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse_string(stream) is not None
-            print('{0!r:9} : {1!r:5} {2!r:5}'
-                  .format(stream, parsed, parsed == expected))
+            if PRINT:
+                print('{0!r:9} : {1!r:5} {2!r:5}'
+                      .format(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
     def test_separator(self):
-        print("\nSeparator(Space())")
+        if PRINT:
+            print("\nSeparator(Space())")
         self._assert(Separator(Space()), 
                      [False, True, True, False, False, False, True, False, False, True])
-        print("\nSeparator(Space()[:])")
+        if PRINT:
+            print("\nSeparator(Space()[:])")
         self._assert(Separator(Space()[:]), 
                      [False, True, True, True, True, True, True, True, True, True])
         
     def test_separator1(self):
-        print("\nSmartSeparator1(Space())")
+        if PRINT:
+            print("\nSmartSeparator1(Space())")
         self._assert(SmartSeparator1(Space()), 
                      [False, True, False, True, False, True, False, True, False, False])
-        print("\nSmartSeparator1(Space()[:])")
+        if PRINT:
+            print("\nSmartSeparator1(Space()[:])")
         self._assert(SmartSeparator1(Space()[:]), 
                      [False, True, False, True, True, True, True, True, False, False])
         
     def test_separator2(self):
-        print("\nSmartSeparator2(Space())")
+        if PRINT:
+            print("\nSmartSeparator2(Space())")
         self._assert(SmartSeparator2(Space()), 
                      [False, True, False, True, False, True, False, True, False, False])
-        print("\nSmartSeparator2(Space()[:])")
+        if PRINT:
+            print("\nSmartSeparator2(Space()[:])")
         self._assert(SmartSeparator2(Space()[:]), 
                      [False, True, False, True, True, True, True, True, False, False])
         
@@ -113,8 +124,9 @@ class AbSeparatorTest(TestCase):
         ok = True
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse(stream) is not None
-            print('{0!r:9} : {1!r:5} {2!r:5}'
-                  .format(stream, parsed, parsed == expected))
+            if PRINT:
+                print('{0!r:9} : {1!r:5} {2!r:5}'
+                      .format(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -124,32 +136,39 @@ class AbSeparatorTest(TestCase):
         ok = True
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse_string(stream) is not None
-            print('{0!r:9} : {1!r:5} {2!r:5}'
-                  .format(stream, parsed, parsed == expected))
+            if PRINT:
+                print('{0!r:9} : {1!r:5} {2!r:5}'
+                      .format(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
     def test_separator(self):
-        print("\nSeparator(Space())")
+        if PRINT:
+            print("\nSeparator(Space())")
         self._assert(Separator(Space()), 
                      [False, True, False, True, False, True, False, False, True])
-        print("\nSeparator(Space()[:])")
+        if PRINT:
+            print("\nSeparator(Space()[:])")
         self._assert(Separator(Space()[:]), 
                      [False, True, True, True, True, True, True, True, True])
         
     def test_separator1(self):
-        print("\nSmartSeparator1(Space())")
+        if PRINT:
+            print("\nSmartSeparator1(Space())")
         self._assert(SmartSeparator1(Space()), 
                      [False, True, False, False, True, False, True, True, False])
-        print("\nSmartSeparator1(Space()[:])")
+        if PRINT:
+            print("\nSmartSeparator1(Space()[:])")
         self._assert(SmartSeparator1(Space()[:]), 
                      [False, True, True, False, True, False, True, True, False])
         
     def test_separator2(self):
-        print("\nSmartSeparator2(Space())")
+        if PRINT:
+            print("\nSmartSeparator2(Space())")
         self._assert(SmartSeparator2(Space()), 
                      [False, True, False, False, True, False, True, True, False])
-        print("\nSmartSeparator2(Space()[:])")
+        if PRINT:
+            print("\nSmartSeparator2(Space()[:])")
         self._assert(SmartSeparator2(Space()[:]), 
                      [False, True, True, False, True, False, True, True, False])
         
@@ -166,8 +185,9 @@ class AbcEosSeparatorTest(TestCase):
         ok = True
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse(stream) is not None
-            print('{0!r:9} : {1!r:5} {2!r:5}'
-                  .format(stream, parsed, parsed == expected))
+            if PRINT:
+                print('{0!r:9} : {1!r:5} {2!r:5}'
+                      .format(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -177,32 +197,39 @@ class AbcEosSeparatorTest(TestCase):
         ok = True
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse_string(stream) is not None
-            print('{0!r:9} : {1!r:5} {2!r:5}'
-                  .format(stream, parsed, parsed == expected))
+            if PRINT:
+                print('{0!r:9} : {1!r:5} {2!r:5}'
+                      .format(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
     def test_separator(self):
-        print("\nSeparator(Space())")
+        if PRINT:
+            print("\nSeparator(Space())")
         self._assert(Separator(Space()), 
                      [True, False, False, False, False, False, False, False, False, False])
-        print("\nSeparator(Space()[:])")
+        if PRINT:
+            print("\nSeparator(Space()[:])")
         self._assert(Separator(Space()[:]), 
                      [True, True, True, True, True, True, True, True, True, True])
         
     def test_separator1(self):
-        print("\nSmartSeparator1(Space())")
+        if PRINT:
+            print("\nSmartSeparator1(Space())")
         self._assert(SmartSeparator1(Space()), 
                      [False, True, False, True, False, True, False, True, False, False])
-        print("\nSmartSeparator1(Space()[:])")
+        if PRINT:
+            print("\nSmartSeparator1(Space()[:])")
         self._assert(SmartSeparator1(Space()[:]), 
                      [False, True, False, True, True, True, True, True, False, False])
         
     def test_separator2(self):
-        print("\nSmartSeparator2(Space())")
+        if PRINT:
+            print("\nSmartSeparator2(Space())")
         self._assert(SmartSeparator2(Space()), 
                      [True, False, False, False, False, False, False, False, False, False])
-        print("\nSmartSeparator2(Space()[:])")
+        if PRINT:
+            print("\nSmartSeparator2(Space()[:])")
         self._assert(SmartSeparator2(Space()[:]), 
                      [True, True, False, True, True, True, True, True, False, False])
         
@@ -219,8 +246,9 @@ class AbEosSeparatorTest(TestCase):
         ok = True
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse(stream) is not None
-            print('{0!r:9} : {1!r:5} {2!r:5}'
-                  .format(stream, parsed, parsed == expected))
+            if PRINT:
+                print('{0!r:9} : {1!r:5} {2!r:5}'
+                      .format(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -230,32 +258,39 @@ class AbEosSeparatorTest(TestCase):
         ok = True
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse(stream) is not None
-            print('{0!r:9} : {1!r:5} {2!r:5}'
-                  .format(stream, parsed, parsed == expected))
+            if PRINT:
+                print('{0!r:9} : {1!r:5} {2!r:5}'
+                      .format(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
     def test_separator(self):
-        print("\nSeparator(Space())")
+        if PRINT:
+            print("\nSeparator(Space())")
         self._assert(Separator(Space()), 
                      [True, False, False, False, False, False, False, False, False])
-        print("\nSeparator(Space()[:])")
+        if PRINT:
+            print("\nSeparator(Space()[:])")
         self._assert(Separator(Space()[:]), 
                      [True, True, True, True, True, True, True, True, True])
         
     def test_separator1(self):
-        print("\nSmartSeparator1(Space())")
+        if PRINT:
+            print("\nSmartSeparator1(Space())")
         self._assert(SmartSeparator1(Space()), 
                      [False, True, False, False, True, False, True, True, False])
-        print("\nSmartSeparator1(Space()[:])")
+        if PRINT:
+            print("\nSmartSeparator1(Space()[:])")
         self._assert(SmartSeparator1(Space()[:]), 
                      [False, True, True, False, True, False, True, True, False])
         
     def test_separator2(self):
-        print("\nSmartSeparator2(Space())")
+        if PRINT:
+            print("\nSmartSeparator2(Space())")
         self._assert(SmartSeparator2(Space()), 
                      [True, False, False, False, False, True, False, True, False])
-        print("\nSmartSeparator2(Space()[:])")
+        if PRINT:
+            print("\nSmartSeparator2(Space()[:])")
         self._assert(SmartSeparator2(Space()[:]), 
                      [True, True, True, False, True, True, True, True, False])
         
