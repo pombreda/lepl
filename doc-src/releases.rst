@@ -60,6 +60,8 @@ Date        Version  Description
 2009-07-07  3.0b2    Fix packaging issues with b1.
 ----------  -------  -----------
 2009-07-16  3.0b3    More packaging issues (switched to distutils; bundling tests and examples).
+----------  -------  -----------
+2009-07-16  3.0      New tutorial; bin package; smart separators; modified Nodes, `*args` (general clean-up of API).
 ==========  =======  ===========
 
 

@@ -86,7 +86,7 @@ Once installed you can test LEPL by running the self-test::
   >>> from lepl._test import all
   >>> all()
 
-..warning::
+.. warning::
 
   Some test failures are expected with certain Python versions.  The test
   described above will check the failures against the version used and,
