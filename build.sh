@@ -20,8 +20,6 @@ rm -fr dist MANIFEST*
 
 python setup.py sdist --formats=gztar,zip
 
-exit 1
-
 ./build-doc.sh
 
 rm -fr "LEPL-$RELEASE"

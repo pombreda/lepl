@@ -62,7 +62,7 @@ def all():
         suite.addTest(loader.loadTestsFromModule(module))
     result = runner.run(suite)
     print('\n\n\n----------------------------------------------------------'
-          '-------------\n')
+          '------------\n')
     if version[0] == '2':
         print('Expect 21 failures in Python 2.6 (unicode string comparisons)')
         assert len(result.failures) == 21, len(result.failures)
