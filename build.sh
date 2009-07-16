@@ -16,41 +16,11 @@ sed -i -e "s/version = .*/version = '$VERSION'/" doc-src/conf.py
 
 sed -i -e "s/__version__ = .*/__version__ = '$RELEASE'/" src/lepl/__init__.py
 
-if [ -e "dist/LEPL-$RELEASE.tar.gz" ]; then
-  echo "update version in setup.py and doc-src/conf.py"
-  echo "current release: $RELEASE"
-  exit
-fi
-
-rm MANIFEST.in
-find . -exec echo "exclude {}" \; | sed -e "s/\.\///" >> MANIFEST.in
-for f in `ls -1 src/lepl/*.py`; 
-do 
-  echo "include $f" >> MANIFEST.in
-done
-for f in `ls -1 src/lepl/regexp/*.py`; 
-do 
-  echo "include $f" >> MANIFEST.in
-done
-for f in `ls -1 src/lepl/lexer/*.py`; 
-do 
-  echo "include $f" >> MANIFEST.in
-done
-for f in `ls -1 src/lepl/bin/*.py`; 
-do 
-  echo "include $f" >> MANIFEST.in
-done
-for f in `ls -1 src/lepl/contrib/*.py`; 
-do 
-  echo "include $f" >> MANIFEST.in
-done
-for f in `ls -1 src/COPY*`; 
-do 
-  echo "include $f" >> MANIFEST.in
-done
-echo "include setup.py" >> MANIFEST.in
+rm -fr dist MANIFEST*
 
 python setup.py sdist --formats=gztar,zip
+
+exit 1
 
 ./build-doc.sh
 

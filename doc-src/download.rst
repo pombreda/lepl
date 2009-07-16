@@ -78,6 +78,20 @@ beta releases) from the `Support Site
 .. index:: Python version
 .. _versions:
 
+Testing
+-------
+
+Once installed you can test LEPL by running the self-test::
+
+  >>> from lepl._test import all
+  >>> all()
+
+..warning::
+
+  Some test failures are expected with certain Python versions.  The test
+  described above will check the failures against the version used and,
+  if all is as expected, display "Looks OK to me!".
+
 Supported Versions
 ------------------
 

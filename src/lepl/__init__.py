@@ -237,7 +237,7 @@ __all__ = [
         'context_memoize',
         'optimize_or']
 
-__version__ = '3.0b2'
+__version__ = '3.0'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

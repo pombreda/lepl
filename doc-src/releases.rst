@@ -58,6 +58,8 @@ Date        Version  Description
 2009-07-07  3.0b1    Smart separators.
 ----------  -------  -----------
 2009-07-07  3.0b2    Fix packaging issues with b1.
+----------  -------  -----------
+2009-07-16  3.0b3    More packaging issues (switched to distutils; bundling tests and examples).
 ==========  =======  ===========
 
 

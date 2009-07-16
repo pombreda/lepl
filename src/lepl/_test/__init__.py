@@ -21,6 +21,7 @@ Tests for the lepl package.
 '''
 
 from logging import getLogger, basicConfig, DEBUG
+from sys import version
 from types import ModuleType
 from unittest import TestSuite, TestLoader, TextTestRunner
 
@@ -60,6 +61,20 @@ def all():
         log.debug(module.__name__)
         suite.addTest(loader.loadTestsFromModule(module))
     result = runner.run(suite)
+    print('\n\n\n----------------------------------------------------------'
+          '-------------\n')
+    if version[0] == '2':
+        print('Expect 21 failures in Python 2.6 (unicode string comparisons)')
+        assert len(result.failures) == 21, len(result.failures)
+        target = 203 # no bin tests
+    else:
+        print('Expect at most 1 failure in Python 3 '
+              '(format variations from address size?)')
+        assert len(result.failures) <= 1, len(result.failures)
+        target = 225
+    print('Expect {0:d} tests total'.format(target))
+    assert result.testsRun == target, result.testsRun
+    print('\nLooks OK to me!\n\n')
 
 
 def ls_all_tests():

@@ -37,6 +37,7 @@ import lepl._example.operators
 import lepl._example.performance
 import lepl._example.phone
 import lepl._example.search
-import lepl._example.separators
+# no tests and 3.0-specific print syntax
+#import lepl._example.separators
 import lepl._example.support
 import lepl._example.trace
