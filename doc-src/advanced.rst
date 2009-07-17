@@ -72,13 +72,13 @@ rewriters are available:
 Flatten And, Or
 
   The `flatten <api/redirect.html#lepl.rewriters.flatten>`_ rewriter
-  combines nested `And() <api/redirect.html#lepl.functions.And>`_ and `Or()
-  <api/redirect.html#lepl.functions.Or>`_ functions.  This helps improve
+  combines nested `And() <api/redirect.html#lepl.matchers.And>`_ and `Or()
+  <api/redirect.html#lepl.matchers.Or>`_ functions.  This helps improve
   efficiency.
 
   Nested matchers typically occur because each ``&`` and ``|`` operator
   generates a new matcher, so a sequence of matchers separated by ``&``, for
-  example, generates several `And() <api/redirect.html#lepl.functions.And>`_
+  example, generates several `And() <api/redirect.html#lepl.matchers.And>`_
   functions.  This rewriter moves them into a single matcher, as might be
   expected from reading the grammar.  This should not change the "meaning" of
   the grammar or the results returned.
@@ -124,20 +124,20 @@ Global Memoizer
 Optimize Or For Left Recursion
 
   When a left--recursive rule occurs in an `Or()
-  <api/redirect.html#lepl.functions.Or>`_ matcher it is usually most efficient
+  <api/redirect.html#lepl.matchers.Or>`_ matcher it is usually most efficient
   to make it the right--most alternative.  This allows other rules to consume
   input before the recursive rule is (re-)called.
 
   The `optimize_or(conservative)
   <api/redirect.html#lepl.rewriters.optimize_or>`_ rewriter tries to detect
   left--recursive rules and re-arranges `Or()
-  <api/redirect.html#lepl.functions.Or>`_ matcher contents appropriately.
+  <api/redirect.html#lepl.matchers.Or>`_ matcher contents appropriately.
 
   The ``conservative`` parameter supplied to this rewriter (and a few more
   below) indicates how left--recursive rules are detected.  If true, all
   recursive paths are assumed to be left recursive.  If false then only those
   matchers that are in the left--most position of multiple arguments are used
-  (except for `Or() <api/redirect.html#lepl.functions.Or>`_).
+  (except for `Or() <api/redirect.html#lepl.matchers.Or>`_).
 
   This matcher is used in the default :ref:`configuration` via the
   `auto_memoize(conservative)
@@ -281,23 +281,23 @@ to the various streams returned by the current match (none if this is a final
 node, one for a simple match, several if the matcher backtracks).
 
 So far so good.  Unfortunately the process is more complicated for `And()
-<api/redirect.html#lepl.functions.And>`_ and `Or()
-<api/redirect.html#lepl.functions.Or>`_.
+<api/redirect.html#lepl.matchers.And>`_ and `Or()
+<api/redirect.html#lepl.matchers.Or>`_.
 
-In the case of `And() <api/redirect.html#lepl.functions.And>`_, the first
+In the case of `And() <api/redirect.html#lepl.matchers.And>`_, the first
 matcher is matched first.  The child nodes correspond to the various (with
 backtracking) results of this match.  At each child node, the second matcher
 is applied, generating new children.  This repeats until the scope of the
-`And() <api/redirect.html#lepl.functions.And>`_ terminates at a depth in the
+`And() <api/redirect.html#lepl.matchers.And>`_ terminates at a depth in the
 tree corresponding to the children of the last matcher.  Since `And()
-<api/redirect.html#lepl.functions.And>`_ fails unless all matchers match, only
+<api/redirect.html#lepl.matchers.And>`_ fails unless all matchers match, only
 the final child nodes are possible results.  As a consequence, both breadth
 and depth first searches would return the same ordering.  The `And()
-<api/redirect.html#lepl.functions.And>`_ match is therefore unambiguous and the
+<api/redirect.html#lepl.matchers.And>`_ match is therefore unambiguous and the
 implementation has no way to specify the (essentially meaningless) choice
 between the two searches.
 
-In the case of `Or() <api/redirect.html#lepl.functions.Or>`_ we must select
+In the case of `Or() <api/redirect.html#lepl.matchers.Or>`_ we must select
 both the matcher and the result from the results available for that matcher.
 A natural approach is to assign the first generation of children to the choice
 of matcher, and the second level to the choice of result for the (parent)

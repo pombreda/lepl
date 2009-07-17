@@ -17,7 +17,7 @@ Remember that operators are just shorthand for matchers (``&`` instead of
 `And() <api/redirect.html#lepl.match.And>`_ etc).  You don't have to use
 operators --- see the discussion on :ref:`caveatsandlimitations`.
 
-But remember that ``&`` and ``And()`` *do differ* when using
+But remember that ``&`` and `And() <api/redirect.html#lepl.matchers.And>`_ *do differ* when using
 :ref:`separators`.
 
 

@@ -51,13 +51,13 @@ in a given string.  For example::
 And (&)
 -------
 
-`[API] <api/redirect.html#lepl.functions.And>`_ This matcher combines other
+`[API] <api/redirect.html#lepl.matchers.And>`_ This matcher combines other
 matchers in order.  For example::
 
   >>> And(Any('h'), Any()).parse_string('hello world')
   ['h', 'e']
 
-All matchers must succeed for `And() <api/redirect.html#lepl.functions.And>`_
+All matchers must succeed for `And() <api/redirect.html#lepl.matchers.And>`_
 as a whole to succeed::
 
   >>> And(Any('h'), Any('x')).parse_string('hello world')
@@ -74,7 +74,7 @@ unless a :ref:`separator <spaces>` is being used.
 Or (|)
 ------
 
-`[API] <api/redirect.html#lepl.functions.Or>`_ This matcher searches through a
+`[API] <api/redirect.html#lepl.matchers.Or>`_ This matcher searches through a
 list of other matchers to find a successful match.  For example::
 
   >>> Or(Any('x'), Any('h'), Any('z')).parse_string('hello world')
@@ -94,7 +94,7 @@ the other possibilities::
   >>> next(matcher)
   (['h', 'e', 'l'], 'lo world')
 
-This shows how `Or() <api/redirect.html#lepl.functions.Or>`_ supports
+This shows how `Or() <api/redirect.html#lepl.matchers.Or>`_ supports
 "backtracking".  LEPL may call a matcher times before a result is found that
 "fits" with the rest of the grammar.
 
@@ -362,7 +362,7 @@ possible matches, the generator will exit.
 
 Most simple matchers will return a generator that yields a single value.
 Generators that return multiple values are used in backtracking.  For example,
-the `Or() <api/redirect.html#lepl.functions.Or>`_ generator may yield once for
+the `Or() <api/redirect.html#lepl.matchers.Or>`_ generator may yield once for
 each sub--match in turn (in practice some sub-matchers may return generators
 that themselves return many values, while others may fail immediately, so it
 is not a direct 1--to--1 correspondence).

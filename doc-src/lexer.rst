@@ -220,7 +220,7 @@ a Python program uses the LEPL parser, with the lexer, to parse some text.
    A function, or set of statements, that generates the LEPL matchers is
    evaluated.  Matchers like `Token()
    <api/redirect.html#lepl.lexer.functions.Token>`_, `And()
-   <api/redirect.html#lepl.functions.And>`_, etc., are objects that link to each
+   <api/redirect.html#lepl.matchers.And>`_, etc., are objects that link to each
    other.  The objects and their links form a graph (with a matcher object at
    each node).
 
