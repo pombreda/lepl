@@ -11,6 +11,9 @@ services.  Currently these are:
 
 * An `issue tracker <http://code.google.com/p/lepl/issues>`_.
 
+* `Source code <http://code.google.com/p/lepl/source/list>`_ repository (a
+  regularly updated clone of the entire tree, but not my main repo).
+
 To ask questions, report bugs, and generally discuss LEPL, please post to the
 `group <http://groups.google.com/group/lepl>`_.
 
