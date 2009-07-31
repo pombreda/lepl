@@ -7,7 +7,7 @@
 
 # python setup.py sdist --formats=gztar,zip register upload
 
-
+ 
 RELEASE=`egrep "version=" setup.py | sed -e "s/.*'\(.*\)'.*/\\1/"`
 VERSION=`echo $RELEASE | sed -e "s/.*?\([0-9]\.[0-9]\).*/\\1/"`
 
