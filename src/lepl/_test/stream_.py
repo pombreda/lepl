@@ -17,14 +17,13 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.stream module.
+Tests for the lepl.stream module (old code).
 '''
 
 from random import choice
-from traceback import format_exc
 from unittest import TestCase
 
-from lepl.stream import SimpleStream, StreamFactory
+from lepl.stream import SimpleStream, SequenceByLine, SimpleGeneratorStream
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324
@@ -34,7 +33,7 @@ from lepl.stream import SimpleStream, StreamFactory
 class StreamTest(TestCase):
     
     def test_single_line(self):
-        s1 = StreamFactory.from_string('abc')
+        s1 = SequenceByLine.from_string('abc')
         assert s1[0] == 'a', s1[0]
         assert s1[0:3] == 'abc', s1[0:3]
         assert s1[2] == 'c' , s1[2]
@@ -42,7 +41,7 @@ class StreamTest(TestCase):
         assert s2[0] == 'b', s2[0]
 
     def test_multiple_lines(self):
-        s1 = StreamFactory.from_string('abc\npqr\nxyz')
+        s1 = SequenceByLine.from_string('abc\npqr\nxyz')
         assert s1[0:3] == 'abc'
         assert s1[0:4] == 'abc\n'
         assert s1[0:5] == 'abc\np'
@@ -55,7 +54,7 @@ class StreamTest(TestCase):
         assert repr(s3) == "Line('xyz')[0:]", repr(s3)
         
     def test_eof(self):
-        s1 = StreamFactory.from_string('abc\npqs')
+        s1 = SequenceByLine.from_string('abc\npqs')
         assert s1[6] == 's', s1[6]
         try:
             # pylint: disable-msg=W0104
@@ -65,14 +64,14 @@ class StreamTest(TestCase):
             pass
         
     def test_string(self):
-        s1 = StreamFactory.from_string('12')
+        s1 = SequenceByLine.from_string('12')
         assert '1' == s1[0:1]
         assert '12' == s1[0:2]
         s2 = s1[1:]
         assert '2' == s2[0:1]
         
     def test_read(self):
-        s1 = StreamFactory.from_string('12\n123\n')
+        s1 = SequenceByLine.from_string('12\n123\n')
         assert '12\n' == s1.text()
 
 
@@ -81,54 +80,36 @@ class SimpleStreamTester(object):
     Support for testing simple streams.
     '''
     
-    def __init__(self, values, make_stream, make_ref=list):
-        '''
-        values is a list of values, from which we pick a random selection.
-        
-        make_stream is then given the randomized list and constructs a stream,
-        while male_ref constructs a built-in sequence (usually a list) that
-        should be equivalent.
-        '''
+    def __init__(self, values, from_list):
         self.__values = values
-        self.__make_stream = make_stream
-        self.__make_ref = make_ref
+        self.__from_list = from_list
         
     def build(self, n):
-        x = [choice(self.__values) for _i in range(n)]
-        s = self.__make_stream(x)
-        l = self.__make_ref(x)
+        l = [choice(self.__values) for _i in range(n)]
+        s = self.__from_list(l)
         assert isinstance(s, SimpleStream)
-        print(repr(l), repr(s))
         return (l, s)
     
     def test_single_index(self, n=3):
         (l, s) = self.build(n)
-        for i in range(len(l)):
-            assert l[i] == s[i], '%r %r' % (l[i], s[i])
+        for i in range(n):
+            assert l[i] == s[i]
     
-    def test_range(self, n=10, with_len=True):
+    def test_range(self, n=3, with_len=True):
         (l, s) = self.build(n)
-        for i in range(len(l)):
-            for j in range(i, len(l)):
+        for i in range(n):
+            for j in range(i, n):
                 (lr, sr) = (l[i:j], s[i:j])
-                if with_len: 
-                    assert len(lr) == len(sr), '%r %d %r %d  %d %d %d' % (lr, len(lr), sr, len(sr), i, j, k)
                 for k in range(j-i):
-                    print(str(i) + ':' + str(j) + ': ' + repr(lr) + '/' + repr(sr))
-                    assert lr[k] == sr[k], str(i) + ':' + str(j) + ': ' + repr(lr) + '/' + repr(sr)
+                    assert lr[k] == sr[k], str(i) + ':' + str(j) + ': ' + str(lr) + '/' + str(sr)
                 if with_len: 
+                    assert len(lr) == len(sr)
                     for k in range(len(lr)):
                         assert lr[k] == sr[k]
-        try:
-            s[len(l)]
-            assert False, 'expected index error: %r %d' % (s, len(l))
-        except IndexError:
-            pass
-            
                     
-    def test_offset(self, n=10, with_len=True):
+    def test_offset(self, n=3, with_len=True):
         (l, s) = self.build(n)
-        for i in range(len(l)):
+        for i in range(n):
             (lo, so) = (l[i:], s[i:])
             while lo:
                 if with_len:
@@ -136,9 +117,9 @@ class SimpleStreamTester(object):
                 assert lo[0] == so[0]
                 (lo, so) = (lo[1:], so[1:])
             assert not so
-            
+        
 
-class RawStringTest(TestCase):
+class SimpleStringTest(TestCase):
     
     def test_type(self):
         assert issubclass(str, SimpleStream)
@@ -159,7 +140,7 @@ class RawStringTest(TestCase):
         self.get_tester().test_offset(with_len=True)
         
         
-class RawListTest(TestCase):
+class SimpleListTest(TestCase):
     
     def test_type(self):
         assert issubclass(list, SimpleStream)
@@ -180,47 +161,11 @@ class RawListTest(TestCase):
         self.get_tester().test_offset(with_len=True)
         
         
-class FromListTest(TestCase):
+class SimpleGeneratorStreamTest(TestCase):
     
     def get_tester(self):
-        return SimpleStreamTester([1, "two", [3]], StreamFactory.from_list)
-    
-    def test_single_index(self):
-        self.get_tester().test_single_index()
-        
-    def test_range(self):
-        self.get_tester().test_range(with_len=False)
-        self.get_tester().test_range(with_len=True)
-        
-    def test_offset(self):
-        self.get_tester().test_offset(with_len=False)
-        self.get_tester().test_offset(with_len=True)
-        
-
-class FromStringTest(TestCase):
-    
-    def get_tester(self):
-        return SimpleStreamTester(list('a\nbc\ndef\n'), 
-                    lambda l: StreamFactory.from_string(''.join(l)))
-    
-    def test_single_index(self):
-        self.get_tester().test_single_index()
-        
-    def test_range(self):
-        self.get_tester().test_range(with_len=False)
-        self.get_tester().test_range(with_len=True)
-        
-    def test_offset(self):
-        self.get_tester().test_offset(with_len=False)
-        self.get_tester().test_offset(with_len=True)
-        
-
-class FromLinesTest(TestCase):
-    
-    def get_tester(self):
-        return SimpleStreamTester(['a\n', 'bc\n', 'def\n'], 
-                    lambda l: StreamFactory.from_lines(iter(l)),
-                    ''.join)
+        return SimpleStreamTester([1,"two", [3]],
+                                  lambda l: SimpleGeneratorStream(iter(l)))
     
     def test_single_index(self):
         self.get_tester().test_single_index()

@@ -199,10 +199,10 @@ class InvisibleScope(object):
         
 
 if __name__ == '__main__':
-    #CheckSlice().run()
+    CheckSlice().run()
     #CheckDash.run()
     #CheckReturnYield().run()
     #CheckGeneratorProxy().run()
-    InvisibleScope().run()
+    #InvisibleScope().run()
     
     

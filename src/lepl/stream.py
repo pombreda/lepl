@@ -610,3 +610,332 @@ class SimpleGeneratorStream(SimpleStream):
     
     def __eq__(self, other):
         return self == other
+
+
+'''
+Sometimes LEPL processes data from a single block of memory (a string, for
+example).  Other times it may process a stream of data - eg characters
+or tokens or lines from a file.
+
+To minimise development and maintenance work it would be preferable to 
+unify all these via a single source.  For example, we could always construct
+an in-memory array of data and then use that.  This has the advantage of
+being simple and using a minimal total amount of resources; the disadvantages
+are that all input must be available immediately and that the instantaneous
+amount of resources consumed is high.
+
+An alternative approach would be to treat everything as a stream of values
+and then add a linked list interface to give the minimal persistence
+required for backtracking (see details below).  This is also conceptually
+fairly simple, and the instantaneous resource use at any one time is
+small; the disadvantages are that the total resource use over time is 
+high and some operations - like calculating the total length, needed for
+left recursive grammars, are very expensive.
+
+To try get the best of both solutions described above I am going with an
+intermediate approach which holds "lines" of data in memory in an array.
+In most cases these will be natural text lines (eg terminated by \n), but
+they could also be of arbitrary length.
+
+The fundamental class is then Line, which holds a line of data in a 
+linked list with other Line instances.  The client code interacts with this
+via StreamView, which implements the LocationStream interface and stores state 
+for a particular character location.  Because there are many StreamView 
+instances (potentially one per character) we take care to make them compact.
+'''
+
+
+class StreamView(LocationStream):
+    '''
+    A view into a Line that implements LocationStream.
+    
+    This is intended to be as compact as possible.  Methods don't "count"
+    because they are not per-instance, and putting the logic here, rather
+    than in Line, makes it easy to iterate (rather than recurse) to the
+    end of the data when necessary (for length). 
+    '''
+    
+    __slots__ = ('_StreamView__line', '_StreamView__offset')
+
+    def __init__(self, line, offset=0):
+        self.__line = line
+        self.__offset = offset
+        
+    def __getitem__(self, index):
+        '''
+        [n] returns a character (string of length 1)
+        [n:] returns a new StreamView instance that starts at the offset n
+        [n:m] returns a sequence (ie string, list, etc)
+        '''
+        
+        # [n]
+        if isinstance(index, int):
+            (line, index) = self.__at(index)
+            return line.line[index]
+        
+        if index.step is not None:
+            raise IndexError('Slice step not supported')
+        
+        if index.start is None:
+            raise IndexError('Slice start must be specified')
+        
+        # [n:]
+        if index.stop is None:
+            if index.start == 0 and self.__offset == 0:
+                return self
+            return StreamView(*self.__at(index.start))
+        
+        # [n:m]
+        length = index.stop - index.start
+        (line, start) = self.__at(index.start)
+        lines = [line.line]
+        remainder = length - (line.length - start)
+        while line.length and remainder:
+            line = line.next
+            remainder -= line.length
+            lines.append(line.line)
+        if remainder > 0:
+            raise IndexError('Missing {0:d} items'.format(remainder))
+        else:
+            return line.join(lines)[start:start+length]
+            
+    def __at(self, index):
+        '''
+        Return a (line, index) pair, for which the index lies within the
+        line.  Otherwise, raise an error.
+        
+        When end_ok is True, (None, 0) is a possible return value.
+        '''
+        line = self.__line
+        index += self.__offset
+        while line.length and index >= line.length:
+            index -= line.length
+            line = line.next
+        # it's possible for index to be zero and line to be empty!
+        if not line.line and index:
+            raise IndexError()
+        return (line, index)
+    
+    def __bool__(self):
+        return bool(self.__line.length)
+    
+    def __nonzero__(self):
+        return self.__bool__()
+    
+    def __len__(self):
+        '''
+        Calculate the total length, if necessary, and store on the class.
+        '''
+        if self.__line.total_length is None:
+            line = self.__line
+            total = line.previous_length
+            while line.length:
+                total = total + line.length
+                line = line.next
+            # type seems to be necessary here to target the class attribute
+            type(self.__line).total_length = total
+        return self.__line.total_length - (self.__line.previous_length + 
+                                           self.__offset)
+    
+    def __repr__(self):
+        return '{0!r}[{1:d}:]'.format(self.__line, self.__offset)
+        
+    def __str__(self):
+        return str(self.text())
+    
+    def __hash__(self):
+        return self.__line.hash(self.__offset)
+    
+    def __eq__(self, other):
+        return self.__line.eq(self.__offset, other)
+    
+    def location(self):
+        '''
+        A tuple containing line number, line offset, character offset,
+        the line currently being processed, and a description of the source.
+        
+        The line number is -1 if this is past the end of the file.
+        '''
+        if self.__line.length:
+            return (self.__line.line_number,
+                    self.__offset,
+                    self.__line.previous_length + self.__offset,
+                    self.text(),
+                    self.__line.source)
+        else:
+            return (-1, None, None, None, self.__line.source)
+    
+    def text(self):
+        if self.__line.line:
+            return self.__line.line[self.__offset:]
+        else:
+            raise IndexError()
+
+
+
+class _StreamFactory(object):
+    
+    @staticmethod
+    def __call__(lines, source, join=''.join):
+        
+        # i am feeling dirty here... what should i be doing instead?
+        global _source
+        _source = source
+        global _join
+        _join = join
+    
+        class Line(object):
+            
+            __source = _source
+            __join = lambda cls, x: _join(x)
+            __slots__ = ['_Line__lines', '_Line__previous_length', 
+                         '_Line__line_number', '_Line__next', '_Line__length', 
+                         '_Line__line']
+            total_length = None
+            
+            def __init__(self, lines, previous_length=0, line_number=0):
+                self.__lines = lines
+                self.__previous_length = previous_length
+                self.__line_number = line_number
+                self.__next = None
+                self.__length = None
+                try:
+                    self.__line = next(lines)
+                    self.__length = len(self.line)
+                except StopIteration:
+                    self.__line = self.__join([])
+                    self.__length = 0
+                    
+            @property
+            def source(self):
+                return self.__source
+            
+            @property
+            def join(self):
+                return self.__join
+                    
+            @property
+            def previous_length(self):
+                return self.__previous_length
+            
+            @property
+            def line_number(self):
+                return self.__line_number
+            
+            @property
+            def length(self):
+                return self.__length
+            
+            @property
+            def line(self):
+                return self.__line
+            
+            @property
+            def next(self):
+                '''
+                Create a new instance without needing to invoke the factory.
+                '''
+                if not self.__next:
+                    if self.__length:
+                        self.__next = Line(self.__lines,
+                                           self.__previous_length + self.__length,
+                                           self.__line_number + 1)
+                    else:
+                        raise IndexError('Past end of stream')
+                return self.__next
+            
+            def __repr__(self):
+                return 'Line({0!r})'.format(self.line)
+    
+        return StreamView(Line(lines))
+
+    @staticmethod
+    def from_path(path):
+        '''
+        Open the file with line buffering.
+        '''
+        return StreamFactory(open(path, 'rt', buffering=1), path)
+    
+    @staticmethod
+    def from_string(text):
+        '''
+        Wrap a string.
+        '''
+        return StreamFactory(StringIO(text), _sample('str: ', repr(text)))
+    
+    @staticmethod
+    def from_lines(lines, source=None, join=''.join):
+        '''
+        Wrap an iterator over lines (strings, by default, but could be a 
+        list of lists for example).
+        '''
+        if source is None:
+            source = _sample('lines: ', repr(lines))
+        return StreamFactory(lines, source, join)
+    
+    @staticmethod
+    def from_items(items, source=None, line_length=80):
+        '''
+        Wrap an iterator over items.
+        '''
+        if source is None:
+            source = _sample('items: ', repr(items))
+        return StreamFactory(aglomerate(items, line_length), source, list)
+    
+    @staticmethod
+    def from_list(data):
+        '''
+        We can parse any list (not just lists of characters as strings).
+        '''
+        return StreamFactory(single_line(data), 
+                             _sample('list: ', repr(data)), list_join)
+    
+    @staticmethod
+    def from_file(file_):
+        '''
+        Wrap a file.
+        '''
+        return StreamFactory(file_, getattr(file_, 'name', '<file>')) 
+        
+    @staticmethod
+    def null(stream):
+        '''
+        Return the underlying data with no modification.
+        '''
+        return stream
+
+
+StreamFactory = _StreamFactory()
+
+
+def list_join(lists):
+    joined = []
+    for list_ in lists:
+        joined.extend(list_)
+    return joined
+
+
+def aglomerate(items, line_length=80):
+    '''
+    Convert an iterator over items into an iterator over lists of items,
+    where each list (except the last) is of length line_length.
+    '''
+    done = False
+    while not done:
+        line = []
+        for i_ in range(line_length):
+            try:
+                line.append(next(items))
+            except StopIteration:
+                done = True
+                break
+        if line:
+            yield line
+
+
+def single_line(line):
+    '''
+    Present a list as a single line in an iteration.
+    '''
+    yield line
+    

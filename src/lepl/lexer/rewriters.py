@@ -76,7 +76,8 @@ def assert_not_token(node, visited):
                 assert_not_token(child, visited)
 
 
-def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None):
+def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None,
+                   extra_tokens=None):
     '''
     This is required when using Tokens.  It does the following:
     - Find all tokens in the matcher graph
@@ -88,11 +89,13 @@ def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None):
     
     alphabet is the alphabet for which the regular expressions are defined.
     
-    discard is a regular expression that is used to match space if no token can
-    be matched (space is then discarded)
+    discard is a regular expression that is used to match space (typically)
+    if no token can be matched (and which is then discarded)
     
-    error is raised if no token or space can be matched (it is passed the
+    error is raised if no token or discard can be matched (it is passed the
     current stream).
+    
+    extra_tokens are added to those found by analysing the grammar.
     '''
 
     log = getLogger('lepl.lexer.rewriters.lexer_rewriter')
@@ -104,6 +107,8 @@ def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None):
         Either construct the lexer, or warn that none found.
         '''
         tokens = find_tokens(matcher)
+        if extra_tokens:
+            tokens.update(extra_tokens)
         if tokens:
             return Lexer(matcher, tokens, alphabet, discard, error)
         else:
