@@ -198,7 +198,7 @@ __all__ = [
         'make_dict',
         'join_with',
         # stream
-        'SequenceByLine',
+        'Stream',
         # operators
         'Override',
         'Separator',

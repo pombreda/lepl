@@ -53,7 +53,7 @@ from lepl.manager import _GeneratorManager
 from lepl.node import Node
 from lepl.operators import OperatorMixin, OPERATORS, DefaultNamespace, Matcher
 from lepl.parser import make_parser, make_matcher, tagged
-from lepl.stream import SequenceByLine
+from lepl.stream import Stream
 from lepl.trace import _TraceResults
 from lepl.support import assert_type, lmap, LogMixin
 
@@ -112,34 +112,34 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
     
     def file_parser(self, config=None):
         '''
-        Construct a parser for file objects that uses a `SequenceByLine()` 
+        Construct a parser for file objects that uses a stream 
         internally and returns a single result.
         '''
-        return make_parser(self, SequenceByLine.from_file, 
+        return make_parser(self, Stream.from_file, 
                            config if config else Configuration.default())
     
     def list_parser(self, config=None):
         '''
-        Construct a parser for lists that uses a `SequenceByLine()` 
+        Construct a parser for lists that uses a stream 
         internally and returns a single result.
         '''
-        return make_parser(self, SequenceByLine.from_list, 
+        return make_parser(self, Stream.from_list, 
                            config if config else Configuration.default())
     
     def path_parser(self, config=None):
         '''
-        Construct a parser for a file that uses a `SequenceByLine()` 
+        Construct a parser for a file that uses a stream 
         internally and returns a single result.
         '''
-        return make_parser(self, SequenceByLine.from_path, 
+        return make_parser(self, Stream.from_path, 
                            config if config else Configuration.default())
     
     def string_parser(self, config=None):
         '''
-        Construct a parser for strings that uses a `SequenceByLine()` 
+        Construct a parser for strings that uses a stream 
         internally and returns a single result.
         '''
-        return make_parser(self, SequenceByLine.from_string, 
+        return make_parser(self, Stream.from_string, 
                            config if config else Configuration.default())
     
     def null_parser(self, config=None):
@@ -147,34 +147,34 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         Construct a parser for strings and lists that returns a single result
         (this does not use streams).
         '''
-        return make_parser(self, SequenceByLine.null, 
+        return make_parser(self, Stream.null, 
                            config if config else Configuration.default())
     
     def parse_file(self, file_, config=None):
         '''
         Parse the contents of a file, returning a single match and using a
-        `SequenceByLine()` internally.
+        stream internally.
         '''
         return self.file_parser(config)(file_)
         
     def parse_list(self, list_, config=None):
         '''
         Parse the contents of a list, returning a single match and using a
-        `SequenceByLine()` internally.
+        stream internally.
         '''
         return self.list_parser(config)(list_)
         
     def parse_path(self, path, config=None):
         '''
         Parse the contents of a file, returning a single match and using a
-        `SequenceByLine()` internally.
+        stream internally.
         '''
         return self.path_parser(config)(path)
         
     def parse_string(self, string, config=None):
         '''
         Parse the contents of a string, returning a single match and using a
-        `SequenceByLine()` internally.
+        stream internally.
         '''
         return self.string_parser(config)(string)
     
@@ -189,33 +189,33 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
     def file_matcher(self, config=None):
         '''
         Construct a parser for file objects that returns a sequence of matches
-        and uses a `SequenceByLine()` internally.
+        and uses a stream internally.
         '''
-        return make_matcher(self, SequenceByLine.from_file, 
+        return make_matcher(self, Stream.from_file, 
                             config if config else Configuration.default())
     
     def list_matcher(self, config=None):
         '''
         Construct a parser for lists that returns a sequence of matches
-        and uses a `SequenceByLine()` internally.
+        and uses a stream internally.
         '''
-        return make_matcher(self, SequenceByLine.from_list, 
+        return make_matcher(self, Stream.from_list, 
                             config if config else Configuration.default())
     
     def path_matcher(self, config=None):
         '''
         Construct a parser for a file that returns a sequence of matches
-        and uses a `SequenceByLine()` internally.
+        and uses a stream internally.
         '''
-        return make_matcher(self, SequenceByLine.from_path, 
+        return make_matcher(self, Stream.from_path, 
                             config if config else Configuration.default())
     
     def string_matcher(self, config=None):
         '''
         Construct a parser for strings that returns a sequence of matches
-        and uses a `SequenceByLine()` internally.
+        and uses a stream internally.
         '''
-        return make_matcher(self, SequenceByLine.from_string, 
+        return make_matcher(self, Stream.from_string, 
                             config if config else Configuration.default())
 
     def null_matcher(self, config=None):
@@ -223,34 +223,34 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         Construct a parser for strings and lists list objects that returns a s
         equence of matches (this does not use streams).
         '''
-        return make_matcher(self, SequenceByLine.null, 
+        return make_matcher(self, Stream.null, 
                             config if config else Configuration.default())
 
     def match_file(self, file_, config=None):
         '''
         Parse the contents of a file, returning a sequence of matches and using 
-        a `SequenceByLine()` internally.
+        a stream internally.
         '''
         return self.file_matcher(config)(file_)
         
     def match_list(self, list_, config=None):
         '''
         Parse a list, returning a sequence of matches and using a
-        `SequenceByLine()` internally.
+        stream internally.
         '''
         return self.list_matcher(config)(list_)
         
     def match_path(self, path, config=None):
         '''
         Parse a file, returning a sequence of matches and using a
-        `SequenceByLine()` internally.
+        stream internally.
         '''
         return self.path_matcher(config)(path)
         
     def match_string(self, string, config=None):
         '''
         Parse a string, returning a sequence of matches and using a
-        `SequenceByLine()` internally.
+        stream internally.
         '''
         return self.string_matcher(config)(string)
 

@@ -30,7 +30,7 @@ from collections import deque
 from logging import getLogger
 from traceback import format_exc
 
-from lepl.stream import SequenceByLine
+from lepl.stream import Stream
     
     
 def tagged(call):
@@ -256,71 +256,71 @@ def make_parser(matcher, stream, config):
 def file_parser(matcher, config):
     '''
     Construct a parser for file objects that returns a single match and
-    uses a `SequenceByLine()` internally.
+    uses a stream internally.
     '''
-    return make_parser(matcher, SequenceByLine.from_file, config)
+    return make_parser(matcher, Stream.from_file, config)
 
 def list_parser(matcher, config):
     '''
     Construct a parser for lists that returns a single match and uses a 
-    `SequenceByLine()` internally.
+    stream internally.
     '''
-    return make_parser(matcher, SequenceByLine.from_list, config)
+    return make_parser(matcher, Stream.from_list, config)
 
 def path_parser(matcher, config):
     '''
     Construct a parser for a file that returns a single match and uses a 
-    `SequenceByLine()` internally.
+    stream internally.
     '''
-    return make_parser(matcher, SequenceByLine.from_path, config)
+    return make_parser(matcher, Stream.from_path, config)
 
 def string_parser(matcher, config):
     '''
     Construct a parser for strings that returns a single match and uses a 
-    `SequenceByLine()` internally.
+    stream internally.
     '''
-    return make_parser(matcher, SequenceByLine.from_string, config)
+    return make_parser(matcher, Stream.from_string, config)
 
 def null_parser(matcher, config):
     '''
     Construct a parser for strings and lists returns a single match
     (this does not use streams).
     '''
-    return make_parser(matcher, SequenceByLine.null, config)
+    return make_parser(matcher, Stream.null, config)
 
 
 def file_matcher(matcher, config):
     '''
     Construct a parser that returns a sequence of matches for file objects 
-    and uses a `SequenceByLine()` internally.
+    and uses a stream internally.
     '''
-    return make_matcher(matcher, SequenceByLine.from_file, config)
+    return make_matcher(matcher, Stream.from_file, config)
 
 def list_matcher(matcher, config):
     '''
     Construct a parser that returns a sequence of matches for lists 
-    and uses a `SequenceByLine()` internally.
+    and uses a stream internally.
     '''
-    return make_matcher(matcher, SequenceByLine.from_list, config)
+    return make_matcher(matcher, Stream.from_list, config)
 
 def path_matcher(matcher, config):
     '''
     Construct a parser that returns a sequence of matches for a file
-    and uses a `SequenceByLine()` internally.
+    and uses a stream internally.
     '''
-    return make_matcher(matcher, SequenceByLine.from_path, config)
+    return make_matcher(matcher, Stream.from_path, config)
 
 def string_matcher(matcher, config):
     '''
     Construct a parser that returns a sequence of matches for strings 
-    and uses a `SequenceByLine()` internally.
+    and uses a stream internally.
     '''
-    return make_matcher(matcher, SequenceByLine.from_string, config)
+    return make_matcher(matcher, Stream.from_string, config)
 
 def null_matcher(matcher, config):
     '''
     Construct a parser that returns a sequence of matches for strings
     and lists (this does not use streams).
     '''
-    return make_matcher(matcher, SequenceByLine.null, config)
+    return make_matcher(matcher, Stream.null, config)
 

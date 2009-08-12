@@ -23,7 +23,7 @@ Tests for the lepl.regexp.unicode module.
 from unittest import TestCase
 
 from logging import basicConfig, DEBUG
-from lepl import RegexpError, SequenceByLine
+from lepl import RegexpError, Stream
 from lepl.regexp.core import NfaGraph, NfaToDfa, Regexp
 from lepl.regexp.unicode import UnicodeAlphabet
 
@@ -146,7 +146,7 @@ class NfaTest(TestCase):
     def assert_matches(self, pattern, text, results):
         r = _test_parser(pattern)
         m = r.nfa().matcher
-        s = list(m(SequenceByLine.from_string(text)))
+        s = list(m(Stream.from_string(text)))
         assert len(s) == len(results), s
         for (a, b) in zip(s, results):
             assert a[1] == b, a[1] + ' != ' + b
