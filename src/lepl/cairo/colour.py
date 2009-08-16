@@ -45,10 +45,10 @@ class Colour(namedtuple('BaseColour', 'r g b a')):
         b = min(a, max(0, b))
         return super(Colour, cls).__new__(cls, r, g, b, a)
     
-    r = property(itemgetter(1), _replace(1)) 
-    g = property(itemgetter(2), _replace(2)) 
-    b = property(itemgetter(3), _replace(3)) 
-    a = property(itemgetter(4), _replace(4)) 
+    r = property(itemgetter(0), _replace(0)) 
+    g = property(itemgetter(1), _replace(1)) 
+    b = property(itemgetter(2), _replace(2)) 
+    a = property(itemgetter(3), _replace(3)) 
     
     @staticmethod
     def from_rgb(rgb):

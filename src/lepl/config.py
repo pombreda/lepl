@@ -21,6 +21,7 @@ The main configuration object and various standard configurations.
 '''
 
 from lepl.monitor import MultipleMonitors
+from lepl.stream import DEFAULT_STREAM_FACTORY
 
 # A major driver for this being separate is that it decouples dependency loops
 
@@ -34,7 +35,7 @@ class Configuration(object):
     __default = None
     __managed = None
     
-    def __init__(self, rewriters=None, monitors=None):
+    def __init__(self, rewriters=None, monitors=None, stream_factory=None):
         '''
         `rewriters` Are functions that take and return a matcher tree.  They
         can add memoisation, restructure the tree, etc.  They are applied left
@@ -53,18 +54,30 @@ class Configuration(object):
             self.monitor = monitors[0]()
         else:
             self.monitor = MultipleMonitors(monitors)
+        if stream_factory is None:
+            stream_factory = DEFAULT_STREAM_FACTORY
+        self.__stream_factory = stream_factory
+        
+    @property
+    def stream(self):
+        '''
+        Read only access to the stream factory.
+        '''
+        return self.__stream_factory
         
     @classmethod    
-    def default(cls):
+    def default(cls, config=None):
         '''
-        Generate a default configuration instance.  Currently this flattens
-        nested `And()` and `Or()` instances;
+        If no config is given, Generate a default configuration instance.  
+        Currently this flattens nested `And()` and `Or()` instances;
         adds memoisation (which allows left recursion, but may alter the order 
         in which matches are returned for ambiguous grammars);
         adds a lexer if any tokens are found (assuming unicode input);
         and supports tracing (which is initially disabled, but can be enabled
         using the `Trace()` matcher).
         '''
+        if config:
+            return config
         if cls.__default is None:
             from lepl.lexer.rewriters import lexer_rewriter
             from lepl.rewriters import flatten, compose_transforms, auto_memoize

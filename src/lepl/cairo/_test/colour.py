@@ -36,7 +36,7 @@ class ColourTest(TestCase):
         Test clipping with pre-multiplication of alpha.
         '''
         red = Colour(1, 0, 0)
-        assert red.rgb() == (1, 0, 0)
+        assert red.rgb() == (1, 0, 0), red.rgb()
         green = Colour(0, 2, 0)
         assert green.rgb() == (0, 1, 0)
         half_blue = Colour(0, 0, 1, 0.5)

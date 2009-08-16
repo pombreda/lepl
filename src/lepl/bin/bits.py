@@ -56,6 +56,8 @@ if bytes is str:
     print('Binary parsing unsupported in this Python version')
 else:
 
+
+    from lepl.stream import SimpleStream
     
     STRICT = 'strict'
     
@@ -459,6 +461,8 @@ else:
             else:
                 return BitString.from_bytearray(value.encode(errors=errors))
             
+            
+    SimpleStream.register(BitString)
             
     def unpack_length(length):
         '''

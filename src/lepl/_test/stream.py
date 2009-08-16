@@ -24,7 +24,7 @@ from random import choice
 from traceback import format_exc
 from unittest import TestCase
 
-from lepl.stream import SimpleStream, Stream
+from lepl.stream import SimpleStream, DEFAULT_STREAM_FACTORY
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324
@@ -34,7 +34,7 @@ from lepl.stream import SimpleStream, Stream
 class StreamTest(TestCase):
     
     def test_single_line(self):
-        s1 = Stream.from_string('abc')
+        s1 = DEFAULT_STREAM_FACTORY.from_string('abc')
         assert s1[0] == 'a', s1[0]
         assert s1[0:3] == 'abc', s1[0:3]
         assert s1[2] == 'c' , s1[2]
@@ -42,7 +42,7 @@ class StreamTest(TestCase):
         assert s2[0] == 'b', s2[0]
 
     def test_multiple_lines(self):
-        s1 = Stream.from_string('abc\npqr\nxyz')
+        s1 = DEFAULT_STREAM_FACTORY.from_string('abc\npqr\nxyz')
         assert s1[0:3] == 'abc'
         assert s1[0:4] == 'abc\n'
         assert s1[0:5] == 'abc\np'
@@ -55,7 +55,7 @@ class StreamTest(TestCase):
         assert repr(s3) == "Line('xyz')[0:]", repr(s3)
         
     def test_eof(self):
-        s1 = Stream.from_string('abc\npqs')
+        s1 = DEFAULT_STREAM_FACTORY.from_string('abc\npqs')
         assert s1[6] == 's', s1[6]
         try:
             # pylint: disable-msg=W0104
@@ -65,14 +65,14 @@ class StreamTest(TestCase):
             pass
         
     def test_string(self):
-        s1 = Stream.from_string('12')
+        s1 = DEFAULT_STREAM_FACTORY.from_string('12')
         assert '1' == s1[0:1]
         assert '12' == s1[0:2]
         s2 = s1[1:]
         assert '2' == s2[0:1]
         
     def test_read(self):
-        s1 = Stream.from_string('12\n123\n')
+        s1 = DEFAULT_STREAM_FACTORY.from_string('12\n123\n')
         assert '12\n' == s1.text()
 
 
@@ -130,7 +130,7 @@ class SimpleStreamTester(object):
             (lo, so) = (l[i:], s[i:])
             while lo:
                 if with_len:
-                    assert len(lo) == len(so), str(lo) + '/' + str(so)
+                    assert len(lo) == len(so), '%d/%d' % (len(lo), len(so))
                 assert lo[0] == so[0]
                 (lo, so) = (lo[1:], so[1:])
             assert not so
@@ -181,7 +181,8 @@ class RawListTest(TestCase):
 class FromListTest(TestCase):
     
     def get_tester(self):
-        return SimpleStreamTester([1, "two", [3]], Stream.from_list)
+        return SimpleStreamTester([1, "two", [3]], 
+                                  DEFAULT_STREAM_FACTORY.from_list)
     
     def test_single_index(self):
         self.get_tester().test_single_index()
@@ -199,7 +200,7 @@ class FromStringTest(TestCase):
     
     def get_tester(self):
         return SimpleStreamTester(list('a\nbc\ndef\n'), 
-                    lambda l: Stream.from_string(''.join(l)))
+                    lambda l: DEFAULT_STREAM_FACTORY.from_string(''.join(l)))
     
     def test_single_index(self):
         self.get_tester().test_single_index()
@@ -217,7 +218,7 @@ class FromLinesTest(TestCase):
     
     def get_tester(self):
         return SimpleStreamTester(['a\n', 'bc\n', 'def\n'], 
-                    lambda l: Stream.from_lines(iter(l)),
+                    lambda l: DEFAULT_STREAM_FACTORY.from_lines(iter(l)),
                     ''.join)
     
     def test_single_index(self):

@@ -45,8 +45,8 @@ class ErrorTest(Example):
         
         with Separator(r'\s*'):
             
-            unopen   = number ** make_error('no ( before {stream_out}') & ')'
-            unclosed = ('(' & expr & Eos()) ** make_error('no ) for {stream_in}')
+            unopen   = number ** make_error("no ( before '{stream_out}'") & ')'
+            unclosed = ('(' & expr & Eos()) ** make_error("no ) for '{stream_in}'")
         
             term    = Or(
                          (number | '(' & expr & ')')      > Term,
@@ -68,7 +68,7 @@ class ErrorTest(Example):
                        """  File "str: '1 + 2 * (3 + 4 - 5'", line 1
     1 + 2 * (3 + 4 - 5
             ^
-lepl.error.Error: no ) for '(3 + 4...'
+lepl.error.Error: no ) for '(3 + 4 - 5'
 """),
                        (lambda: parser('1 + 2 * 3 + 4 - 5)')[0],
                         """  File "str: '1 + 2 * 3 + 4 - 5)'", line 1

@@ -23,7 +23,7 @@ The token streams.
 from logging import getLogger
 #from traceback import format_exc
 
-from lepl.stream import LocationStream, Stream
+from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
 
 
 def lexed_simple_stream(tokens, discard, error, stream):
@@ -47,7 +47,7 @@ def lexed_simple_stream(tokens, discard, error, stream):
         except TypeError:
             #log.debug(format_exc())
             raise error(stream)
-    return Stream.from_list(generator())
+    return DEFAULT_STREAM_FACTORY.from_list(generator())
 
 
 # TODO

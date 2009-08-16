@@ -239,6 +239,8 @@ class StreamView(LocationStream):
         
         # [n:m]
         length = index.stop - index.start
+        if not length:
+            return self.__line.source.join([])
         (line, start) = self.__at(index.start, True)
         lines = [line.line]
         remainder = length - (len(line.line) - start)
@@ -318,13 +320,63 @@ class StreamView(LocationStream):
         return self.__line.text(self.__offset)
 
 
-class LineFactory(object):
+#class StreamFactory(metaclass=ABCMeta):
+# Python 2.6
+# pylint: disable-msg=W0105, C0103
+StreamFactory = ABCMeta('StreamFactory', (object, ), {})
+'''ABC used to identify stream factories.'''
+
+
+class BaseStreamFactory(StreamFactory):
+    '''
+    Support for Stream Factories.
+    '''
+
+    @abstractmethod
+    def from_file(self, file_):
+        '''
+        Provide a stream for the contents of the file.
+        '''
+        
+    @abstractmethod
+    def from_path(self, path):
+        '''
+        Provide a stream for the contents of the file at the given path.
+        '''
+    
+    @abstractmethod
+    def from_string(self, text):
+        '''
+        Provide a stream for the contents of the string.
+        '''
+
+    @abstractmethod
+    def from_lines(self, lines, source=None, join=''.join):
+        '''
+        Provide a stream for the contents of an iterator over lines.
+        '''
+    
+    @abstractmethod
+    def from_list(self, items, source=None, line_length=80):
+        '''
+        Provide a stream for the contents of an iterator over items
+        (ie characters).
+        '''
+    
+    def null(self, stream):
+        '''
+        Return the underlying data with no modification.
+        '''
+        assert isinstance(stream, SimpleStream), type(stream)
+        return stream
+
+
+class DefaultStreamFactory(BaseStreamFactory):
     '''
     A source of Line instances, parameterised by the source.
     '''
     
-    @staticmethod
-    def __call__(source_):
+    def __call__(self, source_):
         
         class Line(object):
             '''
@@ -374,55 +426,43 @@ class LineFactory(object):
     
         return StreamView(Line().next)
 
-    @staticmethod
-    def from_path(path):
+    def from_path(self, path):
         '''
         Open the file with line buffering.
         '''
-        return Stream(LineSource(open(path, 'rt', buffering=1), path))
+        return self(LineSource(open(path, 'rt', buffering=1), path))
     
-    @staticmethod
-    def from_string(text):
+    def from_string(self, text):
         '''
         Wrap a string.
         '''
-        return Stream(LineSource(StringIO(text), _sample('str: ', repr(text))))
+        return self(LineSource(StringIO(text), _sample('str: ', repr(text))))
     
-    @staticmethod
-    def from_lines(lines, source=None, join=''.join):
+    def from_lines(self, lines, source=None, join=''.join):
         '''
         Wrap an iterator over lines (strings, by default, but could be a 
         list of lists for example).
         '''
         if source is None:
             source = _sample('lines: ', repr(lines))
-        return Stream(LineSource(lines, source, join))
+        return self(LineSource(lines, source, join))
     
-    @staticmethod
-    def from_list(items, source=None, line_length=80):
+    def from_list(self, items, source=None, line_length=80):
         '''
         Wrap an iterator over items (or a list).
         '''
         if source is None:
             source = _sample('list: ', repr(items))
-        return Stream(CharacterSource(items, source, list_join, line_length))
+        return self(CharacterSource(items, source, list_join, line_length))
     
-    @staticmethod
-    def from_file(file_):
+    def from_file(self, file_):
         '''
         Wrap a file.
         '''
-        return Stream(LineSource(file_, getattr(file_, 'name', '<file>')) )
+        return self(LineSource(file_, getattr(file_, 'name', '<file>')) )
         
-    @staticmethod
-    def null(stream):
-        '''
-        Return the underlying data with no modification.
-        '''
-        return stream
 
-
-Stream = LineFactory()
+DEFAULT_STREAM_FACTORY = DefaultStreamFactory()
 
 
 #class Source(metaclass=ABCMeta):
@@ -492,7 +532,7 @@ class LineSource(BaseSource):
                         repr(lines) if description is None else description,
                         join)
         self.__lines = iter(lines)
-        self.__line_count = 0
+        self.__line_count = 1 # one-based indexing
         self.__character_count = 0
     
     def __next__(self):
@@ -535,8 +575,8 @@ class CharacterSource(BaseSource):
     Wrap a sequence of characters (like a string or list) so that it provides
     "lines" in chunks of the given size.  Note that location has no concept
     of line number (lines are only an implementation detail).  This means,
-    amongst other things, that Python regexps will give unexpected results
-    with this source (since they work on a "per line" basis).
+    amongst other things, that Python regexps will not work with this source 
+    (since they work on a "per line" basis).
     '''
     
     def __init__(self, characters, description=None, join=''.join, 

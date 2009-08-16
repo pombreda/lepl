@@ -53,7 +53,6 @@ from lepl.manager import _GeneratorManager
 from lepl.node import Node
 from lepl.operators import OperatorMixin, OPERATORS, DefaultNamespace, Matcher
 from lepl.parser import make_parser, make_matcher, tagged
-from lepl.stream import Stream
 from lepl.trace import _TraceResults
 from lepl.support import assert_type, lmap, LogMixin
 
@@ -115,40 +114,40 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         Construct a parser for file objects that uses a stream 
         internally and returns a single result.
         '''
-        return make_parser(self, Stream.from_file, 
-                           config if config else Configuration.default())
+        config = Configuration.default(config)
+        return make_parser(self, config.stream.from_file, config)
     
     def list_parser(self, config=None):
         '''
         Construct a parser for lists that uses a stream 
         internally and returns a single result.
         '''
-        return make_parser(self, Stream.from_list, 
-                           config if config else Configuration.default())
+        config = Configuration.default(config)
+        return make_parser(self, config.stream.from_list, config) 
     
     def path_parser(self, config=None):
         '''
         Construct a parser for a file that uses a stream 
         internally and returns a single result.
         '''
-        return make_parser(self, Stream.from_path, 
-                           config if config else Configuration.default())
+        config = Configuration.default(config)
+        return make_parser(self, config.stream.from_path, config) 
     
     def string_parser(self, config=None):
         '''
         Construct a parser for strings that uses a stream 
         internally and returns a single result.
         '''
-        return make_parser(self, Stream.from_string, 
-                           config if config else Configuration.default())
+        config = Configuration.default(config)
+        return make_parser(self, config.stream.from_string, config) 
     
     def null_parser(self, config=None):
         '''
         Construct a parser for strings and lists that returns a single result
         (this does not use streams).
         '''
-        return make_parser(self, Stream.null, 
-                           config if config else Configuration.default())
+        config = Configuration.default(config)
+        return make_parser(self, config.stream.null, config) 
     
     def parse_file(self, file_, config=None):
         '''
@@ -191,40 +190,40 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         Construct a parser for file objects that returns a sequence of matches
         and uses a stream internally.
         '''
-        return make_matcher(self, Stream.from_file, 
-                            config if config else Configuration.default())
+        config = Configuration.default(config)
+        return make_matcher(self, config.stream.from_file, config) 
     
     def list_matcher(self, config=None):
         '''
         Construct a parser for lists that returns a sequence of matches
         and uses a stream internally.
         '''
-        return make_matcher(self, Stream.from_list, 
-                            config if config else Configuration.default())
+        config = Configuration.default(config)
+        return make_matcher(self, config.stream.from_list, config) 
     
     def path_matcher(self, config=None):
         '''
         Construct a parser for a file that returns a sequence of matches
         and uses a stream internally.
         '''
-        return make_matcher(self, Stream.from_path, 
-                            config if config else Configuration.default())
+        config = Configuration.default(config)
+        return make_matcher(self, config.stream.from_path, config) 
     
     def string_matcher(self, config=None):
         '''
         Construct a parser for strings that returns a sequence of matches
         and uses a stream internally.
         '''
-        return make_matcher(self, Stream.from_string, 
-                            config if config else Configuration.default())
+        config = Configuration.default(config)
+        return make_matcher(self, config.stream.from_string, config) 
 
     def null_matcher(self, config=None):
         '''
         Construct a parser for strings and lists list objects that returns a s
         equence of matches (this does not use streams).
         '''
-        return make_matcher(self, Stream.null, 
-                            config if config else Configuration.default())
+        config = Configuration.default(config)
+        return make_matcher(self, config.stream.null, config) 
 
     def match_file(self, file_, config=None):
         '''

@@ -24,6 +24,7 @@ if bytes is str:
     print('Binary parsing unsupported in this Python version')
 else:
 
+    from logging import basicConfig, DEBUG
     from unittest import TestCase
     
     from lepl.bin.encode import dispatch_table, simple_serialiser
@@ -34,14 +35,14 @@ else:
     
     # pylint: disable-msg=C0103, C0111, C0301
     # (dude this is just a test)
-
-
+    
     class MatcherTest(TestCase):
         '''
         Test whether we correctly match some data.
         '''
         
         def test_match(self):
+            #basicConfig(level=DEBUG)
             
             # first, define some test data - we'll use a simple definition
             # language, but you could also construct this directly in Python

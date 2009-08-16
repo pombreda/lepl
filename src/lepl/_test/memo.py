@@ -24,7 +24,7 @@ from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Configuration, RMemo, Delayed, Any, TraceResults, memoize, \
-    Optional, LMemo, string_matcher, Node, Literals, Eos
+    Optional, LMemo, Node, Literals, Eos
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321
@@ -41,7 +41,7 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += letter & Optional(seq)
         
-        p = string_matcher(seq, 
+        p = seq.string_matcher( 
                 Configuration(rewriters=[memoize(RMemo)], 
                               monitors=[TraceResults(True)]))
         results = list(p('ab'))
@@ -92,9 +92,8 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += letter | (seq  & letter)
         
-        p = string_matcher(seq, 
-                Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[TraceResults(True)]))
+        p = seq.string_matcher(Configuration(rewriters=[memoize(LMemo)], 
+                                             monitors=[TraceResults(True)]))
         results = list(p('abcdef'))
         assert len(results) == 6, len(results)
         assert results[0][0] == ['a'], results[0][0]
@@ -125,9 +124,9 @@ class MemoTest(TestCase):
         termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
         sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
-        p = string_matcher(sentence, 
-                Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[TraceResults(False)]))
+        p = sentence.string_matcher(
+                    Configuration(rewriters=[memoize(LMemo)], 
+                                  monitors=[TraceResults(False)]))
         
         text = 'every boy or some girl and helen and john or pat knows ' \
                'and respects or loves every boy or some girl and pat or ' \

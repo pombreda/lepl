@@ -198,7 +198,7 @@ __all__ = [
         'make_dict',
         'join_with',
         # stream
-        'Stream',
+        'DEFAULT_STREAM_FACTORY',
         # operators
         'Override',
         'Separator',
