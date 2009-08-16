@@ -47,7 +47,7 @@ def lexed_simple_stream(tokens, discard, error, stream):
         except TypeError:
             #log.debug(format_exc())
             raise error(stream)
-    return Stream.from_items(generator())
+    return Stream.from_list(generator())
 
 
 # TODO

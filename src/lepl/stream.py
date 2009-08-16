@@ -670,7 +670,7 @@ class StreamView(LocationStream):
         
         # [n]
         if isinstance(index, int):
-            (line, index) = self.__at(index)
+            (line, index) = self.__at(index, True)
             return line.line[index]
         
         if index.step is not None:
@@ -687,54 +687,51 @@ class StreamView(LocationStream):
         
         # [n:m]
         length = index.stop - index.start
-        (line, start) = self.__at(index.start)
+        (line, start) = self.__at(index.start, True)
         lines = [line.line]
-        remainder = length - (line.length - start)
-        while line.length and remainder:
+        remainder = length - (len(line.line) - start)
+        while line.line and remainder > 0:
             line = line.next
-            remainder -= line.length
-            lines.append(line.line)
+            if line.line:
+                remainder -= len(line.line)
+                lines.append(line.line)
         if remainder > 0:
             raise IndexError('Missing {0:d} items'.format(remainder))
         else:
-            return line.join(lines)[start:start+length]
+            return line.source.join(lines)[start:start+length]
             
-    def __at(self, index):
+    def __at(self, index, strict=False):
         '''
         Return a (line, index) pair, for which the index lies within the
-        line.  Otherwise, raise an error.
+        line.  Otherwise, raise an error.  
         
-        When end_ok is True, (None, 0) is a possible return value.
+        If strict is False, (None, 0) is a possible return value.
         '''
         line = self.__line
         index += self.__offset
-        while line.length and index >= line.length:
-            index -= line.length
+        while line.line and index >= len(line.line):
+            index -= len(line.line)
             line = line.next
         # it's possible for index to be zero and line to be empty!
-        if not line.line and index:
+        if (not line.line) and (strict or index):
             raise IndexError()
         return (line, index)
     
     def __bool__(self):
-        return bool(self.__line.length)
+        return bool(self.__line.line)
     
     def __nonzero__(self):
         return self.__bool__()
     
     def __len__(self):
         '''
-        Calculate the total length, if necessary, and store on the class.
+        Calculate the total length (ie "from here on"), if necessary, and 
+        store on the class.
         '''
-        if self.__line.total_length is None:
-            line = self.__line
-            total = line.previous_length
-            while line.length:
-                total = total + line.length
-                line = line.next
-            # type seems to be necessary here to target the class attribute
-            type(self.__line).total_length = total
-        return self.__line.total_length - (self.__line.previous_length + 
+        line = self.__line
+        while line.source.total_length is None:
+            line = line.next
+        return line.source.total_length - (self.__line.previous_length + 
                                            self.__offset)
     
     def __repr__(self):
@@ -761,108 +758,66 @@ class StreamView(LocationStream):
         
         The line number and offsets are -1 if this is past the end of the file.
         '''
-        if self.__line.length:
-            return (self.__line.line_number,
-                    self.__offset,
-                    self.__line.previous_length + self.__offset,
-                    self.text(),
-                    self.__line.source)
-        else:
-            return (-1, -1, -1, None, self.__line.source)
+        return self.__line.location(self.__offset)
     
     def text(self):
-        return self.__line.line[self.__offset:]
+        if self.__line.line:
+            return self.__line.line[self.__offset:]
+        else:
+            return self.__line.source.join([])
 
 
 class _StreamFactory(object):
     
     @staticmethod
-    def __call__(lines, source, join=''.join):
+    def __call__(source_):
         
-        # i am feeling dirty here... what should i be doing instead?
-        global _source
-        _source = source
-        global _join
-        _join = join
-    
         class Line(object):
             
-            __source = _source
-            __join = lambda cls, x: _join(x)
-            __slots__ = ['_Line__lines', '_Line__previous_length', 
-                         '_Line__line_number', '_Line__next', '_Line__length', 
-                         '_Line__line']
-            total_length = None
+            source = source_
+            __slots__ = ['line', 'previous_length', '_Line__location_state', 
+                         '_Line__next']
             
-            def __init__(self, lines, previous_length=0, line_number=0):
-                self.__lines = lines
-                self.__previous_length = previous_length
-                self.__line_number = line_number
+            def __init__(self, line=None, previous_length=0, 
+                         location_state=None):
+                self.line = line
+                self.previous_length = previous_length
+                self.__location_state = location_state
                 self.__next = None
-                self.__length = None
-                try:
-                    self.__line = next(lines)
-                    self.__length = len(self.line)
-                except StopIteration:
-                    self.__line = self.__join([])
-                    self.__length = 0
+                
+            def location(self, offset):
+                return self.source.location(offset, self.line, 
+                                            self.__location_state)
                     
-            @property
-            def source(self):
-                return self.__source
-            
-            @property
-            def join(self):
-                return self.__join
-                    
-            @property
-            def previous_length(self):
-                return self.__previous_length
-            
-            @property
-            def line_number(self):
-                return self.__line_number
-            
-            @property
-            def length(self):
-                return self.__length
-            
-            @property
-            def line(self):
-                return self.__line
-            
             @property
             def next(self):
-                '''
-                Create a new instance without needing to invoke the factory.
-                '''
                 if not self.__next:
-                    if self.__length:
-                        self.__next = Line(self.__lines,
-                                           self.__previous_length + self.__length,
-                                           self.__line_number + 1)
-                    else:
-                        raise IndexError('Past end of stream')
+                    (line, location_state) = next(self.source)
+                    try:
+                        previous_length = self.previous_length + len(self.line)
+                    except TypeError:
+                        previous_length = self.previous_length
+                    self.__next = Line(line, previous_length, location_state)
                 return self.__next
             
             def __repr__(self):
                 return 'Line({0!r})'.format(self.line)
     
-        return StreamView(Line(lines))
+        return StreamView(Line().next)
 
     @staticmethod
     def from_path(path):
         '''
         Open the file with line buffering.
         '''
-        return Stream(open(path, 'rt', buffering=1), path)
+        return Stream(LineSource(open(path, 'rt', buffering=1), path))
     
     @staticmethod
     def from_string(text):
         '''
         Wrap a string.
         '''
-        return Stream(StringIO(text), _sample('str: ', repr(text)))
+        return Stream(LineSource(StringIO(text), _sample('str: ', repr(text))))
     
     @staticmethod
     def from_lines(lines, source=None, join=''.join):
@@ -872,31 +827,23 @@ class _StreamFactory(object):
         '''
         if source is None:
             source = _sample('lines: ', repr(lines))
-        return Stream(lines, source, join)
+        return Stream(LineSource(lines, source, join))
     
     @staticmethod
-    def from_items(items, source=None, line_length=80):
+    def from_list(items, source=None, line_length=80):
         '''
-        Wrap an iterator over items.
+        Wrap an iterator over items (or a list).
         '''
         if source is None:
-            source = _sample('items: ', repr(items))
-        return Stream(aglomerate(items, line_length), source, list)
-    
-    @staticmethod
-    def from_list(data):
-        '''
-        We can parse any list (not just lists of characters as strings).
-        '''
-        return Stream(single_line(data), 
-                             _sample('list: ', repr(data)), list_join)
+            source = _sample('list: ', repr(items))
+        return Stream(CharacterSource(items, source, list_join, line_length))
     
     @staticmethod
     def from_file(file_):
         '''
         Wrap a file.
         '''
-        return Stream(file_, getattr(file_, 'name', '<file>')) 
+        return Stream(LineSource(file_, getattr(file_, 'name', '<file>')) )
         
     @staticmethod
     def null(stream):
@@ -909,29 +856,108 @@ class _StreamFactory(object):
 Stream = _StreamFactory()
 
 
+class LineSource(object):
+    '''
+    Wrap a source of lines (like a file iterator), so that it provides
+    both the line and associated state that can be used later, with an
+    offset, to calculate location.
+    '''
+    
+    def __init__(self, lines, description=None, join=''.join):
+        '''
+        lines is an iterator over the lines, description will be provided
+        as part of location, and joinis used to combine lines together.
+        '''
+        self.__lines = iter(lines)
+        self.__description = repr(lines) if description is None else description
+        self.__line_count = 0
+        self.__character_count = 0
+        self.__total_length = None
+        self.join = join
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        try:
+            line = next(self.__lines)
+            character_count = self.__character_count
+            self.__character_count += len(line)
+            line_count = self.__line_count
+            self.__line_count += 1
+            return (line, (character_count, line_count))
+        except StopIteration:
+            self.__total_length = self.__character_count
+            return (None, (-1, -1))
+    
+    def location(self, offset, line, location_state):
+        '''
+        A tuple containing line number, line offset, character offset,
+        the line currently being processed, and a description of the source.
+        '''
+        (character_count, line_count) = location_state
+        return (line_count, offset, character_count + offset, 
+                line, self.__description)
+        
+    @property
+    def total_length(self):
+        return self.__total_length
+    
+    
+class CharacterSource(object):
+    '''
+    Wrap a sequence of characters (like a string or list) so that it provides
+    "lines" in chnuks of the given size.  Note that location has no concept
+    of line number.
+    '''
+    
+    def __init__(self, characters, description=None, join=''.join, 
+                 line_length=80):
+        self.__characters = iter(characters)
+        self.__description = repr(lines) if description is None else description
+        self.join = join
+        self.__line_length = line_length
+        self.__character_count = 0
+        self.__total_length = None
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        line = []
+        for i_ in range(self.__line_length):
+            try:
+                line.append(next(self.__characters))
+            except StopIteration:
+                break
+        if line:
+            character_count = self.__character_count
+            self.__character_count += len(line)
+            return (line, character_count)
+        else:
+            self.__total_length = self.__character_count
+            return (None, -1)
+    
+    def location(self, offset, line, location_state):
+        '''
+        A tuple containing line number, line offset, character offset,
+        the line currently being processed, and a description of the source.
+        '''
+        character_count = location_state
+        return (None, offset, character_count + offset, 
+                self.join(line), self.__description)
+        
+    @property
+    def total_length(self):
+        return self.__total_length
+        
+
+
 def list_join(lists):
     joined = []
     for list_ in lists:
         joined.extend(list_)
     return joined
-
-
-def aglomerate(items, line_length=80):
-    '''
-    Convert an iterator over items into an iterator over lists of items,
-    where each list (except the last) is of length line_length.
-    '''
-    done = False
-    while not done:
-        line = []
-        for i_ in range(line_length):
-            try:
-                line.append(next(items))
-            except StopIteration:
-                done = True
-                break
-        if line:
-            yield line
 
 
 def single_line(line):
