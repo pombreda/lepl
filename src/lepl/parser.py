@@ -265,7 +265,7 @@ def make_parser(matcher, stream, config):
 #    Construct a parser for lists that returns a single match and uses a 
 #    stream internally.
 #    '''
-#    return make_parser(matcher, Stream.from_list, config)
+#    return make_parser(matcher, Stream.from_items, config)
 #
 #def path_parser(matcher, config):
 #    '''
@@ -301,7 +301,7 @@ def make_parser(matcher, stream, config):
 #    Construct a parser that returns a sequence of matches for lists 
 #    and uses a stream internally.
 #    '''
-#    return make_matcher(matcher, Stream.from_list, config)
+#    return make_matcher(matcher, Stream.from_items, config)
 #
 #def path_matcher(matcher, config):
 #    '''

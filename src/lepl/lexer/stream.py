@@ -21,9 +21,8 @@ The token streams.
 '''
 
 from logging import getLogger
-#from traceback import format_exc
 
-from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
+from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY, BaseSource
 
 
 def lexed_simple_stream(tokens, discard, error, stream):
@@ -47,7 +46,96 @@ def lexed_simple_stream(tokens, discard, error, stream):
         except TypeError:
             #log.debug(format_exc())
             raise error(stream)
-    return DEFAULT_STREAM_FACTORY.from_list(generator())
+    return DEFAULT_STREAM_FACTORY.from_items(generator())
+
+
+def lexed_location_stream(tokens, discard, error, stream):
+    '''
+    Given a location stream, create a location stream of regexp matches.
+    '''
+    log = getLogger('lepl.lexer.stream.lexed_location_stream')
+    def generator(stream_before):
+        '''
+        This creates the sequence of tokens returned by the stream.
+        '''
+        try:
+            while stream_before:
+                try:
+                    (terminals, size, stream_after) = \
+                            tokens.size_match(stream_before)
+                    # stream_before here to give correct location
+                    log.debug('Token: {0!r} {1!r}'.format(terminals, size))
+                    yield (terminals, size, stream_before)
+                    stream_before = stream_after
+                except TypeError:
+                    (terminals, size, stream_before) = \
+                            discard.size_match(stream_before)
+                    log.debug('Space: {0!r} {1!r}'.format(terminals, size))
+        except TypeError:
+            raise error(stream_before)
+    (_line, _offset, _character, _line, description) = stream.location()
+    return DEFAULT_STREAM_FACTORY(TokenSource(generator(stream),
+                                              description=description,
+                                              join=stream.join))
+
+
+# pylint: disable-msg=E1002
+# (pylint bug?  this chains back to a new style abc)
+class TokenSource(BaseSource):
+    '''
+    Wrap a sequence of (terminals, size, stream_before) tuples.
+    '''
+    
+    def __init__(self, tokens, description=None, join=''.join):
+        '''
+        tokens is an iterator over the (terminals, size, stream_before) tuples.
+        '''
+        super(TokenSource, self).__init__(
+                        repr(tokens) if description is None else description,
+                        join)
+        self.__tokens = iter(tokens)
+        self.__token_count = 0
+    
+    def __next__(self):
+        '''
+        Provide (terminals, text) values (used by matchers) along with
+        the original stream as location_state.
+        
+        Note that this is infinite - it is the StreamView that detects when
+        the Line is empty and terminates any processing by the user.
+        '''
+        try:
+            (terminals, size, stream) = next(self.__tokens)
+            self.__token_count += 1
+            # there's an extra list here because this is a "line" containing
+            # a single token
+            return ([(terminals, stream[0:size])], stream)
+        except StopIteration:
+            self.total_length = self.__token_count
+            return (None, None)
+    
+    def location(self, offset, line, location_state):
+        '''
+        A tuple containing line number, line offset, character offset,
+        the line currently being processed, and a description of the source.
+        
+        location_state is the original stream.
+        '''
+        if location_state:
+            shifted = location_state[offset:]
+            return shifted.location()
+        else:
+            return (-1, -1, -1, None, None)
+        
+    def text(self, offset, line):
+        '''
+        The current line.
+        '''
+        if line:
+            return line[offset:]
+        else:
+            return self.join([])
+
 
 
 # TODO

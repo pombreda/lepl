@@ -123,7 +123,7 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         internally and returns a single result.
         '''
         config = Configuration.default(config)
-        return make_parser(self, config.stream.from_list, config) 
+        return make_parser(self, config.stream.from_items, config) 
     
     def path_parser(self, config=None):
         '''
@@ -199,7 +199,7 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         and uses a stream internally.
         '''
         config = Configuration.default(config)
-        return make_matcher(self, config.stream.from_list, config) 
+        return make_matcher(self, config.stream.from_items, config) 
     
     def path_matcher(self, config=None):
         '''

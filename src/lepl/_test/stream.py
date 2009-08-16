@@ -182,7 +182,7 @@ class FromListTest(TestCase):
     
     def get_tester(self):
         return SimpleStreamTester([1, "two", [3]], 
-                                  DEFAULT_STREAM_FACTORY.from_list)
+                                  DEFAULT_STREAM_FACTORY.from_items)
     
     def test_single_index(self):
         self.get_tester().test_single_index()

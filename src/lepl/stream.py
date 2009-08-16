@@ -81,7 +81,7 @@ we take care to make them compact.
 
 One result of keeping things compact is that there's no inheritance tree for
 those classes; instead different sources are wrapped in Sources which provide
-a general itertator over "lines".
+a general iterator over "lines".
 '''
 
 from abc import ABCMeta, abstractmethod
@@ -173,7 +173,6 @@ class LocationStream(SimpleStreamInterface):
         
         The line number and offsets are -1 if this is past the end of the file.
         '''
-        pass
    
     def text(self):
         '''
@@ -181,6 +180,13 @@ class LocationStream(SimpleStreamInterface):
         starting at the offset.  Needed by ``Regexp`` for strings.
         '''
         raise Exception('This stream does not support Regexp.')
+    
+    @abstractmethod
+    def join(self, pieces):
+        '''
+        The join from the underlying source (used to reconstruct new streams,
+        for example for tokens).
+        '''
     
 
 def _sample(prefix, rest, size=40):
@@ -318,6 +324,12 @@ class StreamView(LocationStream):
         Provide the current line.
         '''
         return self.__line.text(self.__offset)
+    
+    def join(self, pieces):
+        '''
+        Join fragments together.
+        '''
+        return self.__line.source.join(pieces)
 
 
 #class StreamFactory(metaclass=ABCMeta):
@@ -357,7 +369,7 @@ class BaseStreamFactory(StreamFactory):
         '''
     
     @abstractmethod
-    def from_list(self, items, source=None, line_length=80):
+    def from_items(self, items, source=None, line_length=80):
         '''
         Provide a stream for the contents of an iterator over items
         (ie characters).
@@ -447,7 +459,7 @@ class DefaultStreamFactory(BaseStreamFactory):
             source = _sample('lines: ', repr(lines))
         return self(LineSource(lines, source, join))
     
-    def from_list(self, items, source=None, line_length=80):
+    def from_items(self, items, source=None, line_length=80):
         '''
         Wrap an iterator over items (or a list).
         '''
