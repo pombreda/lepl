@@ -57,10 +57,10 @@ class RegexpContainer(object):
     log = getLogger('lepl.regexp.rewriters.RegexpContainer')
 
     def __init__(self, matcher, regexp, use, add_reqd=False):
-        self.matcher = matcher
-        self.regexp = regexp
-        self.use = use
-        self.add_reqd = add_reqd
+        self.matcher = matcher   # current best matcher (regexp or not)
+        self.regexp = regexp     # the current regexp
+        self.use = use           # is the regexp a win?
+        self.add_reqd = add_reqd # we need "add" to combine values (from And)?
         
     def __str__(self):
         return ','.join([str(self.matcher.__class__), str(self.regexp), 
@@ -75,14 +75,16 @@ class RegexpContainer(object):
         for possible in possibles:
             if isinstance(possible, RegexpContainer):
                 cls.log.debug('unpacking: {0!s}'.format(possible))
+                if add_reqd is None or possible.add_reqd == add_reqd:
+                    regexps.append(possible.regexp)
+                    # this flag indicates that it's "worth" using the regexp
+                    # so we "inherit"
+                    use = use or possible.use
+                else:
+                    raise Unsuitable('Add inconsistent.')
             else:
                 cls.log.debug('cannot unpack: {0!s}'.format(possible.__class__))
-            if isinstance(possible, RegexpContainer) \
-                    and possible.add_reqd == add_reqd:
-                regexps.append(possible.regexp)
-                use = use or possible.use
-            else:
-                raise Unsuitable()
+                raise Unsuitable('Not a container.')
         return (use, regexps)
         
     @staticmethod
@@ -199,7 +201,10 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
         '''
         assert isinstance(original, Transformable)
         try:
-            (use, regexps) = RegexpContainer.to_regexps(use, matchers)
+            # since we're going to require add anyway, we're happy to take
+            # other inputs, whether add is required or not.
+            (use, regexps) = \
+                RegexpContainer.to_regexps(use, matchers, add_reqd=None)
             # if we have regexp sub-expressions, join them
             regexp = Sequence(regexps, alphabet)
             log.debug('And: cloning {0}'.format(regexp))
@@ -215,11 +220,14 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
                 return single(alphabet, original, regexp, matcher_type) 
             elif len(original.function.functions) == 1 \
                     and original.function.functions[0] is add:
+                # OR JUST ONE?
                 # lucky!  we just combine and continue
                 log.debug('And: OK')
                 return RegexpContainer.build(original, regexp, alphabet, 
                                              matcher_type, use, transform=False)
             elif not original.function:
+                # regexp can't return multiple values, so hope that we have
+                # an add
                 log.debug('And: add required')
                 return RegexpContainer.build(original, regexp, alphabet, 
                                              matcher_type, use, add_reqd=True)
@@ -239,8 +247,9 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
         '''
         assert isinstance(function, Transformation)
         try:
+            # this is the only place add is required
             (use, [regexp]) = RegexpContainer.to_regexps(use, [matcher], 
-                                                        add_reqd=True)
+                                                         add_reqd=True)
             log.debug('Transform: cloning {0}'.format(regexp))
             if use and len(function.functions) > 1 \
                     and function.functions[0] is add:
@@ -257,6 +266,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
                 return RegexpContainer.build(original, regexp, alphabet, 
                                              matcher_type, use, transform=False)
             elif not function:
+                # we're just forwarding the add_reqd from before here
                 log.debug('Transform: empty, add required')
                 return RegexpContainer(original, regexp, use, add_reqd=True)
             else:
@@ -338,7 +348,7 @@ def regexp_rewriter(alphabet, use=True, matcher=NfaRegexp):
     '''
     Create a rewriter that uses the given alphabet and matcher.
     
-    The use parameter controls when regular expressions are substituted.
+    The "use" parameter controls when regular expressions are substituted.
     If true, they are always used.  If false, they are used only if they
     are part of a tree that includes repetition.  The latter case generally
     gives more efficient parsers because it avoids converting already

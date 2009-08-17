@@ -24,7 +24,7 @@ from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Any, NfaRegexp, Configuration, Literal, compose_transforms, \
-    Add, And, Integer, Float
+    Add, And, Integer, Float, Word, Star, flatten
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
 
@@ -120,5 +120,20 @@ class RewriteTest(TestCase):
         matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
         results = list(matcher('1.2x'))
         assert results == [(['1.2'], 'x'), (['1.'], '2x'), (['1'], '.2x')], results
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        
+    def test_star(self):
+        rx = Add(Star('a')) 
+        matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
+        results = list(matcher('aa'))
+        assert results == [(['aa'], ''), (['a'], 'a'), ([], 'aa')], results
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        
+    def test_word(self):
+        #basicConfig(level=DEBUG)
+        rx = Word('a')
+        matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
+        results = list(matcher('aa'))
+        assert results == [(['aa'], ''), (['a'], 'a')], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
         
