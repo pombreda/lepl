@@ -73,26 +73,45 @@ def lexed_location_stream(tokens, discard, error, stream):
                     log.debug('Space: {0!r} {1!r}'.format(terminals, size))
         except TypeError:
             raise error(stream_before)
-    (_line, _offset, _character, _line, description) = stream.location()
-    return DEFAULT_STREAM_FACTORY(TokenSource(generator(stream),
-                                              description=description,
-                                              join=stream.join))
+    return DEFAULT_STREAM_FACTORY(TokenSource(generator(stream), stream))
 
 
-# pylint: disable-msg=E1002
-# (pylint bug?  this chains back to a new style abc)
-class TokenSource(BaseSource):
+class BaseDelegateSource(BaseSource):
     '''
+    Support for sources that delegate location to other sources.  The location
+    state is a StreamView into the underlying source at the start of the
+    current line.
+    '''
+    
+    def location(self, offset, line, location_state):
+        '''
+        A tuple containing line number, line offset, character offset,
+        the line currently being processed, and a description of the source.
+        
+        location_state is the original stream.
+        '''
+        if location_state:
+            shifted = location_state[offset:]
+            return shifted.location()
+        else:
+            return (-1, -1, -1, None, None)
+        
+        
+class TokenSource(BaseDelegateSource):
+    '''
+    The source of tokens sent to Token matchers.
+    
     Wrap a sequence of (terminals, size, stream_before) tuples.
     '''
     
-    def __init__(self, tokens, description=None, join=''.join):
+    def __init__(self, tokens, stream):
         '''
         tokens is an iterator over the (terminals, size, stream_before) tuples.
         '''
-        super(TokenSource, self).__init__(
-                        repr(tokens) if description is None else description,
-                        join)
+        assert isinstance(stream, LocationStream)
+        # join is unused(?) but passed on to ContentStream
+        super(TokenSource, self).__init__(stream.source().description,
+                                          stream.source().join)
         self.__tokens = iter(tokens)
         self.__token_count = 0
     
@@ -113,141 +132,31 @@ class TokenSource(BaseSource):
         except StopIteration:
             self.total_length = self.__token_count
             return (None, None)
+        
+
+class ContentSource(BaseDelegateSource):
+    '''
+    The source of text sent to embedded content in a Token matcher.
+    '''
     
-    def location(self, offset, line, location_state):
+    def __init__(self, text, stream):
         '''
-        A tuple containing line number, line offset, character offset,
-        the line currently being processed, and a description of the source.
-        
-        location_state is the original stream.
+        tokens is an iterator over the (terminals, size, stream_before) tuples.
         '''
-        if location_state:
-            shifted = location_state[offset:]
-            return shifted.location()
+        assert isinstance(stream, LocationStream), type(stream)
+        super(ContentSource, self).__init__(stream.source().description,
+                                            stream.source().join)
+        self.__line = text
+        self.__stream = stream
+        self.total_length = len(text)
+    
+    def __next__(self):
+        '''
+        Return a single line.
+        '''
+        if self.__line:
+            (self.__line, line) = (None, self.__line)
+            return (line, self.__stream)
         else:
-            return (-1, -1, -1, None, None)
-        
-    def text(self, offset, line):
-        '''
-        The current line.
-        '''
-        if line:
-            return line[offset:]
-        else:
-            return self.join([])
+            return (None, None)
 
-
-
-# TODO
-
-#def lexed_location_stream(tokens, discard, error, stream):
-#    '''
-#    Given a location stream, create a location stream of regexp matches.
-#    '''
-#    log = getLogger('lepl.lexer.stream.lexed_location_stream')
-#    def generator(stream_before):
-#        '''
-#        This creates the sequence of tokens returned by the stream.
-#        '''
-#        try:
-#            while stream_before:
-#                try:
-#                    (terminals, size, stream_after) = \
-#                            tokens.size_match(stream_before)
-#                    # stream_before here to give correct location
-#                    log.debug('Token: {0!r} {1!r}'.format(terminals, size))
-#                    yield (terminals, size, stream_before)
-#                    stream_before = stream_after
-#                except TypeError:
-#                    (terminals, size, stream_before) = \
-#                            discard.size_match(stream_before)
-#                    log.debug('Space: {0!r} {1!r}'.format(terminals, size))
-#        except TypeError:
-#            #log.debug(format_exc())
-#            raise error(stream_before)
-#    return LocationGeneratorStream(generator(stream))
-#
-#
-#class LocationGeneratorStream(LocationStream):
-#    '''
-#    Adapt a SimpleGeneratorStream, which wraps a generator that returns 
-#    (terminals, size, stream) triplets.
-#    '''
-#    
-#    def __init__(self, generator, join=list, simple=None):
-#        if simple is not None:
-#            self.__simple = simple
-#        else:
-#            self.__simple = SimpleGeneratorStream(generator, join)
-#        
-#    def __getitem__(self, spec):
-#        '''
-#        [n] returns a character (string of length 1)
-#        [n:] returns a new SimpleStream instance that starts at the offset n
-#        [n:m] returns a sequence (ie string, list, etc)
-#        '''
-#        def translate(triplet):
-#            '''Helper'''
-#            (terminals, size, stream) = triplet
-#            return (terminals, stream[0:size]) 
-#        if isinstance(spec, int):
-#            return translate(self.__simple[spec])
-#        elif isinstance(spec, slice) and isinstance(spec.start, int):
-#            if spec.step is None and spec.stop is None:
-#                return LocationGeneratorStream(None, None, 
-#                                               self.__simple.__getitem__(spec))
-#            elif spec.step is None and isinstance(spec.stop, int):
-#                # pylint: disable-msg=W0141
-#                return list(map(translate, 
-#                                self.__simple.__getitem__(spec)))
-#        raise IndexError()
-#    
-#    def __bool__(self):
-#        '''
-#        Non-empty?
-#        '''
-#        return bool(self.__simple)
-#    
-#    # Python 2.6
-#    def __nonzero__(self):
-#        return self.__bool__()
-#
-#    def __len__(self):
-#        '''
-#        Amount of remaining data.
-#        '''
-#        return len(self.__simple)
-#    
-#    def __repr__(self):
-#        return '<LocationGeneratorStream>'
-#    
-#    def __str__(self):
-#        return 'Wrapped stream'
-#    
-#    def __hash__(self):
-#        return hash(self.__simple)
-#    
-#    def __eq__(self, other):
-#        # pylint: disable-msg=W0212
-#        # (we test for the type and it's the same as us)
-#        return isinstance(other, LocationGeneratorStream) and \
-#            self.__simple == other.__simple
-#    
-#    def location(self):
-#        '''
-#        A tuple containing line number, line offset, character offset,
-#        the line currently being processed, and a description of the source.
-#        
-#        The line number is -1 if this is past the end of the file.
-#        '''
-#        try:
-#            return self.__simple[0][2].location()
-#        except IndexError:
-#            return (-1, -1, -1, None, None)
-#   
-#    def text(self):
-#        '''
-#        The line of text in the underlying line indexed by this stream,
-#        starting at the offset.  Needed by ``Regexp`` for strings.
-#        '''
-#        return self.__simple[0][2].text()

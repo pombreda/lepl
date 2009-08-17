@@ -27,7 +27,8 @@ from abc import ABCMeta
 from lepl.context import Namespace, NamespaceMixin, Scope
 from lepl.error import syntax_error_kargs
 from lepl.functions import Add, Apply, Drop, KApply, Repeat, Map
-from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream
+from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream, \
+    ContentSource
 from lepl.matchers import OperatorMatcher, BaseMatcher, coerce_, Any, \
     Literal, Lookahead, Regexp, And, Or, raise_error, First
 from lepl.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
@@ -36,7 +37,7 @@ from lepl.parser import tagged
 from lepl.regexp.matchers import BaseRegexp, Regexp
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.stream import LocationStream
+from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
 
 
 TOKENS = 'tokens'
@@ -198,7 +199,8 @@ class Token(OperatorMatcher):
                 if self.content is None:
                     yield ([contents], stream[1:])
                 else:
-                    generator = self.content._match(contents)
+                    generator = self.content._match(
+                                    self.__new_stream(contents, stream))
                     try:
                         while True:
                             (value, stream_out) = yield generator
@@ -212,6 +214,12 @@ class Token(OperatorMatcher):
     
     def __repr__(self):
         return '<Token({0!s})>'.format(self)
+    
+    def __new_stream(self, contents, stream):
+        if isinstance(stream.source(), LocationStream):
+            return DEFAULT_STREAM_FACTORY(ContentSource(contents, stream))
+        else:
+            return contents
     
     @classmethod
     def reset_ids(cls):

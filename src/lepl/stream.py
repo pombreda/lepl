@@ -182,10 +182,10 @@ class LocationStream(SimpleStreamInterface):
         raise Exception('This stream does not support Regexp.')
     
     @abstractmethod
-    def join(self, pieces):
+    def source(self):
         '''
-        The join from the underlying source (used to reconstruct new streams,
-        for example for tokens).
+        This exposes the join and description attributes from the source,
+        which are necessary to calculate derived sources (eg tokens).
         '''
     
 
@@ -298,7 +298,10 @@ class StreamView(LocationStream):
         return '{0!r}[{1:d}:]'.format(self.__line, self.__offset)
         
     def __str__(self):
-        return str(self.text())
+        try:
+            return str(self.text())
+        except:
+            return repr(self)
     
     def __hash__(self):
         return hash(type(self.__line)) ^ self.__offset
@@ -325,11 +328,11 @@ class StreamView(LocationStream):
         '''
         return self.__line.text(self.__offset)
     
-    def join(self, pieces):
+    def source(self):
         '''
-        Join fragments together.
+        Expose the underlying source.
         '''
-        return self.__line.source.join(pieces)
+        return self.__line.source
 
 
 #class StreamFactory(metaclass=ABCMeta):
@@ -437,6 +440,7 @@ class DefaultStreamFactory(BaseStreamFactory):
                 return 'Line({0!r})'.format(self.line)
     
         return StreamView(Line().next)
+    
 
     def from_path(self, path):
         '''
