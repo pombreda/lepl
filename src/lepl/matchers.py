@@ -686,8 +686,8 @@ class Empty(OperatorMatcher):
         the next.
         '''
         yield ([], stream)
-
-            
+        
+        
 class Lookahead(OperatorMatcher):
     '''
     Tests to see if the embedded matcher *could* match, but does not do the

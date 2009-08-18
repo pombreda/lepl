@@ -21,6 +21,8 @@
 Illustrate some of the finer points of lexing.
 '''
 
+from logging import basicConfig, DEBUG
+
 from lepl import Token, Integer, Eos, Literal
 from lepl._example.support import Example
 
@@ -45,6 +47,7 @@ class Limitations(Example):
         '''
         The complete flag indicates whether the entire token must be consumed.
         '''
+        #basicConfig(level=DEBUG)
         abc = Token('abc')
         incomplete = abc(Literal('ab'))
         self.examples([(lambda: incomplete.parse('abc'), "None")])

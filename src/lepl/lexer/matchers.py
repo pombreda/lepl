@@ -28,7 +28,7 @@ from lepl.context import Namespace, NamespaceMixin, Scope
 from lepl.error import syntax_error_kargs
 from lepl.functions import Add, Apply, Drop, KApply, Repeat, Map
 from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream, \
-    ContentSource
+    ContentSource, TokenSource
 from lepl.matchers import OperatorMatcher, BaseMatcher, coerce_, Any, \
     Literal, Lookahead, Regexp, And, Or, raise_error, First
 from lepl.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
@@ -199,8 +199,8 @@ class Token(OperatorMatcher):
                 if self.content is None:
                     yield ([contents], stream[1:])
                 else:
-                    generator = self.content._match(
-                                    self.__new_stream(contents, stream))
+                    new_stream = self.__new_stream(contents, stream)
+                    generator = self.content._match(new_stream)
                     try:
                         while True:
                             (value, stream_out) = yield generator
@@ -216,7 +216,7 @@ class Token(OperatorMatcher):
         return '<Token({0!s})>'.format(self)
     
     def __new_stream(self, contents, stream):
-        if isinstance(stream.source(), LocationStream):
+        if isinstance(stream.source(), TokenSource):
             return DEFAULT_STREAM_FACTORY(ContentSource(contents, stream))
         else:
             return contents

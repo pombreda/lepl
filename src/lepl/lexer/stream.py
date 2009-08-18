@@ -143,7 +143,6 @@ class ContentSource(BaseDelegateSource):
         '''
         tokens is an iterator over the (terminals, size, stream_before) tuples.
         '''
-        assert isinstance(stream, LocationStream), type(stream)
         super(ContentSource, self).__init__(stream.source().description,
                                             stream.source().join)
         self.__line = text
@@ -154,10 +153,7 @@ class ContentSource(BaseDelegateSource):
         '''
         Return a single line.
         '''
-        if self.__line:
-            (self.__line, line) = (None, self.__line)
-            return (line, self.__stream)
-        else:
-            return (None, None)
+        (self.__line, line) = (None, self.__line)
+        return (line, self.__stream)
 
 

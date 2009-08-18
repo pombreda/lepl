@@ -90,7 +90,8 @@ class Node(LogMixin, ConstructorGraphNode):
         '''
         The names of all the attributes constructed from the results.
         '''
-        return iter(self.__names)
+        # this must return a list, not an iterator (Python requirement)
+        return list(self.__names)
     
     def __getitem__(self, index):
         return self.__children[index]
