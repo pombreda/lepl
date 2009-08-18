@@ -92,7 +92,7 @@ class BaseDelegateSource(BaseSource):
         '''
         if location_state:
             shifted = location_state[offset:]
-            return shifted.location()
+            return shifted.location
         else:
             return (-1, -1, -1, None, None)
         
@@ -110,8 +110,8 @@ class TokenSource(BaseDelegateSource):
         '''
         assert isinstance(stream, LocationStream)
         # join is unused(?) but passed on to ContentStream
-        super(TokenSource, self).__init__(stream.source().description,
-                                          stream.source().join)
+        super(TokenSource, self).__init__(str(stream.source),
+                                          stream.source.join)
         self.__tokens = iter(tokens)
         self.__token_count = 0
     
@@ -143,8 +143,8 @@ class ContentSource(BaseDelegateSource):
         '''
         tokens is an iterator over the (terminals, size, stream_before) tuples.
         '''
-        super(ContentSource, self).__init__(stream.source().description,
-                                            stream.source().join)
+        super(ContentSource, self).__init__(str(stream.source),
+                                            stream.source.join)
         self.__line = text
         self.__stream = stream
         self.total_length = len(text)

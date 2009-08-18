@@ -216,7 +216,7 @@ class Token(OperatorMatcher):
         return '<Token({0!s})>'.format(self)
     
     def __new_stream(self, contents, stream):
-        if isinstance(stream.source(), TokenSource):
+        if isinstance(stream.source, TokenSource):
             return DEFAULT_STREAM_FACTORY(ContentSource(contents, stream))
         else:
             return contents

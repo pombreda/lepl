@@ -68,7 +68,7 @@ def syntax_error_kargs(stream_in, stream_out, results):
     Helper function for constructing format dictionary.
     '''
     try:
-        (lineno, offset, _depth, line, filename) = stream_in.location()
+        (lineno, offset, _depth, line, filename) = stream_in.location
         offset += 1 # appears to be 1-based?
     except AttributeError:
         filename = '<unknown> - use stream for better error reporting'

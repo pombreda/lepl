@@ -73,7 +73,7 @@ class StreamTest(TestCase):
         
     def test_read(self):
         s1 = DEFAULT_STREAM_FACTORY.from_string('12\n123\n')
-        assert '12\n' == s1.text()
+        assert '12\n' == s1.text
 
 
 class SimpleStreamTester(object):

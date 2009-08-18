@@ -154,13 +154,13 @@ class _TraceResults(ExposedMonitor):
         '''
         try:
             (lineno, offset, depth, text, source) = \
-                    self.generator.stream.location()
+                    self.generator.stream.location
             stream = str(self.generator.stream)
             if lineno < 0:
                 locn = '  eof  '
             else:
                 locn = '{0:3d}.{1:<3d}'.format(lineno, offset)
-        except AttributeError: # no .location() above
+        except AttributeError: # no .location above
             depth = -len(self.generator.stream)
             if len(self.generator.stream) > 10:
                 stream = repr(self.generator.stream[0:7]) + '...'

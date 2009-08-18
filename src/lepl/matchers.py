@@ -800,7 +800,7 @@ class Regexp(OperatorMatcher):
         (result, stream) tuples).
         '''
         try:
-            match = self.__pattern.match(stream.text())
+            match = self.__pattern.match(stream.text)
         except: # no text method
             match = self.__pattern.match(stream)
         if match:
