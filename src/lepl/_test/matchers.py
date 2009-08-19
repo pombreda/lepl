@@ -40,7 +40,7 @@ class BaseTest(TestCase):
         assert target == result, result
     
     def assert_list(self, stream, match, target):
-        matcher = match.list_matcher()
+        matcher = match.items_matcher()
 #        print(matcher.matcher)
         result = [x for (x, _s) in matcher(stream)]
         assert target == result, result
@@ -64,7 +64,7 @@ class AndTest(BaseTest):
         
     def assert_join(self, stream, match, target):
         result = [''.join(map(str, l)) 
-                  for (l, _s) in match.match_list(stream)]
+                  for (l, _s) in match.match_items(stream)]
         assert target == result, result
 
     def test_add(self):

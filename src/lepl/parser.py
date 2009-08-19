@@ -260,7 +260,7 @@ def make_parser(matcher, stream, config):
 #    '''
 #    return make_parser(matcher, Stream.from_file, config)
 #
-#def list_parser(matcher, config):
+#def items_parser(matcher, config):
 #    '''
 #    Construct a parser for lists that returns a single match and uses a 
 #    stream internally.
@@ -296,7 +296,7 @@ def make_parser(matcher, stream, config):
 #    '''
 #    return make_matcher(matcher, Stream.from_file, config)
 #
-#def list_matcher(matcher, config):
+#def items_matcher(matcher, config):
 #    '''
 #    Construct a parser that returns a sequence of matches for lists 
 #    and uses a stream internally.

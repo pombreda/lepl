@@ -15,11 +15,10 @@ grammars and it can also handle left-recursive grammars.
 The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
-`Release 3.1 <http://www.acooke.org/lepl/releases.html#id1>`_
-simplifies core interfaces related to Nodes and graphs.  It includes initial
-support for parsing (and encoding) binary data and has a completely new
-tutorial.  It also has improved support for handling explicit spaces in
-tabular data or with "smart separators".
+`Release 3.1 <http://www.acooke.org/lepl/releases.html#id1>`_ has updated
+stream support.  These have a clearer design (although remain, unfortunately,
+complex), are better documented, with clearer interfaces (abstract classes),
+and will (I hope) support handling the "offside rule" in a later release.
 
 Features
 --------

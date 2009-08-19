@@ -29,14 +29,14 @@ tar cvfz "dist/LEPL-$RELEASE-doc.tar.gz" "LEPL-$RELEASE"
 zip -r "dist/LEPL-$RELEASE-doc.zip" "LEPL-$RELEASE" -x \*.tgz
 rm -fr "LEPL-$RELEASE"
 
-#pushd ~/projects/personal/www/lepl
-#svn update
-#svn remove --force *
-#svn commit -m "lepl"
-#popd
-#rsync -rv --exclude=".svn" --delete doc/ ~/projects/personal/www/lepl
-#pushd ~/projects/personal/www/lepl
-#svn add *
-#svn commit -m "lepl"
-#popd
+pushd ~/projects/personal/www/lepl
+svn update
+svn remove --force *
+svn commit -m "lepl"
+popd
+rsync -rv --exclude=".svn" --delete doc/ ~/projects/personal/www/lepl
+pushd ~/projects/personal/www/lepl
+svn add *
+svn commit -m "lepl"
+popd
 

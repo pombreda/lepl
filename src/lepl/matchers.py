@@ -117,10 +117,11 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         config = Configuration.default(config)
         return make_parser(self, config.stream.from_file, config)
     
-    def list_parser(self, config=None):
+    def items_parser(self, config=None):
         '''
-        Construct a parser for lists that uses a stream 
-        internally and returns a single result.
+        Construct a parser for a sequence of times (an item is something
+        that would be matched by `Any`) that uses a stream internally and 
+        returns a single result.
         '''
         config = Configuration.default(config)
         return make_parser(self, config.stream.from_items, config) 
@@ -156,12 +157,13 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         '''
         return self.file_parser(config)(file_)
         
-    def parse_list(self, list_, config=None):
+    def parse_items(self, list_, config=None):
         '''
-        Parse the contents of a list, returning a single match and using a
+        Parse the contents of a sequence of items (an item is something
+        that would be matched by `Any`), returning a single match and using a
         stream internally.
         '''
-        return self.list_parser(config)(list_)
+        return self.items_parser(config)(list_)
         
     def parse_path(self, path, config=None):
         '''
@@ -193,9 +195,10 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         config = Configuration.default(config)
         return make_matcher(self, config.stream.from_file, config) 
     
-    def list_matcher(self, config=None):
+    def items_matcher(self, config=None):
         '''
-        Construct a parser for lists that returns a sequence of matches
+        Construct a parser for a sequence of items (an item is something that
+        would be matched by `Any`) that returns a sequence of matches
         and uses a stream internally.
         '''
         config = Configuration.default(config)
@@ -232,12 +235,13 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         '''
         return self.file_matcher(config)(file_)
         
-    def match_list(self, list_, config=None):
+    def match_items(self, list_, config=None):
         '''
-        Parse a list, returning a sequence of matches and using a
+        Parse a sequence of items (an item is something that would be matched
+        by `Any`), returning a sequence of matches and using a
         stream internally.
         '''
-        return self.list_matcher(config)(list_)
+        return self.items_matcher(config)(list_)
         
     def match_path(self, path, config=None):
         '''

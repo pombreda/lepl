@@ -78,6 +78,19 @@ These have a clearer design (although remain, unfortunately, complex), are
 better documented, with clearer interfaces (abstract classes), and will (I
 hope) support handling the "offside rule" in a later release.
 
+.. warning::
+
+  Although this is a minor release, some of the "public" has API changed.
+  These changes are generally in areas that I believe are not commonly used,
+  but you should check that code still runs after upgrading.  Perhaps the most
+  likely problem is that `parse_list()` has become `parse_items()
+  <api/redirect.html#lepl.matchers.OperatorMatcher.parse_items>`_ to emphasise
+  that it is for sequences of "characters" (in contrast, for example, to parse
+  a list of "lines", use `parse_lines()
+  <api/redirect.html#lepl.matchers.OperatorMatcher.parse_lines>`_; characters
+  and lines refer to whether `Any() <api/redirect.html#lepl.matchers.Any>`_
+  should match all or part of an entity, respectively).
+
 
 .. release_3_0:
 

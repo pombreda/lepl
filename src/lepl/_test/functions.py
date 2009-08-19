@@ -49,7 +49,7 @@ class RepeatTest(TestCase):
         
     def assert_simple(self, stream, start, stop, step, target):
         result = [''.join(map(str, l)) 
-                  for (l, _s) in Repeat(RangeMatch(), start, stop, step).match_list(stream)]
+                  for (l, _s) in Repeat(RangeMatch(), start, stop, step).match_items(stream)]
         assert target == result, result
         
     def test_mixin(self):
@@ -74,7 +74,7 @@ class RepeatTest(TestCase):
             pass
     
     def assert_mixin(self, match, stream, target):
-        result = [''.join(map(str, l)) for (l, _s) in match.match_list(stream)]
+        result = [''.join(map(str, l)) for (l, _s) in match.match_items(stream)]
         assert target == result, result
        
     def test_separator(self):
