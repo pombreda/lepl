@@ -62,7 +62,21 @@ Date        Version  Description
 2009-07-16  3.0b3    More packaging issues (switched to distutils; bundling tests and examples).
 ----------  -------  -----------
 2009-07-16  3.0      New tutorial; bin package; smart separators; modified Nodes, `*args` (general clean-up of API).
+----------  -------  -----------
+2009-08-19  3.1      Rewritten streams.
 ==========  =======  ===========
+
+
+.. release_3_1:
+
+3.1
+---
+
+A fairly small set of changes, focussed on the :ref:`streams <streams>` that
+can be used to "wrap" input (instead of parsing a string or list directly).
+These have a clearer design (although remain, unfortunately, complex), are
+better documented, with clearer interfaces (abstract classes), and will (I
+hope) support handling the "offside rule" in a later release.
 
 
 .. release_3_0:

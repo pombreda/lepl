@@ -22,7 +22,7 @@ The token streams.
 
 from logging import getLogger
 
-from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY, BaseSource
+from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY, Source
 
 
 def lexed_simple_stream(tokens, discard, error, stream):
@@ -76,7 +76,7 @@ def lexed_location_stream(tokens, discard, error, stream):
     return DEFAULT_STREAM_FACTORY(TokenSource(generator(stream), stream))
 
 
-class BaseDelegateSource(BaseSource):
+class BaseDelegateSource(Source):
     '''
     Support for sources that delegate location to other sources.  The location
     state is a StreamView into the underlying source at the start of the

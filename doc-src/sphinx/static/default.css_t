@@ -27,7 +27,7 @@ div.documentwrapper {
 
 div.bodywrapper {
     margin: 0 0 0 230px;
-    border-left: 1px dotted #333;
+    border-left: 1px dotted #680;
 }
 
 div.body {
@@ -59,8 +59,8 @@ div.related {
     background-color: {{ theme_relbarbgcolor }};
     line-height: 30px;
     color: {{ theme_relbartextcolor }};
-    border-top: 1px dotted #333;
-    border-bottom: 1px dotted #333;
+    border-top: 1px dotted #680;
+    border-bottom: 1px dotted #680;
 }
 
 div.related a {
@@ -215,12 +215,12 @@ div.admonition p.admonition-title + p {
 
 div.note {
     background-color: transparent;
-    border: 1px solid #444;
+    border: 1px dotted #ccc;
 }
 
 div.seealso {
     background-color: #ffc;
-    border: 1px solid #ff6;
+    border: 1px dotted #ff6;
 }
 
 div.topic {
@@ -229,7 +229,7 @@ div.topic {
 
 div.warning {
     background-color: transparent;
-    border: 1px solid #d20;
+    border: 1px dotted #f88;
 }
 
 p.admonition-title {
@@ -245,18 +245,18 @@ pre {
     background-color: {{ theme_codebgcolor }};
     color: {{ theme_codetextcolor }};
     line-height: 120%;
-    border: 1px solid #444;
+    border: 1px dotted #444;
 }
 
 tt {
     background-color: transparent;
     padding: 0 1px 0 1px;
     font-size: 0.95em;
-    border: 1px dotted #222;
+    border: 1px dotted #ccc;
 }
 
 table.docutils td, table.docutils th, columns, col {
-    border-color: #222;
+    border-color: #eee;
 }
 
 .footnote:target  {
@@ -270,7 +270,8 @@ div.sphinxsidebar ul.want-points {
 }
 
 strong {
-    color: #d20;
+    color: #000;
+    font-weight: bold;
 }
 
 a strong {

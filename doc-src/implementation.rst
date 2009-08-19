@@ -132,3 +132,36 @@ for example.
 Tree traversal (without rewriting) is also useful; it is used to generate
 various textual representations of the matchers (and the pretty ASCII trees
 for ASTs).
+
+
+.. index:: streams, SimpleStream(), LocationStream(), StreamFactory()
+.. _streams:
+
+Streams
+-------
+
+LEPL can process simple strings and lists, but it can also use its own stream
+abstraction, which implements the `LocationStream()
+<api/redirect.html#lepl.stream.LocationStream>`_ interface.  This tracks the
+position of each character within the source (useful for errors and, in the
+future, parsing with the "offside rule").
+
+Streams are created automatically by methods like `parse_string()
+<api/redirect.html#lepl.matchers.OperatorMatcher.parse_string>`_,
+`string_parser()
+<api/redirect.html#lepl.matchers.OperatorMatcher.string_parser>`_,
+`match_string()
+<api/redirect.html#lepl.matchers.OperatorMatcher.match_string>`_,
+`string_matcher()
+<api/redirect.html#lepl.matchers.OperatorMatcher.string_matcher>`_ etc.  But
+the methods `parse()
+<api/redirect.html#lepl.matchers.OperatorMatcher.parse>`_, `null_parser()
+<api/redirect.html#lepl.matchers.OperatorMatcher.null_parser>`_, `match()
+<api/redirect.html#lepl.matchers.OperatorMatcher.match>`_, `null_matcher()
+<api/redirect.html#lepl.matchers.OperatorMatcher.null_matcher>`_ do not do so.
+
+The streams are created by a `StreamFactory()
+<api/redirect.html#lepl.stream.StreamFactory>`_ which is supplied by the
+`Configuration() <api/redirect.html#lepl.bin.config.Configuration>`_, so it is
+possible for a user (or a package that provides a custom configuration) to
+replace the stream implementation that is used.

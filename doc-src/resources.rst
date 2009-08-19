@@ -123,28 +123,3 @@ See also `First() <api/redirect.html#lepl.functions.First>`_.
 If this is useful, I'd really appreciate a good, short example to put here.
 
 
-.. index:: streams, SequenceByLine(), memory, file
-
-Streams
--------
-
-LEPL can process simple strings and lists, but it can also use its own
-`SequenceByLine() <api/redirect.html#lepl.stream.SequenceByLine>`_ class as a
-wrapper for the input.
-
-Streams were more important in LEPL 1.0, when they were necessary to support
-resource management.  They do have an advantages when reading files, as they
-store the file path, which can be used in error messages.
-
-Streams are created automatically by methods like `parse_string()
-<api/redirect.html#lepl.functions.BaseMatcher.parse_string>`_, `string_parser()
-<api/redirect.html#lepl.functions.BaseMatcher.string_parser>`_, `match_string()
-<api/redirect.html#lepl.functions.BaseMatcher.match_string>`_,
-`string_matcher()
-<api/redirect.html#lepl.functions.BaseMatcher.string_matcher>`_ etc.  But the
-methods `parse() <api/redirect.html#lepl.functions.BaseMatcher.parse>`_,
-`null_parser() <api/redirect.html#lepl.functions.BaseMatcher.null_parser>`_,
-`match() <api/redirect.html#lepl.functions.BaseMatcher.match>`_,
-`null_matcher() <api/redirect.html#lepl.functions.BaseMatcher.null_matcher>`_
-do not do so.
-

@@ -64,14 +64,15 @@ def all():
     print('\n\n\n----------------------------------------------------------'
           '------------\n')
     if version[0] == '2':
-        print('Expect 21-22 failures in Python 2.6')
+        print('Expect 21-22 failures in Python 2.6: {0}'
+              .format(result.failures))
         assert 21 <= len(result.failures) <= 22, len(result.failures)
-        target = 203 # no bin tests
+        target = 211 # no bin tests
     else:
         print('Expect at most 1 failure in Python 3 '
               '(format variations from address size?)')
         assert len(result.failures) <= 1, len(result.failures)
-        target = 225
+        target = 237
     print('Expect {0:d} tests total'.format(target))
     assert result.testsRun == target, result.testsRun
     print('\nLooks OK to me!\n\n')
