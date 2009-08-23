@@ -20,7 +20,7 @@
 
 from lepl.config import Configuration
 from lepl.offside.regexp import LineAwareAlphabet
-from lepl.offside.stream import line_aware_stream_factory_factory
+from lepl.offside.stream import LineAwareStreamFactory
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.rewriters import fix_arguments
@@ -35,7 +35,7 @@ class LineAwareConfiguration(Configuration):
             alphabet = UnicodeAlphabet.instance()
         alphabet = LineAwareAlphabet(alphabet)
         rewriters.append(fix_arguments(BaseRegexp, alphabet=alphabet))
-        stream_factory = line_aware_stream_factory_factory(alphabet)
+        stream_factory = LineAwareStreamFactory(alphabet)
         super(LineAwareConfiguration, self).__init__(
                                     rewriters=rewriters, monitors=monitors, 
                                     stream_factory=stream_factory)

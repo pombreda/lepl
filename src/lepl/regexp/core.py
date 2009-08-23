@@ -53,6 +53,8 @@ from the second layer.
 from abc import ABCMeta, abstractmethod
 from collections import deque
 from itertools import chain
+from logging import getLogger
+from traceback import format_exc
 
 from lepl.node import Node
 from lepl.regexp.interval import Character, TaggedFragments, IntervalMap
@@ -839,6 +841,7 @@ class DfaCompiler(object):
             (terminals, size, stream_out) = self.size_match(stream_in)
             return (terminals, stream_in[0:size], stream_out)
         except TypeError:
+            getLogger('lepl.regexp.DfaCompiler.match').debug(format_exc())
             return None
         
     def size_match(self, stream):

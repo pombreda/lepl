@@ -17,53 +17,58 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from io import StringIO
+
 from lepl.offside.support import LineAwareException
-from lepl.stream import StreamFactory, LineSource, sample
+from lepl.stream import DefaultStreamFactory, LineSource, sample
 
 
-def line_aware_stream_factory_factory(alphabet):
-
-    class LineAwareStreamFactory(StreamFactory):
+class LineAwareStreamFactory(DefaultStreamFactory):
     
-        def from_path(self, path):
-            return self(LineAwareSource(alphabet, open(path, 'rt', buffering=1),
-                                        path))
-        
-        def from_string(self, text):
-            return self(LineAwareSource(alphabet, StringIO(text), 
-                                        sample('str: ', repr(text))))
-        
-        def from_lines(self, lines, source=None, join=''.join):
-            if source is None:
-                source = sample('lines: ', repr(lines))
-            return self(LineAwareSource(alphabet, lines, source, join))
-        
-        def from_items(self, items, source=None, line_length=80):
-            raise LineAwareException('Only line-based sources are supported')
-        
-        def from_file(self, file_):
-            return self(LineAwareSource(alphabet, file_, 
-                                        getattr(file_, 'name', '<file>')) )
+    def __init__(self, alphabet):
+        self.alphabet = alphabet
+
+    def from_path(self, path):
+        return self(LineAwareSource(self.alphabet, 
+                                    open(path, 'rt', buffering=1),
+                                    path))
     
-        def null(self, stream):
-            raise LineAwareException('Only line-based sources are supported')
+    def from_string(self, text):
+        return self(LineAwareSource(self.alphabet, StringIO(text), 
+                                    sample('str: ', repr(text))))
+    
+    def from_lines(self, lines, source=None, join=''.join):
+        if source is None:
+            source = sample('lines: ', repr(lines))
+        return self(LineAwareSource(self.alphabet, lines, source, join))
+    
+    def from_items(self, items, source=None, line_length=80):
+        raise LineAwareException('Only line-based sources are supported')
+    
+    def from_file(self, file_):
+        return self(LineAwareSource(self.alphabet, file_, 
+                                    getattr(file_, 'name', '<file>')) )
+
+    def null(self, stream):
+        raise LineAwareException('Only line-based sources are supported')
 
 
 def top_and_tail(alphabet, lines):
     
     def extend(line):
-        yield alphabet.min
-        for char in line:
-            yield char
-        yield alphabet.max
+        return [alphabet.min] + list(line) + [alphabet.max]
     
     for line in lines:
-        yield extend(line) 
+        yield extend(line)
+        
+        
+def join(lines):
+    return ''.join([''.join([str(item) for item in line]) for line in lines])
 
-
+        
 class LineAwareSource(LineSource):
     
-    def __init__(self, alphabet, lines, description=None, join=''.join):
+    def __init__(self, alphabet, lines, description=None, join=join):
         super(LineAwareSource, self).__init__(
                         top_and_tail(alphabet, lines),
                         repr(lines) if description is None else description,
@@ -76,7 +81,7 @@ class LineAwareSource(LineSource):
         
     def text(self, offset, line):
         if line:
-            return line[offset:]
+            return self.join(line[offset:])
         else:
             return self.join([])
        

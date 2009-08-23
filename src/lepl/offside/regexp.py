@@ -59,7 +59,7 @@ class Token(object):
         return hash(repr(self))
     
     def __repr__(self):
-        return 'Token({0!r},{1:b})'.format(self.text, self.high)
+        return 'Token({0!r},{1!r})'.format(self.text, self.high)
     
 
 SOL = Token(START, False)
@@ -143,6 +143,6 @@ def make_line_aware_parser(alphabet):
     # Empty config here avoids loops if the default config includes
     # references to alphabets
     return expr.string_parser(config=
-            Configuration(rewriters=[flatten],
-                          monitors=[TraceResults(True)]))
+            Configuration(rewriters=[flatten]))
+#                          monitors=[TraceResults(True)]))
 
