@@ -217,7 +217,7 @@ def trampoline(main, monitor=None):
             monitor.pop(pop())
                     
                 
-def make_matcher(matcher, stream, config):
+def make_matcher(matcher, stream, config, kargs):
     '''
     Make a matcher.  Rewrite the matcher and prepare the input for a parser.
     This constructs a function that returns a generator that provides a 
@@ -228,19 +228,19 @@ def make_matcher(matcher, stream, config):
     # pylint bug here? (E0601)
     # pylint: disable-msg=W0212, E0601
     # (_match is meant to be hidden)
-    parser = lambda arg: trampoline(matcher._match(stream(arg)), 
+    parser = lambda arg: trampoline(matcher._match(stream(arg, **kargs)), 
                                     monitor=config.monitor)
     parser.matcher = matcher
     return parser
 
 
-def make_parser(matcher, stream, config):
+def make_parser(matcher, stream, config, kargs):
     '''
     Make a parser.  This takes a matcher node, a stream constructor, and a 
     configuration, and return a function that takes an input and returns a
     *single* parse.
     '''
-    matcher = make_matcher(matcher, stream, config)
+    matcher = make_matcher(matcher, stream, config, kargs)
     def single(arg):
         '''
         Adapt a matcher to behave as expected for the parser interface.

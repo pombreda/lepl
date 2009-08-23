@@ -109,160 +109,161 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         visitor = GraphStr()
         return visitor.postprocess(self.postorder(visitor))
     
-    def file_parser(self, config=None):
+    def file_parser(self, config=None, **kargs):
         '''
         Construct a parser for file objects that uses a stream 
         internally and returns a single result.
         '''
         config = Configuration.default(config)
-        return make_parser(self, config.stream.from_file, config)
+        return make_parser(self, config.stream.from_file, config, kargs)
     
-    def items_parser(self, config=None):
+    def items_parser(self, config=None, **kargs):
         '''
         Construct a parser for a sequence of times (an item is something
         that would be matched by `Any`) that uses a stream internally and 
         returns a single result.
         '''
         config = Configuration.default(config)
-        return make_parser(self, config.stream.from_items, config) 
+        return make_parser(self, config.stream.from_items, config, kargs) 
     
-    def path_parser(self, config=None):
+    def path_parser(self, config=None, **kargs):
         '''
         Construct a parser for a file that uses a stream 
         internally and returns a single result.
         '''
         config = Configuration.default(config)
-        return make_parser(self, config.stream.from_path, config) 
+        return make_parser(self, config.stream.from_path, config, kargs) 
     
-    def string_parser(self, config=None):
+    def string_parser(self, config=None, **kargs):
         '''
         Construct a parser for strings that uses a stream 
         internally and returns a single result.
         '''
         config = Configuration.default(config)
-        return make_parser(self, config.stream.from_string, config) 
+        return make_parser(self, config.stream.from_string, config, kargs) 
     
-    def null_parser(self, config=None):
+    def null_parser(self, config=None, **kargs):
         '''
         Construct a parser for strings and lists that returns a single result
         (this does not use streams).
         '''
         config = Configuration.default(config)
-        return make_parser(self, config.stream.null, config) 
+        return make_parser(self, config.stream.null, config, kargs) 
     
-    def parse_file(self, file_, config=None):
+    
+    def parse_file(self, file_, config=None, **kargs):
         '''
         Parse the contents of a file, returning a single match and using a
         stream internally.
         '''
-        return self.file_parser(config)(file_)
+        return self.file_parser(config, **kargs)(file_)
         
-    def parse_items(self, list_, config=None):
+    def parse_items(self, list_, config=None, **kargs):
         '''
         Parse the contents of a sequence of items (an item is something
         that would be matched by `Any`), returning a single match and using a
         stream internally.
         '''
-        return self.items_parser(config)(list_)
+        return self.items_parser(config, **kargs)(list_)
         
-    def parse_path(self, path, config=None):
+    def parse_path(self, path, config=None, **kargs):
         '''
         Parse the contents of a file, returning a single match and using a
         stream internally.
         '''
-        return self.path_parser(config)(path)
+        return self.path_parser(config, **kargs)(path)
         
-    def parse_string(self, string, config=None):
+    def parse_string(self, string, config=None, **kargs):
         '''
         Parse the contents of a string, returning a single match and using a
         stream internally.
         '''
-        return self.string_parser(config)(string)
+        return self.string_parser(config, **kargs)(string)
     
-    def parse(self, stream, config=None):
+    def parse(self, stream, config=None, **kargs):
         '''
         Parse the contents of a string or list, returning a single match (this
         does not use streams).
         '''
-        return self.null_parser(config)(stream)
+        return self.null_parser(config, **kargs)(stream)
     
     
-    def file_matcher(self, config=None):
+    def file_matcher(self, config=None, **kargs):
         '''
         Construct a parser for file objects that returns a sequence of matches
         and uses a stream internally.
         '''
         config = Configuration.default(config)
-        return make_matcher(self, config.stream.from_file, config) 
+        return make_matcher(self, config.stream.from_file, config, kargs) 
     
-    def items_matcher(self, config=None):
+    def items_matcher(self, config=None, **kargs):
         '''
         Construct a parser for a sequence of items (an item is something that
         would be matched by `Any`) that returns a sequence of matches
         and uses a stream internally.
         '''
         config = Configuration.default(config)
-        return make_matcher(self, config.stream.from_items, config) 
+        return make_matcher(self, config.stream.from_items, config, kargs) 
     
-    def path_matcher(self, config=None):
+    def path_matcher(self, config=None, **kargs):
         '''
         Construct a parser for a file that returns a sequence of matches
         and uses a stream internally.
         '''
         config = Configuration.default(config)
-        return make_matcher(self, config.stream.from_path, config) 
+        return make_matcher(self, config.stream.from_path, config, kargs) 
     
-    def string_matcher(self, config=None):
+    def string_matcher(self, config=None, **kargs):
         '''
         Construct a parser for strings that returns a sequence of matches
         and uses a stream internally.
         '''
         config = Configuration.default(config)
-        return make_matcher(self, config.stream.from_string, config) 
+        return make_matcher(self, config.stream.from_string, config, kargs) 
 
-    def null_matcher(self, config=None):
+    def null_matcher(self, config=None, **kargs):
         '''
         Construct a parser for strings and lists list objects that returns a s
         equence of matches (this does not use streams).
         '''
         config = Configuration.default(config)
-        return make_matcher(self, config.stream.null, config) 
+        return make_matcher(self, config.stream.null, config, kargs) 
 
-    def match_file(self, file_, config=None):
+    def match_file(self, file_, config=None, **kargs):
         '''
         Parse the contents of a file, returning a sequence of matches and using 
         a stream internally.
         '''
-        return self.file_matcher(config)(file_)
+        return self.file_matcher(config, **kargs)(file_)
         
-    def match_items(self, list_, config=None):
+    def match_items(self, list_, config=None, **kargs):
         '''
         Parse a sequence of items (an item is something that would be matched
         by `Any`), returning a sequence of matches and using a
         stream internally.
         '''
-        return self.items_matcher(config)(list_)
+        return self.items_matcher(config, **kargs)(list_)
         
-    def match_path(self, path, config=None):
+    def match_path(self, path, config=None, **kargs):
         '''
         Parse a file, returning a sequence of matches and using a
         stream internally.
         '''
-        return self.path_matcher(config)(path)
+        return self.path_matcher(config, **kargs)(path)
         
-    def match_string(self, string, config=None):
+    def match_string(self, string, config=None, **kargs):
         '''
         Parse a string, returning a sequence of matches and using a
         stream internally.
         '''
-        return self.string_matcher(config)(string)
+        return self.string_matcher(config, **kargs)(string)
 
-    def match(self, stream, config=None):
+    def match(self, stream, config=None, **kargs):
         '''
         Parse a string or list, returning a sequence of matches 
         (this does not use streams).
         '''
-        return self.null_matcher(config)(stream)
+        return self.null_matcher(config, **kargs)(stream)
     
 
 class Transformation(object):

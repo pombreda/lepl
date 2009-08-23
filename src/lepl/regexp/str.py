@@ -21,123 +21,11 @@ Some intermediate classes that support parsers for objects that can be
 converted to strings using str().
 '''
 
-from lepl.regexp.core \
-    import BaseAlphabet, Character, Sequence, Choice, Repeat, Option
+from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
+    Option
 from lepl.config import Configuration
 
 
-
-class StrAlphabet(BaseAlphabet):
-    '''
-    An alphabet for unicode strings.
-    '''
-    
-    # pylint: disable-msg=E1002
-    # (pylint bug?  this chains back to a new style abc)
-    def __init__(self, min_, max_, escape='\\', escaped='[]*()-?.+\\^$|'):
-        super(StrAlphabet, self).__init__(min_, max_)
-        self.escape = escape if escape else ''
-        self.escaped = escaped if escaped else []
-        self.__parser = make_str_parser(self)
-    
-    def __escape_char(self, char):
-        '''
-        Escape a character if necessary.
-        '''
-        if self.escape is not None and str(char) in self.escaped:
-            return self.escape + str(char)
-        else:
-            return str(char)
-    
-    def fmt_intervals(self, intervals):
-        '''
-        This must fully describe the data in the intervals (it is used to
-        hash the data).
-        '''
-        ranges = []
-        if len(intervals) == 1:
-            if intervals[0][0] == intervals[0][1]:
-                return self.__escape_char(intervals[0][0])
-            elif intervals[0][0] == self.min and intervals[0][1] == self.max:
-                return '.'
-        if len(intervals) > 1 and intervals[0][0] == self.min:
-            intervals = self.invert(intervals)
-            hat = '^'
-        else:
-            hat = ''
-        # pylint: disable-msg=C0103
-        # (sorry. but i use this (a, b) convention throughout the regexp lib) 
-        for (a, b) in intervals:
-            if a == b:
-                ranges.append(self.__escape_char(a))
-            else:
-                ranges.append('{0!s}-{1!s}'.format(
-                                self.__escape_char(a), self.__escape_char(b)))
-        return '[{0}{1}]'.format(hat, self.join(ranges))
-    
-    def fmt_sequence(self, children):
-        '''
-        Generate a string representation of a sequence.
-        
-        This must fully describe the data in the children (it is used to
-        hash the data).
-        '''
-        return self.join(str(c) for c in children)
-    
-    def fmt_repeat(self, children):
-        '''
-        Generate a string representation of a repetition.
-        
-        This must fully describe the data in the children (it is used to
-        hash the data).
-        '''
-        string = self.fmt_sequence(children)
-        if len(children) == 1 and type(children[0]) in (Character, Choice):
-            return string + '*'
-        else:
-            return '({0})*'.format(string)
-
-    def fmt_choice(self, children):
-        '''
-        Generate a string representation of a choice.
-        
-        This must fully describe the data in the children (it is used to
-        hash the data).
-        '''
-        return '({0})'.format('|'.join(self.fmt_sequence(child) 
-                                       for child in children))
-
-    def fmt_option(self, children):
-        '''
-        Generate a string representation of an option.
-        
-        This must fully describe the data in the children (it is used to
-        hash the data).
-        '''
-        string = self.fmt_sequence(children)
-        if len(children) == 1 and type(children[0]) in (Character, Choice):
-            return string + '?'
-        else:
-            return '({0})?'.format(string)
-        
-    def join(self, chars):
-        '''
-        Join characters together.
-        '''
-        return ''.join(chars)
-    
-    def from_char(self, char):
-        '''
-        This must convert a single character.
-        '''
-        return char
-    
-    def parse(self, regexp):
-        '''
-        Generate a Sequence from the given text.
-        '''
-        return self.__parser(regexp)
-       
 
 def make_str_parser(alphabet):
     '''
@@ -148,7 +36,8 @@ def make_str_parser(alphabet):
     
       0. "Escaping" means prefixing with \.
 
-      1. These characters are special: [, ], -, \, (, ), *, ?, ., +, ^, $, |.
+      1. These characters are special: {, }, [, ], -, \, (, ), *, ?, ., +, 
+         ^, $, |.
 
       2. Special characters (ie literal, or unescaped special characters) may 
          not have a meaning currently, or may only have a meaning in certain 
@@ -214,3 +103,124 @@ def make_str_parser(alphabet):
     # references to alphabets
     return expr.string_parser(config=Configuration())
 
+
+class StrAlphabet(Alphabet):
+    '''
+    An alphabet for unicode strings.
+    '''
+    
+    # pylint: disable-msg=E1002
+    # (pylint bug?  this chains back to a new style abc)
+    def __init__(self, min_, max_, escape='\\', escaped='{}[]*()-?.+\\^$|',
+                 parser_factory=make_str_parser):
+        super(StrAlphabet, self).__init__(min_, max_)
+        self.__escape = escape
+        self.__escaped = escaped
+        self._parser = parser_factory(self)
+    
+    @property
+    def escape(self):
+        return self.__escape
+    
+    @property
+    def escaped(self):
+        return self.__escaped
+    
+    def _escape_char(self, char):
+        '''
+        Escape a character if necessary.
+        '''
+        if self.escape is not None and str(char) in self.escaped:
+            return self.escape + str(char)
+        else:
+            return str(char)
+    
+    def fmt_intervals(self, intervals):
+        '''
+        This must fully describe the data in the intervals (it is used to
+        hash the data).
+        '''
+        ranges = []
+        if len(intervals) == 1:
+            if intervals[0][0] == intervals[0][1]:
+                return self._escape_char(intervals[0][0])
+            elif intervals[0][0] == self.min and intervals[0][1] == self.max:
+                return '.'
+        if len(intervals) > 1 and intervals[0][0] == self.min:
+            intervals = self.invert(intervals)
+            hat = '^'
+        else:
+            hat = ''
+        # pylint: disable-msg=C0103
+        # (sorry. but i use this (a, b) convention throughout the regexp lib) 
+        for (a, b) in intervals:
+            if a == b:
+                ranges.append(self._escape_char(a))
+            else:
+                ranges.append('{0!s}-{1!s}'.format(
+                                self._escape_char(a), self._escape_char(b)))
+        return '[{0}{1}]'.format(hat, self.join(ranges))
+    
+    def fmt_sequence(self, children):
+        '''
+        Generate a string representation of a sequence.
+        
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        return self.join(str(c) for c in children)
+    
+    def fmt_repeat(self, children):
+        '''
+        Generate a string representation of a repetition.
+        
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        string = self.fmt_sequence(children)
+        if len(children) == 1 and type(children[0]) in (Character, Choice):
+            return string + '*'
+        else:
+            return '({0})*'.format(string)
+
+    def fmt_choice(self, children):
+        '''
+        Generate a string representation of a choice.
+        
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        return '({0})'.format('|'.join(self.fmt_sequence(child) 
+                                       for child in children))
+
+    def fmt_option(self, children):
+        '''
+        Generate a string representation of an option.
+        
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        string = self.fmt_sequence(children)
+        if len(children) == 1 and type(children[0]) in (Character, Choice):
+            return string + '?'
+        else:
+            return '({0})?'.format(string)
+        
+    def join(self, chars):
+        '''
+        Join characters together.
+        '''
+        return ''.join(chars)
+    
+    def from_char(self, char):
+        '''
+        This must convert a single character.
+        '''
+        return char
+    
+    def parse(self, regexp):
+        '''
+        Generate a Sequence from the given text.
+        '''
+        return self._parser(regexp)
+       

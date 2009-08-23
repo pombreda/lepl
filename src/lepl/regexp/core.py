@@ -62,10 +62,10 @@ from lepl.support import LogMixin
 # pylint: disable-msg=C0103
 # Python 2.6
 #class Alphabet(metaclass=ABCMeta):
-Alphabet = ABCMeta('Alphabet', (object, ), {})
+_Alphabet = ABCMeta('_Alphabet', (object, ), {})
 
 
-class BaseAlphabet(Alphabet):
+class Alphabet(_Alphabet):
 
     '''
     Regular expressions are generalised over alphabets, which describe the set

@@ -217,7 +217,7 @@ class LocationStream(SimpleStream):
         '''
     
 
-def _sample(prefix, rest, size=40):
+def sample(prefix, rest, size=40):
     '''
     Provide a small sample of a string.
     '''
@@ -507,7 +507,7 @@ class DefaultStreamFactory(StreamFactory):
         '''
         Wrap a string.
         '''
-        return self(LineSource(StringIO(text), _sample('str: ', repr(text))))
+        return self(LineSource(StringIO(text), sample('str: ', repr(text))))
     
     def from_lines(self, lines, source=None, join=''.join):
         '''
@@ -515,7 +515,7 @@ class DefaultStreamFactory(StreamFactory):
         list of lists for example).
         '''
         if source is None:
-            source = _sample('lines: ', repr(lines))
+            source = sample('lines: ', repr(lines))
         return self(LineSource(lines, source, join))
     
     def from_items(self, items, source=None, line_length=80):
@@ -523,7 +523,7 @@ class DefaultStreamFactory(StreamFactory):
         Wrap an iterator over items (or a list).
         '''
         if source is None:
-            source = _sample('list: ', repr(items))
+            source = sample('list: ', repr(items))
         return self(CharacterSource(items, source, list_join, line_length))
     
     def from_file(self, file_):

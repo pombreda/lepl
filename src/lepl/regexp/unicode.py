@@ -35,25 +35,33 @@ class UnicodeAlphabet(StrAlphabet):
     # pylint: disable-msg=E1002
     # (pylint bug?  this chains back to a new style abc)
     def __init__(self):
+        max_ = self.chr(maxunicode)
+        super(UnicodeAlphabet, self).__init__(self.chr(0), max_)
+        
+    @staticmethod
+    def chr(code):
+        '''
+        Convert to a character.
+        '''
         try:
-            max_ = chr(maxunicode)
-        except ValueError: # Python 2.6
-            max_ = unichr(maxunicode)
-        super(UnicodeAlphabet, self).__init__(chr(0), max_)
+            # Python 2.6
+            return unichr(code)
+        except NameError:
+            return chr(code)
     
     def before(self, char):
         '''
         Must return the character before char in the alphabet.  Never called 
         with min (assuming input data are in range).
         ''' 
-        return chr(ord(char)-1)
+        return self.chr(ord(char)-1)
     
     def after(self, char): 
         '''
         Must return the character after c in the alphabet.  Never called with
         max (assuming input data are in range).
         ''' 
-        return chr(ord(char)+1)
+        return self.chr(ord(char)+1)
     
     @classmethod
     def instance(cls):

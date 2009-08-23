@@ -1,0 +1,7 @@
+
+
+
+class LineAwareException(Exception):
+    pass
+
+

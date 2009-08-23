@@ -92,6 +92,10 @@ Once installed you can test LEPL by running the self-test::
   described above will check the failures against the version used and,
   if all is as expected, display "Looks OK to me!".
 
+  Also, with easy_install and Python 2.6, a syntax error is printed during
+  install (from a Python 3 print statement in lepl._example.separators).  You
+  can safely ignore this.
+
 Supported Versions
 ------------------
 
