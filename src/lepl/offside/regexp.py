@@ -1,54 +1,74 @@
 
 
+from lepl.config import Configuration
 from lepl.offside.support import LineAwareException
+from lepl.rewriters import flatten
+from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
+    Option
 from lepl.regexp.str import StrAlphabet
+from lepl.trace import TraceResults
 
 
 START = '^'
 END = '$'
 
 
-def token_factory(str_, cmp):
+class Token(object):
     
-    class Token(object):
-        
-        __slots__ = ()
-        
-        def __cmp__(self, other):
-            if other is self:
-                return 0
-            return cmp
+    def __init__(self, text, high):
+        self.text = text
+        self.high = high
     
-        def __str__(self):
-            return str_
+    def __gt__(self, other):
+        return other is not self and self.high
+
+    def __ge__(self, other):
+        return other is self or self.high
+    
+    def __eq__(self, other):
+        return other is self
+
+    def __lt__(self, other):
+        return other is not self and not self.high
+
+    def __le__(self, other):
+        return other is self or not self.high
+    
+    def __str__(self):
+        return self.text
+    
+    def __hash__(self):
+        return hash(repr(self))
+    
+    def __repr__(self):
+        return 'Token({0!r},{1:b})'.format(self.text, self.high)
+    
+
+SOL = Token(START, False)
+EOL = Token(END, True)
 
 
-def line_aware_alphabet_factory(base_):
+class LineAwareAlphabet(StrAlphabet):
     
-    if not isinstance(base, StrAlphabet):
-        raise LineAwareException('Only StrAlphabet subclasses supported')
+    def __init__(self, alphabet):
+        if not isinstance(alphabet, StrAlphabet):
+            raise LineAwareException('Only StrAlphabet subclasses supported: '
+                                     '{0}/{1}'.format(alphabet, 
+                                                      type(alphabet).__name__))
+        super(LineAwareAlphabet, self).__init__(SOL, EOL,
+                                parser_factory=make_line_aware_parser)
+        self.base = alphabet
+        
+    def before(self, char):
+        if char > self.base.min:
+            return self.base.before(char)
+        return self.min
     
-    SOL = token_factory(START, -1)
-    EOL = token_factory(END, 1)
-    
-    class LineAwareAlphabet(StrAlphabet):
-        
-        base = base_
-        
-        def __init(self):
-            super(LineAwareAlphabet, self).__init__(SOL, EOL,
-                                    parser_factory=make_line_aware_parser)
-            
-        def before(self, char):
-            if char > self.base.min:
-                return self.base.before(char)
-            return self.min
-        
-        def after(self, char):
-            if char < self.base.max:
-                return self.base.after(char)
-            return self.max
-        
+    def after(self, char):
+        if char < self.base.max:
+            return self.base.after(char)
+        return self.max
+
 
 def make_line_aware_parser(alphabet):
     
@@ -79,7 +99,7 @@ def make_line_aware_parser(alphabet):
     
     single  = escaped | raw
     
-    fullchar = single | sol | eol                               >> dup
+    fullchar = (single | sol | eol)                             >> dup
     any_     = Literal('.')                                     >> dot
     letter   = single                                           >> dup
     pair     = single & Drop('-') & single                      > tup
@@ -87,7 +107,7 @@ def make_line_aware_parser(alphabet):
     interval = pair | letter
     brackets = Drop('[') & interval[1:] & Drop(']')
     inverted = Drop('[^') & interval[1:] & Drop(']')            >= invert      
-    char     = inverted | brackets | fullchar | any_            > character
+    char     = (inverted | brackets | fullchar | any_)          > character
 
     item     = Delayed()
     
@@ -104,5 +124,7 @@ def make_line_aware_parser(alphabet):
 
     # Empty config here avoids loops if the default config includes
     # references to alphabets
-    return expr.string_parser(config=Configuration())
+    return expr.string_parser(config=
+            Configuration(rewriters=[flatten],
+                          monitors=[TraceResults(True)]))
 

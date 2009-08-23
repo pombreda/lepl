@@ -39,7 +39,7 @@ class BaseRegexp(Transformable):
     def __init__(self, regexp, alphabet=None):
         super(BaseRegexp, self).__init__()
         self._arg(regexp=regexp)
-        self._arg(alphabet=alphabet)
+        self._karg(alphabet=alphabet)
         self.tag(regexp)
         
     def compose(self, transform):
@@ -78,17 +78,24 @@ class NfaRegexp(BaseRegexp):
     
     def __init__(self, regexp, alphabet=None):
         alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
-        if not isinstance(regexp, Regexp):
-            regexp = Regexp.single(alphabet, regexp)
         super(NfaRegexp, self).__init__(regexp, alphabet)
-        self.__matcher = regexp.nfa().matcher
+        self.__cached_matcher = None
+        
+    def __matcher(self):
+        '''
+        Compile the matcher.
+        '''
+        if self.__cached_matcher is None:
+            self.__cached_matcher = \
+                    Regexp.single(self.alphabet, self.regexp).nfa().match
+        return self.__cached_matcher
 
     @tagged
     def _match(self, stream_in):
         '''
         Actually do the work of matching.
         '''
-        matches = self.__matcher(stream_in)
+        matches = self.__matcher()(stream_in)
         for (_terminal, match, stream_out) in matches:
             yield self.function([match], stream_in, stream_out)
 
@@ -104,17 +111,24 @@ class DfaRegexp(BaseRegexp):
     
     def __init__(self, regexp, alphabet=None):
         alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
-        if not isinstance(regexp, Regexp):
-            regexp = Regexp.single(alphabet, regexp)
         super(DfaRegexp, self).__init__(regexp, alphabet)
-        self.__matcher = regexp.dfa().match
+        self.__cached_matcher = None
+
+    def __matcher(self):
+        '''
+        Compile the matcher.
+        '''
+        if self.__cached_matcher is None:
+            self.__cached_matcher = \
+                    Regexp.single(self.alphabet, self.regexp).dfa().match
+        return self.__cached_matcher
 
     @tagged
     def _match(self, stream_in):
         '''
         Actually do the work of matching.
         '''
-        match = self.__matcher(stream_in)
+        match = self.__matcher()(stream_in)
         if match is not None:
             (_terminals, match, stream_out) = match
             yield self.function([match], stream_in, stream_out)

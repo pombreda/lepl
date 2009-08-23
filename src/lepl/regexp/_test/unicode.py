@@ -145,7 +145,7 @@ class NfaTest(TestCase):
     
     def assert_matches(self, pattern, text, results):
         r = _test_parser(pattern)
-        m = r.nfa().matcher
+        m = r.nfa().match
         s = list(m(DEFAULT_STREAM_FACTORY.from_string(text)))
         assert len(s) == len(results), s
         for (a, b) in zip(s, results):

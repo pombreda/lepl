@@ -34,6 +34,7 @@ def clone(node, args, kargs):
     copy_standard_attributes(node, copy)
     return copy
 
+
 def copy_standard_attributes(node, copy, describe=True, transform=True):
     '''
     Handle the additional attributes that matchers may have.
@@ -335,3 +336,23 @@ def context_memoize(conservative=True):
         return graph.postorder(DelayedClone(new_clone), Matcher)
     return rewriter
 
+
+def fix_arguments(type_, **extra_kargs):
+    '''
+    Add/replace named arguments while cloning.
+    '''
+    def rewriter(graph):
+        '''
+        Rewrite with some arguments fixed.
+        '''
+        def new_clone(node, args, kargs):
+            '''
+            As clone, but add in any extra kargs if the node is an instance
+            of the given type.
+            '''
+            if isinstance(node, type_):
+                for key in extra_kargs:
+                    kargs[key] = extra_kargs[key]
+            return clone(node, args, kargs)
+        return graph.postorder(DelayedClone(new_clone), Matcher)
+    return rewriter

@@ -89,6 +89,7 @@ class Alphabet(_Alphabet):
     def __init__(self, min_, max_):
         self.__min = min_
         self.__max = max_
+        super(Alphabet, self).__init__()
     
     @property
     def min(self):
@@ -401,7 +402,8 @@ class Regexp(Choice):
         if isinstance(regexp, str):
             coerced = alphabet.parse(regexp)
             if not coerced:
-                raise RegexpError('Cannot parse regexp: {0!r}'.format(regexp))
+                raise RegexpError('Cannot parse regexp {0!r} using {1}'
+                                  .format(regexp, alphabet))
         else:
             coerced = [regexp]
         return coerced
@@ -608,7 +610,7 @@ class NfaCompiler(LogMixin):
                        for dest in sorted(self.__graph.empty_transitions(src))]
             self.__table[src] = (map_, empties)
     
-    def matcher(self, stream):
+    def match(self, stream):
         '''
         Create a matcher from the table.
         
