@@ -67,6 +67,8 @@ from lepl.support import LogMixin
 _Alphabet = ABCMeta('_Alphabet', (object, ), {})
 
 
+# pylint: disable-msg=E1002
+# pylint can't find ABCs
 class Alphabet(_Alphabet):
 
     '''

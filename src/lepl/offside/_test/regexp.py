@@ -31,6 +31,8 @@ class RegexpTest(TestCase):
         basicConfig(level=DEBUG)
         config = LineAwareConfiguration(monitors=[TraceResults(True)])
         match = DfaRegexp('^a*')
-        print(list(match.match_string('abc', config)))
-        
-    
+        result = list(match.match_string('abc', config))[0][0]
+        assert result == ['a'], result
+
+
+     

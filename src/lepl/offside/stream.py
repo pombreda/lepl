@@ -16,6 +16,9 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
+'''
+A stream that adds tokens at the start and end of lines.
+'''
 
 from io import StringIO
 
@@ -38,10 +41,10 @@ class LineAwareStreamFactory(DefaultStreamFactory):
         return self(LineAwareSource(self.alphabet, StringIO(text), 
                                     sample('str: ', repr(text))))
     
-    def from_lines(self, lines, source=None, join=''.join):
+    def from_lines(self, lines, source=None, join_=''.join):
         if source is None:
             source = sample('lines: ', repr(lines))
-        return self(LineAwareSource(self.alphabet, lines, source, join))
+        return self(LineAwareSource(self.alphabet, lines, source, join_))
     
     def from_items(self, items, source=None, line_length=80):
         raise LineAwareException('Only line-based sources are supported')
@@ -64,17 +67,20 @@ def top_and_tail(alphabet, lines):
         
         
 def join(lines):
+    # pylint: disable-msg=W0141
     return ''.join([''.join(filter(lambda x: not isinstance(x, Token), line))
                     for line in lines])
 
         
+# pylint: disable-msg=E1002
+# pylint can't find ABCs
 class LineAwareSource(LineSource):
     
-    def __init__(self, alphabet, lines, description=None, join=join):
+    def __init__(self, alphabet, lines, description=None, join_=join):
         super(LineAwareSource, self).__init__(
                         top_and_tail(alphabet, lines),
                         repr(lines) if description is None else description,
-                        join)
+                        join_)
     
     def location(self, offset, line, location_state):
         (character_count, line_count) = location_state

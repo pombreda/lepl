@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -16,24 +16,41 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
-
+'''
+Extend regular expressions to be aware of additional tokens for line start
+and end.
+'''
 
 from lepl.config import Configuration
 from lepl.offside.support import LineAwareException
 from lepl.rewriters import flatten
-from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
-    Option
+from lepl.regexp.core import Character, Sequence, Choice, Repeat, Option
 from lepl.regexp.str import StrAlphabet
-from lepl.trace import TraceResults
 
 
+# pylint: disable-msg=W0105
+# epydoc standard
 START = '^'
+'''
+Symbol to represent start of line.
+'''
+
 END = '$'
+'''
+Symbol to represent end of line.
+'''
 
 
 class Token(object):
+    '''
+    Used like a character, but represents start/end of line.
+    '''
     
     def __init__(self, text, high):
+        '''
+        Ig high is true this is ordered after other letters, otherwise it is
+        ordered before.
+        '''
         self.text = text
         self.high = high
     
@@ -63,10 +80,22 @@ class Token(object):
     
 
 SOL = Token(START, False)
+'''
+Token to represent the start of a line.
+'''
+
 EOL = Token(END, True)
+'''
+Token to represent the end of a line.
+'''
 
 
+# pylint: disable-msg=E1002
+# pylint can't find ABCs
 class LineAwareAlphabet(StrAlphabet):
+    '''
+    Extend an alphabet to include SOL and EOL tokens.
+    '''
     
     def __init__(self, alphabet):
         if not isinstance(alphabet, StrAlphabet):
@@ -78,17 +107,29 @@ class LineAwareAlphabet(StrAlphabet):
         self.base = alphabet
         
     def before(self, char):
+        '''
+        Append SOL before the base character set.
+        '''
         if char > self.base.min:
             return self.base.before(char)
         return self.min
     
     def after(self, char):
+        '''
+        Append EOL after the base character set.
+        '''
         if char < self.base.max:
             return self.base.after(char)
         return self.max
 
 
 def make_line_aware_parser(alphabet):
+    '''
+    Construct a parser that is aware of start and end of lines.
+    
+    This is closely based on the standard string parser - we should refactor
+    to avoid so much duplication.
+    '''
     
     # Avoid dependency loops
     from lepl.functions import Drop, Eos, AnyBut, Substitute
@@ -140,9 +181,6 @@ def make_line_aware_parser(alphabet):
     
     expr     = (char | item)[:] & Drop(Eos())
 
-    # Empty config here avoids loops if the default config includes
-    # references to alphabets
-    return expr.string_parser(config=
-            Configuration(rewriters=[flatten]))
-#                          monitors=[TraceResults(True)]))
+    # add more here, but beware of using regexps(!)
+    return expr.string_parser(config=Configuration(rewriters=[flatten]))
 

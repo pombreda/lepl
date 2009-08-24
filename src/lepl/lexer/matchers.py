@@ -136,14 +136,14 @@ class Token(OperatorMatcher):
         '''
         super(Token, self).__init__(name=TOKENS, namespace=TokenNamespace)
         self._arg(regexp=regexp)
-        self._arg(content=content)
+        self._karg(content=content)
         if id is None:
             id = Token.__count
             Token.__count += 1
-        self._arg(id=id)
-        self._arg(alphabet=alphabet)
-        self._arg(complete=complete)
-        self._arg(compiled=compiled)
+        self._karg(id=id)
+        self._karg(alphabet=alphabet)
+        self._karg(complete=complete)
+        self._karg(compiled=compiled)
         
     def compile(self, alphabet=None):
         '''
@@ -279,9 +279,9 @@ class Lexer(NamespaceMixin, BaseMatcher):
         self._arg(tokens=tokens)
         self._arg(alphabet=alphabet)
         self._arg(discard=discard)
-        self._arg(error=error)
-        self._arg(t_regexp=t_regexp)
-        self._arg(s_regexp=s_regexp)
+        self._karg(error=error)
+        self._karg(t_regexp=t_regexp)
+        self._karg(s_regexp=s_regexp)
         
     def token_for_id(self, id):
         '''

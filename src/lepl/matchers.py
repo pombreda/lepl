@@ -943,7 +943,7 @@ class Consumer(OperatorMatcher):
         '''
         super(Consumer, self).__init__()
         self._arg(matcher=coerce_(matcher))
-        self._arg(consume=consume)
+        self._karg(consume=consume)
     
     @tagged
     def _match(self, stream_in):

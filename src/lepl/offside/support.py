@@ -17,9 +17,15 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 
+'''
+Support for offisde and line-aware parsing.
+'''
 
 
 class LineAwareException(Exception):
-    pass
+    '''
+    The exception raised by problems in line-aware code (functionality that
+    flags or detects markers for the start and end of lines).
+    '''
 
 

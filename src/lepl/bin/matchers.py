@@ -278,8 +278,8 @@ else:
 
         def __init__(self, length, encoding=None, errors=STRICT):
             super(_String, self).__init__(length)
-            self._arg(encoding=encoding)
-            self._arg(errors=errors)
+            self._karg(encoding=encoding)
+            self._karg(errors=errors)
         
         def _convert(self, bits):
             '''
