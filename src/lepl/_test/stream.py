@@ -43,9 +43,9 @@ class StreamTest(TestCase):
 
     def test_multiple_lines(self):
         s1 = DEFAULT_STREAM_FACTORY.from_string('abc\npqr\nxyz')
-        assert s1[0:3] == 'abc'
-        assert s1[0:4] == 'abc\n'
-        assert s1[0:5] == 'abc\np'
+        assert s1[0:3] == 'abc', repr(s1[0:3])
+        assert s1[0:4] == 'abc\n', s1[0:4]
+        assert s1[0:5] == 'abc\np', s1[0:5]
         assert s1[0:11] == 'abc\npqr\nxyz'
         assert s1[5] == 'q', s1[5]
         s2 = s1[5:]
@@ -111,7 +111,7 @@ class SimpleStreamTester(object):
             for j in range(i, len(l)):
                 (lr, sr) = (l[i:j], s[i:j])
                 if with_len: 
-                    assert len(lr) == len(sr), '%r %d %r %d  %d %d %d' % (lr, len(lr), sr, len(sr), i, j, k)
+                    assert len(lr) == len(sr), '%r %d %r %d  %d %d' % (lr, len(lr), sr, len(sr), i, j)
                 for k in range(j-i):
                     assert lr[k] == sr[k], str(i) + ':' + str(j) + ': ' + repr(lr) + '/' + repr(sr)
                 if with_len: 

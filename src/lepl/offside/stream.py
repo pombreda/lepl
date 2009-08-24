@@ -19,6 +19,7 @@
 
 from io import StringIO
 
+from lepl.offside.regexp import Token
 from lepl.offside.support import LineAwareException
 from lepl.stream import DefaultStreamFactory, LineSource, sample
 
@@ -63,7 +64,8 @@ def top_and_tail(alphabet, lines):
         
         
 def join(lines):
-    return ''.join([''.join([str(item) for item in line]) for line in lines])
+    return ''.join([''.join(filter(lambda x: not isinstance(x, Token), line))
+                    for line in lines])
 
         
 class LineAwareSource(LineSource):

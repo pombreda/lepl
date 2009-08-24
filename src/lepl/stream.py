@@ -276,17 +276,23 @@ class StreamView(object):
         if not length:
             return self.__line.source.join([])
         (line, start) = self.__at(index.start, True)
-        lines = [line.line]
-        remainder = length - (len(line.line) - start)
+        line_length = len(line.line)
+        remainder = length - (line_length - start)
+        lines = [line.line[start:min(start+length, line_length)]]
         while line.line and remainder > 0:
             line = line.next
             if line.line:
-                remainder -= len(line.line)
-                lines.append(line.line)
+                line_length = len(line.line)
+                lines.append(line.line[0:min(remainder, line_length)])
+                remainder -= line_length
         if remainder > 0:
             raise IndexError('Missing {0:d} items'.format(remainder))
         else:
-            return line.source.join(lines)[start:start+length]
+            # in the code above we are careful to accumulate exactly what
+            # we need; you might think it simpler to accumulate whole lines
+            # and then take a slice below, but not all joins preserve length
+            # (consider SOL/EOL).
+            return line.source.join(lines)
             
     def __at(self, index, strict=False):
         '''
