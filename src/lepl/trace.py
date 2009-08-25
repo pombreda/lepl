@@ -23,8 +23,8 @@ Tools for logging and tracing.
 # we abuse conventions to give a consistent interface 
 # pylint: disable-msg=C0103
 
-from lepl.monitor import ExposedMonitor
-from lepl.support import CircularFifo
+from lepl.monitor import ActiveMonitor, ValueMonitor
+from lepl.support import CircularFifo, LogMixin
 
 
 def TraceResults(enabled=False):
@@ -33,12 +33,13 @@ def TraceResults(enabled=False):
     that records the flow of control during parsing.  It can be controlled by 
     `Trace()`.
 
-    This is a helper function that "escapes" the main class via a function
-    to simplify configuration.
+    This is a factory that "escapes" the main class via a function to simplify 
+    configuration.
     '''
     return lambda: _TraceResults(enabled)
 
-class _TraceResults(ExposedMonitor):
+
+class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
     '''
     A basic logger (implemented as a monitor - `MonitorInterface`)
     that records the flow of control during parsing.  It can be controlled by 

@@ -30,6 +30,7 @@ from collections import deque
 from logging import getLogger
 from traceback import format_exc
 
+from lepl.monitor import prepare_monitors
 from lepl.stream import DEFAULT_STREAM_FACTORY
     
     
@@ -109,7 +110,7 @@ class GeneratorWrapper(object):
         return self.describe
         
 
-def trampoline(main, monitor=None):
+def trampoline(main, m_stack=None, m_value=None):
     '''
     The main parser loop.  Evaluates matchers as coroutines.
     
@@ -120,7 +121,7 @@ def trampoline(main, monitor=None):
     and index made no significant difference (at around 1% level)
     '''
     stack = deque()
-    append = stack.append
+    push = stack.append
     pop = stack.pop
     try:
         value = main
@@ -131,58 +132,58 @@ def trampoline(main, monitor=None):
         while True:
             epoch += 1
             try:
-                if monitor:
-                    monitor.next_iteration(epoch, value, 
+                if m_value:
+                    m_value.next_iteration(epoch, value, 
                                            exception_being_raised, stack)
-                # is the value a coroutine that should be added to out stack
+                # is the value a coroutine that should be added to our stack
                 # and evaluated?
                 if type(value) is GeneratorWrapper:
-                    if monitor:
-                        monitor.push(value)
+                    if m_stack:
+                        m_stack.push(value)
                     # add to the stack
-                    append(value)
-                    if monitor:
-                        monitor.before_next(value)
+                    push(value)
+                    if m_value:
+                        m_value.before_next(value)
                     # and evaluate
                     value = next(value)
-                    if monitor:
-                        monitor.after_next(value)
+                    if m_value:
+                        m_value.after_next(value)
                 # if we don't have a coroutine then we have a result that
                 # must be passed up the stack.
                 else:
                     # drop top of the stack (which returned the value)
                     popped = pop()
-                    if monitor:
-                        monitor.pop(popped)
+                    if m_stack:
+                        m_stack.pop(popped)
                     # if we still have coroutines left, pass the value in
                     if stack:
                         # handle exceptions that are being raised
                         if exception_being_raised:
                             exception_being_raised = False
-                            if monitor:
-                                monitor.before_throw(stack[-1], value)
+                            if m_value:
+                                m_value.before_throw(stack[-1], value)
                             # raise it inside the coroutine
                             value = stack[-1].throw(value)
-                            if monitor:
-                                monitor.after_throw(value)
+                            if m_value:
+                                m_value.after_throw(value)
                         # handle ordinary values
                         else:
-                            if monitor:
-                                monitor.before_send(stack[-1], value)
+                            if m_value:
+                                m_value.before_send(stack[-1], value)
                             # inject it into the coroutine
                             value = stack[-1].send(value)
-                            if monitor:
-                                monitor.after_send(value)
+                            if m_value:
+                                m_value.after_send(value)
                     # otherwise, the stack is completely unwound so return
                     # to main caller 
                     else:
                         if exception_being_raised:
-                            if monitor:
-                                monitor.raise_(value)
+                            if m_value:
+                                m_value.raise_(value)
                             raise value
                         else:
-                            if monitor:
-                                monitor.yield_(value)
+                            if m_value:
+                                m_value.yield_(value)
                             yield value
                         # this allows us to restart with a new evaluation
                         # (backtracking) if called again.
@@ -201,8 +202,8 @@ def trampoline(main, monitor=None):
                 else:
                     value = exception
                     exception_being_raised = True
-                    if monitor:
-                        monitor.exception(value)
+                    if m_value:
+                        m_value.exception(value)
                     if type(value) is not StopIteration and value != last_exc:
                         last_exc = value
                         log.warn('Exception at epoch {0}'.format(epoch))
@@ -213,8 +214,8 @@ def trampoline(main, monitor=None):
                             log.warn('Stack: ' + generator.matcher.describe)
     finally:
         # record the remaining stack
-        while monitor and stack:
-            monitor.pop(pop())
+        while m_stack and stack:
+            m_stack.pop(pop())
                     
                 
 def make_matcher(matcher, stream, config, kargs):
@@ -223,13 +224,15 @@ def make_matcher(matcher, stream, config, kargs):
     This constructs a function that returns a generator that provides a 
     sequence of matches.
     '''
-    for rewriter in config.rewriters:
+    rewriters = [] if config.rewriters is None else config.rewriters
+    for rewriter in rewriters:
         matcher = rewriter(matcher)
+    (m_stack, m_value) = prepare_monitors(config.monitors)
     # pylint bug here? (E0601)
     # pylint: disable-msg=W0212, E0601
     # (_match is meant to be hidden)
     parser = lambda arg: trampoline(matcher._match(stream(arg, **kargs)), 
-                                    monitor=config.monitor)
+                                    m_stack=m_stack, m_value=m_value)
     parser.matcher = matcher
     return parser
 
@@ -252,74 +255,3 @@ def make_parser(matcher, stream, config, kargs):
     single.matcher = matcher.matcher
     return single
 
-    
-#def file_parser(matcher, config):
-#    '''
-#    Construct a parser for file objects that returns a single match and
-#    uses a stream internally.
-#    '''
-#    return make_parser(matcher, Stream.from_file, config)
-#
-#def items_parser(matcher, config):
-#    '''
-#    Construct a parser for lists that returns a single match and uses a 
-#    stream internally.
-#    '''
-#    return make_parser(matcher, Stream.from_items, config)
-#
-#def path_parser(matcher, config):
-#    '''
-#    Construct a parser for a file that returns a single match and uses a 
-#    stream internally.
-#    '''
-#    return make_parser(matcher, Stream.from_path, config)
-#
-#def string_parser(matcher, config):
-#    '''
-#    Construct a parser for strings that returns a single match and uses a 
-#    stream internally.
-#    '''
-#    return make_parser(matcher, Stream.from_string, config)
-#
-#def null_parser(matcher, config):
-#    '''
-#    Construct a parser for strings and lists returns a single match
-#    (this does not use streams).
-#    '''
-#    return make_parser(matcher, Stream.null, config)
-#
-#
-#def file_matcher(matcher, config):
-#    '''
-#    Construct a parser that returns a sequence of matches for file objects 
-#    and uses a stream internally.
-#    '''
-#    return make_matcher(matcher, Stream.from_file, config)
-#
-#def items_matcher(matcher, config):
-#    '''
-#    Construct a parser that returns a sequence of matches for lists 
-#    and uses a stream internally.
-#    '''
-#    return make_matcher(matcher, Stream.from_items, config)
-#
-#def path_matcher(matcher, config):
-#    '''
-#    Construct a parser that returns a sequence of matches for a file
-#    and uses a stream internally.
-#    '''
-#    return make_matcher(matcher, Stream.from_path, config)
-#
-#def string_matcher(matcher, config):
-#    '''
-#    Construct a parser that returns a sequence of matches for strings 
-#    and uses a stream internally.
-#    '''
-#    return make_matcher(matcher, Stream.from_string, config)
-#
-#def null_matcher(matcher, config):
-#    '''
-#    Construct a parser that returns a sequence of matches for strings
-#    and lists (this does not use streams).
-#    '''
-#    return make_matcher(matcher, Stream.null, config)

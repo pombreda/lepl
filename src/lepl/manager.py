@@ -51,7 +51,8 @@ For the control of parse results see the `Commit()` matcher.
 from heapq import heappushpop, heappop, heappush
 from weakref import ref, WeakKeyDictionary
 
-from lepl.monitor import MonitorInterface
+from lepl.monitor import StackMonitor, ValueMonitor
+from lepl.support import LogMixin
 
 
 # pylint: disable-msg=C0103
@@ -67,7 +68,7 @@ def GeneratorManager(queue_len):
     return lambda: _GeneratorManager(queue_len)
 
 
-class _GeneratorManager(MonitorInterface):
+class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
     '''
     A 'Monitor' (implements `MonitorInterface`, can be supplied
     to `Configuration`) that tracks (and can limit the number of)

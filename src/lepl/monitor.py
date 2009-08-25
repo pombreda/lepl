@@ -24,16 +24,10 @@ See `trampoline()`.
 '''
 
 
-from lepl.support import LogMixin
-
-
-class MonitorInterface(LogMixin):
+class ValueMonitor(object):
     '''
-    The interface expected by `trampoline()`.
+    An interface expected by `trampoline()`, called to track data flow.
     '''
-    
-    def __init__(self):
-        super(MonitorInterface, self).__init__()
     
     def next_iteration(self, epoch, value, exception, stack):
         '''
@@ -95,25 +89,31 @@ class MonitorInterface(LogMixin):
         '''
         pass
     
-    def push(self, value):
+    
+class StackMonitor(object):
+    '''
+    An interface expected by `trampoline()`, called to track stack growth.
+    '''
+    
+    def push(self, generator):
         '''
         Called before adding a generator to the stack.
         '''
         pass
     
-    def pop(self, value):
+    def pop(self, generator):
         '''
         Called after removing a generator from the stack.
         '''
         pass
     
     
-class ExposedMonitor(MonitorInterface):
+class ActiveMonitor(StackMonitor):
     '''
-    A monitor that can interact with a generator (to allow switching on/off
-    for various parts of the parse, for example).
+    A `StackMonitor` implementation that allows matchers that implement the
+    interface on_push/on_pop to be called. 
     
-    Generators can interact with monitors if:
+    Generators can interact with active monitors if:
     
       1. The monitor extends this class
     
@@ -138,18 +138,18 @@ class ExposedMonitor(MonitorInterface):
             generator.matcher.on_pop(self)
         
 
-class MultipleMonitors(MonitorInterface):
+class MultipleValueMonitors(ValueMonitor):
     '''
-    Combine several monitors into one.
+    Combine several value monitors into one.
     '''
     
-    def __init__(self, monitors):
-        super(MultipleMonitors, self).__init__()
-        self._monitors = [monitor() for monitor in monitors]
+    def __init__(self, monitors=None):
+        super(MultipleValueMonitors, self).__init__()
+        self._monitors = [] if monitors is None else monitors
         
     def append(self, monitor):
         '''
-        Add anotehr monitor to the chain.
+        Add another monitor to the chain.
         '''
         self._monitors.append(monitor)
         
@@ -226,6 +226,25 @@ class MultipleMonitors(MonitorInterface):
         for monitor in self._monitors:
             monitor.yield_(value)
     
+
+class MultipleStackMonitors(StackMonitor):
+    '''
+    Combine several stack monitors into one.
+    '''
+    
+    def __init__(self, monitors=None):
+        super(MultipleStackMonitors, self).__init__()
+        self._monitors = [] if monitors is None else monitors
+        
+    def append(self, monitor):
+        '''
+        Add another monitor to the chain.
+        '''
+        self._monitors.append(monitor)
+        
+    def __len__(self):
+        return len(self._monitors)
+    
     def push(self, value):
         '''
         Called before adding a generator to the stack.
@@ -239,3 +258,19 @@ class MultipleMonitors(MonitorInterface):
         '''
         for monitor in self._monitors:
             monitor.pop(value)
+
+
+def prepare_monitors(monitor_factories):
+    '''
+    Take a list of monitor factories and return an active and a passive
+    monitor (or None, if none given).
+    '''
+    stack, value = MultipleStackMonitors(), MultipleValueMonitors()
+    monitor_factories = [] if monitor_factories is None else monitor_factories
+    for monitor_factory in monitor_factories:
+        monitor = monitor_factory()
+        if isinstance(monitor, StackMonitor):
+            stack.append(monitor)
+        if isinstance(monitor, ValueMonitor):
+            value.append(monitor)
+    return (stack if stack else None, value if value else None)

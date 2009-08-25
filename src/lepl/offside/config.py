@@ -19,6 +19,7 @@
 
 
 from lepl.config import Configuration
+from lepl.offside.lexer import offside_rewriter
 from lepl.offside.regexp import LineAwareAlphabet
 from lepl.offside.stream import LineAwareStreamFactory
 from lepl.regexp.matchers import BaseRegexp
@@ -40,3 +41,20 @@ class LineAwareConfiguration(Configuration):
                                     rewriters=rewriters, monitors=monitors, 
                                     stream_factory=stream_factory)
 
+
+class OffsideConfiguration(Configuration):
+    
+    def __init__(self, rewriters=None, monitors=None, alphabet=None,
+                 discard=None, tabsize=None, error=None, extra_tokens=None):
+        if rewriters is None:
+            rewriters = []
+        if alphabet is None:
+            alphabet = UnicodeAlphabet.instance()
+        alphabet = LineAwareAlphabet(alphabet)
+        rewriters.append(fix_arguments(BaseRegexp, alphabet=alphabet),
+                         offside_rewriter(alphabet, discard, error, 
+                                          extra_tokens))
+        stream_factory = LineAwareStreamFactory(alphabet)
+        super(OffsideConfiguration, self).__init__(
+                                    rewriters=rewriters, monitors=monitors, 
+                                    stream_factory=stream_factory)

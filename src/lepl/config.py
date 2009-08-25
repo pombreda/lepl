@@ -20,7 +20,6 @@
 The main configuration object and various standard configurations.
 '''
 
-from lepl.monitor import MultipleMonitors
 from lepl.stream import DEFAULT_STREAM_FACTORY
 
 # A major driver for this being separate is that it decouples dependency loops
@@ -37,23 +36,15 @@ class Configuration(object):
     
     def __init__(self, rewriters=None, monitors=None, stream_factory=None):
         '''
-        `rewriters` Are functions that take and return a matcher tree.  They
+        `rewriters` are functions that take and return a matcher tree.  They
         can add memoisation, restructure the tree, etc.  They are applied left
         to right.
         
-        `monitors` Subclasses of `MonitorInterface` that will be
-        invoked by `trampoline()`.  Multiple values are combined into a single 
-        monitor.  Note that monitors are typically stateful and, since a
-        configuration can be reused, a created on use by function invocation.
-        So a monitor is typically defined as ``lambda: SomeInstance(...)``. 
+        `monitors` are factories that return implementations of `ActiveMonitor`
+        or `PassiveMonitor` and will be invoked by `trampoline()`. 
         '''
-        self.rewriters = [] if rewriters is None else rewriters 
-        if not monitors:
-            self.monitor = None
-        elif len(monitors) == 1:
-            self.monitor = monitors[0]()
-        else:
-            self.monitor = MultipleMonitors(monitors)
+        self.rewriters = rewriters
+        self.monitors = monitors
         if stream_factory is None:
             stream_factory = DEFAULT_STREAM_FACTORY
         self.__stream_factory = stream_factory
