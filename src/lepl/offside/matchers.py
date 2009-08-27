@@ -17,19 +17,3 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from logging import basicConfig, DEBUG
-from unittest import TestCase
-
-from lepl.offside.config import LineAwareConfiguration
-from lepl.regexp.matchers import DfaRegexp
-from lepl.trace import TraceResults
-
-
-class RegexpTest(TestCase):
-    
-    def test_start(self):
-        #basicConfig(level=DEBUG)
-        config = LineAwareConfiguration(monitors=[TraceResults(True)])
-        match = DfaRegexp('^a*')
-        result = list(match.match_string('abc', config))[0][0]
-        assert result == ['a'], result

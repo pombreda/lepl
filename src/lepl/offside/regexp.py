@@ -110,6 +110,8 @@ class LineAwareAlphabet(StrAlphabet):
         '''
         Append SOL before the base character set.
         '''
+        if char == self.max:
+            return self.base.max
         if char > self.base.min:
             return self.base.before(char)
         return self.min
@@ -118,6 +120,8 @@ class LineAwareAlphabet(StrAlphabet):
         '''
         Append EOL after the base character set.
         '''
+        if char == self.min:
+            return self.base.min
         if char < self.base.max:
             return self.base.after(char)
         return self.max
@@ -158,15 +162,14 @@ def make_line_aware_parser(alphabet):
     
     single  = escaped | raw
     
-    fullchar = (single | sol | eol)                             >> dup
     any_     = Literal('.')                                     >> dot
-    letter   = single                                           >> dup
+    letter   = (single | sol | eol)                             >> dup
     pair     = single & Drop('-') & single                      > tup
     
     interval = pair | letter
     brackets = Drop('[') & interval[1:] & Drop(']')
     inverted = Drop('[^') & interval[1:] & Drop(']')            >= invert      
-    char     = (inverted | brackets | fullchar | any_)          > character
+    char     = (inverted | brackets | letter | any_)            > character
 
     item     = Delayed()
     

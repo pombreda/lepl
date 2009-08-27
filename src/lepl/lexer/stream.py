@@ -49,7 +49,7 @@ def lexed_simple_stream(tokens, discard, error, stream):
     return DEFAULT_STREAM_FACTORY.from_items(generator())
 
 
-def lexed_location_stream(tokens, discard, error, stream):
+def lexed_location_stream(tokens, discard, error, stream, adapter=None):
     '''
     Given a location stream, create a location stream of regexp matches.
     '''
@@ -73,7 +73,10 @@ def lexed_location_stream(tokens, discard, error, stream):
                     log.debug('Space: {0!r} {1!r}'.format(terminals, size))
         except TypeError:
             raise error(stream_before)
-    return DEFAULT_STREAM_FACTORY(TokenSource(generator(stream), stream))
+    token_stream = generator(stream)
+    if adapter:
+        token_stream = adapter(token_stream)
+    return DEFAULT_STREAM_FACTORY(TokenSource(token_stream, stream))
 
 
 class BaseDelegateSource(Source):

@@ -23,7 +23,7 @@ Rewrite a matcher graph to include lexing.
 from collections import deque
 from logging import getLogger
 
-from lepl.lexer.matchers import Token, Lexer, LexerError, NonToken
+from lepl.lexer.matchers import BaseToken, Lexer, LexerError, NonToken
 from lepl.operators import Matcher
 from lepl.regexp.unicode import UnicodeAlphabet
 
@@ -44,7 +44,7 @@ def find_tokens(matcher):
             non_tokens.add(matcher)
         if matcher not in visited:
             visited.add(matcher)
-            if isinstance(matcher, Token):
+            if isinstance(matcher, BaseToken):
                 tokens.add(matcher)
                 if matcher.content:
                     assert_not_token(matcher.content, visited)
@@ -69,7 +69,7 @@ def assert_not_token(node, visited):
     '''
     if isinstance(node, Matcher) and node not in visited:
         visited.add(node)
-        if isinstance(node, Token):
+        if isinstance(node, BaseToken):
             raise LexerError('Nested token: {0}'.format(node))
         else:
             for child in node:
@@ -77,7 +77,7 @@ def assert_not_token(node, visited):
 
 
 def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None,
-                   extra_tokens=None):
+                   extra_tokens=None, adapter=None):
     '''
     This is required when using Tokens.  It does the following:
     - Find all tokens in the matcher graph
@@ -96,6 +96,8 @@ def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None,
     current stream).
     
     extra_tokens are added to those found by analysing the grammar.
+    
+    adapter is a generator that can process the token stream.
     '''
 
     log = getLogger('lepl.lexer.rewriters.lexer_rewriter')
@@ -110,7 +112,7 @@ def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None,
         if extra_tokens:
             tokens.update(extra_tokens)
         if tokens:
-            return Lexer(matcher, tokens, alphabet, discard, error)
+            return Lexer(matcher, tokens, alphabet, discard, error, adapter)
         else:
             log.info('Lexer rewriter used, but no tokens found.')
             return matcher

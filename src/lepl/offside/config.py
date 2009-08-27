@@ -19,6 +19,7 @@
 
 
 from lepl.config import Configuration
+from lepl.lexer.matchers import BaseToken
 from lepl.offside.lexer import offside_rewriter
 from lepl.offside.regexp import LineAwareAlphabet
 from lepl.offside.stream import LineAwareStreamFactory
@@ -42,7 +43,7 @@ class LineAwareConfiguration(Configuration):
                                     stream_factory=stream_factory)
 
 
-class OffsideConfiguration(Configuration):
+class IndentationConfiguration(Configuration):
     
     def __init__(self, rewriters=None, monitors=None, alphabet=None,
                  discard=None, tabsize=None, error=None, extra_tokens=None):
@@ -51,10 +52,11 @@ class OffsideConfiguration(Configuration):
         if alphabet is None:
             alphabet = UnicodeAlphabet.instance()
         alphabet = LineAwareAlphabet(alphabet)
-        rewriters.append(fix_arguments(BaseRegexp, alphabet=alphabet),
-                         offside_rewriter(alphabet, discard, error, 
-                                          extra_tokens))
+        rewriters.extend([fix_arguments(BaseRegexp, alphabet=alphabet),
+                          fix_arguments(BaseToken, alphabet=alphabet),
+                          offside_rewriter(alphabet, discard, error, 
+                                           extra_tokens)])
         stream_factory = LineAwareStreamFactory(alphabet)
-        super(OffsideConfiguration, self).__init__(
+        super(IndentationConfiguration, self).__init__(
                                     rewriters=rewriters, monitors=monitors, 
                                     stream_factory=stream_factory)
