@@ -23,7 +23,8 @@ Tests for the lepl.stream module.
 from random import choice
 from unittest import TestCase
 
-from lepl.stream import SimpleStream, DEFAULT_STREAM_FACTORY, Filter
+from lepl.stream import SimpleStream, DEFAULT_STREAM_FACTORY, Filter, \
+    FilteredSource
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, R0904, R0201
@@ -238,17 +239,33 @@ class FilterTest(TestCase):
         def consonant(x):
             return x not in 'aeiou'
         stream1 = DEFAULT_STREAM_FACTORY.from_string('abcdef\nghijklm\n')
+        stream2 = FilteredSource.filtered_stream(consonant, stream1)
+        assert stream2[0:2] == 'bc', stream2[0:2]
+        assert stream2[0:].line_number == 1, stream2[0:].line_number
+        assert stream2[0:].line_offset == 1, stream2[0:].line_offset
+        assert stream2[0:12] == 'bcdf\nghjklm\n'
+        assert stream2[5:].line_number == 2, stream2[5:].line_number
+        assert stream2[5:].line_offset == 0, stream2[5:].line_offset
+        assert len(stream2) == 12
+        
+        
+class CachedFilterTest(TestCase):
+    
+    def test_cached_filter(self):
+        def consonant(x):
+            return x not in 'aeiou'
+        stream1 = DEFAULT_STREAM_FACTORY.from_string('abcdef\nghijklm\n')
         filter_ = Filter(consonant, stream1)
         stream2 = filter_.stream
         assert stream2[0:2] == 'bc', stream2[0:2]
         assert stream2[0:].line_number == 1, stream2[0:].line_number
         assert stream2[0:].line_offset == 1, stream2[0:].line_offset
         assert stream2[0:12] == 'bcdf\nghjklm\n'
-        assert filter_.match(stream2[0:])[0] == 'a', \
-                filter_.match(stream2[0:])[0]
-        assert filter_.match(stream2[1:])[0] == 'c', \
-                filter_.match(stream2[1:])[0]
+        assert filter_.locate(stream2[0:])[0] == 'a', \
+                filter_.locate(stream2[0:])[0]
+        assert filter_.locate(stream2[1:])[0] == 'c', \
+                filter_.locate(stream2[1:])[0]
         assert stream2[5:].line_number == 2, stream2[5:].line_number
         assert stream2[5:].line_offset == 0, stream2[5:].line_offset
-        assert len(stream2) == 12
+        assert len(stream2) == 12, len(stream2)
         

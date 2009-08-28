@@ -724,7 +724,7 @@ def list_join(lists):
 #    yield line
 
 
-class FilterSource(Source):
+class FilteredSource(Source):
     '''
     Support for filters of `LocationStream` instances.  The location is
     delegated to the underlying stream.
@@ -736,8 +736,8 @@ class FilterSource(Source):
     def __init__(self, predicate, stream):
         assert isinstance(stream, LocationStream)
         # join is unused(?) but passed on to ContentStream
-        super(FilterSource, self).__init__(str(stream.source),
-                                          stream.source.join)
+        super(FilteredSource, self).__init__(str(stream.source),
+                                             stream.source.join)
         self.__predicate = predicate
         self.__stream = stream
         self.__length = 0
@@ -765,28 +765,90 @@ class FilterSource(Source):
         else:
             return (-1, -1, -1, None, None)
         
+    @staticmethod
+    def filtered_stream(predicate, stream, factory=DEFAULT_STREAM_FACTORY):
+        '''
+        Generated a filtered stream.
+        '''
+        return factory(FilteredSource(predicate, stream))
+        
 
-class Filter(object):
+class CachingFilteredSource(Source):
     '''
-    Filter a `LocationStream`.  This uses a `TokenSource` internally, but
-    the actual implementation is general (TokenSource is useful because it
-    makes locations explicit).
-    '''
+    An alternative to `FilteredSource` that allows efficient retrieval of
+    the underlying stream at a location corresponding to a position in the
+    filtered stream.  Typically used via `Filter`.
     
-    def __init__(self, predicate, stream, factory=DEFAULT_STREAM_FACTORY):
-        self.__head = stream
-        self.__predicate = predicate
-        self.stream = factory(FilterSource(self.__predicate, stream))
+    This is necessary to avoid O(n^2) time when parsing chunks of data
+    with a filtered stream (without the cache, retrieving an offset in 
+    our linked-list style streams is O(n)).
+    '''
 
-    def match(self, stream):
+    def __init__(self, predicate, stream):
+        assert isinstance(stream, LocationStream)
+        # join is unused(?) but passed on to ContentStream
+        super(CachingFilteredSource, self).__init__(str(stream.source),
+                                                    stream.source.join)
+        self.__predicate = predicate
+        self.__stream = stream
+        self.__length = 0
+        self.__cache = []
+    
+    def __next__(self):
+        while self.__stream:
+            self.__cache.append(self.__stream)
+            item = self.__stream[0]
+            stream_before = self.__stream
+            self.__stream = self.__stream[1:]
+            if self.__predicate(item):
+                self.__length += 1
+                return (item, stream_before)
+        self.total_length = self.__length
+        return (None, None)
+
+    def location(self, offset, line, location_state):
+        '''
+        A tuple containing line number, line offset, character offset,
+        the line currently being processed, and a description of the source.
+        
+        location_state is the original stream.
+        '''
+        if location_state:
+            return location_state.location
+        else:
+            return (-1, -1, -1, None, None)
+        
+    def locate(self, stream):
         '''
         Find the first location in the original stream which, when filtered,
         would match the given stream.
         '''
         # start off with the matching location
-        index = stream.character_offset - self.__head.character_offset
+        index = stream.character_offset - self.__cache[0].character_offset
         # and then backtrack if immediately preceding items would have been
         # filtered
-        while index > 0 and not self.__predicate(self.__head[index-1]):
+        while index > 0 and not self.__predicate(self.__cache[index-1][0]):
             index -= 1
-        return self.__head[index:]
+        return self.__cache[index]
+        
+        
+
+class Filter(object):
+    '''
+    Filter a `LocationStream` using a `CachingFilteredSource`.  This consumes
+    memory proportional to the amount of data read from the filtered stream,
+    but allows efficient retrieval of the underlying stream at a location
+    equivalent to the filtered stream.
+    '''
+    
+    def __init__(self, predicate, stream, factory=DEFAULT_STREAM_FACTORY):
+        self.__source = CachingFilteredSource(predicate, stream)
+        self.__predicate = predicate
+        self.stream = factory(self.__source)
+
+    def locate(self, stream):
+        '''
+        Find the first location in the original stream which, when filtered,
+        would match the given stream.
+        '''
+        return self.__source.locate(stream)
