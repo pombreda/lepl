@@ -105,6 +105,12 @@ _SimpleStream = ABCMeta('_SimpleStream', (object, ), {})
 '''ABC used to identify streams.'''
 
 
+# pylint: disable-msg=E1002,E1001
+# (pylint bug?  this chains back to a new style abc)
+# pylint: disable-msg=W0232
+# defines only an interface
+# pylint: disable-msg=R0903
+# using __ methods
 class SimpleStream(_SimpleStream):
     '''
     The minimal interface that matchers expect to be implemented.
@@ -160,7 +166,9 @@ class SimpleStream(_SimpleStream):
     def __eq__(self, other):
         pass
     
-    
+
+# pylint: disable-msg=E1101
+# pylint unaware of ABCs
 SimpleStream.register(str)
 SimpleStream.register(list)
 
@@ -332,6 +340,8 @@ class StreamView(object):
         return '{0!r}[{1:d}:]'.format(self.__line, self.__offset)
         
     def __str__(self):
+        # pylint: disable-msg=W0702
+        # we want this to be robust
         try:
             return str(self.text)
         except:
@@ -362,21 +372,21 @@ class StreamView(object):
         '''
         The line number (one indexed) from the source.
         '''
-        return self.location()[0]
+        return self.location[0]
         
     @property
     def line_offset(self):
         '''
         The position within the current line (zero indexed).
         '''
-        return self.location()[1]
+        return self.location[1]
         
     @property
     def character_offset(self):
         '''
         The character offset (zero indexed) for the entire data.
         '''
-        return self.location()[2]
+        return self.location[2]
    
     @property
     def text(self):
@@ -439,7 +449,8 @@ class StreamFactory(_StreamFactory):
         (ie characters).
         '''
     
-    def null(self, stream):
+    @staticmethod
+    def null(stream):
         '''
         Return the underlying data with no modification.
         '''
@@ -583,6 +594,8 @@ class Source(_Source):
         the line currently being processed, and a description of the source.
         '''
     
+    # pylint: disable-msg=R0201
+    # optional interface
     def text(self, _offset, _line):
         '''
         Subclasses should override this to return the current line, 
@@ -597,8 +610,6 @@ class Source(_Source):
         return self.__description
  
  
-# pylint: disable-msg=E1002
-# (pylint bug?  this chains back to a new style abc)
 class LineSource(Source):
     '''
     Wrap a source of lines (like a file iterator), so that it provides
@@ -711,4 +722,71 @@ def list_join(lists):
 #    Present a list as a single line in an iteration.
 #    '''
 #    yield line
+
+
+class FilterSource(Source):
+    '''
+    Support for filters of `LocationStream` instances.  The location is
+    delegated to the underlying stream.
     
+    This returns a single item as a "line" - it's inefficient, but if you're
+    using this class at all, I hope it's only for small tasks.
+    '''
+
+    def __init__(self, predicate, stream):
+        assert isinstance(stream, LocationStream)
+        # join is unused(?) but passed on to ContentStream
+        super(FilterSource, self).__init__(str(stream.source),
+                                          stream.source.join)
+        self.__predicate = predicate
+        self.__stream = stream
+        self.__length = 0
+    
+    def __next__(self):
+        while self.__stream:
+            item = self.__stream[0]
+            stream_before = self.__stream
+            self.__stream = self.__stream[1:]
+            if self.__predicate(item):
+                self.__length += 1
+                return (item, stream_before)
+        self.total_length = self.__length
+        return (None, None)
+
+    def location(self, offset, line, location_state):
+        '''
+        A tuple containing line number, line offset, character offset,
+        the line currently being processed, and a description of the source.
+        
+        location_state is the original stream.
+        '''
+        if location_state:
+            return location_state.location
+        else:
+            return (-1, -1, -1, None, None)
+        
+
+class Filter(object):
+    '''
+    Filter a `LocationStream`.  This uses a `TokenSource` internally, but
+    the actual implementation is general (TokenSource is useful because it
+    makes locations explicit).
+    '''
+    
+    def __init__(self, predicate, stream, factory=DEFAULT_STREAM_FACTORY):
+        self.__head = stream
+        self.__predicate = predicate
+        self.stream = factory(FilterSource(self.__predicate, stream))
+
+    def match(self, stream):
+        '''
+        Find the first location in the original stream which, when filtered,
+        would match the given stream.
+        '''
+        # start off with the matching location
+        index = stream.character_offset - self.__head.character_offset
+        # and then backtrack if immediately preceding items would have been
+        # filtered
+        while index > 0 and not self.__predicate(self.__head[index-1]):
+            index -= 1
+        return self.__head[index:]

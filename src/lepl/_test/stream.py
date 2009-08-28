@@ -24,7 +24,7 @@ from random import choice
 from traceback import format_exc
 from unittest import TestCase
 
-from lepl.stream import SimpleStream, DEFAULT_STREAM_FACTORY
+from lepl.stream import SimpleStream, DEFAULT_STREAM_FACTORY, Filter
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324
@@ -231,4 +231,23 @@ class FromLinesTest(TestCase):
     def test_offset(self):
         self.get_tester().test_offset(with_len=False)
         self.get_tester().test_offset(with_len=True)
+
+
+class FilterTest(TestCase):
+    
+    def test_filter(self):
+        def consonant(x):
+            return x not in 'aeiou'
+        stream1 = DEFAULT_STREAM_FACTORY.from_string('abcdef\nghijklm\n')
+        filter = Filter(consonant, stream1)
+        stream2 = filter.stream
+        assert stream2[0:2] == 'bc', stream2[0:2]
+        assert stream2[0:].line_number == 1, stream2[0:].line_number
+        assert stream2[0:].line_offset == 1, stream2[0:].line_offset
+        assert stream2[0:12] == 'bcdf\nghjklm\n'
+        assert filter.match(stream2[0:])[0] == 'a', filter.match(stream2[0:])[0]
+        assert filter.match(stream2[1:])[0] == 'c', filter.match(stream2[1:])[0]
+        assert stream2[5:].line_number == 2, stream2[5:].line_number
+        assert stream2[5:].line_offset == 0, stream2[5:].line_offset
+        assert len(stream2) == 12
         

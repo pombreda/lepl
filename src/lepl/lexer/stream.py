@@ -100,6 +100,8 @@ class BaseDelegateSource(Source):
             return (-1, -1, -1, None, None)
         
         
+# pylint: disable-msg=E1002
+# (pylint bug?  this chains back to a new style abc)
 class TokenSource(BaseDelegateSource):
     '''
     The source of tokens sent to Token matchers.
