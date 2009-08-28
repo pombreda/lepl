@@ -22,7 +22,8 @@ The token streams.
 
 from logging import getLogger
 
-from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY, Source
+from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY, \
+    BaseDelegateSource
 
 
 def lexed_simple_stream(tokens, discard, error, stream):
@@ -79,27 +80,6 @@ def lexed_location_stream(tokens, discard, error, stream, adapter=None):
     return DEFAULT_STREAM_FACTORY(TokenSource(token_stream, stream))
 
 
-class BaseDelegateSource(Source):
-    '''
-    Support for sources that delegate location to other sources.  The location
-    state is a StreamView into the underlying source at the start of the
-    current line.
-    '''
-    
-    def location(self, offset, line, location_state):
-        '''
-        A tuple containing line number, line offset, character offset,
-        the line currently being processed, and a description of the source.
-        
-        location_state is the original stream.
-        '''
-        if location_state:
-            shifted = location_state[offset:]
-            return shifted.location
-        else:
-            return (-1, -1, -1, None, None)
-        
-        
 # pylint: disable-msg=E1002
 # (pylint bug?  this chains back to a new style abc)
 class TokenSource(BaseDelegateSource):

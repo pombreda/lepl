@@ -724,35 +724,13 @@ def list_join(lists):
 #    yield line
 
 
-class FilteredSource(Source):
+class BaseDelegateSource(Source):
     '''
-    Support for filters of `LocationStream` instances.  The location is
-    delegated to the underlying stream.
-    
-    This returns a single item as a "line" - it's inefficient, but if you're
-    using this class at all, I hope it's only for small tasks.
+    Support for sources that delegate location to other sources.  The location
+    state is a StreamView into the underlying source at the start of the
+    current line.
     '''
-
-    def __init__(self, predicate, stream):
-        assert isinstance(stream, LocationStream)
-        # join is unused(?) but passed on to ContentStream
-        super(FilteredSource, self).__init__(str(stream.source),
-                                             stream.source.join)
-        self.__predicate = predicate
-        self.__stream = stream
-        self.__length = 0
     
-    def __next__(self):
-        while self.__stream:
-            item = self.__stream[0]
-            stream_before = self.__stream
-            self.__stream = self.__stream[1:]
-            if self.__predicate(item):
-                self.__length += 1
-                return (item, stream_before)
-        self.total_length = self.__length
-        return (None, None)
-
     def location(self, offset, line, location_state):
         '''
         A tuple containing line number, line offset, character offset,
@@ -761,10 +739,68 @@ class FilteredSource(Source):
         location_state is the original stream.
         '''
         if location_state:
-            return location_state.location
+            shifted = location_state[offset:]
+            return shifted.location
         else:
             return (-1, -1, -1, None, None)
         
+        
+class BaseTransformedSource(BaseDelegateSource):
+    '''
+    Support for transformations of `LocationStream` instances.  The location is
+    delegated to the underlying stream.
+    
+    If the transform returns None, the item is discarded.
+    
+    This returns a single item as a "line" - we could optimise that?
+    '''
+
+    def __init__(self, transform, stream):
+        assert isinstance(stream, LocationStream)
+        # join is unused(?) but passed on to ContentStream
+        super(BaseTransformedSource, self).__init__(str(stream.source),
+                                                    stream.source.join)
+        self.__transform = transform
+        self.__stream = stream
+        self.__length = 0
+    
+    def __next__(self):
+        while self.__stream:
+            item = self.__stream[0]
+            stream_before = self.__stream
+            self.__stream = self.__stream[1:]
+            transformed = self.__transform(item)
+            if transformed is not None:
+                self.__length += 1
+                return (transformed, stream_before)
+        self.total_length = self.__length
+        return (None, None)
+        
+
+class TransformedSource(BaseTransformedSource):
+    '''
+    Transform a `LocationStream`.
+    '''
+
+    @staticmethod
+    def transformed_stream(transform, stream, factory=DEFAULT_STREAM_FACTORY):
+        '''
+        Generated a transformed stream.
+        '''
+        return factory(TransformedSource(transform, stream))
+        
+
+class FilteredSource(BaseTransformedSource):
+    '''
+    Filter a `LocationStream`.
+    '''
+
+    def __init__(self, predicate, stream):
+        assert isinstance(stream, LocationStream)
+        # join is unused(?) but passed on to ContentStream
+        super(FilteredSource, self).__init__(
+                lambda item: item if predicate(item) else None, stream)
+
     @staticmethod
     def filtered_stream(predicate, stream, factory=DEFAULT_STREAM_FACTORY):
         '''
@@ -773,7 +809,56 @@ class FilteredSource(Source):
         return factory(FilteredSource(predicate, stream))
         
 
-class CachingFilteredSource(Source):
+class CachingTransformedSource(BaseDelegateSource):
+    '''
+    An alternative to `TransformedSource` that allows efficient retrieval of
+    the underlying stream at a location corresponding to a position in the
+    transformed stream.  Typically used via `Filter`.
+    
+    This is necessary to avoid O(n^2) time when parsing chunks of data
+    with a transformed stream (without the cache, retrieving an offset in 
+    our linked-list style streams is O(n)).
+    '''
+
+    def __init__(self, transform, stream):
+        assert isinstance(stream, LocationStream)
+        # join is unused(?) but passed on to ContentStream
+        super(CachingTransformedSource, self).__init__(str(stream.source),
+                                                       stream.source.join)
+        self.__transform = transform
+        self.__stream = stream
+        self.__length = 0
+        self.__cache = []
+    
+    def __next__(self):
+        while self.__stream:
+            self.__cache.append(self.__stream)
+            item = self.__stream[0]
+            stream_before = self.__stream
+            self.__stream = self.__stream[1:]
+            transformed = self.__transform(item)
+            if transformed is not None:
+                self.__length += 1
+                return (transformed, stream_before)
+        self.total_length = self.__length
+        return (None, None)
+
+    def locate(self, stream):
+        '''
+        Find the first location in the original stream which, when filtered,
+        would match the given stream.
+        '''
+        # start off with the matching location
+        index = stream.character_offset - self.__cache[0].character_offset
+        # and then backtrack if immediately preceding items would have been
+        # filtered
+        while index > 0 and self.__transform(self.__cache[index-1][0]) is None:
+            index -= 1
+        return self.__cache[index]
+        
+        
+
+class CachingFilteredSource(CachingTransformedSource):
     '''
     An alternative to `FilteredSource` that allows efficient retrieval of
     the underlying stream at a location corresponding to a position in the
@@ -785,54 +870,30 @@ class CachingFilteredSource(Source):
     '''
 
     def __init__(self, predicate, stream):
-        assert isinstance(stream, LocationStream)
-        # join is unused(?) but passed on to ContentStream
-        super(CachingFilteredSource, self).__init__(str(stream.source),
-                                                    stream.source.join)
-        self.__predicate = predicate
-        self.__stream = stream
-        self.__length = 0
-        self.__cache = []
-    
-    def __next__(self):
-        while self.__stream:
-            self.__cache.append(self.__stream)
-            item = self.__stream[0]
-            stream_before = self.__stream
-            self.__stream = self.__stream[1:]
-            if self.__predicate(item):
-                self.__length += 1
-                return (item, stream_before)
-        self.total_length = self.__length
-        return (None, None)
+        super(CachingFilteredSource, self).__init__(
+                lambda item: item if predicate(item) else None, stream)
+        
 
-    def location(self, offset, line, location_state):
-        '''
-        A tuple containing line number, line offset, character offset,
-        the line currently being processed, and a description of the source.
-        
-        location_state is the original stream.
-        '''
-        if location_state:
-            return location_state.location
-        else:
-            return (-1, -1, -1, None, None)
-        
+class Transform(object):
+    '''
+    Transform a `LocationStream` using a `CachingTransformedSource`.  This 
+    consumes memory proportional to the amount of data read from the filtered 
+    stream, but allows efficient retrieval of the underlying stream at a 
+    location equivalent to the filtered stream.
+    '''
+    
+    def __init__(self, transform, stream, factory=DEFAULT_STREAM_FACTORY):
+        self.__source = CachingTransformedSource(transform, stream)
+        self.stream = factory(self.__source)
+
     def locate(self, stream):
         '''
         Find the first location in the original stream which, when filtered,
         would match the given stream.
         '''
-        # start off with the matching location
-        index = stream.character_offset - self.__cache[0].character_offset
-        # and then backtrack if immediately preceding items would have been
-        # filtered
-        while index > 0 and not self.__predicate(self.__cache[index-1][0]):
-            index -= 1
-        return self.__cache[index]
-        
-        
-
+        return self.__source.locate(stream)
+    
+    
 class Filter(object):
     '''
     Filter a `LocationStream` using a `CachingFilteredSource`.  This consumes
@@ -843,7 +904,6 @@ class Filter(object):
     
     def __init__(self, predicate, stream, factory=DEFAULT_STREAM_FACTORY):
         self.__source = CachingFilteredSource(predicate, stream)
-        self.__predicate = predicate
         self.stream = factory(self.__source)
 
     def locate(self, stream):
