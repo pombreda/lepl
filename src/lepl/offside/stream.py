@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -28,45 +28,75 @@ from lepl.stream import DefaultStreamFactory, LineSource, sample
 
 
 class LineAwareStreamFactory(DefaultStreamFactory):
+    '''
+    Generate line-aware streams for various input types.
+    '''
     
     def __init__(self, alphabet):
         self.alphabet = alphabet
 
     def from_path(self, path):
+        '''
+        Generate a stream from a file at a given path.
+        '''
         return self(LineAwareSource(self.alphabet, 
                                     open(path, 'rt', buffering=1),
                                     path))
     
     def from_string(self, text):
+        '''
+        Generate a stream from a string.
+        '''
         return self(LineAwareSource(self.alphabet, StringIO(text), 
                                     sample('str: ', repr(text))))
     
     def from_lines(self, lines, source=None, join_=''.join):
+        '''
+        Generate a stream from a set of lines.
+        '''
         if source is None:
             source = sample('lines: ', repr(lines))
         return self(LineAwareSource(self.alphabet, lines, source, join_))
     
     def from_items(self, items, source=None, line_length=80):
+        '''
+        Lists of items are not supported.
+        '''
         raise LineAwareException('Only line-based sources are supported')
     
     def from_file(self, file_):
+        '''
+        Generate a stream from a file.
+        '''
         return self(LineAwareSource(self.alphabet, file_, 
                                     getattr(file_, 'name', '<file>')) )
 
-    def null(self, stream):
+    @staticmethod
+    def null(stream):
+        '''
+        Reject simple streams.
+        '''
         raise LineAwareException('Only line-based sources are supported')
 
 
 def top_and_tail(alphabet, lines):
-    
+    '''
+    Create a sequence of lines that add SOL and EOL markers to the original
+    text.
+    '''
     def extend(line):
+        '''
+        Add the markers.
+        '''
         return [alphabet.min] + list(line) + [alphabet.max]
-    
-    for line in lines:
-        yield extend(line)
+    # pylint: disable-msg=W0141
+    return map(extend, lines)
         
         
 def join(lines):
+    '''
+    A join that drops the SOL and EOL tokens from the list of characters.
+    '''
     # pylint: disable-msg=W0141
     return ''.join([''.join(filter(lambda x: not isinstance(x, Token), line))
                     for line in lines])
@@ -75,6 +105,10 @@ def join(lines):
 # pylint: disable-msg=E1002
 # pylint can't find ABCs
 class LineAwareSource(LineSource):
+    '''
+    A source to generate `LocationStream` instances from text that contains
+    SOL and EOL tokens.
+    '''
     
     def __init__(self, alphabet, lines, description=None, join_=join):
         super(LineAwareSource, self).__init__(
@@ -83,11 +117,17 @@ class LineAwareSource(LineSource):
                         join_)
     
     def location(self, offset, line, location_state):
+        '''
+        Correct the location for the initial SOL character.
+        '''
         (character_count, line_count) = location_state
         return (line_count, offset - 1, character_count + offset - 1, 
                 line, str(self))
         
     def text(self, offset, line):
+        '''
+        Join characters together as a line of text.
+        '''
         if line:
             return self.join(line[offset:])
         else:

@@ -22,7 +22,8 @@ Initial exploration of cairo.
 
 import cairo
 
-from lepl.cairo.context import cset, WHITE, BLUE, BLACK
+from lepl.cairo.context import cset
+from lepl.cairo.colour import WHITE, BLUE, BLACK
 
     
 def spiral():

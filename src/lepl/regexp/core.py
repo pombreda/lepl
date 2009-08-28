@@ -722,6 +722,8 @@ class DfaGraph(BaseGraph):
         return ', '.join(lines)
 
 
+# pylint: disable-msg=R0903
+# this is complex enough
 class NfaToDfa(LogMixin):
     '''
     Convert a NFA graph to a DFA graph (uses the usual superset approach but
@@ -770,7 +772,8 @@ class NfaToDfa(LogMixin):
                 fragments.append(edge, (nodes, list(terminals)))
         return fragments
     
-    def __group_fragments(self, fragments):
+    @staticmethod
+    def __group_fragments(fragments):
         '''
         For each fragment, we for the complete set of possible destinations
         and associated terminals.  Since it is possible that more than one 

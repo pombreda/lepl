@@ -44,6 +44,8 @@ class ColourTest(TestCase):
         black = Colour(-1, -1, -1)
         assert black.rgb() == (0, 0, 0)
     
+    # pylint: disable-msg=E0001
+    # custom operators
     def test_multiplication(self):
         assert RED * 0.5 == Colour(0.5, 0, 0, 1)
         assert GREEN * (1, 0.5) == Colour(0, 0.5, 0, 0.5)

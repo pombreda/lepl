@@ -36,6 +36,8 @@ def _replace(index):
     return setter
 
 
+# pylint: disable-msg=E1002
+# it is new=style
 class Colour(namedtuple('BaseColour', 'r g b a')):
     
     def __new__(cls, r, g, b, a=1.0):
