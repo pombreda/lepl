@@ -27,20 +27,39 @@ from lepl.offside.regexp import LineAwareAlphabet
 from lepl.offside.support import OffsideException
 
 
-# pylint: disable-msg=R0901, R0904, R0913
+DEFAULT_TABSIZE = 8
+
+
+# pylint: disable-msg=R0901, R0904, R0913, E1101
+# lepl conventions
 class Indentation(BaseToken):
     '''
     This token is identified by its class.
     '''
     
     def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
-                 compiled=False):
-        self.regexp = '^[ \t]*'
+                 compiled=False, blank=False):
         if id_ is None:
             id_ = Indentation
         super(Indentation, self).__init__(content=content, id=id_, 
                                           alphabet=alphabet, complete=complete, 
                                           compiled=compiled)
+        self._karg(blank=blank)
+        self.regexp = '^[ \t]*'
+                
+        
+class BlankIndentation(BaseToken):
+    '''
+    Subclass of `Indentation` that sets blank=True (so the appropriate
+    token can be generated automatically)
+    '''
+    
+    def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
+                 compiled=False, blank=True, tabsize=None):
+        super(BlankIndentation, self).__init__(
+                content=content, id_=id_, alphabet=alphabet, complete=complete,
+                compiled=compiled, blank=blank)
+        self.regexp = '^[ \t]*$'
 
 
 def offside_rewriter(alphabet, discard=None, error=None, extra_tokens=None, 
@@ -54,5 +73,5 @@ def offside_rewriter(alphabet, discard=None, error=None, extra_tokens=None,
         raise OffsideException('Alphabet must be line-aware.')
     if not extra_tokens:
         extra_tokens = set()
-    extra_tokens.add(Indentation())
+    extra_tokens.update([Indentation(), BlankIndentation()])
     return lexer_rewriter(alphabet, discard, error, extra_tokens, adapter)

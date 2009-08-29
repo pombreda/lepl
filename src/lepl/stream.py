@@ -750,9 +750,8 @@ class BaseTransformedSource(BaseDelegateSource):
     Support for transformations of `LocationStream` instances.  The location is
     delegated to the underlying stream.
     
-    If the transform returns None, the item is discarded.
-    
-    This returns a single item as a "line" - we could optimise that?
+    Each item is transformed into a list of new tokens (all associated with 
+    the same location).  To completely filter an item, return the empty list.
     '''
 
     def __init__(self, transform, stream):
@@ -763,16 +762,19 @@ class BaseTransformedSource(BaseDelegateSource):
         self.__transform = transform
         self.__stream = stream
         self.__length = 0
+        self.__state = (None, [])
     
     def __next__(self):
-        while self.__stream:
-            item = self.__stream[0]
+        stream_before, transformed = self.__state
+        while not transformed and self.__stream:
             stream_before = self.__stream
+            transformed = self.__transform(self.__stream[0])
             self.__stream = self.__stream[1:]
-            transformed = self.__transform(item)
-            if transformed is not None:
-                self.__length += 1
-                return (transformed, stream_before)
+        if transformed:
+            item = transformed[0]
+            self.__state = (stream_before, transformed[1:])
+            self.__length += 1
+            return (item, stream_before)
         self.total_length = self.__length
         return (None, None)
         
@@ -799,7 +801,7 @@ class FilteredSource(BaseTransformedSource):
         assert isinstance(stream, LocationStream)
         # join is unused(?) but passed on to ContentStream
         super(FilteredSource, self).__init__(
-                lambda item: item if predicate(item) else None, stream)
+                lambda item: [item] if predicate(item) else [], stream)
 
     @staticmethod
     def filtered_stream(predicate, stream, factory=DEFAULT_STREAM_FACTORY):
@@ -817,7 +819,8 @@ class CachingTransformedSource(BaseDelegateSource):
     
     This is necessary to avoid O(n^2) time when parsing chunks of data
     with a transformed stream (without the cache, retrieving an offset in 
-    our linked-list style streams is O(n)).
+    our linked-list style streams is O(n)).  However it is expensive in
+    terms of memory consumed.
     '''
 
     def __init__(self, transform, stream):
@@ -828,18 +831,42 @@ class CachingTransformedSource(BaseDelegateSource):
         self.__transform = transform
         self.__stream = stream
         self.__length = 0
-        self.__cache = []
+        self.__state = (None, [])
+        # map from character offset to underlying stream 
+        self.__lookup = {}
+        self.__earliest_possible_source = None
     
     def __next__(self):
-        while self.__stream:
-            self.__cache.append(self.__stream)
-            item = self.__stream[0]
+        '''
+        This is the same algorithm as `BaseTranformedSource`, unrolling a
+        possibly expanded list of transformed items.  However, it is 
+        complicated by the need to cache the result for `locate` - this
+        is conservative, in that if an item is generated from the stream
+        at a certain point, but earlier parts of the stream generated no
+        items, then we use the earlier part of the stream.  This approach
+        makes sense with filters because typically a filter is only valid
+        in the region when it is used, and we are checking the stream after
+        the region has finished, so any final discarded items were likely
+        discarded incorrectly.  I think.
+        '''
+        stream_before, transformed = self.__state
+        while not transformed and self.__stream:
             stream_before = self.__stream
+            if self.__earliest_possible_source is None:
+                self.__earliest_possible_source = stream_before
+            transformed = self.__transform(self.__stream[0])
             self.__stream = self.__stream[1:]
-            transformed = self.__transform(item)
-            if transformed is not None:
-                self.__length += 1
-                return (transformed, stream_before)
+        if transformed:
+            item = transformed[0]
+            transformed = transformed[1:]
+            self.__state = (stream_before, transformed)
+            self.__length += 1
+            index = stream_before.character_offset
+            if index not in self.__lookup:
+                self.__lookup[index] = self.__earliest_possible_source
+            if not transformed:
+                self.__earliest_possible_source = None
+            return (item, stream_before)
         self.total_length = self.__length
         return (None, None)
 
@@ -848,14 +875,7 @@ class CachingTransformedSource(BaseDelegateSource):
         Find the first location in the original stream which, when filtered,
         would match the given stream.
         '''
-        # start off with the matching location
-        index = stream.character_offset - self.__cache[0].character_offset
-        # and then backtrack if immediately preceding items would have been
-        # filtered
-        while index > 0 and self.__transform(self.__cache[index-1][0]) is None:
-            index -= 1
-        return self.__cache[index]
-        
+        return self.__lookup[stream.character_offset]
         
 
 class CachingFilteredSource(CachingTransformedSource):
@@ -871,7 +891,7 @@ class CachingFilteredSource(CachingTransformedSource):
 
     def __init__(self, predicate, stream):
         super(CachingFilteredSource, self).__init__(
-                lambda item: item if predicate(item) else None, stream)
+                lambda item: [item] if predicate(item) else [], stream)
         
 
 class Transform(object):
