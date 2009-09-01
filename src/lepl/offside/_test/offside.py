@@ -17,41 +17,41 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for indentation.
+Tests for offside.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.functions import Word, Letter
-from lepl.offside.config import IndentationConfiguration
+from lepl.offside.config import OffsideConfiguration
 from lepl.offside.lexer import Indentation, Eol
 
 
 # pylint: disable-msg=R0201
 # unittest convention
-class IndentationTest(TestCase):
+class OffsideTest(TestCase):
     '''
-    Test the `Indentation` token.
+    Like the indentation test, but check that spaces replaced with a count.
     '''
     
     def test_indentation(self):
         '''
         Test simple matches against leading spaces.
         '''
-        #basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         text = '''
-left
-    four'''
+ onespace
+ \tspaceandtab'''
         word = Token(Word(Letter()))
         indent = Indentation()
         line1 = indent('') + Eol()
-        line2 = indent('') & word('left') + Eol()
-        line3 = indent('    ') & word('four') + Eol()
+        line2 = indent(' ') & word('onespace') + Eol()
+        line3 = indent('     ') & word('spaceandtab') + Eol()
         parser = (line1 & line2 & line3).string_parser(
-                                        config=IndentationConfiguration())
+                            config=OffsideConfiguration(tabsize=4))
         result = parser(text)
-        assert result == ['', '', 'left', '    ', 'four'], result
+        assert result == ['', ' ', 'onespace', '     ', 'spaceandtab'], result
         
         

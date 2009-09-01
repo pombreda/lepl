@@ -50,36 +50,6 @@ def lexed_simple_stream(tokens, discard, error, stream):
     return DEFAULT_STREAM_FACTORY.from_items(generator())
 
 
-def lexed_location_stream(tokens, discard, error, stream, adapter=None):
-    '''
-    Given a location stream, create a location stream of regexp matches.
-    '''
-    log = getLogger('lepl.lexer.stream.lexed_location_stream')
-    def generator(stream_before):
-        '''
-        This creates the sequence of tokens returned by the stream.
-        '''
-        try:
-            while stream_before:
-                try:
-                    (terminals, size, stream_after) = \
-                            tokens.size_match(stream_before)
-                    # stream_before here to give correct location
-                    log.debug('Token: {0!r} {1!r}'.format(terminals, size))
-                    yield (terminals, size, stream_before)
-                    stream_before = stream_after
-                except TypeError:
-                    (terminals, size, stream_before) = \
-                            discard.size_match(stream_before)
-                    log.debug('Space: {0!r} {1!r}'.format(terminals, size))
-        except TypeError:
-            raise error(stream_before)
-    token_stream = generator(stream)
-    if adapter:
-        token_stream = adapter(token_stream)
-    return DEFAULT_STREAM_FACTORY(TokenSource(token_stream, stream))
-
-
 # pylint: disable-msg=E1002
 # (pylint bug?  this chains back to a new style abc)
 class TokenSource(BaseDelegateSource):
@@ -118,6 +88,36 @@ class TokenSource(BaseDelegateSource):
             self.total_length = self.__token_count
             return (None, None)
         
+
+def lexed_location_stream(tokens, discard, error, stream, source=None):
+    '''
+    Given a location stream, create a location stream of regexp matches.
+    '''
+    log = getLogger('lepl.lexer.stream.lexed_location_stream')
+    if source is None:
+        source = TokenSource
+    def generator(stream_before):
+        '''
+        This creates the sequence of tokens returned by the stream.
+        '''
+        try:
+            while stream_before:
+                try:
+                    (terminals, size, stream_after) = \
+                            tokens.size_match(stream_before)
+                    # stream_before here to give correct location
+                    log.debug('Token: {0!r} {1!r}'.format(terminals, size))
+                    yield (terminals, size, stream_before)
+                    stream_before = stream_after
+                except TypeError:
+                    (terminals, size, stream_before) = \
+                            discard.size_match(stream_before)
+                    log.debug('Space: {0!r} {1!r}'.format(terminals, size))
+        except TypeError:
+            raise error(stream_before)
+    token_stream = generator(stream)
+    return DEFAULT_STREAM_FACTORY(source(token_stream, stream))
+
 
 class ContentSource(BaseDelegateSource):
     '''

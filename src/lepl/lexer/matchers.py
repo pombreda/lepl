@@ -309,7 +309,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
     '''
     
     def __init__(self, matcher, tokens, alphabet, discard, 
-                  error=None, t_regexp=None, s_regexp=None, adapter=None):
+                  error=None, t_regexp=None, s_regexp=None, source=None):
         '''
         matcher is the head of the original matcher graph, which will be called
         with a tokenised stream. 
@@ -327,14 +327,14 @@ class Lexer(NamespaceMixin, BaseMatcher):
         t_regexp and s_regexp are internally compiled state, use in cloning,
         and should not be provided by non-cloning callers.
         
-        adapter is an optional generator that can transform the token stream.
+        source is the source used to generate the final stream.
         '''
         super(Lexer, self).__init__(TOKENS, TokenNamespace)
         if t_regexp is None:
             for token in tokens:
                 token.compile(alphabet)
             t_regexp = Regexp.multiple(alphabet, 
-                                       [(t.id, t.regexp) for t in tokens]).dfa()
+                                [(t.id_, t.regexp) for t in tokens]).dfa()
         if s_regexp is None:
             s_regexp = Regexp.single(alphabet, discard).dfa()
         error = RuntimeLexerError if error is None else error
@@ -345,7 +345,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
         self._karg(error=error)
         self._karg(t_regexp=t_regexp)
         self._karg(s_regexp=s_regexp)
-        self._karg(adapter=adapter)
+        self._karg(source=source)
         
     def token_for_id(self, id_):
         '''
@@ -366,11 +366,11 @@ class Lexer(NamespaceMixin, BaseMatcher):
         '''
         if isinstance(stream, LocationStream):
             tokens = lexed_location_stream(self.t_regexp, self.s_regexp,
-                                           self.error, stream, self.adapter)
+                                           self.error, stream, self.source)
         else:
             # might assert simple stream here?
-            if self.adapter:
-                raise RuntimeLexerError('Adapter specified for simple stream')
+            if self.source:
+                raise RuntimeLexerError('Source specified for simple stream')
             tokens = lexed_simple_stream(self.t_regexp, self.s_regexp, 
                                          self.error, stream)
         # pylint: disable-msg=W0212

@@ -17,61 +17,46 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-The `Indentation` token and support.
+Tokens for indentation.
 '''
 
 
 from lepl.lexer.matchers import BaseToken
-from lepl.lexer.rewriters import lexer_rewriter
-from lepl.offside.regexp import LineAwareAlphabet
-from lepl.offside.support import OffsideException
-
-
-DEFAULT_TABSIZE = 8
 
 
 # pylint: disable-msg=R0901, R0904, R0913, E1101
 # lepl conventions
 class Indentation(BaseToken):
     '''
+    Match an indentation (start of line marker plus spaces and tabs).
+    
     This token is identified by its class.
     '''
     
     def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
-                 compiled=False, blank=False):
+                 compiled=False):
         if id_ is None:
             id_ = Indentation
-        super(Indentation, self).__init__(content=content, id=id_, 
+        super(Indentation, self).__init__(content=content, id_=id_, 
                                           alphabet=alphabet, complete=complete, 
                                           compiled=compiled)
-        self._karg(blank=blank)
         self.regexp = '^[ \t]*'
                 
         
-class BlankIndentation(BaseToken):
+class Eol(BaseToken):
     '''
-    Subclass of `Indentation` that sets blank=True (so the appropriate
-    token can be generated automatically)
+    Match the end of line marker.
+    
+    This token is identified by its class.
     '''
     
     def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
-                 compiled=False, blank=True, tabsize=None):
-        super(BlankIndentation, self).__init__(
-                content=content, id_=id_, alphabet=alphabet, complete=complete,
-                compiled=compiled, blank=blank)
-        self.regexp = '^[ \t]*$'
+                 compiled=False):
+        if id_ is None:
+            id_ = Eol
+        super(Eol, self).__init__(content=content, id_=id_, 
+                                  alphabet=alphabet, complete=complete, 
+                                  compiled=compiled)
+        self.regexp = '$'
 
 
-def offside_rewriter(alphabet, discard=None, error=None, extra_tokens=None, 
-                     adapter=None):
-    '''
-    Rewrite a matcher so that indentation tokens are present.
-    '''
-    if discard is None:
-        discard = '[$ \t\r\n]'
-    if not isinstance(alphabet, LineAwareAlphabet):
-        raise OffsideException('Alphabet must be line-aware.')
-    if not extra_tokens:
-        extra_tokens = set()
-    extra_tokens.update([Indentation(), BlankIndentation()])
-    return lexer_rewriter(alphabet, discard, error, extra_tokens, adapter)

@@ -77,7 +77,7 @@ def assert_not_token(node, visited):
 
 
 def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None,
-                   extra_tokens=None, adapter=None):
+                   extra_tokens=None, source=None):
     '''
     This is required when using Tokens.  It does the following:
     - Find all tokens in the matcher graph
@@ -97,7 +97,7 @@ def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None,
     
     extra_tokens are added to those found by analysing the grammar.
     
-    adapter is a generator that can process the token stream.
+    source is the source used to generate the final stream.
     '''
 
     log = getLogger('lepl.lexer.rewriters.lexer_rewriter')
@@ -112,7 +112,8 @@ def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None,
         if extra_tokens:
             tokens.update(extra_tokens)
         if tokens:
-            return Lexer(matcher, tokens, alphabet, discard, error, adapter)
+            return Lexer(matcher, tokens, alphabet, discard, 
+                         error=error, source=source)
         else:
             log.info('Lexer rewriter used, but no tokens found.')
             return matcher

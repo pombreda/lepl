@@ -22,8 +22,10 @@ A stream that adds tokens at the start and end of lines.
 
 from io import StringIO
 
+from lepl.lexer.stream import TokenSource
+from lepl.offside.lexer import Indentation
 from lepl.offside.regexp import Token
-from lepl.offside.support import LineAwareException
+from lepl.offside.support import LineAwareException, OffsideException
 from lepl.stream import DefaultStreamFactory, LineSource, sample
 
 
@@ -132,4 +134,42 @@ class LineAwareSource(LineSource):
             return self.join(line[offset:])
         else:
             return self.join([])
-       
+
+
+class OffsideSource(TokenSource):
+    '''
+    Adapt `TokenSource` to replace tabs with spaces, if needed.
+    '''
+    
+    def __init__(self, tokens, stream, tabsize):
+        super(OffsideSource, self).__init__(tokens, stream)
+        self.__tab = ''.join([' '] * tabsize)
+    
+    def __next__(self):
+        '''
+        Provide (terminals, text) values (used by matchers) along with
+        the original stream as location_state.
+        
+        Note that this is infinite - it is the StreamView that detects when
+        the Line is empty and terminates any processing by the user.
+        '''
+        try:
+            ([(terminals, text)], stream) = \
+                    super(OffsideSource, self).__next__()
+            if terminals and Indentation in terminals:
+                if not len(terminals) == 1:
+                    raise OffsideException('More than one token matching ^')
+                elif '\t' in text:
+                    text = ''.join([char if char == ' ' else self.__tab
+                                    for char in text])
+            return ([(terminals, text)], stream)
+        except TypeError:
+            return (None, None)
+        
+    @staticmethod
+    def factory(tabsize):
+        '''
+        Return a "constructor" that matches `TokenSource`.
+        '''
+        return lambda tokens, stream: OffsideSource(tokens, stream, tabsize)
+
