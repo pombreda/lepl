@@ -30,8 +30,9 @@ from lepl.error import syntax_error_kargs
 from lepl.functions import Add, Apply, Drop, KApply, Repeat, Map
 from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream, \
     ContentSource, TokenSource
+from lepl.error import raise_error
 from lepl.matchers import OperatorMatcher, BaseMatcher, coerce_, Any, \
-    Literal, Lookahead, Regexp, And, Or, raise_error, First
+    Literal, Lookahead, Regexp, And, Or, First
 from lepl.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
     KARGS, RAISE, REPEAT, FIRST, MAP
 from lepl.parser import tagged

@@ -56,17 +56,19 @@ class DelayedClone(Visitor):
     def __init__(self, clone_=clone):
         super(DelayedClone, self).__init__()
         self._clone = clone_
-        self._delayeds = {}
         self._visited = {}
         self._node = None
     
-    def loop(self, _node):
+    def loop(self, node):
         '''
-        This is called for nodes that are arguments to Delayed.  Since we
-        do not know those values yet, we return None.  We will fix the Delayed
-        instances later.
+        This is called for nodes that are involved in cycles when they are
+        needed as arguments but have not themselves been cloned.
         '''
-        return None
+        # delayed import to avoid dependency loops
+        from lepl.matchers import Delayed
+        if node not in self._visited:
+            self._visited[node] = Delayed()
+        return self._visited[node]
     
     def node(self, node):
         '''
@@ -80,22 +82,12 @@ class DelayedClone(Visitor):
         '''
         # delayed import to avoid dependency loops
         from lepl.matchers import Delayed
-        if isinstance(self._node, Delayed):
-            copy = self._clone(self._node, args, kargs)
-            if self._node in self._delayeds:
-                # we already created a replacement for this node, but it's
-                # matcher may contain None (from loop), so fix it
-                # up and return it.
-                self._delayeds[self._node].matcher = copy.matcher
-                copy = self._delayeds[self._node]
-            else:
-                # otherwise, store this version for future use
-                self._delayeds[self._node] = copy
-        else:
-            if self._node not in self._visited:
-                self._visited[self._node] = self._clone(self._node, args, kargs)
-            copy = self._visited[self._node]
-        return copy
+        if self._node not in self._visited:
+            self._visited[self._node] = self._clone(self._node, args, kargs)
+        elif isinstance(self._visited[self._node], Delayed) and \
+                not self._visited[self._node].matcher:
+            self._visited[self._node] += self._clone(self._node, args, kargs)
+        return self._visited[self._node]
     
     def leaf(self, value):
         '''

@@ -64,6 +64,8 @@ POSTORDER = BACKWARD | NONTREE
 PREORDER = FORWARD | NONTREE
 
 
+# pylint: disable-msg=R0911
+# many yields appropriate here
 def dfs_edges(node, type_):
     '''
     Iterative DFS, based on http://www.ics.uci.edu/~eppstein/PADS/DFS.py
@@ -179,6 +181,8 @@ def loops(node, type_):
                         known.add(child)
 
 
+# pylint: disable-msg=R0903
+# interface
 class ConstructorGraphNode(object):
     '''
     An interface that provides information on constructor arguments.
@@ -197,6 +201,8 @@ class ConstructorGraphNode(object):
     constructor arguments during depth-first postorder traversal.
     '''
 
+    # pylint: disable-msg=R0201
+    # interface
     def _constructor_args(self):
         '''
         Regenerate the constructor arguments (returns (args, kargs)).
@@ -347,6 +353,12 @@ class Visitor(object):
         '''
         pass
     
+    def postprocess(self, result):
+        '''
+        Called after walking, passed the match to the initial node.
+        '''
+        return result
+
 
 class ConstructorWalker(object):
     '''
@@ -373,7 +385,7 @@ class ConstructorWalker(object):
             (args, kargs) = self.__arguments(node, visitor, results)
             # pylint: disable-msg=W0142
             results[node] = visitor.constructor(*args, **kargs)
-        return results[self.__root]
+        return visitor.postprocess(results[self.__root])
     
     def __arguments(self, node, visitor, results):
         '''
@@ -575,6 +587,8 @@ class ConstructorStr(Visitor):
         '''
         Try all on one line.
         '''
+        if start == 0:
+            raise _LineOverflow()
         (indent, text) = lines[start-1]
         size = indent + len(text) 
         for (_, extra) in lines[start:stop]:
@@ -586,7 +600,8 @@ class ConstructorStr(Visitor):
         del lines[start:stop]
         return (start-1, indent)
 
-    def __format(self, lines):
+    @staticmethod
+    def __format(lines):
         '''
         Join lines together, given the indent.
         '''

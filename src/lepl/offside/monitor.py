@@ -22,6 +22,7 @@ Support the stack-scoped tracking of indentation level.
 
 
 from lepl.monitor import ActiveMonitor
+from lepl.offside.support import OffsideException
 
 
 class IndentationMonitor(ActiveMonitor):
@@ -32,5 +33,26 @@ class IndentationMonitor(ActiveMonitor):
     
     def __init__(self):
         super(IndentationMonitor, self).__init__()
-        self.indent = 0
+        self.__stack = [0]
         
+    def push_level(self, level):
+        '''
+        Add a new indentation level.
+        '''
+        self.__stack.append(level)
+        
+    def pop_level(self):
+        '''
+        Drop one level.
+        '''
+        self.__stack.pop()
+        if not self.__stack:
+            raise OffsideException('Closed an unopened indentation.') 
+        
+    @property
+    def indentation(self):
+        '''
+        The current indentation value (number of spaces).
+        '''
+        return self.__stack[-1]
+    

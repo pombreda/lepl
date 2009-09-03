@@ -23,6 +23,7 @@ Pre-built configurations for using the package in several standard ways.
 
 from lepl.config import Configuration
 from lepl.lexer.matchers import BaseToken
+from lepl.offside.matchers import DEFAULT_TABSIZE, DEFAULT_POLICY, Block
 from lepl.offside.regexp import LineAwareAlphabet
 from lepl.offside.rewriters import indent_rewriter
 from lepl.offside.stream import LineAwareStreamFactory, OffsideSource
@@ -79,14 +80,6 @@ class IndentationConfiguration(Configuration):
                                     stream_factory=stream_factory)
 
 
-# pylint: disable-msg=W0105
-# epydoc convention
-DEFAULT_TABSIZE = 8
-'''
-The default number of spaces for a tab.
-'''
-
-
 class OffsideConfiguration(Configuration):
     '''
     Configure the system so that a given alphabet is extended to be
@@ -98,7 +91,7 @@ class OffsideConfiguration(Configuration):
     
     def __init__(self, rewriters=None, monitors=None, alphabet=None,
                  discard=None, error=None, extra_tokens=None,
-                 tabsize=DEFAULT_TABSIZE):
+                 tabsize=DEFAULT_TABSIZE, policy=DEFAULT_POLICY):
         if rewriters is None:
             rewriters = []
         if alphabet is None:
@@ -106,6 +99,7 @@ class OffsideConfiguration(Configuration):
         alphabet = LineAwareAlphabet(alphabet)
         rewriters.extend([fix_arguments(BaseRegexp, alphabet=alphabet),
                           fix_arguments(BaseToken, alphabet=alphabet),
+                          fix_arguments(Block, policy=policy),
                           indent_rewriter(alphabet, discard=discard, 
                                     error=error, extra_tokens=extra_tokens, 
                                     source=OffsideSource.factory(tabsize))])

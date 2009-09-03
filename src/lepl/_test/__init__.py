@@ -52,7 +52,7 @@ def all():
     use the file system (since code may be in a zip file), and keeps the
     number of required imports to a minimum.
     '''
-#    basicConfig(level=DEBUG)
+    #basicConfig(level=DEBUG)
     log = getLogger('lepl._test.all.all')
     suite = TestSuite()
     loader = TestLoader()

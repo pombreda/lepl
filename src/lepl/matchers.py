@@ -40,13 +40,14 @@ For more background, please see the `manual <../index.html>`_.
 # (consistent interfaces)
 # pylint: disable-msg=E1101
 # (_args create attributes)
+# pylint: disable-msg=R0901, R0904, W0142
+# lepl conventions
 
 from abc import ABCMeta
 from collections import deque
 from re import compile as compile_
 
 from lepl.config import Configuration
-from lepl.error import raise_error
 from lepl.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     ConstructorStr, GraphStr
 from lepl.manager import _GeneratorManager
@@ -54,7 +55,7 @@ from lepl.node import Node
 from lepl.operators import OperatorMixin, OPERATORS, DefaultNamespace, Matcher
 from lepl.parser import make_parser, make_matcher, tagged
 from lepl.trace import _TraceResults
-from lepl.support import assert_type, lmap, LogMixin
+from lepl.support import lmap, LogMixin
 
 
 # pylint: disable-msg=W0105
@@ -97,7 +98,7 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
 
     def __str__(self):
         visitor = ConstructorStr()
-        return visitor.postprocess(self.postorder(visitor, Matcher))
+        return self.postorder(visitor, Matcher)
     
     def __repr__(self):
         return '<%s>' % self.__class__.__name__
@@ -107,7 +108,7 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         An ASCII tree for display.
         '''
         visitor = GraphStr()
-        return visitor.postprocess(self.postorder(visitor))
+        return self.postorder(visitor)
     
     def file_parser(self, config=None, **kargs):
         '''
@@ -373,7 +374,8 @@ class _BaseSearch(OperatorMatcher):
         self._arg(stop=stop)
         self._karg(rest=coerce_(first if rest is None else rest))
         
-    def _cleanup(self, queue):
+    @staticmethod
+    def _cleanup(queue):
         '''
         Utility called by subclasses.
         '''
@@ -589,7 +591,8 @@ class First(_BaseCombiner):
                     matched = True
             except StopIteration:
                 pass
-            if matched: break
+            if matched:
+                break
             
 
 class Any(OperatorMatcher):
@@ -683,6 +686,8 @@ class Empty(OperatorMatcher):
         if name:
             self.tag(name)
     
+    # pylint: disable-msg=R0201
+    # keep things consistent for future subclasses
     @tagged
     def _match(self, stream):
         '''
@@ -773,6 +778,9 @@ class Transform(Transformable):
             pass
         
     def compose(self, transform):
+        '''
+        Create a new Transform that includes the extra processing. 
+        '''
         return Transform(self.matcher, 
                          self.function.compose(transform.function))
 
@@ -806,7 +814,7 @@ class Regexp(OperatorMatcher):
         '''
         try:
             match = self.__pattern.match(stream.text)
-        except: # no text method
+        except AttributeError: # no text method
             match = self.__pattern.match(stream)
         if match:
             eaten = len(match.group())
@@ -822,12 +830,15 @@ class Delayed(OperatorMatcher):
     matcher must be assigned via '+='.
     '''
     
+    __count = 0 # used to order instances by time when += called
+    
     def __init__(self, matcher=None):
         '''
         Introduce the matcher.  It can be defined later with '+='
         '''
         super(Delayed, self).__init__()
         self._karg(matcher=matcher)
+        self.count = 0
     
     def _match(self, stream):
         '''
@@ -839,12 +850,32 @@ class Delayed(OperatorMatcher):
         else:
             raise ValueError('Delayed matcher still unbound.')
         
+    # pylint: disable-msg=E0203, W0201
+    # _karg defined this in constructor
     def __iadd__(self, matcher):
         if self.matcher:
             raise ValueError('Delayed matcher already bound.')
         else:
             self.matcher = coerce_(matcher)
+            self.__count += 1
+            self.count = self.__count
             return self
+        
+    def __gt__(self, other):
+        '''
+        Support ordering based on count.
+        '''
+        if not isinstance(other, Delayed):
+            raise NotImplemented()
+        return self.count > other.count 
+         
+    def __lt__(self, other):
+        '''
+        Support ordering based on count.
+        '''
+        if not isinstance(other, Delayed):
+            raise NotImplemented()
+        return self.count < other.count 
          
 
 class Commit(OperatorMatcher):
@@ -858,8 +889,10 @@ class Commit(OperatorMatcher):
         super(Commit, self).__init__()
         self.monitor_class = _GeneratorManager
     
+    # pylint: disable-msg=R0201
+    # consistent for subclasses
     @tagged
-    def _match(self, stream):
+    def _match(self, _stream):
         '''
         Attempt to match the stream.
         '''
@@ -923,6 +956,8 @@ class Eof(OperatorMatcher):
     def __init__(self):
         super(Eof, self).__init__()
 
+    # pylint: disable-msg=R0201
+    # consistent for subclasses
     @tagged
     def _match(self, stream):
         '''

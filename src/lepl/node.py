@@ -101,7 +101,7 @@ class Node(LogMixin, ConstructorGraphNode):
     
     def __str__(self):
         visitor = NodeTreeStr()
-        return visitor.postprocess(self.__postorder(visitor))
+        return self.__postorder(visitor)
     
     def __repr__(self):
         return self.__class__.__name__ + '(...)'

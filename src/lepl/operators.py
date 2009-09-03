@@ -44,8 +44,9 @@ class DefaultNamespace(Namespace):
     
     def __init__(self):
         # Handle circular dependencies
-        from lepl.matchers import And, Or, raise_error, First
+        from lepl.error import raise_error
         from lepl.functions import Space, Add, Apply, KApply, Drop, Repeat, Map
+        from lepl.matchers import And, Or, First
         super(DefaultNamespace, self).__init__({
             SPACE_OPT: lambda a, b: And(a, Space()[0:,...], b),
             SPACE_REQ: lambda a, b: And(a, Space()[1:,...], b),
