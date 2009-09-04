@@ -41,9 +41,12 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += letter & Optional(seq)
         
+        print(seq)
         p = seq.string_matcher( 
                 Configuration(rewriters=[memoize(RMemo)], 
                               monitors=[TraceResults(True)]))
+        print(p.matcher)
+        
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]

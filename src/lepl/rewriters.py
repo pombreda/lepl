@@ -23,6 +23,7 @@ parser.
 
 from lepl.graph import Visitor, preorder, loops
 from lepl.operators import Matcher
+from lepl.support import lmap
 
 
 def clone(node, args, kargs):
@@ -57,6 +58,7 @@ class DelayedClone(Visitor):
         super(DelayedClone, self).__init__()
         self._clone = clone_
         self._visited = {}
+        self._loops = set()
         self._node = None
     
     def loop(self, node):
@@ -68,6 +70,7 @@ class DelayedClone(Visitor):
         from lepl.matchers import Delayed
         if node not in self._visited:
             self._visited[node] = Delayed()
+            self._loops.add(node)
         return self._visited[node]
     
     def node(self, node):
@@ -83,11 +86,36 @@ class DelayedClone(Visitor):
         # delayed import to avoid dependency loops
         from lepl.matchers import Delayed
         if self._node not in self._visited:
-            self._visited[self._node] = self._clone(self._node, args, kargs)
-        elif isinstance(self._visited[self._node], Delayed) and \
+            self._visited[self._node] = self.__clone_node(args, kargs)
+        # if this is once of the loops we replaced with a delayed instance,
+        # then we need to patch the delayed matcher
+        elif self._node in self._loops and \
                 not self._visited[self._node].matcher:
-            self._visited[self._node] += self._clone(self._node, args, kargs)
+            self._visited[self._node] += self.__clone_node(args, kargs)
         return self._visited[self._node]
+    
+    def __clone_node(self, args, kargs):
+        '''
+        Before cloning, drop any Delayed from args and kargs.  This helps
+        keep the number of Delayed instances from exploding.
+        '''
+        args = lmap(self.__drop, args)
+        kargs = dict((key, self.__drop(kargs[key])) for key in kargs)
+        return self.__drop(self._clone(self._node, args, kargs))
+    
+    @staticmethod
+    def __drop(node):
+        '''
+        Filter `Delayed` instances where possible (if they have the matcher
+        defined and are nor transformed).
+        '''
+        # delayed import to avoid dependency loops
+        from lepl.matchers import Delayed, Transformable
+        if isinstance(node, Delayed) and node.matcher and \
+                not (isinstance(node, Transformable) and node.function):
+            return node.matcher
+        else:
+            return node
     
     def leaf(self, value):
         '''

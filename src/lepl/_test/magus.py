@@ -47,10 +47,9 @@ class DelayedCloneTest(TestCase):
         for x in postorder(b, Matcher, LEAF):
             print('> {1} {0!s}'.format(x, type(x)))
         
-        # this should be an exact copy
         bb = simple_clone(b)
-        # this fails because the first child is None
         self.assert_children(bb)
+        
         
     def assert_children(self, b):
         print('>>>{0!s}<<<'.format(b))
