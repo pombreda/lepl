@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='LEPL',
-      version='3.1',
+      version='3.2',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -15,10 +15,10 @@ grammars and it can also handle left-recursive grammars.
 The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
-`Release 3.1 <http://www.acooke.org/lepl/releases.html#id1>`_ has updated
-stream support.  These have a clearer design (although remain, unfortunately,
-complex), are better documented, with clearer interfaces (abstract classes),
-and will (I hope) support handling the "offside rule" in a later release.
+`Release 3.2 <http://www.acooke.org/lepl/releases.html#id1>`_ has
+improved support for cloning graphs of matchers (see `Issue 11
+<http://code.google.com/p/lepl/issues/detail?id=11>`_).  It also contains
+changes to support handling the "offside rule" in a later release.
 
 Features
 --------

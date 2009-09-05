@@ -838,7 +838,6 @@ class Delayed(OperatorMatcher):
         '''
         super(Delayed, self).__init__()
         self._karg(matcher=matcher)
-        self.count = 0
     
     def _match(self, stream):
         '''
@@ -857,26 +856,9 @@ class Delayed(OperatorMatcher):
             raise ValueError('Delayed matcher already bound.')
         else:
             self.matcher = coerce_(matcher)
-            self.__count += 1
             self.count = self.__count
             return self
         
-    def __gt__(self, other):
-        '''
-        Support ordering based on count.
-        '''
-        if not isinstance(other, Delayed):
-            raise NotImplemented()
-        return self.count > other.count 
-         
-    def __lt__(self, other):
-        '''
-        Support ordering based on count.
-        '''
-        if not isinstance(other, Delayed):
-            raise NotImplemented()
-        return self.count < other.count 
-         
 
 class Commit(OperatorMatcher):
     '''

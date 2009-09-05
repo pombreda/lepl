@@ -64,7 +64,20 @@ Date        Version  Description
 2009-07-16  3.0      New tutorial; bin package; smart separators; modified Nodes, `*args` (general clean-up of API).
 ----------  -------  -----------
 2009-08-19  3.1      Rewritten streams.
+----------  -------  -----------
+2009-09-05  3.2      Clone bugfix.
 ==========  =======  ===========
+
+
+.. release_3_2:
+
+3.2
+---
+
+A bugfix release to correct a problem with cloning matchers.  This is a minor
+release (rather than a 3.1.1 bugfix release) because it also includes
+significant internal changes as I work towards supporting
+whitespace-significant ("offside rule") parsing.
 
 
 .. release_3_1:

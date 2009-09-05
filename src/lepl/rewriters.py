@@ -87,7 +87,7 @@ class DelayedClone(Visitor):
         from lepl.matchers import Delayed
         if self._node not in self._visited:
             self._visited[self._node] = self.__clone_node(args, kargs)
-        # if this is once of the loops we replaced with a delayed instance,
+        # if this is one of the loops we replaced with a delayed instance,
         # then we need to patch the delayed matcher
         elif self._node in self._loops and \
                 not self._visited[self._node].matcher:
@@ -96,8 +96,9 @@ class DelayedClone(Visitor):
     
     def __clone_node(self, args, kargs):
         '''
-        Before cloning, drop any Delayed from args and kargs.  This helps
-        keep the number of Delayed instances from exploding.
+        Before cloning, drop any Delayed from args and kargs.  Afterwards,
+        check if this is a Delaed instance and, if so, return the contents.
+        This helps keep the number of Delayed instances from exploding.
         '''
         args = lmap(self.__drop, args)
         kargs = dict((key, self.__drop(kargs[key])) for key in kargs)
@@ -137,6 +138,8 @@ def post_clone(function):
         Apply function as well as clone.
         '''
         copy = clone(node, args, kargs)
+        # ignore Delayed since that would (1) effectively duplicate the
+        # action and (2) they come and go with each cloning.
         if not isinstance(node, Delayed):
             copy = function(copy)
         return copy
