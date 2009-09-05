@@ -24,6 +24,7 @@ Pre-built configurations for using the package in several standard ways.
 from lepl.config import Configuration
 from lepl.lexer.matchers import BaseToken
 from lepl.offside.matchers import DEFAULT_TABSIZE, DEFAULT_POLICY, Block
+from lepl.offside.monitor import IndentationMonitor
 from lepl.offside.regexp import LineAwareAlphabet
 from lepl.offside.rewriters import indent_rewriter
 from lepl.offside.stream import LineAwareStreamFactory, OffsideSource
@@ -94,6 +95,8 @@ class OffsideConfiguration(Configuration):
                  tabsize=DEFAULT_TABSIZE, policy=DEFAULT_POLICY):
         if rewriters is None:
             rewriters = []
+        if monitors is None:
+            monitors = []
         if alphabet is None:
             alphabet = UnicodeAlphabet.instance()
         alphabet = LineAwareAlphabet(alphabet)
@@ -103,6 +106,7 @@ class OffsideConfiguration(Configuration):
                           indent_rewriter(alphabet, discard=discard, 
                                     error=error, extra_tokens=extra_tokens, 
                                     source=OffsideSource.factory(tabsize))])
+        monitors.append(IndentationMonitor)
         stream_factory = LineAwareStreamFactory(alphabet)
         super(OffsideConfiguration, self).__init__(
                                     rewriters=rewriters, monitors=monitors, 

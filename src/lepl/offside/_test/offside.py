@@ -20,12 +20,12 @@
 Tests for offside.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.functions import Word, Letter, Digit
-from lepl.matchers import Delayed, Empty
+from lepl.matchers import Delayed, Or
 from lepl.offside.config import OffsideConfiguration
 from lepl.offside.lexer import Indentation, Eol
 from lepl.offside.matchers import Line, Block
@@ -67,13 +67,22 @@ class OffsideTest(TestCase):
         Test a simple example: letters introduce numbers in an indented block.
         '''
         #basicConfig(level=DEBUG)
+        
         number = Token(Digit())
         letter = Token(Letter())
+        
+        # the simplest whitespace grammar i can think of - lines are either
+        # numbers (which are single, simple statements) or letters (which
+        # mark the start of a new, indented block).
         block = Delayed()
-        line = Line(number) | (Line(letter) & block) | Empty()
+        line = Or(Line(number), 
+                  Line(letter) & block) > list
+        # and a block is simply a collection of lines, as above
         block += Block(line[1:])
-        text = '''
-1
+        
+        program = line[1:]
+        
+        text = '''1
 2
 a
  3
@@ -82,8 +91,11 @@ a
   5
  6
 '''
-        parser = block.string_parser(config=OffsideConfiguration(policy=1))
-        print(parser.matcher)
+        parser = program.string_parser(config=OffsideConfiguration(policy=1))
         result = parser(text)
-        print(result)
-        
+        assert result == [['1'], 
+                          ['2'], 
+                          ['a', ['3'], 
+                                ['b', ['4'], 
+                                      ['5']], 
+                                ['6']]]

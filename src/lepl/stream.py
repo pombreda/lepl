@@ -509,7 +509,7 @@ class DefaultStreamFactory(StreamFactory):
                 return self.source.text(offset, self.line)
             
             def __repr__(self):
-                return 'Line({0!r})'.format(self.line)
+                return repr(self.line)
     
         return StreamView(Line().next)
     

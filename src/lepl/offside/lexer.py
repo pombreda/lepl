@@ -22,6 +22,7 @@ Tokens for indentation.
 
 
 from lepl.lexer.matchers import BaseToken
+from lepl.offside.regexp import START, END
 
 
 # pylint: disable-msg=R0901, R0904, R0913, E1101
@@ -36,7 +37,7 @@ class Indentation(BaseToken):
     def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
                  compiled=False):
         if id_ is None:
-            id_ = Indentation
+            id_ = START
         super(Indentation, self).__init__(content=content, id_=id_, 
                                           alphabet=alphabet, complete=complete, 
                                           compiled=compiled)
@@ -53,7 +54,7 @@ class Eol(BaseToken):
     def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
                  compiled=False):
         if id_ is None:
-            id_ = Eol
+            id_ = END
         super(Eol, self).__init__(content=content, id_=id_, 
                                   alphabet=alphabet, complete=complete, 
                                   compiled=compiled)

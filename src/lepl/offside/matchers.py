@@ -21,6 +21,7 @@ Matchers that are indentation aware.
 '''
 
 from lepl.matchers import OperatorMatcher, And
+from lepl.parser import tagged
 from lepl.offside.lexer import Indentation, Eol
 from lepl.offside.monitor import IndentationMonitor
 
@@ -33,8 +34,8 @@ class Line(OperatorMatcher):
     indentation level) and the end of line marker.
     '''
     
-    indentation = Indentation()
-    eol = Eol()
+    indentation = Indentation(compiled=True)
+    eol = Eol(compiled=True)
     
     def __init__(self, matcher):
         super(Line, self).__init__()
@@ -53,22 +54,28 @@ class Line(OperatorMatcher):
         Unused
         '''
         
+    @tagged
     def _match(self, stream_in):
         '''
         If indentation matches current level match contents and Eol.
         '''
         (indent, stream) = yield self.indentation._match(stream_in)
         try:
-            if len(indent) == self.__current_indentation:
-                generator = self.matcher(stream)
+            if len(indent[0]) == self.__current_indentation:
+                generator = self.matcher._match(stream)
                 while True:
                     (result, stream) = yield generator
                     try:
-                        (_eol, stream) = yield self.eol(stream)
+                        (_eol, stream) = yield self.eol._match(stream)
                         yield (result, stream)
                     except StopIteration:
                         # no eol
                         pass
+            else:
+                self._debug('Incorrect indentation ({0:d} != '
+                            'len({1!r}), {2:d})'\
+                            .format(self.__current_indentation,
+                                    indent[0], len(indent[0])))
         except StopIteration:
             return
 
@@ -114,7 +121,7 @@ class Block(OperatorMatcher):
     '''
     
     POLICY = 'policy'
-    indentation = Indentation()
+    indentation = Indentation(compiled=True)
     
 #    def __init__(self, *lines, policy=None):
     def __init__(self, *lines, **kargs):
@@ -150,8 +157,9 @@ class Block(OperatorMatcher):
         '''
         Remove the indentation we added.
         '''
-        monitor.pop_indent()
+        monitor.pop_level()
         
+    @tagged
     def _match(self, stream_in):
         '''
         Pull indentation and call the policy and update the global value, 
@@ -159,7 +167,7 @@ class Block(OperatorMatcher):
         '''
         (indent, _stream) = yield self.indentation._match(stream_in)
         current = self.__monitor.indentation
-        self.__monitor.push_indentation(self.policy(current, indent))
+        self.__monitor.push_level(self.policy(current, indent))
         self.__monitor = None
         
         generator = And(*self.lines)._match(stream_in)
