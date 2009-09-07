@@ -4,8 +4,8 @@
 # This file is part of LEPL.
 # 
 #     LEPL is free software: you can redistribute it and/or modify
-#     it under the terms of the GNU Lesser General Public License as published by
-#     the Free Software Foundation, either version 3 of the License, or
+#     it under the terms of the GNU Lesser General Public License as published 
+#     by the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
 # 
 #     LEPL is distributed in the hope that it will be useful,
@@ -48,14 +48,17 @@ if bytes is str:
     print('Binary parsing unsupported in this Python version')
 else:
 
-    from lepl.bin.bits import BitString, unpack_length
+    from lepl.bin.bits import BitString
     from lepl.node import Node
     
     
     def make_binary_parser():
+        '''
+        Create a parser for binary data.
+        '''
         
         # avoid import loops
-        from lepl import Word, Letter, Digit, UnsignedFloat, UnsignedInteger, \
+        from lepl import Word, Letter, Digit, UnsignedInteger, \
             Regexp, DfaRegexp, Drop, Separator, Delayed, Optional, Any, First, \
             args
             
@@ -72,9 +75,6 @@ else:
         
         mult    = lambda l, n: BitString.from_sequence([l] * int(n, 0)) 
             
-        # unpack length so that it's distinct from str (names)
-        len_tuple  = lambda ab: (ab[0], unpack_length(ab[1]))
-        
         # an attribute or class name
         name    = Word(Letter(), Letter() | Digit() | '_')
     
@@ -94,19 +94,21 @@ else:
         octal   = Any('01234567')[1:]
     
         # a hex number (without pre/postfix)
-        hex     = Regexp('[a-fA-F0-9]')[1:]
+        hex_     = Regexp('[a-fA-F0-9]')[1:]
         
-        # the letters used for binary, octal and hex values (eg the 'x' in 0xffee)
+        # the letters used for binary, octal and hex values 
+        #(eg the 'x' in 0xffee)
+        # pylint: disable-msg=C0103
         b, o, x, d = Any('bB'), Any('oO'), Any('xX'), Any('dD')
     
         # a decimal with optional pre/postfix
         dec     = '0' + d + decimal | decimal + d + '0' | decimal
     
         # little-endian literals have normal prefix syntax (eg 0xffee) 
-        little  = decimal | '0' + (b + binary | o + octal | x + hex)
+        little  = decimal | '0' + (b + binary | o + octal | x + hex_)
     
         # big-endian literals have postfix (eg ffeex0)
-        big     = (binary + b | octal + o | hex + x) + '0'
+        big     = (binary + b | octal + o | hex_ + x) + '0'
     
         # optional spaces - will be ignored 
         # (use DFA here because it's multi-line, so \n will match ok)
@@ -114,20 +116,21 @@ else:
             
         with Separator(spaces):
             
-            # the grammar is recursive - expressions can contain expressions - so
-            # we use a delayed matcher here as a placeholder, so that we can use
-            # them before they are defined.
+            # the grammar is recursive - expressions can contain expressions - 
+            # so we use a delayed matcher here as a placeholder, so that we can 
+            # use them before they are defined.
             expr = Delayed()
             
             # an implict length value can be big or little-endian
-            ivalue = big | little                               > args(BitString.from_int)
+            ivalue = big | little                 > args(BitString.from_int)
             
             # a value with a length can also be decimal
-            lvalue = (big | little | dec) & Drop('/') & length  > args(BitString.from_int)
+            lvalue = (big | little | dec) & Drop('/') & length  \
+                                                  > args(BitString.from_int)
             
             value = lvalue | ivalue
             
-            repeat = value & Drop('*') & little                 > args(mult)
+            repeat = value & Drop('*') & little   > args(mult)
             
             # a named value is also a tuple
             named = name & Drop('=') & (expr | value | repeat)  > tuple
@@ -137,14 +140,14 @@ else:
             
             # and an expression itself consists of a comma-separated list of
             # one or more entries, surrounded by paremtheses
-            entries = Drop('(') & entry[1:,Drop(',')] & Drop(')')
+            entries = Drop('(') & entry[1:, Drop(',')] & Drop(')')
             
-            # the Binary node may be expliti or implicit and takes the list of
+            # the Binary node may be explicit or implicit and takes the list of
             # entries as an argument list
             node = Optional(Drop('Node')) & entries             > Node
             
             # alternatively, we can give a name and create a named sub-class
-            other = name & entries                              > args(named_class)
+            other = name & entries                > args(named_class)
             
             # and finally, we "tie the knot" by giving a definition for the
             # delayed matcher we introduced earlier, which is either a binary
@@ -157,6 +160,11 @@ else:
     __PARSER = None
     
     def parse(spec):
+        '''
+        Use the parser.
+        '''
+        # pylint: disable-msg=W0603
+        # global
         global __PARSER
         if __PARSER is None:
             __PARSER = make_binary_parser()

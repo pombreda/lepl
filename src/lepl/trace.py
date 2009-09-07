@@ -120,7 +120,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
             if type(value) is StopIteration:
                 self._log_done(self.fmt_done())
             else:
-                self._log_error(value, self.fmt_result(value))
+                self._log_error(self.fmt_result(value))
         
     def fmt_result(self, value):
         '''
@@ -154,7 +154,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         Provide a standard format for location.
         '''
         try:
-            (lineno, offset, depth, text, source) = \
+            (lineno, offset, depth, _text, _source) = \
                     self.generator.stream.location
             stream = str(self.generator.stream)
             if lineno < 0:
@@ -203,7 +203,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         (self._info if type(value) is tuple else self._debug)(text)    
 
-    def _log_error(self, value, text):
+    def _log_error(self, text):
         '''
         Record an error.
         '''
@@ -259,7 +259,7 @@ class _RecordDeepest(_TraceResults):
         if type(value) is tuple:
             self.record(True, text)
 
-    def _log_error(self, value, text):
+    def _log_error(self, text):
         '''
         Modify `TraceResults` to record the data.
         '''

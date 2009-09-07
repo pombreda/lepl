@@ -20,7 +20,6 @@
 Rewriters and related classes for adding indentation.
 '''
 
-
 from lepl.lexer.rewriters import lexer_rewriter
 from lepl.offside.regexp import LineAwareAlphabet
 from lepl.offside.support import OffsideException

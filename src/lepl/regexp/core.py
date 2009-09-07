@@ -347,7 +347,7 @@ class RegexpError(Exception):
     pass
 
 
-class Regexp(Choice):
+class Expression(Choice):
     '''
     A collection of Labelled instances.
     '''
@@ -355,7 +355,7 @@ class Regexp(Choice):
     def __init__(self, children, alphabet):
         for child in children:
             assert isinstance(child, Labelled)
-        super(Regexp, self).__init__(children, alphabet)
+        super(Expression, self).__init__(children, alphabet)
         
     def _build_str(self):
         '''
@@ -418,17 +418,19 @@ class Regexp(Choice):
         '''
         Generate an instance for a single expression or sequence.
         '''
-        return Regexp([Labelled(label, Regexp._coerce(regexp, alphabet), 
-                                alphabet)], alphabet)
+        return Expression([Labelled(label, 
+                                    Expression._coerce(regexp, alphabet), 
+                                    alphabet)], alphabet)
     
     @staticmethod
     def multiple(alphabet, regexps):
         '''
         Generate an instance for several expressions.
         '''
-        return Regexp([Labelled(label,  Regexp._coerce(regexp, alphabet), 
-                                alphabet) for (label, regexp) in regexps], 
-                      alphabet)
+        return Expression([Labelled(label,  
+                                    Expression._coerce(regexp, alphabet), 
+                                    alphabet) for (label, regexp) in regexps], 
+                                    alphabet)
         
 
         
@@ -659,7 +661,7 @@ class NfaCompiler(LogMixin):
                 # add back reduced matched
                 if len(matched) > 1: # avoid discard iteration
                     stack.append((map_, matched[:-1], empties, match, stream))
-               # and expand this destination
+                # and expand this destination
                 (map_, empties) = self.__table[dest]
                 stack.append((map_, None, empties, match, stream))
                 # this doesn't happen with current nfa

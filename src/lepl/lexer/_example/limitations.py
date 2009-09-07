@@ -21,7 +21,7 @@
 Illustrate some of the finer points of lexing.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 
 from lepl import Token, Integer, Eos, Literal
 from lepl._example.support import Example
@@ -54,4 +54,3 @@ class Limitations(Example):
         abc = Token('abc')
         incomplete = abc(Literal('ab'), complete=False)
         self.examples([(lambda: incomplete.parse('abc'), "['ab']")])
-       

@@ -20,7 +20,7 @@
 Tests for the lepl.functions module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.functions import Space, Repeat, SkipTo, Newline

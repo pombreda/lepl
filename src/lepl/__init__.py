@@ -16,7 +16,9 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable-msg=C0301
+#@PydevCodeAnalysisIgnore
+# pylint: disable-msg=C0301, E0611, W0401
+# confused by __init__?
 
 '''
 LEPL is a parser library written in Python.

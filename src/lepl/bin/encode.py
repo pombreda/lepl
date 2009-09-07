@@ -58,7 +58,7 @@ if bytes is str:
     print('Binary parsing unsupported in this Python version')
 else:
 
-    from functools import reduce
+    from functools import reduce as reduce_
     from operator import add
     
     from lepl.bin.bits import BitString, STRICT
@@ -67,6 +67,11 @@ else:
     
     
     def dispatch_table(big_endian=True, encoding=None, errors=STRICT):
+        '''
+        Convert types appropriately.
+        '''
+        # pylint: disable-msg=W0108
+        # consistency
         return {int: lambda n: BitString.from_int(n, ordered=big_endian),
                 str: lambda s: BitString.from_str(s, encoding, errors),
                 bytes: lambda b: BitString.from_bytearray(b),
@@ -75,7 +80,13 @@ else:
     
     
     def make_converter(table):
+        '''
+        Given a table, create the converter.
+        '''
         def converter(value):
+            '''
+            The converter.
+            '''
             type_ = type(value)
             if type_ in table:
                 return (type_, table[type_](value))
@@ -87,7 +98,9 @@ else:
     
     
     def simple_serialiser(node, table):
+        '''
+        Serialize using the given table.
+        '''
         stream = leaves(node, Node)
         converter = make_converter(table)
-        result = BitString()
-        return reduce(add, [converter(value)[1] for value in stream])
+        return reduce_(add, [converter(value)[1] for value in stream])

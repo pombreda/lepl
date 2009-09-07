@@ -20,7 +20,7 @@
 Tests for offside.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
@@ -43,7 +43,7 @@ class TabTest(TestCase):
         '''
         Test simple matches against leading spaces.
         '''
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         text = '''
  onespace
  \tspaceandtab'''

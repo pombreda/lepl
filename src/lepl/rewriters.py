@@ -84,7 +84,6 @@ class DelayedClone(Visitor):
         Clone the node, taking care to handle loops.
         '''
         # delayed import to avoid dependency loops
-        from lepl.matchers import Delayed
         if self._node not in self._visited:
             self._visited[self._node] = self.__clone_node(args, kargs)
         # if this is one of the loops we replaced with a delayed instance,

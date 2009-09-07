@@ -20,16 +20,16 @@
 Tests for the lepl.matchers module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.functions import Word, Newline, Space, AnyBut, Digit, Integer
-from lepl.matchers import Configuration, Any, Or, Literal, Eof, Regexp, \
-    Commit, Delayed, And, Lookahead, Columns, Trace
+from lepl.matchers import Any, Or, Literal, Eof, Regexp, Commit, Delayed, \
+    And, Lookahead, Columns
 from lepl.node import Node
 
 
-# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201, R0904, R0903
 # (dude this is just a test)
 
     

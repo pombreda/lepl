@@ -20,7 +20,7 @@
 Tests for the lepl.memo module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Configuration, RMemo, Delayed, Any, TraceResults, memoize, \

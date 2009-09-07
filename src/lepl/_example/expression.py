@@ -18,13 +18,14 @@
 
 # pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,C0321,C0324,C0103
 # (the code style is for documentation, not "real")
+#@PydevCodeAnalysisIgnore
 
 '''
 Examples from the documentation.
 '''
 
 from __future__ import with_statement
-from logging import basicConfig, INFO
+#from logging import basicConfig, INFO
 
 from lepl import *
 from lepl._example.support import Example

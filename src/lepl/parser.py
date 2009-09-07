@@ -31,7 +31,6 @@ from logging import getLogger
 from traceback import format_exc
 
 from lepl.monitor import prepare_monitors
-from lepl.stream import DEFAULT_STREAM_FACTORY
     
     
 def tagged(call):
@@ -234,6 +233,7 @@ def make_matcher(matcher, stream, config, kargs):
     # pylint bug here? (E0601)
     # pylint: disable-msg=W0212, E0601
     # (_match is meant to be hidden)
+    # pylint: disable-msg=W0142
     parser = lambda arg: trampoline(matcher._match(stream(arg, **kargs)), 
                                     m_stack=m_stack, m_value=m_value)
     parser.matcher = matcher

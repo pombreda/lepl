@@ -36,7 +36,8 @@ from lepl.matchers import OperatorMatcher, BaseMatcher, coerce_, Any, \
 from lepl.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
     KARGS, RAISE, REPEAT, FIRST, MAP
 from lepl.parser import tagged
-from lepl.regexp.matchers import BaseRegexp, Regexp
+from lepl.regexp.core import Expression
+from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
@@ -334,10 +335,11 @@ class Lexer(NamespaceMixin, BaseMatcher):
         if t_regexp is None:
             for token in tokens:
                 token.compile(alphabet)
-            t_regexp = Regexp.multiple(alphabet, 
-                                [(t.id_, t.regexp) for t in tokens]).dfa()
+            t_regexp = Expression.multiple(alphabet, 
+                                           [(t.id_, t.regexp) 
+                                            for t in tokens]).dfa()
         if s_regexp is None:
-            s_regexp = Regexp.single(alphabet, discard).dfa()
+            s_regexp = Expression.single(alphabet, discard).dfa()
         error = RuntimeLexerError if error is None else error
         self._arg(matcher=matcher)
         self._arg(tokens=tokens)

@@ -24,7 +24,7 @@ if bytes is str:
     print('Binary parsing unsupported in this Python version')
 else:
 
-    from logging import basicConfig, DEBUG
+    #from logging import basicConfig, DEBUG
     from unittest import TestCase
     
     from lepl.bin.encode import dispatch_table, simple_serialiser

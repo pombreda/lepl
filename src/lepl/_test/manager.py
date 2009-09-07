@@ -20,7 +20,7 @@
 Tests for the lepl.manager module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.config import Configuration

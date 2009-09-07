@@ -25,10 +25,12 @@ calls the standard Python regular expression library (and so is faster).
 
 from lepl.matchers import Transformable
 from lepl.parser import tagged
-from lepl.regexp.core import Regexp
+from lepl.regexp.core import Expression
 from lepl.regexp.unicode import UnicodeAlphabet
 
 
+# pylint: disable-msg=R0904, R0901, E1101
+# lepl convention
 class BaseRegexp(Transformable):
     '''
     Common code for all matchers.
@@ -87,7 +89,7 @@ class NfaRegexp(BaseRegexp):
         '''
         if self.__cached_matcher is None:
             self.__cached_matcher = \
-                    Regexp.single(self.alphabet, self.regexp).nfa().match
+                    Expression.single(self.alphabet, self.regexp).nfa().match
         return self.__cached_matcher
 
     @tagged
@@ -120,7 +122,7 @@ class DfaRegexp(BaseRegexp):
         '''
         if self.__cached_matcher is None:
             self.__cached_matcher = \
-                    Regexp.single(self.alphabet, self.regexp).dfa().match
+                    Expression.single(self.alphabet, self.regexp).dfa().match
         return self.__cached_matcher
 
     @tagged

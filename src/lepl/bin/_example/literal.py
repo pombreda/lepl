@@ -29,7 +29,7 @@ else:
     from lepl._example.support import Example
     
     
-    # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324
+    # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, R0201
     # (dude this is just a test)
 
     
@@ -39,7 +39,7 @@ else:
             '''
             An 803.3 MAC frame - see http://en.wikipedia.org/wiki/Ethernet
             '''
-            b = parse('''
+            _b = parse('''
     Frame(
       Header(
         preamble  = 0b10101010*7,
@@ -52,12 +52,14 @@ else:
       CRC(234d0/4.)
     )
     ''')
-#            print(b)
+#            print(_b)
             
             
     class RepresentationExample(Example):
         
         def test_representation(self):
+            #@PydevCodeAnalysisIgnore
+            # doesn't know base literals
             self._assert(0b101100, '00110100 00000000 00000000 00000000')
             self._assert('0b101100', '001101')
             self._assert('001101b0', '001101')

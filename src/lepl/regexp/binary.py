@@ -22,7 +22,7 @@ A proof-of-concept regexp implementation for binary data strings.
 The hope is that one day we can parse binary data in the same way as text...
 '''
 
-from lepl.regexp.core import Regexp, Labelled
+from lepl.regexp.core import Expression, Labelled
 from lepl.regexp.str import StrAlphabet, make_str_parser
 
 
@@ -72,15 +72,15 @@ def binary_single_parser(label, text):
     '''
     Parse a binary regular expression, returning the associated Regexp.
     '''
-    return Regexp([Labelled(label, __compiled_binary_parser(text), BINARY)], 
-                  BINARY)
+    return Expression([Labelled(label, __compiled_binary_parser(text), BINARY)], 
+                      BINARY)
 
 
 def binary_parser(*regexps):
     '''
     Parse a set of binary regular expressions, returning the associated Regexp.
     '''
-    return Regexp([Labelled(label, __compiled_binary_parser(text), BINARY)
-                   for (label, text) in regexps], BINARY)
+    return Expression([Labelled(label, __compiled_binary_parser(text), BINARY)
+                       for (label, text) in regexps], BINARY)
 
 
