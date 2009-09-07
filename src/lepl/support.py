@@ -181,6 +181,8 @@ def safe_in(value, container, default=False):
     try:
         return value in container
     except TypeError:
+        log = getLogger('lepl.support.safe_in')
+        log.warn('Cannot test for {0!r} in collection'.format(value))
         return default
     
     
@@ -191,6 +193,8 @@ def safe_add(container, value):
     try:
         container.add(value)
     except TypeError:
+        log = getLogger('lepl.support.safe_add')
+        log.warn('Cannot add {0!r} to collection'.format(value))
         pass
 
 

@@ -30,8 +30,6 @@ from lepl.offside.regexp import START, END
 class Indentation(BaseToken):
     '''
     Match an indentation (start of line marker plus spaces and tabs).
-    
-    This token is identified by its class.
     '''
     
     def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
@@ -47,8 +45,6 @@ class Indentation(BaseToken):
 class Eol(BaseToken):
     '''
     Match the end of line marker.
-    
-    This token is identified by its class.
     '''
     
     def __init__(self, content=None, id_=None, alphabet=None, complete=True, 

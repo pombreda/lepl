@@ -773,7 +773,7 @@ class Transform(Transformable):
             generator = self.matcher._match(stream_in)
             while True:
                 (results, stream_out) = yield generator
-                yield (self.function(results, stream_in, stream_out))
+                yield self.function(results, stream_in, stream_out)
         except StopIteration:
             pass
         
@@ -830,8 +830,6 @@ class Delayed(OperatorMatcher):
     matcher must be assigned via '+='.
     '''
     
-    __count = 0 # used to order instances by time when += called
-    
     def __init__(self, matcher=None):
         '''
         Introduce the matcher.  It can be defined later with '+='
@@ -856,7 +854,6 @@ class Delayed(OperatorMatcher):
             raise ValueError('Delayed matcher already bound.')
         else:
             self.matcher = coerce_(matcher)
-            self.count = self.__count
             return self
         
 

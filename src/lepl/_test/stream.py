@@ -50,9 +50,9 @@ class StreamTest(TestCase):
         assert s1[5] == 'q', s1[5]
         s2 = s1[5:]
         assert s2[0] == 'q', s2[0]
-        assert repr(s2) == "Line('pqr\\n')[1:]", repr(s2)
+        assert repr(s2) == "'pqr\\n'[1:]", repr(s2)
         s3 = s2[3:]
-        assert repr(s3) == "Line('xyz')[0:]", repr(s3)
+        assert repr(s3) == "'xyz'[0:]", repr(s3)
         
     def test_eof(self):
         s1 = DEFAULT_STREAM_FACTORY.from_string('abc\npqs')

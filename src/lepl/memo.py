@@ -28,13 +28,17 @@ generators implemented here.
 # for some reason (parsing of yields?) pyulint cannot process this file
 # (but running from the command line gives partial data)
 
-
 from itertools import count
 
 from lepl.matchers import OperatorMatcher
 from lepl.parser import tagged, GeneratorWrapper
 from lepl.support import LogMixin, empty
 
+
+class MemoException(Exception):
+    '''
+    Exception raised for problems with memoisation.
+    '''
 
 class RMemo(OperatorMatcher):
     '''
@@ -71,6 +75,7 @@ class RMemo(OperatorMatcher):
                 self.__table[stream] = RTable(self.matcher._match(stream))
             return self.__table[stream].generator(self.matcher, stream)
         except TypeError: # unhashable type; cannot cache
+            self._warn('Cannot memoize (cannot hash {0!r})'.format(stream))
             return self.matcher._match(stream)
 
 
@@ -85,15 +90,22 @@ class RTable(LogMixin):
         self.__generator = generator
         self.__table = []
         self.__stopped = False
+        self.__active = False
         
     def __read(self, i):
         '''
         Either return a value from previous cached values or call the
         embedded generator to get the next value (and then store it).
         '''
+        if self.__active:
+            raise MemoException('Left recursion with RMemo?')
         try:
             while i >= len(self.__table) and not self.__stopped:
-                result = yield self.__generator
+                try:
+                    self.__active = True
+                    result = yield self.__generator
+                finally:
+                    self.__active = False
                 self.__table.append(result)
         except StopIteration:
             self._stopped = True
@@ -239,6 +251,8 @@ class PerCallCache(LogMixin):
 #                    raise Exception('A view completed before the cache was '
 #                                    'complete: {0!r}'
 #                                    .format(self.__generator))
+                if not result:
+                    print('fff')
                 self.__cache.append(result)
                 self.__returned = True
                 yield result

@@ -38,7 +38,7 @@ class Limitations(Example):
         '''
         tokens = (Token(Integer()) | Token(r'\-'))[:] & Eos()
         self.examples([(lambda: list(tokens.match('1-2')), 
-                        "[(['1', '-2'], Line(None)[0:])]")])
+                        "[(['1', '-2'], None[0:])]")])
         matchers = (Integer() | Literal('-'))[:] & Eos()
         self.examples([(lambda: list(matchers.match('1-2')), 
                         "[(['1', '-2'], ''), (['1', '-', '2'], '')]")])

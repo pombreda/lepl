@@ -23,7 +23,7 @@ A stream that adds tokens at the start and end of lines.
 from io import StringIO
 
 from lepl.lexer.stream import TokenSource
-from lepl.offside.lexer import Indentation
+from lepl.offside.lexer import START
 from lepl.offside.regexp import Token
 from lepl.offside.support import LineAwareException, OffsideException
 from lepl.stream import DefaultStreamFactory, LineSource, sample
@@ -156,7 +156,7 @@ class OffsideSource(TokenSource):
         try:
             ([(terminals, text)], stream) = \
                     super(OffsideSource, self).__next__()
-            if terminals and Indentation in terminals:
+            if terminals and START in terminals:
                 if not len(terminals) == 1:
                     raise OffsideException('More than one token matching ^')
                 elif '\t' in text:

@@ -65,7 +65,8 @@ class IndentationConfiguration(Configuration):
     '''
     
     def __init__(self, rewriters=None, monitors=None, alphabet=None,
-                 discard=None, error=None, extra_tokens=None):
+                 discard=None, error=None, extra_tokens=None,
+                 tabsize=DEFAULT_TABSIZE):
         if rewriters is None:
             rewriters = []
         if alphabet is None:
@@ -73,8 +74,9 @@ class IndentationConfiguration(Configuration):
         alphabet = LineAwareAlphabet(alphabet)
         rewriters.extend([fix_arguments(BaseRegexp, alphabet=alphabet),
                           fix_arguments(BaseToken, alphabet=alphabet),
-                          indent_rewriter(alphabet, discard, error, 
-                                          extra_tokens)])
+                          indent_rewriter(alphabet, discard=discard, 
+                                    error=error, extra_tokens=extra_tokens, 
+                                    source=OffsideSource.factory(tabsize))])
         stream_factory = LineAwareStreamFactory(alphabet)
         super(IndentationConfiguration, self).__init__(
                                     rewriters=rewriters, monitors=monitors, 

@@ -20,15 +20,16 @@
 Tests for offside.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.functions import Word, Letter, Digit
 from lepl.matchers import Delayed, Or
-from lepl.offside.config import OffsideConfiguration
+from lepl.offside.config import OffsideConfiguration, IndentationConfiguration
 from lepl.offside.lexer import Indentation, Eol
 from lepl.offside.matchers import Line, Block
+from lepl.trace import TraceResults
 
 
 # pylint: disable-msg=R0201
@@ -42,17 +43,18 @@ class TabTest(TestCase):
         '''
         Test simple matches against leading spaces.
         '''
-        #basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         text = '''
  onespace
  \tspaceandtab'''
         word = Token(Word(Letter()))
         indent = Indentation()
-        line1 = indent('') + Eol()
-        line2 = indent(' ') & word('onespace') + Eol()
-        line3 = indent('     ') & word('spaceandtab') + Eol()
+        line1 = indent('') & ~Eol()
+        line2 = indent(' ') & word('onespace') & ~Eol()
+        line3 = indent('     ') & word('spaceandtab') & ~Eol()
         parser = (line1 & line2 & line3).string_parser(
-                            config=OffsideConfiguration(tabsize=4))
+                            config=IndentationConfiguration(tabsize=4,
+                                            monitors=[TraceResults(True)]))
         result = parser(text)
         assert result == ['', ' ', 'onespace', '     ', 'spaceandtab'], result
         

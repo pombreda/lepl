@@ -21,7 +21,7 @@ Rewriters modify the graph of matchers before it is used to generate a
 parser.
 '''
 
-from lepl.graph import Visitor, preorder, loops
+from lepl.graph import Visitor, preorder, loops, order, NONTREE
 from lepl.operators import Matcher
 from lepl.support import lmap
 
@@ -337,9 +337,8 @@ def context_memoize(conservative=True):
         Detect loops and clone appropriately.
         '''
         dangerous = set()
-        for delayed in [x for x in preorder(graph, Matcher) 
-                        if isinstance(x, Delayed)]:
-            for loop in either_loops(delayed, conservative):
+        for head in order(graph, NONTREE, Matcher):
+            for loop in either_loops(head, conservative):
                 for node in loop:
                     dangerous.add(node)
         def new_clone(node, args, kargs):

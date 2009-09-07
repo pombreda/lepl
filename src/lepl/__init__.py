@@ -220,6 +220,7 @@ __all__ = [
         # memo,
         'RMemo',
         'LMemo',
+        'MemoException',
         # regexp.core
         'RegexpError',
         # regexp.matchers

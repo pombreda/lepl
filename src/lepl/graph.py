@@ -176,9 +176,9 @@ def loops(node, type_):
                 if child is node:
                     yield family
                 else:
-                    if child not in known:
+                    if not safe_in(child, known):
                         stack.append(family)
-                        known.add(child)
+                        safe_add(known, child)
 
 
 # pylint: disable-msg=R0903
@@ -353,6 +353,8 @@ class Visitor(object):
         '''
         pass
     
+    # pylint: disable-msg=R0201
+    # interface
     def postprocess(self, result):
         '''
         Called after walking, passed the match to the initial node.

@@ -16,6 +16,7 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
+#@PydevCodeAnalysisIgnore
 # pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,C0321,C0324,C0103
 # (the code style is for documentation, not "real")
 
@@ -24,7 +25,7 @@ Process a table of data based on values from
 http://www.swivel.com/data_sets/spreadsheet/1002196
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example
