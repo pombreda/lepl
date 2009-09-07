@@ -60,10 +60,7 @@ class GeneratorWrapper(object):
         self.__generator = generator
     
     def __next__(self):
-        foo = next(self.__generator)
-        if not foo:
-            print('ddsa')
-        return foo
+        return next(self.__generator)
             
     def next(self):
         '''

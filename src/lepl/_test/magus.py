@@ -20,7 +20,7 @@
 Tests added for 3.2, 3.2.1
 '''
 
-# pylint: disable-msg=W0614, W0401, C0103, R0201
+# pylint: disable-msg=W0614, W0401, C0103, R0201, R0914, R0915
 # test
 #@PydevCodeAnalysisIgnore
 

@@ -153,7 +153,8 @@ class Block(OperatorMatcher):
         '''
         self.__monitor = monitor
         
-    def on_pop(self, monitor):
+    @staticmethod
+    def on_pop(monitor):
         '''
         Remove the indentation we added.
         '''

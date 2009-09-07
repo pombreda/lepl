@@ -32,6 +32,8 @@ def is_named(arg):
             and len(arg) == 2 and isinstance(arg[0], str)
             
 
+# pylint: disable-msg=R0903
+# it's not supposed to have public attributes, because it exposes contents
 class Node(LogMixin, ConstructorGraphNode):
     '''
     A base class for AST nodes.
@@ -159,6 +161,8 @@ class Node(LogMixin, ConstructorGraphNode):
         return (args, {})
     
     
+# pylint: disable-msg=R0903
+# __ method
 class MutableNode(Node):
     '''
     Extend `Node` to allow children to be set.

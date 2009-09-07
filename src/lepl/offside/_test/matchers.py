@@ -1,4 +1,7 @@
 
+'''
+Currently unused.
+'''
 
 from unittest import TestCase
 
@@ -43,7 +46,8 @@ def first(a, b,
 #        line_comment = LineAny(comment)
 #        
 #        # single line function is distinct
-#        func1 = Line(word('def') + word + args + symbol('=') + expr + Opt(comment))
+#        func1 = \
+#          Line(word('def') + word + args + symbol('=') + expr + Opt(comment))
 #        func = Line(word('def') + word + args + symbol('=') + Opt(comment)) + 
 #               Block((expr|func|func1)[:])
 #        
