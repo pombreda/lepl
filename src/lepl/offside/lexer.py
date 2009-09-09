@@ -17,26 +17,28 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tokens for indentation.
+Tokens for indents.
 '''
 
 
 from lepl.lexer.matchers import BaseToken
+from lepl.offside.monitor import BlockMonitor
 from lepl.offside.regexp import START, END
+from lepl.parser import tagged
 
 
 # pylint: disable-msg=R0901, R0904, R0913, E1101
 # lepl conventions
-class Indentation(BaseToken):
+class Indent(BaseToken):
     '''
-    Match an indentation (start of line marker plus spaces and tabs).
+    Match an indent (start of line marker plus spaces and tabs).
     '''
     
     def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
                  compiled=False):
         if id_ is None:
             id_ = START
-        super(Indentation, self).__init__(content=content, id_=id_, 
+        super(Indent, self).__init__(content=content, id_=id_, 
                                           alphabet=alphabet, complete=complete, 
                                           compiled=compiled)
         self.regexp = '^[ \t]*'
@@ -55,5 +57,52 @@ class Eol(BaseToken):
                                   alphabet=alphabet, complete=complete, 
                                   compiled=compiled)
         self.regexp = '$'
+
+
+class BIndent(Indent):
+    '''
+    Extend `Indent` so that it matches the block indent level.
+    
+    Content is supported, but checking of matched length happens after
+    matching content, so it's probably not that helpful.
+    '''
+    
+    def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
+                 compiled=False):
+        super(BIndent, self).__init__(content=content, id_=id_, 
+                                      alphabet=alphabet, complete=complete, 
+                                      compiled=compiled)
+        self.monitor_class = BlockMonitor
+        self.__current_indent = None
+        
+    def on_push(self, monitor):
+        '''
+        Read the global indentation level.
+        '''
+        self.__current_indent = monitor.indent
+        
+    def on_pop(self, monitor):
+        '''
+        Unused
+        '''
+    
+    @tagged
+    def _match(self, stream_in):
+        '''
+        Check that we match the current level
+        '''
+        try:
+            generator = super(BIndent, self)._match(stream_in)
+            while True:
+                (indent, stream) = yield generator
+                if len(indent[0]) == self.__current_indent:
+                    yield (indent, stream)
+                else:
+                    self._debug('Incorrect indent ({0:d} != '
+                                'len({1!r}), {2:d})'\
+                                .format(self.__current_indent,
+                                        indent[0], len(indent[0])))
+        except StopIteration:
+            return
 
 

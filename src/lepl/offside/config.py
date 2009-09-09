@@ -24,7 +24,7 @@ Pre-built configurations for using the package in several standard ways.
 from lepl.config import Configuration
 from lepl.lexer.matchers import BaseToken
 from lepl.offside.matchers import DEFAULT_TABSIZE, DEFAULT_POLICY, Block
-from lepl.offside.monitor import IndentationMonitor
+from lepl.offside.monitor import BlockMonitor
 from lepl.offside.regexp import LineAwareAlphabet
 from lepl.offside.rewriters import indent_rewriter
 from lepl.offside.stream import LineAwareStreamFactory, OffsideSource
@@ -57,11 +57,11 @@ class LineAwareConfiguration(Configuration):
                                     stream_factory=stream_factory)
 
 
-class IndentationConfiguration(Configuration):
+class IndentConfiguration(Configuration):
     '''
     Configure the system so that a given alphabet is extended to be
     "line-aware" and that additional tokens are generated for the
-    initial indentation (`Indentation`) and end of line (`Eol`).
+    initial indent (`Indent`) and end of line (`Eol`).
     '''
     
     def __init__(self, rewriters=None, monitors=None, alphabet=None,
@@ -78,7 +78,7 @@ class IndentationConfiguration(Configuration):
                                     error=error, extra_tokens=extra_tokens, 
                                     source=OffsideSource.factory(tabsize))])
         stream_factory = LineAwareStreamFactory(alphabet)
-        super(IndentationConfiguration, self).__init__(
+        super(IndentConfiguration, self).__init__(
                                     rewriters=rewriters, monitors=monitors, 
                                     stream_factory=stream_factory)
 
@@ -87,7 +87,7 @@ class OffsideConfiguration(Configuration):
     '''
     Configure the system so that a given alphabet is extended to be
     "line-aware", additional tokens are generated for the initial 
-    indentation (`Indentation`) and end of line (`Eol`), indentation
+    indent (`Indent`) and end of line (`Eol`), indent
     is converted to space count, and additional support is added for
     structured matching ("offside rule") with `Line` and `Block`.
     '''
@@ -108,7 +108,7 @@ class OffsideConfiguration(Configuration):
                           indent_rewriter(alphabet, discard=discard, 
                                     error=error, extra_tokens=extra_tokens, 
                                     source=OffsideSource.factory(tabsize))])
-        monitors.append(IndentationMonitor)
+        monitors.append(BlockMonitor)
         stream_factory = LineAwareStreamFactory(alphabet)
         super(OffsideConfiguration, self).__init__(
                                     rewriters=rewriters, monitors=monitors, 

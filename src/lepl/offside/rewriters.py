@@ -17,13 +17,13 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Rewriters and related classes for adding indentation.
+Rewriters and related classes for adding indents.
 '''
 
 from lepl.lexer.rewriters import lexer_rewriter
 from lepl.offside.regexp import LineAwareAlphabet
 from lepl.offside.support import OffsideException
-from lepl.offside.lexer import Eol, Indentation
+from lepl.offside.lexer import Eol, Indent
 
 
 
@@ -31,7 +31,7 @@ from lepl.offside.lexer import Eol, Indentation
 def indent_rewriter(alphabet, discard=None, error=None, extra_tokens=None, 
                     source=None):
     '''
-    Rewrite a matcher so that indentation tokens are present.
+    Rewrite a matcher so that indent tokens are present.
     '''
     if discard is None:
         discard = '[ \t\r\n]'
@@ -39,7 +39,7 @@ def indent_rewriter(alphabet, discard=None, error=None, extra_tokens=None,
         raise OffsideException('Alphabet must be line-aware.')
     if not extra_tokens:
         extra_tokens = set()
-    extra_tokens.update([Indentation(), Eol()])
+    extra_tokens.update([Indent(), Eol()])
     return lexer_rewriter(alphabet=alphabet, discard=discard, error=error, 
                           extra_tokens=extra_tokens, source=source)
 

@@ -8,7 +8,7 @@ from unittest import TestCase
 
 class SimpleLanguageTest(TestCase):
     '''
-    A parser for a simple language, a little like python, that uses indentation.
+    A parser for a simple language, a little like python, that uses indents.
     '''
     
     PROGRAM = \
@@ -22,7 +22,7 @@ def counter_from(n) =
     n = n + 1
   counter
   
-# multiline argument list and a different indentation size
+# multiline argument list and a different indent size
 def first(a, b,
          c) =
    a

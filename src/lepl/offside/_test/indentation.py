@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for indentation.
+Tests for indent.
 '''
 
 #from logging import basicConfig, DEBUG
@@ -25,18 +25,19 @@ from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.functions import Word, Letter
-from lepl.offside.config import IndentationConfiguration
-from lepl.offside.lexer import Indentation, Eol
+from lepl.offside.config import IndentConfiguration
+from lepl.offside.lexer import Indent, Eol
+from lepl.trace import TraceResults
 
 
 # pylint: disable-msg=R0201
 # unittest convention
-class IndentationTest(TestCase):
+class IndentTest(TestCase):
     '''
-    Test the `Indentation` token.
+    Test the `Indent` token.
     '''
     
-    def test_indentation(self):
+    def test_indent(self):
         '''
         Test simple matches against leading spaces.
         '''
@@ -45,13 +46,38 @@ class IndentationTest(TestCase):
 left
     four'''
         word = Token(Word(Letter()))
-        indent = Indentation()
+        indent = Indent()
         line1 = indent('') + Eol()
         line2 = indent('') & word('left') + Eol()
         line3 = indent('    ') & word('four') + Eol()
         parser = (line1 & line2 & line3).string_parser(
-                                        config=IndentationConfiguration())
+                                        config=IndentConfiguration())
         result = parser(text)
         assert result == ['', '', 'left', '    ', 'four'], result
         
+
+class TabTest(TestCase):
+    '''
+    Check that tabs are expanded.
+    '''
+    
+    def test_indent(self):
+        '''
+        Test simple matches against leading spaces.
+        '''
+        #basicConfig(level=DEBUG)
+        text = '''
+ onespace
+ \tspaceandtab'''
+        word = Token(Word(Letter()))
+        indent = Indent()
+        line1 = indent('') & ~Eol()
+        line2 = indent(' ') & word('onespace') & ~Eol()
+        line3 = indent('     ') & word('spaceandtab') & ~Eol()
+        parser = (line1 & line2 & line3).string_parser(
+                            config=IndentConfiguration(tabsize=4,
+                                            monitors=[TraceResults(True)]))
+        result = parser(text)
+        assert result == ['', ' ', 'onespace', '     ', 'spaceandtab'], result
         
+    

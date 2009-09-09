@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Support the stack-scoped tracking of indentation level.
+Support the stack-scoped tracking of indent level blocks.
 '''
 
 
@@ -26,22 +26,22 @@ from lepl.offside.support import OffsideException
 from lepl.support import LogMixin
 
 
-class IndentationMonitor(ActiveMonitor, LogMixin):
+class BlockMonitor(ActiveMonitor, LogMixin):
     '''
-    This tracks the current indentation level (in number of spaces).  It is
+    This tracks the current indent level (in number of spaces).  It is
     read by `Line` and updated by `Block`.
     '''
     
     def __init__(self):
-        super(IndentationMonitor, self).__init__()
+        super(BlockMonitor, self).__init__()
         self.__stack = [0]
         
     def push_level(self, level):
         '''
-        Add a new indentation level.
+        Add a new indent level.
         '''
         self.__stack.append(level)
-        self._debug('Indentation -> {0:d}'.format(level))
+        self._debug('Indent -> {0:d}'.format(level))
         
     def pop_level(self):
         '''
@@ -49,13 +49,13 @@ class IndentationMonitor(ActiveMonitor, LogMixin):
         '''
         self.__stack.pop()
         if not self.__stack:
-            raise OffsideException('Closed an unopened indentation.') 
-        self._debug('Indentation <- {0:d}'.format(self.indentation))
+            raise OffsideException('Closed an unopened indent.') 
+        self._debug('Indent <- {0:d}'.format(self.indent))
        
     @property
-    def indentation(self):
+    def indent(self):
         '''
-        The current indentation value (number of spaces).
+        The current indent value (number of spaces).
         '''
         return self.__stack[-1]
     
