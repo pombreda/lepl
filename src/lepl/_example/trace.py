@@ -23,7 +23,7 @@
 Examples from the documentation.
 '''
 
-#
+
 #from logging import basicConfig, INFO, DEBUG
 #
 #from lepl import *

@@ -66,15 +66,17 @@ Date        Version  Description
 2009-08-19  3.1      Rewritten streams.
 ----------  -------  -----------
 2009-09-05  3.2      Clone bugfix.
+----------  -------  -----------
+2009-09-09  3.2.1    Clone bugfix bugfix.
 ==========  =======  ===========
 
 
 .. release_3_2:
 
-3.2
----
+3.2, 3.2.1
+----------
 
-A bugfix release to correct a problem with cloning matchers.  This is a minor
+A bugfix release to correct a problem with cloning matchers.  3.2 is a minor
 release (rather than a 3.1.1 bugfix release) because it also includes
 significant internal changes as I work towards supporting
 whitespace-significant ("offside rule") parsing.

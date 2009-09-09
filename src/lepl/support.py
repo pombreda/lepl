@@ -205,3 +205,13 @@ def fold(fun, start, sequence):
     for value in sequence:
         start = fun(start, value)
     return start
+
+
+def sample(prefix, rest, size=40):
+    '''
+    Provide a small sample of a string.
+    '''
+    text = prefix + rest
+    if len(text) > size:
+        text = prefix + rest[0:size-len(prefix)-3] + '...'
+    return text

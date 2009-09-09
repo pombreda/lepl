@@ -20,7 +20,7 @@
 Tests for the lepl.regexp.matchers module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Separator, Regexp, NfaRegexp, Trace, DfaRegexp

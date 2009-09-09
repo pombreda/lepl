@@ -205,12 +205,13 @@ def trampoline(main, m_stack=None, m_value=None):
                         m_value.exception(value)
                     if type(value) is not StopIteration and value != last_exc:
                         last_exc = value
-                        log.warn('Exception at epoch {0}'.format(epoch))
+                        log.error('Exception at epoch {0}: {1!s}'\
+                                  .format(epoch, value))
                         if stack:
-                            log.warn('Top of stack: {0}'.format(stack[-1]))
+                            log.debug('Top of stack: {0}'.format(stack[-1]))
                         log.warn(format_exc())
                         for generator in stack:
-                            log.warn('Stack: ' + generator.matcher.describe)
+                            log.debug('Stack: ' + generator.matcher.describe)
     finally:
         # record the remaining stack
         while m_stack and stack:

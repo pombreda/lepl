@@ -90,7 +90,7 @@ which provide a general iterator over "lines".
 from abc import ABCMeta, abstractmethod, abstractproperty
 from io import StringIO
 
-from lepl.support import open_stop
+from lepl.support import open_stop, sample
 
 
 class StreamException(Exception):
@@ -224,16 +224,6 @@ class LocationStream(SimpleStream):
         which are necessary to calculate derived sources (eg tokens).
         '''
     
-
-def sample(prefix, rest, size=40):
-    '''
-    Provide a small sample of a string.
-    '''
-    text = prefix + rest
-    if len(text) > size:
-        text = prefix + rest[0:size-len(prefix)-3] + '...'
-    return text
-
 
 # this doesn't extend LocationStream, instead we register with it
 # (i believe this saves memory space)
@@ -540,7 +530,7 @@ class DefaultStreamFactory(StreamFactory):
         Wrap an iterator over items (or a list).
         '''
         if source is None:
-            source = sample('list: ', repr(items))
+            source = sample('items: ', repr(items))
         return self(CharacterSource(items, source, list_join, line_length))
     
     def from_file(self, file_):

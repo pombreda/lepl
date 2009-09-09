@@ -29,6 +29,7 @@ import lepl
 
 # we need to import all files used in the automated self-test
 
+#@PydevCodeAnalysisIgnore
 import lepl._test.bug_stalled_parser
 import lepl._test.error
 import lepl._test.functions
@@ -64,9 +65,9 @@ def all():
     print('\n\n\n----------------------------------------------------------'
           '------------\n')
     if version[0] == '2':
-        print('Expect 21-22 failures in Python 2.6: {0:d}'
+        print('Expect 20-21 failures in Python 2.6: {0:d}'
               .format(len(result.failures)))
-        assert 21 <= len(result.failures) <= 22, len(result.failures)
+        assert 20 <= len(result.failures) <= 21, len(result.failures)
         target = 213 # no bin/cairo tests
     else:
         print('Expect at most 1 failure in Python 3: {0:d} '

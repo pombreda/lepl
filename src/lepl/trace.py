@@ -24,7 +24,7 @@ Tools for logging and tracing.
 # pylint: disable-msg=C0103
 
 from lepl.monitor import ActiveMonitor, ValueMonitor
-from lepl.support import CircularFifo, LogMixin
+from lepl.support import CircularFifo, LogMixin, sample
 
 
 def TraceResults(enabled=False):
@@ -127,7 +127,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         Provide a standard format for the results.
         '''
         (stream, depth, locn) = self.fmt_stream() 
-        return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> {6!r}' \
+        return '{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> {6!r}' \
                 .format(self.epoch, 
                         stream,
                         locn,
@@ -141,7 +141,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         Provide a standard format for failure.
         '''
         (stream, depth, locn) = self.fmt_stream() 
-        return '{0:05d} {1:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> stop' \
+        return '{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> stop' \
                 .format(self.epoch, 
                         stream,
                         locn,
@@ -156,18 +156,14 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         try:
             (lineno, offset, depth, _text, _source) = \
                     self.generator.stream.location
-            stream = str(self.generator.stream)
             if lineno < 0:
                 locn = '  eof  '
             else:
                 locn = '{0:3d}.{1:<3d}'.format(lineno, offset)
         except AttributeError: # no .location above
             depth = -len(self.generator.stream)
-            if len(self.generator.stream) > 10:
-                stream = repr(self.generator.stream[0:7]) + '...'
-            else:
-                stream = repr(self.generator.stream)
             locn = '<unknown>'
+        stream = sample('', str(self.generator.stream), 9)
         return (stream, depth, locn)
         
     def yield_(self, value):
