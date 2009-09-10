@@ -22,8 +22,8 @@ The token streams.
 
 from logging import getLogger
 
-from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY, \
-    BaseDelegateSource
+from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
+from lepl.filters import BaseDelegateSource
 
 
 def lexed_simple_stream(tokens, discard, error, stream):

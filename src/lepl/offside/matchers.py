@@ -24,15 +24,7 @@ from lepl.matchers import OperatorMatcher, And
 from lepl.parser import tagged
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.monitor import BlockMonitor
-
-
-# pylint: disable-msg=C0103
-# consistent interface
-def BLine(matcher):
-    '''
-    Match the matcher within a block indent.
-    '''
-    return ~BIndent() & matcher & ~Eol()
+from lepl.filters import Filter
 
 
 def constant_indent(n_spaces):
@@ -132,4 +124,45 @@ class Block(OperatorMatcher):
         generator = And(*self.lines)._match(stream_in)
         while True:
             yield (yield generator)
-        
+
+
+# pylint: disable-msg=C0103
+# consistent interface
+def BLine(matcher):
+    '''
+    Match the matcher within a block indent.
+    '''
+    return ~BIndent() & matcher & ~Eol()
+
+
+class Nodent(OperatorMatcher):
+    '''
+    Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 
+    filtered out.  On matching, return the "outer" stream at the appropriate
+    position (ie just after the last matched token in the filtered stream).
+    '''
+    
+    def __init__(self, matcher):
+        super(Nodent, self).__init__()
+        self._arg(matcher=matcher)
+    
+    @staticmethod
+    def filter(token):
+        '''
+        Remove `Indent` and `Eol` tokens.
+        '''
+        return not isinstance(token, Indent) and not isinstance(token, Eol)
+    
+    @tagged
+    def _match(self, stream_in):
+        '''
+        Provide a filtered stream to the embedded matcher.
+        '''
+        filter_ = Filter(self.filter, stream_in)
+        generator = self.matcher._match(filter_.stream)
+        try:
+            while True:
+                (result, stream) = yield generator
+                yield (result, filter_.locate(stream))
+        except StopIteration:
+            return
