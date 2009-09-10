@@ -22,9 +22,9 @@ Matchers that are indent aware.
 
 from lepl.matchers import OperatorMatcher, And
 from lepl.parser import tagged
-from lepl.offside.lexer import Indent, Eol, BIndent
+from lepl.offside.lexer import Indent, Eol, BIndent, START, END
 from lepl.offside.monitor import BlockMonitor
-from lepl.filters import Filter
+from lepl.filters import Filter, ExcludeSequence
 
 
 def constant_indent(n_spaces):
@@ -135,34 +135,35 @@ def BLine(matcher):
     return ~BIndent() & matcher & ~Eol()
 
 
-class Nodent(OperatorMatcher):
+def only_token(token, item):
     '''
-    Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 
-    filtered out.  On matching, return the "outer" stream at the appropriate
-    position (ie just after the last matched token in the filtered stream).
+    Check whether the item (from a location stream of tokens) contains only
+    the token specified.
     '''
+    (tokens, _contents) = item
+    return len(tokens) == 1 and tokens[0] == token
+
+
+def any_token(token, item):
+    '''
+    Check whether the item (from a location stream of tokens) contains at least
+    the token specified.
+    '''
+    (tokens, _contents) = item
+    return token in tokens
+
+
+def CLineFactory(token):
+    '''
+    Return a CLine matcher that applies its contents to a stream which 
+    continues past line breaks if the given token is present.
+    '''
+    return ExcludeSequence(any_token, [START, token.id_, END])
     
-    def __init__(self, matcher):
-        super(Nodent, self).__init__()
-        self._arg(matcher=matcher)
-    
-    @staticmethod
-    def filter(token):
-        '''
-        Remove `Indent` and `Eol` tokens.
-        '''
-        return not isinstance(token, Indent) and not isinstance(token, Eol)
-    
-    @tagged
-    def _match(self, stream_in):
-        '''
-        Provide a filtered stream to the embedded matcher.
-        '''
-        filter_ = Filter(self.filter, stream_in)
-        generator = self.matcher._match(filter_.stream)
-        try:
-            while True:
-                (result, stream) = yield generator
-                yield (result, filter_.locate(stream))
-        except StopIteration:
-            return
+
+Inline = ExcludeSequence(only_token, [START, END])
+'''
+Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 
+filtered out.  On matching, return the "outer" stream at the appropriate
+position (ie just after the last matched token in the filtered stream).
+'''

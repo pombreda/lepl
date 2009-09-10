@@ -375,5 +375,3 @@ def ExcludeSequence(exclude, sequence):
     '''
     return lambda matcher: _ExcludeSequence(exclude, sequence, matcher)
 
-    
-        
