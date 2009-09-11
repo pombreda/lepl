@@ -52,6 +52,20 @@ class BaseDelegateSource(Source):
             return (-1, -1, -1, None, None)
         
         
+def list_join(old_join):
+    '''
+    We're taking a stream and splitting it into single "characters", 
+    each of which is then placed in a "line", so we have introduce an
+    extra level of lists.
+    '''
+    def join(list_of_lists):
+        '''
+        Rewrite join to remove the extra lists.
+        '''
+        return old_join(x[0] for x in list_of_lists)
+    return join
+    
+
 # pylint: disable-msg=E1002
 # pylint confused by abcs
 class BaseTransformedSource(BaseDelegateSource):
@@ -71,17 +85,18 @@ class BaseTransformedSource(BaseDelegateSource):
     def __init__(self, transform, stream):
         if not isinstance(stream, LocationStream):
             raise FilterException('Can only filter LocationStream instances.')
-        # join is unused(?) but passed on to ContentStream
+        # join is unused here, but used by `StreamView`
         super(BaseTransformedSource, self).__init__(str(stream.source),
-                                                    stream.source.join)
+                                            list_join(stream.source.join))
         self.__length = 0
         self.__iterator = transform(stream)
-    
+        
     def __next__(self):
         try:
-            result = next(self.__iterator)
+            (new_item, old_stream) = next(self.__iterator)
             self.__length += 1
-            return result
+            # The extra list is needed because sources return lines
+            return ([new_item], old_stream)
         except StopIteration:
             self.total_length = self.__length
             return (None, None)
@@ -117,7 +132,7 @@ class FilteredSource(BaseTransformedSource):
                 if predicate(item):
                     yield (item, stream)
                 stream = stream[1:]
-        # join is unused(?) but passed on to ContentStream
+        # join is unused here, but used by `StreamView`
         super(FilteredSource, self).__init__(transform, stream)
 
     @staticmethod
@@ -148,9 +163,9 @@ class CachingTransformedSource(BaseDelegateSource):
     def __init__(self, transform, stream):
         if not isinstance(stream, LocationStream):
             raise FilterException('Can only filter LocationStream instances.')
-        # join is unused(?) but passed on to ContentStream
+        # join is unused here, but used by `StreamView`
         super(CachingTransformedSource, self).__init__(str(stream.source),
-                                                       stream.source.join)
+                                                list_join(stream.source.join))
         self.__length = 0
         self.__iterator = transform(stream)
         # map from character offset to underlying stream 
@@ -181,7 +196,8 @@ class CachingTransformedSource(BaseDelegateSource):
             if index not in self.__lookup:
                 self.__lookup[index] = self.__previous_stream
             self.__previous_stream = old_stream[1:]
-            return (item, old_stream)
+            # The extra list is needed because sources return lines
+            return ([item], old_stream)
         except StopIteration:
             self.total_length = self.__length
             return (None, None)
@@ -320,15 +336,19 @@ class _ExcludeSequence(OperatorMatcher):
     Match the content against a stream filtered to remove a sequence.
     '''
     
-    def __init__(self, exclude, sequence, matcher):
+    def __init__(self, exclude, matcher, *sequence):
         '''
         exclude takes two arguments - a value from sequence and an item
         from the stream.
+        
+        The argument arder is a bit unusual here, but sequence is *args so that
+        each value appears as a child and so is automatically detected when
+        generating the lexer.
         '''
         super(_ExcludeSequence, self).__init__()
         self._arg(exclude=exclude)
-        self._arg(sequence=sequence)
         self._arg(matcher=matcher)
+        self._args(sequence=sequence)
     
     @tagged
     def _match(self, stream_in):
@@ -373,5 +393,7 @@ def ExcludeSequence(exclude, sequence):
     
     Warning - consumes space proportional to the size of the filtered data.
     '''
-    return lambda matcher: _ExcludeSequence(exclude, sequence, matcher)
+    # pylint: disable-msg=W0142
+    # see comment in `_ExcludedSequence`
+    return lambda matcher: _ExcludeSequence(exclude, matcher, *sequence)
 

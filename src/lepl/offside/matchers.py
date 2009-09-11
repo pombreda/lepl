@@ -24,7 +24,7 @@ from lepl.matchers import OperatorMatcher, And
 from lepl.parser import tagged
 from lepl.offside.lexer import Indent, Eol, BIndent, START, END
 from lepl.offside.monitor import BlockMonitor
-from lepl.filters import Filter, ExcludeSequence
+from lepl.filters import ExcludeSequence
 
 
 def constant_indent(n_spaces):
@@ -128,11 +128,18 @@ class Block(OperatorMatcher):
 
 # pylint: disable-msg=C0103
 # consistent interface
+def Line(matcher):
+    '''
+    Match the matcher within a line.
+    '''
+    return ~Indent(compiled=True) & matcher & ~Eol(compiled=True)
+
+
 def BLine(matcher):
     '''
-    Match the matcher within a block indent.
+    Match the matcher within a line with block indent.
     '''
-    return ~BIndent() & matcher & ~Eol()
+    return ~BIndent(compiled=True) & matcher & ~Eol(compiled=True)
 
 
 def only_token(token, item):
@@ -141,7 +148,7 @@ def only_token(token, item):
     the token specified.
     '''
     (tokens, _contents) = item
-    return len(tokens) == 1 and tokens[0] == token
+    return len(tokens) == 1 and tokens[0] == token.id_
 
 
 def any_token(token, item):
@@ -150,18 +157,28 @@ def any_token(token, item):
     the token specified.
     '''
     (tokens, _contents) = item
-    return token in tokens
+    return token.id_ in tokens
 
 
-def CLineFactory(token):
+def CLineFactory(continuation):
     '''
-    Return a CLine matcher that applies its contents to a stream which 
+    Return a BLine matcher that applies its contents to a stream which 
     continues past line breaks if the given token is present.
     '''
-    return ExcludeSequence(any_token, [START, token.id_, END])
+    def Cline(matcher):
+        '''
+        Like `BLine` (matches the `Block` indentation at the start), but
+        continues over multiple lines if the continuation token is found
+        at the end of each line.
+        '''
+        multiple = ExcludeSequence(any_token, 
+                    [Indent(compiled=True), continuation, Eol(compiled=True)])
+        return BLine(multiple(matcher))
+    return Cline
     
 
-Inline = ExcludeSequence(only_token, [START, END])
+Extend = ExcludeSequence(only_token, 
+                         [Indent(compiled=True), Eol(compiled=True)])
 '''
 Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 
 filtered out.  On matching, return the "outer" stream at the appropriate

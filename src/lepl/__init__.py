@@ -119,6 +119,10 @@ from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.lexer.rewriters import lexer_rewriter
 from lepl.manager import *
 from lepl.matchers import *
+from lepl.offside.config import IndentConfiguration, LineAwareConfiguration, \
+    OffsideConfiguration
+from lepl.offside.lexer import Indent, Eol, BIndent
+from lepl.offside.matchers import Line, Block, BLine, CLineFactory, Extend
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.rewriters import regexp_rewriter
@@ -238,7 +242,22 @@ __all__ = [
         'compose_transforms',
         'auto_memoize',
         'context_memoize',
-        'optimize_or']
+        'optimize_or',
+        # offside.config
+        'IndentConfiguration',
+        'LineAwareConfiguration',
+        'OffsideConfiguration',
+        # offside.lexer
+        'Indent',
+        'Eol',
+        'BIndent',
+        # offside.matchers
+        'Line',
+        'Block',
+        'BLine',
+        'CLineFactory',
+        'Extend'
+       ]
 
 __version__ = '3.2.1'
 

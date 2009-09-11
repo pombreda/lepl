@@ -71,7 +71,6 @@ class CachedFilterTest(TestCase):
         assert len(stream2) == 12, len(stream2)
         
 
-
 class ExcludeTest(TestCase):
     
     def test_exclude(self):
@@ -96,6 +95,7 @@ class ExcludeTest(TestCase):
         matcher = factory(Literal('b')[:, ...]) + Literal('c')[:, ...]
         matcher.parse_string('abababccc')
         ['bbbccc']  
+
 
 class ExcludeSequenceTest(TestCase):
     

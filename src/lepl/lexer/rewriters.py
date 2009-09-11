@@ -63,6 +63,22 @@ def find_tokens(matcher):
     return tokens
 
 
+def unique_ids(tokens):
+    '''
+    Drop tokens with unique IDs (these are "machine added" things like 
+    indentation).
+    '''
+    log = getLogger('lepl.lexer.rewriters.unique_ids')
+    by_id = {}
+    for token in tokens:
+        if token.id_ in by_id:
+            if type(token.id_) is int:
+                log.warn('Discarding duplicate token: {0}'.format(token))
+        else:
+            by_id[token.id_] = token
+    return set(by_id.values())
+
+
 def assert_not_token(node, visited):
     '''
     Assert that neither this nor any child node is a Token. 
@@ -111,6 +127,8 @@ def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None,
         tokens = find_tokens(matcher)
         if extra_tokens:
             tokens.update(extra_tokens)
+        # this breaks specialised tokens
+#        tokens = unique_ids(tokens)
         if tokens:
             return Lexer(matcher, tokens, alphabet, discard, 
                          error=error, source=source)

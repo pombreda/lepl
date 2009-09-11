@@ -126,7 +126,7 @@ class ContentSource(BaseDelegateSource):
     
     def __init__(self, text, stream):
         '''
-        tokens is an iterator over the (terminals, size, stream_before) tuples.
+        There's just a single line from the token contents.
         '''
         super(ContentSource, self).__init__(str(stream.source),
                                             stream.source.join)

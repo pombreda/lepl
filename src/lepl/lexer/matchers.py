@@ -127,7 +127,7 @@ class BaseToken(OperatorMatcher):
         of the token.  It is usually set via (), which clones this instance
         so that the same token can be used more than once.
         
-        id is an optional unique identifier that will be given an integer
+        id_ is an optional unique identifier that will be given an integer
         value if left empty.
         
         alphabet is the alphabet associated with the regexp.  It should be
@@ -203,14 +203,16 @@ class BaseToken(OperatorMatcher):
         delegate to the content.
         '''
         if not self.compiled:
-            raise LexerError('A Token has not been compiled. '
+            raise LexerError('A {0} token has not been compiled. '
                              'You must use the lexer_rewriter with Tokens. '
                              'This can be done by using '
-                             'Configuration.tokens().')
+                             'Configuration.tokens().'.format(
+                                                self.__class__.__name__))
         if stream:
             (tokens, contents) = stream[0]
             if self.id_ in tokens:
                 if self.content is None:
+                    # result contains all data
                     yield ([contents], stream[1:])
                 else:
                     new_stream = self.__new_stream(contents, stream)
@@ -239,6 +241,8 @@ class BaseToken(OperatorMatcher):
         if isinstance(stream.source, TokenSource):
             return DEFAULT_STREAM_FACTORY(ContentSource(contents, stream))
         else:
+            # when is this branch used?
+            print('STRANGE BRANCH')
             return contents
     
     @classmethod
@@ -335,6 +339,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
         if t_regexp is None:
             for token in tokens:
                 token.compile(alphabet)
+                self._debug('Token: {0}'.format(token))
             t_regexp = Expression.multiple(alphabet, 
                                            [(t.id_, t.regexp) 
                                             for t in tokens]).dfa()
