@@ -103,12 +103,12 @@ class Block(OperatorMatcher):
         '''
         self.__monitor = monitor
         
-    @staticmethod
-    def on_pop(monitor):
+    def on_pop(self, monitor):
         '''
         Remove the indent we added.
         '''
-        monitor.pop_level()
+        if not self.__monitor: # only if we pushed
+            monitor.pop_level()
         
     @tagged
     def _match(self, stream_in):
@@ -119,6 +119,7 @@ class Block(OperatorMatcher):
         (indent, _stream) = yield self.indent._match(stream_in)
         current = self.__monitor.indent
         self.__monitor.push_level(self.policy(current, indent))
+        # this flags we have pushed and need to pop
         self.__monitor = None
         
         generator = And(*self.lines)._match(stream_in)

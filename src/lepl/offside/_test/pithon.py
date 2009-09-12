@@ -82,3 +82,61 @@ def foo(abc, def,
                           ['def', 'foo', ('abc', 'def', 'ghi'), 
                            ['jgiog']]], result
         
+    def test_cline(self):
+        #basicConfig(level=DEBUG)
+        result = self.parser('''
+this is a single \
+  line spread over \
+    many actual \
+lines
+and this is another
+''')
+        assert result == [[], 
+                          ['this', 'is', 'a', 'single', 'line', 'spread', 
+                           'over', 'many', 'actual', 'lines'], 
+                           ['and', 'this', 'is', 'another']], result
+                           
+    def test_all(self):
+        basicConfig(level=DEBUG)
+        result = self.parser('''
+this is a grammar with a similar 
+line structure to python
+
+if something:
+  then we indent
+else:
+  something else
+  
+def function(a, b, c):
+  we can nest blocks:
+    like this
+  and we can also \
+    have explicit continuations \
+    with \
+any \
+       indentation
+       
+same for (argument,
+          lists):
+  which do not need the
+  continuation marker
+''')
+        assert result == \
+        [ [], 
+          ['this', 'is', 'a', 'grammar', 'with', 'a', 'similar'], 
+          ['line', 'structure', 'to', 'python'], 
+          [], 
+          ['if', 'something', 
+            ['then', 'we', 'indent']], 
+          ['else', 
+            ['something', 'else'], 
+          []], 
+          ['def', 'function', ('a', 'b', 'c'), 
+            ['we', 'can', 'nest', 'blocks', 
+              ['like', 'this']], 
+            ['and', 'we', 'can', 'also', 'have', 'explicit', 
+             'continuations', 'with', 'any', 'indentation'], 
+            []], 
+          ['same', 'for', ('argument', 'lists'), 
+            ['which', 'do', 'not', 'need', 'the'], 
+            ['continuation', 'marker']]], result
