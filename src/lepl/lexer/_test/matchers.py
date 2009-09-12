@@ -102,8 +102,7 @@ class TokenRewriteTest(TestCase):
             parser('abc defXghi')
             assert False, 'expected error'
         except RuntimeLexerError as err:
-            assert str(err) == 'Cannot lex "<unknown> - ' \
-                'use stream for better error reporting" at -1/-1', str(err)
+            assert str(err) == 'No lexer for \'Xghi\'.', str(err)
         
     def test_good_error_msg(self):
         '''
@@ -117,8 +116,8 @@ class TokenRewriteTest(TestCase):
             parser('abc defXghi')
             assert False, 'expected error'
         except RuntimeLexerError as err:
-            assert str(err) == 'Cannot lex "str: \'abc defXghi\'" at 1/8', \
-                str(err)
+            assert str(err) == 'No lexer for \'Xghi\' at line 1 character 7 ' \
+                'of str: \'abc defXghi\'.', str(err)
         
     def test_expr_with_functions(self):
         '''
@@ -285,8 +284,7 @@ class ErrorTest(TestCase):
             parser('c')
             assert False, 'expected failure'
         except RuntimeLexerError as err:
-            assert str(err) == 'Cannot lex "<unknown> - use stream for ' \
-                'better error reporting" at -1/-1', str(err)
+            assert str(err) == 'No lexer for \'c\'.', str(err)
 
     def test_incomplete(self):
         '''

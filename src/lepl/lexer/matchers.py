@@ -31,6 +31,7 @@ from lepl.functions import Add, Apply, Drop, KApply, Repeat, Map
 from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream, \
     ContentSource, TokenSource
 from lepl.error import raise_error
+from lepl.lexer.support import LexerError, RuntimeLexerError
 from lepl.matchers import OperatorMatcher, BaseMatcher, coerce_, Any, \
     Literal, Lookahead, Regexp, And, Or, First
 from lepl.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
@@ -67,13 +68,6 @@ NonToken.register(Any)
 NonToken.register(Literal)
 NonToken.register(Lookahead)
 NonToken.register(Regexp)
-
-
-class LexerError(Exception):
-    '''
-    Errors associated with the lexer
-    '''
-    pass
 
 
 class TokenNamespace(Namespace):
@@ -241,8 +235,7 @@ class BaseToken(OperatorMatcher):
         if isinstance(stream.source, TokenSource):
             return DEFAULT_STREAM_FACTORY(ContentSource(contents, stream))
         else:
-            # when is this branch used?
-            print('STRANGE BRANCH')
+            # this branch when the original stream is not a location stream 
             return contents
     
     @classmethod
@@ -293,17 +286,6 @@ class  Token(BaseToken):
         self._karg(regexp=regexp)
         
         
-class RuntimeLexerError(LexerError):
-    '''
-    Error raised for problems with lexing.
-    '''
-    
-    def __init__(self, stream):
-        super(RuntimeLexerError, self).__init__(
-            'Cannot lex "{filename}" at {lineno}/{offset}'.format(
-                **syntax_error_kargs(stream, None, None)))
-
-
 class Lexer(NamespaceMixin, BaseMatcher):
     '''
     This takes a set of regular expressions and provides a matcher that
@@ -315,7 +297,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
     '''
     
     def __init__(self, matcher, tokens, alphabet, discard, 
-                  error=None, t_regexp=None, s_regexp=None, source=None):
+                  t_regexp=None, s_regexp=None, source=None):
         '''
         matcher is the head of the original matcher graph, which will be called
         with a tokenised stream. 
@@ -326,9 +308,6 @@ class Lexer(NamespaceMixin, BaseMatcher):
         
         discard is the regular expression for spaces (which are silently
         dropped if not token can be matcher).
-        
-        error is the exception raised if discard fails to match.  It is passed
-        the stream.
         
         t_regexp and s_regexp are internally compiled state, use in cloning,
         and should not be provided by non-cloning callers.
@@ -345,12 +324,10 @@ class Lexer(NamespaceMixin, BaseMatcher):
                                             for t in tokens]).dfa()
         if s_regexp is None:
             s_regexp = Expression.single(alphabet, discard).dfa()
-        error = RuntimeLexerError if error is None else error
         self._arg(matcher=matcher)
         self._arg(tokens=tokens)
         self._arg(alphabet=alphabet)
         self._arg(discard=discard)
-        self._karg(error=error)
         self._karg(t_regexp=t_regexp)
         self._karg(s_regexp=s_regexp)
         self._karg(source=source)
@@ -374,13 +351,12 @@ class Lexer(NamespaceMixin, BaseMatcher):
         '''
         if isinstance(stream, LocationStream):
             tokens = lexed_location_stream(self.t_regexp, self.s_regexp,
-                                           self.error, stream, self.source)
+                                           stream, self.source)
         else:
             # might assert simple stream here?
             if self.source:
                 raise RuntimeLexerError('Source specified for simple stream')
-            tokens = lexed_simple_stream(self.t_regexp, self.s_regexp, 
-                                         self.error, stream)
+            tokens = lexed_simple_stream(self.t_regexp, self.s_regexp, stream)
         # pylint: disable-msg=W0212
         # implementation, not public, method
         generator = self.matcher._match(tokens)

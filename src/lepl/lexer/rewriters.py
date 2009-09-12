@@ -92,8 +92,8 @@ def assert_not_token(node, visited):
                 assert_not_token(child, visited)
 
 
-def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None,
-                   extra_tokens=None, source=None):
+def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', extra_tokens=None, 
+                   source=None):
     '''
     This is required when using Tokens.  It does the following:
     - Find all tokens in the matcher graph
@@ -130,8 +130,7 @@ def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', error=None,
         # this breaks specialised tokens
 #        tokens = unique_ids(tokens)
         if tokens:
-            return Lexer(matcher, tokens, alphabet, discard, 
-                         error=error, source=source)
+            return Lexer(matcher, tokens, alphabet, discard, source=source)
         else:
             log.info('Lexer rewriter used, but no tokens found.')
             return matcher

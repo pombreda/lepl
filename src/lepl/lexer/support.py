@@ -17,27 +17,19 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Rewriters and related classes for adding indents.
+Support classes for the lexer.
 '''
 
-from lepl.lexer.rewriters import lexer_rewriter
-from lepl.offside.regexp import LineAwareAlphabet
-from lepl.offside.support import OffsideError
-from lepl.offside.lexer import Eol, Indent
+
+class LexerError(Exception):
+    '''
+    Errors associated with the lexer
+    '''
 
 
-def indent_rewriter(alphabet, discard=None, extra_tokens=None, source=None):
+class RuntimeLexerError(LexerError):
     '''
-    Rewrite a matcher so that indent tokens are present.
+    Error raised for problems with lexing.
     '''
-    if discard is None:
-        discard = '[ \t\r\n]'
-    if not isinstance(alphabet, LineAwareAlphabet):
-        raise OffsideError('Alphabet must be line-aware.')
-    if not extra_tokens:
-        extra_tokens = set()
-    extra_tokens.update([Indent(), Eol()])
-    return lexer_rewriter(alphabet=alphabet, discard=discard, 
-                          extra_tokens=extra_tokens, source=source)
 
 

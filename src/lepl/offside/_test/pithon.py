@@ -5,6 +5,7 @@ from unittest import TestCase
 
 from lepl import *
 from lepl.offside.config import OffsideConfiguration
+from lepl.lexer.matchers import LexerError
 
 class PithonTest(TestCase):
     
@@ -14,8 +15,8 @@ class PithonTest(TestCase):
         word = Token(Word(Lower()))
         continuation = Token(r'\\')
         symbol = Token(Any('()'))
-        introduce = Token(':')
-        comma = Token(',')
+        introduce = ~Token(':')
+        comma = ~Token(',')
         
         CLine = CLineFactory(continuation)
         
@@ -25,7 +26,7 @@ class PithonTest(TestCase):
 
         block = Delayed()
         line = (CLine(statement) | block | Line(Empty())) > list
-        block += CLine((function | statement) & ~introduce) & Block(line[1:])
+        block += CLine((function | statement) & introduce) & Block(line[1:])
         
         program = (line[:] & Eos())
         return program.string_parser(
@@ -33,7 +34,7 @@ class PithonTest(TestCase):
                                          monitors=[TraceResults(True)]))
     
     def test_blocks(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         program1 = '''
 kopo fjire ifejfr
 ogptkr jgitr gtr
@@ -49,15 +50,35 @@ jiojio
 '''
         result = self.parser(program1)
         assert result == [[], 
-                          [u'kopo', u'fjire', u'ifejfr'], 
-                          [u'ogptkr', u'jgitr', u'gtr'], 
-                          [u'ffjireofr', (u'kfkorp', u',', u'freopk'), 
-                           [u'jifr', u'fireo'], 
-                           [u'frefre', u'jifoji'], 
-                           [u'jio', u'frefre',
-                            [u'jiforejifre', u'fiorej'], 
-                            [u'jfore', u'fire'], 
-                            [u'jioj']], 
-                           [u'jioj']], 
-                          [u'jiojio']], result
+                          ['kopo', 'fjire', 'ifejfr'], 
+                          ['ogptkr', 'jgitr', 'gtr'], 
+                          ['ffjireofr', ('kfkorp', 'freopk'), 
+                           ['jifr', 'fireo'], 
+                           ['frefre', 'jifoji'], 
+                           ['jio', 'frefre',
+                            ['jiforejifre', 'fiorej'], 
+                            ['jfore', 'fire'], 
+                            ['jioj']], 
+                           ['jioj']], 
+                          ['jiojio']], result
+        
+    def test_no_lexer(self):
+        #basicConfig(level=DEBUG)
+        try:
+            print(self.parser('123'))
+            assert False, 'expected exception'
+        except LexerError as error:
+            assert str(error) == 'No lexer for \'123\' at ' \
+                'line 1 character 0 of str: \'123\'.', str(error)
+                
+    def test_extend(self):
+        #basicConfig(level=DEBUG)
+        result = self.parser('''
+def foo(abc, def,
+        ghi):
+  jgiog
+''')
+        assert result == [[], 
+                          ['def', 'foo', ('abc', 'def', 'ghi'), 
+                           ['jgiog']]], result
         

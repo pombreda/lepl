@@ -25,7 +25,7 @@ from io import StringIO
 from lepl.lexer.stream import TokenSource
 from lepl.offside.lexer import START
 from lepl.offside.regexp import Token
-from lepl.offside.support import LineAwareException, OffsideException
+from lepl.offside.support import LineAwareError, OffsideError
 from lepl.stream import DefaultStreamFactory, LineSource, sample
 
 
@@ -64,7 +64,7 @@ class LineAwareStreamFactory(DefaultStreamFactory):
         '''
         Lists of items are not supported.
         '''
-        raise LineAwareException('Only line-based sources are supported')
+        raise LineAwareError('Only line-based sources are supported')
     
     def from_file(self, file_):
         '''
@@ -78,7 +78,7 @@ class LineAwareStreamFactory(DefaultStreamFactory):
         '''
         Reject simple streams.
         '''
-        raise LineAwareException('Only line-based sources are supported')
+        raise LineAwareError('Only line-based sources are supported')
 
 
 def top_and_tail(alphabet, lines):
@@ -131,7 +131,8 @@ class LineAwareSource(LineSource):
         Join characters together as a line of text.
         '''
         if line:
-            return self.join(line[offset:])
+            # remember - join joins *lines*
+            return self.join([line[offset:]])
         else:
             return self.join([])
 
@@ -158,12 +159,13 @@ class OffsideSource(TokenSource):
                     super(OffsideSource, self).__next__()
             if terminals and START in terminals:
                 if not len(terminals) == 1:
-                    raise OffsideException('More than one token matching ^')
+                    raise OffsideError('More than one token matching ^')
                 elif '\t' in text:
                     text = ''.join([char if char == ' ' else self.__tab
                                     for char in text])
             return ([(terminals, text)], stream)
-        except TypeError:
+        except TypeError as error:
+            print(error)
             return (None, None)
         
     @staticmethod

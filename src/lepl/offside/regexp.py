@@ -22,7 +22,7 @@ and end.
 '''
 
 from lepl.config import Configuration
-from lepl.offside.support import LineAwareException
+from lepl.offside.support import LineAwareError
 from lepl.rewriters import flatten
 from lepl.regexp.core import Character, Sequence, Choice, Repeat, Option
 from lepl.regexp.str import StrAlphabet
@@ -99,7 +99,7 @@ class LineAwareAlphabet(StrAlphabet):
     
     def __init__(self, alphabet):
         if not isinstance(alphabet, StrAlphabet):
-            raise LineAwareException('Only StrAlphabet subclasses supported: '
+            raise LineAwareError('Only StrAlphabet subclasses supported: '
                                      '{0}/{1}'.format(alphabet, 
                                                       type(alphabet).__name__))
         super(LineAwareAlphabet, self).__init__(SOL, EOL,

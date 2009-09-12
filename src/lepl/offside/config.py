@@ -65,8 +65,7 @@ class IndentConfiguration(Configuration):
     '''
     
     def __init__(self, rewriters=None, monitors=None, alphabet=None,
-                 discard=None, error=None, extra_tokens=None,
-                 tabsize=DEFAULT_TABSIZE):
+                 discard=None, extra_tokens=None, tabsize=DEFAULT_TABSIZE):
         if rewriters is None:
             rewriters = []
         if alphabet is None:
@@ -75,7 +74,7 @@ class IndentConfiguration(Configuration):
         rewriters.extend([fix_arguments(BaseRegexp, alphabet=alphabet),
                           fix_arguments(BaseToken, alphabet=alphabet),
                           indent_rewriter(alphabet, discard=discard, 
-                                    error=error, extra_tokens=extra_tokens, 
+                                    extra_tokens=extra_tokens, 
                                     source=OffsideSource.factory(tabsize))])
         stream_factory = LineAwareStreamFactory(alphabet)
         super(IndentConfiguration, self).__init__(
@@ -93,7 +92,7 @@ class OffsideConfiguration(Configuration):
     '''
     
     def __init__(self, rewriters=None, monitors=None, alphabet=None,
-                 discard=None, error=None, extra_tokens=None,
+                 discard=None, extra_tokens=None,
                  tabsize=DEFAULT_TABSIZE, policy=DEFAULT_POLICY):
         if rewriters is None:
             rewriters = []
@@ -106,7 +105,7 @@ class OffsideConfiguration(Configuration):
                           fix_arguments(BaseToken, alphabet=alphabet),
                           fix_arguments(Block, policy=policy),
                           indent_rewriter(alphabet, discard=discard, 
-                                    error=error, extra_tokens=extra_tokens, 
+                                    extra_tokens=extra_tokens, 
                                     source=OffsideSource.factory(tabsize))])
         monitors.append(BlockMonitor)
         stream_factory = LineAwareStreamFactory(alphabet)

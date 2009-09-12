@@ -22,11 +22,12 @@ The token streams.
 
 from logging import getLogger
 
-from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
 from lepl.filters import BaseDelegateSource
+from lepl.lexer.support import RuntimeLexerError
+from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
 
 
-def lexed_simple_stream(tokens, discard, error, stream):
+def lexed_simple_stream(tokens, discard, stream):
     '''
     Given a simple stream, create a simple stream of (terminals, match) pairs.
     '''
@@ -45,8 +46,7 @@ def lexed_simple_stream(tokens, discard, error, stream):
                     (terminals, _size, stream) = discard.size_match(stream)
                     log.debug('Space: {0!r} {1!r}'.format(terminals, discard))
         except TypeError:
-            #log.debug(format_exc())
-            raise error(stream)
+            raise RuntimeLexerError('No lexer for \'{0}\'.'.format(stream))
     return DEFAULT_STREAM_FACTORY.from_items(generator())
 
 
@@ -89,7 +89,7 @@ class TokenSource(BaseDelegateSource):
             return (None, None)
         
 
-def lexed_location_stream(tokens, discard, error, stream, source=None):
+def lexed_location_stream(tokens, discard, stream, source=None):
     '''
     Given a location stream, create a location stream of regexp matches.
     '''
@@ -114,7 +114,12 @@ def lexed_location_stream(tokens, discard, error, stream, source=None):
                             discard.size_match(stream_before)
                     log.debug('Space: {0!r} {1!r}'.format(terminals, size))
         except TypeError:
-            raise error(stream_before)
+            raise RuntimeLexerError('No lexer for \'{0}\' at '
+                                    'line {1} character {2} of {3}.'
+                                    .format(stream_before.text, 
+                                            stream_before.line_number,
+                                            stream_before.line_offset,
+                                            stream_before.source))
     token_stream = generator(stream)
     return DEFAULT_STREAM_FACTORY(source(token_stream, stream))
 

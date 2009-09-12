@@ -172,13 +172,13 @@ def CLineFactory(continuation):
         at the end of each line.
         '''
         multiple = ExcludeSequence(any_token, 
-                    [Indent(compiled=True), continuation, Eol(compiled=True)])
+                    [Eol(compiled=True), continuation, Indent(compiled=True)])
         return BLine(multiple(matcher))
     return Cline
     
 
 Extend = ExcludeSequence(only_token, 
-                         [Indent(compiled=True), Eol(compiled=True)])
+                         [Eol(compiled=True), Indent(compiled=True)])
 '''
 Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 
 filtered out.  On matching, return the "outer" stream at the appropriate

@@ -22,14 +22,14 @@ Support for offisde and line-aware parsing.
 '''
 
 
-class LineAwareException(Exception):
+class LineAwareError(Exception):
     '''
     The exception raised by problems in line-aware code (functionality that
     flags or detects markers for the start and end of lines).
     '''
 
 
-class OffsideException(Exception):
+class OffsideError(Exception):
     '''
     The exception raised by problems when parsing whitespace significant
     code.
