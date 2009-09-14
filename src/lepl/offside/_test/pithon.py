@@ -97,7 +97,7 @@ and this is another
                            ['and', 'this', 'is', 'another']], result
                            
     def test_all(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         result = self.parser('''
 this is a grammar with a similar 
 line structure to python

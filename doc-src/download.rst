@@ -99,11 +99,11 @@ Once installed you can test LEPL by running the self-test::
 Supported Versions
 ------------------
 
-The code was written using Python 3.0.  It was then backported to Python 2.6
-and appears to work fine there, except for the binary parsing (which only
-works on Python 3+).
+The code is targetted at Python 3, but various small modifications are added
+to keep most packages (currently everything except binary parsing) working
+with Python 2.6.
 
-However, it's not regularly tested on anything other than 3.0.
+It is regularly tested on 2.6 and 3.1.
 
 It does not work with Python 2.5.  Incompatibilities include:
 

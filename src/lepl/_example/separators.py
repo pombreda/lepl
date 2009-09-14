@@ -33,6 +33,14 @@ W_STREAM = 10
 W_YES = 14
 
 
+def _print(*args, **kargs):
+    '''
+    Isolate this for Python 2.6.  We need to exclude this to avoid errors
+    on install.
+    '''
+#    print(*args, **kargs)
+
+
 def make_table(base, streams, separators, title, titles):
     '''
     Generate the entire table, given a base matcher, some streams to test 
@@ -72,19 +80,19 @@ def print_titles(title, titles):
     
 def print_row(left, count, width, line='-'):
     if left:
-        print('+' + line * W_STREAM, end='')
+        _print('+' + line * W_STREAM, end='')
     else:
-        print('|' + ' ' * W_STREAM, end='')
+        _print('|' + ' ' * W_STREAM, end='')
     for _i in range(count):
-        print('+' + line * (W_YES * width + width - 1) , end='')
+        _print('+' + line * (W_YES * width + width - 1) , end='')
     print('+')
     
 def print_columns(left, count, width, titles):
-    print('|{0:{1}}'.format(left, W_STREAM), end='')
+    _print('|{0:{1}}'.format(left, W_STREAM), end='')
     for _i in range(count):
         for title in titles:
-            print('|{0:{1}}'.format(title, width * W_YES + width - 1), end='')
-    print('|')
+            _print('|{0:{1}}'.format(title, width * W_YES + width - 1), end='')
+    _print('|')
     
 def build_parsers(base, separators):
     '''

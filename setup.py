@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='LEPL',
-      version='3.2.1',
+      version='3.3b1',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -69,7 +69,8 @@ Features
                 'lepl.bin',    'lepl.bin._test',    'lepl.bin._example',
                 'lepl.contrib',
                 'lepl.lexer',  'lepl.lexer._test',  'lepl.lexer._example',
-                'lepl.regexp', 'lepl.regexp._test'
+                'lepl.regexp', 'lepl.regexp._test',
+                'lepl.offside','lepl.offside._test'
                 ],
       package_dir = {'':'src'},
       license = "LGPL",
