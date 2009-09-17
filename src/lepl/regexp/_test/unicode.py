@@ -254,4 +254,5 @@ class DfaTest(TestCase):
         self.assert_dfa('a(bc|b*d)', 'abde', 'abd') 
         self.assert_dfa('a(bc|b*d)', 'abce', 'abc') 
     
-
+    def test_space_star(self):
+        self.assert_dfa(' *', '  a', '  ')

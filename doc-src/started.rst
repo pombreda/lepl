@@ -58,7 +58,7 @@ There's a lot going on here, some of which I will explain in later sections,
 but the most important thing to notice is that ``matcher`` was constructed
 from two simpler matchers [#]_ --- `Word()
 <api/redirect.html#lepl.Word>`_ and `Integer()
-<api/redirect.html#lepl.match.Integer>`_ [#]_.  It is those two matchers
+<api/redirect.html#lepl.Integer>`_ [#]_.  It is those two matchers
 that identify the values 'andrew' (a word) and '3333253' (an integer).
 
 .. [#] In fact there are probably a dozen or so matchers involved here: the

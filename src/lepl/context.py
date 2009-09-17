@@ -22,7 +22,7 @@ allows with contexts to influence local statements.
 '''
 
 from collections import deque
-from logging import getLogger
+#from logging import getLogger
 from threading import local
 
 
@@ -33,6 +33,7 @@ class ContextError(Exception):
     pass
 
 
+# pylint: disable-msg=R0903
 class NamespaceMap(local):
     '''
     A store for namespaces.
@@ -162,9 +163,9 @@ def Global(name, default=None):
     This provides an interface to `__GLOBAL`.
     '''
     # Delay creation to handle circular dependencies.
-    LOG = getLogger('lepl.context.Global')
+    #LOG = getLogger('lepl.context.Global')
     assert name
-    LOG.debug('Getting {0}/{1}'.format(name, default))
+    #LOG.debug('Getting {0}/{1}'.format(name, default))
     global __GLOBAL
     if __GLOBAL is None:
         __GLOBAL = NamespaceMap()

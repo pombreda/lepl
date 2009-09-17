@@ -20,11 +20,23 @@
 Matchers that are indent aware.
 '''
 
-from lepl.matchers import OperatorMatcher, And
+from lepl.matchers import OperatorMatcher, And, Any
 from lepl.parser import tagged
-from lepl.offside.lexer import Indent, Eol, BIndent, START, END
+from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.monitor import BlockMonitor
+from lepl.offside.regexp import SOL as _SOL, EOL as _EOL
 from lepl.filters import ExcludeSequence
+
+
+SOL = lambda: ~Any([_SOL])
+'''
+Allow explicit matching of start of line marker.
+'''
+
+EOL = lambda: ~Any([_EOL])
+'''
+Allow explicit matching of end of line marker.
+'''
 
 
 def constant_indent(n_spaces):

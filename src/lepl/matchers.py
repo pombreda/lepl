@@ -616,6 +616,7 @@ class Any(OperatorMatcher):
         super(Any, self).__init__()
         self._karg(restrict=restrict)
         self.tag(repr(restrict))
+        self.__warned = False
     
     @tagged
     def _match(self, stream):
@@ -624,7 +625,18 @@ class Any(OperatorMatcher):
         (result, stream) tuples).  The result will be a single matching 
         character.
         '''
-        if stream and (not self.restrict or stream[0] in self.restrict):
+        ok = bool(stream)
+        if ok and self.restrict:
+            try:
+                ok = stream[0] in self.restrict
+            except TypeError:
+                # it would be nice to make this an error, but for line aware
+                # parsing (and any other heterogenous input) it's legal
+                if not self.__warned:
+                    self._debug('Cannot restrict {0} with {1!r}'.format(
+                                                stream[0], self.restrict))
+                    self.__warned = True
+        if ok:
             yield ([stream[0]], stream[1:])
             
             

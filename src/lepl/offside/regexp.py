@@ -41,7 +41,7 @@ Symbol to represent end of line.
 '''
 
 
-class Token(object):
+class Marker(object):
     '''
     Used like a character, but represents start/end of line.
     '''
@@ -76,17 +76,20 @@ class Token(object):
         return hash(repr(self))
     
     def __repr__(self):
-        return 'Token({0!r},{1!r})'.format(self.text, self.high)
+        return 'Marker({0!r},{1!r})'.format(self.text, self.high)
+    
+    def __len__(self):
+        return 1
     
 
-SOL = Token(START, False)
+SOL = Marker(START, False)
 '''
-Token to represent the start of a line.
+Marker to represent the start of a line.
 '''
 
-EOL = Token(END, True)
+EOL = Marker(END, True)
 '''
-Token to represent the end of a line.
+Marker to represent the end of a line.
 '''
 
 

@@ -122,7 +122,8 @@ from lepl.matchers import *
 from lepl.offside.config import IndentConfiguration, LineAwareConfiguration, \
     OffsideConfiguration
 from lepl.offside.lexer import Indent, Eol, BIndent
-from lepl.offside.matchers import Line, Block, BLine, CLineFactory, Extend
+from lepl.offside.matchers import Line, Block, BLine, CLineFactory, Extend, \
+    SOL, EOL
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.rewriters import regexp_rewriter
@@ -256,7 +257,9 @@ __all__ = [
         'Block',
         'BLine',
         'CLineFactory',
-        'Extend'
+        'Extend',
+        'SOL',
+        'EOL'
        ]
 
 __version__ = '3.3b1'

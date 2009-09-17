@@ -24,7 +24,7 @@ from io import StringIO
 
 from lepl.lexer.stream import TokenSource
 from lepl.offside.lexer import START
-from lepl.offside.regexp import Token
+from lepl.offside.regexp import Marker
 from lepl.offside.support import LineAwareError, OffsideError
 from lepl.stream import DefaultStreamFactory, LineSource, sample
 
@@ -100,7 +100,7 @@ def join(lines):
     A join that drops the SOL and EOL tokens from the list of characters.
     '''
     # pylint: disable-msg=W0141
-    return ''.join([''.join(filter(lambda x: not isinstance(x, Token), line))
+    return ''.join([''.join(filter(lambda x: not isinstance(x, Marker), line))
                     for line in lines])
 
         

@@ -18,6 +18,7 @@ parser in considerable detail.  New users may want to start there.
    resources
    debugging
    lexer
+   offside
    advanced
    style
    implementation
