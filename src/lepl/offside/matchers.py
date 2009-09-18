@@ -28,6 +28,9 @@ from lepl.offside.regexp import SOL as _SOL, EOL as _EOL
 from lepl.filters import ExcludeSequence
 
 
+# pylint: disable-msg=W0105
+# pylint convention
+
 SOL = lambda: ~Any([_SOL])
 '''
 Allow explicit matching of start of line marker.
@@ -69,7 +72,7 @@ By default, expect an indent equivalent to a tab.
 # pylint conventions
 class Block(OperatorMatcher):
     '''
-    Set a new indent level for the enclosed matchers (typically `Line` and
+    Set a new indent level for the enclosed matchers (typically `BLine` and
     `Block` instances).
     
     In the simplest case, this might increment the global indent by 4, say.

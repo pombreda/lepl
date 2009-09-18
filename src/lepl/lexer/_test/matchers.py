@@ -20,7 +20,10 @@
 Wide range of tests for lexer.
 '''
 
-from logging import basicConfig, DEBUG
+# pylint: disable-msg=R0201, R0904, R0903, R0914
+# tests
+
+#from logging import basicConfig, DEBUG
 from math import sin, cos
 from operator import add, sub, truediv, mul
 from unittest import TestCase
@@ -28,6 +31,14 @@ from unittest import TestCase
 from lepl import Token, Literal, Float, LexerError, Configuration, \
     lexer_rewriter, Node, Delayed, Any, Eos, TraceResults, UnsignedFloat, \
     Or, UnicodeAlphabet, RuntimeLexerError
+
+
+def str26(value):
+    '''
+    Convert to string with crude hack for 2.6 Unicode
+    '''
+    string = str(value)
+    return string.replace("u'", "'")
 
 
 class RegexpCompilationTest(TestCase):
@@ -151,8 +162,8 @@ class TokenRewriteTest(TestCase):
         parser = line.string_parser(
                     Configuration(monitors=[TraceResults(True)],
                                   rewriters=[lexer_rewriter()]))
-        results = parser('1 + 2*sin(3+ 4) - 5')
-        assert str(results[0]) == """Expression
+        results = str26(parser('1 + 2*sin(3+ 4) - 5')[0])
+        assert results == """Expression
  +- Factor
  |   `- Term
  |       `- value '1'
@@ -175,7 +186,7 @@ class TokenRewriteTest(TestCase):
  +- operator '-'
  `- Factor
      `- Term
-         `- value '5'""", '[' + str(results[0]) + ']'
+         `- value '5'""", '[' + results + ']'
         
 
     def test_expression2(self):

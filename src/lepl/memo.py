@@ -251,8 +251,6 @@ class PerCallCache(LogMixin):
 #                    raise Exception('A view completed before the cache was '
 #                                    'complete: {0!r}'
 #                                    .format(self.__generator))
-                if not result:
-                    print('fff')
                 self.__cache.append(result)
                 self.__returned = True
                 yield result

@@ -30,6 +30,14 @@ from lepl.stream import SimpleStream, DEFAULT_STREAM_FACTORY
 # (dude this is just a test)
 
     
+def repr26(value):
+    '''
+    Convert to string with crude hack for 2.6 Unicode
+    '''
+    string = repr(value)
+    return string.replace("u'", "'")
+
+
 class StreamTest(TestCase):
     
     def test_single_line(self):
@@ -49,9 +57,9 @@ class StreamTest(TestCase):
         assert s1[5] == 'q', s1[5]
         s2 = s1[5:]
         assert s2[0] == 'q', s2[0]
-        assert repr(s2) == "'pqr\\n'[1:]", repr(s2)
+        assert repr26(s2) == "'pqr\\n'[1:]", repr26(s2)
         s3 = s2[3:]
-        assert repr(s3) == "'xyz'[0:]", repr(s3)
+        assert repr26(s3) == "'xyz'[0:]", repr26(s3)
         
     def test_eof(self):
         s1 = DEFAULT_STREAM_FACTORY.from_string('abc\npqs')

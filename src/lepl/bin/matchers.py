@@ -31,8 +31,10 @@ else:
     from lepl.parser import tagged
     
     
-    # pylint: disable-msg=C0103
-    # (consistent interface for matchers)
+    # pylint: disable-msg=C0103, R0901, R0904
+    # lepl conventions
+    # pylint: disable-msg=R0201
+    # (allow over-riding in sub-classes)
     
     class _Constant(OperatorMatcher):
         '''

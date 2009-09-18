@@ -93,8 +93,8 @@ class ExcludeTest(TestCase):
     def test_example(self):
         factory = Exclude(lambda x: x == 'a')
         matcher = factory(Literal('b')[:, ...]) + Literal('c')[:, ...]
-        matcher.parse_string('abababccc')
-        ['bbbccc']  
+        result = matcher.parse_string('abababccc')
+        assert result == ['bbbccc'], result  
 
 
 class ExcludeSequenceTest(TestCase):

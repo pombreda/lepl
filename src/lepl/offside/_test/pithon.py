@@ -1,11 +1,14 @@
 
 
-from logging import basicConfig, DEBUG
+
+# pylint: disable-msg=W0614, W0401, W0621, C0103, C0111, R0201, R0904
+#@PydevCodeAnalysisIgnore
+
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import *
-from lepl.offside.config import OffsideConfiguration
-from lepl.lexer.matchers import LexerError
+
 
 class PithonTest(TestCase):
     

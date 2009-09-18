@@ -20,7 +20,11 @@
 Check location data within tokens.
 '''
 
-from logging import basicConfig, DEBUG
+# pylint: disable-msg=W0614, W0401, C0103, C0111, R0201
+#@PydevCodeAnalysisIgnore
+
+
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import *

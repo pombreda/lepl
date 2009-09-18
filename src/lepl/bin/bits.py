@@ -52,6 +52,10 @@ with 0x).
 Note: No attempt is made to handle sign (complements etc).
 '''
 
+# pylint: disable-msg=R0903
+# using __ methods
+
+
 if bytes is str:
     print('Binary parsing unsupported in this Python version')
 else:
@@ -461,7 +465,8 @@ else:
             else:
                 return BitString.from_bytearray(value.encode(errors=errors))
             
-            
+    # pylint: disable-msg=E1101
+    # python 2.6 doesn't know about abcs
     SimpleStream.register(BitString)
             
     def unpack_length(length):
@@ -545,53 +550,68 @@ else:
         
         def __next__(self):
             if self.__required == self.__existing:
-                # byte aligned
-                if self.__index < len(self.__bytes):
-                    byte = self.__bytes[self.__index]
-                    self.__index += 1
+                return self.__byte_aligned()
+            elif self.__required > self.__existing:
+                return self.__add_offset()
+            else:
+                return self.__correct_offset()
+            
+        def __byte_aligned(self):
+            '''
+            Already aligned, so return next byte.
+            '''
+            if self.__index < len(self.__bytes):
+                byte = self.__bytes[self.__index]
+                self.__index += 1
+                return byte
+            else:
+                raise StopIteration()
+            
+        def __add_offset(self):
+            '''
+            No longer understand this.  Replace with BitStream project?
+            '''
+            if self.__index < 0:
+                if self.__total < self.__length:
+                    # initial offset chunk
+                    byte = 0xff & (self.__bytes[0] << 
+                                   (self.__required - self.__existing))
+                    self.__index = 0
+                    self.__total = 8 - self.__required
                     return byte
                 else:
                     raise StopIteration()
-            elif self.__required > self.__existing:
-                # need to add additional offset
-                if self.__index < 0:
-                    if self.__total < self.__length:
-                        # initial offset chunk
-                        byte = 0xff & (self.__bytes[0] << 
-                                       (self.__required - self.__existing))
-                        self.__index = 0
-                        self.__total = 8 - self.__required
-                        return byte
-                    else:
-                        raise StopIteration()
-                else:
-                    if self.__total < self.__length:
-                        byte = 0xff & (self.__bytes[self.__index] >> 
-                                       (8 - self.__required + self.__existing))
-                        self.__index += 1
-                        self.__total += self.__required
-                    else:
-                        raise StopIteration()
-                    if self.__total < self.__length:
-                        byte |= 0xff & (self.__bytes[self.__index] << 
-                                        (self.__required - self.__existing))
-                        self.__total += 8 - self.__required
-                    return byte
             else:
-                # need to correct for additional offset
                 if self.__total < self.__length:
                     byte = 0xff & (self.__bytes[self.__index] >> 
-                                   (self.__existing - self.__required))
+                                   (8 - self.__required + self.__existing))
                     self.__index += 1
-                    self.__total += 8 - self.__existing + self.__required
+                    self.__total += self.__required
                 else:
                     raise StopIteration()
                 if self.__total < self.__length:
                     byte |= 0xff & (self.__bytes[self.__index] << 
-                                    (8 - self.__existing + self.__required))
-                    self.__total += self.__existing - self.__required
+                                    (self.__required - self.__existing))
+                    self.__total += 8 - self.__required
                 return byte
-    
+
+        def __correct__offset(self):
+            '''
+            No longer understand this.  Replace with BitStream project?
+            '''
+            if self.__total < self.__length:
+                byte = 0xff & (self.__bytes[self.__index] >> 
+                               (self.__existing - self.__required))
+                self.__index += 1
+                self.__total += 8 - self.__existing + self.__required
+            else:
+                raise StopIteration()
+            if self.__total < self.__length:
+                byte |= 0xff & (self.__bytes[self.__index] << 
+                                (8 - self.__existing + self.__required))
+                self.__total += self.__existing - self.__required
+            return byte
+            
     
     ONE = BitString(b'\x01', 1)
     ZERO = BitString(b'\x00', 1)

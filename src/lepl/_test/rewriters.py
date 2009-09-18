@@ -34,6 +34,14 @@ from lepl.rewriters import DelayedClone
 # (dude this is just a test)
 
     
+def str26(value):
+    '''
+    Hack 2.6 string conversion
+    '''
+    string = str(value)
+    return string.replace("u'", "'")
+
+
 class DelayedCloneTest(TestCase):
     
     def assert_clone(self, matcher):
@@ -157,7 +165,7 @@ class ComposeTransformsTest(TestCase):
         ast = p('1')[0]
         assert type(ast) == Term, type(ast)
         assert ast[0] == '1', ast[0]
-        assert str(ast) == """Term
+        assert str26(ast) == """Term
  `- number '1'""", ast
         
 

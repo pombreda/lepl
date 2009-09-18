@@ -38,7 +38,9 @@ The `LineAwareConfiguration() <api/redirect.html#lepl.offside.matchers.LineAware
 in addition to the normal characters, it contains additional "markers" for the
 start and end of lines.
 
-The markers can be mathed with `SOL() <api/redirect.html#lepl.offside.matchers.SOL>`_ and `EOL() <api/redirect.html#lepl.offside.matchers.EOL>`_::
+The markers can be matched with `SOL()
+<api/redirect.html#lepl.offside.matchers.SOL>`_ and `EOL()
+<api/redirect.html#lepl.offside.matchers.EOL>`_::
 
   >>> start = SOL() & Space()[:, ...]
   >>> words = Word()[:,~Space()[:]] > list
@@ -46,7 +48,7 @@ The markers can be mathed with `SOL() <api/redirect.html#lepl.offside.matchers.S
   >>> line = start & words & end
   >>> parser = line.string_parser(LineAwareConfiguration())
   >>> parser('  abc def')
-  ['  ', ['abc', 'def'], '']
+  ['  ', ['abc', 'def']]
 
 The start and end of line markers are not returned by the matchers.
 

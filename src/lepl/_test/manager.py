@@ -30,7 +30,7 @@ from lepl.matchers import Literal
 from lepl.support import LogMixin
 
 
-# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201, R0904
 # (dude this is just a test)
 
     

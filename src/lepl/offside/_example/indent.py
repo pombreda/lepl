@@ -20,6 +20,9 @@
 Show how the Indent and Eol tokens can be used
 '''
 
+# pylint: disable-msg=W0614, W0401, C0111
+#@PydevCodeAnalysisIgnore
+
 
 from logging import basicConfig, DEBUG
 

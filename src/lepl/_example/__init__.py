@@ -23,6 +23,8 @@ when the documentation needs to be updated.
 
 # we need to import all files used in the automated self-test
 
+# pylint: disable-msg=E0611
+#@PydevCodeAnalysisIgnore
 import lepl._example.args
 import lepl._example.columns
 import lepl._example.error
@@ -41,3 +43,4 @@ import lepl._example.search
 #import lepl._example.separators
 import lepl._example.support
 import lepl._example.trace
+

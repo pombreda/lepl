@@ -31,10 +31,15 @@ from traceback import format_exception_only, format_exc
 class Example(TestCase):
     
     def examples(self, examples):
+        '''
+        Run each example and check expected against actual output. 
+        '''
         for (example, target) in examples:
             try:
                 result = str(example())
             except Exception as e:
                 getLogger('lepl._example.support.Example').debug(format_exc())
                 result = ''.join(format_exception_only(type(e), e))
+            # Python 2.6 unicode strings - hack removal
+            result = result.replace("u'", "'")
             assert target == result, '"' + result + '" != "' + target + '"'

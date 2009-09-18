@@ -20,17 +20,25 @@
 Tests for the lepl.node module.
 '''
 
-from logging import basicConfig, DEBUG, INFO
+#from logging import basicConfig, DEBUG, INFO
 from unittest import TestCase
 
 from lepl import Delayed, Digit, Any, Node, make_error, throw, Or, Space, \
     AnyBut, Eos
 
 
-# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, R0201, R0903
 # (dude this is just a test)
 
     
+def str26(value):
+    '''
+    Hack 2.6 string conversion
+    '''
+    string = str(value)
+    return string.replace("u'", "'")
+
+
 class NodeTest(TestCase):
 
     def test_node(self):
@@ -50,7 +58,7 @@ class NodeTest(TestCase):
         
         p = expression.string_parser()
         ast = p('1 + 2 * (3 + 4 - 5)')
-        assert str(ast[0]) == """Expression
+        assert str26(ast[0]) == """Expression
  +- Factor
  |   +- Term
  |   |   `- number '1'
@@ -81,7 +89,7 @@ class NodeTest(TestCase):
          |   `- Factor
          |       `- Term
          |           `- number '5'
-         `- ')'""", ast[0]
+         `- ')'""", str26(ast[0])
 
 class ListTest(TestCase):
 
@@ -142,4 +150,4 @@ class ErrorTest(TestCase):
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "unexpected text: foo", e.msg
-                     
+    

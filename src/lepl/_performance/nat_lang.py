@@ -20,16 +20,16 @@
 Performance related tests.
 '''
 
-# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, W0614, W0401
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, W0614, W0401, R0914, R0903
+#@PydevCodeAnalysisIgnore
 
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 
 from lepl import *
-from lepl.rewriters import compose_transforms
 
 
-def naturalLanguage():
+def natural_language():
     '''
     This focuses on the LMemo cache.  It does not use any monitor or stream.
     '''
@@ -64,7 +64,7 @@ def naturalLanguage():
                           'john and helen'))) == 392  
 
 
-def naturalLanguage2():
+def natural_language2():
     '''
     This focuses on the LMemo cache.  It does not use any monitor or stream.
     '''
@@ -136,12 +136,12 @@ p.sort_stats('time')
 p.print_stats(35)
     '''
     import cProfile
-    cProfile.run('naturalLanguage()', 'nat_lang.prof')
+    cProfile.run('natural_language()', 'nat_lang.prof')
 
 if __name__ == '__main__':
     time()
 #    profile()
-#    naturalLanguage()
+#    natural_language()
 
     
     

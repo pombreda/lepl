@@ -23,5 +23,7 @@ Tests for the lepl.lexer package.
 
 # we need to import all files used in the automated self-test
 
+# pylint: disable-msg=E0611
+#@PydevCodeAnalysisIgnore
 import lepl.lexer._test.matchers
-
+import lepl.lexer._test.stream

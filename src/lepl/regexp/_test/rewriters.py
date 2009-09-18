@@ -20,11 +20,11 @@
 Tests for the lepl.regexp.rewriters module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Any, NfaRegexp, Configuration, Literal, compose_transforms, \
-    Add, And, Integer, Float, Word, Star, flatten
+    Add, And, Integer, Float, Word, Star
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
 

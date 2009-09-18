@@ -163,124 +163,124 @@ class Character(object):
         graph.connect(src, dest, self)
     
 
-class Fragments(object):
-    '''
-    Similar to Character, but each additional interval fragments the list
-    of intervals, instead of creating a new merged interval.  For example,
-    if (3,5) is added to (1,4) and (7,8) then the result will be the
-    intervals (1,2), (3,4), (5,5) and (7,8) - the interval (3,4) is the
-    overlap between (1,4) and (3,5).   
-    
-    Used internally to combine transitions.
-    '''
-    
-    # pylint: disable-msg=C0103 
-    # (use (a,b) variables consistently)
-    
-    def __init__(self, alphabet, characters=None):
-        self.alphabet = alphabet
-        self.__intervals = deque()
-        if characters:
-            for character in characters:
-                self.append(character)
-                
-    def append(self, character):
-        '''
-        Add a character to the intervals.
-        '''
-        assert type(character) is Character
-        for interval in character:
-            self.__append(interval)
-        
-    def __append(self, interval):
-        '''
-        Add an interval to the existing intervals.
-        '''
-        (a1, b1) = interval
-        if b1 < a1:
-            (a1, b1) = (b1, a1)
-        intervals = deque()
-        alphabet = self.alphabet
-        done = False
-        while self.__intervals:
-            (a0, b0) = self.__intervals.popleft()
-            if a0 <= a1:
-                if b0 < a1:
-                    # old interval starts and ends before new interval
-                    # so keep old interval and continue
-                    intervals.append((a0, b0))
-                elif b1 <= b0:
-                    # old interval starts before or with and ends after or with 
-                    # new interval
-                    # so we have one, two or three new intervals
-                    if a0 < a1:
-                         # first part of old
-                        intervals.append((a0, alphabet.before(a1)))
-                    # common to both
-                    intervals.append((a1, b1)) 
-                    if b1 < b0:
-                         # last part of old
-                        intervals.append((alphabet.after(b1), b0))
-                    done = True
-                    break
-                else:
-                    # old interval starts before new, but partially overlaps
-                    # so split old and continue
-                    # (since it may overlap more intervals...)
-                    if a0 < a1:
-                        # first part of old
-                        intervals.append((a0, alphabet.before(a1)))
-                    # common to both 
-                    intervals.append((a1, b0)) 
-                    a1 = alphabet.after(b0)
-            else:
-                if b1 < a0:
-                    # new interval starts and ends before old
-                    intervals.append((a1, b1))
-                    intervals.append((a0, b0))
-                    done = True
-                    break
-                elif b0 <= b1:
-                    # new interval starts before and ends after or with old 
-                    # interval
-                    # so split and continue if extends (since last part may 
-                    # overlap...)
-                    # first part of new
-                    intervals.append((a1, alphabet.before(a0))) 
-                    # overlap
-                    intervals.append((a0, b0)) 
-                    if b1 > b0:
-                        a1 = alphabet.after(b0)
-                    else:
-                        done = True
-                        break
-                else:
-                    # new interval starts before old, but partially overlaps,
-                    # split and slurp rest
-                    # first part of new
-                    intervals.append((a1, alphabet.before(a0))) 
-                    # overlap
-                    intervals.append((a0, b1)) 
-                    # last part of old
-                    intervals.append((alphabet.after(b1), b0)) 
-                    done = True
-                    break
-        if not done:
-            intervals.append((a1, b1))
-        intervals.extend(self.__intervals) # slurp remaining
-        self.__intervals = intervals
-        
-    def len(self):
-        '''
-        The number of intervals contained.
-        '''
-        return len(self.__intervals)
-    
-    def __getitem__(self, index):
-        return self.__intervals[index]
-    
-    def __iter__(self):
-        return iter(self.__intervals)
+#class Fragments(object):
+#    '''
+#    Similar to Character, but each additional interval fragments the list
+#    of intervals, instead of creating a new merged interval.  For example,
+#    if (3,5) is added to (1,4) and (7,8) then the result will be the
+#    intervals (1,2), (3,4), (5,5) and (7,8) - the interval (3,4) is the
+#    overlap between (1,4) and (3,5).   
+#    
+#    Used internally to combine transitions.
+#    '''
+#    
+#    # pylint: disable-msg=C0103 
+#    # (use (a,b) variables consistently)
+#    
+#    def __init__(self, alphabet, characters=None):
+#        self.alphabet = alphabet
+#        self.__intervals = deque()
+#        if characters:
+#            for character in characters:
+#                self.append(character)
+#                
+#    def append(self, character):
+#        '''
+#        Add a character to the intervals.
+#        '''
+#        assert type(character) is Character
+#        for interval in character:
+#            self.__append(interval)
+#        
+#    def __append(self, interval):
+#        '''
+#        Add an interval to the existing intervals.
+#        '''
+#        (a1, b1) = interval
+#        if b1 < a1:
+#            (a1, b1) = (b1, a1)
+#        intervals = deque()
+#        alphabet = self.alphabet
+#        done = False
+#        while self.__intervals:
+#            (a0, b0) = self.__intervals.popleft()
+#            if a0 <= a1:
+#                if b0 < a1:
+#                    # old interval starts and ends before new interval
+#                    # so keep old interval and continue
+#                    intervals.append((a0, b0))
+#                elif b1 <= b0:
+#                    # old interval starts before or with and ends after or with 
+#                    # new interval
+#                    # so we have one, two or three new intervals
+#                    if a0 < a1:
+#                         # first part of old
+#                        intervals.append((a0, alphabet.before(a1)))
+#                    # common to both
+#                    intervals.append((a1, b1)) 
+#                    if b1 < b0:
+#                         # last part of old
+#                        intervals.append((alphabet.after(b1), b0))
+#                    done = True
+#                    break
+#                else:
+#                    # old interval starts before new, but partially overlaps
+#                    # so split old and continue
+#                    # (since it may overlap more intervals...)
+#                    if a0 < a1:
+#                        # first part of old
+#                        intervals.append((a0, alphabet.before(a1)))
+#                    # common to both 
+#                    intervals.append((a1, b0)) 
+#                    a1 = alphabet.after(b0)
+#            else:
+#                if b1 < a0:
+#                    # new interval starts and ends before old
+#                    intervals.append((a1, b1))
+#                    intervals.append((a0, b0))
+#                    done = True
+#                    break
+#                elif b0 <= b1:
+#                    # new interval starts before and ends after or with old 
+#                    # interval
+#                    # so split and continue if extends (since last part may 
+#                    # overlap...)
+#                    # first part of new
+#                    intervals.append((a1, alphabet.before(a0))) 
+#                    # overlap
+#                    intervals.append((a0, b0)) 
+#                    if b1 > b0:
+#                        a1 = alphabet.after(b0)
+#                    else:
+#                        done = True
+#                        break
+#                else:
+#                    # new interval starts before old, but partially overlaps,
+#                    # split and slurp rest
+#                    # first part of new
+#                    intervals.append((a1, alphabet.before(a0))) 
+#                    # overlap
+#                    intervals.append((a0, b1)) 
+#                    # last part of old
+#                    intervals.append((alphabet.after(b1), b0)) 
+#                    done = True
+#                    break
+#        if not done:
+#            intervals.append((a1, b1))
+#        intervals.extend(self.__intervals) # slurp remaining
+#        self.__intervals = intervals
+#        
+#    def len(self):
+#        '''
+#        The number of intervals contained.
+#        '''
+#        return len(self.__intervals)
+#    
+#    def __getitem__(self, index):
+#        return self.__intervals[index]
+#    
+#    def __iter__(self):
+#        return iter(self.__intervals)
     
     
 class IntervalMap(dict):

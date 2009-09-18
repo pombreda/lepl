@@ -20,6 +20,9 @@
 Show how the BLine and Block tokens can be used
 '''
 
+# pylint: disable-msg=W0401, W0614, W0621, C0103, C0111, R0201, C0301
+#@PydevCodeAnalysisIgnore
+
 
 from logging import basicConfig, DEBUG
 
@@ -41,9 +44,9 @@ class OffsideExample(Example):
 abc def
 ghijk:
   mno pqr:
-    stu
-  vwx yz
-'''), "[[], ['abc', 'def'], ['ghijk', ['mno', 'pqr', ['stu']], ['vwx', 'yz']]]")])
+    stuv
+  wx yz
+'''), "[[], ['abc', 'def'], ['ghijk', ['mno', 'pqr', ['stuv']], ['wx', 'yz']]]")])
 
     def test_offside2(self):
         basicConfig(level=DEBUG)
@@ -59,10 +62,10 @@ ghijk:
 abc def
 ghijk:
   mno pqr:
-    stu
-  vwx yz
+    stuv
+  wx yz
 '''),
-"[[], ['abc', 'def'], ['ghijk', ['mno', 'pqr', ['stu']], ['vwx', 'yz']]]")])
+"[[], ['abc', 'def'], ['ghijk', ['mno', 'pqr', ['stuv']], ['wx', 'yz']]]")])
         
    
     def test_pithon(self):

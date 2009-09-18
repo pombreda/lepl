@@ -16,14 +16,15 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,C0321,C0324,C0103
+# pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,C0321,C0324,C0103,R0201,R0903
+#@PydevCodeAnalysisIgnore
 # (the code style is for documentation, not "real")
 
 '''
 Examples from the documentation.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example
@@ -68,24 +69,24 @@ class ErrorTest(Example):
                        """  File "str: '1 + 2 * (3 + 4 - 5'", line 1
     1 + 2 * (3 + 4 - 5
             ^
-lepl.error.Error: no ) for '(3 + 4 - 5'
+Error: no ) for '(3 + 4 - 5'
 """),
                        (lambda: parser('1 + 2 * 3 + 4 - 5)')[0],
                         """  File "str: '1 + 2 * 3 + 4 - 5)'", line 1
     1 + 2 * 3 + 4 - 5)
                     ^
-lepl.error.Error: no ( before ')'
+Error: no ( before ')'
 """),
                        (lambda: parser('1 + 2 * (3 + four - 5)')[0],
                         """  File "str: '1 + 2 * (3 + four - 5)'", line 1
     1 + 2 * (3 + four - 5)
                  ^
-lepl.error.Error: unexpected text: four
+Error: unexpected text: four
 """),
                        (lambda: parser('1 + 2 ** (3 + 4 - 5)')[0],
                         """  File "str: '1 + 2 ** (3 + 4 - 5)'", line 1
     1 + 2 ** (3 + 4 - 5)
            ^
-lepl.error.Error: unexpected text: *
+Error: unexpected text: *
 """)])
         

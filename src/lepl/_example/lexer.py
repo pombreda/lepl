@@ -17,13 +17,14 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 # pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,C0321,C0324,C0103
+#@PydevCodeAnalysisIgnore
 # (the code style is for documentation, not "real")
 
 '''
 Examples from the documentation.
 '''
 
-from logging import basicConfig, getLogger, DEBUG, INFO
+#from logging import basicConfig, getLogger, DEBUG, INFO
 
 from lepl import *
 from lepl._example.support import Example
@@ -48,7 +49,7 @@ class LexerExample(Example):
         
         #basicConfig(level=DEBUG)
         #basicConfig(level=INFO)
-        getLogger('lepl.lexer.stream.lexed_simple_stream').setLevel(DEBUG)
+        #getLogger('lepl.lexer.stream.lexed_simple_stream').setLevel(DEBUG)
         
         value = Token(SignedFloat())
         symbol = Token('[^0-9a-zA-Z \t\r\n]')

@@ -29,7 +29,7 @@ from lepl.parser import tagged
 from lepl._test.matchers import BaseTest
 
 
-# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201, R0913, R0901, R0904
 # (dude this is just a test)
 
 class RepeatTest(TestCase):

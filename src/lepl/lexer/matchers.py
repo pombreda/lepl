@@ -26,7 +26,6 @@ expressions.
 from abc import ABCMeta
 
 from lepl.context import Namespace, NamespaceMixin
-from lepl.error import syntax_error_kargs
 from lepl.functions import Add, Apply, Drop, KApply, Repeat, Map
 from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream, \
     ContentSource, TokenSource

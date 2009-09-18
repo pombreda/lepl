@@ -25,7 +25,7 @@ from unittest import TestCase
 from lepl.support import assert_type, CircularFifo
 
 
-# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, R0201, R0913
 # (dude this is just a test)
 
     
@@ -83,5 +83,3 @@ class CircularFifoTest(TestCase):
         assert [6,7,8] == list(fifo)
         fifo.append(9)
         assert [7,8,9] == list(fifo)
-
-               

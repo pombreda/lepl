@@ -21,6 +21,7 @@ Performance related tests.
 '''
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, W0614, W0401
+#@PydevCodeAnalysisIgnore
 
 
 from random import choice

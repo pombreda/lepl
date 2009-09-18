@@ -23,6 +23,8 @@ Tests for the lepl.bin package.
 
 # we need to import all files used in the automated self-test
 
+# pylint: disable-msg=E0611
+#@PydevCodeAnalysisIgnore
 import lepl.bin._test.bits
 import lepl.bin._test.encode
 import lepl.bin._test.literal

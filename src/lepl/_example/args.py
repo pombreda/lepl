@@ -16,14 +16,15 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable-msg=W0401,C0111,W0614,W0622,C0301
+# pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,R0914
+#@PydevCodeAnalysisIgnore
 # (the code style is for documentation, not "real")
 
 '''
 Examples from the documentation.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example

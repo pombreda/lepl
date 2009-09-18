@@ -23,6 +23,9 @@
 Examples from the documentation.
 '''
 
+#@PydevCodeAnalysisIgnore
+
+
 from lepl import *
 from lepl._example.support import Example
 

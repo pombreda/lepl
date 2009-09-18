@@ -170,7 +170,7 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         Delete all non-active generators.
         '''
         if self.__queue:
-            for retry in range(len(self.__queue)):
+            for _retry in range(len(self.__queue)):
                 reference = heappop(self.__queue)
                 if reference.active():
                     reference.update(self.epoch) # forces epoch update

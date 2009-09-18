@@ -41,6 +41,9 @@ Symbol to represent end of line.
 '''
 
 
+# pylint: disable-msg=R0903
+# using __ methods
+
 class Marker(object):
     '''
     Used like a character, but represents start/end of line.

@@ -223,4 +223,3 @@ class StrAlphabet(Alphabet):
         Generate a Sequence from the given text.
         '''
         return self._parser(regexp)
-       

@@ -22,13 +22,14 @@ Contributed matchers.
 
 from copy import copy
 
-from lepl.functions import Repeat, Optional
-from lepl.matchers import And, Or, _BaseSearch, Transform, Empty
+from lepl.functions import Optional
+from lepl.matchers import And, Or, _BaseSearch, Transform
 from lepl.operators import _BaseSeparator
 
 
 # (c) 2009 "mereandor" / mereandor at gmail dot com (Roman), Andrew Cooke
 
+# pylint: disable-msg=R0903
 class SmartSeparator2(_BaseSeparator):
     '''
     A substitute `Separator` with different semantics for optional matchers.
@@ -66,12 +67,16 @@ class SmartSeparator2(_BaseSeparator):
                         required = required.first
             return required, optional
 
-        def and_(a, b):
-            (requireda, optionala) = non_optional_copy(a)
-            (requiredb, optionalb) = non_optional_copy(b)
+        # pylint: disable-msg=W0141
+        def and_(matcher_a, matcher_b):
+            '''
+            Combine two matchers.
+            '''
+            (requireda, optionala) = non_optional_copy(matcher_a)
+            (requiredb, optionalb) = non_optional_copy(matcher_b)
           
             if not (optionala or optionalb):
-                return And(a, separator, b)
+                return And(matcher_a, separator, matcher_b)
             else:
                 matcher = Or(
                     *filter((lambda x: x is not None), [

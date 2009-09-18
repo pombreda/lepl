@@ -17,6 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 # pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,C0321,C0324,C0103
+#@PydevCodeAnalysisIgnore
 # (the code style is for documentation, not "real")
 
 '''
@@ -33,7 +34,7 @@ W_STREAM = 10
 W_YES = 14
 
 
-def _print(*args, **kargs):
+def _print(*_args, **_kargs):
     '''
     Isolate this for Python 2.6.  We need to exclude this to avoid errors
     on install.
@@ -41,7 +42,7 @@ def _print(*args, **kargs):
 #    print(*args, **kargs)
 
 
-def make_table(base, streams, separators, title, titles):
+def make_table(base, streams, separators_, title, titles_):
     '''
     Generate the entire table, given a base matcher, some streams to test 
     it against, and separators (with titles) that define how spaces will be
@@ -51,27 +52,27 @@ def make_table(base, streams, separators, title, titles):
     can define the matcher within the scope of the different separators (and
     add `Eos()` in different ways).
     '''
-    assert len(titles) == len(separators)
-    parsers = build_parsers(base, separators)
+    assert len(titles_) == len(separators_)
+    parsers = build_parsers(base, separators_)
     print()
-    print_titles(title, titles)
+    print_titles(title, titles_)
     for stream in streams:
         ok = ['yes' if parser.parse(stream) is not None else ''
               for parser in parsers]
         print_columns(repr(stream), 1, 1, ok)
-        print_row(True, len(titles) * 4, 1)
+        print_row(True, len(titles_) * 4, 1)
     print()
     
-def print_titles(title, titles):
+def print_titles(title, titles_):
     '''
     Print titles in the format expected by restructured text.
     '''
-    n_titles = len(titles)
+    n_titles = len(titles_)
     width = W_STREAM + n_titles * (W_YES+1) * 4
     print('+{0}+'.format('-' * width))
     print('|{0:{1}}|'.format(title, width))
     print_row(True, n_titles, 4)
-    print_columns('', 1, 4, titles)
+    print_columns('', 1, 4, titles_)
     print_row(False,  n_titles*2, 2)
     print_columns('', n_titles, 2, ['And(..., Eos())', '... & Eos()'])
     print_row(False,  n_titles*4, 1)
@@ -86,21 +87,21 @@ def print_row(left, count, width, line='-'):
     for _i in range(count):
         _print('+' + line * (W_YES * width + width - 1) , end='')
     print('+')
-    
-def print_columns(left, count, width, titles):
+
+def print_columns(left, count, width, titles_):
     _print('|{0:{1}}'.format(left, W_STREAM), end='')
     for _i in range(count):
-        for title in titles:
+        for title in titles_:
             _print('|{0:{1}}'.format(title, width * W_YES + width - 1), end='')
     _print('|')
     
-def build_parsers(base, separators):
+def build_parsers(base, separators_):
     '''
     Construct parsers from 'base', with fixed or optional spaces and 'Eos()' 
     connected via 'And()' or '&'.
     '''
     parsers = []
-    for separator in separators:
+    for separator in separators_:
         with separator(' '):
             parsers.append(And(base(), Eos()))
         with separator(Literal(' ')[:]):

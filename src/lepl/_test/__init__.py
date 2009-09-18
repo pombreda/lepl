@@ -29,24 +29,8 @@ import lepl
 
 # we need to import all files used in the automated self-test
 
+# pylint: disable-msg=E0611, W0401
 #@PydevCodeAnalysisIgnore
-import lepl._example.args
-import lepl._example.columns
-import lepl._example.error
-import lepl._example.expression
-import lepl._example.hello
-import lepl._example.lexer
-import lepl._example.manager
-import lepl._example.matchers
-import lepl._example.memo
-import lepl._example.nodes
-import lepl._example.operators
-import lepl._example.performance
-import lepl._example.phone
-import lepl._example.search
-import lepl._example.separators
-import lepl._example.support
-import lepl._example.trace
 import lepl._test.bug_stalled_parser
 import lepl._test.error
 import lepl._test.filters
@@ -63,25 +47,15 @@ import lepl._test.rewriters
 import lepl._test.separators
 import lepl._test.stream
 import lepl._test.support
-import lepl.bin._test.bits
-import lepl.bin._test.encode
-import lepl.bin._test.literal
-import lepl.bin._test.matchers
-import lepl.bin._example.literal
-import lepl.lexer._test.matchers
-import lepl.lexer._test.stream
-import lepl.lexer._example.calculator
-import lepl.lexer._example.limitations
-import lepl.offside._test.indentation
-import lepl.offside._test.matchers
-import lepl.offside._test.offside
-import lepl.offside._test.pithon
-import lepl.offside._test.regexp
-import lepl.regexp._test.binary
-import lepl.regexp._test.interval
-import lepl.regexp._test.matchers
-import lepl.regexp._test.rewriters
-import lepl.regexp._test.unicode
+
+from lepl._example import *
+from lepl.bin._test import *
+from lepl.bin._example import *
+from lepl.lexer._test import *
+from lepl.lexer._example import *
+from lepl.offside._test import *
+from lepl.offside._example import *
+from lepl.regexp._test import *
 
 
 def all():
@@ -123,15 +97,15 @@ def ls_all_tests():
     '''
     All test modules.
     '''
-    for root in ls(lepl, 
-                   ['bin', 'contrib', 'lexer', 'regexp', 'offside'], 
-                   True):
-        for child in ls(root, ['_test', '_example']):
-            for module in ls(child):
+    for root in ls_module(lepl, 
+                          ['bin', 'contrib', 'lexer', 'regexp', 'offside'], 
+                          True):
+        for child in ls_module(root, ['_test', '_example']):
+            for module in ls_module(child):
                 yield module
 
 
-def ls(parent, children=None, include_parent=False):
+def ls_module(parent, children=None, include_parent=False):
     '''
     Expand and return child modules.
     '''
@@ -141,6 +115,7 @@ def ls(parent, children=None, include_parent=False):
         children = dir(parent)
     for child in children:
         try:
+            # pylint: disable-msg=W0122
             exec('import {0}.{1}'.format(parent.__name__, child))
             module = getattr(parent, child, None)
             if isinstance(module, ModuleType):

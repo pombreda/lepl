@@ -17,6 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 # pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,C0321,C0324,C0103
+#@PydevCodeAnalysisIgnore
 # (the code style is for documentation, not "real")
 
 '''
@@ -33,9 +34,7 @@ class OperatorExamples(Example):
         self.examples([(lambda: eval("('Mr' | 'Ms') // Word()"),
                         "TypeError: unsupported operand type(s) for |: 'str' and 'str'\n"),
                        (lambda: eval("('Mr' // Word() > 'man' | 'Ms' // Word() > 'woman')"),
-                        '''  File "<string>", line None
-SyntaxError: The operator > for And was applied to a matcher (<Or>). Check syntax and parentheses.
-''')])
+                        "SyntaxError: The operator > for And was applied to a matcher (<Or>). Check syntax and parentheses.\n")])
 
     def test_override(self):
         

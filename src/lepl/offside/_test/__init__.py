@@ -19,3 +19,14 @@
 '''
 Tests for the lepl.offside package.
 '''
+
+
+# we need to import all files used in the automated self-test
+
+# pylint: disable-msg=E0611
+#@PydevCodeAnalysisIgnore
+import lepl.offside._test.indentation
+import lepl.offside._test.matchers
+import lepl.offside._test.offside
+import lepl.offside._test.pithon
+import lepl.offside._test.regexp

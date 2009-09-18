@@ -63,20 +63,20 @@ def find_tokens(matcher):
     return tokens
 
 
-def unique_ids(tokens):
-    '''
-    Drop tokens with unique IDs (these are "machine added" things like 
-    indentation).
-    '''
-    log = getLogger('lepl.lexer.rewriters.unique_ids')
-    by_id = {}
-    for token in tokens:
-        if token.id_ in by_id:
-            if type(token.id_) is int:
-                log.warn('Discarding duplicate token: {0}'.format(token))
-        else:
-            by_id[token.id_] = token
-    return set(by_id.values())
+#def unique_ids(tokens):
+#    '''
+#    Drop tokens with unique IDs (these are "machine added" things like 
+#    indentation).
+#    '''
+#    log = getLogger('lepl.lexer.rewriters.unique_ids')
+#    by_id = {}
+#    for token in tokens:
+#        if token.id_ in by_id:
+#            if type(token.id_) is int:
+#                log.warn('Discarding duplicate token: {0}'.format(token))
+#        else:
+#            by_id[token.id_] = token
+#    return set(by_id.values())
 
 
 def assert_not_token(node, visited):

@@ -20,6 +20,8 @@
 Show how line aware alphabet can be used.
 '''
 
+#@PydevCodeAnalysisIgnore
+
 
 from logging import basicConfig, DEBUG
 
@@ -48,4 +50,4 @@ class LineAwareExample(Example):
         line = start & words & end
         parser = line.string_parser(LineAwareConfiguration())
         self.examples([(lambda: parser('  abc def'), 
-                        "['  ', ['abc', 'def'], '']")])
+                        "['  ', ['abc', 'def']]")])
