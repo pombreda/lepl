@@ -20,7 +20,7 @@
 Tests for offside.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
@@ -41,7 +41,7 @@ class OffsideTest(TestCase):
         '''
         Test a simple example: letters introduce numbers in an indented block.
         '''
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         number = Token(Digit())
         letter = Token(Letter())

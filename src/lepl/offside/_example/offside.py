@@ -24,7 +24,7 @@ Show how the BLine and Block tokens can be used
 #@PydevCodeAnalysisIgnore
 
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example

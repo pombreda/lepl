@@ -20,6 +20,8 @@
 Matchers that are indent aware.
 '''
 
+from weakref import WeakKeyDictionary
+
 from lepl.matchers import OperatorMatcher, And, Any
 from lepl.parser import tagged
 from lepl.offside.lexer import Indent, Eol, BIndent
@@ -82,6 +84,10 @@ class Block(OperatorMatcher):
     
     A block will always match an `Indent`, but will not consumer it
     (it will remain in the stream after the block has finished).
+    
+    The usual memoization of left recursive calls will not detect problems
+    with nested blocks (because the indentation changes), so instead we
+    track and block nested calls manually.
     '''
     
     POLICY = 'policy'
@@ -110,6 +116,7 @@ class Block(OperatorMatcher):
         self._karg(indent=indent)
         self.monitor_class = BlockMonitor
         self.__monitor = None
+        self.__streams = WeakKeyDictionary()
         
     def on_push(self, monitor):
         '''
@@ -122,7 +129,8 @@ class Block(OperatorMatcher):
         '''
         Remove the indent we added.
         '''
-        if not self.__monitor: # only if we pushed
+        # only if we pushed a value to monitor (see below)
+        if not self.__monitor:
             monitor.pop_level()
         
     @tagged
@@ -131,15 +139,23 @@ class Block(OperatorMatcher):
         Pull indent and call the policy and update the global value, 
         then evaluate the contents.
         '''
-        (indent, _stream) = yield self.indent._match(stream_in)
-        current = self.__monitor.indent
-        self.__monitor.push_level(self.policy(current, indent))
-        # this flags we have pushed and need to pop
-        self.__monitor = None
-        
-        generator = And(*self.lines)._match(stream_in)
-        while True:
-            yield (yield generator)
+        # detect a nested call
+        if stream_in in self.__streams:
+            self._debug('Avoided left recursive call to Block.')
+            return
+        self.__streams[stream_in] = True
+        try:
+            (indent, _stream) = yield self.indent._match(stream_in)
+            current = self.__monitor.indent
+            self.__monitor.push_level(self.policy(current, indent))
+            # this flags we have pushed and need to pop
+            self.__monitor = None
+            
+            generator = And(*self.lines)._match(stream_in)
+            while True:
+                yield (yield generator)
+        finally:
+            del self.__streams[stream_in]
 
 
 # pylint: disable-msg=C0103

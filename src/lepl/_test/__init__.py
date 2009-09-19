@@ -48,14 +48,14 @@ import lepl._test.separators
 import lepl._test.stream
 import lepl._test.support
 
-from lepl._example import *
-from lepl.bin._test import *
-from lepl.bin._example import *
-from lepl.lexer._test import *
-from lepl.lexer._example import *
-from lepl.offside._test import *
-from lepl.offside._example import *
-from lepl.regexp._test import *
+#from lepl._example import *
+#from lepl.bin._test import *
+#from lepl.bin._example import *
+#from lepl.lexer._test import *
+#from lepl.lexer._example import *
+#from lepl.offside._test import *
+#from lepl.offside._example import *
+#from lepl.regexp._test import *
 
 
 def all():
@@ -77,17 +77,17 @@ def all():
     print('\n\n\n----------------------------------------------------------'
           '------------\n')
     if version[0] == '2':
-        print('Expect 20-21 failures in Python 2.6: {0:d} '
-              '(unicode strings)'
+        print('Expect 2-3 failures in Python 2.6: {0:d} '
+              '(error class names, format variation from address size?)'
               .format(len(result.failures)))
-        assert 20 <= len(result.failures) <= 21, len(result.failures)
-        target = 230 # no bin/cairo tests
+        assert 2 <= len(result.failures) <= 3, len(result.failures)
+        target = 238 # no bin/cairo tests
     else:
         print('Expect at most 1 failure in Python 3: {0:d} '
               '(format variations from address size?)'
               .format(len(result.failures)))
-        assert len(result.failures) <= 1, len(result.failures)
-        target = 252 # no cairo tests
+        assert 0 <= len(result.failures) <= 1, len(result.failures)
+        target = 260 # no cairo tests (2)
     print('Expect {0:d} tests total: {1:d}'.format(target, result.testsRun))
     assert result.testsRun == target, result.testsRun
     print('\nLooks OK to me!\n\n')

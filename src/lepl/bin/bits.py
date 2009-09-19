@@ -595,7 +595,7 @@ else:
                     self.__total += 8 - self.__required
                 return byte
 
-        def __correct__offset(self):
+        def __correct_offset(self):
             '''
             No longer understand this.  Replace with BitStream project?
             '''

@@ -34,7 +34,8 @@ class OperatorExamples(Example):
         self.examples([(lambda: eval("('Mr' | 'Ms') // Word()"),
                         "TypeError: unsupported operand type(s) for |: 'str' and 'str'\n"),
                        (lambda: eval("('Mr' // Word() > 'man' | 'Ms' // Word() > 'woman')"),
-                        "SyntaxError: The operator > for And was applied to a matcher (<Or>). Check syntax and parentheses.\n")])
+                        '''  File "<string>", line None
+SyntaxError: The operator > for And was applied to a matcher (<Or>). Check syntax and parentheses.\n''')])
 
     def test_override(self):
         

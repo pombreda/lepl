@@ -33,7 +33,7 @@ from lepl._example.support import Example
 class IndentExample(Example):
     
     def test_indent(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         words = Token(Word(Lower()))[:] > list
         line = Indent() & words & Eol()
         parser = line.string_parser(IndentConfiguration(tabsize=4))

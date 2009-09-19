@@ -237,7 +237,7 @@ class StreamView(object):
     end of the data when necessary (for length). 
     '''
     
-    __slots__ = ('_StreamView__line', '_StreamView__offset')
+    __slots__ = ('_StreamView__line', '_StreamView__offset', '__weakref__')
 
     def __init__(self, line, offset=0):
         self.__line = line

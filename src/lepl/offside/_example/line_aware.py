@@ -32,7 +32,7 @@ from lepl._example.support import Example
 class LineAwareExample(Example):
     
     def test_regexp(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         start = DfaRegexp('^ *')
         words = Word()[:,~Space()[:]] > list
         end = DfaRegexp('$')
@@ -43,7 +43,7 @@ class LineAwareExample(Example):
 
 
     def test_match(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         start = SOL() & Space()[:, ...]
         words = Word()[:,~Space()[:]] > list
         end = EOL()

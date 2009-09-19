@@ -33,6 +33,7 @@ from itertools import count
 
 from lepl.matchers import OperatorMatcher
 from lepl.parser import tagged, GeneratorWrapper
+from lepl.state import State
 from lepl.support import LogMixin, empty
 
 
@@ -79,6 +80,7 @@ class _RMemo(OperatorMatcher):
         super(_RMemo, self).__init__()
         self._arg(matcher=matcher)
         self.__table = {}
+        self.__state = State.singleton()
         self.tag(self.matcher.describe)
         
     @tagged
@@ -89,14 +91,15 @@ class _RMemo(OperatorMatcher):
         # pylint: disable-msg=W0212
         # (_match is an internal interface)
         try:
-            if stream not in self.__table:
+            key = (stream, self.__state.hash)
+            if key not in self.__table:
                 # we have no cache for this stream, so we need to generate the
                 # entry.  we do not care about nested calls with the same stream
                 # because this memoization is not for left recursion.  that 
                 # means that we can return a table around this generator 
                 # immediately.
-                self.__table[stream] = RTable(self.matcher._match(stream))
-            return self.__table[stream].generator(self.matcher, stream)
+                self.__table[key] = RTable(self.matcher._match(stream))
+            return self.__table[key].generator(self.matcher, stream)
         except TypeError: # unhashable type; cannot cache
             self._warn('Cannot memoize (cannot hash {0!r})'.format(stream))
             return self.matcher._match(stream)
@@ -182,17 +185,19 @@ class _LMemo(OperatorMatcher):
     def __init__(self, matcher):
         super(_LMemo, self).__init__()
         self._arg(matcher=matcher)
-        self.tag(self.matcher.describe)
         self.__caches = {}
+        self.__state = State.singleton()
+        self.tag(self.matcher.describe)
         
     @tagged
     def _match(self, stream):
         '''
         Attempt to match the stream.
         '''
-        if stream not in self.__caches:
-            self.__caches[stream] = PerStreamCache(self.matcher)
-        return self.__caches[stream]._match(stream)
+        key = (stream, self.__state.hash)
+        if key not in self.__caches:
+            self.__caches[key] = PerStreamCache(self.matcher)
+        return self.__caches[key]._match(stream)
         
 
 class PerStreamCache(LogMixin):
