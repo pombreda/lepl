@@ -38,16 +38,7 @@ may work correctly when it changes.
 
 from threading import local
 
-
-__SINGLETONS = {}
-
-def singleton(factory):
-    '''
-    Manage singletons for various types.
-    '''
-    if factory not in __SINGLETONS:
-        __SINGLETONS[factory] = factory()
-    return __SINGLETONS[factory]
+from lepl.support import singleton
 
 
 class State(local):

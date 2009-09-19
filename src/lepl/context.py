@@ -25,6 +25,8 @@ from collections import deque
 #from logging import getLogger
 from threading import local
 
+from lepl.support import singleton
+
 
 class ContextError(Exception):
     '''
@@ -147,29 +149,16 @@ class OnceOnlyNamespace(Namespace):
             super(OnceOnlyNamespace, self).set(name, value)
         
 
-# pylint: disable-msg=W0105
-__GLOBAL = None
-'''
-A map from name to the appropriate global (for this thread) singleton.
-'''
-
-
 # pylint: disable-msg=C0103, W0603
 def Global(name, default=None):
     '''
     Global (per-thread) binding from operator name to implementation, by
     namespace.
-    
-    This provides an interface to `__GLOBAL`.
     '''
     # Delay creation to handle circular dependencies.
-    #LOG = getLogger('lepl.context.Global')
     assert name
-    #LOG.debug('Getting {0}/{1}'.format(name, default))
-    global __GLOBAL
-    if __GLOBAL is None:
-        __GLOBAL = NamespaceMap()
-    return __GLOBAL.get(name, default)
+    namespace_map = singleton(NamespaceMap)
+    return namespace_map.get(name, default)
 
 
 class NamespaceMixin(object):

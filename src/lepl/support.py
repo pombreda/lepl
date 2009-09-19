@@ -215,3 +215,19 @@ def sample(prefix, rest, size=40):
     if len(text) > size:
         text = prefix + rest[0:size-len(prefix)-3] + '...'
     return text
+
+
+__SINGLETONS = {}
+'''
+Map from factory (constructor/class) to singleton.
+'''
+
+def singleton(factory):
+    '''
+    Manage singletons for various types.
+    '''
+    if factory not in __SINGLETONS:
+        __SINGLETONS[factory] = factory()
+    return __SINGLETONS[factory]
+
+
