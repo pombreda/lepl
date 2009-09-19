@@ -32,9 +32,12 @@ class BlockMonitor(ActiveMonitor, LogMixin):
     read by `Line` and updated by `Block`.
     '''
     
-    def __init__(self):
+    def __init__(self, start=0):
+        '''
+        start is the initial indent (in spaces).
+        '''
         super(BlockMonitor, self).__init__()
-        self.__stack = [0]
+        self.__stack = [start]
         
     def push_level(self, level):
         '''
@@ -59,3 +62,9 @@ class BlockMonitor(ActiveMonitor, LogMixin):
         '''
         return self.__stack[-1]
     
+
+def block_monitor(start=0):
+    '''
+    Add an extra lambda for the standard monitor interface.
+    '''
+    return lambda: BlockMonitor(start)

@@ -20,12 +20,12 @@
 Tests for offside.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.functions import Letter, Digit
-from lepl.matchers import Delayed, Or
+from lepl.matchers import Delayed, Or, Trace
 from lepl.offside.config import OffsideConfiguration
 from lepl.offside.matchers import Block, BLine
 
@@ -41,7 +41,7 @@ class OffsideTest(TestCase):
         '''
         Test a simple example: letters introduce numbers in an indented block.
         '''
-        #basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         
         number = Token(Digit())
         letter = Token(Letter())
@@ -55,7 +55,7 @@ class OffsideTest(TestCase):
         # and a block is simply a collection of lines, as above
         block += Block(line[1:])
         
-        program = line[1:]
+        program = Trace(line[1:])
         
         text = '''1
 2
@@ -73,4 +73,4 @@ a
                           ['a', ['3'], 
                                 ['b', ['4'], 
                                       ['5']], 
-                                ['6']]]
+                                ['6']]], result

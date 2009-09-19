@@ -164,8 +164,7 @@ class OffsideSource(TokenSource):
                     text = ''.join([char if char == ' ' else self.__tab
                                     for char in text])
             return ([(terminals, text)], stream)
-        except TypeError as error:
-            print(error)
+        except TypeError:
             return (None, None)
         
     @staticmethod

@@ -24,7 +24,7 @@ Show how the BLine and Block tokens can be used
 #@PydevCodeAnalysisIgnore
 
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example
@@ -33,7 +33,7 @@ from lepl._example.support import Example
 class OffsideExample(Example):
     
     def test_offside(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         introduce = ~Token(':')
         word = Token(Word(Lower()))
         scope = Delayed()
@@ -49,7 +49,7 @@ ghijk:
 '''), "[[], ['abc', 'def'], ['ghijk', ['mno', 'pqr', ['stuv']], ['wx', 'yz']]]")])
 
     def test_offside2(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         introduce = ~Token(':')
         word = Token(Word(Lower()))
         statement = Delayed()
@@ -69,7 +69,7 @@ ghijk:
         
    
     def test_pithon(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         word = Token(Word(Lower()))
         continuation = Token(r'\\')
@@ -128,3 +128,17 @@ same for (argument,
 "['which', 'do', 'not', 'need', 'the'], "
 "['continuation', 'marker']]]")])
         
+        
+    def test_initial_offset(self):
+        #basicConfig(level=DEBUG)
+        word = Token(Word(Lower()))
+        line = Delayed()
+        block = Block(line[1:])
+        line += BLine(word | Empty()) | block
+        parser = line[:].string_parser(OffsideConfiguration(policy=4, start=3))
+        result = parser('''
+   foo
+       bar
+''')
+        assert result == [], result
+         

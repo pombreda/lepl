@@ -75,10 +75,12 @@ Indent and Eol Tokens
 
 Once we have start and end of line markers, supported by regular expressions,
 we can define tokens that match those markers.  This is done by
-`IndentConfiguration() <api/redirect.html#lepl.offside.matchers.IndentConfiguration>`_ which creates two tokens: `Indent() <api/redirect.html#lepl.lexer.matchers.Indent>`_ and
-`Eol() <api/redirect.html#lepl.lexer.matchers.Eol>`_.  As you might expect, the first of these matches the start of line
-marker plus any additional spaces, while the second matchers the end of line
-marker.
+`IndentConfiguration()
+<api/redirect.html#lepl.offside.matchers.IndentConfiguration>`_ which creates
+two tokens: `Indent() <api/redirect.html#lepl.lexer.matchers.Indent>`_ and
+`Eol() <api/redirect.html#lepl.lexer.matchers.Eol>`_.  As you might expect,
+the first of these matches the start of line marker plus any additional
+spaces, while the second matchers the end of line marker.
 
 In addition, this configuration includes additional stream processing that
 converts tabs to a given number of spaces::
@@ -96,13 +98,35 @@ words.
 Lines and Blocks
 ----------------
 
-Matching each `Indent() <api/redirect.html#lepl.lexer.matchers.Indent>`_ and `Eol() <api/redirect.html#lepl.lexer.matchers.Eol>`_ is cumbersome, so the top level of
-support for whitespace matching in LEPL defines some extra matchers that
-simplfy the task.  
+Matching each `Indent() <api/redirect.html#lepl.lexer.matchers.Indent>`_ and
+`Eol() <api/redirect.html#lepl.lexer.matchers.Eol>`_ is cumbersome, so the top
+level of support for whitespace matching in LEPL defines some extra matchers
+that simplfy the task.
 
-`Block() <api/redirect.html#lepl.offside.matchers.Block>`_ and `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_ colaborate with a monitor (an advanced feature of
-LEPL that allows matchers to share data as they are added to or leave the call
-stack) to share the "current indentation level"::
+`Block() <api/redirect.html#lepl.offside.matchers.Block>`_ and `BLine()
+<api/redirect.html#lepl.offside.matchers.BLine>`_ colaborate with a monitor
+(an advanced feature of LEPL that allows matchers to share data as they are
+added to or leave the call stack) to share the "current indentation level".
+
+The structure of some text, in terms of ``BLine()`` and ``Block()``, might
+look a little like this::
+
+  BLine()
+  BLine()
+  Block(BLine()
+        BLine()
+        Block(BLine()
+              BLine())
+        BLine()
+        Block(Bline()))
+  Bline()
+
+Where every line is in a separate ``Bline()`` and then groups of indented
+lines are collected inside ``Block()`` elements.  Each ``Block()`` sets the
+indent required for the ``Bline()`` elements it contains.
+
+Because blocks can be nested we typically have a recursive grammar.  For
+example::
 
   >>> introduce = ~Token(':')
   >>> word = Token(Word(Lower()))
@@ -123,12 +147,17 @@ stack) to share the "current indentation level"::
   ...     stu
   ...   vwx yz
   ... '''
-  [[], ['abc', 'def'], ['ghijk', ['mno', 'pqr', ['stu']], ['vwx', 'yz']]]
+  [[], 
+   ['abc', 'def'], 
+   ['ghijk', 
+    ['mno', 'pqr', 
+     ['stu']], 
+    ['vwx', 'yz']]]
 
 I will now explain the parser above in detail.
 
-First, as with any recursive grammar, we introduce a matcher that we will use
-before we define it.  In this case, we introduce ``statement``.
+As with any recursive grammar, we introduce a matcher that we will use before
+we define it.  In this case, we introduce ``statement``.
 
 Next we define three different kinds of statement.  The first, ``simple``, is
 a statement that fits in a single line.  The next, ``empty``, is an empty

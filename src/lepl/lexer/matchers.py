@@ -33,6 +33,7 @@ from lepl.error import raise_error
 from lepl.lexer.support import LexerError, RuntimeLexerError
 from lepl.matchers import OperatorMatcher, BaseMatcher, coerce_, Any, \
     Literal, Lookahead, Regexp, And, Or, First
+from lepl.memo import NoMemo
 from lepl.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
     KARGS, RAISE, REPEAT, FIRST, MAP
 from lepl.parser import tagged
@@ -99,7 +100,7 @@ class TokenNamespace(Namespace):
 
 # pylint: disable-msg=R0901, R0904, R0913, W0201, W0142, E1101
 # lepl standards
-class BaseToken(OperatorMatcher):
+class BaseToken(OperatorMatcher, NoMemo):
     '''
     Introduce a token that will be recognised by the lexer.  A Token instance
     can be specialised to match particular contents by calling as a function.

@@ -20,7 +20,7 @@
 Tests for indent.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
@@ -65,7 +65,7 @@ class TabTest(TestCase):
         '''
         Test simple matches against leading spaces.
         '''
-        #basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         text = '''
  onespace
  \tspaceandtab'''
@@ -78,6 +78,7 @@ class TabTest(TestCase):
                             config=IndentConfiguration(tabsize=4,
                                             monitors=[TraceResults(True)]))
         result = parser(text)
+        print(result)
         assert result == ['', ' ', 'onespace', '     ', 'spaceandtab'], result
         
     

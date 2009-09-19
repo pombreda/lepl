@@ -104,6 +104,21 @@ lexers.  If no lexers are present, this message is logged::
 This is not a problem (assuming you didn't intend to use lexing, of course).
 
 
+.. index:: A Token was specified with a matcher, but
+
+Rewriter Order
+--------------
+
+Rewriters are applied to the graph of matchers in the order given.  The order may be important.  For example this error::
+
+  A Token was specified with a matcher, but the matcher could not be converted to a regular expression: RMemo
+
+is caused by adding memoization `before` rewriting for the lexer (which
+converts matchers to regular expressions).  This is because the regular
+expresssion rewriter doesn't "know" about memoisastion.  The solution is to
+specify the lexer rewriter first.
+
+
 .. index:: longest match, print_longest()
 .. _deepest_match:
 

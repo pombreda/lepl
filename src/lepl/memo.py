@@ -28,6 +28,7 @@ generators implemented here.
 # for some reason (parsing of yields?) pyulint cannot process this file
 # (but running from the command line gives partial data)
 
+from abc import ABCMeta
 from itertools import count
 
 from lepl.matchers import OperatorMatcher
@@ -35,12 +36,34 @@ from lepl.parser import tagged, GeneratorWrapper
 from lepl.support import LogMixin, empty
 
 
+# pylint: disable-msg=W0105, C0103, R0903, W0212
+# Python 2.6
+#class NoMemo(metaclass=NoMemo):
+NoMemo = ABCMeta('NoMemo', (object, ), {})
+'''
+ABC used to indicate that memoisation should not be applied.  
+'''
+
+# pylint: disable-msg=R0901, R0904
+# lepl conventions
+
+
 class MemoException(Exception):
     '''
     Exception raised for problems with memoisation.
     '''
+    
+def RMemo(matcher):
+    '''
+    Wrap in the _RMemo cache if required.
+    '''
+    if isinstance(matcher, NoMemo):
+        return matcher
+    else:
+        return _RMemo(matcher)
 
-class RMemo(OperatorMatcher):
+
+class _RMemo(OperatorMatcher):
     '''
     A simple memoizer for grammars that do not have left recursion.  Since this
     fails with left recursion it's safer to always use LMemo.
@@ -53,7 +76,7 @@ class RMemo(OperatorMatcher):
     # (using _args to define attributes)
     
     def __init__(self, matcher):
-        super(RMemo, self).__init__()
+        super(_RMemo, self).__init__()
         self._arg(matcher=matcher)
         self.__table = {}
         self.tag(self.matcher.describe)
@@ -108,7 +131,7 @@ class RTable(LogMixin):
                     self.__active = False
                 self.__table.append(result)
         except StopIteration:
-            self._stopped = True
+            self.__stopped = True
         if i < len(self.__table):
             yield self.__table[i]
         else:
@@ -138,7 +161,17 @@ class _DummyMatcher(object):
         self.describe = '{0}({1})'.format(outer, inner)
         
         
-class LMemo(OperatorMatcher):
+def LMemo(matcher):
+    '''
+    Wrap in the _LMemo cache if required.
+    '''
+    if isinstance(matcher, NoMemo):
+        return matcher
+    else:
+        return _LMemo(matcher)
+
+
+class _LMemo(OperatorMatcher):
     '''
     A memoizer for grammars that do have left recursion.
     '''
@@ -147,7 +180,7 @@ class LMemo(OperatorMatcher):
     # (using _args to define attributes)
     
     def __init__(self, matcher):
-        super(LMemo, self).__init__()
+        super(_LMemo, self).__init__()
         self._arg(matcher=matcher)
         self.tag(self.matcher.describe)
         self.__caches = {}
@@ -175,14 +208,15 @@ class PerStreamCache(LogMixin):
         self.__counter = 0
         self.__first = None
         
-    def __curtail(self, count, stream):
+    @staticmethod
+    def __curtail(count_, stream):
         '''
         Do we stop at this point?
         '''
-        if count == 1:
+        if count_ == 1:
             return False
         else:
-            return count > len(stream) 
+            return count_ > len(stream) 
         
     @tagged
     def _match(self, stream):

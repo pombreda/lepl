@@ -31,6 +31,7 @@ from unittest import TestCase
 from lepl import *
 from lepl.graph import ConstructorWalker, LEAF, NONTREE, dfs_edges
 from lepl.matchers import Matcher, Transform, Transformation
+from lepl.memo import _LMemo, _RMemo
 from lepl.rewriters import DelayedClone
 
 
@@ -215,22 +216,22 @@ class CloneTest(TestCase):
         desc3 = Description(clone3) 
         #print(desc3)
         assert desc3.total == 44, desc3
-        desc3.assert_count(RMemo, 21)
+        desc3.assert_count(_RMemo, 21)
         desc3.assert_count(Delayed, 2)
 
         clone4 = memoize(LMemo)(clone2)
         desc4 = Description(clone4) 
         #print(desc4)
         assert desc4.total == 44, desc4
-        desc4.assert_count(LMemo, 21)
+        desc4.assert_count(_LMemo, 21)
         desc4.assert_count(Delayed, 2)
         
         clone5 = context_memoize()(clone2)
         desc5 = Description(clone5) 
         #print(desc5)
         assert desc5.total == 44, desc5
-        desc5.assert_count(RMemo, 16)
-        desc5.assert_count(LMemo, 5)
+        desc5.assert_count(_RMemo, 16)
+        desc5.assert_count(_LMemo, 5)
         desc5.assert_count(Delayed, 2)
         
         try:
