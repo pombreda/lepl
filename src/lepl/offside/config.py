@@ -68,7 +68,7 @@ class LineAwareConfiguration(Configuration):
 class OffsideConfiguration(Configuration):
     '''
     As `LineAwareConfiguration`, but with additional support for
-    structured matching ("offside rule") with `Line` and `Block`.
+    structured matching ("offside rule") with `BLine` and `Block`.
     '''
     
     def __init__(self, rewriters=None, monitors=None, alphabet=None,

@@ -16,8 +16,8 @@ sed -i -r 's/``(BitString|Int)\(\)``/`\1() <api\/redirect.html#lepl.bin.bits.\1>
 sed -i -r 's/``(Const|BEnd|LEnd)\(\)``/`\1() <api\/redirect.html#lepl.bin.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(Configuration)\(\)``/`\1() <api\/redirect.html#lepl.bin.config.\1>`_/g' *.rst
 sed -i -r 's/``(DfaRegexp|NfaRegexp)\(\)``/`\1() <api\/redirect.html#lepl.regexp.matchers.\1>`_/g' *.rst
-sed -i -r 's/``(Line|Block|BLine|CLineFactory|Extend|SOL|EOL)\(\)``/`\1() <api\/redirect.html#lepl.offside.matchers.\1>`_/g' *.rst
-sed -i -r 's/``(Indent|Eol|BIndent)\(\)``/`\1() <api\/redirect.html#lepl.lexer.matchers.\1>`_/g' *.rst
+sed -i -r 's/``(Line|Block|BLine|ContinuedLineFactory|ContinuedBLineFactory|Extend|SOL|EOL)\(\)``/`\1() <api\/redirect.html#lepl.offside.matchers.\1>`_/g' *.rst
+sed -i -r 's/``(Indent|Eol|BIndent)\(\)``/`\1() <api\/redirect.html#lepl.offside.lexer.\1>`_/g' *.rst
 sed -i -r 's/``(LineAwareConfiguration|IndentConfiguration|OffsideConfiguration)\(\)``/`\1() <api\/redirect.html#lepl.offside.config.\1>`_/g' *.rst
 
 # fix up old errors
@@ -26,5 +26,6 @@ sed -i -r 's/``(LineAwareConfiguration|IndentConfiguration|OffsideConfiguration)
 sed -i -r 's/functions\.(And|Or|Literal|Columns)/matchers.\1/g' *.rst
 #sed -i -r 's/lepl\.contrib\.functions\.SmartSeparator2/lepl.contrib.matchers.SmartSeparator2/g' *.rst
 sed -i -r 's/lepl\.offside\.matchers\.(LineAwareConfiguration|IndentConfiguration|OffsideConfiguration)/lepl.offside.config.\1/g' *.rst
+sed -i -r 's/lepl\.lexer\.matchers\.(Indent|Eol|BIndent)/lepl.offside.lexer.\1/g' *.rst
 
 

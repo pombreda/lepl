@@ -20,11 +20,11 @@
 Show how the BLine and Block tokens can be used
 '''
 
-# pylint: disable-msg=W0401, W0614, W0621, C0103, C0111, R0201, C0301
+# pylint: disable-msg=W0401, W0614, W0621, C0103, C0111, R0201, C0301, R0904
 #@PydevCodeAnalysisIgnore
 
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example
@@ -134,6 +134,7 @@ same for (argument,
         word = Token(Word(Lower()))
         line = Delayed()
         block = Block(line[1:])
+        # this also tests left recursion and blocks
         line += BLine(word | Empty()) | block
         parser = line[:].string_parser(OffsideConfiguration(policy=4, start=3))
         result = parser('''

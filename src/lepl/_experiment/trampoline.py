@@ -20,7 +20,7 @@
 Experimental code.
 '''
 
-# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, W0614, W0401, W0232
+# pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, W0614, W0401, W0232, R0911, W0703
 
 
 from itertools import count
@@ -78,22 +78,22 @@ def fib(n):
         
 def add_attribute(f):
     def fun(*args, **kargs):
-        generator = f(*args, **kargs)
-        generator.attribute = 42
+        gen = f(*args, **kargs)
+        gen.attribute = 42
     return fun
 
 # @add_attribute - doesn't work, generators have read-only attributes            
 def sequence(n):
-    for i in range(n):
+    for _i in range(n):
         yield n
 
 
 def outer(n):
     for i in range(n):
-        generator = sequence(i)
+        gen = sequence(i)
         try:
             while True:
-                yield (yield generator)
+                yield (yield gen)
         except StopIteration:
             pass
         
