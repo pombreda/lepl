@@ -37,7 +37,7 @@ class PithonTest(TestCase):
         introduce = ~Token(':')
         comma = ~Token(',')
         
-        CLine = CLineFactory(continuation)
+        CLine = ContinuedBLineFactory(continuation)
         
         statement = word[1:]
         args = Extend(word[:, comma]) > tuple

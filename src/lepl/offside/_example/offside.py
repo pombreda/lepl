@@ -77,7 +77,7 @@ ghijk:
         introduce = ~Token(':')
         comma = ~Token(',')
 
-        CLine = CLineFactory(continuation)
+        CLine = ContinuedBLineFactory(continuation)
                 
         statement = Delayed()
 

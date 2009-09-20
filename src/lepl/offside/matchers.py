@@ -192,21 +192,36 @@ def any_token(token, item):
     return token.id_ in tokens
 
 
-def CLineFactory(continuation):
+def _ContinuedLineFactory(continuation, base):
     '''
-    Return a BLine matcher that applies its contents to a stream which 
-    continues past line breaks if the given token is present.
+    Return the base (line) matcher, modified so that it applies its contents 
+    to a stream which continues past line breaks if the given token is present.
     '''
-    def Cline(matcher):
+    def ContinuedLine(matcher):
         '''
-        Like `BLine` (matches the `Block` indentation at the start), but
-        continues over multiple lines if the continuation token is found
-        at the end of each line.
+        Like `base`, but continues over multiple lines if the continuation 
+        token is found at the end of each line.
         '''
         multiple = ExcludeSequence(any_token, 
                     [Eol(compiled=True), continuation, Indent(compiled=True)])
         return BLine(multiple(matcher))
-    return Cline
+    return ContinuedLine
+
+
+def ContinuedLineFactory(continuation):
+    '''
+    Construct a matcher like `Line`, but which extends over multiple lines if
+    the continuation token ends a line.
+    '''
+    return _ContinuedLineFactory(continuation, Line)
+    
+
+def ContinuedBLineFactory(continuation):
+    '''
+    Construct a matcher like `BLine`, but which extends over multiple lines if
+    the continuation token ends a line.
+    '''
+    return _ContinuedLineFactory(continuation, BLine)
     
 
 Extend = ExcludeSequence(only_token, 
