@@ -25,6 +25,5 @@ Examples for the lepl.offside package.
 
 # pylint: disable-msg=E0611
 #@PydevCodeAnalysisIgnore
-import lepl.offside._example.indent
 import lepl.offside._example.line_aware
 import lepl.offside._example.offside

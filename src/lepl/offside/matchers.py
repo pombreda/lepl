@@ -22,12 +22,13 @@ Matchers that are indent aware.
 
 from weakref import WeakKeyDictionary
 
-from lepl.matchers import OperatorMatcher, And, Any
+from lepl.matchers import OperatorMatcher, And, Any, coerce_
 from lepl.parser import tagged
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.monitor import BlockMonitor
 from lepl.offside.regexp import SOL as _SOL, EOL as _EOL
 from lepl.filters import ExcludeSequence
+from lepl.lexer.matchers import Token
 
 
 # pylint: disable-msg=W0105
@@ -197,14 +198,15 @@ def _ContinuedLineFactory(continuation, base):
     Return the base (line) matcher, modified so that it applies its contents 
     to a stream which continues past line breaks if the given token is present.
     '''
+    continuation = coerce_(continuation, Token)
+    
     def ContinuedLine(matcher):
         '''
         Like `base`, but continues over multiple lines if the continuation 
         token is found at the end of each line.
         '''
-        multiple = ExcludeSequence(any_token, 
-                    [Eol(compiled=True), continuation, Indent(compiled=True)])
-        return BLine(multiple(matcher))
+        multiple = ExcludeSequence(any_token, [continuation, Eol(), Indent()])
+        return base(multiple(matcher))
     return ContinuedLine
 
 

@@ -23,13 +23,13 @@ Show how line aware alphabet can be used.
 #@PydevCodeAnalysisIgnore
 
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example
 
 
-class LineAwareExample(Example):
+class LineAwareExamples(Example):
     
     def test_regexp(self):
         #basicConfig(level=DEBUG)
@@ -37,7 +37,7 @@ class LineAwareExample(Example):
         words = Word()[:,~Space()[:]] > list
         end = DfaRegexp('$')
         line = start & words & end
-        parser = line.string_parser(LineOrientedConfiguration())
+        parser = line.string_parser(LineAwareConfiguration())
         self.examples([(lambda: parser('  abc def'), 
                         "['  ', ['abc', 'def'], '']")])
 
@@ -48,6 +48,34 @@ class LineAwareExample(Example):
         words = Word()[:,~Space()[:]] > list
         end = EOL()
         line = start & words & end
-        parser = line.string_parser(LineOrientedConfiguration())
+        parser = line.string_parser(LineAwareConfiguration())
         self.examples([(lambda: parser('  abc def'), 
                         "['  ', ['abc', 'def']]")])
+
+    def test_indent_token(self):
+        #basicConfig(level=DEBUG)
+        words = Token(Word(Lower()))[:] > list
+        line = Indent() & words & Eol()
+        parser = line.string_parser(LineAwareConfiguration(tabsize=4))
+        self.examples([(lambda: parser('\tabc def'), 
+                        "['    ', ['abc', 'def'], '']")])
+
+    def test_line_token(self):
+        #basicConfig(level=DEBUG)
+        words = Token(Word(Lower()))[:] > list
+        line = Line(words)
+        parser = line.string_parser(LineAwareConfiguration(tabsize=4))
+        self.examples([(lambda: parser('\tabc def'), 
+                        "[['abc', 'def']]")])
+    
+    def test_continued(self):
+        #basicConfig(level=DEBUG)
+        words = Token(Word(Lower()))[:] > list
+        CLine = ContinuedLineFactory(r'\+')
+        line = CLine(words)
+        parser = line.string_parser(LineAwareConfiguration())
+        self.examples([(lambda: parser('''abc def +
+ghi'''), 
+                        "[['abc', 'def', 'ghi']]")])
+    
+   

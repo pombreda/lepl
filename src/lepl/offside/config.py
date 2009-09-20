@@ -38,7 +38,7 @@ from lepl.trace import TraceResults
 # pylint: disable-msg=R0913
 # lepl conventions
 
-class LineOrientedConfiguration(Configuration):
+class LineAwareConfiguration(Configuration):
     '''
     Configure the system so that a given alphabet is extended to be
     "line-aware": SOL and EOL markers are added; `Indent` and `Eol`
@@ -46,7 +46,7 @@ class LineOrientedConfiguration(Configuration):
     '''
     
     def __init__(self, rewriters=None, monitors=None, alphabet=None,
-                 discard='[ \t\r\n]', tabsize=DEFAULT_TABSIZE):
+                 discard='[ \t\r\n]', tabsize=None):
         if rewriters is None:
             rewriters = [flatten, compose_transforms, auto_memoize()]
         if monitors is None:
@@ -60,14 +60,14 @@ class LineOrientedConfiguration(Configuration):
                                     source=OffsideSource.factory(tabsize))] \
                     + rewriters
         stream_factory = LineAwareStreamFactory(alphabet)
-        super(LineOrientedConfiguration, self).__init__(
+        super(LineAwareConfiguration, self).__init__(
                                     rewriters=rewriters, monitors=monitors, 
                                     stream_factory=stream_factory)
 
 
 class OffsideConfiguration(Configuration):
     '''
-    As `LineOrientedConfiguration`, but with additional support for
+    As `LineAwareConfiguration`, but with additional support for
     structured matching ("offside rule") with `Line` and `Block`.
     '''
     

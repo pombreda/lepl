@@ -349,6 +349,16 @@ class _ExcludeSequence(OperatorMatcher):
         self._arg(exclude=exclude)
         self._arg(matcher=matcher)
         self._args(sequence=sequence)
+        
+    @staticmethod
+    def __zip(seq1, seq2):
+        '''
+        Avoid calling len() on seq2
+        '''
+        for item in seq1:
+            if seq2:
+                yield (item, seq2[0])
+                seq2 = seq2[1:]
     
     @tagged
     def _match(self, stream_in):
@@ -365,7 +375,7 @@ class _ExcludeSequence(OperatorMatcher):
                     stream = stream[1:]
                     residual -= 1
                 else:
-                    for (seq, item) in zip(self.sequence, stream):
+                    for (seq, item) in self.__zip(self.sequence, stream):
                         if not self.exclude(seq, item):
                             break
                         else:

@@ -144,7 +144,10 @@ class OffsideSource(TokenSource):
     
     def __init__(self, tokens, stream, tabsize):
         super(OffsideSource, self).__init__(tokens, stream)
-        self.__tab = ''.join([' '] * tabsize)
+        if tabsize:
+            self.__tab = ''.join([' '] * tabsize)
+        else:
+            self.__tab = None
     
     def __next__(self):
         '''
@@ -160,7 +163,7 @@ class OffsideSource(TokenSource):
             if terminals and START in terminals:
                 if not len(terminals) == 1:
                     raise OffsideError('More than one token matching ^')
-                elif '\t' in text:
+                elif '\t' in text and self.__tab:
                     text = ''.join([char if char == ' ' else self.__tab
                                     for char in text])
             return ([(terminals, text)], stream)

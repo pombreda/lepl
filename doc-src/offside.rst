@@ -2,16 +2,19 @@
 .. index:: offside rule, whitespace sensitive parsing
 .. _offside:
 
-Offside Rule
-============
+Line--Aware Parsing and the Offside Rule
+========================================
 
-From release 3.3 LEPL includes support to simplify parsing text where
-whitespace is important.  For example, in both Python and Haskell, the
-relative indentation of lines changes the meaning of a program.
+From release 3.3 LEPL includes support to simplify parsing text where lines
+and whitespace are significant.  For example, in both Python and Haskell,the
+relative indentation of lines changes the meaning of a program.  There are
+also many simpler cases where a matcher should be applied to a single line (or
+a line wih continuation character).
 
-There is nothing special about spaces, of course, so in principle it was
-always possible to handle such grammars in LEPL, but in practice doing so was
-frustratingly complex.  The new extensions make things much simpler.
+There is nothing special about spaces and newline characters, of course, so in
+principle it was always possible to handle such grammars in LEPL, but in
+practice doing so was frustratingly complex.  The new extensions make things
+much simpler.
 
 Note that I ues the phrase "offside rule" in a general way (only) to describe
 indentation--aware parsing.  I am not claiming to support the exact parsing
@@ -22,21 +25,20 @@ make a variety of different syntaxes possible.
 Introduction
 ------------
 
-Below I will describe the way that LEPL handles indentation in three separate
-stages.  Most people will use the "high level" tools described in the final
-approach, but those are built on top of the "lower level" stages, so it is
-best to start there.
+The offside rule support (indentation sensitive) is built on top of the
+line--aware features, so I will describe those first.
 
 
 Line Aware Alphabet
 -------------------
 
 LEPL treats the data to be parsed as a stream --- typically a stream of
-characters, or tokens.  For indentation--sensitive parsing, however, it is
-important to know about `lines`, so we must add extra markers to the stream.
-The `LineAwareConfiguration() <api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ does just this, modifying the stream so that,
-in addition to the normal characters, it contains additional "markers" for the
-start and end of lines.
+characters, or tokens.  For line--aware parsing, however, it is important to
+know about `lines`, so we must add extra markers to the stream.  The
+`LineAwareConfiguration()
+<api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ does just
+this, modifying the stream so that, in addition to the normal characters, it
+contains additional "markers" for the start and end of lines.
 
 The markers can be matched with `SOL()
 <api/redirect.html#lepl.offside.matchers.SOL>`_ and `EOL()
@@ -53,8 +55,10 @@ The markers can be matched with `SOL()
 The start and end of line markers are not returned by the matchers.
 
 The extra markers are also added to the default alpabet (Unicode), so that
-LEPL's regular expressions (the `DfaRegexp() <api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_ and `NfaRegexp() <api/redirect.html#lepl.regexp.matchers.NfaRegexp>`_ matchers)
-can match the start and end of lines (using the ``^`` and ``$`` symbols).
+LEPL's regular expressions (the `DfaRegexp()
+<api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_ and `NfaRegexp()
+<api/redirect.html#lepl.regexp.matchers.NfaRegexp>`_ matchers) can match the
+start and end of lines (using the ``^`` and ``$`` symbols).
 
 Here is an example showing the use of regular expressions::
 
@@ -70,20 +74,27 @@ Note how the ``start`` expression returns the matched spaces, but the start
 and end markers are automatically suppressed from the results.
 
 
+Tabs
+----
+
+The ``LineAwareConfiguration()`` has an optional ``tabsize`` parameter.  If
+set, tabs are replaced by this many spaces.  By default, no replacement is
+made.
+
+
 Indent and Eol Tokens
 ---------------------
 
-Once we have start and end of line markers, supported by regular expressions,
-we can define tokens that match those markers.  This is done by
-`IndentConfiguration()
-<api/redirect.html#lepl.offside.config.IndentConfiguration>`_ which creates
-two tokens: `Indent() <api/redirect.html#lepl.lexer.matchers.Indent>`_ and
-`Eol() <api/redirect.html#lepl.lexer.matchers.Eol>`_.  As you might expect,
-the first of these matches the start of line marker plus any additional
-spaces, while the second matchers the end of line marker.
+We can use tokens with line--aware alphabets.  LEPL includes two tokens that
+do the basic work: `Indent() <api/redirect.html#lepl.lexer.matchers.Indent>`_
+and `Eol() <api/redirect.html#lepl.lexer.matchers.Eol>`_.  As you might
+expect, the first of these matches the start of line marker plus any
+additional spaces, while the second matchers the end of line marker.
 
-In addition, this configuration includes additional stream processing that
-converts tabs to a given number of spaces::
+Like any other token, ``Indent()`` can be used to create a specialised token
+that matches the actual indentation used.
+
+Here is an example using line--aware tokens::
 
   >>> words = Token(Word(Lower()))[:] > list
   >>> line = Indent() & words & Eol()
@@ -95,21 +106,48 @@ And because we use tokens there is no need to worry about spaces between
 words.
 
 
-Lines and Blocks
-----------------
+Lines and Continuations
+-----------------------
 
-Matching each `Indent() <api/redirect.html#lepl.lexer.matchers.Indent>`_ and
-`Eol() <api/redirect.html#lepl.lexer.matchers.Eol>`_ is cumbersome, so the top
-level of support for whitespace matching in LEPL defines some extra matchers
-that simplfy the task.
+The ``Line()`` matcher hides ``Indent()`` and ``Eol()`` behind a slightly
+simpler interface::
 
-`Block() <api/redirect.html#lepl.offside.matchers.Block>`_ and `BLine()
-<api/redirect.html#lepl.offside.matchers.BLine>`_ colaborate with a monitor
-(an advanced feature of LEPL that allows matchers to share data as they are
-added to or leave the call stack) to share the "current indentation level".
+  >>> words = Token(Word(Lower()))[:] > list
+  >>> line = Line(words)
+  >>> parser = line.string_parser(LineAwareConfiguration(tabsize=4))
+  >>> parser('\tabc def')
+  [['abc', 'def']]
 
-The structure of some text, in terms of `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_ and `Block() <api/redirect.html#lepl.offside.matchers.Block>`_, might
-look a little like this::
+In some cases we would like a line to continue over several lines if it ends
+with a certain matcher.  We can make a similar matcher to ``Line()`` that
+continues over multiple lines using ``ContinuedLineFactory()``::
+
+  >>> words = Token(Word(Lower()))[:] > list
+  >>> CLine = ContinuedLineFactory(r'\+')
+  >>> line = CLine(words)
+  >>> parser = line.string_parser(LineAwareConfiguration())
+  >>> parser('''abc def +
+  ghi'''
+  [['abc', 'def', 'ghi']]
+
+A similar matcher is ``Extend()`` which allows some content within a line to
+continue onto another line.  Note that, unlike `Line()
+<api/redirect.html#lepl.offside.matchers.Line>`_ this does not match an entire
+line --- it just skips line breaks.  For an example that uses ``Extend()`` see
+the very end of this section.
+
+
+Offside Rule and Blocks
+-----------------------
+
+In addition to the above, LEPL simplifies offside rule parsing with the
+concept of "blocks", which allow text to be described in terms of nested
+sections.  The simpest way to use blocks is via ``OffsideConfiguration()``.
+
+The nested structure is described using `BLine()
+<api/redirect.html#lepl.offside.matchers.BLine>`_ and `Block()
+<api/redirect.html#lepl.offside.matchers.Block>`_.  They work together as
+shown in the following "picture"::
 
   BLine()
   BLine()
@@ -121,9 +159,16 @@ look a little like this::
         Block(Bline()))
   Bline()
 
-Where every line is in a separate ``Bline()`` and then groups of indented
-lines are collected inside `Block() <api/redirect.html#lepl.offside.matchers.Block>`_ elements.  Each `Block() <api/redirect.html#lepl.offside.matchers.Block>`_ sets the
-indent required for the ``Bline()`` elements it contains.
+Where every line is in a separate ``Bline()`` and groups of indented lines are
+collected inside `Block() <api/redirect.html#lepl.offside.matchers.Block>`_
+elements.  Each `Block() <api/redirect.html#lepl.offside.matchers.Block>`_
+sets the indent required for the ``Bline()`` elements it contains.
+
+In a little more detail: `Block()
+<api/redirect.html#lepl.offside.matchers.Block>`_ and `BLine()
+<api/redirect.html#lepl.offside.matchers.BLine>`_ colaborate with a monitor
+(an advanced feature of LEPL that allows matchers to share data as they are
+added to or leave the call stack) to share the "current indentation level".
 
 Because blocks can be nested we typically have a recursive grammar.  For
 example::
@@ -154,57 +199,32 @@ example::
      ['stu']], 
     ['vwx', 'yz']]]
 
-I will now explain the parser above in detail.
+The core of the parser above are the three uses of ``BLine()``. The first,
+``simple``, is a statement that fits in a single line.  The next, ``empty``,
+is an empty statement.  Finally, ``block`` defines a block statement as one
+that is introduced by a line that ends in ":" and then contains a series of
+statements that are indented relative to the first line.
 
-As with any recursive grammar, we introduce a matcher that we will use before
-we define it.  In this case, we introduce ``statement``.
-
-Next we define three different kinds of statement.  The first, ``simple``, is
-a statement that fits in a single line.  The next, ``empty``, is an empty
-statement.  Finally, ``block`` defines a block statement as one that is
-introduced by a line that ends in ":" and then contains a series of statements
-that are indented relative to the first line.
-
-So you can see that the `Block() <api/redirect.html#lepl.offside.matchers.Block>`_ matcher's job is to collect together lines
-that are indented relative to whatever came just before.  This works with
-`BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_ which matches a line if it is indented at the correct level.
-Finally (and implicitly) the indentation starts at zero.
+So you can see that the `Block()
+<api/redirect.html#lepl.offside.matchers.Block>`_ matcher's job is to collect
+together lines that are indented relative to whatever came just before.  This
+works with `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_ which
+matches a line if it is indented at the correct level.  Finally (and
+implicitly) the indentation starts at zero.
 
 
 Further Matchers
 ----------------
 
-In addition to `Block() <api/redirect.html#lepl.offside.matchers.Block>`_ and `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_, discussed above, the
-`OffsideConfiguration() <api/redirect.html#lepl.offside.config.OffsideConfiguration>`_ can be used with several other matchers:
+The other line--aware matchers can also be used with blocks.  For example, a
+line for which indentation is not important (a comment, perhaps), can be
+matched with ``Line()``.
 
+``ContinuationBLineFactory()`` adds support for ``BLine()`` in exactly the
+same way as ``ContinuationLineFactory()`` described earlier.
 
-.. index:: Line()
-
-Line
-
-  The `Line() <api/redirect.html#lepl.offside.matchers.Line>`_ matcher matches a line with any indentation.
-
-
-.. index:: CLineFactory()
-
-CLineFactory
-
-  `CLineFactory() <api/redirect.html#lepl.offside.matchers.CLineFactory>`_ can be used to construct a matcher (usually called
-  ``CLine``) that allows a statement to continue ofver several lines if each
-  line ends with a continuation symbol.
-
-
-.. index:: Extend()
-
-Extend
-
-  The `Extend() <api/redirect.html#lepl.offside.matchers.Extend>`_ matcher allows part of a statement to continue over more
-  than one line.  Note that, unlike `Line() <api/redirect.html#lepl.offside.matchers.Line>`_, `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_ and ``CLine``,
-  this does not match an entire line --- it just skips line breaks.
-
-
-The following example shows these matchers being used in a grammar that has a
-Python--like structure::
+The following example shows many of these matchers being used in a grammar
+that has a Python--like structure::
 
   >>> word = Token(Word(Lower()))
   >>> continuation = Token(r'\\')
@@ -212,7 +232,7 @@ Python--like structure::
   >>> introduce = ~Token(':')
   >>> comma = ~Token(',')
 
-  >>> CLine = CLineFactory(continuation)
+  >>> CLine = ContinuationBLineFactory(continuation)
                 
   >>> statement = Delayed()
 
