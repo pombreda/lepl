@@ -10,7 +10,11 @@ LEPL - A Parser Library for Python 3 (and 2.6)
   * :ref:`Manual <manual>`
   * :ref:`Download etc <support>`
 
-LEPL is written and maintained by `Andrew Cooke <http://www.acooke.org>`_.
+LEPL combines the simplicity and ease--of--use of a recursive descent parser
+with scalability (through memoisation) and advanced (but optional) features
+like lexing, AST generation, offside--rule, robustness to ambiguous and
+left--recursive grammars, etc.  It is written and maintained by `Andrew Cooke
+<http://www.acooke.org>`_.
 
 
 Features
@@ -30,7 +34,7 @@ Features
 * Generic, pure-Python approach supports parsing a wide variety of data
   including :ref:`binary data <binary>` (Python 3+ only).
 
-* Well documented and easy to extend.
+* Well documented and extensible, modular design.
 
 * :ref:`Unlimited recursion depth <trampolining>`.  The underlying algorithm
   is recursive descent, which can exhaust the stack for complex grammars and
@@ -53,6 +57,10 @@ Features
 * Pluggable trace and resource management, including :ref:`deepest match
   <deepest_match>` diagnostics and the ability to :ref:`limit backtracking
   <resources>`.
+
+* Support for the ":ref:`offside rule <offside>`" (significant indentation
+  levels).
+
 
 .. _example:
 

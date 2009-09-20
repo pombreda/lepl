@@ -23,10 +23,10 @@ Pre-built configurations for using the package in several standard ways.
 
 from lepl.config import Configuration
 from lepl.lexer.matchers import BaseToken
+from lepl.lexer.rewriters import lexer_rewriter
 from lepl.offside.matchers import DEFAULT_TABSIZE, DEFAULT_POLICY, Block
 from lepl.offside.monitor import block_monitor
 from lepl.offside.regexp import LineAwareAlphabet
-from lepl.offside.rewriters import indent_rewriter
 from lepl.offside.stream import LineAwareStreamFactory, OffsideSource
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
@@ -38,39 +38,15 @@ from lepl.trace import TraceResults
 # pylint: disable-msg=R0913
 # lepl conventions
 
-class LineAwareConfiguration(Configuration):
-    '''
-    Configure the system so that the given alphabet is extended to be
-    "line-aware".  This means that the stream will contain additional
-    start-of-line and end-of-line values (see `LineAwareAlphabet`), but
-    does not introduce any special tokens. 
-    '''
-    
-    def __init__(self, rewriters=None, monitors=None, alphabet=None):
-        if rewriters is None:
-            rewriters = [flatten, compose_transforms, auto_memoize()]
-        if monitors is None:
-            monitors = [TraceResults(False)]
-        if alphabet is None:
-            alphabet = UnicodeAlphabet.instance()
-        alphabet = LineAwareAlphabet(alphabet)
-        rewriters = [fix_arguments(BaseRegexp, alphabet=alphabet)] \
-                    + rewriters
-        stream_factory = LineAwareStreamFactory(alphabet)
-        super(LineAwareConfiguration, self).__init__(
-                                    rewriters=rewriters, monitors=monitors, 
-                                    stream_factory=stream_factory)
-
-
-class IndentConfiguration(Configuration):
+class LineOrientedConfiguration(Configuration):
     '''
     Configure the system so that a given alphabet is extended to be
-    "line-aware" and that additional tokens are generated for the
-    initial indent (`Indent`) and end of line (`Eol`).
+    "line-aware": SOL and EOL markers are added; `Indent` and `Eol`
+    tokens will work, etc.
     '''
     
     def __init__(self, rewriters=None, monitors=None, alphabet=None,
-                 discard=None, extra_tokens=None, tabsize=DEFAULT_TABSIZE):
+                 discard='[ \t\r\n]', tabsize=DEFAULT_TABSIZE):
         if rewriters is None:
             rewriters = [flatten, compose_transforms, auto_memoize()]
         if monitors is None:
@@ -80,28 +56,24 @@ class IndentConfiguration(Configuration):
         alphabet = LineAwareAlphabet(alphabet)
         rewriters = [fix_arguments(BaseRegexp, alphabet=alphabet),
                      fix_arguments(BaseToken, alphabet=alphabet),
-                     indent_rewriter(alphabet, discard=discard, 
-                                     extra_tokens=extra_tokens, 
-                                     source=OffsideSource.factory(tabsize))] \
+                     lexer_rewriter(alphabet, discard=discard, 
+                                    source=OffsideSource.factory(tabsize))] \
                     + rewriters
         stream_factory = LineAwareStreamFactory(alphabet)
-        super(IndentConfiguration, self).__init__(
+        super(LineOrientedConfiguration, self).__init__(
                                     rewriters=rewriters, monitors=monitors, 
                                     stream_factory=stream_factory)
 
 
 class OffsideConfiguration(Configuration):
     '''
-    Configure the system so that a given alphabet is extended to be
-    "line-aware", additional tokens are generated for the initial 
-    indent (`Indent`) and end of line (`Eol`), indent
-    is converted to space count, and additional support is added for
+    As `LineOrientedConfiguration`, but with additional support for
     structured matching ("offside rule") with `Line` and `Block`.
     '''
     
     def __init__(self, rewriters=None, monitors=None, alphabet=None,
-                 discard=None, extra_tokens=None,
-                 tabsize=DEFAULT_TABSIZE, policy=DEFAULT_POLICY, start=0):
+                 discard='[ \t\r\n]', tabsize=DEFAULT_TABSIZE, 
+                 policy=DEFAULT_POLICY, start=0):
         if rewriters is None:
             rewriters = [flatten, compose_transforms, auto_memoize()]
         if monitors is None:
@@ -112,8 +84,7 @@ class OffsideConfiguration(Configuration):
         rewriters = [fix_arguments(BaseRegexp, alphabet=alphabet),
                      fix_arguments(BaseToken, alphabet=alphabet),
                      fix_arguments(Block, policy=policy),
-                     indent_rewriter(alphabet, discard=discard, 
-                                     extra_tokens=extra_tokens, 
+                     lexer_rewriter(alphabet, discard=discard, 
                                      source=OffsideSource.factory(tabsize))] \
                     + rewriters
         monitors.append(block_monitor(start))

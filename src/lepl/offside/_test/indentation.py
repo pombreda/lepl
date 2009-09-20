@@ -25,7 +25,7 @@ from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.functions import Word, Letter
-from lepl.offside.config import IndentConfiguration
+from lepl.offside.config import LineOrientedConfiguration
 from lepl.offside.lexer import Indent, Eol
 from lepl.trace import TraceResults
 
@@ -51,7 +51,7 @@ left
         line2 = indent('') & word('left') + Eol()
         line3 = indent('    ') & word('four') + Eol()
         parser = (line1 & line2 & line3).string_parser(
-                                        config=IndentConfiguration())
+                                        config=LineOrientedConfiguration())
         result = parser(text)
         assert result == ['', '', 'left', '    ', 'four'], result
         
@@ -75,7 +75,7 @@ class TabTest(TestCase):
         line2 = indent(' ') & word('onespace') & ~Eol()
         line3 = indent('     ') & word('spaceandtab') & ~Eol()
         parser = (line1 & line2 & line3).string_parser(
-                            config=IndentConfiguration(tabsize=4,
+                            config=LineOrientedConfiguration(tabsize=4,
                                             monitors=[TraceResults(True)]))
         result = parser(text)
         #print(result)

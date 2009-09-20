@@ -34,7 +34,7 @@ Line Aware Alphabet
 LEPL treats the data to be parsed as a stream --- typically a stream of
 characters, or tokens.  For indentation--sensitive parsing, however, it is
 important to know about `lines`, so we must add extra markers to the stream.
-The `LineAwareConfiguration() <api/redirect.html#lepl.offside.matchers.LineAwareConfiguration>`_ does just this, modifying the stream so that,
+The `LineAwareConfiguration() <api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ does just this, modifying the stream so that,
 in addition to the normal characters, it contains additional "markers" for the
 start and end of lines.
 
@@ -76,7 +76,7 @@ Indent and Eol Tokens
 Once we have start and end of line markers, supported by regular expressions,
 we can define tokens that match those markers.  This is done by
 `IndentConfiguration()
-<api/redirect.html#lepl.offside.matchers.IndentConfiguration>`_ which creates
+<api/redirect.html#lepl.offside.config.IndentConfiguration>`_ which creates
 two tokens: `Indent() <api/redirect.html#lepl.lexer.matchers.Indent>`_ and
 `Eol() <api/redirect.html#lepl.lexer.matchers.Eol>`_.  As you might expect,
 the first of these matches the start of line marker plus any additional
@@ -108,7 +108,7 @@ that simplfy the task.
 (an advanced feature of LEPL that allows matchers to share data as they are
 added to or leave the call stack) to share the "current indentation level".
 
-The structure of some text, in terms of ``BLine()`` and ``Block()``, might
+The structure of some text, in terms of `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_ and `Block() <api/redirect.html#lepl.offside.matchers.Block>`_, might
 look a little like this::
 
   BLine()
@@ -122,7 +122,7 @@ look a little like this::
   Bline()
 
 Where every line is in a separate ``Bline()`` and then groups of indented
-lines are collected inside ``Block()`` elements.  Each ``Block()`` sets the
+lines are collected inside `Block() <api/redirect.html#lepl.offside.matchers.Block>`_ elements.  Each `Block() <api/redirect.html#lepl.offside.matchers.Block>`_ sets the
 indent required for the ``Bline()`` elements it contains.
 
 Because blocks can be nested we typically have a recursive grammar.  For
@@ -175,7 +175,7 @@ Further Matchers
 ----------------
 
 In addition to `Block() <api/redirect.html#lepl.offside.matchers.Block>`_ and `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_, discussed above, the
-`OffsideConfiguration() <api/redirect.html#lepl.offside.matchers.OffsideConfiguration>`_ can be used with several other matchers:
+`OffsideConfiguration() <api/redirect.html#lepl.offside.config.OffsideConfiguration>`_ can be used with several other matchers:
 
 
 .. index:: Line()

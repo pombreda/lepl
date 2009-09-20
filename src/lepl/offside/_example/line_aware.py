@@ -37,7 +37,7 @@ class LineAwareExample(Example):
         words = Word()[:,~Space()[:]] > list
         end = DfaRegexp('$')
         line = start & words & end
-        parser = line.string_parser(LineAwareConfiguration())
+        parser = line.string_parser(LineOrientedConfiguration())
         self.examples([(lambda: parser('  abc def'), 
                         "['  ', ['abc', 'def'], '']")])
 
@@ -48,6 +48,6 @@ class LineAwareExample(Example):
         words = Word()[:,~Space()[:]] > list
         end = EOL()
         line = start & words & end
-        parser = line.string_parser(LineAwareConfiguration())
+        parser = line.string_parser(LineOrientedConfiguration())
         self.examples([(lambda: parser('  abc def'), 
                         "['  ', ['abc', 'def']]")])

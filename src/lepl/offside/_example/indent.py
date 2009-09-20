@@ -36,6 +36,6 @@ class IndentExample(Example):
         #basicConfig(level=DEBUG)
         words = Token(Word(Lower()))[:] > list
         line = Indent() & words & Eol()
-        parser = line.string_parser(IndentConfiguration(tabsize=4))
+        parser = line.string_parser(LineOrientedConfiguration(tabsize=4))
         self.examples([(lambda: parser('\tabc def'), 
                         "['    ', ['abc', 'def'], '']")])

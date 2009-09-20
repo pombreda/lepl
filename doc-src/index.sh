@@ -18,12 +18,13 @@ sed -i -r 's/``(Configuration)\(\)``/`\1() <api\/redirect.html#lepl.bin.config.\
 sed -i -r 's/``(DfaRegexp|NfaRegexp)\(\)``/`\1() <api\/redirect.html#lepl.regexp.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(Line|Block|BLine|CLineFactory|Extend|SOL|EOL)\(\)``/`\1() <api\/redirect.html#lepl.offside.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(Indent|Eol|BIndent)\(\)``/`\1() <api\/redirect.html#lepl.lexer.matchers.\1>`_/g' *.rst
-sed -i -r 's/``(LineAwareConfiguration|IndentConfiguration|OffsideConfiguration)\(\)``/`\1() <api\/redirect.html#lepl.offside.matchers.\1>`_/g' *.rst
+sed -i -r 's/``(LineAwareConfiguration|IndentConfiguration|OffsideConfiguration)\(\)``/`\1() <api\/redirect.html#lepl.offside.config.\1>`_/g' *.rst
 
 # fix up old errors
 #sed -i -e 's/redirect\/html/redirect.html/g' *.rst
 #sed -i -r 's/matchers\.(AnyBut|Optional|Star|ZeroOrMore|Plus|OneOrMore|Map|Add|Substitute|Name|Eos|Identity|Newline|Space|Whitespace|Digit|Letter|Upper|Lower|Printable|Punctuation|UnsignedInteger|SignedInteger|Integer|UnsignedFloat|SignedFloat|SignedEFloat|Float|Word|String||Drop)/functions.\1/g' *.rst
 sed -i -r 's/functions\.(And|Or|Literal|Columns)/matchers.\1/g' *.rst
 #sed -i -r 's/lepl\.contrib\.functions\.SmartSeparator2/lepl.contrib.matchers.SmartSeparator2/g' *.rst
+sed -i -r 's/lepl\.offside\.matchers\.(LineAwareConfiguration|IndentConfiguration|OffsideConfiguration)/lepl.offside.config.\1/g' *.rst
 
 
