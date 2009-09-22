@@ -26,7 +26,7 @@ from unittest import TestCase
 from lepl.lexer.matchers import Token
 from lepl.functions import Letter, Digit
 from lepl.matchers import Delayed, Or, Trace
-from lepl.offside.config import OffsideConfiguration
+from lepl.offside.config import LineAwareConfiguration
 from lepl.offside.matchers import Block, BLine
 
 
@@ -66,7 +66,8 @@ a
   5
  6
 '''
-        parser = program.string_parser(config=OffsideConfiguration(policy=1))
+        parser = program.string_parser(
+                                config=LineAwareConfiguration(block_policy=1))
         result = parser(text)
         assert result == [['1'], 
                           ['2'], 

@@ -137,13 +137,13 @@ class LineAwareSource(LineSource):
             return self.join([])
 
 
-class OffsideSource(TokenSource):
+class LineAwareTokenSource(TokenSource):
     '''
     Adapt `TokenSource` to replace tabs with spaces, if needed.
     '''
     
     def __init__(self, tokens, stream, tabsize):
-        super(OffsideSource, self).__init__(tokens, stream)
+        super(LineAwareTokenSource, self).__init__(tokens, stream)
         if tabsize:
             self.__tab = ''.join([' '] * tabsize)
         else:
@@ -159,7 +159,7 @@ class OffsideSource(TokenSource):
         '''
         try:
             ([(terminals, text)], stream) = \
-                    super(OffsideSource, self).__next__()
+                    super(LineAwareTokenSource, self).__next__()
             if terminals and START in terminals:
                 if not len(terminals) == 1:
                     raise OffsideError('More than one token matching ^')
@@ -175,5 +175,5 @@ class OffsideSource(TokenSource):
         '''
         Return a "constructor" that matches `TokenSource`.
         '''
-        return lambda tokens, stream: OffsideSource(tokens, stream, tabsize)
+        return lambda tokens, stream: LineAwareTokenSource(tokens, stream, tabsize)
 

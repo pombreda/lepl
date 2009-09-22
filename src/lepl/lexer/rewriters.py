@@ -113,8 +113,6 @@ def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', source=None):
     source is the source used to generate the final stream.
     '''
 
-    # TODO - handle discard=None (no discards, instead of crash)
-
     log = getLogger('lepl.lexer.rewriters.lexer_rewriter')
 
     if alphabet is None:

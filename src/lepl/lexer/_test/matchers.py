@@ -288,7 +288,8 @@ class ErrorTest(TestCase):
         '''
         token = Token('a')
         parser = token.null_parser(Configuration(rewriters=[lexer_rewriter(
-                                        UnicodeAlphabet.instance(), 'b')]))
+                                        UnicodeAlphabet.instance(), 
+                                        discard='b')]))
         assert parser('a') == ['a'], parser('a')
         assert parser('b') == None, parser('b')
         try:
@@ -313,4 +314,18 @@ class ErrorTest(TestCase):
         assert parser('a') == ['a'], parser('a')
         # whereas this is fine, since complete=False
         assert parser('ab') == ['a'], parser('ab')
+    
+    def test_none_discard(self):
+        '''
+        If discard is None, discard nothing.
+        '''
+        token = Token('a')
+        parser = token[1:].null_parser(Configuration(
+                            rewriters=[lexer_rewriter(discard=None)]))
+        result = parser('aa')
+        assert result == ['a', 'a'], result
+        try:
+            parser(' a')
+        except RuntimeLexerError as error:
+            assert str26(error) == "No discard for ' a'.", str26(error)
             

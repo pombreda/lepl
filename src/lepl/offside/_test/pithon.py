@@ -49,7 +49,7 @@ class PithonTest(TestCase):
         
         program = (line[:] & Eos())
         return program.string_parser(
-                    OffsideConfiguration(policy=2,
+                    LineAwareConfiguration(block_policy=2,
                                          monitors=[TraceResults(True)]))
     
     def test_blocks(self):

@@ -106,6 +106,9 @@ class Block(OperatorMatcher):
         return a new level.  Typically it is set globally by rewriting with
         a default in the configuration.  If it is given as an integer then
         `constant_indent` is used to create a policy from that.
+        
+        indent is the matcher used to match indents, and is exposed for 
+        rewriting/extension (in other words, ignore it).
         '''
         super(Block, self).__init__()
         self._args(lines=lines)

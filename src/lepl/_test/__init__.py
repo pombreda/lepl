@@ -81,13 +81,13 @@ def all():
               '(error class names, format variation from address size?)'
               .format(len(result.failures)))
         assert 2 <= len(result.failures) <= 3, len(result.failures)
-        target = 238 # no bin/cairo tests
+        target = 241 # no bin/cairo tests
     else:
         print('Expect at most 1 failure in Python 3: {0:d} '
               '(format variations from address size?)'
               .format(len(result.failures)))
         assert 0 <= len(result.failures) <= 1, len(result.failures)
-        target = 260 # no cairo tests (2)
+        target = 263 # no cairo tests (2)
     print('Expect {0:d} tests total: {1:d}'.format(target, result.testsRun))
     assert result.testsRun == target, result.testsRun
     print('\nLooks OK to me!\n\n')

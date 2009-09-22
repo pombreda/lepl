@@ -21,7 +21,9 @@ Rewriters modify the graph of matchers before it is used to generate a
 parser.
 '''
 
-from lepl.graph import Visitor, preorder, loops, order, NONTREE
+from collections import namedtuple
+
+from lepl.graph import Visitor, preorder, loops, order, NONTREE, dfs_edges, LEAF
 from lepl.operators import Matcher
 from lepl.support import lmap
 
@@ -377,3 +379,60 @@ def fix_arguments(type_, **extra_kargs):
             return clone(node, args, kargs)
         return graph.postorder(DelayedClone(new_clone), Matcher)
     return rewriter
+
+
+class NodeStats(object):
+    '''
+    Provide statitsics and access by type to nodes.
+    '''
+    
+    def __init__(self, matcher=None):
+        self.loops = 0
+        self.leaves = 0
+        self.total = 0
+        self.others = 0
+        self.duplicates = 0
+        self.types = {}
+        self.__known = set()
+        if matcher is not None:
+            self.add_all(matcher)
+        
+    def add(self, type_, node):
+        '''
+        Add a node of a given type.
+        '''
+        if type_ & LEAF:
+            self.leaves += 1
+        if type_ & NONTREE and isinstance(node, Matcher):
+            self.loops += 1
+        if node not in self.__known:
+            self.__known.add(node)
+            node_type = type(node)
+            if node_type not in self.types:
+                self.types[node_type] = set()
+            self.types[node_type].add(node)
+            if isinstance(node, Matcher):
+                self.total += 1
+            else:
+                self.others += 1
+        else:
+            self.duplicates += 1
+            
+    def add_all(self, matcher):
+        '''
+        Add all nodes.
+        '''
+        for (_parent, child, type_) in dfs_edges(matcher, Matcher):
+            self.add(type_, child)
+
+    def __str__(self):
+        counts = 'total:      {total:3d}\n' \
+                 'leaves:     {leaves:3d}\n' \
+                 'loops:      {loops:3d}\n' \
+                 'duplicates: {duplicates:3d}\n' \
+                 'others:     {others:3d}\n'.format(**self.__dict__)
+        keys = list(self.types.keys())
+        keys.sort(key=repr)
+        types = '\n'.join(['{0:40s}: {1:3d}'.format(key, self.types[key])
+                           for key in keys])
+        return counts + types

@@ -39,7 +39,7 @@ class OffsideExample(Example):
         scope = Delayed()
         line = (BLine(word[:] | Empty()) > list) | scope
         scope += BLine(word[:] & introduce) & Block(line[:]) > list
-        parser = line[:].string_parser(OffsideConfiguration(policy=2))
+        parser = line[:].string_parser(LineAwareConfiguration(block_policy=2))
         self.examples([(lambda: parser('''
 abc def
 ghijk:
@@ -57,7 +57,7 @@ ghijk:
         empty = BLine(Empty())
         block = BLine(word[:] & introduce) & Block(statement[:])
         statement += (simple | empty | block) > list
-        parser = statement[:].string_parser(OffsideConfiguration(policy=2))
+        parser = statement[:].string_parser(LineAwareConfiguration(block_policy=2))
         self.examples([(lambda: parser('''
 abc def
 ghijk:
@@ -91,7 +91,8 @@ ghijk:
         
         statement += (empty | simple | ifblock | function) > list
         
-        parser = statement[:].string_parser(OffsideConfiguration(policy=2))
+        parser = statement[:].string_parser(
+                                LineAwareConfiguration(block_policy=2))
 
         self.examples([(lambda: parser('''
 this is a grammar with a similar 
@@ -136,7 +137,8 @@ same for (argument,
         block = Block(line[1:])
         # this also tests left recursion and blocks
         line += BLine(word | Empty()) | block
-        parser = line[:].string_parser(OffsideConfiguration(policy=4, start=3))
+        parser = line[:].string_parser(
+                        LineAwareConfiguration(block_policy=4, block_start=3))
         result = parser('''
    foo
        bar

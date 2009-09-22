@@ -119,7 +119,7 @@ from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.lexer.rewriters import lexer_rewriter
 from lepl.manager import *
 from lepl.matchers import *
-from lepl.offside.config import LineAwareConfiguration, OffsideConfiguration
+from lepl.offside.config import LineAwareConfiguration, LineAwareConfiguration
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
     ContinuedBLineFactory, Extend, SOL, EOL
@@ -245,7 +245,7 @@ __all__ = [
         'optimize_or',
         # offside.config
         'LineAwareConfiguration',
-        'OffsideConfiguration',
+        'LineAwareConfiguration',
         # offside.lexer
         'Indent',
         'Eol',

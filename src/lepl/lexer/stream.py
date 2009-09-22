@@ -47,6 +47,8 @@ def lexed_simple_stream(tokens, discard, stream):
                     log.debug('Space: {0!r} {1!r}'.format(terminals, discard))
         except TypeError:
             raise RuntimeLexerError('No lexer for \'{0}\'.'.format(stream))
+        except AttributeError:
+            raise RuntimeLexerError('No discard for \'{0}\'.'.format(stream))
     return DEFAULT_STREAM_FACTORY.from_items(generator())
 
 

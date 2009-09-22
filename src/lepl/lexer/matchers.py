@@ -322,7 +322,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
             t_regexp = Expression.multiple(alphabet, 
                                            [(t.id_, t.regexp) 
                                             for t in tokens]).dfa()
-        if s_regexp is None:
+        if s_regexp is None and discard is not None:
             s_regexp = Expression.single(alphabet, discard).dfa()
         self._arg(matcher=matcher)
         self._arg(tokens=tokens)
