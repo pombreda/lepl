@@ -162,6 +162,6 @@ the methods `parse()
 
 The streams are created by a `StreamFactory()
 <api/redirect.html#lepl.stream.StreamFactory>`_ which is supplied by the
-`Configuration() <api/redirect.html#lepl.bin.config.Configuration>`_, so it is
+`Configuration() <api/redirect.html#lepl.config.Configuration>`_, so it is
 possible for a user (or a package that provides a custom configuration) to
 replace the stream implementation that is used.

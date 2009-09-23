@@ -70,6 +70,8 @@ Date        Version  Description
 2009-09-09  3.2.1    Clone bugfix bugfix.
 ----------  -------  -----------
 2009-09-13  3.3b1    Whitespace sensitive parsing (no documentation).
+----------  -------  -----------
+2009-09-23  3.3      Whitespace sensitive parsing.
 ==========  =======  ===========
 
 
@@ -78,9 +80,7 @@ Date        Version  Description
 3.3
 ---
 
-This (currently beta only, with no documentation) supports whitespace
-sensitive parsing.  For more information see `this blog post
-<http://www.acooke.org/cute/OffsidePar0.html>`_.
+This supports :ref:`line--aware <offside>` parsing.
 
 
 .. release_3_2:

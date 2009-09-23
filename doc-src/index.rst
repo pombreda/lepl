@@ -4,21 +4,83 @@ LEPL - A Parser Library for Python 3 (and 2.6)
 
 * `API Documentation <api>`_
 
+* :ref:`Features <features>`
+
 * :ref:`Documentation Contents <contents>`
 
   * :ref:`Tutorial <tutorial>`
   * :ref:`Manual <manual>`
   * :ref:`Download etc <support>`
 
+
+
+::
+
+  >>> from lepl import *
+  
+  >>> class Term(Node): pass
+  >>> class Factor(Node): pass
+  >>> class Expression(Node): pass
+  
+  >>> expr   = Delayed()
+  >>> number = Digit()[1:,...]                          > 'number'
+  >>> spaces = Drop(Regexp(r'\s*'))
+  
+  >>> with Separator(spaces):
+  >>>     term    = number | '(' & expr & ')'           > Term
+  >>>     muldiv  = Any('*/')                           > 'operator'
+  >>>     factor  = term & (muldiv & term)[:]           > Factor
+  >>>     addsub  = Any('+-')                           > 'operator'
+  >>>     expr   += factor & (addsub & factor)[:]       > Expression
+  >>>     line    = expr & Eos()
+  
+  >>> parser = line.parse_string
+  >>> parser('1 + 2 * (3 + 4 - 5)')[0]
+  
+  Expression
+   +- Factor
+   |   +- Term
+   |   |   `- number '1'
+   |   `- ' '
+   +- operator '+'
+   +- ' '
+   `- Factor
+       +- Term
+       |   `- number '2'
+       +- ' '
+       +- operator '*'
+       +- ' '
+       `- Term
+	   +- '('
+	   +- Expression
+	   |   +- Factor
+	   |   |   +- Term
+	   |   |   |   `- number '3'
+	   |   |   `- ' '
+	   |   +- operator '+'
+	   |   +- ' '
+	   |   +- Factor
+	   |   |   +- Term
+	   |   |   |   `- number '4'
+	   |   |   `- ' '
+	   |   +- operator '-'
+	   |   +- ' '
+	   |   `- Factor
+	   |       `- Term
+	   |           `- number '5'
+	   `- ')'
+
+
+.. _features:
+
+Features
+--------
+
 LEPL combines the simplicity and ease--of--use of a recursive descent parser
 with scalability (through memoisation) and advanced (but optional) features
 like lexing, AST generation, offside--rule, robustness to ambiguous and
 left--recursive grammars, etc.  It is written and maintained by `Andrew Cooke
 <http://www.acooke.org>`_.
-
-
-Features
---------
 
 * :ref:`Parsers are Python code <example>`, defined in Python itself.  No
   separate grammar is necessary.
@@ -61,67 +123,6 @@ Features
 * Support for the ":ref:`offside rule <offside>`" (significant indentation
   levels).
 
-
-.. _example:
-
-Example
--------
-
-To generate an AST for an arithmetic expression::
-
-  >>> from lepl import *
-
-  >>> class Term(Node): pass
-  >>> class Factor(Node): pass
-  >>> class Expression(Node): pass
-
-  >>> expr   = Delayed()
-  >>> number = Digit()[1:,...]                          > 'number'
-  >>> spaces = Drop(Regexp(r'\s*'))
-
-  >>> with Separator(spaces):
-  >>>     term    = number | '(' & expr & ')'           > Term
-  >>>     muldiv  = Any('*/')                           > 'operator'
-  >>>     factor  = term & (muldiv & term)[:]           > Factor
-  >>>     addsub  = Any('+-')                           > 'operator'
-  >>>     expr   += factor & (addsub & factor)[:]       > Expression
-  >>>     line    = expr & Eos()
-
-  >>> parser = line.parse_string
-  >>> parser('1 + 2 * (3 + 4 - 5)')[0]
-  
-  Expression
-   +- Factor
-   |   +- Term
-   |   |   `- number '1'
-   |   `- ' '
-   +- operator '+'
-   +- ' '
-   `- Factor
-       +- Term
-       |   `- number '2'
-       +- ' '
-       +- operator '*'
-       +- ' '
-       `- Term
-	   +- '('
-	   +- Expression
-	   |   +- Factor
-	   |   |   +- Term
-	   |   |   |   `- number '3'
-	   |   |   `- ' '
-	   |   +- operator '+'
-	   |   +- ' '
-	   |   +- Factor
-	   |   |   +- Term
-	   |   |   |   `- number '4'
-	   |   |   `- ' '
-	   |   +- operator '-'
-	   |   +- ' '
-	   |   `- Factor
-	   |       `- Term
-	   |           `- number '5'
-	   `- ')'
 
 .. _contents:
 

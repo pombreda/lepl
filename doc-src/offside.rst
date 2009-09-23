@@ -35,9 +35,11 @@ Introduction
 
 The offside rule support (indentation sensitive) is built on top of the
 line--aware features, so I will describe those first.  To enable line--aware
-features, use `LineAwareConfiguration() <api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ (or do the equivalent with a
-standard `Configuration() <api/redirect.html#lepl.bin.config.Configuration>`_ object if you want more control over exactly what
-options are used).
+features, use `LineAwareConfiguration()
+<api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ (or do the
+equivalent with a standard `Configuration()
+<api/redirect.html#lepl.config.Configuration>`_ object if you want more
+control over exactly what options are used).
 
 
 Line Aware Alphabet
@@ -87,9 +89,10 @@ and end markers are, again, automatically suppressed from the results.
 Tabs
 ----
 
-The `LineAwareConfiguration() <api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ has an optional ``tabsize`` parameter.  If
-set, tabs are replaced by this many spaces.  By default, no replacement is
-made.
+The `LineAwareConfiguration()
+<api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ has
+``tabsize`` parameter --- tabs are replaced by this many spaces.  By default,
+8 characters are used.  To leave tabs as they are, set to ``None``.
 
 
 Indent and Eol Tokens
@@ -157,7 +160,7 @@ In addition to the above, LEPL simplifies offside rule parsing with the
 concept of "blocks", which allow text to be described in terms of nested
 sections.  Again, this is most simply configured via `LineAwareConfiguration()
 <api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ (either the
-`block_policy` or the `block_start` option must be given to trigger the
+``block_policy`` or the ``block_start`` option must be given to trigger the
 correct behaviour --- see below).
 
 The nested structure is described using `BLine()
@@ -218,7 +221,7 @@ example::
      ['stu']], 
     ['vwx', 'yz']]]
 
-The core of the parser above are the three uses of `BLine()
+The core of the parser above is the three uses of `BLine()
 <api/redirect.html#lepl.offside.matchers.BLine>`_. The first, ``simple``, is a
 statement that fits in a single line.  The next, ``empty``, is an empty
 statement.  Finally, ``block`` defines a block statement as one that is
@@ -231,10 +234,10 @@ together lines that are indented relative to whatever came just before.  This
 works with `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_ which
 matches a line if it is indented at the correct level.
 
-The `block_policy` parameter in `LineAwareConfiguration()
+The ``block_policy`` parameter in `LineAwareConfiguration()
 <api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ indicates how
-many spaces are required for a single level of indentation.  The `block_start`
-gives the initial indentation level (zero by default).
+many spaces are required for a single level of indentation.  The
+``block_start`` gives the initial indentation level (zero by default).
 
 
 Further Matchers

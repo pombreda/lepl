@@ -261,7 +261,7 @@ __all__ = [
         'EOL'
        ]
 
-__version__ = '3.3b1'
+__version__ = '3.3'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

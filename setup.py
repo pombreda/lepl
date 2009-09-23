@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='LEPL',
-      version='3.3b1',
+      version='3.3',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -15,11 +15,9 @@ grammars and it can also handle left-recursive grammars.
 The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
-`Release 3.2.1 <http://www.acooke.org/lepl/releases.html#id1>`_ has improved
-support for cloning graphs of matchers (see `Issue 11
-<http://code.google.com/p/lepl/issues/detail?id=11>`_ and `Issue 12
-<http://code.google.com/p/lepl/issues/detail?id=12>`_ ).  It also contains
-changes to support handling the "offside rule" in a later release.
+`Release 3.3 <http://www.acooke.org/lepl/releases.html#id1>`_ adds `line-aware
+parsing <http://www.acooke.org/lepl/offside.html>`_, including support for the
+"offside rule".
 
 Features
 --------
@@ -65,12 +63,12 @@ Features
       author='Andrew Cooke',
       author_email='andrew@acooke.org',
       url='http://www.acooke.org/lepl/',
-      packages=['lepl',        'lepl._test',        'lepl._example',
-                'lepl.bin',    'lepl.bin._test',    'lepl.bin._example',
+      packages=['lepl',        'lepl._test',         'lepl._example',
+                'lepl.bin',    'lepl.bin._test',     'lepl.bin._example',
                 'lepl.contrib',
-                'lepl.lexer',  'lepl.lexer._test',  'lepl.lexer._example',
+                'lepl.lexer',  'lepl.lexer._test',   'lepl.lexer._example',
                 'lepl.regexp', 'lepl.regexp._test',
-                'lepl.offside','lepl.offside._test'
+                'lepl.offside','lepl.offside._test', 'lepl.offside._example'
                 ],
       package_dir = {'':'src'},
       license = "LGPL",

@@ -96,7 +96,7 @@ Missing Tokens
 --------------
 
 The default `Configuration()
-<api/redirect.html#lepl.bin.config.Configuration>`_ includes processing for
+<api/redirect.html#lepl.config.Configuration>`_ includes processing for
 lexers.  If no lexers are present, this message is logged::
 
   Lexer rewriter used, but no tokens found.

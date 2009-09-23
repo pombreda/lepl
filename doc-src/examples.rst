@@ -237,7 +237,7 @@ configuration, although slower, can handle a much wider variety of grammars.
 
 I learnt the following from writing and running this test and others like it:
 
-  * Using the simplest possible configuration --- `Configuration() <api/redirect.html#lepl.bin.config.Configuration>`_ or
+  * Using the simplest possible configuration --- `Configuration() <api/redirect.html#lepl.config.Configuration>`_ or
     ``basic`` in the table above --- is a good choice for simple problems.
 
   * The default configuration --- ``Configuration.default()`` --- was chosen
