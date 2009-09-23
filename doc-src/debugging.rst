@@ -90,7 +90,7 @@ the ``.parse()`` and ``.match()`` methods, use ``.parse_items()`` and
 support hashing.
 
 
-.. index:: Lexer rewriter used, but no tokens found
+.. index:: Lexer rewriter used but no tokens found
 
 Missing Tokens
 --------------
@@ -104,7 +104,7 @@ lexers.  If no lexers are present, this message is logged::
 This is not a problem (assuming you didn't intend to use lexing, of course).
 
 
-.. index:: A Token was specified with a matcher, but
+.. index:: A Token was specified with a matcher but
 
 Rewriter Order
 --------------

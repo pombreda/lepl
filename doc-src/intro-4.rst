@@ -102,7 +102,7 @@ series of layers.  Which is much easier to show than explain in words::
 Note how each group can pass to the next, and how parentheses return back to
 the first group, giving the overall recursion we need to handle nested groups.
 
-.. index:: ambiguity, recursion, left recursion
+.. index:: ambiguity, recursion, left-recursion
 
 Ambiguity and Left Recursion
 ----------------------------

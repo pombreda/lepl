@@ -21,14 +21,6 @@ indentation--aware parsing.  I am not claiming to support the exact parsing
 used in any one language, but instead to provide a general toolkit that should
 make a variety of different syntaxes possible.
 
-.. warning::
-
-   This code is still in development.  The documentation here reflects the
-   latest code in subversion.  There is also a beta release (3.3b1) which
-   contains working line-aware support, but it differs slightly from what is
-   documented here (the svn and this documentation are more recent that the
-   beta).  There should be another release before the end of September.
-
 
 Introduction
 ------------
@@ -41,6 +33,8 @@ equivalent with a standard `Configuration()
 <api/redirect.html#lepl.config.Configuration>`_ object if you want more
 control over exactly what options are used).
 
+
+.. index:: SOL(), EOL(), LineAwareConfiguration()
 
 Line Aware Alphabet
 -------------------
@@ -95,6 +89,8 @@ The `LineAwareConfiguration()
 8 characters are used.  To leave tabs as they are, set to ``None``.
 
 
+.. index:: Indent(), Eol()
+
 Indent and Eol Tokens
 ---------------------
 
@@ -120,11 +116,15 @@ And because we use tokens there is no need to worry about spaces between
 words.
 
 
+.. index:: ContinuedLineFactory()
+
 Lines and Continuations
 -----------------------
 
-The `Line() <api/redirect.html#lepl.offside.matchers.Line>`_ matcher hides `Indent() <api/redirect.html#lepl.offside.lexer.Indent>`_ and `Eol() <api/redirect.html#lepl.offside.lexer.Eol>`_ behind a slightly
-simpler interface::
+The `Line() <api/redirect.html#lepl.offside.matchers.Line>`_ matcher hides
+`Indent() <api/redirect.html#lepl.offside.lexer.Indent>`_ and `Eol()
+<api/redirect.html#lepl.offside.lexer.Eol>`_ behind a slightly simpler
+interface::
 
   >>> words = Token(Word(Lower()))[:] > list
   >>> line = Line(words)
@@ -133,8 +133,10 @@ simpler interface::
   [['abc', 'def']]
 
 In some cases we would like a line to continue over several lines if it ends
-with a certain matcher.  We can make a similar matcher to `Line() <api/redirect.html#lepl.offside.matchers.Line>`_ that
-continues over multiple lines using `ContinuedLineFactory() <api/redirect.html#lepl.offside.matchers.ContinuedLineFactory>`_::
+with a certain matcher.  We can make a similar matcher to `Line()
+<api/redirect.html#lepl.offside.matchers.Line>`_ that continues over multiple
+lines using `ContinuedLineFactory()
+<api/redirect.html#lepl.offside.matchers.ContinuedLineFactory>`_::
 
   >>> words = Token(Word(Lower()))[:] > list
   >>> CLine = ContinuedLineFactory(r'\+')
@@ -152,6 +154,8 @@ entire line --- it just skips line breaks.  For an example that uses `Extend()
 <api/redirect.html#lepl.offside.matchers.Extend>`_ see the very end of this
 section.
 
+
+.. index:: Block(), BLine()
 
 Offside Rule and Blocks
 -----------------------
@@ -239,6 +243,8 @@ The ``block_policy`` parameter in `LineAwareConfiguration()
 many spaces are required for a single level of indentation.  The
 ``block_start`` gives the initial indentation level (zero by default).
 
+
+.. index:: ContinuedBLineFactory()
 
 Further Matchers
 ----------------
