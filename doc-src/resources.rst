@@ -100,7 +100,7 @@ the ``queue_len`` is set to a very low level generators are discarded whenever
 possible, making backtracking impossible and providing just a single match.
 
 
-.. index:: cut, prolog, min_queue, Commit()
+.. index:: cut, prolog, queue_len, Commit()
 .. _committing:
 
 Committing

@@ -98,11 +98,12 @@ We can use tokens with line--aware alphabets.  LEPL includes two tokens that
 do the basic work: `Indent() <api/redirect.html#lepl.offside.lexer.Indent>`_
 and `Eol() <api/redirect.html#lepl.offside.lexer.Eol>`_.  As you might expect,
 the first of these matches the start of line marker plus any additional
-spaces, while the second matchers the end of line marker.
+spaces, while the second matches the end of line marker.
 
 Like any other token, `Indent()
 <api/redirect.html#lepl.offside.lexer.Indent>`_ can be used to create a
-specialised token that matches the actual indentation used.
+specialised token that matches the text inside the token (in this case, the
+spaces).
 
 Here is an example using line--aware tokens::
 
