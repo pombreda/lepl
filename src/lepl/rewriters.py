@@ -21,11 +21,9 @@ Rewriters modify the graph of matchers before it is used to generate a
 parser.
 '''
 
-from collections import namedtuple
-
 from lepl.graph import Visitor, preorder, loops, order, NONTREE, dfs_edges, LEAF
 from lepl.operators import Matcher
-from lepl.support import lmap
+from lepl.support import lmap, format
 
 
 def clone(node, args, kargs):
@@ -426,13 +424,13 @@ class NodeStats(object):
             self.add(type_, child)
 
     def __str__(self):
-        counts = 'total:      {total:3d}\n' \
-                 'leaves:     {leaves:3d}\n' \
-                 'loops:      {loops:3d}\n' \
-                 'duplicates: {duplicates:3d}\n' \
-                 'others:     {others:3d}\n'.format(**self.__dict__)
+        counts = format('total:      {total:3d}\n'
+                        'leaves:     {leaves:3d}\n'
+                        'loops:      {loops:3d}\n'
+                        'duplicates: {duplicates:3d}\n'
+                        'others:     {others:3d}\n', **self.__dict__)
         keys = list(self.types.keys())
         keys.sort(key=repr)
-        types = '\n'.join(['{0:40s}: {1:3d}'.format(key, self.types[key])
+        types = '\n'.join([format('{0:40s}: {1:3d}', key, self.types[key])
                            for key in keys])
         return counts + types

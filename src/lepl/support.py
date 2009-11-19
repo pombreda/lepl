@@ -22,6 +22,15 @@ Library routines / utilities (some unused).
 
 from logging import getLogger
 
+# this is an attempt to make 2.6 and 3 function equally with strings
+try:
+    str = unicode
+    basestring = basestring
+except:
+    str = str
+    basestring = str
+
+
 
 def assert_type(name, value, type_, none_ok=False):
     '''
@@ -31,8 +40,8 @@ def assert_type(name, value, type_, none_ok=False):
         return
     if isinstance(value, type_):
         return
-    raise TypeError('{0} (value {1}) must be of type {2}.'
-                    .format(name, repr(value), type_.__name__))
+    raise TypeError(format('{0} (value {1}) must be of type {2}.',
+                           name, repr(value), type_.__name__))
 
 
 class CircularFifo(object):
@@ -169,8 +178,8 @@ class LogMixin(object):
         Construct a tag from the class name and an optional set of extra values.
         '''
         # pylint: disable-msg=W0141
-        self.describe = '{0}({1})'.format(self.__class__.__name__, 
-                                          ','.join(map(str, args)))
+        self.describe = format('{0}({1})', self.__class__.__name__, 
+                               ','.join(map(str, args)))
         return self
     
 
@@ -182,7 +191,7 @@ def safe_in(value, container, default=False):
         return value in container
     except TypeError:
         log = getLogger('lepl.support.safe_in')
-        log.warn('Cannot test for {0!r} in collection'.format(value))
+        log.warn(format('Cannot test for {0!r} in collection', value))
         return default
     
     
@@ -194,7 +203,7 @@ def safe_add(container, value):
         container.add(value)
     except TypeError:
         log = getLogger('lepl.support.safe_add')
-        log.warn('Cannot add {0!r} to collection'.format(value))
+        log.warn(format('Cannot add {0!r} to collection', value))
         pass
 
 
@@ -231,3 +240,9 @@ def singleton(factory):
     return __SINGLETONS[factory]
 
 
+def format(template, *args, **kargs):
+    '''
+    Guarantee that template is always unicode, as embedding unicode in ascii
+    can cause errors.
+    '''
+    return str(template).format(*args, **kargs)

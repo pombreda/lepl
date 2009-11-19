@@ -24,6 +24,7 @@ Filter and transform streams.
 from lepl.matchers import OperatorMatcher
 from lepl.parser import tagged
 from lepl.stream import Source, LocationStream, DEFAULT_STREAM_FACTORY
+from lepl.support import str
 
 
 class FilterException(Exception):

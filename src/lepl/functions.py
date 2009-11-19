@@ -35,7 +35,7 @@ from lepl.matchers import coerce_, Regexp, And, DepthFirst, BreadthFirst, \
     OrderByResultCount, ApplyRaw, Transformation, Transform, ApplyArgs, \
     Any, Lookahead, Eof, Literal, Or
 from lepl.operators import GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
-from lepl.support import assert_type, lmap
+from lepl.support import assert_type, lmap, format, basestring
 
  
 # pylint: disable-msg=C0103
@@ -146,7 +146,7 @@ def Apply(matcher, function, raw=False, args=False):
     args = args or (type(function) is type 
                       and issubclass(function, ApplyArgs))
     if not isinstance(function, Transformation):
-        if isinstance(function, str):
+        if isinstance(function, basestring):
             function = lambda results, f=function: \
                             lmap(lambda x: (f, x), results)
             raw = True
@@ -276,7 +276,7 @@ def Map(matcher, function):
     matcher.    
     '''
     # list() necessary so we can use '+' on result
-    if isinstance(function, str):
+    if isinstance(function, basestring):
         return Apply(matcher, lambda l: list(map(lambda x: (function, x), l)), 
                      raw=True)
     else:
@@ -295,9 +295,10 @@ def add(results, _stream_in, stream_out):
             try:
                 result = result + extra
             except TypeError:
-                raise TypeError('An attempt was made to add two results '
-                                'that do not have consistent types: '
-                                '{0!r} + {1!r}'.format(result, extra))
+                raise TypeError(
+                    format('An attempt was made to add two results '
+                           'that do not have consistent types: {0!r} + {1!r}',
+                           result, extra))
         result = [result]
     else:
         result = []

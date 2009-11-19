@@ -26,6 +26,7 @@ from logging import getLogger
 from lepl.lexer.matchers import BaseToken, Lexer, LexerError, NonToken
 from lepl.operators import Matcher
 from lepl.regexp.unicode import UnicodeAlphabet
+from lepl.support import format
 
 
 def find_tokens(matcher):
@@ -53,30 +54,14 @@ def find_tokens(matcher):
                     if isinstance(child, Matcher):
                         stack.append(child)
     if tokens and non_tokens:
-        raise LexerError('The grammar contains a mix of Tokens and non-Token '
-                         'matchers at the top level. If Tokens are used then '
-                         'non-token matchers that consume input must only '
-                         'appear "inside" Tokens.  The non-Token matchers '
-                         'include: {0}.'
-                         .format('; '.join(n.__class__.__name__ 
-                                           for n in non_tokens)))
+        raise LexerError(
+            format('The grammar contains a mix of Tokens and non-Token '
+                   'matchers at the top level. If Tokens are used then '
+                   'non-token matchers that consume input must only '
+                   'appear "inside" Tokens.  The non-Token matchers '
+                   'include: {0}.',
+                   '; '.join(n.__class__.__name__ for n in non_tokens)))
     return tokens
-
-
-#def unique_ids(tokens):
-#    '''
-#    Drop tokens with unique IDs (these are "machine added" things like 
-#    indentation).
-#    '''
-#    log = getLogger('lepl.lexer.rewriters.unique_ids')
-#    by_id = {}
-#    for token in tokens:
-#        if token.id_ in by_id:
-#            if type(token.id_) is int:
-#                log.warn('Discarding duplicate token: {0}'.format(token))
-#        else:
-#            by_id[token.id_] = token
-#    return set(by_id.values())
 
 
 def assert_not_token(node, visited):
@@ -86,7 +71,7 @@ def assert_not_token(node, visited):
     if isinstance(node, Matcher) and node not in visited:
         visited.add(node)
         if isinstance(node, BaseToken):
-            raise LexerError('Nested token: {0}'.format(node))
+            raise LexerError(format('Nested token: {0}', node))
         else:
             for child in node:
                 assert_not_token(child, visited)

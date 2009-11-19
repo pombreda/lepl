@@ -24,7 +24,7 @@ Tools for logging and tracing.
 # pylint: disable-msg=C0103
 
 from lepl.monitor import ActiveMonitor, ValueMonitor
-from lepl.support import CircularFifo, LogMixin, sample
+from lepl.support import CircularFifo, LogMixin, sample, format, str
 
 
 def TraceResults(enabled=False):
@@ -67,7 +67,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         if self.enabled > 0:
             self.generator = generator
-            self.action = 'next({0})'.format(generator.describe)
+            self.action = format('next({0})', generator.describe)
     
     def after_next(self, value):
         '''
@@ -83,11 +83,13 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         if self.enabled > 0:
             self.generator = generator
             if type(value) is StopIteration:
-                self.action = ' stop -> {0}({1!r})'.format(
-                            generator.matcher.describe, generator.stream)
+                self.action = format(' stop -> {0}({1!r})',
+                                     generator.matcher.describe, 
+                                     generator.stream)
             else:
-                self.action = '{2!r} -> {0}({1!r})'.format(
-                            generator.matcher.describe, generator.stream, value)
+                self.action = format('{2!r} -> {0}({1!r})',
+                                     generator.matcher.describe, 
+                                     generator.stream, value)
     
     def after_throw(self, value):
         '''
@@ -102,8 +104,8 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         if self.enabled > 0:
             self.generator = generator
-            self.action = '{1!r} -> {0}'.format(
-                            generator.matcher.describe, value)
+            self.action = format('{1!r} -> {0}',
+                                 generator.matcher.describe, value)
     
     def after_send(self, value):
         '''
@@ -127,27 +129,29 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         Provide a standard format for the results.
         '''
         (stream, depth, locn) = self.fmt_stream() 
-        return '{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> {6!r}' \
-                .format(self.epoch, 
-                        stream,
-                        locn,
-                        depth,
-                        self.depth,
-                        self.action,
-                        value)
+        return format('{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} '
+                      '{5:>60s} -> {6!r}',
+                      self.epoch, 
+                      stream,
+                      locn,
+                      depth,
+                      self.depth,
+                      self.action,
+                      value)
                 
     def fmt_done(self):
         '''
         Provide a standard format for failure.
         '''
         (stream, depth, locn) = self.fmt_stream() 
-        return '{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} {5:>60s} -> stop' \
-                .format(self.epoch, 
-                        stream,
-                        locn,
-                        depth,
-                        self.depth,
-                        self.action)
+        return format('{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} '
+                      '{5:>60s} -> stop',
+                      self.epoch, 
+                      stream,
+                      locn,
+                      depth,
+                      self.depth,
+                      self.action)
                 
     def fmt_stream(self):
         '''
@@ -159,7 +163,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
             if lineno < 0:
                 locn = '  eof  '
             else:
-                locn = '{0:3d}.{1:<3d}'.format(lineno, offset)
+                locn = format('{0:3d}.{1:<3d}', lineno, offset)
         except AttributeError: # no .location above
             depth = -len(self.generator.stream)
             locn = '<unknown>'
@@ -179,19 +183,19 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         if self.enabled > 0:
             if type(value) is StopIteration:
-                self._info(self.fmt_final_result('raise {0!r}'.format(value)))
+                self._info(self.fmt_final_result(format('raise {0!r}', value)))
             else:
-                self._warn(self.fmt_final_result('raise {0!r}'.format(value)))
+                self._warn(self.fmt_final_result(format('raise {0!r}', value)))
         
     def fmt_final_result(self, value):
         '''
         Provide a standard format for the result.
         '''
-        return '{0:05d}                            {1:03d} {2} {3}' \
-                .format(self.epoch,
-                        self.depth,
-                        ' ' * 63,
-                        value)
+        return format('{0:05d}                            {1:03d} {2} {3}',
+                      self.epoch,
+                      self.depth,
+                      ' ' * 63,
+                      value)
 
     def _log_result(self, value, text):
         '''
@@ -321,11 +325,11 @@ class _RecordDeepest(_TraceResults):
         '''
         Format the result.
         '''
-        return \
-            '\nUp to {0} matches before and including longest match:\n{1}\n' \
-            'Up to {2} failures following longest match:\n{3}\n' \
-            'Up to {4} successful matches following longest match:\n{5}\n' \
-            .format(self.n_before, '\n'.join(self._before),
-                    self.n_done_after, '\n'.join(self._done_after),
-                    self.n_results_after, '\n'.join(self._results_after))
+        return format(
+            '\nUp to {0} matches before and including longest match:\n{1}\n'
+            'Up to {2} failures following longest match:\n{3}\n'
+            'Up to {4} successful matches following longest match:\n{5}\n',
+            self.n_before, '\n'.join(self._before),
+            self.n_done_after, '\n'.join(self._done_after),
+            self.n_results_after, '\n'.join(self._results_after))
         

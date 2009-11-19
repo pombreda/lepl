@@ -52,7 +52,7 @@ from heapq import heappushpop, heappop, heappush
 from weakref import ref, WeakKeyDictionary
 
 from lepl.monitor import StackMonitor, ValueMonitor
-from lepl.support import LogMixin
+from lepl.support import LogMixin, format, str
 
 
 # pylint: disable-msg=C0103
@@ -117,8 +117,8 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         '''
         reference = GeneratorRef(generator, self.epoch)
         self.__known[generator] = reference
-        self._debug('Queue size: {0}/{1}'
-                    .format(len(self.__queue), self.__queue_len))
+        self._debug(format('Queue size: {0}/{1}',
+                           len(self.__queue), self.__queue_len))
         # if we have space, simply save with no expiry
         if self.__queue_len == 0 or len(self.__queue) < self.__queue_len:
             self.__add_unlimited(reference)
@@ -130,7 +130,7 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         Add the new reference and discard any GCed candidates that happen
         to be on the top of the heap.
         '''
-        self._debug('Free space, so add {0}'.format(reference))
+        self._debug(format('Free space, so add {0}', reference))
         candidate = heappushpop(self.__queue, reference)
         while candidate:
             candidate.deletable(self.epoch)
@@ -146,12 +146,12 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         '''
         while reference:
             candidate = heappushpop(self.__queue, reference)
-            self._debug('Exchanged {0} for {1}'.format(reference, candidate))
+            self._debug(format('Exchanged {0} for {1}', reference, candidate))
             if candidate.order_epoch == self.epoch:
                 # even the oldest generator is current
                 break
             elif candidate.deletable(self.epoch):
-                self._debug('Closing {0}'.format(candidate))
+                self._debug(format('Closing {0}', candidate))
                 candidate.close()
                 return
             else:
@@ -162,8 +162,8 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         # this is currently 1 too small, and zero means unlimited, so
         # doubling should always be sufficient.
         self.__queue_len = self.__queue_len * 2
-        self._warn('Queue is too small - extending to {0}'
-                   .format(self.__queue_len))
+        self._warn(format('Queue is too small - extending to {0}',
+                          self.__queue_len))
             
     def commit(self):
         '''
@@ -224,11 +224,11 @@ class GeneratorRef(object):
         wrapped = self.__wrapper()
         if not wrapped:
             assert self.__count == 0, \
-                'GCed but still on stack?! {0}'.format(self.__describe)
+                format('GCed but still on stack?! {0}', self.__describe)
             return False
         else:
             assert wrapped is generator, \
-                'Hash collision? {0}/{1}'.format(generator, wrapped)
+                format('Hash collision? {0}/{1}', generator, wrapped)
             return True
     
     def deletable(self, epoch):
@@ -237,7 +237,7 @@ class GeneratorRef(object):
         '''
         if not self.__wrapper():
             assert self.__count == 0, \
-                'GCed but still on stack?! {0}'.format(self.__describe)
+                format('GCed but still on stack?! {0}', self.__describe)
             # already disposed by system
             self.gced = True
             return True
@@ -264,10 +264,11 @@ class GeneratorRef(object):
     def __str__(self):
         generator = self.__wrapper()
         if generator:
-            return '{0} ({1:d}/{2:d})'.format(
-                self.__describe, self.order_epoch, self.__last_known_epoch)
+            return format('{0} ({1:d}/{2:d})',
+                          self.__describe, self.order_epoch, 
+                          self.__last_known_epoch)
         else:
-            return 'Empty ref to {0}'.format(self.__describe)
+            return format('Empty ref to {0}', self.__describe)
     
     def __repr__(self):
         return str(self)

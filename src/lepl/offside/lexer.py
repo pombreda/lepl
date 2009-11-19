@@ -25,6 +25,7 @@ from lepl.lexer.matchers import BaseToken
 from lepl.offside.monitor import BlockMonitor
 from lepl.offside.regexp import START, END
 from lepl.parser import tagged
+from lepl.support import format
 
 
 # pylint: disable-msg=R0901, R0904, R0913, E1101
@@ -98,10 +99,10 @@ class BIndent(Indent):
                 if len(indent[0]) == self.__current_indent:
                     yield (indent, stream)
                 else:
-                    self._debug('Incorrect indent ({0:d} != '
-                                'len({1!r}), {2:d})'\
-                                .format(self.__current_indent,
-                                        indent[0], len(indent[0])))
+                    self._debug(
+                        format('Incorrect indent ({0:d} != len({1!r}), {2:d})',
+                               self.__current_indent, indent[0], 
+                               len(indent[0])))
         except StopIteration:
             return
 

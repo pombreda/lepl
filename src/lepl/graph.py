@@ -50,7 +50,7 @@ calls it in a way that replicates the original calls to the node constructors.
 
 from collections import Sequence, deque
 
-from lepl.support import compose, safe_in, safe_add, empty
+from lepl.support import compose, safe_in, safe_add, empty, format
 
 
 FORWARD = 1    # forward edge
@@ -726,8 +726,8 @@ def clone(node, args, kargs):
         # pylint: disable-msg=W0142
         return type(node)(*args, **kargs)
     except TypeError as err:
-        raise TypeError('Error cloning {0} with ({1}, {2}): {3}'.format(
-                        type(node), args, kargs, err))
+        raise TypeError(format('Error cloning {0} with ({1}, {2}): {3}',
+                               type(node), args, kargs, err))
 
 
 class Clone(Visitor):

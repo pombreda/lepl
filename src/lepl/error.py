@@ -24,6 +24,7 @@ This is not that complete or well thought through; it needs to be revised.
 
 from lepl.graph import postorder
 from lepl.node import Node
+from lepl.support import format
 
 
 def make_error(msg):
@@ -60,7 +61,7 @@ def syntax_error_args(msg, stream_in, stream_out, results):
     offset = kargs[OFFSET]
     line = kargs[LINE]
     # pylint: disable-msg=W0142
-    return (msg.format(**kargs), (filename, lineno, offset, line))
+    return (format(msg, **kargs), (filename, lineno, offset, line))
 
 
 def syntax_error_kargs(stream_in, stream_out, results):

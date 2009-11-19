@@ -90,7 +90,7 @@ which provide a general iterator over "lines".
 from abc import ABCMeta, abstractmethod, abstractproperty
 from io import StringIO
 
-from lepl.support import open_stop, sample
+from lepl.support import open_stop, sample, format, basestring, str
 
 
 class StreamException(Exception):
@@ -169,7 +169,7 @@ class SimpleStream(_SimpleStream):
 
 # pylint: disable-msg=E1101
 # pylint unaware of ABCs
-SimpleStream.register(str)
+SimpleStream.register(basestring)
 SimpleStream.register(list)
 
 
@@ -284,7 +284,7 @@ class StreamView(object):
                 lines.append(line.line[0:min(remainder, line_length)])
                 remainder -= line_length
         if remainder > 0:
-            raise IndexError('Missing {0:d} items'.format(remainder))
+            raise IndexError(format('Missing {0:d} items', remainder))
         else:
             # in the code above we are careful to accumulate exactly what
             # we need; you might think it simpler to accumulate whole lines
@@ -327,7 +327,7 @@ class StreamView(object):
                                            self.__offset)
     
     def __repr__(self):
-        return '{0!r}[{1:d}:]'.format(self.__line, self.__offset)
+        return format('{0!r}[{1:d}:]', self.__line, self.__offset)
         
     def __str__(self):
         # pylint: disable-msg=W0702

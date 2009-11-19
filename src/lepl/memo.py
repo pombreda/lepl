@@ -34,7 +34,7 @@ from itertools import count
 from lepl.matchers import OperatorMatcher
 from lepl.parser import tagged, GeneratorWrapper
 from lepl.state import State
-from lepl.support import LogMixin, empty
+from lepl.support import LogMixin, empty, format
 
 
 # pylint: disable-msg=W0105, C0103, R0903, W0212
@@ -101,7 +101,7 @@ class _RMemo(OperatorMatcher):
                 self.__table[key] = RTable(self.matcher._match(stream))
             return self.__table[key].generator(self.matcher, stream)
         except TypeError: # unhashable type; cannot cache
-            self._warn('Cannot memoize (cannot hash {0!r})'.format(stream))
+            self._warn(format('Cannot memoize (cannot hash {0!r})', stream))
             return self.matcher._match(stream)
 
 
@@ -161,7 +161,7 @@ class _DummyMatcher(object):
         '''
         Making this lazy has no effect on efficiency for nested.right.
         '''
-        self.describe = '{0}({1})'.format(outer, inner)
+        self.describe = format('{0}({1})', outer, inner)
         
         
 def LMemo(matcher):
@@ -281,15 +281,12 @@ class PerCallCache(LogMixin):
             while True:
                 result = yield self.__generator
                 if self.__unstable:
-                    self._warn('A view completed before the cache was '
+                    self._warn(
+                        format('A view completed before the cache was '
                                'complete: {0!r}. This typically means that '
                                'the grammar contains a matcher that does not '
                                'consume input within a loop and is usually '
-                               'an error.'
-                               .format(self.__generator))
-#                    raise Exception('A view completed before the cache was '
-#                                    'complete: {0!r}'
-#                                    .format(self.__generator))
+                               'an error.', self.__generator))
                 self.__cache.append(result)
                 self.__returned = True
                 yield result

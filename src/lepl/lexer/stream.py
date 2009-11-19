@@ -25,6 +25,7 @@ from logging import getLogger
 from lepl.filters import BaseDelegateSource
 from lepl.lexer.support import RuntimeLexerError
 from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
+from lepl.support import format, str
 
 
 def lexed_simple_stream(tokens, discard, stream):
@@ -40,15 +41,15 @@ def lexed_simple_stream(tokens, discard, stream):
             while stream:
                 try:
                     (terminals, match, stream) = tokens.match(stream)
-                    log.debug('Token: {0!r} {1!r}'.format(terminals, match))
+                    log.debug(format('Token: {0!r} {1!r}', terminals, match))
                     yield (terminals, match)
                 except TypeError:
                     (terminals, _size, stream) = discard.size_match(stream)
-                    log.debug('Space: {0!r} {1!r}'.format(terminals, discard))
+                    log.debug(format('Space: {0!r} {1!r}', terminals, discard))
         except TypeError:
-            raise RuntimeLexerError('No lexer for \'{0}\'.'.format(stream))
+            raise RuntimeLexerError(format('No lexer for \'{0}\'.', stream))
         except AttributeError:
-            raise RuntimeLexerError('No discard for \'{0}\'.'.format(stream))
+            raise RuntimeLexerError(format('No discard for \'{0}\'.', stream))
     return DEFAULT_STREAM_FACTORY.from_items(generator())
 
 
@@ -108,20 +109,18 @@ def lexed_location_stream(tokens, discard, stream, source=None):
                     (terminals, size, stream_after) = \
                             tokens.size_match(stream_before)
                     # stream_before here to give correct location
-                    log.debug('Token: {0!r} {1!r}'.format(terminals, size))
+                    log.debug(format('Token: {0!r} {1!r}', terminals, size))
                     yield (terminals, size, stream_before)
                     stream_before = stream_after
                 except TypeError:
                     (terminals, size, stream_before) = \
                             discard.size_match(stream_before)
-                    log.debug('Space: {0!r} {1!r}'.format(terminals, size))
+                    log.debug(format('Space: {0!r} {1!r}', terminals, size))
         except TypeError:
-            raise RuntimeLexerError('No lexer for \'{0}\' at '
-                                    'line {1} character {2} of {3}.'
-                                    .format(stream_before.text, 
-                                            stream_before.line_number,
-                                            stream_before.line_offset,
-                                            stream_before.source))
+            raise RuntimeLexerError(
+                format('No lexer for \'{0}\' at line {1} character {2} of {3}.',
+                       stream_before.text, stream_before.line_number,
+                       stream_before.line_offset, stream_before.source))
     token_stream = generator(stream)
     return DEFAULT_STREAM_FACTORY(source(token_stream, stream))
 

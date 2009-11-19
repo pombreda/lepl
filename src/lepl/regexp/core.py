@@ -56,7 +56,7 @@ from itertools import chain
 
 from lepl.node import Node
 from lepl.regexp.interval import Character, TaggedFragments, IntervalMap
-from lepl.support import LogMixin
+from lepl.support import format, basestring, str
 
 
 # pylint: disable-msg=C0103
@@ -401,11 +401,11 @@ class Expression(Choice):
         '''
         Coerce to a regexp.
         '''
-        if isinstance(regexp, str):
+        if isinstance(regexp, basestring):
             coerced = alphabet.parse(regexp)
             if not coerced:
-                raise RegexpError('Cannot parse regexp {0!r} using {1}'
-                                  .format(regexp, alphabet))
+                raise RegexpError(format('Cannot parse regexp {0!r} using {1}',
+                                         regexp, alphabet))
         else:
             coerced = [regexp]
         return coerced
@@ -432,7 +432,7 @@ class Expression(Choice):
         
 
         
-class BaseGraph(LogMixin):
+class BaseGraph(object):
     '''
     Describes a collection of connected nodes.
     '''
@@ -563,16 +563,16 @@ class NfaGraph(BaseGraph):
         for node in self:
             edges = []
             for (dest, edge) in self.transitions(node):
-                edges.append('{0}:{1}'.format(edge, dest))
+                edges.append(format('{0}:{1}', edge, dest))
             for dest in self.empty_transitions(node):
                 edges.append(str(dest))
             label = '' if self.terminal(node) is None \
                        else (' ' + self.terminal(node))
-            lines.append('{0}{1} {2}'.format(node, label, ';'.join(edges)))
+            lines.append(format('{0}{1} {2}', node, label, ';'.join(edges)))
         return ', '.join(lines)
 
 
-class NfaCompiler(LogMixin):
+class NfaCompiler(object):
     '''
     Given a graph this constructs a transition table and an associated
     matcher.  The matcher attempts to find longest matches but does not
@@ -712,19 +712,19 @@ class DfaGraph(BaseGraph):
         for node in self:
             edges = []
             for (dest, edge) in self.transitions(node):
-                edges.append('{0}:{1}'.format(edge, dest))
+                edges.append(format('{0}:{1}', edge, dest))
             nodes = [n for n in self.nfa_nodes(node)]
             edges = ' ' + ';'.join(edges) if edges else ''
             labels = list(self.terminals(node))
             labels = ' ' + '/'.join(str(label) for label in labels) \
                      if labels else ''
-            lines.append('{0} {1}{2}{3}'.format(node, nodes, edges, labels))
+            lines.append(format('{0} {1}{2}{3}', node, nodes, edges, labels))
         return ', '.join(lines)
 
 
 # pylint: disable-msg=R0903
 # this is complex enough
-class NfaToDfa(LogMixin):
+class NfaToDfa(object):
     '''
     Convert a NFA graph to a DFA graph (uses the usual superset approach but
     does combination of states in a way that seems to fit better with the idea 
@@ -807,7 +807,6 @@ class NfaToDfa(LogMixin):
             (intervals, terminals) = groups[nfa_nodes]
             char = Character(intervals, self.__alphabet)
             (new, dest) = self.dfa.node(nfa_nodes)
-#            self._debug('new: {0}, nodes:{1}'.format(new, nfa_nodes))
             self.dfa.connect(src, dest, char)
             if new:
                 stack.append((dest, nfa_nodes, terminals))

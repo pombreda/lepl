@@ -23,7 +23,7 @@ Support for operator syntactic sugar (and operator redefinition).
 from abc import ABCMeta
 
 from lepl.context import Namespace, NamespaceMixin, Scope
-from lepl.support import open_stop
+from lepl.support import open_stop, format, basestring
 
 
 # pylint: disable-msg=C0103, W0105
@@ -658,7 +658,7 @@ class OperatorMixin(NamespaceMixin):
         '''
         Provide some diagnostics if the syntax is completely mixed up.
         '''
-        if not isinstance(other, str): # can go either way
+        if not isinstance(other, basestring): # can go either way
             if is_match != isinstance(other, Matcher):
                 if is_match:
                     msg = 'The operator {0} for {1} was applied to something ' \
@@ -667,6 +667,6 @@ class OperatorMixin(NamespaceMixin):
                     msg = 'The operator {0} for {1} was applied to a matcher ' \
                         '({2!r}).'
                 msg += ' Check syntax and parentheses.'
-                raise SyntaxError(msg.format(name, self.__class__.__name__, 
-                                             other))
+                raise SyntaxError(format(msg, name, self.__class__.__name__, 
+                                         other))
 

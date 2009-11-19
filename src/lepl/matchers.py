@@ -55,7 +55,7 @@ from lepl.node import Node
 from lepl.operators import OperatorMixin, OPERATORS, DefaultNamespace, Matcher
 from lepl.parser import make_parser, make_matcher, tagged
 from lepl.trace import _TraceResults
-from lepl.support import lmap, LogMixin
+from lepl.support import lmap, LogMixin, format, basestring, str
 
 
 # pylint: disable-msg=W0105
@@ -316,7 +316,7 @@ class Transformation(object):
         return str(self.functions)
         
     def __repr__(self):
-        return 'Transformation({0!r})'.format(self.functions)
+        return format('Transformation({0!r})', self.functions)
     
     def __bool__(self):
         return bool(self.functions)
@@ -633,8 +633,8 @@ class Any(OperatorMatcher):
                 # it would be nice to make this an error, but for line aware
                 # parsing (and any other heterogenous input) it's legal
                 if not self.__warned:
-                    self._debug('Cannot restrict {0} with {1!r}'.format(
-                                                stream[0], self.restrict))
+                    self._debug(format('Cannot restrict {0} with {1!r}',
+                                       stream[0], self.restrict))
                     self.__warned = True
         if ok:
             yield ([stream[0]], stream[1:])
@@ -684,7 +684,7 @@ def coerce_(arg, function=Literal):
     Many arguments can take a string which is implicitly converted (via this
     function) to a literal (or similar).
     '''
-    return function(arg) if isinstance(arg, str) else arg
+    return function(arg) if isinstance(arg, basestring) else arg
 
 
 class Empty(OperatorMatcher):
@@ -1089,8 +1089,8 @@ def Columns(*columns, **kargs):
     else:
         skip = SkipTo(First(Newline(), Eos()))
     if kargs:
-        raise SyntaxError('Columns only accepts a single keyword: {0}'
-                          .format(_SKIP))
+        raise SyntaxError(format('Columns only accepts a single keyword: {0}',
+                                 _SKIP))
     indices = []
     matchers = []
     for (col, matcher) in columns:

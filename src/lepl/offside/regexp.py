@@ -26,6 +26,7 @@ from lepl.offside.support import LineAwareError
 from lepl.rewriters import flatten
 from lepl.regexp.core import Character, Sequence, Choice, Repeat, Option
 from lepl.regexp.str import StrAlphabet
+from lepl.support import format
 
 
 # pylint: disable-msg=W0105
@@ -79,7 +80,7 @@ class Marker(object):
         return hash(repr(self))
     
     def __repr__(self):
-        return 'Marker({0!r},{1!r})'.format(self.text, self.high)
+        return format('Marker({0!r},{1!r})', self.text, self.high)
     
     def __len__(self):
         return 1
@@ -105,9 +106,9 @@ class LineAwareAlphabet(StrAlphabet):
     
     def __init__(self, alphabet):
         if not isinstance(alphabet, StrAlphabet):
-            raise LineAwareError('Only StrAlphabet subclasses supported: '
-                                     '{0}/{1}'.format(alphabet, 
-                                                      type(alphabet).__name__))
+            raise LineAwareError(
+                format('Only StrAlphabet subclasses supported: {0}/{1}',
+                       alphabet, type(alphabet).__name__))
         super(LineAwareAlphabet, self).__init__(SOL, EOL,
                                 parser_factory=make_line_aware_parser)
         self.base = alphabet

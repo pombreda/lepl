@@ -31,6 +31,7 @@ from unittest import TestCase
 from lepl import Token, Literal, Float, LexerError, Configuration, \
     lexer_rewriter, Node, Delayed, Any, Eos, TraceResults, UnsignedFloat, \
     Or, UnicodeAlphabet, RuntimeLexerError
+from lepl.support import str
 
 
 def str26(value):

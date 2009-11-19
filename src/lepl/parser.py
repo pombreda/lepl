@@ -31,7 +31,8 @@ from logging import getLogger
 from traceback import format_exc
 
 from lepl.monitor import prepare_monitors
-    
+from lepl.support import format
+
     
 def tagged(call):
     '''
@@ -104,8 +105,8 @@ class GeneratorWrapper(object):
         Lazily evaluated for speed - saves 1/3 of time spent in constructor
         '''
         if not self.describe:
-            self.describe = '{0}({1!r})'.format(self.matcher.describe, 
-                                              self.stream)
+            self.describe = format('{0}({1!r})', 
+                                   self.matcher.describe, self.stream)
         return self.describe
         
 
@@ -205,10 +206,10 @@ def trampoline(main, m_stack=None, m_value=None):
                         m_value.exception(value)
                     if type(value) is not StopIteration and value != last_exc:
                         last_exc = value
-                        log.error('Exception at epoch {0}: {1!s}'\
-                                  .format(epoch, value))
+                        log.error(format('Exception at epoch {0}: {1!s}',
+                                         epoch, value))
                         if stack:
-                            log.debug('Top of stack: {0}'.format(stack[-1]))
+                            log.debug(format('Top of stack: {0}', stack[-1]))
                         log.warn(format_exc())
                         for generator in stack:
                             log.debug('Stack: ' + generator.matcher.describe)

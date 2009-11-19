@@ -21,7 +21,7 @@ Base classes for AST nodes (and associated functions).
 '''
 
 from lepl.graph import GraphStr, ConstructorGraphNode, ConstructorWalker
-from lepl.support import LogMixin
+from lepl.support import LogMixin, basestring
 
 
 def is_named(arg):
@@ -29,7 +29,7 @@ def is_named(arg):
     Is this is "named tuple"?
     '''
     return (isinstance(arg, tuple) or isinstance(arg, list)) \
-            and len(arg) == 2 and isinstance(arg[0], str)
+            and len(arg) == 2 and isinstance(arg[0], basestring)
             
 
 # pylint: disable-msg=R0903
@@ -198,7 +198,7 @@ def make_dict(contents):
     return dict(entry for entry in contents
                  if isinstance(entry, tuple) 
                  and len(entry) == 2
-                 and isinstance(entry[0], str))
+                 and isinstance(entry[0], basestring))
 
 
 def join_with(separator=''):

@@ -24,7 +24,7 @@ Support the stack-scoped tracking of indent level blocks.
 from lepl.monitor import ActiveMonitor
 from lepl.offside.support import OffsideError
 from lepl.state import State
-from lepl.support import LogMixin
+from lepl.support import LogMixin, format
 
 
 class BlockMonitor(ActiveMonitor, LogMixin):
@@ -47,7 +47,7 @@ class BlockMonitor(ActiveMonitor, LogMixin):
         '''
         self.__stack.append(level)
         self.__state[BlockMonitor] = level
-        self._debug('Indent -> {0:d}'.format(level))
+        self._debug(format('Indent -> {0:d}', level))
         
     def pop_level(self):
         '''
@@ -57,7 +57,7 @@ class BlockMonitor(ActiveMonitor, LogMixin):
         if not self.__stack:
             raise OffsideError('Closed an unopened indent.') 
         self.__state[BlockMonitor] = self.indent
-        self._debug('Indent <- {0:d}'.format(self.indent))
+        self._debug(format('Indent <- {0:d}', self.indent))
        
     @property
     def indent(self):

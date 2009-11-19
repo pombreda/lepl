@@ -42,6 +42,7 @@ from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
+from lepl.support import format, str
 
 
 # pylint: disable-msg=W0105
@@ -174,9 +175,10 @@ class BaseToken(OperatorMatcher, NoMemo):
             if isinstance(rewrite, BaseRegexp):
                 regexp = str(rewrite.regexp)
             else:
-                raise LexerError('A Token was specified with a matcher, '
-                                 'but the matcher could not be converted to '
-                                 'a regular expression: {0}'.format(rewrite))
+                raise LexerError(
+                    format('A Token was specified with a matcher, '
+                           'but the matcher could not be converted to '
+                           'a regular expression: {0}', rewrite))
         return regexp
         
     def __call__(self, content, complete=None):
@@ -197,11 +199,11 @@ class BaseToken(OperatorMatcher, NoMemo):
         delegate to the content.
         '''
         if not self.compiled:
-            raise LexerError('A {0} token has not been compiled. '
-                             'You must use the lexer_rewriter with Tokens. '
-                             'This can be done by using '
-                             'Configuration.tokens().'.format(
-                                                self.__class__.__name__))
+            raise LexerError(
+                format('A {0} token has not been compiled. '
+                       'You must use the lexer_rewriter with Tokens. '
+                       'This can be done by using Configuration.tokens().',
+                       self.__class__.__name__))
         if stream:
             (tokens, contents) = stream[0]
             if self.id_ in tokens:
@@ -222,10 +224,10 @@ class BaseToken(OperatorMatcher, NoMemo):
                         return
         
     def __str__(self):
-        return '{0}: {1!r}'.format(self.id_, self.regexp)
+        return format('{0}: {1!r}', self.id_, self.regexp)
     
     def __repr__(self):
-        return '<Token({0!s})>'.format(self)
+        return format('<Token({0!s})>', self)
     
     @staticmethod
     def __new_stream(contents, stream):
@@ -318,7 +320,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
         if t_regexp is None:
             for token in tokens:
                 token.compile(alphabet)
-                self._debug('Token: {0}'.format(token))
+                self._debug(format('Token: {0}', token))
             t_regexp = Expression.multiple(alphabet, 
                                            [(t.id_, t.regexp) 
                                             for t in tokens]).dfa()

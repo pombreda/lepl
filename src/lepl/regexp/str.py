@@ -24,6 +24,7 @@ converted to strings using str().
 from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
     Option
 from lepl.config import Configuration
+from lepl.support import format, str
 
 
 
@@ -157,9 +158,10 @@ class StrAlphabet(Alphabet):
             if a == b:
                 ranges.append(self._escape_char(a))
             else:
-                ranges.append('{0!s}-{1!s}'.format(
-                                self._escape_char(a), self._escape_char(b)))
-        return '[{0}{1}]'.format(hat, self.join(ranges))
+                ranges.append(
+                    format('{0!s}-{1!s}',
+                           self._escape_char(a), self._escape_char(b)))
+        return format('[{0}{1}]', hat, self.join(ranges))
     
     def fmt_sequence(self, children):
         '''
@@ -181,7 +183,7 @@ class StrAlphabet(Alphabet):
         if len(children) == 1 and type(children[0]) in (Character, Choice):
             return string + '*'
         else:
-            return '({0})*'.format(string)
+            return format('({0})*', string)
 
     def fmt_choice(self, children):
         '''
@@ -190,8 +192,8 @@ class StrAlphabet(Alphabet):
         This must fully describe the data in the children (it is used to
         hash the data).
         '''
-        return '({0})'.format('|'.join(self.fmt_sequence(child) 
-                                       for child in children))
+        return format('({0})',
+                      '|'.join(self.fmt_sequence(child) for child in children))
 
     def fmt_option(self, children):
         '''
@@ -204,7 +206,7 @@ class StrAlphabet(Alphabet):
         if len(children) == 1 and type(children[0]) in (Character, Choice):
             return string + '?'
         else:
-            return '({0})?'.format(string)
+            return format('({0})?', string)
         
     def join(self, chars):
         '''

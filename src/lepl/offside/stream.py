@@ -27,6 +27,7 @@ from lepl.offside.lexer import START
 from lepl.offside.regexp import Marker
 from lepl.offside.support import LineAwareError, OffsideError
 from lepl.stream import DefaultStreamFactory, LineSource, sample
+from lepl.support import str
 
 
 class LineAwareStreamFactory(DefaultStreamFactory):
