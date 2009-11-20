@@ -143,7 +143,7 @@ class BaseToken(OperatorMatcher, NoMemo):
         super(BaseToken, self).__init__(name=TOKENS, namespace=TokenNamespace)
         self._karg(content=content)
         if id_ is None:
-            id_ = BaseToken.__count
+            id_ = 'Tk' + str(BaseToken.__count)
             BaseToken.__count += 1
         self._karg(id_=id_)
         self._karg(alphabet=alphabet)

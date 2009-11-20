@@ -74,13 +74,13 @@ class Marker(object):
         return other is self or not self.high
     
     def __str__(self):
-        return self.text
+        return format('{{{0}}}', self.text)
     
     def __hash__(self):
         return hash(repr(self))
     
     def __repr__(self):
-        return format('Marker({0!r},{1!r})', self.text, self.high)
+        return format('Marker({0!s},{1!s})', self.text, self.high)
     
     def __len__(self):
         return 1

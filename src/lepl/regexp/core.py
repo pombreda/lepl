@@ -56,7 +56,7 @@ from itertools import chain
 
 from lepl.node import Node
 from lepl.regexp.interval import Character, TaggedFragments, IntervalMap
-from lepl.support import format, basestring, str
+from lepl.support import format, basestring, str, LogMixin
 
 
 # pylint: disable-msg=C0103
@@ -67,7 +67,7 @@ _Alphabet = ABCMeta('_Alphabet', (object, ), {})
 
 # pylint: disable-msg=E1002
 # pylint can't find ABCs
-class Alphabet(_Alphabet):
+class Alphabet(LogMixin, _Alphabet):
 
     '''
     Regular expressions are generalised over alphabets, which describe the set
@@ -145,6 +145,7 @@ class Alphabet(_Alphabet):
             last = b
         if last != self.max:
             inverted.append((self.after(last), self.max))
+        self._debug(format('invert {0} -> {1}', intervals, inverted))
         return inverted
 
     @abstractmethod
@@ -172,6 +173,13 @@ class Alphabet(_Alphabet):
     def fmt_option(self, children):
         '''
         This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        
+    @abstractmethod
+    def fmt_label(self, label, child):
+        '''
+        This must fully describe the data in the child (it is used to
         hash the data).
         '''
         
@@ -283,8 +291,10 @@ class Repeat(Sequence):
         Connect in loop from before to before, and also directly from
         start to end.
         '''
-        super(Repeat, self).build(graph, before, before)
-        graph.connect(before, after) 
+        node = graph.new_node()
+        graph.connect(before, node)
+        super(Repeat, self).build(graph, node, node)
+        graph.connect(node, after) 
     
     
 class Choice(Sequence):
@@ -302,12 +312,14 @@ class Choice(Sequence):
         '''
         Connect in parallel from start to end, but add extra nodes so that
         the sequence is tried in order (because evaluation tries empty
-        transitions last).
+        transitions last) and that loops don't return to start.
         '''
         if self:
             last = self[-1]
         for child in self:
-            child.build(graph, before, after)
+            node = graph.new_node()
+            graph.connect(before, node)
+            child.build(graph, node, after)
             if child is not last:
                 node = graph.new_node()
                 graph.connect(before, node)
@@ -322,9 +334,16 @@ class Labelled(Sequence):
     '''
     
     def __init__(self, label, children, alphabet):
-        super(Labelled, self).__init__(children, alphabet)
         self.label = label
+        super(Labelled, self).__init__(children, alphabet)
         
+    def _build_str(self):
+        '''
+        Construct a string representation of self.
+        '''
+        return self.alphabet.fmt_label(self.label,
+                                       self.alphabet.fmt_sequence(self))
+    
     def build(self, graph, before, _after=None):
         '''
         A sequence, but with an extra final empty transition to force
@@ -355,12 +374,6 @@ class Expression(Choice):
             assert isinstance(child, Labelled)
         super(Expression, self).__init__(children, alphabet)
         
-    def _build_str(self):
-        '''
-        Construct a string representation of self.
-        '''
-        return self.alphabet.fmt_sequence(self)
-
     def build(self, graph, _before=None, _after=None):
         '''
         Each Labelled is an independent sequence.  We use empty transitions 
@@ -370,13 +383,14 @@ class Expression(Choice):
         assert not _after
         if self:
             before = graph.new_node()
-            last = self[-1]
-            src = before
+            first = self[0]
             for child in self:
-                child.build(graph, src)
-                if child is not last:
-                    src = graph.new_node()
-                    graph.connect(before, src)
+                if child is not first:
+                    # chain a new option
+                    tmp = graph.new_node()
+                    graph.connect(before, tmp)
+                    before = tmp
+                child.build(graph, before)
                     
     def nfa(self):
         '''
@@ -391,9 +405,12 @@ class Expression(Choice):
         Generate a DFA-based matcher (faster than NFA, but returns only a
         single, greedy match).
         '''
+        self._debug(format('compiling to dfa: {0}', self))
         ngraph = NfaGraph(self.alphabet)
         self.build(ngraph)
+        self._debug(format('nfa graph: {0}', ngraph))
         dgraph = NfaToDfa(ngraph, self.alphabet).dfa
+        self._debug(format('dfa graph: {0}', dgraph))
         return DfaCompiler(dgraph, self.alphabet)
     
     @staticmethod
@@ -563,16 +580,20 @@ class NfaGraph(BaseGraph):
         for node in self:
             edges = []
             for (dest, edge) in self.transitions(node):
-                edges.append(format('{0}:{1}', edge, dest))
+                edges.append(format('{0}->{1}', edge, dest))
             for dest in self.empty_transitions(node):
                 edges.append(str(dest))
             label = '' if self.terminal(node) is None \
-                       else (' ' + self.terminal(node))
-            lines.append(format('{0}{1} {2}', node, label, ';'.join(edges)))
-        return ', '.join(lines)
+                       else format('({0})', self.terminal(node))
+            if edges:
+                lines.append(
+                    format('{0}{1}: {2}', node, label, ', '.join(edges)))
+            else:
+                lines.append(format('{0}{1}', node, label))
+        return '; '.join(lines)
 
 
-class NfaCompiler(object):
+class NfaCompiler(LogMixin):
     '''
     Given a graph this constructs a transition table and an associated
     matcher.  The matcher attempts to find longest matches but does not
@@ -812,7 +833,7 @@ class NfaToDfa(object):
                 stack.append((dest, nfa_nodes, terminals))
 
 
-class DfaCompiler(object):
+class DfaCompiler(LogMixin):
     '''
     Create a lookup table for a DFA and a matcher to evaluate it.
     '''
@@ -858,6 +879,8 @@ class DfaCompiler(object):
                     if self.__empty_labels else None
         while stream:
             future = self.__table[state][stream[0]]
+            self._debug(format('stream {0!s}: {1} -> {2}',
+                               stream[0], state, future))
             if future is None:
                 break
             # update state

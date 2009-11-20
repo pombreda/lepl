@@ -141,27 +141,26 @@ class StrAlphabet(Alphabet):
         This must fully describe the data in the intervals (it is used to
         hash the data).
         '''
+        def pretty(c):
+            x = self._escape_char(c)
+            if len(x) > 1 or str(' ') <= str(x) <= str('~'):
+                return str(x)
+            else:
+                return format('{{{0!r}}}', c)
         ranges = []
         if len(intervals) == 1:
             if intervals[0][0] == intervals[0][1]:
                 return self._escape_char(intervals[0][0])
             elif intervals[0][0] == self.min and intervals[0][1] == self.max:
                 return '.'
-        if len(intervals) > 1 and intervals[0][0] == self.min:
-            intervals = self.invert(intervals)
-            hat = '^'
-        else:
-            hat = ''
         # pylint: disable-msg=C0103
         # (sorry. but i use this (a, b) convention throughout the regexp lib) 
         for (a, b) in intervals:
             if a == b:
                 ranges.append(self._escape_char(a))
             else:
-                ranges.append(
-                    format('{0!s}-{1!s}',
-                           self._escape_char(a), self._escape_char(b)))
-        return format('[{0}{1}]', hat, self.join(ranges))
+                ranges.append(format('{0!s}-{1!s}', pretty(a), pretty(b)))
+        return format('[{0}]', self.join(ranges))
     
     def fmt_sequence(self, children):
         '''
@@ -192,8 +191,7 @@ class StrAlphabet(Alphabet):
         This must fully describe the data in the children (it is used to
         hash the data).
         '''
-        return format('({0})',
-                      '|'.join(self.fmt_sequence(child) for child in children))
+        return format('({0})', '|'.join(str(child) for child in children))
 
     def fmt_option(self, children):
         '''
@@ -207,6 +205,15 @@ class StrAlphabet(Alphabet):
             return string + '?'
         else:
             return format('({0})?', string)
+        
+    def fmt_label(self, label, child):
+        '''
+        Generate a string representation of labelled options.
+        
+        This must fully describe the data in the children (it is used to
+        hash the data).
+        '''
+        return format('{{{0}:{1}}}', label, child)
         
     def join(self, chars):
         '''
