@@ -22,7 +22,7 @@ Tests for the lepl.regexp.unicode module.
 
 from unittest import TestCase
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from lepl import RegexpError, DEFAULT_STREAM_FACTORY
 from lepl.regexp.core import NfaGraph, NfaToDfa, Expression
 from lepl.regexp.unicode import UnicodeAlphabet
@@ -39,7 +39,7 @@ def _test_parser(regexp):
     return Expression.single(UNICODE, regexp, 'label')
 
 def label(text):
-    return format('({{label:({0!s})}})', text)
+    return format('({{label:{0!s}}})', text)
     
 class CharactersTest(TestCase):
     
@@ -73,7 +73,7 @@ class CharactersTest(TestCase):
         c = _test_parser('[,a-bq]')
         assert label('[,a-bq]') == str(c), str(c)
         c = _test_parser('[^a]')
-        assert '({label:([{u'\x00'}-`b-{u'\U0010ffff'}])})' == str(c), str(c)
+        assert "({label:[{'\\x00'}-`b-{'\\uffff'}]})" == str(c), str(c)
    
     def test_merge(self):
         c = _test_parser('[a-ce-g]')
@@ -129,14 +129,14 @@ class CharactersTest(TestCase):
         c = _test_parser('(a*|b|[c-d])')
         assert label('(a*|b|[c-d])') == str(c), str(c)
         c = _test_parser('a(a|b)*')
-        assert '({label:(a|(a|b)*)})' == str(c), str(c)
+        assert label('a(a|b)*') == str(c), str(c)
         c = _test_parser('a([a-c]x|axb)*')
         assert label('a([a-c]x|axb)*') == str(c), str(c)
         
     def test_bad_escape(self):
         #basicConfig(level=DEBUG)
         c = _test_parser(r'\+')
-        assert label('\\+') == '({label:(\+)})', str(c)
+        assert label('\\+') == str(c), str(c)
         try:
             c = _test_parser('+')
             assert False, 'Expected error'
@@ -172,6 +172,7 @@ class NfaTest(TestCase):
                             ['aababba', 'aababb', 'aabab', 'aaba', 'aab', 'aa', 'a', ''])
     
     def test_multiple_choice(self):
+        #basicConfig(level=DEBUG)
         self.assert_matches('(a|ab)b', 'abb', ['ab', 'abb'])
 
     def test_range(self):
@@ -223,7 +224,6 @@ class DfaGraphTest(TestCase):
     def test_dfa_conflicting_choice(self):
         self.assert_dfa_graph('a(bc|b*d)', 
             '0 [0] a:1, 1 [3, 5, 6] d:2;b:3, 2 [1, 2] label, 3 [4, 5, 6] b:4;[c-d]:2, 4 [5, 6] b:4;d:2')
-
     def test_dfa_conflicting_choice_2(self):
         self.assert_dfa_graph('a(bb|b*c)', 
             '0 [0] a:1, 1 [3, 5, 6] c:2;b:3, 2 [1, 2] label, 3 [4, 5, 6] b:4;c:2, 4 [1, 2, 5, 6] b:5;c:2 label, 5 [5, 6] b:5;c:2')

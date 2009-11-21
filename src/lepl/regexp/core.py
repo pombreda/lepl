@@ -317,13 +317,22 @@ class Choice(Sequence):
         if self:
             last = self[-1]
         for child in self:
-            node = graph.new_node()
-            graph.connect(before, node)
-            child.build(graph, node, after)
+            child.build(graph, before, after)
             if child is not last:
                 node = graph.new_node()
                 graph.connect(before, node)
                 before = node
+
+#        if self:
+#            last = self[-1]
+#        for child in self:
+#            node = graph.new_node()
+#            graph.connect(before, node)
+#            child.build(graph, node, after)
+#            if child is not last:
+#                node = graph.new_node()
+#                graph.connect(before, node)
+#                before = node
     
         
 class Labelled(Sequence):
@@ -396,8 +405,10 @@ class Expression(Choice):
         '''
         Generate a NFA-based matcher.
         '''
+        self._debug(format('compiling to nfa: {0}', self))
         graph = NfaGraph(self.alphabet)
         self.build(graph)
+        self._debug(format('nfa graph: {0}', graph))
         return NfaCompiler(graph, self.alphabet)
         
     def dfa(self):
@@ -576,6 +587,18 @@ class NfaGraph(BaseGraph):
             return None
         
     def __str__(self):
+        '''
+        Example:
+        0: 3, 4; 1: 2; 2(Tk1); 3: [{u'\x00'}-`b-{u'\U0010ffff'}]->3, 1; 
+        4: {$}->5, 7; 5: 6; 6($); 7: {^}->10; 8: 9; 9(^); 10: 11; 
+        11: [      ]->11, 8
+        
+        Node 0 leads to 3 and 4 (both empty)
+        Node 1 leads to 2 (empty)
+        Node 2 is terminal, labelled with "Tk1"
+        Node 3 loops back to 3 for a character in the given range, or to 1
+        etc.
+        '''
         lines = []
         for node in self:
             edges = []
