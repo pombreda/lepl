@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='LEPL',
-      version='3.3',
+      version='3.3.1',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -18,6 +18,8 @@ results to first-time users.
 `Release 3.3 <http://www.acooke.org/lepl/releases.html#id1>`_ adds `line-aware
 parsing <http://www.acooke.org/lepl/offside.html>`_, including support for the
 "offside rule".
+
+Release 3.3.1 is a bugfix release correcting problems with regular expressions.
 
 Features
 --------

@@ -203,30 +203,31 @@ class DfaGraphTest(TestCase):
 
     def test_dfa_no_empty(self):
         self.assert_dfa_graph('abc',
-            '0 [0] a:1, 1 [3] b:2, 2 [4] c:3, 3 [1, 2] label') 
+            '0: [0] a->1; 1: [3] b->2; 2: [4] c->3; 3(label): [1, 2]') 
         
     def test_dfa_simple_repeat(self):
         self.assert_dfa_graph('ab*c',
-            '0 [0] a:1, 1 [3, 4] b:1;c:2, 2 [1, 2] label')
+            '0: [0] a->1; 1: [3, 4, 5] c->2,b->3; 2(label): [1, 2]; 3: [4, 5] c->2,b->3')
         
     def test_dfa_simple_choice(self):
         self.assert_dfa_graph('a(b|c)', 
-            '0 [0] a:1, 1 [3, 4] [b-c]:2, 2 [1, 2] label')
+            '0: [0] a->1; 1: [3, 4] [b-c]->2; 2(label): [1, 2]')
         
     def test_dfa_repeated_choice(self):
         self.assert_dfa_graph('a(b|cd)*e', 
-            '0 [0] a:1, 1 [3, 4, 5] c:2;e:3;b:1, 2 [6] d:1, 3 [1, 2] label')
+            '0: [0] a->1; 1: [3, 4, 5, 6] e->2,c->3,b->4; 2(label): [1, 2]; 3: [7] d->4; 4: [4, 5, 6] e->2,c->3,b->4')
         
     def test_dfa_overlapping_choice(self):
         self.assert_dfa_graph('a(bcd|bce)', 
-            '0 [0] a:1, 1 [3, 6] b:2, 2 [4, 7] c:3, 3 [8, 5] [d-e]:4, 4 [1, 2] label')
+            '0: [0] a->1; 1: [3, 6] b->2; 2: [4, 7] c->3; 3: [8, 5] [d-e]->4; 4(label): [1, 2]')
 
     def test_dfa_conflicting_choice(self):
         self.assert_dfa_graph('a(bc|b*d)', 
-            '0 [0] a:1, 1 [3, 5, 6] d:2;b:3, 2 [1, 2] label, 3 [4, 5, 6] b:4;[c-d]:2, 4 [5, 6] b:4;d:2')
+            '0: [0] a->1; 1: [3, 5, 6, 7] d->2,b->3; 2(label): [1, 2]; 3: [4, 6, 7] [c-d]->2,b->4; 4: [6, 7] d->2,b->4')
+        
     def test_dfa_conflicting_choice_2(self):
         self.assert_dfa_graph('a(bb|b*c)', 
-            '0 [0] a:1, 1 [3, 5, 6] c:2;b:3, 2 [1, 2] label, 3 [4, 5, 6] b:4;c:2, 4 [1, 2, 5, 6] b:5;c:2 label, 5 [5, 6] b:5;c:2')
+            '0: [0] a->1; 1: [3, 5, 6, 7] c->2,b->3; 2(label): [1, 2]; 3: [4, 6, 7] c->2,b->4; 4(label): [1, 2, 6, 7] c->2,b->5; 5: [6, 7] c->2,b->5')
 
     def test_dfa_dot_option(self):
         '''
@@ -234,7 +235,7 @@ class DfaGraphTest(TestCase):
         '''
         #basicConfig(level=DEBUG)
         self.assert_dfa_graph('.*a?b', 
-            '0 [0, 3, 4] b:1;[^b]:0, 1 [0, 1, 2, 3, 4] b:1;[^b]:0 label')
+            r"0: [0, 3, 4, 5] [{'\x00'}-ac-{'\uffff'}]->1,b->2; 1: [3, 4, 5] [{'\x00'}-ac-{'\uffff'}]->1,b->2; 2(label): [1, 2, 3, 4, 5] [{'\x00'}-ac-{'\uffff'}]->1,b->2")
 
 
 class DfaTest(TestCase):

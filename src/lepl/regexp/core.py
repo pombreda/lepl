@@ -756,14 +756,14 @@ class DfaGraph(BaseGraph):
         for node in self:
             edges = []
             for (dest, edge) in self.transitions(node):
-                edges.append(format('{0}:{1}', edge, dest))
+                edges.append(format('{0}->{1}', edge, dest))
             nodes = [n for n in self.nfa_nodes(node)]
-            edges = ' ' + ';'.join(edges) if edges else ''
+            edges = ' ' + ','.join(edges) if edges else ''
             labels = list(self.terminals(node))
-            labels = ' ' + '/'.join(str(label) for label in labels) \
+            labels = format('({0})', ','.join(str(label) for label in labels)) \
                      if labels else ''
-            lines.append(format('{0} {1}{2}{3}', node, nodes, edges, labels))
-        return ', '.join(lines)
+            lines.append(format('{0}{1}: {2}{3}', node, labels, nodes, edges))
+        return '; '.join(lines)
 
 
 # pylint: disable-msg=R0903
