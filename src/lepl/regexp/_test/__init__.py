@@ -28,6 +28,7 @@ Tests for the lepl.regexp package.
 import lepl.regexp._test.binary
 import lepl.regexp._test.interval
 import lepl.regexp._test.matchers
+#import lepl.regexp._test.random
 import lepl.regexp._test.rewriters
 import lepl.regexp._test.unicode
 

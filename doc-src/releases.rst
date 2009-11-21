@@ -74,15 +74,17 @@ Date        Version  Description
 2009-09-23  3.3      Whitespace sensitive parsing.
 ----------  -------  -----------
 2009-11-22  3.3.1    Regexp bugfixes.
+----------  -------  -----------
+2009-11-22  3.3.2    Regexp bugfixes (correct self-test).
 ==========  =======  ===========
 
 
 .. release_3_3:
 
-3.3, 3.3.1
+3.3, 3.3.2
 ----------
 
-This supports :ref:`line--aware <offside>` parsing.  3.3.1 fixes bugs in the
+This supports :ref:`line--aware <offside>` parsing.  3.3.2 fixes bugs in the
 regular expression engine.
 
 

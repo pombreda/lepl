@@ -30,3 +30,4 @@ import lepl.offside._test.matchers
 import lepl.offside._test.offside
 import lepl.offside._test.pithon
 import lepl.offside._test.regexp
+import lepl.offside._test.unicode
