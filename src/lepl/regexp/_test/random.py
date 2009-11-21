@@ -21,9 +21,9 @@ Tests for the lepl.regexp package.  We generate random expressions and
 test the results against the python regexp matcher.
 '''
 
-from logging import basicConfig, DEBUG, getLogger
+#from logging import basicConfig, DEBUG, getLogger
 from random import randint, choice
-from re import compile
+from re import compile as compile_
 from sys import exc_info
 from unittest import TestCase
 
@@ -71,7 +71,7 @@ def random_choice(depth_left, alphabet):
     return format('({0})', '|'.join(random_expression(depth_left, alphabet)
                                     for _ in range(randint(1, 3))))
 
-def random_range(depth_left, alphabet):
+def random_range(_depth_left, alphabet):
     def random_chars():
         subexpr = ''
         for _ in range(randint(1, 2)):
@@ -111,7 +111,7 @@ class RandomTest(TestCase):
         wwork that way... 
         '''
         #basicConfig(level=DEBUG)
-        log = getLogger('lepl.reexgp._test.random')
+        #log = getLogger('lepl.reexgp._test.random')
         match_alphabet = '012'
         string_alphabet = '013'
         for _ in range(100):
@@ -120,16 +120,16 @@ class RandomTest(TestCase):
             lepl_result = DfaRegexp(expression).parse(string)
             if lepl_result:
                 lepl_result = lepl_result[0]
-            log.debug(format('{0} {1} {2}', expression, string, lepl_result))
+            #log.debug(format('{0} {1} {2}', expression, string, lepl_result))
             try:
-                python_result = compile(expression).match(string) 
+                python_result = compile_(expression).match(string) 
                 if python_result:
                     python_result = python_result.group()
                 assert lepl_result == python_result, \
                     format('{0} != {1}\n{2} {3}', 
                            lepl_result, python_result, expression, string)
             except:
-                (e, v, t) = exc_info()
+                (e, v, _t) = exc_info()
                 if repr(v) == "error('nothing to repeat',)":
                     pass
                 else:

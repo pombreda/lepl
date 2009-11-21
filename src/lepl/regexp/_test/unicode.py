@@ -22,7 +22,7 @@ Tests for the lepl.regexp.unicode module.
 
 from unittest import TestCase
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from lepl import RegexpError, DEFAULT_STREAM_FACTORY
 from lepl.regexp.core import NfaGraph, NfaToDfa, Expression
 from lepl.regexp.unicode import UnicodeAlphabet

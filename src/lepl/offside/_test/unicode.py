@@ -24,12 +24,12 @@ Tests for the lepl.offside.regexp module.
 # tests
 
 
-from logging import basicConfig, DEBUG, INFO, ERROR
+#from logging import basicConfig, DEBUG, INFO, ERROR
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
-from lepl.memo import LMemo
-from lepl.rewriters import memoize
+#from lepl.memo import LMemo
+#from lepl.rewriters import memoize
 from lepl.offside.config import LineAwareConfiguration
 from lepl.offside.matchers import BLine
 from lepl.offside.regexp import LineAwareAlphabet, SOL, EOL
