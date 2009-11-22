@@ -20,15 +20,12 @@
 Tests for the lepl.functions module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.config import Configuration
 from lepl.functions import Space, Repeat, SkipTo, Newline, String
 from lepl.matchers import Any, OperatorMatcher, Trace
-from lepl.memo import LMemo, RMemo
 from lepl.parser import tagged
-from lepl.rewriters import memoize
 from lepl._test.matchers import BaseTest
 
 
