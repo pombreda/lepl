@@ -47,8 +47,11 @@ class BaseDelegateSource(Source):
         location_state is the original stream.
         '''
         if location_state:
-            shifted = location_state[offset:]
-            return shifted.location
+            try:
+                shifted = location_state[offset:]
+                return shifted.location
+            except IndexError:
+                return (-1, -1, -1, None, None)
         else:
             return (-1, -1, -1, None, None)
         

@@ -508,7 +508,7 @@ def String(quote='"', escape='\\'):
     q = Literal(quote)
     content = AnyBut(q)
     if escape:
-        content = Or(content, And(Drop(escape), q))
+        content = Or(And(Drop(escape), q), content)
     content = Repeat(content, add_=True) 
     return And(Drop(q), content, Drop(q))
 

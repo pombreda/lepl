@@ -20,12 +20,15 @@
 Tests for the lepl.functions module.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.functions import Space, Repeat, SkipTo, Newline
+from lepl.config import Configuration
+from lepl.functions import Space, Repeat, SkipTo, Newline, String
 from lepl.matchers import Any, OperatorMatcher, Trace
+from lepl.memo import LMemo, RMemo
 from lepl.parser import tagged
+from lepl.rewriters import memoize
 from lepl._test.matchers import BaseTest
 
 
@@ -149,3 +152,14 @@ class SkipToTest(BaseTest):
         #basicConfig(level=DEBUG)
         self.assert_direct('''abc
 d''', Trace(~SkipTo(Newline()) + 'd'), [['d']])
+
+
+class StringTest(BaseTest):
+    
+    def test_simple(self):
+        self.assert_direct('"abc"', String(), [['abc']])
+        self.assert_direct('"abc"d', String(), [['abc']])
+
+    def test_escape(self):
+        self.assert_direct('"ab\\"c"', String(), [['ab"c'], ['ab\\']])
+        
