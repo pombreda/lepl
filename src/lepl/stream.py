@@ -591,7 +591,9 @@ class Source(_Source):
         Subclasses should override this to return the current line, 
         if supported.
         '''
-        raise StreamException('This source does not support lines.')
+        raise StreamException(
+            format('This source ({0!s}) does not support lines.',
+                   self.__class__.__name__))
     
     def __str__(self):
         '''

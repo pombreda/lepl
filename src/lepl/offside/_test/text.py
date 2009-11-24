@@ -57,7 +57,7 @@ class TextTest(TestCase):
             # in reality we would have more expressions!
             expression = Literal('pass') 
         
-        # the define the block structure
+        # then define the block structure
         statement = Delayed()
         simple = TLine(expression)
         empty = TLine(Empty())

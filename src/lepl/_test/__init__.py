@@ -82,13 +82,13 @@ def all():
               'unicode ranges)'
               .format(len(result.failures)))
         assert 3 <= len(result.failures) <= 5, len(result.failures)
-        target = 251 # no bin/cairo tests
+        target = 253 # no bin/cairo tests
     else:
         print('Expect at most 1 failure in Python 3: {0:d} '
               '(format variations from address size?)'
               .format(len(result.failures)))
         assert 0 <= len(result.failures) <= 1, len(result.failures)
-        target = 273 # no cairo tests (2)
+        target = 275 # no cairo tests (2)
     print('Expect {0:d} tests total: {1:d}'.format(target, result.testsRun))
     assert result.testsRun == target, result.testsRun
     print('\nLooks OK to me!\n\n')

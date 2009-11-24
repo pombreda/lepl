@@ -138,13 +138,24 @@ class ContentSource(BaseDelegateSource):
                                             stream.source.join)
         self.__line = text
         self.__stream = stream
+        self.__used = False
         self.total_length = len(text)
     
     def __next__(self):
         '''
         Return a single line.
         '''
-        (self.__line, line) = (None, self.__line)
-        return (line, self.__stream)
+        try:
+            return (None if self.__used else self.__line, self.__stream)
+        finally:
+            self.__used = True
 
+    def text(self, offset, line):
+        '''
+        Provide the remaining part of the line.
+        '''
+        if line:
+            return line[offset:]
+        else:
+            return self.join([])
 

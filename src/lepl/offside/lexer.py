@@ -24,6 +24,7 @@ Tokens for indents.
 from lepl.lexer.matchers import BaseToken
 from lepl.offside.monitor import BlockMonitor
 from lepl.offside.regexp import START, END
+from lepl.offside.support import OffsideError
 from lepl.parser import tagged
 from lepl.support import format
 
@@ -92,6 +93,11 @@ class BIndent(Indent):
         '''
         Check that we match the current level
         '''
+        if self.__current_indent is None:
+            raise OffsideError('No initial indentation has been set. '
+                               'You probably have not specified one of '
+                               'block_policy or block_start in the '
+                               'configuration')
         try:
             generator = super(BIndent, self)._match(stream_in)
             while True:

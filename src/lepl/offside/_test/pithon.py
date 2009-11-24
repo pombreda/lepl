@@ -44,6 +44,9 @@ class PithonTest(TestCase):
         function = word[1:] & ~symbol('(') & args & ~symbol(')')
 
         block = Delayed()
+        # that Empty() works below is strange - it's not a token!
+        # i can see why it works (it really doesn't care what the stream
+        # is), but not why it's not flagged as an error...!?!
         line = (CLine(statement) | block | Line(Empty())) > list
         block += CLine((function | statement) & introduce) & Block(line[1:])
         
