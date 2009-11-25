@@ -46,6 +46,7 @@ class RewriteTest(TestCase):
         assert isinstance(matcher.matcher, NfaRegexp)
         
     def test_or(self):
+        #basicConfig(level=DEBUG)
         rx = Any('a') | Any('b') 
         matcher = rx.null_matcher(Configuration(rewriters=[regexp_rewriter(UNICODE)]))
         results = list(matcher('bq'))

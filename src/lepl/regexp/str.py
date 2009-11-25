@@ -22,7 +22,7 @@ converted to strings using str().
 '''
 
 from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
-    Option
+    Option, _Choice
 from lepl.config import Configuration
 from lepl.support import format, str
 
@@ -135,6 +135,14 @@ class StrAlphabet(Alphabet):
             return self.escape + str(char)
         else:
             return str(char)
+        
+    def _no_parens(self, children):
+        '''
+        Returns True of no parens are needed around this when formatting.
+        '''
+        return len(children) == 1 and \
+            (isinstance(children[0], Character) or
+             len(children[0]) == 1 and isinstance(children[0][0], _Choice))
     
     def fmt_intervals(self, intervals):
         '''
@@ -146,7 +154,7 @@ class StrAlphabet(Alphabet):
             if len(x) > 1 or str(' ') <= str(x) <= str('~'):
                 return str(x)
             else:
-                return format('{{{0!r}}}', c)
+                return repr(c)[1:-1]
         ranges = []
         if len(intervals) == 1:
             if intervals[0][0] == intervals[0][1]:
@@ -179,7 +187,7 @@ class StrAlphabet(Alphabet):
         hash the data).
         '''
         string = self.fmt_sequence(children)
-        if len(children) == 1 and type(children[0]) in (Character, Choice):
+        if self._no_parens(children):
             return string + '*'
         else:
             return format('({0})*', string)
@@ -201,7 +209,7 @@ class StrAlphabet(Alphabet):
         hash the data).
         '''
         string = self.fmt_sequence(children)
-        if len(children) == 1 and type(children[0]) in (Character, Choice):
+        if self._no_parens(children):
             return string + '?'
         else:
             return format('({0})?', string)
@@ -213,7 +221,7 @@ class StrAlphabet(Alphabet):
         This must fully describe the data in the children (it is used to
         hash the data).
         '''
-        return format('{{{0}:{1}}}', label, child)
+        return format('(?P<{0}>{1})', label, child)
         
     def join(self, chars):
         '''

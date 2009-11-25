@@ -297,7 +297,16 @@ class Repeat(Sequence):
         graph.connect(node, after) 
     
     
-class Choice(Sequence):
+def Choice(children, alphabet):
+    '''
+    Encase a choice in a sequence so that it can be treated in the same
+    way as other components (if we don't do this, then passing it to another
+    sequence will split it into constituents and the sequence them).
+    '''
+    return Sequence([_Choice(children, alphabet)], alphabet)
+
+    
+class _Choice(Sequence):
     '''
     A set of alternative Characters (or sequences).
     '''
@@ -353,17 +362,15 @@ class Labelled(Sequence):
         return self.alphabet.fmt_label(self.label,
                                        self.alphabet.fmt_sequence(self))
     
-    def build(self, graph, before, _after=None):
+    def build(self, graph, before, after):
         '''
         A sequence, but with an extra final empty transition to force
         any loops before termination.
         '''
-        assert not _after
-        after = graph.new_node()
-        final = graph.new_node()
-        super(Labelled, self).build(graph, before, after)
-        graph.connect(after, final)
-        graph.terminate(final, [self.label])
+        node = graph.new_node()
+        super(Labelled, self).build(graph, before, node)
+        graph.connect(node, after)
+        graph.terminate(node, [self.label])
         
 
 class RegexpError(Exception):
@@ -373,43 +380,25 @@ class RegexpError(Exception):
     pass
 
 
-class Expression(Choice):
+class Compiler(LogMixin):
     '''
-    A collection of Labelled instances.
+    Compile an expression.
     '''
     
-    def __init__(self, children, alphabet):
-        for child in children:
-            assert isinstance(child, Labelled)
-        super(Expression, self).__init__(children, alphabet)
-        
-    def build(self, graph, _before=None, _after=None):
-        '''
-        Each Labelled is an independent sequence.  We use empty transitions 
-        to order the choices.
-        '''
-        assert not _before
-        assert not _after
-        if self:
-            before = graph.new_node()
-            first = self[0]
-            for child in self:
-                if child is not first:
-                    # chain a new option
-                    tmp = graph.new_node()
-                    graph.connect(before, tmp)
-                    before = tmp
-                child.build(graph, before)
-                    
+    def __init__(self, expression, alphabet):
+        super(Compiler, self).__init__()
+        self.expression = expression
+        self.alphabet = alphabet
+
     def nfa(self):
         '''
         Generate a NFA-based matcher.
         '''
         self._debug(format('compiling to nfa: {0}', self))
         graph = NfaGraph(self.alphabet)
-        self.build(graph)
+        self.expression.build(graph, graph.new_node(), graph.new_node())
         self._debug(format('nfa graph: {0}', graph))
-        return NfaCompiler(graph, self.alphabet)
+        return NfaPattern(graph, self.alphabet)
         
     def dfa(self):
         '''
@@ -418,11 +407,17 @@ class Expression(Choice):
         '''
         self._debug(format('compiling to dfa: {0}', self))
         ngraph = NfaGraph(self.alphabet)
-        self.build(ngraph)
+        self.expression.build(ngraph, ngraph.new_node(), ngraph.new_node())
         self._debug(format('nfa graph: {0}', ngraph))
         dgraph = NfaToDfa(ngraph, self.alphabet).dfa
         self._debug(format('dfa graph: {0}', dgraph))
-        return DfaCompiler(dgraph, self.alphabet)
+        return DfaPattern(dgraph, self.alphabet)
+    
+    def __str__(self):
+        '''
+        Show the expression itself.
+        '''
+        return str(self.expression)
     
     @staticmethod
     def _coerce(regexp, alphabet):
@@ -434,30 +429,28 @@ class Expression(Choice):
             if not coerced:
                 raise RegexpError(format('Cannot parse regexp {0!r} using {1}',
                                          regexp, alphabet))
+            return coerced
         else:
-            coerced = [regexp]
-        return coerced
-        
+            return regexp
     
     @staticmethod
     def single(alphabet, regexp, label='label'):
         '''
         Generate an instance for a single expression or sequence.
         '''
-        return Expression([Labelled(label, 
-                                    Expression._coerce(regexp, alphabet), 
-                                    alphabet)], alphabet)
+        return Compiler(Labelled(label, Compiler._coerce(regexp, alphabet), 
+                                 alphabet), alphabet)
     
     @staticmethod
     def multiple(alphabet, regexps):
         '''
         Generate an instance for several expressions.
         '''
-        return Expression([Labelled(label,  
-                                    Expression._coerce(regexp, alphabet), 
-                                    alphabet) for (label, regexp) in regexps], 
-                                    alphabet)
-        
+        return Compiler(
+                    Choice([Labelled(label, Compiler._coerce(regexp, alphabet), 
+                                     alphabet) for (label, regexp) in regexps], 
+                                     alphabet), alphabet)
+
 
         
 class BaseGraph(object):
@@ -616,7 +609,7 @@ class NfaGraph(BaseGraph):
         return '; '.join(lines)
 
 
-class NfaCompiler(LogMixin):
+class NfaPattern(LogMixin):
     '''
     Given a graph this constructs a transition table and an associated
     matcher.  The matcher attempts to find longest matches but does not
@@ -632,7 +625,7 @@ class NfaCompiler(LogMixin):
     '''
     
     def __init__(self, graph, alphabet):
-        super(NfaCompiler, self).__init__()
+        super(NfaPattern, self).__init__()
         self.__graph = graph
         self.__alphabet = alphabet
         self.__table = {}
@@ -856,13 +849,13 @@ class NfaToDfa(object):
                 stack.append((dest, nfa_nodes, terminals))
 
 
-class DfaCompiler(LogMixin):
+class DfaPattern(LogMixin):
     '''
     Create a lookup table for a DFA and a matcher to evaluate it.
     '''
     
     def __init__(self, graph, alphabet):
-        super(DfaCompiler, self).__init__()
+        super(DfaPattern, self).__init__()
         self.__graph = graph
         self.__alphabet = alphabet
         self.__table = [None] * len(graph)

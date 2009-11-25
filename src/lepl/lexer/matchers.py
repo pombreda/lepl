@@ -37,7 +37,7 @@ from lepl.memo import NoMemo
 from lepl.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
     KARGS, RAISE, REPEAT, FIRST, MAP
 from lepl.parser import tagged
-from lepl.regexp.core import Expression
+from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
@@ -321,11 +321,10 @@ class Lexer(NamespaceMixin, BaseMatcher):
             for token in tokens:
                 token.compile(alphabet)
                 self._debug(format('Token: {0}', token))
-            t_regexp = Expression.multiple(alphabet, 
-                                           [(t.id_, t.regexp) 
-                                            for t in tokens]).dfa()
+            t_regexp = Compiler.multiple(
+                        alphabet, [(t.id_, t.regexp) for t in tokens]).dfa()
         if s_regexp is None and discard is not None:
-            s_regexp = Expression.single(alphabet, discard).dfa()
+            s_regexp = Compiler.single(alphabet, discard).dfa()
         self._arg(matcher=matcher)
         self._arg(tokens=tokens)
         self._arg(alphabet=alphabet)

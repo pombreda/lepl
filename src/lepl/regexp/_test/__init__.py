@@ -26,6 +26,7 @@ Tests for the lepl.regexp package.
 # pylint: disable-msg=E0611
 #@PydevCodeAnalysisIgnore
 import lepl.regexp._test.binary
+import lepl.regexp._test.core
 import lepl.regexp._test.interval
 import lepl.regexp._test.matchers
 #import lepl.regexp._test.random

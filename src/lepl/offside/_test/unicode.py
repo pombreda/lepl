@@ -33,7 +33,7 @@ from lepl.lexer.matchers import Token
 from lepl.offside.config import LineAwareConfiguration
 from lepl.offside.matchers import BLine
 from lepl.offside.regexp import LineAwareAlphabet, SOL, EOL
-from lepl.regexp.core import Expression
+from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import DfaRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.support import str
@@ -101,44 +101,44 @@ class RegexpTest(TestCase):
         
     def test_match_1(self):
         alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
-        expr = Expression.single(alphabet, '[a]').nfa()
+        expr = Compiler.single(alphabet, '[a]').nfa()
         result = list(expr.match(str('a123')))
         assert result == [(str('label'), str('a'), str('123'))], result
         
     def test_match_2(self):
         alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
-        expr = Expression.single(alphabet, '[^a]').nfa()
+        expr = Compiler.single(alphabet, '[^a]').nfa()
         result = list(expr.match(str('123a')))
         assert result == [(str('label'), str('1'), str('23a'))], result
         
     def test_match_3(self):
         alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
-        expr = Expression.single(alphabet, '[^a]*').dfa()
+        expr = Compiler.single(alphabet, '[^a]*').dfa()
         result = list(expr.match(str('123a')))
         assert result == [[str('label')], str('123'), str('a')], result
         
     def test_match_4(self):
         alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
-        expr = Expression.single(alphabet, '[^a]*').dfa()
+        expr = Compiler.single(alphabet, '[^a]*').dfa()
         result = list(expr.match([str('1'), str('a')]))
         assert result == [[str('label')], [str('1')], [str('a')]], result
         
     def test_match_5(self):
         alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
-        expr = Expression.single(alphabet, '[^a]*').dfa()
+        expr = Compiler.single(alphabet, '[^a]*').dfa()
         result = list(expr.match([SOL, str('1'), str('a')]))
         assert result == [[str('label')], [SOL, str('1')], [str('a')]], result
         
     def test_match_6(self):
         alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
-        expr = Expression.single(alphabet, '[^^a]*').dfa()
+        expr = Compiler.single(alphabet, '[^^a]*').dfa()
         result = list(expr.match([SOL, str('1'), str('a')]))
         assert result == [[str('label')], [], [SOL, str('1'), str('a')]], \
             result
 
     def test_match_7(self):
         alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
-        expr = Expression.single(alphabet, '[^^$a]*').dfa()
+        expr = Compiler.single(alphabet, '[^^$a]*').dfa()
         result = list(expr.match([str('1'), EOL]))
         assert result == [[str('label')], [str('1')], [EOL]], \
             result

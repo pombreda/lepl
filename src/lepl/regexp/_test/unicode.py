@@ -24,7 +24,7 @@ from unittest import TestCase
 
 #from logging import basicConfig, DEBUG
 from lepl import RegexpError, DEFAULT_STREAM_FACTORY
-from lepl.regexp.core import NfaGraph, NfaToDfa, Expression
+from lepl.regexp.core import NfaGraph, NfaToDfa, Compiler
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.support import format
 
@@ -36,10 +36,10 @@ UNICODE = UnicodeAlphabet.instance()
 
 
 def _test_parser(regexp):
-    return Expression.single(UNICODE, regexp, 'label')
+    return Compiler.single(UNICODE, regexp, 'label')
 
 def label(text):
-    return format('({{label:{0!s}}})', text)
+    return format('(?P<label>{0!s})', text)
     
 class CharactersTest(TestCase):
     
@@ -73,7 +73,7 @@ class CharactersTest(TestCase):
         c = _test_parser('[,a-bq]')
         assert label('[,a-bq]') == str(c), str(c)
         c = _test_parser('[^a]')
-        assert "({label:[{'\\x00'}-`b-{'\\uffff'}]})" == str(c), str(c)
+        assert r'(?P<label>[\x00-`b-\uffff])' == str(c), str(c)
    
     def test_merge(self):
         c = _test_parser('[a-ce-g]')
@@ -126,6 +126,7 @@ class CharactersTest(TestCase):
         assert label('ab?c') == str(c), str(c)
         
     def test_choice(self):
+        #basicConfig(level=DEBUG)
         c = _test_parser('(a*|b|[c-d])')
         assert label('(a*|b|[c-d])') == str(c), str(c)
         c = _test_parser('a(a|b)*')
@@ -197,7 +198,7 @@ class DfaGraphTest(TestCase):
     def assert_dfa_graph(self, regexp, desc):
         r = _test_parser(regexp)
         nfa = NfaGraph(UNICODE)
-        r.build(nfa)
+        r.expression.build(nfa, nfa.new_node(), nfa.new_node())
         dfa = NfaToDfa(nfa, UNICODE).dfa
         assert str(dfa) == desc, str(dfa)
 
@@ -235,8 +236,7 @@ class DfaGraphTest(TestCase):
         '''
         #basicConfig(level=DEBUG)
         self.assert_dfa_graph('.*a?b', 
-            r"0: [0, 3, 4, 5] [{'\x00'}-ac-{'\uffff'}]->1,b->2; 1: [3, 4, 5] [{'\x00'}-ac-{'\uffff'}]->1,b->2; 2(label): [1, 2, 3, 4, 5] [{'\x00'}-ac-{'\uffff'}]->1,b->2")
-
+            r'0: [0, 3, 4, 5] [\x00-ac-\uffff]->1,b->2; 1: [3, 4, 5] [\x00-ac-\uffff]->1,b->2; 2(label): [1, 2, 3, 4, 5] [\x00-ac-\uffff]->1,b->2')
 
 class DfaTest(TestCase):
     
