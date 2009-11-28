@@ -26,9 +26,10 @@ from lepl.lexer.matchers import BaseToken
 from lepl.lexer.rewriters import lexer_rewriter
 from lepl.offside.matchers import DEFAULT_TABSIZE, DEFAULT_POLICY, Block
 from lepl.offside.monitor import block_monitor
-from lepl.offside.regexp import LineAwareAlphabet
+from lepl.offside.regexp import LineAwareAlphabet, make_hide_sol_eol_parser
 from lepl.offside.stream import LineAwareStreamFactory, LineAwareTokenSource
 from lepl.regexp.matchers import BaseRegexp
+from lepl.regexp.str import make_str_parser
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.rewriters import fix_arguments, flatten, compose_transforms, \
     auto_memoize
@@ -48,7 +49,8 @@ class LineAwareConfiguration(Configuration):
     then the associated monitor is also added automatically.
     '''
     
-    def __init__(self, rewriters=None, monitors=None, alphabet=None,
+    def __init__(self, rewriters=None, monitors=None, 
+                 alphabet=None, parser_factory=None,
                  discard='[ \t\r\n]', tabsize=DEFAULT_TABSIZE, 
                  block_policy=None, block_start=None):
         '''
@@ -63,6 +65,12 @@ class LineAwareConfiguration(Configuration):
         
         alphabet is the alphabet used; by default it is assumed to be Unicode
         and it will be extended to include start and end of line markers.
+        
+        parser_factory is used to generate a regexp parser.  If this is unset
+        then the parser used depends on whether blocks are being used.  If so,
+        then the HideSolEolParser is used (so that you can specify tokens 
+        without worrying about SOL and EOL); otherwise a normal parser is
+        used.
         
         discard is a regular expression which is matched against the stream
         if lexing otherwise fails.  A successful match is discarded.  If None
@@ -91,7 +99,12 @@ class LineAwareConfiguration(Configuration):
             monitors.append(block_monitor(block_start))
         if alphabet is None:
             alphabet = UnicodeAlphabet.instance()
-        alphabet = LineAwareAlphabet(alphabet)
+        if not parser_factory:
+            if use_blocks:
+                parser_factory = make_hide_sol_eol_parser
+            else:
+                parser_factory = make_str_parser
+        alphabet = LineAwareAlphabet(alphabet, parser_factory)
         rewriters = [fix_arguments(BaseRegexp, alphabet=alphabet),
                      fix_arguments(BaseToken, alphabet=alphabet)] + \
                     ([fix_arguments(Block, policy=block_policy)] 

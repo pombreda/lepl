@@ -24,11 +24,10 @@ converted to strings using str().
 from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
     Option, _Choice
 from lepl.config import Configuration
-from lepl.support import format, str
+from lepl.support import format, str, LogMixin
 
 
-
-def make_str_parser(alphabet):
+class StrParser(LogMixin):
     '''
     Construct a parser for string based expressions.
     
@@ -55,56 +54,127 @@ def make_str_parser(alphabet):
     automatic escaping of given text easier.
     '''
     
-    # Avoid dependency loops
-    from lepl.functions import Drop, Eos, AnyBut, Upper
-    from lepl.matchers import Any, Lookahead, Literal, Delayed
+    def __init__(self, alphabet):
+        super(StrParser, self).__init__()
+        self.alphabet = alphabet
+        
+    def dup(self, x):
+        '''
+        Create an interval from a single character.
+        '''
+        return (self.alphabet.from_char(x), self.alphabet.from_char(x))
     
-    dup = lambda x: (alphabet.from_char(x), alphabet.from_char(x))
-    tup = lambda x: (alphabet.from_char(x[0]), alphabet.from_char(x[1]))
-    dot = lambda x: (alphabet.min, alphabet.max)
-    # Character needed here to ensure intervals passed to invert are ordered 
-    invert = lambda x: alphabet.invert(Character(x, alphabet))
-    sequence = lambda x: Sequence(x, alphabet)
-    repeat = lambda x: Repeat(x, alphabet)
-    repeat2 = lambda x: sequence([sequence(x), Repeat(x, alphabet)])
-    option = lambda x: Option(x, alphabet)
-    choice = lambda x: Choice(x, alphabet)
-    character = lambda x: Character(x, alphabet)
-    extension = alphabet.extension
+    def tup(self, x):
+        '''
+        Create an interval from a tuple.
+        '''
+        return (self.alphabet.from_char(x[0]), self.alphabet.from_char(x[1]))
     
-    # these two definitions enforce the conditions above, providing only
-    # special characters appear as literals in the grammar
-    escaped  = Drop(alphabet.escape) + Any(alphabet.escaped)
-    raw      = ~Lookahead(alphabet.escape) + AnyBut(alphabet.escaped)
+    def dot(self, _):
+        '''
+        Create a "complete" interval.
+        '''
+        return (self.alphabet.min, self.alphabet.max)
     
-    single   = escaped | raw
+    def invert(self, x):
+        '''
+        Invert an interval.
+        '''
+        # Character needed here to ensure intervals passed to invert are ordered 
+        return self.alphabet.invert(Character(x, self.alphabet))
     
-    any_     = Literal('.')                                     >> dot
-    letter   = single                                           >> dup
-    pair     = single & Drop('-') & single                      > tup
-    extend   = (Drop('(*') & Upper()[1:,...] & Drop(')'))       >> extension
+    def sequence(self, x):
+        '''
+        Create a sequence.
+        '''
+        return Sequence(x, self.alphabet)
     
-    interval = pair | letter | extend
-    brackets = Drop('[') & interval[1:] & Drop(']')
-    inverted = Drop('[^') & interval[1:] & Drop(']')            >= invert      
-    char     = inverted | brackets | letter | any_ | extend     > character
+    def star(self, x):
+        '''
+        Repeat a sub-expression.
+        '''
+        return Repeat(x, self.alphabet)
+    
+    def plus(self, x):
+        '''
+        Repeat a sub-expression.
+        '''
+        return self.sequence([self.sequence(x), self.star(x)])
+    
+    def option(self, x):
+        '''
+        Make a sub-expression optional.
+        '''
+        return Option(x, self.alphabet)
+    
+    def choice(self, x):
+        '''
+        Construct a choice from a list of sub-expressions.
+        '''
+        return Choice(x, self.alphabet)
+    
+    def char(self, x):
+        '''
+        Construct a character from an interval (pair).
+        '''
+        return Character(x, self.alphabet)
+    
+    def extend(self, x):
+        '''
+        Delegate a character extension to the alphabet.
+        '''
+        return self.alphabet.extension(x)
+    
+    def build(self):
+        '''
+        Construct the parser.
+        '''
+        
+        # Avoid dependency loops
+        from lepl.functions import Drop, Eos, AnyBut, Upper
+        from lepl.matchers import Any, Lookahead, Literal, Delayed
+    
+        # these two definitions enforce the conditions above, providing only
+        # special characters appear as literals in the grammar
+        escaped  = Drop(self.alphabet.escape) + Any(self.alphabet.escaped)
+        raw      = ~Lookahead(self.alphabet.escape) + \
+                        AnyBut(self.alphabet.escaped)
+        
+        single   = escaped | raw
+        
+        any_     = Literal('.')                                  >> self.dot
+        letter   = single                                        >> self.dup
+        pair     = single & Drop('-') & single                   > self.tup
+        extend   = (Drop('(*') & Upper()[1:,...] & Drop(')'))    >> self.extend
+        
+        interval = pair | letter | extend
+        brackets = Drop('[') & interval[1:] & Drop(']')
+        inverted = Drop('[^') & interval[1:] & Drop(']')         >= self.invert      
+        char     = inverted | brackets | letter | any_ | extend  > self.char
+    
+        item     = Delayed()
+        
+        seq      = (char | item)[0:]                             > self.sequence
+        group    = Drop('(') & seq & Drop(')')
+        alts     = Drop('(') & seq[2:, Drop('|')] & Drop(')')    > self.choice
+        star     = (alts | group | char) & Drop('*')             > self.star
+        plus     = (alts | group | char) & Drop('+')             > self.plus
+        opt      = (alts | group | char) & Drop('?')             > self.option
+        
+        item    += alts | group | star | plus | opt
+        
+        expr     = (char | item)[:] & Drop(Eos())
+    
+        # Empty config here avoids loops if the default config includes
+        # references to alphabets
+        return expr.string_parser(config=Configuration())
 
-    item     = Delayed()
-    
-    seq      = (char | item)[0:]                                > sequence
-    group    = Drop('(') & seq & Drop(')')
-    alts     = Drop('(') & seq[2:, Drop('|')] & Drop(')')       > choice
-    star     = (alts | group | char) & Drop('*')                > repeat
-    plus     = (alts | group | char) & Drop('+')                > repeat2
-    opt      = (alts | group | char) & Drop('?')                > option
-    
-    item    += alts | group | star | plus | opt
-    
-    expr     = (char | item)[:] & Drop(Eos())
 
-    # Empty config here avoids loops if the default config includes
-    # references to alphabets
-    return expr.string_parser(config=Configuration())
+def make_str_parser(alphabet):
+    '''
+    Create a parser.
+    '''
+    return StrParser(alphabet).build()
 
 
 class StrAlphabet(Alphabet):

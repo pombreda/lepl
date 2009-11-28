@@ -62,7 +62,7 @@ class TextTest(TestCase):
         simple = TLine(expression)
         empty = TLine(Empty())
         block = TLine(fundef) & Block(statement[:])
-        statement += Trace((simple | empty | block) > list)
+        statement += (simple | empty | block) > list
 
         return statement[:].string_parser(
                     LineAwareConfiguration(block_policy=2))
@@ -119,7 +119,7 @@ class TextStarTest(TestCase):
         simple = TLine(expression)
         empty = TLine(Empty())
         block = TLine(fundef) & Block(statement[:])
-        statement += Trace((simple | empty | block) > list)
+        statement += (simple | empty | block) > list
 
         return statement[:].string_parser(
                     LineAwareConfiguration(block_policy=2))

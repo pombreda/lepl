@@ -28,13 +28,14 @@ Tests for the lepl.offside.regexp module.
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
-#from lepl.memo import LMemo
-#from lepl.rewriters import memoize
+from lepl.memo import LMemo
+from lepl.rewriters import memoize
 from lepl.offside.config import LineAwareConfiguration
 from lepl.offside.matchers import BLine
 from lepl.offside.regexp import LineAwareAlphabet, SOL, EOL
 from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import DfaRegexp
+from lepl.regexp.str import make_str_parser
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.support import str
 from lepl.trace import TraceResults
@@ -49,41 +50,21 @@ class RegexpTest(TestCase):
         result = list(match.match_string('abc', config))[0][0]
         assert result == ['ab'], result
         
-        # these are waiting on [^...] for line aware automatically
-        # excluding ^ and $
-        
-#    def test_invert_bug_2(self):
-#        #basicConfig(level=DEBUG)
-#        bad = BLine(Token('[^a]'))
-#        parser = bad.string_parser(
-#            LineAwareConfiguration(block_policy=2, 
-#                                   rewriters=[memoize(LMemo)]))
-#        result = parser('123')
-#        assert result == ['123'], result
-#        
-#    def test_invert_bug_3(self):
-#        #basicConfig(level=DEBUG)
-#        bad = BLine(Token(str('[^a]')))
-#        parser = bad.string_parser(
-#            LineAwareConfiguration(block_policy=2, 
-#                                   rewriters=[memoize(LMemo)]))
-#        result = parser('123')
-#        assert result == ['123'], result
-#        
-#    def test_invert_bug_4(self):
-#        #basicConfig(level=DEBUG)
-#        bad = BLine(Token('[^a]*'))
-#        parser = bad.string_parser(
-#            LineAwareConfiguration(block_policy=2, 
-#                                   rewriters=[memoize(LMemo)]))
-#        result = parser('123')
-#        assert result == ['123'], result
+    def test_invert_bug_4(self):
+        #basicConfig(level=DEBUG)
+        bad = BLine(Token('[^a]*'))
+        parser = bad.string_parser(
+            LineAwareConfiguration(block_policy=2, 
+                                   rewriters=[memoize(LMemo)]))
+        result = parser('123')
+        assert result == ['123'], result
         
     def test_invert_bug_5(self):
         #basicConfig(level=DEBUG)
         bad = BLine(Token('[^(*SOL)(*EOL)a]*'))
         parser = bad.string_parser(
             LineAwareConfiguration(block_policy=2, 
+                                   parser_factory=make_str_parser,
                                    rewriters=[],
                                    monitors=[TraceResults(True)]))
         result = parser('123')
@@ -94,50 +75,58 @@ class RegexpTest(TestCase):
         bad = BLine(Token(str('[^(*SOL)(*EOL)a]*')))
         parser = bad.string_parser(
             LineAwareConfiguration(block_policy=2, 
+                                   parser_factory=make_str_parser, 
                                    rewriters=[],
                                    monitors=[TraceResults(True)]))
         result = parser(str('123'))
         assert result == [str('123')], result
         
     def test_match_1(self):
-        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
+        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance(), 
+                                     make_str_parser)
         expr = Compiler.single(alphabet, '[a]').nfa()
         result = list(expr.match(str('a123')))
         assert result == [(str('label'), str('a'), str('123'))], result
         
     def test_match_2(self):
-        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
+        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance(), 
+                                     make_str_parser)
         expr = Compiler.single(alphabet, '[^a]').nfa()
         result = list(expr.match(str('123a')))
         assert result == [(str('label'), str('1'), str('23a'))], result
         
     def test_match_3(self):
-        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
+        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance(), 
+                                     make_str_parser)
         expr = Compiler.single(alphabet, '[^a]*').dfa()
         result = list(expr.match(str('123a')))
         assert result == [[str('label')], str('123'), str('a')], result
         
     def test_match_4(self):
-        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
+        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance(), 
+                                     make_str_parser)
         expr = Compiler.single(alphabet, '[^a]*').dfa()
         result = list(expr.match([str('1'), str('a')]))
         assert result == [[str('label')], [str('1')], [str('a')]], result
         
     def test_match_5(self):
-        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
+        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance(), 
+                                     make_str_parser)
         expr = Compiler.single(alphabet, '[^a]*').dfa()
         result = list(expr.match([SOL, str('1'), str('a')]))
         assert result == [[str('label')], [SOL, str('1')], [str('a')]], result
         
     def test_match_6(self):
-        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
+        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance(), 
+                                     make_str_parser)
         expr = Compiler.single(alphabet, '[^(*SOL)a]*').dfa()
         result = list(expr.match([SOL, str('1'), str('a')]))
         assert result == [[str('label')], [], [SOL, str('1'), str('a')]], \
             result
 
     def test_match_7(self):
-        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
+        alphabet = LineAwareAlphabet(UnicodeAlphabet.instance(), 
+                                     make_str_parser)
         expr = Compiler.single(alphabet, '[^(*SOL)(*EOL)a]*').dfa()
         result = list(expr.match([str('1'), EOL]))
         assert result == [[str('label')], [str('1')], [EOL]], \

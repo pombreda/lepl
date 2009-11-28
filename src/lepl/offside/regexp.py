@@ -23,7 +23,7 @@ and end.
 
 from lepl.offside.support import LineAwareError
 from lepl.regexp.core import Character
-from lepl.regexp.str import StrAlphabet, make_str_parser
+from lepl.regexp.str import StrAlphabet, StrParser
 from lepl.support import format, str
 
 
@@ -105,13 +105,13 @@ class LineAwareAlphabet(StrAlphabet):
     Extend an alphabet to include SOL and EOL tokens.
     '''
     
-    def __init__(self, alphabet):
+    def __init__(self, alphabet, parser_factory):
         if not isinstance(alphabet, StrAlphabet):
             raise LineAwareError(
                 format('Only StrAlphabet subclasses supported: {0}/{1}',
                        alphabet, type(alphabet).__name__))
         super(LineAwareAlphabet, self).__init__(SOL, EOL,
-                                parser_factory=make_str_parser)
+                                                parser_factory=parser_factory)
         self.base = alphabet
         self.extensions = {START: SOL, END: EOL}
         
@@ -154,3 +154,42 @@ class LineAwareAlphabet(StrAlphabet):
         return super(LineAwareAlphabet, self).join(
                     filter(lambda x: x not in (SOL, EOL), chars))
             
+            
+class HideSolEolParser(StrParser):
+    '''
+    Modify the parser to hide SOL and EOL from users (if you want to avoid
+    this, go ahead and use StrParser with the line aware alphabet).
+    '''
+    
+    def __init__(self, alphabet):
+        super(HideSolEolParser, self).__init__(alphabet)
+    
+    def dot(self, _):
+        '''
+        Create a "complete" interval.
+        '''
+        return (self.alphabet.base.min, self.alphabet.base.max)
+    
+    def invert(self, x):
+        '''
+        Invert an interval.
+        '''
+        char = Character(x, self.alphabet)
+        intervals = list(char)
+        # if the interval already includes SOL or EOL then something odd is
+        # happening and we just use the usual alphabet
+        if intervals[0][0] == self.alphabet.min or \
+                intervals[-1][1] == self.alphabet.max:
+            self._warn(format('Using {0!s} with explicit markers.',
+                              self.__class__))
+            return self.alphabet.invert(char)
+        # otherwise, avoid introducing them
+        else:
+            return self.alphabet.base.invert(char)
+    
+
+def make_hide_sol_eol_parser(alphabet):
+    '''
+    Create a new parser.
+    '''
+    return HideSolEolParser(alphabet).build()

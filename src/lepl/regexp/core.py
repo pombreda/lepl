@@ -150,7 +150,9 @@ class Alphabet(LogMixin, _Alphabet):
     
     def extension(self, text):
         '''
-        Called with the contents of (*...).
+        This is called for extensions for the form (*NAME) where NAME is any
+        sequence of capitals.  It should return a character range.  Further
+        uses of (*...) are still to be decided.
         '''
         raise RegexpError(format('Extension {0!r} not supported by {1!s}',
                                  text, self.__class__))
