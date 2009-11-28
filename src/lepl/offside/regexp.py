@@ -137,12 +137,12 @@ class LineAwareAlphabet(StrAlphabet):
     
     def extension(self, text):
         '''
-        Supply the extensions.
+        This is called for extensions for the form (*NAME) where NAME is any
+        sequence of capitals.  It should return a character range.  Further
+        uses of (*...) are still to be decided.
         '''
         if text in self.extensions:
             extn = self.extensions[text]
-#            return Character([(extn, extn)], self)
-# TODO
             return (extn, extn)
         else:
             return super(LineAwareAlphabet, self).extension(text)

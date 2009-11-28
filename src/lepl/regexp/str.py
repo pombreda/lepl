@@ -56,7 +56,7 @@ def make_str_parser(alphabet):
     '''
     
     # Avoid dependency loops
-    from lepl.functions import Drop, Eos, AnyBut
+    from lepl.functions import Drop, Eos, AnyBut, Upper
     from lepl.matchers import Any, Lookahead, Literal, Delayed
     
     dup = lambda x: (alphabet.from_char(x), alphabet.from_char(x))
@@ -82,7 +82,7 @@ def make_str_parser(alphabet):
     any_     = Literal('.')                                     >> dot
     letter   = single                                           >> dup
     pair     = single & Drop('-') & single                      > tup
-    extend   = (Drop('(*') & AnyBut(')')[1:,...] & Drop(')'))   >> extension
+    extend   = (Drop('(*') & Upper()[1:,...] & Drop(')'))       >> extension
     
     interval = pair | letter | extend
     brackets = Drop('[') & interval[1:] & Drop(']')

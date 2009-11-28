@@ -318,11 +318,14 @@ class Lexer(NamespaceMixin, BaseMatcher):
         '''
         super(Lexer, self).__init__(TOKENS, TokenNamespace)
         if t_regexp is None:
+            unique = {}
             for token in tokens:
                 token.compile(alphabet)
                 self._debug(format('Token: {0}', token))
-            t_regexp = Compiler.multiple(
-                        alphabet, [(t.id_, t.regexp) for t in tokens]).dfa()
+                # this just reduces the work for the regexp compiler
+                unique[token.id_] = token
+            t_regexp = Compiler.multiple(alphabet, 
+                            [(t.id_, t.regexp) for t in unique.values()]).dfa()
         if s_regexp is None and discard is not None:
             s_regexp = Compiler.single(alphabet, discard).dfa()
         self._arg(matcher=matcher)

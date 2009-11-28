@@ -24,7 +24,6 @@ from io import StringIO
 
 from lepl.lexer.stream import TokenSource
 from lepl.offside.lexer import START
-from lepl.offside.regexp import Marker
 from lepl.offside.support import LineAwareError, OffsideError
 from lepl.stream import DefaultStreamFactory, LineSource, sample
 from lepl.support import str
@@ -96,15 +95,6 @@ def top_and_tail(alphabet, lines):
     return map(extend, lines)
         
         
-def join(lines):
-    '''
-    A join that drops the SOL and EOL tokens from the list of characters.
-    '''
-    # pylint: disable-msg=W0141
-    return ''.join([''.join(filter(lambda x: not isinstance(x, Marker), line))
-                    for line in lines])
-
-        
 # pylint: disable-msg=E1002
 # pylint can't find ABCs
 class LineAwareSource(LineSource):
@@ -113,7 +103,10 @@ class LineAwareSource(LineSource):
     SOL and EOL tokens.
     '''
     
-    def __init__(self, alphabet, lines, description=None, join_=join):
+    def __init__(self, alphabet, lines, description=None, join_=None):
+        if not join_:
+            join_ = lambda lines: \
+                ''.join([alphabet.join(line) for line in lines])
         super(LineAwareSource, self).__init__(
                         top_and_tail(alphabet, lines),
                         repr(lines) if description is None else description,

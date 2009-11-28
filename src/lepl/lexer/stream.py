@@ -40,8 +40,14 @@ def lexed_simple_stream(tokens, discard, stream):
         try:
             while stream:
                 try:
-                    (terminals, match, stream) = tokens.match(stream)
-                    log.debug(format('Token: {0!r} {1!r}', terminals, match))
+                    (terminals, match, stream_after) = tokens.match(stream)
+                    if stream_after == stream:
+                        log.warn('Tokens match the empty string!')
+                        raise TypeError()
+                    else:
+                        stream = stream_after
+                    log.debug(format('Token: {0!r} {1!r} {2!r}', 
+                                     terminals, match, stream))
                     yield (terminals, match)
                 except TypeError:
                     (terminals, _size, stream) = discard.size_match(stream)
@@ -108,8 +114,12 @@ def lexed_location_stream(tokens, discard, stream, source=None):
                 try:
                     (terminals, size, stream_after) = \
                             tokens.size_match(stream_before)
+                    if stream_after == stream_before:
+                        log.warn('Tokens match the empty string!')
+                        raise TypeError()
+                    log.debug(format('Token: {0!r} {1!r} {2!r}', 
+                                     terminals, size, stream_before))
                     # stream_before here to give correct location
-                    log.debug(format('Token: {0!r} {1!r}', terminals, size))
                     yield (terminals, size, stream_before)
                     stream_before = stream_after
                 except TypeError:
