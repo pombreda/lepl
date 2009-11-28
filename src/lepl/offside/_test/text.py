@@ -38,7 +38,7 @@ class TextTest(TestCase):
         # we still need one token, which matches "all the text"
         # for version 3.3.x we must exclude the line start + end
         # TODO - why does this break with * instead of +?
-        Text = Token('[^^$\n]+')
+        Text = Token('[^(*SOL)(*EOL)\n]+')
         
         def TLine(contents):
             '''

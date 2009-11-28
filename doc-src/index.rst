@@ -135,7 +135,8 @@ Contents
    intro
    manual
    support
-
+   faq
+   
 
 Indices and tables
 ------------------

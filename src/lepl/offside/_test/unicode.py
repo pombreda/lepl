@@ -45,7 +45,7 @@ class RegexpTest(TestCase):
     def test_invert_bug_1(self):
         #basicConfig(level=DEBUG)
         config = LineAwareConfiguration(monitors=[TraceResults(True)])
-        match = DfaRegexp('^[^c]*')
+        match = DfaRegexp('(*SOL)[^c]*')
         result = list(match.match_string('abc', config))[0][0]
         assert result == ['ab'], result
         
@@ -81,7 +81,7 @@ class RegexpTest(TestCase):
         
     def test_invert_bug_5(self):
         #basicConfig(level=DEBUG)
-        bad = BLine(Token('[^^$a]*'))
+        bad = BLine(Token('[^(*SOL)(*EOL)a]*'))
         parser = bad.string_parser(
             LineAwareConfiguration(block_policy=2, 
                                    rewriters=[],
@@ -91,7 +91,7 @@ class RegexpTest(TestCase):
         
     def test_invert_bug_6(self):
         #basicConfig(level=DEBUG)
-        bad = BLine(Token(str('[^^$a]*')))
+        bad = BLine(Token(str('[^(*SOL)(*EOL)a]*')))
         parser = bad.string_parser(
             LineAwareConfiguration(block_policy=2, 
                                    rewriters=[],
@@ -131,14 +131,14 @@ class RegexpTest(TestCase):
         
     def test_match_6(self):
         alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
-        expr = Compiler.single(alphabet, '[^^a]*').dfa()
+        expr = Compiler.single(alphabet, '[^(*SOL)a]*').dfa()
         result = list(expr.match([SOL, str('1'), str('a')]))
         assert result == [[str('label')], [], [SOL, str('1'), str('a')]], \
             result
 
     def test_match_7(self):
         alphabet = LineAwareAlphabet(UnicodeAlphabet.instance())
-        expr = Compiler.single(alphabet, '[^^$a]*').dfa()
+        expr = Compiler.single(alphabet, '[^(*SOL)(*EOL)a]*').dfa()
         result = list(expr.match([str('1'), EOL]))
         assert result == [[str('label')], [str('1')], [EOL]], \
             result

@@ -147,6 +147,13 @@ class Alphabet(LogMixin, _Alphabet):
             inverted.append((self.after(last), self.max))
         self._debug(format('invert {0} -> {1}', intervals, inverted))
         return inverted
+    
+    def extension(self, text):
+        '''
+        Called with the contents of (*...).
+        '''
+        raise RegexpError(format('Extension {0!r} not supported by {1!s}',
+                                 text, self.__class__))
 
     @abstractmethod
     def fmt_sequence(self, children):
@@ -653,10 +660,10 @@ class NfaPattern(LogMixin):
     
     def match(self, stream):
         '''
-        Create a matcher from the table.
+        Use the table to match a stream.
         
         The stack holds the current state, which is consumed from left to
-        right.  The state is:
+        right.  An entry on the stack contains:
         
           - map_ - a map from character to [(dest state, terminals)]
 
@@ -665,12 +672,10 @@ class NfaPattern(LogMixin):
 
           - empties - empty transitions for this state
 
-          - match - the current match, as a list of tokens consumed from the stream
+          - match - the current match, as a list of tokens consumed from the 
+          stream
 
           - stream - the current stream
-
-        map_ and matched are not both necessary (they are exclusive), but it 
-        simplifies the algorithm to separate them.
         '''
         self._debug(str(self.__table))
         stack = deque()
@@ -684,7 +689,7 @@ class NfaPattern(LogMixin):
                 pass
             elif map_:
                 # re-add empties with old match
-                stack.append((None, [], empties, match, stream))
+                stack.append((None, None, empties, match, stream))
                 # and try matching a character
                 if stream:
                     matched = map_[stream[0]]

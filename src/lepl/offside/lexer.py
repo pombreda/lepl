@@ -43,7 +43,7 @@ class Indent(BaseToken):
         super(Indent, self).__init__(content=content, id_=id_, 
                                           alphabet=alphabet, complete=complete, 
                                           compiled=compiled)
-        self.regexp = '^[ \t]*'
+        self.regexp = '(*SOL)[ \t]*'
                 
         
 class Eol(BaseToken):
@@ -58,7 +58,7 @@ class Eol(BaseToken):
         super(Eol, self).__init__(content=content, id_=id_, 
                                   alphabet=alphabet, complete=complete, 
                                   compiled=compiled)
-        self.regexp = '$'
+        self.regexp = '(*EOL)'
 
 
 class BIndent(Indent):

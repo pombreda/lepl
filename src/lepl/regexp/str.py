@@ -70,6 +70,7 @@ def make_str_parser(alphabet):
     option = lambda x: Option(x, alphabet)
     choice = lambda x: Choice(x, alphabet)
     character = lambda x: Character(x, alphabet)
+    extension = alphabet.extension
     
     # these two definitions enforce the conditions above, providing only
     # special characters appear as literals in the grammar
@@ -81,11 +82,12 @@ def make_str_parser(alphabet):
     any_     = Literal('.')                                     >> dot
     letter   = single                                           >> dup
     pair     = single & Drop('-') & single                      > tup
+    extend   = (Drop('(*') & AnyBut(')')[1:,...] & Drop(')'))   >> extension
     
-    interval = pair | letter
+    interval = pair | letter | extend
     brackets = Drop('[') & interval[1:] & Drop(']')
     inverted = Drop('[^') & interval[1:] & Drop(']')            >= invert      
-    char     = inverted | brackets | letter | any_              > character
+    char     = inverted | brackets | letter | any_ | extend     > character
 
     item     = Delayed()
     

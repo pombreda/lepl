@@ -90,7 +90,7 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
 def Apply(matcher, function, raw=False, args=False):
     '''
     Apply an arbitrary function to the results of the matcher 
-    (**>**, **>=**, **\***).
+    (**>**, **>=**).
     
     Apply can be used via the standard operators by placing ``>`` 
     (or ``>=`` to set ``raw=True``, or ``*`` to set ``args=True``) 
@@ -112,6 +112,8 @@ def Apply(matcher, function, raw=False, args=False):
     grouping.  This is necessary because Python's ``list()`` is an
     identity for lists, but we want it to add an extra level of grouping
     so that nested S-expressions are easy to generate.
+    
+    See also `Map`.
 
     :Parameters:
 
@@ -273,7 +275,9 @@ def Map(matcher, function):
     Apply an arbitrary function to each of the tokens in the result of the 
     matcher (**>>**).  If the function is a name, named pairs are created 
     instead.  It can be used indirectly by placing ``>>`` to the right of the 
-    matcher.    
+    matcher.
+    
+    See also `Apply`.
     '''
     # list() necessary so we can use '+' on result
     if isinstance(function, basestring):

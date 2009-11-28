@@ -70,7 +70,7 @@ Cache the parser to allow efficient re-use.
 
 def binary_single_parser(label, text):
     '''
-    Parse a binary regular Compiler, returning the associated Regexp.
+    Parse a binary regular expression, returning the associated Regexp.
     '''
     return Compiler.single(BINARY,
                 Labelled(label, __compiled_binary_parser(text), BINARY))
@@ -78,7 +78,7 @@ def binary_single_parser(label, text):
 
 def binary_parser(*regexps):
     '''
-    Parse a set of binary regular Compilers, returning the associated Regexp.
+    Parse a set of binary regular expressions, returning the associated Regexp.
     '''
     return Compiler.multiple(BINARY,
                 [Labelled(label, __compiled_binary_parser(text), BINARY)

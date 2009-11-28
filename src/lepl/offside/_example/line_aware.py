@@ -33,9 +33,9 @@ class LineAwareExamples(Example):
     
     def test_regexp(self):
         #basicConfig(level=DEBUG)
-        start = DfaRegexp('^ *')
+        start = DfaRegexp('(*SOL) *')
         words = Word()[:,~Space()[:]] > list
-        end = DfaRegexp('$')
+        end = DfaRegexp('(*EOL)')
         line = start & words & end
         parser = line.string_parser(LineAwareConfiguration())
         self.examples([(lambda: parser('  abc def'), 

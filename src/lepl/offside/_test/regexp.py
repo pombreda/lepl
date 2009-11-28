@@ -37,6 +37,6 @@ class RegexpTest(TestCase):
     def test_start(self):
         #basicConfig(level=DEBUG)
         config = LineAwareConfiguration(monitors=[TraceResults(True)])
-        match = DfaRegexp('^a*')
+        match = DfaRegexp('(*SOL)a*')
         result = list(match.match_string('abc', config))[0][0]
         assert result == ['a'], result
