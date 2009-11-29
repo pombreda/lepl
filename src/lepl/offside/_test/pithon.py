@@ -44,10 +44,9 @@ class PithonTest(TestCase):
         function = word[1:] & ~symbol('(') & args & ~symbol(')')
 
         block = Delayed()
-        # that Empty() works below is strange - it's not a token!
-        # i can see why it works (it really doesn't care what the stream
-        # is), but not why it's not flagged as an error...!?!
-        line = (CLine(statement) | block | Line(Empty())) > list
+        blank = ~Line(Empty())
+        comment = ~Line(Token('#.*'))
+        line = (CLine(statement) | block | blank | comment) > list
         block += CLine((function | statement) & introduce) & Block(line[1:])
         
         program = (line[:] & Eos())
@@ -118,12 +117,48 @@ and this is another
                            'over', 'many', 'actual', 'lines'], 
                            ['and', 'this', 'is', 'another']], result
                            
+    def test_blanks(self):
+        #basicConfig(level=DEBUG)
+        result = self.parser('''
+def foo():
+  a blank line can be
+  
+  inside a block
+  
+or can separate blocks
+''')
+        assert result == [[], 
+                          ['def', 'foo', (), 
+                           ['a', 'blank', 'line', 'can', 'be'], 
+                           [], 
+                           ['inside', 'a', 'block'], 
+                           []
+                          ], 
+                          ['or', 'can', 'separate', 'blocks']
+                         ], result
+                           
+    def test_comments(self):
+        #basicConfig(level=DEBUG)
+        result = self.parser('''
+# a comment here
+def foo():
+  # one here
+  contents
+# wrong indentation!
+  more content''')
+        assert result == [[], [], 
+                          ['def', 'foo', (), 
+                           [], 
+                           ['contents'], [], 
+                           ['more', 'content']]], result
+                           
     def test_all(self):
         #basicConfig(level=DEBUG)
         result = self.parser('''
 this is a grammar with a similar 
 line structure to python
 
+# it supports comments
 if something:
   then we indent
 else:
@@ -142,11 +177,15 @@ same for (argument,
           lists):
   which do not need the
   continuation marker
+  # and we can have blank lines inside a block:
+  
+  like this
 ''')
         assert result == \
         [ [], 
           ['this', 'is', 'a', 'grammar', 'with', 'a', 'similar'], 
           ['line', 'structure', 'to', 'python'], 
+          [], 
           [], 
           ['if', 'something', 
             ['then', 'we', 'indent']], 
@@ -161,4 +200,7 @@ same for (argument,
             []], 
           ['same', 'for', ('argument', 'lists'), 
             ['which', 'do', 'not', 'need', 'the'], 
-            ['continuation', 'marker']]], result
+            ['continuation', 'marker'],
+            [],
+            [],
+            ['like', 'this']]], result

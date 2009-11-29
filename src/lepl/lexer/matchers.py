@@ -69,6 +69,7 @@ NonToken.register(Any)
 NonToken.register(Literal)
 NonToken.register(Lookahead)
 NonToken.register(Regexp)
+# don't register Empty() here because it's actually useful as a token(!)
 
 
 class TokenNamespace(Namespace):
