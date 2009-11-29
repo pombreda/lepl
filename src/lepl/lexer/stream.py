@@ -42,8 +42,9 @@ def lexed_simple_stream(tokens, discard, stream):
                 try:
                     (terminals, match, stream_after) = tokens.match(stream)
                     if stream_after == stream:
-                        log.warn('Tokens match the empty string!')
-                        raise TypeError()
+                        raise RuntimeLexerError('Tokens matched an empty '
+                            'string.\nChange your token definitions so that '
+                            'they cannot be empty.')
                     else:
                         stream = stream_after
                     log.debug(format('Token: {0!r} {1!r} {2!r}', 
@@ -115,8 +116,9 @@ def lexed_location_stream(tokens, discard, stream, source=None):
                     (terminals, size, stream_after) = \
                             tokens.size_match(stream_before)
                     if stream_after == stream_before:
-                        log.warn('Tokens match the empty string!')
-                        raise TypeError()
+                        raise RuntimeLexerError('Tokens matched an empty '
+                            'string.\nChange your token definitions so that '
+                            'they cannot be empty.')
                     log.debug(format('Token: {0!r} {1!r} {2!r}', 
                                      terminals, size, stream_before))
                     # stream_before here to give correct location

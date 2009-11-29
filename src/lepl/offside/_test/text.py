@@ -28,17 +28,15 @@ from lepl import *
 
 
 class TextTest(TestCase):
-    
-    def parser(self):
+
+    def parser(self, regexp):
         '''
         Construct a parser that uses "offside rule" parsing, but which
         avoids using tokens in the grammar.
         '''
         
         # we still need one token, which matches "all the text"
-        # for version 3.3.x we must exclude the line start + end
-        # TODO - why does this break with * instead of +?
-        Text = Token('[^(*SOL)(*EOL)\n]+')
+        Text = Token(regexp)
         
         def TLine(contents):
             '''
@@ -67,74 +65,29 @@ class TextTest(TestCase):
         return statement[:].string_parser(
                     LineAwareConfiguration(block_policy=2))
         
-    def test_text(self):
-        parser = self.parser()
-        result = parser('''pass
+    def do_parse(self, parser):
+        return parser('''pass
 def foo():
   pass
   def bar():
     pass
 ''')
+        
+    def test_plus(self):
+        parser = self.parser('[^\n]+')
+        result = self.do_parse(parser)
         assert result == [['pass'], 
                           ['def', 'foo', '(', ')', ':', 
                            ['pass'], 
                            ['def', 'bar', '(', ')', ':', 
                             ['pass']]]], result
 
-
-class TextStarTest(TestCase):
-    '''
-    The above failed when '*' used in regexp.  This is because tokens matching
-    an empty string are not a good idea - we now catch this in the underlying
-    stream handling (a warning message is generated).
-    '''
-    
-    def parser(self):
-        '''
-        Construct a parser that uses "offside rule" parsing, but which
-        avoids using tokens in the grammar.
-        '''
-        
-        Text = Token('[^(*SOL)(*EOL)\n]*')
-        
-        def TLine(contents):
-            '''
-            A version of BLine() that takes text-based matchers.
-            '''
-            return BLine(Text(contents))
-        
-        # from here on we use TLine instead of BLine and don't worry about
-        # tokens.
-        
-        # first define the basic grammar
-        with Separator(~Space()[:]):
-            name = Word()
-            args = name[:, ',']
-            fundef = 'def' & name & '(' & args & ')' & ':'
-            # in reality we would have more expressions!
-            expression = Literal('pass') 
-        
-        # then define the block structure
-        statement = Delayed()
-        simple = TLine(expression)
-        empty = TLine(Empty())
-        block = TLine(fundef) & Block(statement[:])
-        statement += (simple | empty | block) > list
-
-        return statement[:].string_parser(
-                    LineAwareConfiguration(block_policy=2))
-        
-    def test_text(self):
+    def test_star(self):
         #basicConfig(level=DEBUG)
-        parser = self.parser()
-        result = parser('''pass
-def foo():
-  pass
-  def bar():
-    pass
-''')
-        assert result == [['pass'], 
-                          ['def', 'foo', '(', ')', ':', 
-                           ['pass'], 
-                           ['def', 'bar', '(', ')', ':', 
-                            ['pass']]]], result
+        parser = self.parser('[^\n]*')
+        try:
+            self.do_parse(parser)
+            assert False, 'Expected error'
+        except RuntimeLexerError:
+            pass
+        

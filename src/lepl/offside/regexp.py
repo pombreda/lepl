@@ -21,10 +21,10 @@ Extend regular expressions to be aware of additional tokens for line start
 and end.
 '''
 
-from lepl.offside.support import LineAwareError
+from lepl.offside.support import LineAwareError, OffsideError
 from lepl.regexp.core import Character
 from lepl.regexp.str import StrAlphabet, StrParser
-from lepl.support import format, str
+from lepl.support import format
 
 
 # pylint: disable-msg=W0105
@@ -180,8 +180,13 @@ class HideSolEolParser(StrParser):
         # happening and we just use the usual alphabet
         if intervals[0][0] == self.alphabet.min or \
                 intervals[-1][1] == self.alphabet.max:
-            self._warn(format('Using {0!s} with explicit markers.',
-                              self.__class__))
+            raise OffsideError(format('Using {0!s} with explicit markers.\n'
+                'Usually this means that you have (*SOL) or (*EOL) in a '
+                'regular expression.  This should not be necessary.  If you '
+                'do need to match those then you should disable their '
+                'automatic management by setting '
+                'parser_factory=make_str_parser in LineAwareConfiguration.',
+                self.__class__))
             return self.alphabet.invert(char)
         # otherwise, avoid introducing them
         else:
