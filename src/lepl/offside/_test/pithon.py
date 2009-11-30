@@ -31,6 +31,12 @@ class PithonTest(TestCase):
     @property
     def parser(self):
         
+        def rightmost(current, indent):
+           shift = len(indent[0])
+           if current >= shift:
+               raise StopIteration()
+           return shift
+        
         word = Token(Word(Lower()))
         continuation = Token(r'\\')
         symbol = Token(Any('()'))
@@ -51,8 +57,8 @@ class PithonTest(TestCase):
         
         program = (line[:] & Eos())
         return program.string_parser(
-                    LineAwareConfiguration(block_policy=2,
-                                         monitors=[TraceResults(True)]))
+                    LineAwareConfiguration(block_policy=rightmost,
+                                           monitors=[TraceResults(True)]))
     
     def test_blocks(self):
         #basicConfig(level=DEBUG)
@@ -63,9 +69,9 @@ ffjireofr(kfkorp, freopk):
   jifr fireo
   frefre jifoji
   jio frefre:
-    jiforejifre fiorej
-    jfore fire
-    jioj
+        jiforejifre fiorej
+        jfore fire
+        jioj
   jioj
 jiojio
 '''
@@ -149,7 +155,8 @@ def foo():
         assert result == [[], [], 
                           ['def', 'foo', (), 
                            [], 
-                           ['contents'], [], 
+                           ['contents'], 
+                           [], 
                            ['more', 'content']]], result
                            
     def test_all(self):
