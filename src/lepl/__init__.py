@@ -140,11 +140,12 @@ __all__ = [
         'raise_error',
         'Error',
         'throw',
-        # match
+        # matchers
         'Empty',
         'Repeat',
         'And',
         'Or',
+        'Join',
         'First',
         'Any',
         'Literal',
