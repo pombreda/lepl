@@ -54,7 +54,7 @@ ghijk:
         word = Token(Word(Lower()))
         statement = Delayed()
         simple = BLine(word[:])
-        empty = BLine(Empty())
+        empty = Line(Empty())
         block = BLine(word[:] & introduce) & Block(statement[:])
         statement += (simple | empty | block) > list
         parser = statement[:].string_parser(LineAwareConfiguration(block_policy=2))

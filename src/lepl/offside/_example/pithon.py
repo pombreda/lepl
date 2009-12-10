@@ -31,17 +31,12 @@ class PythonExample(Example):
     
     def test_python(self):
         
-        def rightmost(current, indent):
-           shift = len(indent[0])
-           if current >= shift:
-               raise StopIteration()
-           return shift
-        
         word = Token(Word(Lower()))
         continuation = Token(r'\\')
         symbol = Token(Any('()'))
         introduce = ~Token(':')
         comma = ~Token(',')
+        hash = Token('#.*')
         
         CLine = ContinuedBLineFactory(continuation)
         
@@ -51,7 +46,7 @@ class PythonExample(Example):
 
         block = Delayed()
         blank = ~Line(Empty())
-        comment = ~Line(Token('#.*'))
+        comment = ~Line(hash)
         line = Or((CLine(statement) | block) > list,
                   blank,
                   comment)

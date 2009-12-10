@@ -11,6 +11,9 @@ relative indentation of lines changes the meaning of a program.  There are
 also many simpler cases where a matcher should be applied to a single line (or
 several lines connected with a continuation character).
 
+At the end of this section is an :ref:`example <python_example>` that handles 
+indentation in a similar way to Python.
+
 There is nothing special about spaces and newline characters, of course, so in
 principle it was always possible to handle such grammars in LEPL, but in
 practice doing so was frustratingly complex.  The new extensions make things
@@ -64,13 +67,13 @@ The extra markers are also added to the alphabet used (Unicode by default), so
 that LEPL's regular expressions (the `DfaRegexp()
 <api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_ and `NfaRegexp()
 <api/redirect.html#lepl.regexp.matchers.NfaRegexp>`_ matchers) can match the
-start and end of lines (using the ``^`` and ``$`` symbols).
+start and end of lines (using ``(*SOL)`` and ``(*EOL)``).
 
 Here is an example showing the use of regular expressions::
 
-  >>> start = DfaRegexp('^ *')
+  >>> start = DfaRegexp('(*SOL) *')
   >>> words = Word()[:,~Space()[:]] > list
-  >>> end = DfaRegexp('$')
+  >>> end = DfaRegexp('(*EOL)')
   >>> line = start & words & end
   >>> parser = line.string_parser(LineAwareConfiguration())
   >>> parser('  abc def')
@@ -122,6 +125,15 @@ words.
 Lines and Continuations
 -----------------------
 
+.. note::
+
+  To make full use of the tools in this and the following sections you
+  must use :ref:`Tokens <lexer>`.  The source includes a short
+  `example <api/lepl.offside._test.text-pysrc.html#TextTest>`_
+  that allows simple (non-Token) matching within a line, but it
+  is very limited (with no support for extending matches over several lines,
+  for example).
+
 The `Line() <api/redirect.html#lepl.offside.matchers.Line>`_ matcher hides
 `Indent() <api/redirect.html#lepl.offside.lexer.Indent>`_ and `Eol()
 <api/redirect.html#lepl.offside.lexer.Eol>`_ behind a slightly simpler
@@ -156,7 +168,7 @@ entire line --- it just skips line breaks.  For an example that uses `Extend()
 section.
 
 
-.. index:: Block(), BLine()
+.. index:: Block(), BLine(), block_policy, rightmost, block_start
 
 Offside Rule and Blocks
 -----------------------
@@ -206,7 +218,7 @@ example::
   >>> statement = Delayed()
 
   >>> simple = BLine(word[:])
-  >>> empty = BLine(Empty())
+  >>> empty = Line(Empty())
   >>> block = BLine(word[:] & introduce) & Block(statement[:])
 
   >>> statement += (simple | empty | block) > list
@@ -227,11 +239,14 @@ example::
     ['vwx', 'yz']]]
 
 The core of the parser above is the three uses of `BLine()
-<api/redirect.html#lepl.offside.matchers.BLine>`_. The first, ``simple``, is a
-statement that fits in a single line.  The next, ``empty``, is an empty
-statement.  Finally, ``block`` defines a block statement as one that is
-introduced by a line that ends in ":" and then contains a series of statements
-that are indented relative to the first line.
+<api/redirect.html#lepl.offside.matchers.BLine>`_ and 
+`Line() <api/redirect.html#lepl.offside.matchers.Line>`_.  The first, 
+``simple``, is a statement that fits in a single line.  The next, ``empty``, 
+is an empty statement (this uses 
+`Line() <api/redirect.html#lepl.offside.matchers.Line>`_ because we don't care 
+about the indentation of blank lines.  Finally, ``block`` defines a block 
+statement as one that is introduced by a line that ends in ":" and then 
+contains a series of statements that are indented relative to the first line.
 
 So you can see that the `Block()
 <api/redirect.html#lepl.offside.matchers.Block>`_ matcher's job is to collect
@@ -241,8 +256,20 @@ matches a line if it is indented at the correct level.
 
 The ``block_policy`` parameter in `LineAwareConfiguration()
 <api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ indicates how
-many spaces are required for a single level of indentation.  The
+many spaces are required for a single level of indentation.  Alternatively,
+``rightmost`` will use whatever indentation appears in the source.  The
 ``block_start`` gives the initial indentation level (zero by default).
+
+.. note::
+
+  When blocks are used regular expressions are automatically modified to
+  exclude ``(*SOL)`` and ``(*EOL)``.  In general this means that LEPL simply
+  "does the right thing" and you don't to worry about modifying regular
+  expressions to match or exclude the line markers.
+  
+  However, if you do need to explicitly match markers, this behaviour can be
+  disabled by providing ``parser_factory=make_str_parser`` to the
+  `LineAwareConfiguration() <api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_. 
 
 
 .. index:: ContinuedBLineFactory()
@@ -262,68 +289,104 @@ continuation support for `BLine()
 <api/redirect.html#lepl.offside.matchers.ContinuedLineFactory>`_ described
 earlier.
 
-The following example shows many of these matchers being used in a grammar
-that has a Python--like structure::
 
-  >>> word = Token(Word(Lower()))
-  >>> continuation = Token(r'\\')
-  >>> symbol = Token(Any('()'))
-  >>> introduce = ~Token(':')
-  >>> comma = ~Token(',')
+.. index:: Python
+.. _python_example:
 
-  >>> CLine = ContinuedBLineFactory(continuation)
-                
-  >>> statement = Delayed()
+Python-Like Indentation
+-----------------------
 
-  >>> empty = Line(Empty())
-  >>> simple = CLine(word[1:])
-  >>> ifblock = CLine(word[1:] & introduce) & Block(statement[1:])
+This parser recognizes indentation in a similar way to Python:
 
-  >>> args = Extend(word[:, comma]) > tuple
-  >>> fundef = word[1:] & ~symbol('(') & args & ~symbol(')')
-  >>> function = CLine(fundef & introduce) & Block(statement[1:])
-        
-  >>> statement += (empty | simple | ifblock | function) > list
-        
-  >>> parser = statement[:].string_parser(LineAwareConfiguration(block_policy=2))
-  >>> parser('''
-  ... this is a grammar with a similar 
-  ... line structure to python
-  ... 
-  ... if something:
-  ...   then we indent
-  ... else:
-  ...   something else
-  ... 
-  ... def function(a, b, c):
-  ...   we can nest blocks:
-  ...     like this
-  ...   and we can also \
-  ...     have explicit continuations \
-  ...     with \
-  ... any \
-  ...       indentation
-  ... 
-  ... same for (argument,
-  ...           lists):
-  ...   which do not need the
-  ...   continuation marker
-  ... '''
-  [[], 
-   ['this', 'is', 'a', 'grammar', 'with', 'a', 'similar'],
-   ['line', 'structure', 'to', 'python'], 
-   []
-   ['if', 'something', 
-    ['then', 'we', 'indent']]
-   ['else', 
-    ['something', 'else'], 
-    []],
-   ['def', 'function', ('a', 'b', 'c'),
-    ['we', 'can', 'nest', 'blocks', 
-     ['like', 'this']],
-    ['and', 'we', 'can', 'also', 'have', 'explicit', 'continuations', 'with', 'any', 'indentation'], 
-    []],
-   ['same', 'for', ('argument', 'lists'),
-    ['which', 'do', 'not', 'need', 'the'],
-    ['continuation', 'marker']]]
+  * Blocks are defined by relative indentation
+  * The `\\` marker indicates that a line extends past a line break
+  * Some constructions (like parentheses) automatically allow a line
+    to extend past a line break
+  * Comments can have any indentation
+  
+(To keep the example simple there's only minimal parsing apart from the
+basic structure - a useful Python parser would obviously need much more work).
+  
+::
 
+    word = Token(Word(Lower()))
+    continuation = Token(r'\\')
+    symbol = Token(Any('()'))
+    introduce = ~Token(':')
+    comma = ~Token(',')
+    hash = Token('#.*')
+    
+    CLine = ContinuedBLineFactory(continuation)
+    
+    statement = word[1:]
+    args = Extend(word[:, comma]) > tuple
+    function = word[1:] & ~symbol('(') & args & ~symbol(')')
+
+    block = Delayed()
+    blank = ~Line(Empty())
+    comment = ~Line(hash)
+    line = Or((CLine(statement) | block) > list,
+              blank,
+              comment)
+    block += CLine((function | statement) & introduce) & Block(line[1:])
+    
+    program = (line[:] & Eos())
+    parser = program.string_parser(
+                LineAwareConfiguration(block_policy=rightmost))
+  
+When applied to input like::
+
+    # this is a grammar with a similar
+    # line structure to python
+
+    if something:
+      then we indent
+    else:
+        something else
+        # note a different indent size here
+
+    def function(a, b, c):
+      we can nest blocks:
+        like this
+      and we can also \
+        have explicit continuations \
+        with \
+    any \
+           indentation
+
+    same for (argument,
+                        lists):
+      which do not need the
+      continuation marker
+      # and we can have blank lines inside a block:
+
+      like this
+        # along with strangely placed comments
+      but still keep blocks tied together
+
+The following structure is generated::
+
+    [
+      ['if', 'something', 
+        ['then', 'we', 'indent']
+      ],
+      ['else', 
+        ['something', 'else'], 
+      ],
+      ['def', 'function', ('a', 'b', 'c'), 
+        ['we', 'can', 'nest', 'blocks', 
+          ['like', 'this']
+        ], 
+        ['and', 'we', 'can', 'also', 'have', 'explicit', 'continuations', 
+         'with', 'any', 'indentation'], 
+      ], 
+      ['same', 'for', ('argument', 'lists'), 
+        ['which', 'do', 'not', 'need', 'the'], 
+        ['continuation', 'marker'], 
+        ['like', 'this'], 
+        ['but', 'still', 'keep', 'blocks', 'tied', 'together']
+      ]
+    ]
+
+The important thing to notice here is that the nesting of lists in the final
+result matches the indentation of the original source.

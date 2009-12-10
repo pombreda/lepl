@@ -16,6 +16,9 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
+'''
+Test a Python-like grammar.
+'''
 
 # pylint: disable-msg=W0614, W0401, W0621, C0103, C0111, R0201, R0904
 #@PydevCodeAnalysisIgnore
@@ -30,12 +33,6 @@ class PithonTest(TestCase):
     
     @property
     def parser(self):
-        
-        def rightmost(current, indent):
-           shift = len(indent[0])
-           if current >= shift:
-               raise StopIteration()
-           return shift
         
         word = Token(Word(Lower()))
         continuation = Token(r'\\')

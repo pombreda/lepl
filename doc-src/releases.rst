@@ -76,16 +76,18 @@ Date        Version  Description
 2009-11-22  3.3.1    Regexp bugfixes.
 ----------  -------  -----------
 2009-11-22  3.3.2    Regexp bugfixes (correct self-test).
+----------  -------  -----------
+2009-12-10  3.3.3    Various small tweaks based on user feedback.
 ==========  =======  ===========
 
 
 .. release_3_3:
 
-3.3, 3.3.2
+3.3, 3.3.3
 ----------
 
-This supports :ref:`line--aware <offside>` parsing.  3.3.2 fixes bugs in the
-regular expression engine.
+This supports :ref:`line--aware <offside>` parsing.  3.3.3 includes various
+small improvements based on user-feedback.
 
 
 .. release_3_2:

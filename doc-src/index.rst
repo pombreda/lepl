@@ -10,7 +10,8 @@ LEPL - A Parser Library for Python 3 (and 2.6)
 
   * :ref:`Tutorial <tutorial>`
   * :ref:`Manual <manual>`
-  * :ref:`Download etc <support>`
+  * :ref:`Download and Support <support>`
+  * :ref:`FAQ <faq>`
 
 
 
@@ -121,7 +122,7 @@ left--recursive grammars, etc.  It is written and maintained by `Andrew Cooke
   <resources>`.
 
 * Support for the ":ref:`offside rule <offside>`" (significant indentation
-  levels).
+  levels) when using the lexer.
 
 
 .. _contents:

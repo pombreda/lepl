@@ -58,6 +58,13 @@ def constant_indent(n_spaces):
     return policy
 
 
+def rightmost(_current, indent):
+    '''
+    Another simple policy that matches whatever indent is used.
+    '''
+    return len(indent[0])
+
+
 # pylint: disable-msg=W0105
 # epydoc convention
 DEFAULT_TABSIZE = 8
@@ -83,7 +90,7 @@ class Block(OperatorMatcher):
     `Indent`, and set the global indent at that amount if it is larger
     than the current value.
     
-    A block will always match an `Indent`, but will not consumer it
+    A block will always match an `Indent`, but will not consume it
     (it will remain in the stream after the block has finished).
     
     The usual memoization of left recursive calls will not detect problems

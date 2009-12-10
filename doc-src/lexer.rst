@@ -5,9 +5,10 @@
 Lexer
 =====
 
-The use of LEPL's lexer is optional.  It has not been used in earlier chapters
-of this manual.  However, for many applications it will both simplify the
-grammar and give a more efficient parser.
+LEPL's lexer has not been used in earlier chapters of this manual.  However, 
+for many applications it will both simplify the grammar and give a more 
+efficient parser.  Some extensions, like :ref:`Line-Aware Parsing 
+<offside>`, assume its use. 
 
 
 Introduction

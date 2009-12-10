@@ -5,7 +5,7 @@
 # with a link to foo
 #   `foo() <api/redirect.html#lepl.foo>`_
 
-sed -i -r 's/``(Delayed|Literal|Columns|And|Or|Any)\(\)``/`\1() <api\/redirect.html#lepl.matchers.\1>`_/g' *.rst
+sed -i -r 's/``(Delayed|Literal|Columns|And|Or|Any|OperatorMatcher)\(\)``/`\1() <api\/redirect.html#lepl.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(Letter|Digit|Rexgexp|args|SkipTo|SignedFloat|Literal|Drop|Star|Space|Eos)\(\)``/`\1() <api\/redirect.html#lepl.functions.\1>`_/g' *.rst
 sed -i -r 's/``(Node)\(\)``/`\1() <api\/redirect.html#lepl.node.\1>`_/g' *.rst
 sed -i -r 's/``(Separator|SmartSeparator1)\(\)``/`\1() <api\/redirect.html#lepl.operators.\1>`_/g' *.rst

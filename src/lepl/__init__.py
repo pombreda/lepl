@@ -122,7 +122,7 @@ from lepl.matchers import *
 from lepl.offside.config import LineAwareConfiguration, LineAwareConfiguration
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
-    ContinuedBLineFactory, Extend, SOL, EOL
+    ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.rewriters import regexp_rewriter
@@ -259,10 +259,12 @@ __all__ = [
         'ContinuedBLineFactory',
         'Extend',
         'SOL',
-        'EOL'
+        'EOL',
+        'rightmost',
+        'constant_indent'
        ]
 
-__version__ = '3.3.2'
+__version__ = '3.3.3'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

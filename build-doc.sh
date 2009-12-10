@@ -12,5 +12,5 @@ rm -fr doc
 
 sphinx-build -b html doc-src/ doc
 
-epydoc -v -o doc/api --html --graph=all --docformat=restructuredtext -v --exclude="_test" --exclude="_example" --exclude="_experiment" --exclude="_trampoline" --exclude="_performance" --debug src/*
+epydoc -v -o doc/api --html --graph=all --docformat=restructuredtext -v --exclude="_experiment" --exclude="_performance" --exclude="_example" --debug src/*
 
