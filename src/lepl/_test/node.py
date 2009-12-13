@@ -150,4 +150,26 @@ class ErrorTest(TestCase):
             assert False, 'expected error'
         except SyntaxError as e:
             assert e.msg == "unexpected text: foo", e.msg
+
+
+class EqualityTest(TestCase):
     
+    def test_object_eq(self):
+        a = Node('a')
+        b = Node('a')
+        assert a != b
+        assert b != a
+        assert a is not b
+        assert b is not a
+        assert a == a
+        assert b == b
+        assert a is a
+        assert b is b
+        
+    def test_recursive_eq(self):
+        a = Node('a', Node('b'))
+        b = Node('a', Node('b'))
+        c = Node('a', Node('c'))
+        assert a._recursively_eq(b)
+        assert not a._recursively_eq(c)
+        

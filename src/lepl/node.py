@@ -118,9 +118,11 @@ class Node(LogMixin, ConstructorGraphNode):
     def __nonzero__(self):
         return self.__bool__()
     
-    def __eq__(self, other):
+    def _recursively_eq(self, other):
         '''
-        Note that eq compares contents, but hash uses object identity.
+        This compares two nodes by recursively comparing their contents.
+        It may be useful for testing, for example, but care should be taken
+        to avoid its use on cycles of objects.
         '''
         try:
             siblings = iter(other)
@@ -128,8 +130,13 @@ class Node(LogMixin, ConstructorGraphNode):
             return False
         for child in self:
             try:
-                if child != next(siblings):
-                    return False
+                sibling = next(siblings)
+                try:
+                    if not child._recursively_eq(sibling):
+                        return False
+                except AttributeError:
+                    if child != sibling:
+                        return False
             except StopIteration:
                 return False
         try:
@@ -138,12 +145,6 @@ class Node(LogMixin, ConstructorGraphNode):
         except StopIteration:
             return True
         
-    def __hash__(self):
-        '''
-        Note that eq compares contents, but hash uses object identity.
-        '''
-        return super(Node, self).__hash__()
-
     def _constructor_args(self):
         '''
         Regenerate the constructor arguments (returns (args, kargs)).
