@@ -68,7 +68,7 @@ Why isn't my parser matching the full expression? (2)
 
 *It seems Float matched the part it liked, and just ignored the rest.*
 
-The simple solution is to add ``Eos()`` to the end of the parser, so that the
+The simple solution is to add `Eos() <api/redirect.html#lepl.functions.Eos>`_ to the end of the parser, so that the
 entire stream must match.
 
 But it would be better to use tokens here.  You could have one token for

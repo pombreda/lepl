@@ -110,15 +110,15 @@ An alternative to the above, automatic management of generators, is to
 explicitly remove non--active generators as part of the search process.  This
 is similar to Prolog's *cut*, I believe.
 
-The `Commit() <api/redirect.html#lepl.functions.Commit>`_ matcher does this: it
+The `Commit() <api/redirect.html#lepl.matchers.Commit>`_ matcher does this: it
 discards all non--active generators.
 
-For `Commit() <api/redirect.html#lepl.functions.Commit>`_ to work the
+For `Commit() <api/redirect.html#lepl.matchers.Commit>`_ to work the
 `GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_ must
 maintain references to generators.  This occurs when the ``queue_len`` value
 is 0, which stores references but does not cause :ref:`limiting`.
 
-See also `First() <api/redirect.html#lepl.functions.First>`_.
+See also `First() <api/redirect.html#lepl.matchers.First>`_.
 
 If this is useful, I'd really appreciate a good, short example to put here.
 

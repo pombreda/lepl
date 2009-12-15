@@ -50,6 +50,8 @@ In short, then: use operators with care.  Many of the guidelines in the
 :ref:`style` chapter are intended to help manage these problems.
 
 
+.. index:: &, +, /, //, |, %
+
 Binary Operators Between Matchers
 ---------------------------------
 
@@ -73,11 +75,13 @@ Operator  Description
           `Or() <api/redirect.html#lepl.matchers.And>`_.
 --------  -----------
 ``%``     As ``|``, but without backtracking between functions.  
-          Identical to `First() <api/redirect.html#lepl.functions.First>`_.
+          Identical to `First() <api/redirect.html#lepl.matchers.First>`_.
 ========  ===========
 
 For a discussion of backtracking see :ref:`backtracking`.
 
+
+.. index:: ~, []
 
 Prefix And Postfix Operators On Matchers
 ----------------------------------------
@@ -99,6 +103,7 @@ Operator  Description
   ``~`` (see :ref:`lookahead`).
 
 
+.. index:: >=, >, >>, **, ^, args()
 .. _ge:
 
 Operators That Apply Functions To Results
@@ -114,6 +119,10 @@ Operator  Description
           If the function is a string a ``(string, result)`` pair is 
           generated instead.  
           Identical to `Apply() <api/redirect.html#lepl.functions.Apply>`_.
+--------  -----------
+``args``  Not an operator, but used with ``>`` to expand the list of results
+          to be arguments (like Python's ``*args`` convention).  For
+          example ``> args(myFunc)`` invokes ``myFunc(*results)``.
 --------  -----------
 ``>>``    As ``>``, but the function is applied to each result in turn 
           (instead of all results being supplied in a single list argument).
@@ -163,7 +172,7 @@ Note that there was no need to specify a separator in ``word[1:]``, and that
 this the argument of `Separator() <api/redirect.html#lepl.operators.Separator>`_ is a rare example of a string being
 coerced to something other than a `Literal()
 <api/redirect.html#lepl.matchers.Literal>`_ (here `Regexp()
-<api/redirect.html#lepl.functions.Regexp>`_ is used).
+<api/redirect.html#lepl.matchers.Regexp>`_ is used).
 
 The use of separators to handle spaces is discussed in more detail below.
 

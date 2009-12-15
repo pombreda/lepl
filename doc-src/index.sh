@@ -23,7 +23,7 @@ sed -i -r 's/``(LineAwareConfiguration|IndentConfiguration|OffsideConfiguration)
 # fix up old errors
 #sed -i -e 's/redirect\/html/redirect.html/g' *.rst
 #sed -i -r 's/matchers\.(AnyBut|Optional|Star|ZeroOrMore|Plus|OneOrMore|Map|Add|Substitute|Name|Eos|Identity|Newline|Space|Whitespace|Digit|Letter|Upper|Lower|Printable|Punctuation|UnsignedInteger|SignedInteger|Integer|UnsignedFloat|SignedFloat|SignedEFloat|Float|Word|String||Drop)/functions.\1/g' *.rst
-sed -i -r 's/functions\.(And|Or|Literal|Columns)/matchers.\1/g' *.rst
+sed -i -r 's/functions\.(And|Or|Literal|Columns|Lookahead|Commit|Delayed|Empty|Eof|First|Regexp|Trace)/matchers.\1/g' *.rst
 #sed -i -r 's/lepl\.contrib\.functions\.SmartSeparator2/lepl.contrib.matchers.SmartSeparator2/g' *.rst
 sed -i -r 's/lepl\.offside\.matchers\.(LineAwareConfiguration|IndentConfiguration|OffsideConfiguration)/lepl.offside.config.\1/g' *.rst
 sed -i -r 's/lepl\.bin\.config\.(Configuration)/lepl.config.\1/g' *.rst

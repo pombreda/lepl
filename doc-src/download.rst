@@ -25,13 +25,20 @@ first.  If you want a local copy of the manual you should also read the
 :ref:`localdocs` section.
 
 
-Install With Setuptools / easy_install (Python 2.6)
+Install With Distribute / Setuptools (easy_install).
 
-  This installs the latest **stable** version and currently only works for
-  **Python 2.6**.
+  This installs the latest **stable** version.
 
-  If you have `setuptools <http://pypi.python.org/pypi/setuptools>`_ installed
-  you should be able to install LEPL using::
+  `Distribute <http://pypi.python.org/pypi/distribute>`_ and
+  `setuptools <http://pypi.python.org/pypi/setuptools>`_ are very similar,
+  and either will install LEPL on Python 2.6.  However, I recommend using
+  `distribute <http://pypi.python.org/pypi/distribute>`_ since it also
+  works with Python 3 and appears to be better supported.
+
+  Once you have installed 
+  `distribute <http://pypi.python.org/pypi/distribute>`_ or
+  `setuptools <http://pypi.python.org/pypi/setuptools>`_ you can install
+  LEPL with the command
 
     easy_install lepl
 
@@ -41,7 +48,7 @@ Install With Setuptools / easy_install (Python 2.6)
 
 .. _manual_install:
 
-Install With Distutils / setup.py (Python 3 and 2.6)
+Install With Distutils / setup.py
 
   :ref:`download` and unpack a source package then run::
 

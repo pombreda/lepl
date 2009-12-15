@@ -27,7 +27,7 @@ The rewriters are described below (:ref:`rewriting`).
 
 The monitors are combined and passed to `trampoline()
 <api/redirect.html#lepl.parser.trampoline>`_.  `TraceResults() <api/redirect.html#lepl.trace.TraceResults>`_ enables the
-`Trace() <api/redirect.html#lepl.functions.Trace>`_ matcher.
+`Trace() <api/redirect.html#lepl.matchers.Trace>`_ matcher.
 
 
 .. index:: rewriting

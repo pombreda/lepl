@@ -941,7 +941,9 @@ class Trace(OperatorMatcher):
     
 class Eof(OperatorMatcher):
     '''
-    Match the end of a stream.  Returns nothing.
+    Match the end of a stream.  Returns nothing.  
+
+    This is also aliased to Eos in lepl.functions.
     '''
 
     def __init__(self):

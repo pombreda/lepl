@@ -164,7 +164,7 @@ Specifying a fourth argument (the increment when used with ``[]`` syntax) of
 Lookahead
 ---------
 
-`[API] <api/redirect.html#lepl.functions.Lookahead>`_ This matcher checks
+`[API] <api/redirect.html#lepl.matchers.Lookahead>`_ This matcher checks
 whether another matcher would succeed, but returns the original stream with an
 empty result list.
 
@@ -195,7 +195,7 @@ When preceded by a ``~`` the logic is reversed::
 .. note::
 
   This change in behaviour is specific to `Lookahead()
-  <api/redirect.html#lepl.functions.Lookahead>`_ --- usually ``~`` applies
+  <api/redirect.html#lepl.matchers.Lookahead>`_ --- usually ``~`` applies
   `Drop() <api/redirect.html#lepl.functions.Drop>`_ as described below.
 
 
@@ -216,10 +216,10 @@ matcher, but discards the results::
 together, with optional spaces between).
 
 This is different to `Lookahead()
-<api/redirect.html#lepl.functions.Lookahead>`_ because the matcher after
+<api/redirect.html#lepl.matchers.Lookahead>`_ because the matcher after
 `Drop() <api/redirect.html#lepl.functions.Drop>`_ receives a stream that has
 "moved on" to the next part of the input.  With `Lookahead()
-<api/redirect.html#lepl.functions.Lookahead>`_ the stream is not advanced and
+<api/redirect.html#lepl.matchers.Lookahead>`_ the stream is not advanced and
 so this example will fail::
 
   >>> (Lookahead('hello') / 'world').parse_string('hello world')
@@ -307,13 +307,13 @@ Many more matchers are described in the `API Documentation
 `Add() <api/redirect.html#lepl.functions.Add>`_,
 `AnyBut() <api/redirect.html#lepl.functions.AnyBut>`_,
 `Columns() <api/redirect.html#lepl.matchers.Columns>`_,
-`Commit() <api/redirect.html#lepl.functions.Commit>`_,
-`Delayed() <api/redirect.html#lepl.functions.Delayed>`_,
+`Commit() <api/redirect.html#lepl.matchers.Commit>`_,
+`Delayed() <api/redirect.html#lepl.matchers.Delayed>`_,
 `Digit() <api/redirect.html#lepl.functions.Digit>`_,
-`Empty() <api/redirect.html#lepl.functions.Empty>`_,
-`Eof() <api/redirect.html#lepl.functions.Eof>`_,
-`Eos() <api/redirect.html#lepl.functions.Eos>`_,
-`First() <api/redirect.html#lepl.functions.First>`_,
+`Empty() <api/redirect.html#lepl.matchers.Empty>`_,
+`Eof() <api/redirect.html#lepl.matchers.Eof>`_,
+`Eos() <api/redirect.html#lepl.matchers.Eof>`_,
+`First() <api/redirect.html#lepl.matchers.First>`_,
 `Float() <api/redirect.html#lepl.functions.Float>`_, 
 `Identity() <api/redirect.html#lepl.functions.Identity>`_,
 `Integer() <api/redirect.html#lepl.functions.Integer>`_,
@@ -327,7 +327,7 @@ Many more matchers are described in the `API Documentation
 `Plus() <api/redirect.html#lepl.functions.Plus>`_,
 `Printable() <api/redirect.html#lepl.functions.Printable>`_,
 `Punctuation() <api/redirect.html#lepl.functions.Punctuation>`_,
-`Regexp() <api/redirect.html#lepl.functions.Regexp>`_,
+`Regexp() <api/redirect.html#lepl.matchers.Regexp>`_,
 `SignedEFloat() <api/redirect.html#lepl.functions.SignedEFloat>`_,
 `SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_,
 `SignedInteger() <api/redirect.html#lepl.functions.SignedInteger>`_,
@@ -336,7 +336,7 @@ Many more matchers are described in the `API Documentation
 `Star() <api/redirect.html#lepl.functions.Star>`_,
 `String() <api/redirect.html#lepl.functions.String>`_,
 `Substitute() <api/redirect.html#lepl.functions.Substitute>`_,
-`Trace() <api/redirect.html#lepl.functions.Trace>`_,
+`Trace() <api/redirect.html#lepl.matchers.Trace>`_,
 `UnsignedFloat() <api/redirect.html#lepl.functions.UnsignedFloat>`_,
 `UnsignedInteger() <api/redirect.html#lepl.functions.UnsignedInteger>`_,
 `Upper() <api/redirect.html#lepl.functions.Upper>`_,
