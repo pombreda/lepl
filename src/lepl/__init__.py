@@ -106,19 +106,24 @@ Running this gives the result::
              `- ')'
 '''
 
-from lepl.config import Configuration
+from lepl.core.config import Configuration
 from lepl.contrib.matchers import SmartSeparator2
-from lepl.error import *
-from lepl.functions import *
-from lepl.memo import * 
-from lepl.node import *
-from lepl.operators import * 
-from lepl.parser import *
-from lepl.stream import *
+from lepl.match.error import make_error, raise_error, Error, throw
+from lepl.match.derived import Apply, args, KApply, Regexp, Delayed, Commit, \
+    Trace, AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Substitute, \
+    Name, Eof, Eos, Identity, Newline, Space, Whitespace, Digit, Letter, \
+    Upper, Lower, Printable, Punctuation, UnsignedInteger, SignedInteger, \
+    Float, Word, Separator, DropEmpty, Literals, String, SkipTo, \
+    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST
+from lepl.core.memo import RMemo, LMemo, MemoException
+from lepl.support.node import Node, make_dict, join_with
+from lepl.match.operators import Override, Separator, SmartSeparator1 
+from lepl.stream.stream import DEFAULT_STREAM_FACTORY
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.lexer.rewriters import lexer_rewriter
-from lepl.manager import *
-from lepl.matchers import *
+from lepl.core.manager import GeneratorManager
+from lepl.match.core import Empty, Repeat, And, Or, Join, First, Any, Literal, \
+    Empty, Lookahead, Columns
 from lepl.offside.config import LineAwareConfiguration, LineAwareConfiguration
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
@@ -127,20 +132,21 @@ from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.rewriters import *
-from lepl.trace import *
+from lepl.core.rewriters import memoize, flatten, compse_transforms, \
+    auto_memoize, context_memoize, optimize_or
+from lepl.core.trace import RecordDeepest, TraceResults
 
 __all__ = [
-        # config
+        # lepl.core.config
         'Configuration',
-        # contrib.matchers
+        # lepl.contrib.matchers
         'SmartSeparator2',
-        # error
+        # lepl.match.error
         'make_error',
         'raise_error',
         'Error',
         'throw',
-        # matchers
+        # lepl.match.core
         'Empty',
         'Repeat',
         'And',
@@ -152,7 +158,7 @@ __all__ = [
         'Empty',
         'Lookahead',
         'Columns',
-        # functions
+        # lepl.match.derived
         'Apply',
         'args',
         'KApply',
@@ -200,58 +206,55 @@ __all__ = [
         'NON_GREEDY',
         'DEPTH_FIRST',
         'BREADTH_FIRST',
-        # node
+        # lepl.support.node
         'Node',
         'make_dict',
         'join_with',
-        # stream
+        # lepl.stream.stream
         'DEFAULT_STREAM_FACTORY',
-        # operators
+        # lepl.match.operators
         'Override',
         'Separator',
         'SmartSeparator1',
-        # parser
-        'Configuration',
-        # lexer.matchers
+        # lepl.lexer.matchers
         'Token',
         'LexerError',
         'RuntimeLexerError',
-        # lexer.rewriters
+        # lepl.lexer.rewriters
         'lexer_rewriter',
-        # manager
+        # lepl.core.manager
         'GeneratorManager',
-        # trace
+        # lepl.core.trace
         'RecordDeepest',
         'TraceResults',
-        # parser
-        # memo,
+        # lepl.core.memo,
         'RMemo',
         'LMemo',
         'MemoException',
-        # regexp.core
+        # lepl.regexp.core
         'RegexpError',
-        # regexp.matchers
+        # lepl.regexp.matchers
         'NfaRegexp',
         'DfaRegexp',
-        # regexp.rewriters
+        # lepl.regexp.rewriters
         'regexp_rewriter',
-        # regexp.unicode
+        # lepl.regexp.unicode
         'UnicodeAlphabet',
-        # rewriters
+        # lepl.core.rewriters
         'memoize',
         'flatten',
         'compose_transforms',
         'auto_memoize',
         'context_memoize',
         'optimize_or',
-        # offside.config
+        # lepl.offside.config
         'LineAwareConfiguration',
         'LineAwareConfiguration',
-        # offside.lexer
+        # lepl.offside.lexer
         'Indent',
         'Eol',
         'BIndent',
-        # offside.matchers
+        # lepl.offside.matchers
         'Line',
         'Block',
         'BLine',
