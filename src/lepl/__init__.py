@@ -106,47 +106,46 @@ Running this gives the result::
              `- ')'
 '''
 
-from lepl.core.config import Configuration
 from lepl.contrib.matchers import SmartSeparator2
-from lepl.match.error import make_error, raise_error, Error, throw
-from lepl.match.derived import Apply, args, KApply, Regexp, Delayed, Commit, \
-    Trace, AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Substitute, \
-    Name, Eof, Eos, Identity, Newline, Space, Whitespace, Digit, Letter, \
-    Upper, Lower, Printable, Punctuation, UnsignedInteger, SignedInteger, \
-    Float, Word, Separator, DropEmpty, Literals, String, SkipTo, \
-    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST
+from lepl.core.config import Configuration
+from lepl.core.manager import GeneratorManager
 from lepl.core.memo import RMemo, LMemo, MemoException
-from lepl.support.node import Node, make_dict, join_with
-from lepl.match.operators import Override, Separator, SmartSeparator1 
-from lepl.stream.stream import DEFAULT_STREAM_FACTORY
+from lepl.core.rewriters import memoize, flatten, compse_transforms, \
+    auto_memoize, context_memoize, optimize_or
+from lepl.core.trace import RecordDeepest, TraceResults
+from lepl.matchers.core import Empty, Repeat, And, Or, Join, First, Any, \
+    Literal, Empty, Lookahead, Columns
+from lepl.matchers.derived import Apply, args, KApply, Regexp, Delayed, \
+    Commit, Trace, AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, \
+    Substitute, Name, Eof, Eos, Identity, Newline, Space, Whitespace, Digit, \
+    Letter, Upper, Lower, Printable, Punctuation, UnsignedInteger, \
+    SignedInteger, Float, Word, Separator, DropEmpty, Literals, String, \
+    SkipTo, GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.lexer.rewriters import lexer_rewriter
-from lepl.core.manager import GeneratorManager
-from lepl.match.core import Empty, Repeat, And, Or, Join, First, Any, Literal, \
-    Empty, Lookahead, Columns
 from lepl.offside.config import LineAwareConfiguration, LineAwareConfiguration
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
     ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent
+from lepl.matchers.operators import Override, Separator, SmartSeparator1 
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.core.rewriters import memoize, flatten, compse_transforms, \
-    auto_memoize, context_memoize, optimize_or
-from lepl.core.trace import RecordDeepest, TraceResults
+from lepl.stream.stream import DEFAULT_STREAM_FACTORY
+from lepl.support.node import Node, make_dict, join_with
 
 __all__ = [
         # lepl.core.config
         'Configuration',
         # lepl.contrib.matchers
         'SmartSeparator2',
-        # lepl.match.error
+        # lepl.matchers.error
         'make_error',
         'raise_error',
         'Error',
         'throw',
-        # lepl.match.core
+        # lepl.matchers.core
         'Empty',
         'Repeat',
         'And',
@@ -158,7 +157,7 @@ __all__ = [
         'Empty',
         'Lookahead',
         'Columns',
-        # lepl.match.derived
+        # lepl.matchers.derived
         'Apply',
         'args',
         'KApply',
