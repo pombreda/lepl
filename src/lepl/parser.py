@@ -79,16 +79,6 @@ class GeneratorWrapper(object):
         '''
         Raise an exception in the generator (standard Python method).
         '''
-#        We don't use exceptions, apart from StopIteration, so they are 
-#        always "errors".  if we try passing them in they get re-thrown and 
-#        lose the stack trace (i don't understand fully).  
-#        Anyway, it seems to give more useful errors just to throw here 
-#        (alternatively, we could alter the trampoline to throw immediately, 
-#        but i'd rather keep that more general).
-#        if isinstance(value, StopIteration):
-#            return self.__generator.throw(value)
-#        else:
-#            raise value
         return self.__generator.throw(value)
                 
     def __iter__(self):
@@ -96,7 +86,7 @@ class GeneratorWrapper(object):
                 
     def close(self):
         '''
-        Close the generator (used in with contexts; standard Pythin method).
+        Close the generator (used in with contexts; standard Python method).
         '''
         self.__generator.close()
         

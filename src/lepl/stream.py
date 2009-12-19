@@ -71,8 +71,8 @@ high and some operations - like calculating the total length, needed for
 left recursive grammars, are very expensive.
 
 To try get the best of both solutions described above I am going with an
-intermediate approach which holds "lines" of data in memory in an array.
-In most cases these will be natural text lines (eg terminated by a newline), 
+intermediate approach which holds a "line" of data in memory in an array.
+In most cases this will be natural text line (eg terminated by a newline), 
 but they could also be of arbitrary length.
 
 The fundamental class is then Line, which holds a line of data in a 
@@ -707,12 +707,3 @@ def list_join(lists):
     for list_ in lists:
         joined.extend(list_)
     return joined
-
-
-#def single_line(line):
-#    '''
-#    Present a list as a single line in an iteration.
-#    '''
-#    yield line
-
-
