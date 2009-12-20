@@ -653,7 +653,7 @@ class GraphStr(Visitor):
         '''
         def fun(first, rest, name, type_=self.__type):
             '''
-            Build the ASCII pircture; this is rather terse...  First is the
+            Build the ASCII picture; this is rather terse...  First is the
             prefix to the first line; rest is the prefix to the rest.  Args
             and Kargs are the equivalent functions for the constructor
             arguments; we evaluate them here as we "expend" the ASCII

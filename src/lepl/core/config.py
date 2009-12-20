@@ -71,7 +71,8 @@ class Configuration(object):
             return config
         if cls.__default is None:
             from lepl.lexer.rewriters import lexer_rewriter
-            from lepl.core.rewriters import flatten, compose_transforms, auto_memoize
+            from lepl.core.rewriters import flatten, compose_transforms, \
+                auto_memoize
             from lepl.core.trace import TraceResults
             cls.__default = \
                 Configuration(
@@ -89,7 +90,8 @@ class Configuration(object):
         if cls.__managed is None:
             from lepl.lexer.rewriters import lexer_rewriter
             from lepl.core.manager import GeneratorManager
-            from lepl.core.rewriters import flatten, compose_transforms, auto_memoize
+            from lepl.core.rewriters import flatten, compose_transforms, \
+                auto_memoize
             from lepl.core.trace import TraceResults
             cls.__managed = \
                 Configuration(
@@ -109,7 +111,8 @@ class Configuration(object):
         '''
         from lepl.lexer.rewriters import lexer_rewriter
         from lepl.regexp.unicode import UnicodeAlphabet
-        from lepl.core.rewriters import flatten, compose_transforms, auto_memoize
+        from lepl.core.rewriters import flatten, compose_transforms, \
+            auto_memoize
         from lepl.core.trace import TraceResults
         alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
         return Configuration(
@@ -128,7 +131,8 @@ class Configuration(object):
         from lepl.lexer.rewriters import lexer_rewriter
         from lepl.regexp.rewriters import regexp_rewriter
         from lepl.regexp.unicode import UnicodeAlphabet
-        from lepl.core.rewriters import flatten, compose_transforms, auto_memoize
+        from lepl.core.rewriters import flatten, compose_transforms, \
+            auto_memoize
         from lepl.core.trace import TraceResults
         alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
         return Configuration(
@@ -151,7 +155,8 @@ class Configuration(object):
         from lepl.regexp.matchers import DfaRegexp
         from lepl.regexp.rewriters import regexp_rewriter
         from lepl.regexp.unicode import UnicodeAlphabet
-        from lepl.core.rewriters import flatten, compose_transforms, auto_memoize
+        from lepl.core.rewriters import flatten, compose_transforms, \
+            auto_memoize
         from lepl.core.trace import TraceResults
         alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
         return Configuration(

@@ -110,7 +110,8 @@ class DelayedClone(Visitor):
         defined and are nor transformed).
         '''
         # delayed import to avoid dependency loops
-        from lepl.matchers.core import Delayed, Transformable
+        from lepl.matchers.core import Delayed
+        from lepl.matchers.transform import Transformable
         if isinstance(node, Delayed) and node.matcher and \
                 not (isinstance(node, Transformable) and node.function):
             return node.matcher

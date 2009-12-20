@@ -30,7 +30,8 @@ from lepl.matchers.core import Regexp, Lookahead, Any, Eof, Literal, Empty
 from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
     NON_GREEDY
 from lepl.matchers.support import OperatorMatcher, coerce_
-from lepl.matchers.transform import Transformation, Transform
+from lepl.matchers.transform import Transformation, Transform, ApplyArgs, \
+    ApplyRaw
 from lepl.support.lib import assert_type, lmap, format, basestring
 
  
@@ -131,16 +132,20 @@ def Apply(matcher, function, raw=False, args=False):
 
       raw
         If True the results are used directly.  Otherwise they are wrapped in
-        a list.  The default is False --- a list is added.
+        a list.  The default is False --- a list is added.  This is set to
+        true if the target function is an `ApplyRaw` instance.
 
       args
         If True, the results are passed to the function as separate
         arguments (Python's '*args' behaviour).  The default is False ---
-        the results are passed inside a list).
+        the results are passed inside a list).  This is set to true if the
+        target function is an `ApplyArgs` instance.
     '''
+    raw = raw or (type(function) is type and issubclass(function, ApplyRaw))
+    args = args or (type(function) is type 
+                      and issubclass(function, ApplyArgs))
     if not isinstance(function, Transformation):
         if isinstance(function, basestring):
-            # pylint: disable-msg=E0601
             function = lambda results, f=function: \
                             lmap(lambda x: (f, x), results)
             raw = True

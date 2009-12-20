@@ -99,6 +99,7 @@ class Node(LogMixin, ConstructorGraphNode):
         return self.__children[index]
     
     def __iter__(self):
+        dummy = self.__children
         return iter(self.__children)
     
     def __str__(self):

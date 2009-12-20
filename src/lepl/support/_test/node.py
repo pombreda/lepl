@@ -173,3 +173,11 @@ class EqualityTest(TestCase):
         assert a._recursively_eq(b)
         assert not a._recursively_eq(c)
         
+
+class ChildrenTest(TestCase):
+    
+    def test_children(self):
+        a = Node('a')
+        for c in a:
+            assert c == 'a', c
+

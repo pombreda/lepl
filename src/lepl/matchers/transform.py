@@ -28,9 +28,32 @@ Matchers that process results.
 # pylint: disable-msg=R0901, R0904, W0142
 # lepl conventions
 
+from abc import ABCMeta
+
 from lepl.core.parser import tagged
 from lepl.matchers.support import OperatorMatcher, coerce_
 from lepl.support.lib import format, str
+from lepl.support.node import Node
+
+
+# pylint: disable-msg=W0105
+# Python 2.6
+#class ApplyRaw(metaclass=ABCMeta):
+ApplyRaw = ABCMeta('ApplyRaw', (object, ), {})
+'''
+ABC used to control `Apply`, so that the result is not wrapped in a list.  
+'''
+
+
+# Python 2.6
+#class ApplyArgs(metaclass=ABCMeta):
+ApplyArgs = ABCMeta('ApplyArgs', (object, ), {})
+'''
+ABC used to control `Apply`, so that the results list is supplied as "*args".  
+'''
+
+ApplyArgs.register(Node)
+
 
 
 class Transformation(object):

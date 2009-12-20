@@ -27,7 +27,7 @@ if bytes is str:
 else:
 
     from lepl.bin.bits import unpack_length, BitString, STRICT
-    from lepl.matchers.core import OperatorMatcher
+    from lepl.matchers.support import OperatorMatcher
     from lepl.core.parser import tagged
     
     
