@@ -23,7 +23,8 @@ Contributed matchers.
 from copy import copy
 
 from lepl.matchers.derived import Optional
-from lepl.matchers.core import And, Or, _BaseSearch, Transform
+from lepl.matchers.combine import And, Or, _BaseSearch
+from lepl.matchers.transform import Transform
 from lepl.matchers.operators import _BaseSeparator
 
 

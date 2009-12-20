@@ -149,7 +149,7 @@ def flatten(graph):
     '''
     A rewriter that flattens `And` and `Or` lists.
     '''
-    from lepl.matchers.core import And, Or
+    from lepl.matchers.combine import And, Or
     def new_clone(node, old_args, kargs):
         '''
         The flattening cloner.
@@ -179,7 +179,7 @@ def compose_transforms(graph):
     A rewriter that joins adjacent transformations into a single
     operation, avoiding trampolining in some cases.
     '''
-    from lepl.matchers.core import Transform, Transformable
+    from lepl.matchers.transform import Transform, Transformable
     def new_clone(node, args, kargs):
         '''
         The joining cloner.
@@ -253,7 +253,8 @@ def left_loops(node):
     
     Each loop is a list that starts and ends with the given node.
     '''
-    from lepl.matchers.core import Or, Lookahead
+    from lepl.matchers.combine import Or
+    from lepl.matchers.core import Lookahead
     stack = [[node]]
     known = set([node]) # avoid getting lost in embedded loops
     while stack:
@@ -299,7 +300,8 @@ def optimize_or(conservative=True):
     `conservative` refers to the algorithm used to detect loops; False
     may classify some left--recursive loops as right--recursive.
     '''
-    from lepl.matchers.core import Delayed, Or
+    from lepl.matchers.core import Delayed
+    from lepl.matchers.combine import Or
     def rewriter(graph):
         '''
         The Or-rewriting rewriter.

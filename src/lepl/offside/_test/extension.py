@@ -71,7 +71,8 @@ class CompilerTest(TestCase):
     def do_test(self, pattern, target, dfa_result, nfa_result, parser_factory):
         alphabet = LineAwareAlphabet(UnicodeAlphabet.instance(), parser_factory)
         compiler = Compiler.single(alphabet, pattern)
-        text = str(compiler.expression)
+        str(compiler.expression)
+#        text = str(compiler.expression)
 #        assert text == format('(?P<label>{0!s})', pattern), text
         
         factory = LineAwareStreamFactory(alphabet)

@@ -24,6 +24,7 @@ parsing.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
+# pylint: disable-msg=W0614
 from lepl import *
 
 

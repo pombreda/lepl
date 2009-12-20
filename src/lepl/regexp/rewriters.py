@@ -122,7 +122,7 @@ def single(alphabet, node, regexp, matcher_type, transform=True):
     Create a matcher for the given regular expression.
     '''
     # avoid dependency loops
-    from lepl.matchers.core import Transformation
+    from lepl.matchers.transform import Transformation
     matcher = matcher_type(regexp, alphabet)
     copy_standard_attributes(node, matcher, describe=False, transform=transform)
     return matcher.precompose_transformation(Transformation(empty_adapter))
@@ -130,7 +130,7 @@ def single(alphabet, node, regexp, matcher_type, transform=True):
 
 def empty_adapter(results, _sin, sout):
     '''
-    There is a fundamental mis-match between regular expressions and the 
+    There is a fundamental mismatch between regular expressions and the 
     recursive descent parser on how empty matchers are handled.  The main 
     parser uses empty lists; regexp uses an empty string.  This is a hack
     that converts from one to the other.  I do not see a better solution.
@@ -159,8 +159,9 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
     
     # Avoid dependency loops
     from lepl.matchers.derived import add
-    from lepl.matchers.core import Any, Or, And, Transformable, \
-        Transform, Transformation, Literal, DepthFirst
+    from lepl.matchers.combine import And, Or, DepthFirst
+    from lepl.matchers.core import Any, Literal
+    from lepl.matchers.transform import Transformable, Transform, Transformation
 
     log = getLogger('lepl.regexp.rewriters.make_clone')
     

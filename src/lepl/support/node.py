@@ -132,6 +132,7 @@ class Node(LogMixin, ConstructorGraphNode):
             try:
                 sibling = next(siblings)
                 try:
+                    # pylint: disable-msg=W0212
                     if not child._recursively_eq(sibling):
                         return False
                 except AttributeError:

@@ -24,7 +24,8 @@ Tests for the lepl.functions module.
 from unittest import TestCase
 
 from lepl.matchers.derived import Space, Repeat, SkipTo, Newline, String
-from lepl.matchers.core import Any, OperatorMatcher, Trace
+from lepl.matchers.core import Any, OperatorMatcher
+from lepl.matchers.monitor import Trace
 from lepl.core.parser import tagged
 from lepl._test.base import BaseTest
 

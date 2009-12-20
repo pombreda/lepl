@@ -17,24 +17,20 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Matcher-related functions.
-
-The following are functions rather than classes, but we use the class
-syntax to give a uniform interface.
-
-The functions are not strictly matchers, in that they do not yield
-results directly.  Instead they provide useful ways of assembling other
-matchers to do useful tasks.  Because of this they do not appear in the
-final matcher tree for any particular grammar.
+Functions that construct useful combinations of existing matchers.
 '''
 
 from string import whitespace, digits, ascii_letters, \
     ascii_uppercase, ascii_lowercase, printable, punctuation
 
-from lepl.matchers.core import coerce_, Regexp, And, DepthFirst, BreadthFirst, \
-    OrderByResultCount, ApplyRaw, Transformation, Transform, ApplyArgs, \
-    Any, Lookahead, Eof, Literal, Or
-from lepl.matchers.operators import GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
+from lepl.core.parser import tagged
+from lepl.matchers.combine import And, DepthFirst, BreadthFirst, \
+    OrderByResultCount, Or, First
+from lepl.matchers.core import Regexp, Lookahead, Any, Eof, Literal, Empty
+from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
+    NON_GREEDY
+from lepl.matchers.support import OperatorMatcher, coerce_
+from lepl.matchers.transform import Transformation, Transform
 from lepl.support.lib import assert_type, lmap, format, basestring
 
  
@@ -135,20 +131,16 @@ def Apply(matcher, function, raw=False, args=False):
 
       raw
         If True the results are used directly.  Otherwise they are wrapped in
-        a list.  The default is False --- a list is added.  This is set to
-        true if the target function is an `ApplyRaw` instance.
+        a list.  The default is False --- a list is added.
 
       args
         If True, the results are passed to the function as separate
         arguments (Python's '*args' behaviour).  The default is False ---
-        the results are passed inside a list).  This is set to true if the
-        target function is an `ApplyArgs` instance.
+        the results are passed inside a list).
     '''
-    raw = raw or (type(function) is type and issubclass(function, ApplyRaw))
-    args = args or (type(function) is type 
-                      and issubclass(function, ApplyArgs))
     if not isinstance(function, Transformation):
         if isinstance(function, basestring):
+            # pylint: disable-msg=E0601
             function = lambda results, f=function: \
                             lmap(lambda x: (f, x), results)
             raw = True
@@ -526,3 +518,114 @@ def SkipTo(matcher, include=True):
         return Add(And(Star(AnyBut(matcher)), matcher))
     else:
         return And(Add(Star(AnyBut(matcher))), Lookahead(matcher))
+
+
+# pylint: disable-msg=E1101
+class _Columns(OperatorMatcher):
+    '''
+    Match data in a set of columns.
+    
+    This is a fairly complex matcher.  It allows matchers to be associated 
+    with a range of indices (measured from the current point in the stream)
+    and only succeeds if all matchers succeed.  The results are returned in
+    a list, in the same order as the matchers are specified.
+    
+    A range if indices is given as a tuple (start, stop) which works like an
+    array index.  So (0, 4) selects the first four characters (like [0:4]).
+    Alternatively, a number of characters can be given, in which case they
+    start where the previous column finished (or at zero for the first).
+    
+    The matcher for each column will see the (selected) input data as a 
+    separate stream.  If a matcher should consume the entire column then
+    it should check for `Eos`.
+    
+    Finally, the skip parameter allows control of how much input is consumed.  
+    If it is unset the remaining stream starts after the final column matched. 
+    
+    Note that with backtracking this matcher can be quite expensive, because
+    each different combination of results is returned.
+    '''
+ 
+    def __init__(self, skip, indices, *matchers):
+        super(_Columns, self).__init__()
+        self._arg(skip=skip)
+        self._arg(indices=indices)
+        self._args(matchers=matchers)
+        
+    @tagged
+    def _match(self, stream_in):
+        '''
+        Build the generator from standard components and then evaluate it.
+        '''
+        try:
+            matcher = self.__build_matcher(stream_in)
+            generator = matcher._match(stream_in)
+            try:
+                while True:
+                    yield (yield generator)
+            except StopIteration:
+                pass
+        # if there is insufficient data for the columns, skip
+        except IndexError:
+            pass
+        
+    def __build_matcher(self, stream_in):
+        '''
+        Build a matcher that, when it is evaluated, will return the 
+        matcher results for the columns.  We base this on `And`, but need
+        to force the correct streams.
+        '''
+        def force_out(replacement):
+            '''
+            Generate a transformer function that replaces the stream_out.
+            '''
+            return lambda results, _stream_in, _stream_out: \
+                                                    (results, replacement)
+        # left and right are the indices for the column
+        # matchers is the list of matchers that will be joined by And
+        # previous is the "column before", which must be modified so that
+        # it returns the correct stream_out for the next matcher
+        right, matchers, previous = 0, [], Empty()
+        columns = list(zip(self.indices, self.matchers))
+        if self.skip: 
+            # this takes the entire stream_in and applies it to skip
+            columns.append(((0, None), Drop(self.skip)))
+        else:
+            # this takes everything to the right of the previous column
+            columns.append((None, Empty()))
+        for (col, matcher) in columns:
+            try:
+                (left, right) = col
+            except TypeError:
+                left = right
+                right = None if col is None else right + col
+            matchers.append(Transform(previous, 
+                                      force_out(stream_in[left:right])))
+            previous = matcher
+        matchers.append(previous)
+        return And(*matchers)
+
+
+# Python 2.6 doesn't support named arg after *args
+#def Columns(*columns, skip=None):
+_SKIP = 'skip'
+def Columns(*columns, **kargs):
+    '''
+    Provide a cleaner syntax to `_Columns` (we can't do this directly
+    because the clone function isn't smart enough to unpack complex
+    arguments). 
+    '''
+    if _SKIP in kargs:
+        skip = kargs[_SKIP]
+        del kargs[_SKIP]
+    else:
+        skip = SkipTo(First(Newline(), Eos()))
+    if kargs:
+        raise SyntaxError(format('Columns only accepts a single keyword: {0}',
+                                 _SKIP))
+    indices = []
+    matchers = []
+    for (col, matcher) in columns:
+        indices.append(col)
+        matchers.append(matcher)
+    return _Columns(skip, indices, *matchers)

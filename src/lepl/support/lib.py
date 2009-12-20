@@ -26,7 +26,7 @@ from logging import getLogger
 try:
     str = unicode
     basestring = basestring
-except:
+except NameError:
     str = str
     basestring = str
 
@@ -204,7 +204,6 @@ def safe_add(container, value):
     except TypeError:
         log = getLogger('lepl.support.safe_add')
         log.warn(format('Cannot add {0!r} to collection', value))
-        pass
 
 
 def fold(fun, start, sequence):

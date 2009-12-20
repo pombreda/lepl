@@ -112,25 +112,26 @@ from lepl.core.manager import GeneratorManager
 from lepl.core.rewriters import memoize, flatten, compose_transforms, \
     auto_memoize, context_memoize, optimize_or
 from lepl.core.trace import RecordDeepest, TraceResults
-from lepl.matchers.core import Empty, And, Or, First, Any, Delayed, Commit, \
-    Literal, Empty, Lookahead, Columns, Trace
+from lepl.matchers.combine import And, Or, First
+from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
+    Lookahead
+from lepl.matchers.monitor import Trace, Commit
 from lepl.matchers.derived import Apply, args, KApply, Regexp, Join, \
     AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Repeat, Plus, \
     OneOrMore, Substitute, Name, Eof, Eos, Identity, Newline, Space, \
     Whitespace, Digit, Letter, Upper, Lower, Printable, Punctuation, \
     UnsignedInteger, SignedInteger, Integer, UnsignedFloat, SignedFloat, \
-    SignedEFloat, Float, Word, DropEmpty, Literals, String, SkipTo, \
-    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST
+    SignedEFloat, Float, Word, DropEmpty, Literals, String, SkipTo, Columns
 from lepl.matchers.error import Error, make_error, raise_error, throw
 from lepl.matchers.memo import RMemo, LMemo, MemoException
-from lepl.matchers.operators import Separator
+from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
+    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.lexer.rewriters import lexer_rewriter
 from lepl.offside.config import LineAwareConfiguration, LineAwareConfiguration
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
     ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent
-from lepl.matchers.operators import Override, Separator, SmartSeparator1 
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.rewriters import regexp_rewriter

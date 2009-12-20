@@ -30,8 +30,9 @@ from unittest import TestCase
 
 from lepl import *
 from lepl.support.graph import ConstructorWalker
-from lepl.matchers.core import Matcher, Transform, Transformation
+from lepl.matchers.transform import Transform, Transformation
 from lepl.matchers.memo import _LMemo, _RMemo
+from lepl.matchers.support import Matcher
 from lepl.core.rewriters import DelayedClone, NodeStats
 
 

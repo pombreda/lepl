@@ -24,8 +24,10 @@ Tests for offside.
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
+from lepl.matchers.combine import Or
+from lepl.matchers.core import Delayed
 from lepl.matchers.derived import Letter, Digit
-from lepl.matchers.core import Delayed, Or, Trace
+from lepl.matchers.monitor import Trace
 from lepl.offside.config import LineAwareConfiguration
 from lepl.offside.matchers import Block, BLine
 

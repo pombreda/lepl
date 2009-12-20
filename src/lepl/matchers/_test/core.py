@@ -24,9 +24,11 @@ Tests for the lepl.matchers module.
 from unittest import TestCase
 
 from lepl._test.base import BaseTest
-from lepl.matchers.derived import Word, Newline, Space, AnyBut, Digit, Integer
-from lepl.matchers.core import Any, Or, Literal, Eof, Regexp, Commit, Delayed, \
-    And, Lookahead, Columns
+from lepl.matchers.combine import And, Or
+from lepl.matchers.core import Any, Literal, Eof, Regexp, Delayed, Lookahead
+from lepl.matchers.derived import Word, Newline, Space, AnyBut, Digit, \
+    Integer, Columns
+from lepl.matchers.monitor import Commit
 from lepl.support.node import Node
 
 

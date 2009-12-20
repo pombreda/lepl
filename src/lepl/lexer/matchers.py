@@ -31,11 +31,12 @@ from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream, \
     ContentSource, TokenSource
 from lepl.matchers.error import raise_error
 from lepl.lexer.support import LexerError, RuntimeLexerError
-from lepl.matchers.core import OperatorMatcher, BaseMatcher, coerce_, Any, \
-    Literal, Lookahead, Regexp, And, Or, First
+from lepl.matchers.core import OperatorMatcher, Any, Literal, Lookahead, Regexp
+from lepl.matchers.combine import And, Or, First
 from lepl.matchers.memo import NoMemo
-from lepl.matchers.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
-    KARGS, RAISE, REPEAT, FIRST, MAP
+from lepl.matchers.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, \
+    NOT, KARGS, RAISE, REPEAT, FIRST, MAP
+from lepl.matchers.support import BaseMatcher, coerce_
 from lepl.core.parser import tagged
 from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import BaseRegexp

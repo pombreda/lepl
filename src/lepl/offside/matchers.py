@@ -22,7 +22,9 @@ Matchers that are indent aware.
 
 from weakref import WeakKeyDictionary
 
-from lepl.matchers.core import OperatorMatcher, And, Any, coerce_
+from lepl.matchers.core import Any
+from lepl.matchers.combine import And
+from lepl.matchers.support import coerce_, OperatorMatcher
 from lepl.core.parser import tagged
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.monitor import BlockMonitor
