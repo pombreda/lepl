@@ -70,25 +70,25 @@ Here is an example of both approaches in use::
     File "str: '1 + 2 * (3 + 4 - 5'", line 1
       1 + 2 * (3 + 4 - 5
 	      ^
-  lepl.error.Error: no ) for '(3 + 4...'
+  lepl.matchers.error.Error: no ) for '(3 + 4...'
 
   >>> parser('1 + 2 * 3 + 4 - 5)')[0]
     File "str: '1 + 2 * 3 + 4 - 5)'", line 1
       1 + 2 * 3 + 4 - 5)
 		      ^
-  lepl.error.Error: no ( before ')'
+  lepl.matchers.error.Error: no ( before ')'
 
   >>> parser('1 + 2 * (3 + four - 5)')[0]
     File "str: '1 + 2 * (3 + four - 5)'", line 1
       1 + 2 * (3 + four - 5)
 		   ^
-  lepl.error.Error: unexpected text: four
+  lepl.matchers.error.Error: unexpected text: four
 
   >>> parser('1 + 2 ** (3 + 4 - 5)')[0]
     File "str: '1 + 2 ** (3 + 4 - 5)'", line 1
       1 + 2 ** (3 + 4 - 5)
 	     ^
-  lepl.error.Error: unexpected text: *
+  lepl.matchers.error.Error: unexpected text: *
 
 
 .. note::
