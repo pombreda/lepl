@@ -25,7 +25,7 @@ from collections import deque
 #from logging import getLogger
 from threading import local
 
-from lepl.support import singleton, format
+from lepl.support.lib import singleton, format
 
 
 class ContextError(Exception):
@@ -53,7 +53,7 @@ class NamespaceMap(local):
         This gets the namespace associated with the name, creating a new
         namespace from the second arguent if necessary.
         '''
-        from lepl.operators import DefaultNamespace
+        from lepl.matchers.operators import DefaultNamespace
         if name not in self.__map:
             self.__map[name] = DefaultNamespace() if default is None \
                                                   else default()

@@ -23,29 +23,17 @@ Tests for the lepl.matchers module.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.functions import Word, Newline, Space, AnyBut, Digit, Integer
-from lepl.matchers import Any, Or, Literal, Eof, Regexp, Commit, Delayed, \
+from lepl._test.base import BaseTest
+from lepl.matchers.derived import Word, Newline, Space, AnyBut, Digit, Integer
+from lepl.matchers.core import Any, Or, Literal, Eof, Regexp, Commit, Delayed, \
     And, Lookahead, Columns
-from lepl.node import Node
+from lepl.support.node import Node
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201, R0904, R0903
 # (dude this is just a test)
 
     
-class BaseTest(TestCase):
-    
-    def assert_direct(self, stream, match, target):
-        result = [x for (x, _s) in match.match_string(stream)]
-        assert target == result, result
-    
-    def assert_list(self, stream, match, target):
-        matcher = match.items_matcher()
-        #print(matcher.matcher)
-        result = [x for (x, _s) in matcher(stream)]
-        assert target == result, result
-    
-
 class AndTest(BaseTest):
 
     def test_simple(self):

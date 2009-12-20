@@ -27,8 +27,8 @@ if bytes is str:
 else:
 
     from lepl.bin.bits import unpack_length, BitString, STRICT
-    from lepl.matchers import OperatorMatcher
-    from lepl.parser import tagged
+    from lepl.matchers.core import OperatorMatcher
+    from lepl.core.parser import tagged
     
     
     # pylint: disable-msg=C0103, R0901, R0904

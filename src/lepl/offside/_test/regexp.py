@@ -29,7 +29,7 @@ from unittest import TestCase
 
 from lepl.offside.config import LineAwareConfiguration
 from lepl.regexp.matchers import DfaRegexp
-from lepl.trace import TraceResults
+from lepl.core.trace import TraceResults
 
 
 class RegexpTest(TestCase):

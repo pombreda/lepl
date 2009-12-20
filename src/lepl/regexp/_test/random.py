@@ -28,7 +28,7 @@ from sys import exc_info
 from unittest import TestCase
 
 from lepl.regexp.matchers import DfaRegexp
-from lepl.support import format
+from lepl.support.lib import format
 
 def randbool(weight=1):
     return choice([True] * weight + [False])

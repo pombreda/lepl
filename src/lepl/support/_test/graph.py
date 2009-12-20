@@ -23,9 +23,9 @@ Tests for the lepl.graph module.
 from unittest import TestCase
 
 
-from lepl.graph import ArgAsAttributeMixin, preorder, postorder, reset, \
+from lepl.support.graph import ArgAsAttributeMixin, preorder, postorder, reset, \
     ConstructorWalker, Clone, make_proxy, LEAF, leaves
-from lepl.node import Node
+from lepl.support.node import Node
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141

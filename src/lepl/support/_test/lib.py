@@ -22,7 +22,7 @@ Tests for the lepl.support module.
 
 from unittest import TestCase
 
-from lepl.support import assert_type, CircularFifo
+from lepl.support.lib import assert_type, CircularFifo
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, R0201, R0913

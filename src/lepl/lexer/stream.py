@@ -22,10 +22,10 @@ The token streams.
 
 from logging import getLogger
 
-from lepl.filters import BaseDelegateSource
+from lepl.stream.filters import BaseDelegateSource
 from lepl.lexer.support import RuntimeLexerError
-from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
-from lepl.support import format, str
+from lepl.stream.stream import LocationStream, DEFAULT_STREAM_FACTORY
+from lepl.support.lib import format, str
 
 
 def lexed_simple_stream(tokens, discard, stream):

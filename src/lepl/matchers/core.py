@@ -47,15 +47,16 @@ from abc import ABCMeta
 from collections import deque
 from re import compile as compile_
 
-from lepl.config import Configuration
-from lepl.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
+from lepl.core.config import Configuration
+from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     ConstructorStr, GraphStr
-from lepl.manager import _GeneratorManager
-from lepl.node import Node
-from lepl.operators import OperatorMixin, OPERATORS, DefaultNamespace, Matcher
-from lepl.parser import make_parser, make_matcher, tagged
-from lepl.trace import _TraceResults
-from lepl.support import lmap, LogMixin, format, basestring, str
+from lepl.core.manager import _GeneratorManager
+from lepl.support.node import Node
+from lepl.matchers.operators import OperatorMixin, OPERATORS, \
+    DefaultNamespace, Matcher
+from lepl.core.parser import make_parser, make_matcher, tagged
+from lepl.core.trace import _TraceResults
+from lepl.support.lib import lmap, LogMixin, format, basestring, str
 
 
 # pylint: disable-msg=W0105
@@ -1042,7 +1043,7 @@ class _Columns(OperatorMatcher):
         matcher results for the columns.  We base this on `And`, but need
         to force the correct streams.
         '''
-        from lepl.functions import Drop
+        from lepl.matchers.derived import Drop
         def force_out(replacement):
             '''
             Generate a transformer function that replaces the stream_out.
@@ -1084,7 +1085,7 @@ def Columns(*columns, **kargs):
     because the clone function isn't smart enough to unpack complex
     arguments). 
     '''
-    from lepl.functions import SkipTo, Newline, Eos
+    from lepl.matchers.derived import SkipTo, Newline, Eos
     if _SKIP in kargs:
         skip = kargs[_SKIP]
         del kargs[_SKIP]

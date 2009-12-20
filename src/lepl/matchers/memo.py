@@ -31,10 +31,10 @@ generators implemented here.
 from abc import ABCMeta
 from itertools import count
 
-from lepl.matchers import OperatorMatcher
-from lepl.parser import tagged, GeneratorWrapper
-from lepl.state import State
-from lepl.support import LogMixin, empty, format
+from lepl.matchers.core import OperatorMatcher
+from lepl.core.parser import tagged, GeneratorWrapper
+from lepl.support.state import State
+from lepl.support.lib import LogMixin, empty, format
 
 
 # pylint: disable-msg=W0105, C0103, R0903, W0212

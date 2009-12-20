@@ -23,10 +23,10 @@ Tests for the lepl.functions module.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.functions import Space, Repeat, SkipTo, Newline, String
-from lepl.matchers import Any, OperatorMatcher, Trace
-from lepl.parser import tagged
-from lepl._test.matchers import BaseTest
+from lepl.matchers.derived import Space, Repeat, SkipTo, Newline, String
+from lepl.matchers.core import Any, OperatorMatcher, Trace
+from lepl.core.parser import tagged
+from lepl._test.base import BaseTest
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201, R0913, R0901, R0904

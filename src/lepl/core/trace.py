@@ -23,8 +23,8 @@ Tools for logging and tracing.
 # we abuse conventions to give a consistent interface 
 # pylint: disable-msg=C0103
 
-from lepl.monitor import ActiveMonitor, ValueMonitor
-from lepl.support import CircularFifo, LogMixin, sample, format, str
+from lepl.core.monitor import ActiveMonitor, ValueMonitor
+from lepl.support.lib import CircularFifo, LogMixin, sample, format, str
 
 
 def TraceResults(enabled=False):

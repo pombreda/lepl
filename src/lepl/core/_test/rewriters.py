@@ -24,10 +24,10 @@ from unittest import TestCase
 
 from lepl import Any, Delayed, Configuration, compose_transforms, Optional, \
     Node, Drop, optimize_or, And
-from lepl.graph import preorder
-from lepl.matchers import Transform
-from lepl.operators import Matcher
-from lepl.rewriters import DelayedClone
+from lepl.support.graph import preorder
+from lepl.matchers.core import Transform
+from lepl.matchers.operators import Matcher
+from lepl.core.rewriters import DelayedClone
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0321

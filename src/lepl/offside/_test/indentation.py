@@ -24,10 +24,10 @@ Tests for indent.
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
-from lepl.functions import Word, Letter
+from lepl.matchers.derived import Word, Letter
 from lepl.offside.config import LineAwareConfiguration
 from lepl.offside.lexer import Indent, Eol
-from lepl.trace import TraceResults
+from lepl.core.trace import TraceResults
 
 
 # pylint: disable-msg=R0201

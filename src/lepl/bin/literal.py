@@ -49,7 +49,7 @@ if bytes is str:
 else:
 
     from lepl.bin.bits import BitString
-    from lepl.node import Node
+    from lepl.support.node import Node
     
     
     def make_binary_parser():

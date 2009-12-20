@@ -25,6 +25,7 @@ Tests for the lepl.offside package.
 
 # pylint: disable-msg=E0611
 #@PydevCodeAnalysisIgnore
+import lepl.offside._test.extension
 import lepl.offside._test.indentation
 import lepl.offside._test.matchers
 import lepl.offside._test.offside

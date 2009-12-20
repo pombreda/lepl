@@ -29,10 +29,10 @@ Tests added for 3.2, 3.2.1
 from unittest import TestCase
 
 from lepl import *
-from lepl.graph import ConstructorWalker
-from lepl.matchers import Matcher, Transform, Transformation
-from lepl.memo import _LMemo, _RMemo
-from lepl.rewriters import DelayedClone, NodeStats
+from lepl.support.graph import ConstructorWalker
+from lepl.matchers.core import Matcher, Transform, Transformation
+from lepl.matchers.memo import _LMemo, _RMemo
+from lepl.core.rewriters import DelayedClone, NodeStats
 
 
 class MagusTest(TestCase):

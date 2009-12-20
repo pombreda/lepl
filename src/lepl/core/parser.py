@@ -30,8 +30,8 @@ from collections import deque
 from logging import getLogger
 from traceback import format_exc
 
-from lepl.monitor import prepare_monitors
-from lepl.support import format
+from lepl.core.monitor import prepare_monitors
+from lepl.support.lib import format
 
     
 def tagged(call):

@@ -54,9 +54,9 @@ from abc import ABCMeta, abstractmethod
 from collections import deque
 from itertools import chain
 
-from lepl.node import Node
+from lepl.support.node import Node
 from lepl.regexp.interval import Character, TaggedFragments, IntervalMap
-from lepl.support import format, basestring, str, LogMixin
+from lepl.support.lib import format, basestring, str, LogMixin
 
 
 # pylint: disable-msg=C0103

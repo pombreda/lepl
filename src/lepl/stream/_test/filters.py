@@ -24,10 +24,10 @@ Tests for the lepl.filters module.
 from operator import eq
 from unittest import TestCase
 
-from lepl.filters import Filter, FilteredSource, Exclude, ExcludeSequence, \
-    FilterException
-from lepl.matchers import Any, Literal
-from lepl.stream import  DEFAULT_STREAM_FACTORY
+from lepl.stream.filters import Filter, FilteredSource, Exclude, \
+    ExcludeSequence, FilterException
+from lepl.matchers.core import Any, Literal
+from lepl.stream.stream import  DEFAULT_STREAM_FACTORY
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, R0904, R0201

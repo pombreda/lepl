@@ -23,11 +23,11 @@ Tests for the lepl.manager module.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.config import Configuration
-from lepl.functions import Eos
-from lepl.manager import GeneratorManager
-from lepl.matchers import Literal
-from lepl.support import LogMixin
+from lepl.core.config import Configuration
+from lepl.core.manager import GeneratorManager
+from lepl.matchers.derived import Eos
+from lepl.matchers.core import Literal
+from lepl.support.lib import LogMixin
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201, R0904

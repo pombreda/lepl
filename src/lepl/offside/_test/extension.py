@@ -28,7 +28,7 @@ from lepl.offside.regexp import LineAwareAlphabet, make_hide_sol_eol_parser
 from lepl.offside.stream import LineAwareStreamFactory
 from lepl.regexp.core import Compiler
 from lepl.regexp.str import make_str_parser
-#from lepl.support import format
+#from lepl.support.lib import format
 
 
 # pylint: disable-msg=C0103, C0111, C0301

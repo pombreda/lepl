@@ -109,18 +109,21 @@ Running this gives the result::
 from lepl.contrib.matchers import SmartSeparator2
 from lepl.core.config import Configuration
 from lepl.core.manager import GeneratorManager
-from lepl.core.memo import RMemo, LMemo, MemoException
-from lepl.core.rewriters import memoize, flatten, compse_transforms, \
+from lepl.core.rewriters import memoize, flatten, compose_transforms, \
     auto_memoize, context_memoize, optimize_or
 from lepl.core.trace import RecordDeepest, TraceResults
-from lepl.matchers.core import Empty, Repeat, And, Or, Join, First, Any, \
-    Literal, Empty, Lookahead, Columns
-from lepl.matchers.derived import Apply, args, KApply, Regexp, Delayed, \
-    Commit, Trace, AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, \
-    Substitute, Name, Eof, Eos, Identity, Newline, Space, Whitespace, Digit, \
-    Letter, Upper, Lower, Printable, Punctuation, UnsignedInteger, \
-    SignedInteger, Float, Word, Separator, DropEmpty, Literals, String, \
-    SkipTo, GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST
+from lepl.matchers.core import Empty, And, Or, First, Any, Delayed, Commit, \
+    Literal, Empty, Lookahead, Columns, Trace
+from lepl.matchers.derived import Apply, args, KApply, Regexp, Join, \
+    AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Repeat, Plus, \
+    OneOrMore, Substitute, Name, Eof, Eos, Identity, Newline, Space, \
+    Whitespace, Digit, Letter, Upper, Lower, Printable, Punctuation, \
+    UnsignedInteger, SignedInteger, Integer, UnsignedFloat, SignedFloat, \
+    SignedEFloat, Float, Word, DropEmpty, Literals, String, SkipTo, \
+    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST
+from lepl.matchers.error import Error, make_error, raise_error, throw
+from lepl.matchers.memo import RMemo, LMemo, MemoException
+from lepl.matchers.operators import Separator
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.lexer.rewriters import lexer_rewriter
 from lepl.offside.config import LineAwareConfiguration, LineAwareConfiguration

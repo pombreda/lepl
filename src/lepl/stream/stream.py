@@ -90,7 +90,7 @@ which provide a general iterator over "lines".
 from abc import ABCMeta, abstractmethod, abstractproperty
 from io import StringIO
 
-from lepl.support import open_stop, sample, format, basestring, str
+from lepl.support.lib import open_stop, sample, format, basestring, str
 
 
 class StreamException(Exception):

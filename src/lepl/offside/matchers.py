@@ -22,12 +22,12 @@ Matchers that are indent aware.
 
 from weakref import WeakKeyDictionary
 
-from lepl.matchers import OperatorMatcher, And, Any, coerce_
-from lepl.parser import tagged
+from lepl.matchers.core import OperatorMatcher, And, Any, coerce_
+from lepl.core.parser import tagged
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.monitor import BlockMonitor
 from lepl.offside.regexp import SOL as _SOL, EOL as _EOL
-from lepl.filters import ExcludeSequence
+from lepl.stream.filters import ExcludeSequence
 from lepl.lexer.matchers import Token
 
 

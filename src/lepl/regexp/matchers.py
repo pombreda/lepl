@@ -23,8 +23,8 @@ These are used internally for rewriting; users typically use `Regexp` which
 calls the standard Python regular expression library (and so is faster).
 '''
 
-from lepl.matchers import Transformable
-from lepl.parser import tagged
+from lepl.matchers.core import Transformable
+from lepl.core.parser import tagged
 from lepl.regexp.core import Compiler
 from lepl.regexp.unicode import UnicodeAlphabet
 

@@ -16,19 +16,22 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
-
 '''
-Tests for the lepl.matchers package.
+Tests for the lepl.matchers module.
 '''
 
+#from logging import basicConfig, DEBUG
+from unittest import TestCase
 
-# we need to import all files used in the automated self-test
 
-# pylint: disable-msg=E0611
-#@PydevCodeAnalysisIgnore
-import lepl.matchers._test.core
-import lepl.matchers._test.derived
-import lepl.matchers._test.error
-import lepl.matchers._test.memo
-import lepl.matchers._test.operators
-import lepl.matchers._test.separators
+class BaseTest(TestCase):
+    
+    def assert_direct(self, stream, match, target):
+        result = [x for (x, _s) in match.match_string(stream)]
+        assert target == result, result
+    
+    def assert_list(self, stream, match, target):
+        matcher = match.items_matcher()
+        #print(matcher.matcher)
+        result = [x for (x, _s) in matcher(stream)]
+        assert target == result, result

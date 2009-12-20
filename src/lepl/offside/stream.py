@@ -25,8 +25,8 @@ from io import StringIO
 from lepl.lexer.stream import TokenSource
 from lepl.offside.lexer import START
 from lepl.offside.support import LineAwareError, OffsideError
-from lepl.stream import DefaultStreamFactory, LineSource, sample
-from lepl.support import str
+from lepl.stream.stream import DefaultStreamFactory, LineSource, sample
+from lepl.support.lib import str
 
 
 class LineAwareStreamFactory(DefaultStreamFactory):

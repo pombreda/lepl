@@ -21,16 +21,16 @@ Rewriters modify the graph of matchers before it is used to generate a
 parser.
 '''
 
-from lepl.graph import Visitor, preorder, loops, order, NONTREE, dfs_edges, LEAF
-from lepl.operators import Matcher
-from lepl.support import lmap, format
+from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, dfs_edges, LEAF
+from lepl.matchers.operators import Matcher
+from lepl.support.lib import lmap, format
 
 
 def clone(node, args, kargs):
     '''
     Clone including matcher-specific attributes.
     '''
-    from lepl.graph import clone as old_clone
+    from lepl.support.graph import clone as old_clone
     copy = old_clone(node, args, kargs)
     copy_standard_attributes(node, copy)
     return copy
@@ -40,7 +40,7 @@ def copy_standard_attributes(node, copy, describe=True, transform=True):
     '''
     Handle the additional attributes that matchers may have.
     '''
-    from lepl.matchers import Transformable
+    from lepl.matchers.core import Transformable
     if isinstance(node, Transformable) and transform:
         copy.function = node.function
     if describe:
@@ -67,7 +67,7 @@ class DelayedClone(Visitor):
         needed as arguments but have not themselves been cloned.
         '''
         # delayed import to avoid dependency loops
-        from lepl.matchers import Delayed
+        from lepl.matchers.core import Delayed
         if node not in self._visited:
             self._visited[node] = Delayed()
             self._loops.add(node)
@@ -110,7 +110,7 @@ class DelayedClone(Visitor):
         defined and are nor transformed).
         '''
         # delayed import to avoid dependency loops
-        from lepl.matchers import Delayed, Transformable
+        from lepl.matchers.core import Delayed, Transformable
         if isinstance(node, Delayed) and node.matcher and \
                 not (isinstance(node, Transformable) and node.function):
             return node.matcher
@@ -131,7 +131,7 @@ def post_clone(function):
     proxies and so have no functionality of their own (so, when used with 
     `DelayedClone`, effectively performs a map on the graph).
     '''
-    from lepl.matchers import Delayed
+    from lepl.matchers.core import Delayed
     def new_clone(node, args, kargs):
         '''
         Apply function as well as clone.
@@ -149,7 +149,7 @@ def flatten(graph):
     '''
     A rewriter that flattens `And` and `Or` lists.
     '''
-    from lepl.matchers import And, Or
+    from lepl.matchers.core import And, Or
     def new_clone(node, old_args, kargs):
         '''
         The flattening cloner.
@@ -179,7 +179,7 @@ def compose_transforms(graph):
     A rewriter that joins adjacent transformations into a single
     operation, avoiding trampolining in some cases.
     '''
-    from lepl.matchers import Transform, Transformable
+    from lepl.matchers.core import Transform, Transformable
     def new_clone(node, args, kargs):
         '''
         The joining cloner.
@@ -253,7 +253,7 @@ def left_loops(node):
     
     Each loop is a list that starts and ends with the given node.
     '''
-    from lepl.matchers import Or, Lookahead
+    from lepl.matchers.core import Or, Lookahead
     stack = [[node]]
     known = set([node]) # avoid getting lost in embedded loops
     while stack:
@@ -299,7 +299,7 @@ def optimize_or(conservative=True):
     `conservative` refers to the algorithm used to detect loops; False
     may classify some left--recursive loops as right--recursive.
     '''
-    from lepl.matchers import Delayed, Or
+    from lepl.matchers.core import Delayed, Or
     def rewriter(graph):
         '''
         The Or-rewriting rewriter.
@@ -329,8 +329,8 @@ def context_memoize(conservative=True):
     `conservative` refers to the algorithm used to detect loops; False
     may classify some left--recursive loops as right--recursive.
     '''
-    from lepl.matchers import Delayed
-    from lepl.memo import LMemo, RMemo
+    from lepl.matchers.core import Delayed
+    from lepl.matchers.memo import LMemo, RMemo
     def rewriter(graph):
         '''
         Detect loops and clone appropriately.

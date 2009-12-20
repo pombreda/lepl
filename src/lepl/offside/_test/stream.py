@@ -24,7 +24,7 @@ Tests for the lepl.offside.stream module.
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
-from lepl.matchers import Regexp, Literal
+from lepl.matchers.core import Regexp, Literal
 from lepl.offside.config import LineAwareConfiguration
 from lepl.offside.matchers import BLine
 from lepl.offside.support import OffsideError

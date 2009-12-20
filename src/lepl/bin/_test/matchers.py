@@ -30,7 +30,7 @@ else:
     from lepl.bin.encode import dispatch_table, simple_serialiser
     from lepl.bin.literal import parse
     from lepl.bin.matchers import BEnd, Const
-    from lepl.node import Node
+    from lepl.support.node import Node
     
     
     # pylint: disable-msg=C0103, C0111, C0301

@@ -50,7 +50,7 @@ calls it in a way that replicates the original calls to the node constructors.
 
 from collections import Sequence, deque
 
-from lepl.support import compose, safe_in, safe_add, empty, format
+from lepl.support.lib import compose, safe_in, safe_add, empty, format
 
 
 FORWARD = 1    # forward edge

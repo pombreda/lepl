@@ -25,7 +25,7 @@ from unittest import TestCase
 
 from lepl import UnicodeAlphabet
 from lepl.regexp.core import Compiler
-from lepl.support import format
+from lepl.support.lib import format
 
 
 # pylint: disable-msg=C0103, C0111, C0301

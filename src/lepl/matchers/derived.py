@@ -31,11 +31,11 @@ final matcher tree for any particular grammar.
 from string import whitespace, digits, ascii_letters, \
     ascii_uppercase, ascii_lowercase, printable, punctuation
 
-from lepl.matchers import coerce_, Regexp, And, DepthFirst, BreadthFirst, \
+from lepl.matchers.core import coerce_, Regexp, And, DepthFirst, BreadthFirst, \
     OrderByResultCount, ApplyRaw, Transformation, Transform, ApplyArgs, \
     Any, Lookahead, Eof, Literal, Or
-from lepl.operators import GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
-from lepl.support import assert_type, lmap, format, basestring
+from lepl.matchers.operators import GREEDY, NON_GREEDY, BREADTH_FIRST, DEPTH_FIRST
+from lepl.support.lib import assert_type, lmap, format, basestring
 
  
 # pylint: disable-msg=C0103

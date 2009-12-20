@@ -22,9 +22,9 @@ Error handling (generating an error while parsing).
 This is not that complete or well thought through; it needs to be revised.
 '''
 
-from lepl.graph import postorder
-from lepl.node import Node
-from lepl.support import format
+from lepl.support.graph import postorder
+from lepl.support.node import Node
+from lepl.support.lib import format
 
 
 def make_error(msg):

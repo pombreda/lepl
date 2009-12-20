@@ -22,9 +22,9 @@ Contributed matchers.
 
 from copy import copy
 
-from lepl.functions import Optional
-from lepl.matchers import And, Or, _BaseSearch, Transform
-from lepl.operators import _BaseSeparator
+from lepl.matchers.derived import Optional
+from lepl.matchers.core import And, Or, _BaseSearch, Transform
+from lepl.matchers.operators import _BaseSeparator
 
 
 # (c) 2009 "mereandor" / mereandor at gmail dot com (Roman), Andrew Cooke

@@ -21,10 +21,10 @@ Filter and transform streams.
 '''
 
 
-from lepl.matchers import OperatorMatcher
-from lepl.parser import tagged
-from lepl.stream import Source, LocationStream, DEFAULT_STREAM_FACTORY
-from lepl.support import str
+from lepl.matchers.core import OperatorMatcher
+from lepl.core.parser import tagged
+from lepl.stream.stream import Source, LocationStream, DEFAULT_STREAM_FACTORY
+from lepl.support.lib import str
 
 
 class FilterException(Exception):

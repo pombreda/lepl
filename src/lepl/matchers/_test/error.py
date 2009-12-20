@@ -23,7 +23,7 @@ Tests for the lepl.error module.
 from unittest import TestCase
 
 from lepl import Literal, Error
-from lepl.error import make_error
+from lepl.matchers.error import make_error
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201

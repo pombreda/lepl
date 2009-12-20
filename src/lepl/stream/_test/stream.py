@@ -23,7 +23,7 @@ Tests for the lepl.stream module.
 from random import choice
 from unittest import TestCase
 
-from lepl.stream import SimpleStream, DEFAULT_STREAM_FACTORY
+from lepl.stream.stream import SimpleStream, DEFAULT_STREAM_FACTORY
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, R0904, R0201

@@ -41,12 +41,12 @@ None).
 
 from logging import getLogger
 
-from lepl.operators import Matcher
+from lepl.matchers.operators import Matcher
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty
 from lepl.regexp.matchers import NfaRegexp
 from lepl.regexp.interval import Character
-from lepl.rewriters import copy_standard_attributes, clone, DelayedClone
-from lepl.support import format, str
+from lepl.core.rewriters import copy_standard_attributes, clone, DelayedClone
+from lepl.support.lib import format, str
 
 
 class RegexpContainer(object):
@@ -122,7 +122,7 @@ def single(alphabet, node, regexp, matcher_type, transform=True):
     Create a matcher for the given regular expression.
     '''
     # avoid dependency loops
-    from lepl.matchers import Transformation
+    from lepl.matchers.core import Transformation
     matcher = matcher_type(regexp, alphabet)
     copy_standard_attributes(node, matcher, describe=False, transform=transform)
     return matcher.precompose_transformation(Transformation(empty_adapter))
@@ -158,8 +158,8 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
     # they should return either a container or a matcher.
     
     # Avoid dependency loops
-    from lepl.functions import add
-    from lepl.matchers import Any, Or, And, Transformable, \
+    from lepl.matchers.derived import add
+    from lepl.matchers.core import Any, Or, And, Transformable, \
         Transform, Transformation, Literal, DepthFirst
 
     log = getLogger('lepl.regexp.rewriters.make_clone')

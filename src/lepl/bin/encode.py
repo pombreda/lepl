@@ -62,8 +62,8 @@ else:
     from operator import add
     
     from lepl.bin.bits import BitString, STRICT
-    from lepl.graph import leaves
-    from lepl.node import Node
+    from lepl.support.graph import leaves
+    from lepl.support.node import Node
     
     
     def dispatch_table(big_endian=True, encoding=None, errors=STRICT):

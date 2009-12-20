@@ -61,7 +61,7 @@ if bytes is str:
 else:
 
 
-    from lepl.stream import SimpleStream
+    from lepl.stream.stream import SimpleStream
     
     STRICT = 'strict'
     

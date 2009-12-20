@@ -25,8 +25,8 @@ from lepl.lexer.matchers import BaseToken
 from lepl.offside.monitor import BlockMonitor
 from lepl.offside.regexp import START, END
 from lepl.offside.support import OffsideError
-from lepl.parser import tagged
-from lepl.support import format
+from lepl.core.parser import tagged
+from lepl.support.lib import format
 
 
 # pylint: disable-msg=R0901, R0904, R0913, E1101

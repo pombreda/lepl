@@ -21,7 +21,7 @@ Pre-built configurations for using the package in several standard ways.
 '''
 
 
-from lepl.config import Configuration
+from lepl.core.config import Configuration
 from lepl.lexer.matchers import BaseToken
 from lepl.lexer.rewriters import lexer_rewriter
 from lepl.offside.matchers import DEFAULT_TABSIZE, DEFAULT_POLICY, Block
@@ -31,9 +31,9 @@ from lepl.offside.stream import LineAwareStreamFactory, LineAwareTokenSource
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.str import make_str_parser
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.rewriters import fix_arguments, flatten, compose_transforms, \
+from lepl.core.rewriters import fix_arguments, flatten, compose_transforms, \
     auto_memoize
-from lepl.trace import TraceResults
+from lepl.core.trace import TraceResults
 
 
 # pylint: disable-msg=R0913

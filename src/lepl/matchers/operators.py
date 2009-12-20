@@ -22,8 +22,8 @@ Support for operator syntactic sugar (and operator redefinition).
 
 from abc import ABCMeta
 
-from lepl.context import Namespace, NamespaceMixin, Scope
-from lepl.support import open_stop, format, basestring
+from lepl.support.context import Namespace, NamespaceMixin, Scope
+from lepl.support.lib import open_stop, format, basestring
 
 
 # pylint: disable-msg=C0103, W0105
@@ -44,9 +44,9 @@ class DefaultNamespace(Namespace):
     
     def __init__(self):
         # Handle circular dependencies
-        from lepl.error import raise_error
-        from lepl.functions import Space, Add, Apply, KApply, Drop, Repeat, Map
-        from lepl.matchers import And, Or, First
+        from lepl.matchers.error import raise_error
+        from lepl.matchers.derived import Space, Add, Apply, KApply, Drop, Repeat, Map
+        from lepl.matchers.core import And, Or, First
         super(DefaultNamespace, self).__init__({
             SPACE_OPT: lambda a, b: And(a, Space()[0:,...], b),
             SPACE_REQ: lambda a, b: And(a, Space()[1:,...], b),
@@ -127,8 +127,8 @@ class _BaseSeparator(Override):
         then any previous defined separator is effectively removed.
         '''
         # Handle circular dependencies
-        from lepl.functions import Repeat
-        from lepl.matchers import Regexp, And, coerce_
+        from lepl.matchers.derived import Repeat
+        from lepl.matchers.core import Regexp, And, coerce_
         if separator is None:
             and_ = And
             repeat = Repeat
@@ -147,8 +147,8 @@ class _BaseSeparator(Override):
         '''
         A simple Repeat with separator.
         '''
-        from lepl.functions import Repeat
-        from lepl.matchers import And
+        from lepl.matchers.derived import Repeat
+        from lepl.matchers.core import And
         def repeat(m, st=0, sp=None, d=0, s=None, a=False):
             '''
             Wrap `Repeat` to adapt the separator.
@@ -175,7 +175,7 @@ class Separator(_BaseSeparator):
         Require the separator on each `And`.
         '''
         # Handle circular dependencies
-        from lepl.matchers import And
+        from lepl.matchers.core import And
         return (lambda a, b: And(a, separator, b),
                 self._repeat(separator))
         
@@ -196,7 +196,7 @@ class SmartSeparator1(_BaseSeparator):
         Require the separator on each `And`.
         '''
         # Handle circular dependencies
-        from lepl.matchers import Consumer, And, Or
+        from lepl.matchers.core import Consumer, And, Or
         def and_(a, b):
             '''
             Add space only in the case when both consume something.

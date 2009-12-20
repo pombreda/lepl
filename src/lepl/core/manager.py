@@ -51,8 +51,8 @@ For the control of parse results see the `Commit()` matcher.
 from heapq import heappushpop, heappop, heappush
 from weakref import ref, WeakKeyDictionary
 
-from lepl.monitor import StackMonitor, ValueMonitor
-from lepl.support import LogMixin, format, str
+from lepl.core.monitor import StackMonitor, ValueMonitor
+from lepl.support.lib import LogMixin, format, str
 
 
 # pylint: disable-msg=C0103

@@ -25,24 +25,24 @@ expressions.
 
 from abc import ABCMeta
 
-from lepl.context import Namespace, NamespaceMixin
-from lepl.functions import Add, Apply, Drop, KApply, Repeat, Map
+from lepl.support.context import Namespace, NamespaceMixin
+from lepl.matchers.derived import Add, Apply, Drop, KApply, Repeat, Map
 from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream, \
     ContentSource, TokenSource
-from lepl.error import raise_error
+from lepl.matchers.error import raise_error
 from lepl.lexer.support import LexerError, RuntimeLexerError
-from lepl.matchers import OperatorMatcher, BaseMatcher, coerce_, Any, \
+from lepl.matchers.core import OperatorMatcher, BaseMatcher, coerce_, Any, \
     Literal, Lookahead, Regexp, And, Or, First
-from lepl.memo import NoMemo
-from lepl.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
+from lepl.matchers.memo import NoMemo
+from lepl.matchers.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
     KARGS, RAISE, REPEAT, FIRST, MAP
-from lepl.parser import tagged
+from lepl.core.parser import tagged
 from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.stream import LocationStream, DEFAULT_STREAM_FACTORY
-from lepl.support import format, str
+from lepl.stream.stream import LocationStream, DEFAULT_STREAM_FACTORY
+from lepl.support.lib import format, str
 
 
 # pylint: disable-msg=W0105

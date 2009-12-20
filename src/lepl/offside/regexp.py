@@ -24,7 +24,7 @@ and end.
 from lepl.offside.support import LineAwareError, OffsideError
 from lepl.regexp.core import Character
 from lepl.regexp.str import StrAlphabet, StrParser
-from lepl.support import format
+from lepl.support.lib import format
 
 
 # pylint: disable-msg=W0105

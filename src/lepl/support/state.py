@@ -38,7 +38,7 @@ may work correctly when it changes.
 
 from threading import local
 
-from lepl.support import singleton
+from lepl.support.lib import singleton
 
 
 class State(local):

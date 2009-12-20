@@ -26,7 +26,7 @@ from unittest import TestCase
 from lepl import RegexpError, DEFAULT_STREAM_FACTORY
 from lepl.regexp.core import NfaGraph, NfaToDfa, Compiler
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.support import format
+from lepl.support.lib import format
 
 # pylint: disable-msg=C0103, C0111, C0301, R0201, R0904
 # (dude this is just a test)

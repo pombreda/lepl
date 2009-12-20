@@ -23,8 +23,8 @@ converted to strings using str().
 
 from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
     Option, _Choice
-from lepl.config import Configuration
-from lepl.support import format, str, LogMixin
+from lepl.core.config import Configuration
+from lepl.support.lib import format, str, LogMixin
 
 
 class StrParser(LogMixin):
@@ -131,8 +131,8 @@ class StrParser(LogMixin):
         '''
         
         # Avoid dependency loops
-        from lepl.functions import Drop, Eos, AnyBut, Upper
-        from lepl.matchers import Any, Lookahead, Literal, Delayed
+        from lepl.matchers.derived import Drop, Eos, AnyBut, Upper
+        from lepl.matchers.core import Any, Lookahead, Literal, Delayed
     
         # these two definitions enforce the conditions above, providing only
         # special characters appear as literals in the grammar

@@ -24,7 +24,7 @@ from unittest import TestCase
 
 #from logging import basicConfig, DEBUG
 from lepl.regexp.binary import binary_single_parser
-from lepl.support import format
+from lepl.support.lib import format
 
 # pylint: disable-msg=C0103, C0111, C0301, C0324, R0201, R0903, R0904
 # (dude this is just a test)

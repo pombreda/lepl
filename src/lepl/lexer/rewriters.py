@@ -24,9 +24,9 @@ from collections import deque
 from logging import getLogger
 
 from lepl.lexer.matchers import BaseToken, Lexer, LexerError, NonToken
-from lepl.operators import Matcher
+from lepl.matchers.operators import Matcher
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.support import format
+from lepl.support.lib import format
 
 
 def find_tokens(matcher):

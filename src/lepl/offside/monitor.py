@@ -21,10 +21,10 @@ Support the stack-scoped tracking of indent level blocks.
 '''
 
 
-from lepl.monitor import ActiveMonitor
+from lepl.core.monitor import ActiveMonitor
 from lepl.offside.support import OffsideError
-from lepl.state import State
-from lepl.support import LogMixin, format
+from lepl.support.state import State
+from lepl.support.lib import LogMixin, format
 
 
 class BlockMonitor(ActiveMonitor, LogMixin):

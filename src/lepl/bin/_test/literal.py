@@ -29,7 +29,7 @@ else:
     
     from lepl.bin.bits import BitString
     from lepl.bin.literal import parse
-    from lepl.node import Node
+    from lepl.support.node import Node
     
     
     # pylint: disable-msg=C0103, C0111, C0301

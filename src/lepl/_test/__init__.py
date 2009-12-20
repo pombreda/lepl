@@ -31,31 +31,6 @@ import lepl
 
 # pylint: disable-msg=E0611, W0401
 #@PydevCodeAnalysisIgnore
-import lepl._test.bug_stalled_parser
-import lepl._test.error
-import lepl._test.filters
-import lepl._test.functions
-import lepl._test.graph
-import lepl._test.magus
-import lepl._test.manager
-import lepl._test.matchers
-import lepl._test.memo
-import lepl._test.node
-import lepl._test.operators
-import lepl._test.parser
-import lepl._test.rewriters
-import lepl._test.separators
-import lepl._test.stream
-import lepl._test.support
-
-#from lepl._example import *
-#from lepl.bin._test import *
-#from lepl.bin._example import *
-#from lepl.lexer._test import *
-#from lepl.lexer._example import *
-#from lepl.offside._test import *
-#from lepl.offside._example import *
-#from lepl.regexp._test import *
 
 
 def all():
@@ -99,7 +74,8 @@ def ls_all_tests():
     All test modules.
     '''
     for root in ls_module(lepl, 
-                          ['bin', 'contrib', 'lexer', 'regexp', 'offside'], 
+                          ['bin', 'contrib', 'core', 'lexer', 'matchers', 
+                           'offside', 'regexp', 'stream', 'support'], 
                           True):
         for child in ls_module(root, ['_test', '_example']):
             for module in ls_module(child):
