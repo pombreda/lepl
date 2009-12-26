@@ -42,9 +42,8 @@ class MemoTest(TestCase):
         seq   += letter & Optional(seq)
         
         #print(seq)
-        p = seq.string_matcher( 
-                Configuration(rewriters=[memoize(RMemo)], 
-                              monitors=[TraceResults(True)]))
+        seq.config.right_memoize().trace(True)
+        p = seq.string_matcher()
         #print(p.matcher)
         
         results = list(p('ab'))
@@ -61,9 +60,8 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += Optional(seq) & letter
         
-        p = seq.null_matcher(
-                Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[TraceResults(True)]))
+        seq.config.left_memoize().trace(True)
+        p = seq.null_matcher()
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
@@ -78,9 +76,8 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += Optional(seq) & letter
         
-        p = seq.string_matcher(
-                Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[TraceResults(True)]))
+        seq.config.left_memoize().trace(True)
+        p = seq.string_matcher()
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
@@ -95,8 +92,8 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += letter | (seq  & letter)
         
-        p = seq.string_matcher(Configuration(rewriters=[memoize(LMemo)], 
-                                             monitors=[TraceResults(True)]))
+        seq.config.left_memoize().trace(True)
+        p = seq.string_matcher()
         results = list(p('abcdef'))
         assert len(results) == 6, len(results)
         assert results[0][0] == ['a'], results[0][0]
@@ -127,9 +124,8 @@ class MemoTest(TestCase):
         termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
         sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
-        p = sentence.string_matcher(
-                    Configuration(rewriters=[memoize(LMemo)], 
-                                  monitors=[TraceResults(False)]))
+        sentence.config.left_memoize().trace()
+        p = sentence.string_matcher()
         
         text = 'every boy or some girl and helen and john or pat knows ' \
                'and respects or loves every boy or some girl and pat or ' \

@@ -57,9 +57,9 @@ class LimitedDepthTest(LogMixin, TestCase):
     def assert_range(self, n_match, direcn, results, multiplier):
         for index in range(len(results)):
             queue_len = index * multiplier
-            matcher = (Literal('*')[::direcn,...][n_match] & Eos())\
-                        .string_matcher(
-                        Configuration(monitors=[GeneratorManager(queue_len)]))
+            expr = Literal('*')[::direcn,...][n_match] & Eos()
+            expr.config.manage(queue_len)
+            matcher = expr.string_matcher()
             self.assert_count(matcher, queue_len, index, results[index])
             
     def assert_count(self, matcher, queue_len, index, count):
@@ -69,8 +69,8 @@ class LimitedDepthTest(LogMixin, TestCase):
 
     def test_single(self):
         #basicConfig(level=DEBUG)
-        matcher = (Literal('*')[:,...][3]).string_matcher(
-                        Configuration(monitors=[GeneratorManager(queue_len=5)])
-                        )('*' * 4)
-        list(matcher)
+        expr = Literal('*')[:,...][3]
+        expr.config.manage(5)
+        match = expr.string_matcher()('*' * 4)
+        list(match)
         

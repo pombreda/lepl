@@ -167,7 +167,8 @@ class StrParser(LogMixin):
     
         # Empty config here avoids loops if the default config includes
         # references to alphabets
-        return expr.string_parser(config=Configuration())
+        expr.config.clear()
+        return expr.string_parser()
 
 
 def make_str_parser(alphabet):

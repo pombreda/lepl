@@ -57,9 +57,8 @@ class MemoExample(Example):
         termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
         sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
-        p = sentence.null_matcher(
-                Configuration(rewriters=[memoize(LMemo)], 
-                              monitors=[TraceResults(False)]))
+        sentence.config.left_memoize().trace()
+        p = sentence.null_matcher()
         self.examples([(lambda: 
             len(list(p('every boy or some girl and helen and john or pat knows '
                        'and respects or loves every boy or some girl and pat or '

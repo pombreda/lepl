@@ -25,14 +25,16 @@ from lepl.stream.stream import DEFAULT_STREAM_FACTORY
 # A major driver for this being separate is that it decouples dependency loops
 
 
+class ConfigurationError(Exception):
+    pass
+
+
+
 class Configuration(object):
     '''
     Encapsulate various parameters that describe how the matchers are
     rewritten and evaluated.
     '''
-    
-    __default = None
-    __managed = None
     
     def __init__(self, rewriters=None, monitors=None, stream_factory=None):
         '''
@@ -42,128 +44,140 @@ class Configuration(object):
         
         `monitors` are factories that return implementations of `ActiveMonitor`
         or `PassiveMonitor` and will be invoked by `trampoline()`. 
+        
+        `stream_factory` constructs a stream from the given input.
         '''
         self.rewriters = rewriters
         self.monitors = monitors
         if stream_factory is None:
             stream_factory = DEFAULT_STREAM_FACTORY
+        self.stream_factory = stream_factory
+        
+    
+
+class ConfigBuilder(object):
+    
+    def __init__(self):
+        self.__unused = True
+        self.__rewriters = []
+        self.__monitors = []
+        self.__stream_factory = DEFAULT_STREAM_FACTORY
+        self.__alphabet = None
+        
+    def add_rewriter(self, rewriter):
+        self.__unused = False
+        self.__rewriters.append(rewriter)
+        return self
+
+    def add_monitor(self, monitor):
+        self.__unused = False
+        self.__monitors.append(monitor)
+        return self
+    
+    def set_stream_factory(self, stream_factory=DEFAULT_STREAM_FACTORY):
+        self.__unused = False
         self.__stream_factory = stream_factory
-        
+        return self
+
     @property
-    def stream(self):
-        '''
-        Read only access to the stream factory.
-        '''
-        return self.__stream_factory
-        
-    @classmethod    
-    def default(cls, config=None):
-        '''
-        If no config is given, Generate a default configuration instance.  
-        Currently this flattens nested `And()` and `Or()` instances;
-        adds memoisation (which allows left recursion, but may alter the order 
-        in which matches are returned for ambiguous grammars);
-        adds a lexer if any tokens are found (assuming unicode input);
-        and supports tracing (which is initially disabled, but can be enabled
-        using the `Trace()` matcher).
-        '''
-        if config:
-            return config
-        if cls.__default is None:
-            from lepl.lexer.rewriters import lexer_rewriter
-            from lepl.core.rewriters import flatten, compose_transforms, \
-                auto_memoize
-            from lepl.core.trace import TraceResults
-            cls.__default = \
-                Configuration(
-                    rewriters=[flatten, compose_transforms, lexer_rewriter(),
-                               auto_memoize()],
-                    monitors=[TraceResults(False)])
-        return cls.__default
+    def configuration(self):
+        if self.__unused:
+            self.default()
+        return Configuration(self.__rewriters, self.__monitors, 
+                             self.__stream_factory)
     
-    @classmethod
-    def managed(cls):
-        '''
-        Add generator management (no limit, but enables `Commit()`) to the
-        default configuration.
-        '''
-        if cls.__managed is None:
-            from lepl.lexer.rewriters import lexer_rewriter
-            from lepl.core.manager import GeneratorManager
-            from lepl.core.rewriters import flatten, compose_transforms, \
-                auto_memoize
-            from lepl.core.trace import TraceResults
-            cls.__managed = \
-                Configuration(
-                    rewriters=[flatten, compose_transforms, lexer_rewriter(),
-                               auto_memoize()],
-                    monitors=[TraceResults(False), 
-                              GeneratorManager(queue_len=0)])
-        return cls.__managed
+    @configuration.setter
+    def configuration(self, configuration):
+        self.__rewriters = list(configuration.rewriters)
+        self.__monitors = list(configuration.monitors)
+        self.__stream_factory = configuration.stream_factory
     
-    @classmethod    
-    def tokens(cls, alphabet):
-        '''
-        Tokens for a unicode alphabet are already suppored by the default
-        configuration; this allows other alphabets to be supported.
-        
-        If alphabet is not specified, Unicode is assumed.
-        '''
-        from lepl.lexer.rewriters import lexer_rewriter
+    @property
+    def alphabet(self):
         from lepl.regexp.unicode import UnicodeAlphabet
-        from lepl.core.rewriters import flatten, compose_transforms, \
-            auto_memoize
-        from lepl.core.trace import TraceResults
-        alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
-        return Configuration(
-                rewriters=[flatten, compose_transforms,
-                           lexer_rewriter(alphabet), auto_memoize()],
-                monitors=[TraceResults(False)])
+        if not self.__alphabet:
+            self.__alphabet = UnicodeAlphabet.instance()
+        return self.__alphabet
     
-    @classmethod
-    def nfa(cls, alphabet=None):
-        '''
-        Rewrite fragments of the matcher graph as regular expressions.
-        This uses a pushdown automaton and should return all possible matches.
-        
-        If alphabet is not specified, Unicode is assumed.
-        '''
-        from lepl.lexer.rewriters import lexer_rewriter
-        from lepl.regexp.rewriters import regexp_rewriter
-        from lepl.regexp.unicode import UnicodeAlphabet
-        from lepl.core.rewriters import flatten, compose_transforms, \
-            auto_memoize
-        from lepl.core.trace import TraceResults
-        alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
-        return Configuration(
-                rewriters=[flatten, compose_transforms,
-                           regexp_rewriter(alphabet, False),
-                           compose_transforms, lexer_rewriter(alphabet),
-                           auto_memoize()],
-                monitors=[TraceResults(False)])
+    @alphabet.setter
+    def alphabet(self, alphabet):
+        if alphabet:
+            if self.__alphabet:
+                if self.__alphabet != alphabet:
+                    raise ConfigurationError(
+                        'Alphabet has changed during configuration '
+                        '(perhaps the default was already used?)')
+            else:
+                self.__alphabet = alphabet
     
-    @classmethod
-    def dfa(cls, alphabet=None):
-        '''
-        Rewrite fragments of the matcher graph as regular expressions.
-        This uses a finite automaton and returns only the greediest match,
-        so may produce changed results with ambiguous parsers.
+    def flatten(self):
+        from lepl.core.rewriters import flatten
+        return self.add_rewriter(flatten)
         
-        Note - this assumes that the value being parsed is Unicode text.
-        '''
+    def compose_transforms(self):
+        from lepl.core.rewriters import compose_transforms
+        return self.add_rewriter(compose_transforms)
+        
+    def optimize_or(self, conservative=True):
+        from lepl.core.rewriters import optimize_or
+        return self.add_rewriter(optimize_or(conservative))
+        
+    def lexer(self, alphabet=None, discard=None):
         from lepl.lexer.rewriters import lexer_rewriter
+        self.alphabet = alphabet
+        return self.add_rewriter(
+            lexer_rewriter(alphabet=self.alphabet, discard=discard))
+    
+    def auto_memoize(self, conservative=None):
+        from lepl.core.rewriters import auto_memoize
+        return self.add_rewriter(auto_memoize(conservative))
+    
+    def left_memoize(self):
+        from lepl.core.rewriters import memoize
+        from lepl.matchers.memo import LMemo
+        return self.add_rewriter(memoize(LMemo))
+    
+    def right_memoize(self):
+        from lepl.core.rewriters import memoize
+        from lepl.matchers.memo import RMemo
+        return self.add_rewriter(memoize(RMemo))
+    
+    def trace(self, enabled=False):
+        from lepl.core.trace import TraceResults
+        return self.add_monitor(TraceResults(enabled))
+    
+    def manage(self, queue_len=0):
+        from lepl.core.manager import GeneratorManager
+        return self.add_monitor(GeneratorManager(queue_len))
+    
+    def compile_to_dfa(self, force=False, alphabet=None):
         from lepl.regexp.matchers import DfaRegexp
         from lepl.regexp.rewriters import regexp_rewriter
-        from lepl.regexp.unicode import UnicodeAlphabet
-        from lepl.core.rewriters import flatten, compose_transforms, \
-            auto_memoize
-        from lepl.core.trace import TraceResults
-        alphabet = UnicodeAlphabet.instance() if alphabet is None else alphabet
-        return Configuration(
-                rewriters=[flatten, compose_transforms,
-                           regexp_rewriter(UnicodeAlphabet.instance(), 
-                                           False, DfaRegexp),
-                           compose_transforms, lexer_rewriter(alphabet),
-                           auto_memoize()],
-                monitors=[TraceResults(False)])
+        self.alphabet = alphabet
+        return self.add_rewriter(
+                    regexp_rewriter(self.alphabet, force, DfaRegexp))
     
+    def compile_to_nfa(self, force=False, alphabet=None):
+        from lepl.regexp.matchers import NfaRegexp
+        from lepl.regexp.rewriters import regexp_rewriter
+        self.alphabet = alphabet
+        return self.add_rewriter(
+                    regexp_rewriter(self.alphabet, force, NfaRegexp))
+    
+    def clear(self):
+        self.__unused = False
+        self.__rewriters = []
+        self.__monitors = []
+        self.__stream_factory = DEFAULT_STREAM_FACTORY
+        self.__alphabet = None
+        return self
+
+    def default(self):
+        self.clear()
+        self.flatten()
+        self.compose_transforms()
+        self.lexer()
+        self.auto_memoize()
+        self.trace()
+        return self
+        

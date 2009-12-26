@@ -58,11 +58,9 @@ class MagusTest(TestCase):
 
         dotted_name = function & Eos()
 
-        parser = dotted_name.string_parser(
-                    Configuration(
-                        rewriters=[flatten, compose_transforms, 
-                                   auto_memoize()],
-                        monitors=[TraceResults(False)]))
+        dotted_name.config.flatten().compose_transforms().auto_memoize()
+        dotted_name.config.trace(False)
+        parser = dotted_name.string_parser()
         parser("1func()")
         
 
@@ -175,13 +173,16 @@ class CloneTest(TestCase):
         self.assert_count(desc5, Delayed, 2)
         
         try:
-            clone3.parse_string('1join()', config=Configuration())
+            clone3.config.clear()
+            clone3.parse_string('1join()')
             assert False, 'Expected error'
         except MemoException as error:
             assert str(error) == 'Left recursion with RMemo?', str(error)
-            
-        clone4.parse_string('1join()', config=Configuration())
-        clone5.parse_string('1join()', config=Configuration())
+        
+        clone4.config.clear()
+        clone4.parse_string('1join()')
+        clone5.config.clear()
+        clone5.parse_string('1join()')
         
     def assert_count(self, desc, type_, count):
         '''

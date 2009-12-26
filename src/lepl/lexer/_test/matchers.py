@@ -88,7 +88,8 @@ class TokenRewriteTest(TestCase):
         Basic configuration.
         '''
         reals = (Token(Float()) >> float)[:]
-        parser = reals.null_parser(Configuration(rewriters=[lexer_rewriter()]))
+        reals.config.lexer()
+        parser = reals.null_parser()
         results = parser('1 2.3')
         assert results == [1.0, 2.3], results
     
@@ -96,9 +97,9 @@ class TokenRewriteTest(TestCase):
         '''
         Skip anything(not just spaces)
         '''
-        word = Token('[a-z]+')
-        parser = (word[:]).null_parser(
-                        Configuration(rewriters=[lexer_rewriter(discard='.')]))
+        words = Token('[a-z]+')[:]
+        words.config.lexer(discard='.')
+        parser = words.null_parser()
         results = parser('abc defXghi')
         assert results == ['abc', 'def', 'ghi'], results
         
@@ -107,9 +108,9 @@ class TokenRewriteTest(TestCase):
         An ugly error message (can't we improve this?)
         '''
         #basicConfig(level=DEBUG)
-        word = Token('[a-z]+')
-        parser = (word[:]).null_parser(
-                        Configuration(rewriters=[lexer_rewriter()]))
+        words = Token('[a-z]+')[:]
+        words.config.lexer()
+        parser = words.null_parser()
         try:
             parser('abc defXghi')
             assert False, 'expected error'
@@ -121,9 +122,9 @@ class TokenRewriteTest(TestCase):
         Better error message with streams.
         '''
         #basicConfig(level=DEBUG)
-        word = Token('[a-z]+')
-        parser = (word[:]).string_parser(
-                        Configuration(rewriters=[lexer_rewriter()]))
+        words = Token('[a-z]+')[:]
+        words.config.lexer()
+        parser = words.string_parser()
         try:
             parser('abc defXghi')
             assert False, 'expected error'
@@ -160,9 +161,8 @@ class TokenRewriteTest(TestCase):
         expr   += factor & (addsub & factor)[:]         > Expression
         line    = expr & Eos()
         
-        parser = line.string_parser(
-                    Configuration(monitors=[TraceResults(True)],
-                                  rewriters=[lexer_rewriter()]))
+        line.config.trace(True).lexer()
+        parser = line.string_parser()
         results = str26(parser('1 + 2*sin(3+ 4) - 5')[0])
         assert results == """Expression
  +- Factor
@@ -288,9 +288,8 @@ class ErrorTest(TestCase):
         An unexpected character fails to match.
         '''
         token = Token('a')
-        parser = token.null_parser(Configuration(rewriters=[lexer_rewriter(
-                                        UnicodeAlphabet.instance(), 
-                                        discard='b')]))
+        token.config.lexer(discard='b')
+        parser = token.null_parser()
         assert parser('a') == ['a'], parser('a')
         assert parser('b') == None, parser('b')
         try:
@@ -318,11 +317,11 @@ class ErrorTest(TestCase):
     
     def test_none_discard(self):
         '''
-        If discard is None, discard nothing.
+        If discard is '', discard nothing.
         '''
         token = Token('a')
-        parser = token[1:].null_parser(Configuration(
-                            rewriters=[lexer_rewriter(discard=None)]))
+        token.config.lexer(discard='')
+        parser = token[1:].null_parser()
         result = parser('aa')
         assert result == ['a', 'a'], result
         try:

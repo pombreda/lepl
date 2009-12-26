@@ -77,7 +77,7 @@ def assert_not_token(node, visited):
                 assert_not_token(child, visited)
 
 
-def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', source=None):
+def lexer_rewriter(alphabet=None, discard=None, source=None):
     '''
     This is required when using Tokens.  It does the following:
     - Find all tokens in the matcher graph
@@ -95,13 +95,17 @@ def lexer_rewriter(alphabet=None, discard='[ \t\r\n]', source=None):
     error is raised if no token or discard can be matched (it is passed the
     current stream).
     
-    source is the source used to generate the final stream.
+    source is the source used to generate the final stream (it is used for
+    offside parsing).
     '''
 
     log = getLogger('lepl.lexer.rewriters.lexer_rewriter')
 
     if alphabet is None:
         alphabet = UnicodeAlphabet.instance()
+    # use '' to have no discard at all
+    if discard is None:
+        discard = '[ \t\r\n]'
     def rewriter(matcher):
         '''
         Either construct the lexer, or warn that none found.

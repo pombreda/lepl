@@ -120,19 +120,22 @@ class ComposeTransformsTest(TestCase):
     
     def test_null(self):
         matcher = Any() > append('x')
-        parser = matcher.null_parser(Configuration(rewriters=[]))
+        matcher.config.clear()
+        parser = matcher.null_parser()
         result = parser('a')[0]
         assert result == 'ax', result
         
     def test_simple(self):
         matcher = Any() > append('x')
-        parser = matcher.null_parser(Configuration(rewriters=[compose_transforms]))
+        matcher.config.compose_transforms()
+        parser = matcher.null_parser()
         result = parser('a')[0]
         assert result == 'ax', result
         
     def test_double(self):
         matcher = (Any() > append('x')) > append('y')
-        parser = matcher.null_parser(Configuration(rewriters=[compose_transforms]))
+        matcher.config.compose_transforms()
+        parser = matcher.null_parser()
         result = parser('a')[0]
         assert result == 'axy', result
         assert isinstance(parser.matcher, Transform)
@@ -140,7 +143,8 @@ class ComposeTransformsTest(TestCase):
     
     def test_and(self):
         matcher = (Any() & Optional(Any())) > append('x')
-        parser = matcher.null_parser(Configuration(rewriters=[compose_transforms]))
+        matcher.config.compose_transforms()
+        parser = matcher.null_parser()
         result = parser('a')[0]
         assert result == 'ax', result
         assert isinstance(parser.matcher, And)
@@ -148,7 +152,8 @@ class ComposeTransformsTest(TestCase):
     def test_loop(self):
         matcher = Delayed()
         matcher += (Any() | matcher) > append('x')
-        parser = matcher.null_parser(Configuration(rewriters=[compose_transforms]))
+        matcher.config.compose_transforms()
+        parser = matcher.null_parser()
         result = parser('a')[0]
         assert result == 'ax', result
         assert isinstance(parser.matcher, Delayed)
@@ -161,7 +166,8 @@ class ComposeTransformsTest(TestCase):
         term        = number                               > Term
         factor      = term | Drop(Optional(term))
         
-        p = factor.string_parser(Configuration(rewriters=[compose_transforms]))
+        factor.config.compose_transforms()
+        p = factor.string_parser()
         ast = p('1')[0]
         assert type(ast) == Term, type(ast)
         assert ast[0] == '1', ast[0]
@@ -175,13 +181,15 @@ class OptimizeOrTest(TestCase):
         matcher = Delayed()
         matcher += matcher | Any()
         assert isinstance(matcher.matcher.matchers[0], Delayed)
-        matcher.string_parser(Configuration(rewriters=[optimize_or(True)]))
+        matcher.config.optimize_or(True)
+        matcher.string_parser()
         assert isinstance(matcher.matcher.matchers[0], Any)
         
     def test_liberal(self):
         matcher = Delayed()
         matcher += matcher | Any()
         assert isinstance(matcher.matcher.matchers[0], Delayed)
-        matcher.string_parser(Configuration(rewriters=[optimize_or(False)]))
+        matcher.config.optimize_or(False)
+        matcher.string_parser()
         assert isinstance(matcher.matcher.matchers[0], Any)
         

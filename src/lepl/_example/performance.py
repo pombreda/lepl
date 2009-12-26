@@ -53,8 +53,8 @@ def build(config):
         expr   += factor & (addsub & factor)[:]     > Expression
         line    = Trace(expr) & Eos()
     
-    parser = line.string_parser(config)
-    return parser
+    line.configuration = config
+    return line.string_parser()
 
 def default(): return build(Configuration.default())
 def managed(): return build(Configuration.managed())

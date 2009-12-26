@@ -27,7 +27,7 @@ Base classes for matchers.
 # pylint: disable-msg=R0901, R0904, W0142
 # lepl conventions
 
-from lepl.core.config import Configuration
+from lepl.core.config import ConfigBuilder
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     ConstructorStr, GraphStr
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
@@ -49,10 +49,9 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
     A base class that provides support to all matchers with operators.
     '''
     
-    __default_config = None
-
     def __init__(self, name=OPERATORS, namespace=DefaultNamespace):
         super(OperatorMatcher, self).__init__(name=name, namespace=namespace)
+        self.config = ConfigBuilder()
 
     def __str__(self):
         visitor = ConstructorStr()
@@ -68,161 +67,161 @@ class OperatorMatcher(OperatorMixin, BaseMatcher):
         visitor = GraphStr()
         return self.postorder(visitor)
     
-    def file_parser(self, config=None, **kargs):
+    def file_parser(self, **kargs):
         '''
         Construct a parser for file objects that uses a stream 
         internally and returns a single result.
         '''
-        config = Configuration.default(config)
-        return make_parser(self, config.stream.from_file, config, kargs)
+        config = self.config.configuration
+        return make_parser(self, config.stream_factory.from_file, config, kargs)
     
-    def items_parser(self, config=None, **kargs):
+    def items_parser(self, **kargs):
         '''
         Construct a parser for a sequence of times (an item is something
         that would be matched by `Any`) that uses a stream internally and 
         returns a single result.
         '''
-        config = Configuration.default(config)
-        return make_parser(self, config.stream.from_items, config, kargs) 
+        config = self.config.configuration
+        return make_parser(self, config.stream_factory.from_items, config, kargs) 
     
-    def path_parser(self, config=None, **kargs):
+    def path_parser(self, **kargs):
         '''
         Construct a parser for a file that uses a stream 
         internally and returns a single result.
         '''
-        config = Configuration.default(config)
-        return make_parser(self, config.stream.from_path, config, kargs) 
+        config = self.config.configuration
+        return make_parser(self, config.stream_factory.from_path, config, kargs) 
     
-    def string_parser(self, config=None, **kargs):
+    def string_parser(self, **kargs):
         '''
         Construct a parser for strings that uses a stream 
         internally and returns a single result.
         '''
-        config = Configuration.default(config)
-        return make_parser(self, config.stream.from_string, config, kargs) 
+        config = self.config.configuration
+        return make_parser(self, config.stream_factory.from_string, config, kargs) 
     
-    def null_parser(self, config=None, **kargs):
+    def null_parser(self, **kargs):
         '''
         Construct a parser for strings and lists that returns a single result
         (this does not use streams).
         '''
-        config = Configuration.default(config)
-        return make_parser(self, config.stream.null, config, kargs) 
+        config = self.config.configuration
+        return make_parser(self, config.stream_factory.null, config, kargs) 
     
     
-    def parse_file(self, file_, config=None, **kargs):
+    def parse_file(self, file_, **kargs):
         '''
         Parse the contents of a file, returning a single match and using a
         stream internally.
         '''
-        return self.file_parser(config, **kargs)(file_)
+        return self.file_parser(**kargs)(file_)
         
-    def parse_items(self, list_, config=None, **kargs):
+    def parse_items(self, list_, **kargs):
         '''
         Parse the contents of a sequence of items (an item is something
         that would be matched by `Any`), returning a single match and using a
         stream internally.
         '''
-        return self.items_parser(config, **kargs)(list_)
+        return self.items_parser(**kargs)(list_)
         
-    def parse_path(self, path, config=None, **kargs):
+    def parse_path(self, path, **kargs):
         '''
         Parse the contents of a file, returning a single match and using a
         stream internally.
         '''
-        return self.path_parser(config, **kargs)(path)
+        return self.path_parser(**kargs)(path)
         
-    def parse_string(self, string, config=None, **kargs):
+    def parse_string(self, string, **kargs):
         '''
         Parse the contents of a string, returning a single match and using a
         stream internally.
         '''
-        return self.string_parser(config, **kargs)(string)
+        return self.string_parser(**kargs)(string)
     
-    def parse(self, stream, config=None, **kargs):
+    def parse(self, stream, **kargs):
         '''
         Parse the contents of a string or list, returning a single match (this
         does not use streams).
         '''
-        return self.null_parser(config, **kargs)(stream)
+        return self.null_parser(**kargs)(stream)
     
     
-    def file_matcher(self, config=None, **kargs):
+    def file_matcher(self, **kargs):
         '''
         Construct a parser for file objects that returns a sequence of matches
         and uses a stream internally.
         '''
-        config = Configuration.default(config)
-        return make_matcher(self, config.stream.from_file, config, kargs) 
+        config = self.config.configuration
+        return make_matcher(self, config.stream_factory.from_file, config, kargs) 
     
-    def items_matcher(self, config=None, **kargs):
+    def items_matcher(self, **kargs):
         '''
         Construct a parser for a sequence of items (an item is something that
         would be matched by `Any`) that returns a sequence of matches
         and uses a stream internally.
         '''
-        config = Configuration.default(config)
-        return make_matcher(self, config.stream.from_items, config, kargs) 
+        config = self.config.configuration
+        return make_matcher(self, config.stream_factory.from_items, config, kargs) 
     
-    def path_matcher(self, config=None, **kargs):
+    def path_matcher(self, **kargs):
         '''
         Construct a parser for a file that returns a sequence of matches
         and uses a stream internally.
         '''
-        config = Configuration.default(config)
-        return make_matcher(self, config.stream.from_path, config, kargs) 
+        config = self.config.configuration
+        return make_matcher(self, config.stream_factory.from_path, config, kargs) 
     
-    def string_matcher(self, config=None, **kargs):
+    def string_matcher(self, **kargs):
         '''
         Construct a parser for strings that returns a sequence of matches
         and uses a stream internally.
         '''
-        config = Configuration.default(config)
-        return make_matcher(self, config.stream.from_string, config, kargs) 
+        config = self.config.configuration
+        return make_matcher(self, config.stream_factory.from_string, config, kargs) 
 
-    def null_matcher(self, config=None, **kargs):
+    def null_matcher(self, **kargs):
         '''
-        Construct a parser for strings and lists list objects that returns a s
-        equence of matches (this does not use streams).
+        Construct a parser for strings and lists list objects that returns a 
+        sequence of matches (this does not use streams).
         '''
-        config = Configuration.default(config)
-        return make_matcher(self, config.stream.null, config, kargs) 
+        config = self.config.configuration
+        return make_matcher(self, config.stream_factory.null, config, kargs) 
 
-    def match_file(self, file_, config=None, **kargs):
+    def match_file(self, file_, **kargs):
         '''
         Parse the contents of a file, returning a sequence of matches and using 
         a stream internally.
         '''
-        return self.file_matcher(config, **kargs)(file_)
+        return self.file_matcher(**kargs)(file_)
         
-    def match_items(self, list_, config=None, **kargs):
+    def match_items(self, list_, **kargs):
         '''
         Parse a sequence of items (an item is something that would be matched
         by `Any`), returning a sequence of matches and using a
         stream internally.
         '''
-        return self.items_matcher(config, **kargs)(list_)
+        return self.items_matcher(**kargs)(list_)
         
-    def match_path(self, path, config=None, **kargs):
+    def match_path(self, path, **kargs):
         '''
         Parse a file, returning a sequence of matches and using a
         stream internally.
         '''
-        return self.path_matcher(config, **kargs)(path)
+        return self.path_matcher(**kargs)(path)
         
-    def match_string(self, string, config=None, **kargs):
+    def match_string(self, string, **kargs):
         '''
         Parse a string, returning a sequence of matches and using a
         stream internally.
         '''
-        return self.string_matcher(config, **kargs)(string)
+        return self.string_matcher(**kargs)(string)
 
-    def match(self, stream, config=None, **kargs):
+    def match(self, stream, **kargs):
         '''
         Parse a string or list, returning a sequence of matches 
         (this does not use streams).
         '''
-        return self.null_matcher(config, **kargs)(stream)
+        return self.null_matcher(**kargs)(stream)
     
     
 def coerce_(arg, function=None):
