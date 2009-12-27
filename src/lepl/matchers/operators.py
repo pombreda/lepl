@@ -20,21 +20,9 @@
 Support for operator syntactic sugar (and operator redefinition).
 '''
 
-from abc import ABCMeta
-
+from lepl.matchers.matcher import Matcher
 from lepl.support.context import Namespace, NamespaceMixin, Scope
 from lepl.support.lib import open_stop, format, basestring
-
-
-# pylint: disable-msg=C0103, W0105
-# Python 2.6
-#class Matcher(metaclass=ABCMeta):
-Matcher = ABCMeta('Matcher', (object, ), {})
-'''
-ABC used to identify matchers.  
-
-Note that graph traversal assumes subclasses are hashable and iterable.
-'''
 
 
 class DefaultNamespace(Namespace):

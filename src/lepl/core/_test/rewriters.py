@@ -24,7 +24,7 @@ from unittest import TestCase
 
 from lepl import Any, Delayed, Optional, Node, Drop, And
 from lepl.support.graph import preorder
-from lepl.matchers.support import Matcher
+from lepl.matchers.matcher import Matcher
 from lepl.matchers.transform import Transform
 from lepl.core.rewriters import DelayedClone
 

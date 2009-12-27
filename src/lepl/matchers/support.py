@@ -17,8 +17,17 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Base classes for matchers.
+Support classes for matchers.
 '''
+
+from lepl.core.config import ConfigBuilder
+from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
+    ConstructorStr, GraphStr
+from lepl.matchers.matcher import Matcher
+from lepl.matchers.operators import OperatorMixin, OPERATORS, \
+    DefaultNamespace
+from lepl.core.parser import make_parser, make_matcher
+from lepl.support.lib import LogMixin, basestring
 
 # pylint: disable-msg=C0103,W0212
 # (consistent interfaces)
@@ -26,14 +35,6 @@ Base classes for matchers.
 # (_args create attributes)
 # pylint: disable-msg=R0901, R0904, W0142
 # lepl conventions
-
-from lepl.core.config import ConfigBuilder
-from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
-    ConstructorStr, GraphStr
-from lepl.matchers.operators import OperatorMixin, OPERATORS, \
-    DefaultNamespace, Matcher
-from lepl.core.parser import make_parser, make_matcher
-from lepl.support.lib import LogMixin, basestring
 
 
 class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, 

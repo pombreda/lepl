@@ -22,7 +22,7 @@ parser.
 '''
 
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, dfs_edges, LEAF
-from lepl.matchers.operators import Matcher
+from lepl.matchers.matcher import Matcher
 from lepl.support.lib import lmap, format
 
 

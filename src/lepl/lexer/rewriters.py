@@ -24,7 +24,7 @@ from collections import deque
 from logging import getLogger
 
 from lepl.lexer.matchers import BaseToken, Lexer, LexerError, NonToken
-from lepl.matchers.operators import Matcher
+from lepl.matchers.matcher import Matcher
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.support.lib import format
 

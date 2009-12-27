@@ -33,8 +33,9 @@ from lepl.matchers.error import raise_error
 from lepl.lexer.support import LexerError, RuntimeLexerError
 from lepl.matchers.core import OperatorMatcher, Any, Literal, Lookahead, Regexp
 from lepl.matchers.combine import And, Or, First
+from lepl.matchers.matcher import Matcher
 from lepl.matchers.memo import NoMemo
-from lepl.matchers.operators import Matcher, ADD, AND, OR, APPLY, APPLY_RAW, \
+from lepl.matchers.operators import ADD, AND, OR, APPLY, APPLY_RAW, \
     NOT, KARGS, RAISE, REPEAT, FIRST, MAP
 from lepl.matchers.support import BaseMatcher, coerce_
 from lepl.core.parser import tagged

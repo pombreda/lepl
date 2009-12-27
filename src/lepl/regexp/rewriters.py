@@ -41,7 +41,7 @@ None).
 
 from logging import getLogger
 
-from lepl.matchers.operators import Matcher
+from lepl.matchers.matcher import Matcher
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty
 from lepl.regexp.matchers import NfaRegexp
 from lepl.regexp.interval import Character
