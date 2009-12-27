@@ -23,8 +23,6 @@ Tests for the lepl.manager module.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.core.config import Configuration
-from lepl.core.manager import GeneratorManager
 from lepl.matchers.derived import Eos
 from lepl.matchers.core import Literal
 from lepl.support.lib import LogMixin

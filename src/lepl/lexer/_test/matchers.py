@@ -28,9 +28,8 @@ from math import sin, cos
 from operator import add, sub, truediv, mul
 from unittest import TestCase
 
-from lepl import Token, Literal, Float, LexerError, Configuration, \
-    lexer_rewriter, Node, Delayed, Any, Eos, TraceResults, UnsignedFloat, \
-    Or, UnicodeAlphabet, RuntimeLexerError
+from lepl import Token, Literal, Float, LexerError, Node, Delayed, Any, Eos, \
+    UnsignedFloat, Or, RuntimeLexerError
 from lepl.support.lib import str
 
 

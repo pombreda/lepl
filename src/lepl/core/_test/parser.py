@@ -23,7 +23,7 @@ Tests for the lepl.parser module.
 from types import MethodType
 from unittest import TestCase
 
-from lepl import Literal, Any, flatten, Configuration
+from lepl import Literal, Any
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, E1101

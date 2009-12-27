@@ -128,7 +128,6 @@ from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
     GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.lexer.rewriters import lexer_rewriter
-from lepl.offside.config import LineAwareConfiguration, LineAwareConfiguration
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
     ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent
@@ -250,9 +249,6 @@ __all__ = [
         'auto_memoize',
         'context_memoize',
         'optimize_or',
-        # lepl.offside.config
-        'LineAwareConfiguration',
-        'LineAwareConfiguration',
         # lepl.offside.lexer
         'Indent',
         'Eol',

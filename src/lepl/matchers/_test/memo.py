@@ -23,8 +23,7 @@ Tests for the lepl.memo module.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl import Configuration, RMemo, Delayed, Any, TraceResults, memoize, \
-    Optional, LMemo, Node, Literals, Eos
+from lepl import Delayed, Any, Optional, Node, Literals, Eos
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321

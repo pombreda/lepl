@@ -28,9 +28,6 @@ Tests for the lepl.offside.regexp module.
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
-from lepl.matchers.memo import LMemo
-from lepl.core.rewriters import memoize
-from lepl.offside.config import LineAwareConfiguration
 from lepl.offside.matchers import BLine
 from lepl.offside.regexp import LineAwareAlphabet, SOL, EOL
 from lepl.regexp.core import Compiler
@@ -38,7 +35,6 @@ from lepl.regexp.matchers import DfaRegexp
 from lepl.regexp.str import make_str_parser
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.support.lib import str
-from lepl.core.trace import TraceResults
 
 
 class RegexpTest(TestCase):

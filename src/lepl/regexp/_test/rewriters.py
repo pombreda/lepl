@@ -23,10 +23,7 @@ Tests for the lepl.regexp.rewriters module.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl import Any, NfaRegexp, Configuration, Literal, compose_transforms, \
-    Add, And, Integer, Float, Word, Star
-from lepl.regexp.rewriters import regexp_rewriter
-from lepl.regexp.unicode import UnicodeAlphabet
+from lepl import Any, NfaRegexp, Literal, Add, And, Integer, Float, Word, Star
 
 
 # pylint: disable-msg=C0103, C0111, C0301, C0324

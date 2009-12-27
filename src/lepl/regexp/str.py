@@ -23,7 +23,6 @@ converted to strings using str().
 
 from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
     Option, _Choice
-from lepl.core.config import Configuration
 from lepl.support.lib import format, str, LogMixin
 
 
