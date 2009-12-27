@@ -74,7 +74,7 @@ class ConfigBuilder(object):
         self.__monitors.append(monitor)
         return self
     
-    def set_stream_factory(self, stream_factory=DEFAULT_STREAM_FACTORY):
+    def stream_factory(self, stream_factory=DEFAULT_STREAM_FACTORY):
         self.__unused = False
         self.__stream_factory = stream_factory
         return self
@@ -122,11 +122,12 @@ class ConfigBuilder(object):
         from lepl.core.rewriters import optimize_or
         return self.add_rewriter(optimize_or(conservative))
         
-    def lexer(self, alphabet=None, discard=None):
+    def lexer(self, alphabet=None, discard=None, source=None):
         from lepl.lexer.rewriters import lexer_rewriter
         self.alphabet = alphabet
         return self.add_rewriter(
-            lexer_rewriter(alphabet=self.alphabet, discard=discard))
+            lexer_rewriter(alphabet=self.alphabet, discard=discard,
+                           source=source))
     
     def auto_memoize(self, conservative=None):
         from lepl.core.rewriters import auto_memoize
@@ -163,6 +164,193 @@ class ConfigBuilder(object):
         self.alphabet = alphabet
         return self.add_rewriter(
                     regexp_rewriter(self.alphabet, force, NfaRegexp))
+        
+    def set_arguments(self, type_, **kargs):
+        '''
+        Set the given keyword arguments on all matchers of the given `type_`
+        (ie class) in the grammar.
+        '''
+        from lepl.core.rewriters import set_arguments
+        return self.add_rewriter(set_arguments(type_, **kargs))
+        
+    def set_alphabet_arg(self, alphabet):
+        '''
+        Set `alphabet` on various matchers.  This is useful when using an 
+        unusual alphabet (most often when using line-aware parsing), as
+        it saves having to specify it on each matcher when creating the
+        grammar.
+        
+        Although this option is often required for line aware parsing,
+        you normally do not need to call this because it is called by 
+        `default_line_aware` (and `line_aware`).
+        '''
+        from lepl.regexp.matchers import BaseRegexp
+        from lepl.lexer.matchers import BaseToken
+        self.alphabet = alphabet
+        self.set_arguments(BaseRegexp, alphabet=self.alphabet)
+        self.set_arguments(BaseToken, alphabet=self.alphabet)
+        return self
+
+    def set_block_policy_arg(self, block_policy):
+        '''
+        Set the block policy on all `Block` instances.
+        
+        Although this option is required for "offside rule" parsing,
+        you normally do not need to call this because it is called by 
+        `default_line_aware` (and `line_aware`) if either `block_policy` 
+        or `block_start` is specified.
+        '''
+        from lepl.offside.matchers import Block
+        return self.set_arguments(Block, policy=block_policy)
+    
+    def blocks(self, block_policy=None, block_start=None):
+        '''
+        Set the given `block_policy` on all block elements and add a 
+        `block_monitor` with the given `block_start`.  If either is
+        not given, default values are used.
+        
+        Although these options are required for "offside rule" parsing,
+        you normally do not need to call this because it is called by 
+        `default_line_aware` (and `line_aware`) if either `block_policy` or 
+        `block_start` is specified.
+        '''
+        from lepl.offside.matchers import DEFAULT_POLICY 
+        from lepl.offside.monitor import block_monitor
+        if block_policy is None:
+            block_policy = DEFAULT_POLICY
+        if block_start is None:
+            block_start = 0
+        self.add_monitor(block_monitor(block_start))
+        self.set_block_policy_arg(block_policy)
+        return self
+    
+    def line_aware(self, alphabet=None, parser_factory=None,
+                   discard=None, tabsize=None, 
+                   block_policy=None, block_start=None):
+        '''
+        Configure the parser for line aware behaviour.  This sets many 
+        different options and is intended to be the "normal" way to enable
+        line aware parsing (including "offside rule" support).
+        
+        See also `default_line_aware`.
+        
+        Normally calling this method is all that is needed for configuration.
+        If you do need to "fine tune" the configuration for parsing should
+        consult the source for this method and then call other methods
+        as needed.
+        
+        `alphabet` is the alphabet used; by default it is assumed to be Unicode
+        and it will be extended to include start and end of line markers.
+        
+        `parser_factory` is used to generate a regexp parser.  If this is unset
+        then the parser used depends on whether blocks are being used.  If so,
+        then the HideSolEolParser is used (so that you can specify tokens 
+        without worrying about SOL and EOL); otherwise a normal parser is
+        used.
+        
+        `discard` is a regular expression which is matched against the stream
+        if lexing otherwise fails.  A successful match is discarded.  If None
+        then the usual token defaut is used (whitespace).  To disable, use
+        an empty string.
+        
+        `tabsize`, if not None, should be the number of spaces used to replace
+        tabs.
+        
+        `block_policy` should be the number of spaces in an indent, if blocks 
+        are used (or an appropriate function).  By default (ie if `block_start`
+        is given) it is taken to be DEFAULT_POLICY.
+        
+        `block_start` is the initial indentation, if blocks are used.  By 
+        default (ie if `block_policy` is given) 0 is used.
+        
+        To enable blocks ("offside rule" parsing), at least one of 
+        `block_policy` and `block_start` must be given.
+        `
+        '''
+        from lepl.offside.matchers import DEFAULT_TABSIZE
+        from lepl.offside.regexp import LineAwareAlphabet, \
+            make_hide_sol_eol_parser
+        from lepl.offside.stream import LineAwareStreamFactory, \
+            LineAwareTokenSource
+        from lepl.regexp.str import make_str_parser
+        from lepl.regexp.unicode import UnicodeAlphabet
+        
+        self.clear()
+        
+        use_blocks = block_policy is not None or block_start is not None
+        if use_blocks:
+            self.blocks(block_policy, block_start)
+            
+        if tabsize is None:
+            tabsize = DEFAULT_TABSIZE
+        if alphabet is None:
+            alphabet = UnicodeAlphabet.instance()
+        if not parser_factory:
+            if use_blocks:
+                parser_factory = make_hide_sol_eol_parser
+            else:
+                parser_factory = make_str_parser
+        self.alphabet = LineAwareAlphabet(alphabet, parser_factory)
+
+        self.set_alphabet_arg(self.alphabet)
+        if use_blocks:
+            self.set_block_policy_arg(block_policy)
+        self.lexer(alphabet=self.alphabet, discard=discard, 
+                   source=LineAwareTokenSource.factory(tabsize))
+        self.stream_factory(LineAwareStreamFactory(self.alphabet))
+        
+        return self
+        
+    def default_line_aware(self, alphabet=None, parser_factory=None,
+                           discard=None, tabsize=None, 
+                           block_policy=None, block_start=None):
+        '''
+        Configure the parser for line aware behaviour.  This sets many 
+        different options and is intended to be the "normal" way to enable
+        line aware parsing (including "offside rule" support).
+        
+        Compared to `line_aware`, this also adds various "standard" options.
+        
+        Normally calling this method is all that is needed for configuration.
+        If you do need to "fine tune" the configuration for parsing should
+        consult the source for this method and then call other methods
+        as needed.
+        
+        `alphabet` is the alphabet used; by default it is assumed to be Unicode
+        and it will be extended to include start and end of line markers.
+        
+        `parser_factory` is used to generate a regexp parser.  If this is unset
+        then the parser used depends on whether blocks are being used.  If so,
+        then the HideSolEolParser is used (so that you can specify tokens 
+        without worrying about SOL and EOL); otherwise a normal parser is
+        used.
+        
+        `discard` is a regular expression which is matched against the stream
+        if lexing otherwise fails.  A successful match is discarded.  If None
+        then the usual token defaut is used (whitespace).  To disable, use
+        an empty string.
+        
+        `tabsize`, if not None, should be the number of spaces used to replace
+        tabs.
+        
+        `block_policy` should be the number of spaces in an indent, if blocks 
+        are used (or an appropriate function).  By default (ie if `block_start`
+        is given) it is taken to be DEFAULT_POLICY.
+        
+        `block_start` is the initial indentation, if blocks are used.  By 
+        default (ie if `block_policy` is given) 0 is used.
+        
+        To enable blocks ("offside rule" parsing), at least one of 
+        `block_policy` and `block_start` must be given.
+        `
+        '''
+        self.line_aware(alphabet, parser_factory, discard, tabsize, 
+                        block_policy, block_start)
+        self.flatten()
+        self.compose_transforms()
+        self.auto_memoize()
+        return self
+        
     
     def clear(self):
         self.__unused = False

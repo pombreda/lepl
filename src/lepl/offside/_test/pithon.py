@@ -53,9 +53,8 @@ class PithonTest(TestCase):
         block += CLine((function | statement) & introduce) & Block(line[1:])
         
         program = (line[:] & Eos())
-        return program.string_parser(
-                    LineAwareConfiguration(block_policy=rightmost,
-                                           monitors=[TraceResults(True)]))
+        program.config.default_line_aware(block_policy=rightmost).trace(True)
+        return program.string_parser()
     
     def test_blocks(self):
         #basicConfig(level=DEBUG)

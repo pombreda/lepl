@@ -45,39 +45,36 @@ class RegexpTest(TestCase):
     
     def test_invert_bug_1(self):
         #basicConfig(level=DEBUG)
-        config = LineAwareConfiguration(monitors=[TraceResults(True)])
         match = DfaRegexp('(*SOL)[^c]*')
-        result = list(match.match_string('abc', config))[0][0]
+        match.config.default_line_aware().trace(True)
+        result = list(match.match_string('abc'))[0][0]
         assert result == ['ab'], result
         
     def test_invert_bug_4(self):
         #basicConfig(level=DEBUG)
         bad = BLine(Token('[^a]*'))
-        parser = bad.string_parser(
-            LineAwareConfiguration(block_policy=2, 
-                                   rewriters=[memoize(LMemo)]))
+        bad.config.line_aware(block_policy=2).left_memoize()
+        parser = bad.string_parser()
         result = parser('123')
         assert result == ['123'], result
         
     def test_invert_bug_5(self):
         #basicConfig(level=DEBUG)
         bad = BLine(Token('[^(*SOL)(*EOL)a]*'))
-        parser = bad.string_parser(
-            LineAwareConfiguration(block_policy=2, 
-                                   parser_factory=make_str_parser,
-                                   rewriters=[],
-                                   monitors=[TraceResults(True)]))
+        bad.config.default_line_aware(block_policy=2, 
+                                      parser_factory=make_str_parser)
+        bad.config.trace(True)
+        parser = bad.string_parser()
         result = parser('123')
         assert result == ['123'], result
         
     def test_invert_bug_6(self):
         #basicConfig(level=DEBUG)
         bad = BLine(Token(str('[^(*SOL)(*EOL)a]*')))
-        parser = bad.string_parser(
-            LineAwareConfiguration(block_policy=2, 
-                                   parser_factory=make_str_parser, 
-                                   rewriters=[],
-                                   monitors=[TraceResults(True)]))
+        bad.config.default_line_aware(block_policy=2,
+                                      parser_factory=make_str_parser)
+        bad.config.trace(True)
+        parser = bad.string_parser() 
         result = parser(str('123'))
         assert result == [str('123')], result
         

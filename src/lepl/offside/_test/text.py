@@ -62,9 +62,10 @@ class TextTest(TestCase):
         empty = TLine(Empty())
         block = TLine(fundef) & Block(statement[:])
         statement += (simple | empty | block) > list
-
-        return statement[:].string_parser(
-                    LineAwareConfiguration(block_policy=2))
+        program = statement[:]
+        
+        program.config.default_line_aware(block_policy=2)
+        return program.string_parser()
         
     def do_parse(self, parser):
         return parser('''pass

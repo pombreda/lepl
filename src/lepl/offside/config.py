@@ -31,7 +31,7 @@ from lepl.offside.stream import LineAwareStreamFactory, LineAwareTokenSource
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.str import make_str_parser
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.core.rewriters import fix_arguments, flatten, compose_transforms, \
+from lepl.core.rewriters import set_arguments, flatten, compose_transforms, \
     auto_memoize
 from lepl.core.trace import TraceResults
 

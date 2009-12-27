@@ -39,7 +39,9 @@ class OffsideExample(Example):
         scope = Delayed()
         line = (BLine(word[:] | Empty()) > list) | scope
         scope += BLine(word[:] & introduce) & Block(line[:]) > list
-        parser = line[:].string_parser(LineAwareConfiguration(block_policy=2))
+        program = line[:]
+        program.config.default_line_aware(block_policy=2)
+        parser = program.string_parser()
         self.examples([(lambda: parser('''
 abc def
 ghijk:
@@ -57,7 +59,9 @@ ghijk:
         empty = Line(Empty())
         block = BLine(word[:] & introduce) & Block(statement[:])
         statement += (simple | empty | block) > list
-        parser = statement[:].string_parser(LineAwareConfiguration(block_policy=2))
+        program = statement[:]
+        program.config.default_line_aware(block_policy=2)
+        parser = program.string_parser()
         self.examples([(lambda: parser('''
 abc def
 ghijk:
@@ -90,9 +94,10 @@ ghijk:
         function = CLine(fundef & introduce) & Block(statement[1:])
         
         statement += (empty | simple | ifblock | function) > list
+        program = statement[:]
         
-        parser = statement[:].string_parser(
-                                LineAwareConfiguration(block_policy=2))
+        program.config.default_line_aware(block_policy=2)
+        parser = program.string_parser()
 
         self.examples([(lambda: parser('''
 this is a grammar with a similar 
@@ -137,8 +142,9 @@ same for (argument,
         block = Block(line[1:])
         # this also tests left recursion and blocks
         line += BLine(word | Empty()) | block
-        parser = line[:].string_parser(
-                        LineAwareConfiguration(block_policy=4, block_start=3))
+        program = line[:]
+        program.config.default_line_aware(block_policy=4, block_start=3)
+        parser = program.string_parser()
         result = parser('''
    foo
        bar

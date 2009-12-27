@@ -27,16 +27,14 @@ Tests for the lepl.offside.regexp module.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.offside.config import LineAwareConfiguration
 from lepl.regexp.matchers import DfaRegexp
-from lepl.core.trace import TraceResults
 
 
 class RegexpTest(TestCase):
     
     def test_start(self):
         #basicConfig(level=DEBUG)
-        config = LineAwareConfiguration(monitors=[TraceResults(True)])
         match = DfaRegexp('(*SOL)a*')
-        result = list(match.match_string('abc', config))[0][0]
+        match.config.default_line_aware()
+        result = list(match.match_string('abc'))[0][0]
         assert result == ['a'], result

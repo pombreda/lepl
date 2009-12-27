@@ -37,7 +37,8 @@ class LineAwareExamples(Example):
         words = Word()[:,~Space()[:]] > list
         end = DfaRegexp('(*EOL)')
         line = start & words & end
-        parser = line.string_parser(LineAwareConfiguration())
+        line.config.default_line_aware()
+        parser = line.string_parser()
         self.examples([(lambda: parser('  abc def'), 
                         "['  ', ['abc', 'def'], '']")])
 
@@ -48,7 +49,8 @@ class LineAwareExamples(Example):
         words = Word()[:,~Space()[:]] > list
         end = EOL()
         line = start & words & end
-        parser = line.string_parser(LineAwareConfiguration())
+        line.config.default_line_aware()
+        parser = line.string_parser()
         self.examples([(lambda: parser('  abc def'), 
                         "['  ', ['abc', 'def']]")])
 
@@ -56,7 +58,8 @@ class LineAwareExamples(Example):
         #basicConfig(level=DEBUG)
         words = Token(Word(Lower()))[:] > list
         line = Indent() & words & Eol()
-        parser = line.string_parser(LineAwareConfiguration(tabsize=4))
+        line.config.default_line_aware(tabsize=4)
+        parser = line.string_parser()
         self.examples([(lambda: parser('\tabc def'), 
                         "['    ', ['abc', 'def'], '']")])
 
@@ -64,7 +67,8 @@ class LineAwareExamples(Example):
         #basicConfig(level=DEBUG)
         words = Token(Word(Lower()))[:] > list
         line = Line(words)
-        parser = line.string_parser(LineAwareConfiguration(tabsize=4))
+        line.config.default_line_aware(tabsize=4)
+        parser = line.string_parser()
         self.examples([(lambda: parser('\tabc def'), 
                         "[['abc', 'def']]")])
     
@@ -73,7 +77,8 @@ class LineAwareExamples(Example):
         words = Token(Word(Lower()))[:] > list
         CLine = ContinuedLineFactory(r'\+')
         line = CLine(words)
-        parser = line.string_parser(LineAwareConfiguration())
+        line.config.default_line_aware()
+        parser = line.string_parser()
         self.examples([(lambda: parser('''abc def +
 ghi'''), 
                         "[['abc', 'def', 'ghi']]")])

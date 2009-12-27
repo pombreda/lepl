@@ -25,7 +25,6 @@ from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.matchers.core import Regexp, Literal
-from lepl.offside.config import LineAwareConfiguration
 from lepl.offside.matchers import BLine
 from lepl.offside.support import OffsideError
 from lepl.regexp.matchers import DfaRegexp
@@ -37,7 +36,8 @@ class LineTest(TestCase):
         text = Token('[^\n\r]+')
         quoted = Regexp("'[^']'")
         line = BLine(text(quoted))
-        parser = line.string_parser(LineAwareConfiguration())
+        line.config.default_line_aware()
+        parser = line.string_parser()
         try:
             parser("'a'")
             assert False, 'Expected error'
@@ -49,14 +49,16 @@ class LineTest(TestCase):
         text = Token('[^\n\r]+')
         quoted = Regexp("'[^']'")
         line = BLine(text(quoted))
-        parser = line.string_parser(LineAwareConfiguration(block_start=0))
+        line.config.default_line_aware(block_start=0)
+        parser = line.string_parser()
         assert parser("'a'") == ["'a'"]
         
     def test_offset(self):
         #basicConfig(level=DEBUG)
         text = Token('[^\n\r]+')
         line = BLine(text(~Literal('aa') & Regexp('.*')))
-        parser = line.string_parser(LineAwareConfiguration(block_start=0))
+        line.config.default_line_aware(block_start=0)
+        parser = line.string_parser()
         assert parser('aabc') == ['bc']
         # what happens with an empty match?
         check = ~Literal('aa') & Regexp('.*')
@@ -66,7 +68,8 @@ class LineTest(TestCase):
     def test_single_line(self):
         #basicConfig(level=DEBUG)
         line = DfaRegexp('(*SOL)[a-z]*(*EOL)')
-        parser = line.string_parser(LineAwareConfiguration())
+        line.config.default_line_aware()
+        parser = line.string_parser()
         assert parser('abc') == ['abc']
         
 

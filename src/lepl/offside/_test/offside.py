@@ -68,8 +68,8 @@ a
   5
  6
 '''
-        parser = program.string_parser(
-                                config=LineAwareConfiguration(block_policy=1))
+        program.config.default_line_aware(block_policy=1)
+        parser = program.string_parser()
         result = parser(text)
         assert result == [['1'], 
                           ['2'], 

@@ -50,8 +50,9 @@ left
         line1 = indent('') + Eol()
         line2 = indent('') & word('left') + Eol()
         line3 = indent('    ') & word('four') + Eol()
-        parser = (line1 & line2 & line3).string_parser(
-                                        config=LineAwareConfiguration())
+        expr = (line1 & line2 & line3)
+        expr.config.default_line_aware()
+        parser = expr.string_parser()
         result = parser(text)
         assert result == ['', '', 'left', '    ', 'four'], result
         
@@ -74,9 +75,9 @@ class TabTest(TestCase):
         line1 = indent('') & ~Eol()
         line2 = indent(' ') & word('onespace') & ~Eol()
         line3 = indent('     ') & word('spaceandtab') & ~Eol()
-        parser = (line1 & line2 & line3).string_parser(
-                            config=LineAwareConfiguration(tabsize=4,
-                                            monitors=[TraceResults(True)]))
+        expr = line1 & line2 & line3
+        expr.config.default_line_aware(tabsize=4).trace(True)
+        parser = expr.string_parser()
         result = parser(text)
         #print(result)
         assert result == ['', ' ', 'onespace', '     ', 'spaceandtab'], result

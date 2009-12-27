@@ -361,7 +361,7 @@ def context_memoize(conservative=True):
     return rewriter
 
 
-def fix_arguments(type_, **extra_kargs):
+def set_arguments(type_, **extra_kargs):
     '''
     Add/replace named arguments while cloning.
     '''

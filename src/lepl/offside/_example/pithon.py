@@ -53,8 +53,8 @@ class PythonExample(Example):
         block += CLine((function | statement) & introduce) & Block(line[1:])
         
         program = (line[:] & Eos())
-        parser = program.string_parser(
-                    LineAwareConfiguration(block_policy=rightmost))
+        program.config.default_line_aware(block_policy=rightmost)
+        parser = program.string_parser()
         
         result = parser('''
 # this is a grammar with a similar 
