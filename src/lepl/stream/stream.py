@@ -440,7 +440,7 @@ class StreamFactory(_StreamFactory):
         '''
     
     @staticmethod
-    def null(stream):
+    def from_null(stream):
         '''
         Return the underlying data with no modification.
         '''

@@ -229,13 +229,11 @@ def make_matcher(matcher, stream, config, kargs):
     return parser
 
 
-def make_parser(matcher, stream, config, kargs):
+def make_parser(matcher):
     '''
-    Make a parser.  This takes a matcher node, a stream constructor, and a 
-    configuration, and return a function that takes an input and returns a
-    *single* parse.
+    Convert a matcher (from `make_matcher`) to a parser (which returns a 
+    single result or None).
     '''
-    matcher = make_matcher(matcher, stream, config, kargs)
     def single(arg):
         '''
         Adapt a matcher to behave as expected for the parser interface.

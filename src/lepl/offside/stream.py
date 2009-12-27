@@ -74,7 +74,7 @@ class LineAwareStreamFactory(DefaultStreamFactory):
                                     getattr(file_, 'name', '<file>')) )
 
     @staticmethod
-    def null(stream):
+    def from_null(stream):
         '''
         Reject simple streams.
         '''

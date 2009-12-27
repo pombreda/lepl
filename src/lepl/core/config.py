@@ -58,31 +58,43 @@ class Configuration(object):
 class ConfigBuilder(object):
     
     def __init__(self):
-        self.__unused = True
+        # this is cleared when any config is specified by the user
+        # if it is set when the configuration is requested, then the default
+        # config is generated (so if the user sets anything, then that takes
+        # priority and is from an empty state)
+        self.__default = True
+        # this is set whenever and config is changed.  it is cleared when
+        # the configuration is read.  so if is is false then the configuration
+        # is the same as previously read
+        self.__changed = True
         self.__rewriters = []
         self.__monitors = []
         self.__stream_factory = DEFAULT_STREAM_FACTORY
         self.__alphabet = None
         
     def add_rewriter(self, rewriter):
-        self.__unused = False
+        self.__default = False
+        self.__changed = True
         self.__rewriters.append(rewriter)
         return self
 
     def add_monitor(self, monitor):
-        self.__unused = False
+        self.__default = False
+        self.__changed = True
         self.__monitors.append(monitor)
         return self
     
     def stream_factory(self, stream_factory=DEFAULT_STREAM_FACTORY):
-        self.__unused = False
+        self.__default = False
+        self.__changed = True
         self.__stream_factory = stream_factory
         return self
 
     @property
     def configuration(self):
-        if self.__unused:
+        if self.__default:
             self.default()
+        self.__changed = False
         return Configuration(self.__rewriters, self.__monitors, 
                              self.__stream_factory)
     
@@ -91,6 +103,7 @@ class ConfigBuilder(object):
         self.__rewriters = list(configuration.rewriters)
         self.__monitors = list(configuration.monitors)
         self.__stream_factory = configuration.stream_factory
+        self.__changed = True
     
     @property
     def alphabet(self):
@@ -109,6 +122,10 @@ class ConfigBuilder(object):
                         '(perhaps the default was already used?)')
             else:
                 self.__alphabet = alphabet
+                
+    @property
+    def changed(self):
+        return self.__changed
     
     def flatten(self):
         from lepl.core.rewriters import flatten
@@ -353,7 +370,7 @@ class ConfigBuilder(object):
         
     
     def clear(self):
-        self.__unused = False
+        self.__default = False
         self.__rewriters = []
         self.__monitors = []
         self.__stream_factory = DEFAULT_STREAM_FACTORY
