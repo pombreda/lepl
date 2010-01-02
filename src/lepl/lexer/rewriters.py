@@ -25,6 +25,7 @@ from logging import getLogger
 
 from lepl.lexer.matchers import BaseToken, Lexer, LexerError, NonToken
 from lepl.matchers.matcher import Matcher
+from lepl.matchers.support import UserLayerFacade
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.support.lib import format
 
@@ -41,9 +42,13 @@ def find_tokens(matcher):
     stack = deque([matcher])
     while stack:
         matcher = stack.popleft()
-        if isinstance(matcher, NonToken):
-            non_tokens.add(matcher)
         if matcher not in visited:
+            if isinstance(matcher, UserLayerFacade) \
+                    and isinstance(matcher.delegate, NonToken):
+                non_tokens.add(matcher)
+                visited.add(matcher.delegate)
+            elif isinstance(matcher, NonToken):
+                non_tokens.add(matcher)
             visited.add(matcher)
             if isinstance(matcher, BaseToken):
                 tokens.add(matcher)
@@ -60,7 +65,7 @@ def find_tokens(matcher):
                    'non-token matchers that consume input must only '
                    'appear "inside" Tokens.  The non-Token matchers '
                    'include: {0}.',
-                   '; '.join(n.__class__.__name__ for n in non_tokens)))
+                   '; '.join(str(n) for n in non_tokens)))
     return tokens
 
 

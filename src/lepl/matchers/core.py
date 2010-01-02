@@ -30,12 +30,12 @@ Matchers that embody fundamental, common actions.
 from re import compile as compile_
 
 from lepl.core.parser import tagged
-from lepl.matchers.support import OperatorMatcher, coerce_
+from lepl.matchers.support import OperatorMatcher, coerce_, UserLayerFacade
 from lepl.matchers.transform import Transformable
 from lepl.support.lib import format
 
 
-class Any(OperatorMatcher):
+class _Any(OperatorMatcher):
     '''
     Match a single token in the stream.  
     A set of valid tokens can be supplied.
@@ -53,7 +53,7 @@ class Any(OperatorMatcher):
             
             **Note:** This argument is *not* a sub-matcher.
         '''
-        super(Any, self).__init__()
+        super(_Any, self).__init__()
         self._karg(restrict=restrict)
         self.tag(repr(restrict))
         self.__warned = False
@@ -78,6 +78,11 @@ class Any(OperatorMatcher):
                     self.__warned = True
         if ok:
             yield ([stream[0]], stream[1:])
+
+
+def Any(restrict=None):
+    return UserLayerFacade(_Any(restrict),
+                UserLayerFacade.template('Any({0.delegate.restrict})'))
             
             
 class Literal(Transformable):

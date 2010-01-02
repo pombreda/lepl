@@ -21,12 +21,13 @@ Support classes for matchers.
 '''
 
 from lepl.core.config import ParserMixin
+from lepl.core.parser import tagged
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     ConstructorStr, GraphStr
 from lepl.matchers.matcher import Matcher
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
     DefaultNamespace
-from lepl.support.lib import LogMixin, basestring
+from lepl.support.lib import LogMixin, basestring, format
 
 # pylint: disable-msg=C0103,W0212
 # (consistent interfaces)
@@ -65,6 +66,30 @@ class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
         '''
         visitor = GraphStr()
         return self.postorder(visitor)
+    
+
+class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin, 
+                      PostorderWalkerMixin, LogMixin, ParserMixin, Matcher):
+    
+    def __init__(self, delegate, display):
+        super(UserLayerFacade, self).__init__(name=OPERATORS, namespace=DefaultNamespace)
+        self._karg(delegate=delegate)
+        self._karg(display=display)
+    
+    def __str__(self):
+        return self.display(self)
+    
+    @tagged
+    def _match(self, stream):
+        generator = self.delegate._match(stream)
+        while True:
+            yield (yield generator)
+            
+    @classmethod
+    def template(cls, template):
+        def display(facade):
+            return format(template, facade)
+        return display
     
 
 def coerce_(arg, function=None):

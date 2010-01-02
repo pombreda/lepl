@@ -42,6 +42,7 @@ None).
 from logging import getLogger
 
 from lepl.matchers.matcher import Matcher
+from lepl.matchers.support import UserLayerFacade
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty
 from lepl.regexp.matchers import NfaRegexp
 from lepl.regexp.interval import Character
@@ -160,7 +161,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
     # Avoid dependency loops
     from lepl.matchers.derived import add
     from lepl.matchers.combine import And, Or, DepthFirst
-    from lepl.matchers.core import Any, Literal
+    from lepl.matchers.core import _Any, Literal
     from lepl.matchers.transform import Transformable, Transform, Transformation
 
     log = getLogger('lepl.regexp.rewriters.make_clone')
@@ -322,12 +323,22 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             log.debug(format('DFS: not rewritten: {0!r}', original))
             return original
         
-    map_ = {Any: clone_any, 
+    def clone_facade(use, original, delegate, display):
+        '''
+        Discard facades.
+        '''
+        if isinstance(delegate, RegexpContainer):
+            return delegate
+        else:
+            return original
+        
+    map_ = {_Any: clone_any, 
             Or: clone_or, 
             And: clone_and,
             Transform: clone_transform,
             Literal: clone_literal,
-            DepthFirst: clone_dfs}
+            DepthFirst: clone_dfs,
+            UserLayerFacade: clone_facade}
     
     def clone_(node, args, kargs):
         '''
