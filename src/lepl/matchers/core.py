@@ -30,59 +30,47 @@ Matchers that embody fundamental, common actions.
 from re import compile as compile_
 
 from lepl.core.parser import tagged
-from lepl.matchers.support import OperatorMatcher, coerce_, UserLayerFacade
+from lepl.matchers.support import OperatorMatcher, coerce_, matcher_factory
 from lepl.matchers.transform import Transformable
 from lepl.support.lib import format
 
 
-class _Any(OperatorMatcher):
+@matcher_factory
+def Any(restrict=None):
     '''
-    Match a single token in the stream.  
-    A set of valid tokens can be supplied.
+    Create a matcher for a single character.
+    
+    :Parameters:
+    
+      restrict (optional)
+        A list of tokens (or a string of suitable characters).  
+        If omitted any single token is accepted.  
+        
+        **Note:** This argument is *not* a sub-matcher.
     '''
-    
-    def __init__(self, restrict=None):
-        '''
-        Create a matcher for a single character.
-        
-        :Parameters:
-        
-          restrict (optional)
-            A list of tokens (or a string of suitable characters).  
-            If omitted any single token is accepted.  
-            
-            **Note:** This argument is *not* a sub-matcher.
-        '''
-        super(_Any, self).__init__()
-        self._karg(restrict=restrict)
-        self.tag(repr(restrict))
-        self.__warned = False
-    
-    @tagged
-    def _match(self, stream):
+    warned = [False]
+
+    def match(support, stream):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  The result will be a single matching 
         character.
         '''
         ok = bool(stream)
-        if ok and self.restrict:
+        if ok and restrict:
             try:
-                ok = stream[0] in self.restrict
+                ok = stream[0] in restrict
             except TypeError:
                 # it would be nice to make this an error, but for line aware
                 # parsing (and any other heterogenous input) it's legal
-                if not self.__warned:
-                    self._debug(format('Cannot restrict {0} with {1!r}',
-                                       stream[0], self.restrict))
-                    self.__warned = True
+                if not warned[0]:
+                    support._debug(format('Cannot restrict {0} with {1!r}',
+                                          stream[0], restrict))
+                    warned[0] = True
         if ok:
             yield ([stream[0]], stream[1:])
-
-
-def Any(restrict=None):
-    return UserLayerFacade(_Any(restrict),
-                UserLayerFacade.template('Any({0.delegate.restrict})'))
+            
+    return match
             
             
 class Literal(Transformable):

@@ -33,6 +33,7 @@ from lepl import Any, NfaRegexp, Literal, Add, And, Integer, Float, Word, Star
 class RewriteTest(TestCase):
     
     def test_any(self):
+        #basicConfig(level=DEBUG)
         char = Any()
         char.config.compile_to_nfa(force=True)
         matcher = char.null_matcher()

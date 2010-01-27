@@ -161,7 +161,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
     # Avoid dependency loops
     from lepl.matchers.derived import add
     from lepl.matchers.combine import And, Or, DepthFirst
-    from lepl.matchers.core import _Any, Literal
+    from lepl.matchers.core import Any, Literal
     from lepl.matchers.transform import Transformable, Transform, Transformation
 
     log = getLogger('lepl.regexp.rewriters.make_clone')
@@ -171,7 +171,6 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
         We can always convert Any() to a regular expression; the only question
         is whether we have an open range or not.
         '''
-        assert not isinstance(original, Transformable)
         if restrict is None:
             char = Character([(alphabet.min, alphabet.max)], alphabet)
         else:
@@ -323,16 +322,15 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             log.debug(format('DFS: not rewritten: {0!r}', original))
             return original
         
-    def clone_facade(use, original, delegate, display):
-        '''
-        Discard facades.
-        '''
-        if isinstance(delegate, RegexpContainer):
-            return delegate
+    def clone_facade(use, original, factory, args, kargs):
+        if factory in map_:
+            log.debug(format('Found {0}', factory))
+            return map_[factory](use, original, *args, **kargs)
         else:
+            log.debug(format('No clone for {0}, {1}', factory, map_.keys()))
             return original
         
-    map_ = {_Any: clone_any, 
+    map_ = {Any.factory: clone_any, 
             Or: clone_or, 
             And: clone_and,
             Transform: clone_transform,

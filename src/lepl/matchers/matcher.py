@@ -36,7 +36,7 @@ Note that graph traversal assumes subclasses are hashable and iterable.
 
 class Matcher(_Matcher):
     
-    @abstractmethod
+#    @abstractmethod 
     def _match(self, stream):
         '''
         This is the core method called during recursive decent.  It must

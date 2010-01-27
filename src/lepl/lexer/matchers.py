@@ -31,7 +31,7 @@ from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream, \
     ContentSource, TokenSource
 from lepl.matchers.error import raise_error
 from lepl.lexer.support import LexerError, RuntimeLexerError
-from lepl.matchers.core import OperatorMatcher, _Any, Literal, Lookahead, Regexp
+from lepl.matchers.core import OperatorMatcher, Any, Literal, Lookahead, Regexp
 from lepl.matchers.combine import And, Or, First
 from lepl.matchers.matcher import Matcher
 from lepl.matchers.memo import NoMemo
@@ -56,7 +56,7 @@ The namespace used for global per-thread data for matchers defined here.
 
 # pylint: disable-msg=C0103
 # it's a class
-NonToken = ABCMeta('NonToken', (object, ), {})
+NonToken = ABCMeta('NonToken', (object, ), {'factories': [Any.factory]})
 '''
 ABC used to identify matchers that actually consume from the stream.  These
 are the "leaf" matchers that "do the real work" and they cannot be used at
@@ -67,7 +67,7 @@ for the user.  Not implementing this interface will not block any
 functionality.
 '''
 
-NonToken.register(_Any)
+#NonToken.register(Any)
 NonToken.register(Literal)
 NonToken.register(Lookahead)
 NonToken.register(Regexp)

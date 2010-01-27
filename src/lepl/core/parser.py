@@ -46,6 +46,18 @@ def tagged(call):
     return tagged_call
 
 
+def tagged_function(matcher, call):
+    '''
+    Decorator for generators to add extra attributes.
+    '''
+    def tagged_call(stream):
+        '''
+        Wrap the result.
+        '''
+        return GeneratorWrapper(call(matcher, stream), matcher, stream)
+    return tagged_call
+
+
 class GeneratorWrapper(object):
     '''
     Associate basic info about call that created the generator with the 

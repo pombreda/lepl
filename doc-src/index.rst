@@ -8,7 +8,7 @@ LEPL - A Parser Library for Python 3 (and 2.6)
 
 * :ref:`Documentation Contents <contents>`
 
-  * :ref:`Tutorial <tutorial1>`
+  * :ref:`Tutorial <tutorial>`
   * :ref:`Manual <manual>`
   * :ref:`Download and Support <support>`
   * :ref:`FAQ <faq>`

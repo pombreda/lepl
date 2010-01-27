@@ -10,7 +10,18 @@ sed -i -e "s/__version__ = .*/__version__ = '$RELEASE'/" src/lepl/__init__.py
 
 rm -fr doc
 
+pushd doc-src
+./index.sh
+popd
+
 sphinx-build -b html doc-src/ doc
+
+# this is a bit of a hack, but people want to jump directly to the text
+# so we skip the contents
+pushd doc
+sed -i -e 's/href="intro.html"/href="intro-1.html"/' index.html
+sed -i -e 's/A Tutorial for LEPL/Tutorial Contents/' intro-1.html
+popd
 
 epydoc -v -o doc/api --html --graph=all --docformat=restructuredtext -v --exclude="_experiment" --exclude="_performance" --exclude="_example" --debug src/*
 

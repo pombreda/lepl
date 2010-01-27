@@ -452,6 +452,25 @@ Second, I checked for a ``value`` preceded by ``-`` (which will appear as a
 like you'd expect and, in a similar way to `And()
 <api/redirect.html#lepl.matchers.And>`_ and ``&``, also has a shortcut: ``|``.
 
+Alternative Spaces
+------------------
+
+Finally, it is worth noting that you can specify an alternative regular
+expression that will be used to match spaces between tokens.  The way that
+LEPL works is as follows:
+
+  1. An attempt is made to match a token.
+
+  2. If no token matches, an attempt is made to match spaces.
+
+  3. If no spaces could be matched, an error is raised.
+
+The spaces matched in step 2 are defined via a regular expression, which can
+be passed to the :ref:`configuration` (the ``discard`` parameter to
+`lexer_rewriter() <api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_;
+if no value value is given, "\\r\\n\\t " is used).
+
+
 Summary
 -------
 

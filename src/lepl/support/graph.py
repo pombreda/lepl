@@ -505,7 +505,11 @@ class ConstructorStr(Visitor):
         '''
         Store the node's class name for later use.
         '''
-        self.__name = node.__class__.__name__
+        # TODO - clean this up
+        try:
+            self.__name = node.delegate.__class__.__name__
+        except AttributeError:
+            self.__name = node.__class__.__name__
         
     def loop(self, value):
         '''

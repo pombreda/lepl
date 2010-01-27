@@ -21,7 +21,8 @@ Rewriters modify the graph of matchers before it is used to generate a
 parser.
 '''
 
-from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, dfs_edges, LEAF
+from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
+    dfs_edges, LEAF
 from lepl.matchers.matcher import Matcher
 from lepl.support.lib import lmap, format
 
@@ -384,7 +385,7 @@ def set_arguments(type_, **extra_kargs):
 
 class NodeStats(object):
     '''
-    Provide statitsics and access by type to nodes.
+    Provide statistics and access by type to nodes.
     '''
     
     def __init__(self, matcher=None):
@@ -393,6 +394,7 @@ class NodeStats(object):
         self.total = 0
         self.others = 0
         self.duplicates = 0
+        self.unhashable = 0
         self.types = {}
         self.__known = set()
         if matcher is not None:
@@ -406,18 +408,21 @@ class NodeStats(object):
             self.leaves += 1
         if type_ & NONTREE and isinstance(node, Matcher):
             self.loops += 1
-        if node not in self.__known:
-            self.__known.add(node)
-            node_type = type(node)
-            if node_type not in self.types:
-                self.types[node_type] = set()
-            self.types[node_type].add(node)
-            if isinstance(node, Matcher):
-                self.total += 1
+        try:
+            if node not in self.__known:
+                self.__known.add(node)
+                node_type = type(node)
+                if node_type not in self.types:
+                    self.types[node_type] = set()
+                self.types[node_type].add(node)
+                if isinstance(node, Matcher):
+                    self.total += 1
+                else:
+                    self.others += 1
             else:
-                self.others += 1
-        else:
-            self.duplicates += 1
+                self.duplicates += 1
+        except:
+            self.unhashable += 1
             
     def add_all(self, matcher):
         '''
@@ -431,7 +436,8 @@ class NodeStats(object):
                         'leaves:     {leaves:3d}\n'
                         'loops:      {loops:3d}\n'
                         'duplicates: {duplicates:3d}\n'
-                        'others:     {others:3d}\n', **self.__dict__)
+                        'others:     {others:3d}\n'
+                        'unhashable: {unhashable:3d}\n', **self.__dict__)
         keys = list(self.types.keys())
         keys.sort(key=repr)
         types = '\n'.join([format('{0:40s}: {1:3d}', key, self.types[key])

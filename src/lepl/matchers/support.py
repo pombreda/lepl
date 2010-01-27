@@ -21,7 +21,7 @@ Support classes for matchers.
 '''
 
 from lepl.core.config import ParserMixin
-from lepl.core.parser import tagged
+from lepl.core.parser import tagged, tagged_function
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     ConstructorStr, GraphStr
 from lepl.matchers.matcher import Matcher
@@ -42,17 +42,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
     '''
     A base class that provides support to all matchers.
     '''
-    pass
     
-    
-class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
-    '''
-    A base class that provides support to all matchers with operators.
-    '''
-    
-    def __init__(self, name=OPERATORS, namespace=DefaultNamespace):
-        super(OperatorMatcher, self).__init__(name=name, namespace=namespace)
-
     def __str__(self):
         visitor = ConstructorStr()
         return self.postorder(visitor, Matcher)
@@ -68,29 +58,43 @@ class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
         return self.postorder(visitor)
     
 
+
+class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
+    '''
+    A base class that provides support to all matchers with operators.
+    '''
+    
+    def __init__(self, name=OPERATORS, namespace=DefaultNamespace):
+        super(OperatorMatcher, self).__init__(name=name, namespace=namespace)
+
+
 class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin, 
                       PostorderWalkerMixin, LogMixin, ParserMixin, Matcher):
     
-    def __init__(self, delegate, display):
+    def __init__(self, factory, args, kargs):
         super(UserLayerFacade, self).__init__(name=OPERATORS, namespace=DefaultNamespace)
-        self._karg(delegate=delegate)
-        self._karg(display=display)
+        self.__delegate = None
+        self._karg(factory=factory)
+        self._karg(args=args)
+        self._karg(kargs=kargs)
+        self._match = self.__delayed_delegate
+        
+    def __delayed_delegate(self, stream):
+        matcher = self.factory(*self.args, **self.kargs)
+        self._match = tagged_function(self, matcher)
+        return self._match(stream)
     
     def __str__(self):
-        return self.display(self)
-    
-    @tagged
-    def _match(self, stream):
-        generator = self.delegate._match(stream)
-        while True:
-            yield (yield generator)
-            
-    @classmethod
-    def template(cls, template):
-        def display(facade):
-            return format(template, facade)
-        return display
-    
+        return format('UserLayerFacade({0}, {1}, {2})', 
+                      self.factory, self.args, self.kargs)
+        
+
+def matcher_factory(factory):
+    def wrapped_factory(*args, **kargs):
+        return UserLayerFacade(factory, args, kargs)
+    wrapped_factory.factory = factory
+    return wrapped_factory
+
 
 def coerce_(arg, function=None):
     '''
