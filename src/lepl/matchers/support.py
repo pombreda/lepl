@@ -70,31 +70,40 @@ class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
         super(OperatorMatcher, self).__init__(name=name, namespace=namespace)
 
 
+def to_generator(value):
+    '''
+    Create a single-shot generator from a value.
+    '''
+    if value is not None:
+        yield value
+
+
 class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin, 
                       PostorderWalkerMixin, LogMixin, ParserMixin, Matcher):
     
-    def __init__(self, factory, args, kargs):
+    def __init__(self, pure, factory, args, kargs):
         super(UserLayerFacade, self).__init__(name=OPERATORS, 
                                               namespace=DefaultNamespace)
-        self.__delegate = None
+        self._karg(pure=pure)
         self._karg(factory=factory)
         self._karg(args=args)
         self._karg(kargs=kargs)
-        self._match = self.__delayed_delegate
         
-    def __delayed_delegate(self, stream):
+    def _match(self, stream):
+        '''
+        The code below is called once and then replaces itself so that the
+        same logic is not repeated on any following calls.
+        
+        We handle both normal functions (pure=True) and generators.
+        '''
         matcher = self.factory(*self.args, **self.kargs)
-        first_result = matcher(self, stream)
-        if isinstance(first_result, GeneratorType):
-            self._match = tagged_function(self, matcher)
-            return GeneratorWrapper(first_result, self, stream)
+        if self.pure:
+            self._match = lambda stream: \
+                GeneratorWrapper(to_generator(matcher(self, stream)),
+                                 self, stream)
         else:
-            # todo self._match = ...
-            return GeneratorWrapper(self.__single(first_result), self, stream)
-    
-    def __single(self, result):
-        if result is not None:
-            yield result
+            self._match = tagged_function(self, matcher)
+        return self._match(stream)
     
     def __repr__(self):
         return format('UserLayerFacade({0}, {1}, {2})', 
@@ -104,14 +113,16 @@ class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin,
         return self.factory.__name__
         
         
-def as_generator(matcher):
-    def generator(stream):
-        while True:
-            return 
-
-def matcher_factory(factory):
+def function_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
-        return UserLayerFacade(factory, args, kargs)
+        return UserLayerFacade(True, factory, args, kargs)
+    wrapped_factory.factory = factory
+    return wrapped_factory
+
+
+def generator_matcher_factory(factory):
+    def wrapped_factory(*args, **kargs):
+        return UserLayerFacade(False, factory, args, kargs)
     wrapped_factory.factory = factory
     return wrapped_factory
 

@@ -30,12 +30,13 @@ Matchers that embody fundamental, common actions.
 from re import compile as compile_
 
 from lepl.core.parser import tagged
-from lepl.matchers.support import OperatorMatcher, coerce_, matcher_factory
+from lepl.matchers.support import OperatorMatcher, coerce_, \
+    function_matcher_factory
 from lepl.matchers.transform import Transformable
 from lepl.support.lib import format
 
 
-@matcher_factory
+@function_matcher_factory
 def Any(restrict=None):
     '''
     Create a matcher for a single character.
