@@ -45,7 +45,7 @@ def find_tokens(matcher):
         if matcher not in visited:
             if isinstance(matcher, UserLayerFacade) \
                     and matcher.factory in NonToken.factories:
-                non_tokens.add(matcher.factory.__name__)
+                non_tokens.add(matcher)
                 visited.add(matcher.factory)
             elif isinstance(matcher, NonToken):
                 non_tokens.add(matcher)

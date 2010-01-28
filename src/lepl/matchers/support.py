@@ -20,8 +20,10 @@
 Support classes for matchers.
 '''
 
+from types import GeneratorType
+
 from lepl.core.config import ParserMixin
-from lepl.core.parser import tagged, tagged_function
+from lepl.core.parser import tagged, tagged_function, GeneratorWrapper
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     ConstructorStr, GraphStr
 from lepl.matchers.matcher import Matcher
@@ -72,7 +74,8 @@ class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin,
                       PostorderWalkerMixin, LogMixin, ParserMixin, Matcher):
     
     def __init__(self, factory, args, kargs):
-        super(UserLayerFacade, self).__init__(name=OPERATORS, namespace=DefaultNamespace)
+        super(UserLayerFacade, self).__init__(name=OPERATORS, 
+                                              namespace=DefaultNamespace)
         self.__delegate = None
         self._karg(factory=factory)
         self._karg(args=args)
@@ -81,13 +84,30 @@ class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin,
         
     def __delayed_delegate(self, stream):
         matcher = self.factory(*self.args, **self.kargs)
-        self._match = tagged_function(self, matcher)
-        return self._match(stream)
+        first_result = matcher(self, stream)
+        if isinstance(first_result, GeneratorType):
+            self._match = tagged_function(self, matcher)
+            return GeneratorWrapper(first_result, self, stream)
+        else:
+            # todo self._match = ...
+            return GeneratorWrapper(self.__single(first_result), self, stream)
     
-    def __str__(self):
+    def __single(self, result):
+        if result is not None:
+            yield result
+    
+    def __repr__(self):
         return format('UserLayerFacade({0}, {1}, {2})', 
                       self.factory, self.args, self.kargs)
         
+    def __str__(self):
+        return self.factory.__name__
+        
+        
+def as_generator(matcher):
+    def generator(stream):
+        while True:
+            return 
 
 def matcher_factory(factory):
     def wrapped_factory(*args, **kargs):

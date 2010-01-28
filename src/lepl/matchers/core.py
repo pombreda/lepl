@@ -52,9 +52,7 @@ def Any(restrict=None):
 
     def match(support, stream):
         '''
-        Do the matching (return a generator that provides successive 
-        (result, stream) tuples).  The result will be a single matching 
-        character.
+        Do the matching.  The result will be a single matchingcharacter.
         '''
         ok = bool(stream)
         if ok and restrict:
@@ -68,7 +66,7 @@ def Any(restrict=None):
                                           stream[0], restrict))
                     warned[0] = True
         if ok:
-            yield ([stream[0]], stream[1:])
+            return ([stream[0]], stream[1:])
             
     return match
             

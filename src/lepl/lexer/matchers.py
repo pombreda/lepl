@@ -67,7 +67,6 @@ for the user.  Not implementing this interface will not block any
 functionality.
 '''
 
-#NonToken.register(Any)
 NonToken.register(Literal)
 NonToken.register(Lookahead)
 NonToken.register(Regexp)

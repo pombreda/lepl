@@ -34,28 +34,28 @@ from lepl.core.monitor import prepare_monitors
 from lepl.support.lib import format
 
     
-def tagged(call):
+def tagged(method):
     '''
     Decorator for generators to add extra attributes.
     '''
-    def tagged_call(matcher, stream):
+    def tagged_method(matcher, stream):
         '''
         Wrap the result.
         '''
-        return GeneratorWrapper(call(matcher, stream), matcher, stream)
-    return tagged_call
+        return GeneratorWrapper(method(matcher, stream), matcher, stream)
+    return tagged_method
 
 
-def tagged_function(matcher, call):
+def tagged_function(matcher, function):
     '''
     Decorator for generators to add extra attributes.
     '''
-    def tagged_call(stream):
+    def tagged_function(stream):
         '''
         Wrap the result.
         '''
-        return GeneratorWrapper(call(matcher, stream), matcher, stream)
-    return tagged_call
+        return GeneratorWrapper(function(matcher, stream), matcher, stream)
+    return tagged_function
 
 
 class GeneratorWrapper(object):
