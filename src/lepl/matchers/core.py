@@ -72,7 +72,31 @@ def Any(restrict=None):
     return match
             
             
-class Literal(Transformable):
+@function_matcher_factory
+def Literal(text):
+    '''
+    Match a series of tokens in the stream (**''**).
+
+    Typically the argument is a string but a list might be appropriate 
+    with some streams.
+    '''
+    def match(support, stream):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).
+
+        Need to be careful here to use only the restricted functionality
+        provided by the stream interface.
+        '''
+        try:
+            if text == stream[0:len(text)]:
+                return ([text], stream[len(text):])
+        except IndexError:
+            pass
+    return match
+
+        
+class Literal2(Transformable):
     '''
     Match a series of tokens in the stream (**''**).
     '''

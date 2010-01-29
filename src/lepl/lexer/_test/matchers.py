@@ -278,7 +278,7 @@ class ErrorTest(TestCase):
                                'Tokens are used then non-token matchers ' \
                                'that consume input must only appear "inside" ' \
                                'Tokens.  The non-Token matchers include: ' \
-                               'Any.', str(err)
+                               'Any().', str(err)
         else:
             assert False, 'wrong exception'
 

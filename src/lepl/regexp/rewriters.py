@@ -282,10 +282,8 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
         
     def clone_literal(use, original, text):
         '''
-        Literal is transformable, so we need to be careful with any associated
-        Transformation.
+        Literal values are easy to transform.
         '''
-        assert isinstance(original, Transformable)
         chars = [Character([(c, c)], alphabet) for c in text]
         regexp = Sequence(chars, alphabet)
         log.debug(format('Literal: cloned {0}', regexp))
@@ -334,7 +332,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             Or: clone_or, 
             And: clone_and,
             Transform: clone_transform,
-            Literal: clone_literal,
+            Literal.factory: clone_literal,
             DepthFirst: clone_dfs,
             UserLayerFacade: clone_facade}
     

@@ -54,14 +54,14 @@ class InstanceMethodTest(TestCase):
         assert foo.bar() == (1, 2, True)
 
 
-class FlattenTest(TestCase):
     
+class FlattenTest(TestCase):
     def test_flatten(self):
         matcher = Literal('a') & Literal('b') & Literal('c')
-        assert str(matcher) == "And(And(Literal('a'), Literal('b')), Literal('c'))", str(matcher)
+        assert str(matcher) == "And(And, Literal)", str(matcher)
         matcher.config.flatten()
         parser = matcher.string_parser()
-        assert str(parser.matcher) == "And(Literal('a'), Literal('b'), Literal('c'))", str(parser.matcher)
+        assert str(parser.matcher) == "And(Literal, Literal, Literal)", str(parser.matcher)
 
 
 class RepeatTest(TestCase):

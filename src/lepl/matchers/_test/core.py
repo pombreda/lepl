@@ -186,330 +186,329 @@ class StrTest(TestCase):
                 result += c
         return result
 
-    def test_str(self):
-        class Term(Node): pass
-        class Factor(Node): pass
-        class Expression(Node): pass
-
-        expression  = Delayed()
-        number      = Digit()[1:,...]                      > 'number'
-        term        = (number | '(' / expression / ')')    > Term
-        muldiv      = Any('*/')                            > 'operator'
-        factor      = (term / (muldiv / term)[0::])        > Factor
-        addsub      = Any('+-')                            > 'operator'
-        expression += (factor / (addsub / factor)[0::])    > Expression
-
-        description = str(expression)
-        self.assert_same(description, r'''Delayed(
- matcher=Transform(
-  And(
-   Transform(
-    And(
-     Transform(
-      Or(
-       Transform(
-        Transform(
-         DepthFirst(
-          Any(restrict='0123456789'), 1, None, 
-          rest=Any(restrict='0123456789')), 
-         Transformation([<function add at 0x7f0fa288cc88>])), 
-        Transformation([<function <lambda> at 0xe5b628>])), 
-       And(
-        And(
-         Literal('('), 
-         Transform(
-          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          Transformation([<function add at 0x7f0fa288cc88>])), 
-         Delayed(matcher=<loop>)), 
-        Transform(
-         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-         Transformation([<function add at 0x7f0fa288cc88>])), 
-        Literal(')'))), 
-      Transformation([<function <lambda> at 0x12cec88>])), 
-     Transform(
-      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-      Transformation([<function add at 0x7f0fa288cc88>])), 
-     DepthFirst(
-      And(
-       Transform(
-        Any(restrict='*/'), 
-        Transformation([<function <lambda> at 0x12ceb78>])), 
-       Transform(
-        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        Transformation([<function add at 0x7f0fa288cc88>])), 
-       Transform(
-        Or(
-         Transform(
-          Transform(
-           DepthFirst(
-            Any(restrict='0123456789'), 1, None, 
-            rest=Any(restrict='0123456789')), 
-           Transformation([<function add at 0x7f0fa288cc88>])), 
-          Transformation([<function <lambda> at 0xe5b628>])), 
-         And(
-          And(
-           Literal('('), 
-           Transform(
-            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            Transformation([<function add at 0x7f0fa288cc88>])), 
-           Delayed(matcher=<loop>)), 
-          Transform(
-           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           Transformation([<function add at 0x7f0fa288cc88>])), 
-          Literal(')'))), 
-        Transformation([<function <lambda> at 0x12cec88>]))), 
-      0, None, 
-      rest=And(
-       Transform(
-        Any(restrict='*/'), 
-        Transformation([<function <lambda> at 0x12ceb78>])), 
-       Transform(
-        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        Transformation([<function add at 0x7f0fa288cc88>])), 
-       Transform(
-        Or(
-         Transform(
-          Transform(
-           DepthFirst(
-            Any(restrict='0123456789'), 1, None, 
-            rest=Any(restrict='0123456789')), 
-           Transformation([<function add at 0x7f0fa288cc88>])), 
-          Transformation([<function <lambda> at 0xe5b628>])), 
-         And(
-          And(
-           Literal('('), 
-           Transform(
-            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            Transformation([<function add at 0x7f0fa288cc88>])), 
-           Delayed(matcher=<loop>)), 
-          Transform(
-           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           Transformation([<function add at 0x7f0fa288cc88>])), 
-          Literal(')'))), 
-        Transformation([<function <lambda> at 0x12cec88>]))))), 
-    Transformation([<function <lambda> at 0x12ced10>])), 
-   Transform(
-    DepthFirst(
-     Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-    Transformation([<function add at 0x7f0fa288cc88>])), 
-   DepthFirst(
-    And(
-     Transform(
-      Any(restrict='+-'), Transformation([<function <lambda> at 0x12cea68>])), 
-     Transform(
-      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-      Transformation([<function add at 0x7f0fa288cc88>])), 
-     Transform(
-      And(
-       Transform(
-        Or(
-         Transform(
-          Transform(
-           DepthFirst(
-            Any(restrict='0123456789'), 1, None, 
-            rest=Any(restrict='0123456789')), 
-           Transformation([<function add at 0x7f0fa288cc88>])), 
-          Transformation([<function <lambda> at 0xe5b628>])), 
-         And(
-          And(
-           Literal('('), 
-           Transform(
-            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            Transformation([<function add at 0x7f0fa288cc88>])), 
-           Delayed(matcher=<loop>)), 
-          Transform(
-           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           Transformation([<function add at 0x7f0fa288cc88>])), 
-          Literal(')'))), 
-        Transformation([<function <lambda> at 0x12cec88>])), 
-       Transform(
-        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        Transformation([<function add at 0x7f0fa288cc88>])), 
-       DepthFirst(
-        And(
-         Transform(
-          Any(restrict='*/'), 
-          Transformation([<function <lambda> at 0x12ceb78>])), 
-         Transform(
-          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          Transformation([<function add at 0x7f0fa288cc88>])), 
-         Transform(
-          Or(
-           Transform(
-            Transform(
-             DepthFirst(
-              Any(restrict='0123456789'), 1, None, 
-              rest=Any(restrict='0123456789')), 
-             Transformation([<function add at 0x7f0fa288cc88>])), 
-            Transformation([<function <lambda> at 0xe5b628>])), 
-           And(
-            And(
-             Literal('('), 
-             Transform(
-              DepthFirst(
-               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              Transformation([<function add at 0x7f0fa288cc88>])), 
-             Delayed(matcher=<loop>)), 
-            Transform(
-             DepthFirst(
-              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             Transformation([<function add at 0x7f0fa288cc88>])), 
-            Literal(')'))), 
-          Transformation([<function <lambda> at 0x12cec88>]))), 
-        0, None, 
-        rest=And(
-         Transform(
-          Any(restrict='*/'), 
-          Transformation([<function <lambda> at 0x12ceb78>])), 
-         Transform(
-          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          Transformation([<function add at 0x7f0fa288cc88>])), 
-         Transform(
-          Or(
-           Transform(
-            Transform(
-             DepthFirst(
-              Any(restrict='0123456789'), 1, None, 
-              rest=Any(restrict='0123456789')), 
-             Transformation([<function add at 0x7f0fa288cc88>])), 
-            Transformation([<function <lambda> at 0xe5b628>])), 
-           And(
-            And(
-             Literal('('), 
-             Transform(
-              DepthFirst(
-               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              Transformation([<function add at 0x7f0fa288cc88>])), 
-             Delayed(matcher=<loop>)), 
-            Transform(
-             DepthFirst(
-              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             Transformation([<function add at 0x7f0fa288cc88>])), 
-            Literal(')'))), 
-          Transformation([<function <lambda> at 0x12cec88>]))))), 
-      Transformation([<function <lambda> at 0x12ced10>]))), 
-    0, None, 
-    rest=And(
-     Transform(
-      Any(restrict='+-'), Transformation([<function <lambda> at 0x12cea68>])), 
-     Transform(
-      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-      Transformation([<function add at 0x7f0fa288cc88>])), 
-     Transform(
-      And(
-       Transform(
-        Or(
-         Transform(
-          Transform(
-           DepthFirst(
-            Any(restrict='0123456789'), 1, None, 
-            rest=Any(restrict='0123456789')), 
-           Transformation([<function add at 0x7f0fa288cc88>])), 
-          Transformation([<function <lambda> at 0xe5b628>])), 
-         And(
-          And(
-           Literal('('), 
-           Transform(
-            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-            Transformation([<function add at 0x7f0fa288cc88>])), 
-           Delayed(matcher=<loop>)), 
-          Transform(
-           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-           Transformation([<function add at 0x7f0fa288cc88>])), 
-          Literal(')'))), 
-        Transformation([<function <lambda> at 0x12cec88>])), 
-       Transform(
-        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-        Transformation([<function add at 0x7f0fa288cc88>])), 
-       DepthFirst(
-        And(
-         Transform(
-          Any(restrict='*/'), 
-          Transformation([<function <lambda> at 0x12ceb78>])), 
-         Transform(
-          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          Transformation([<function add at 0x7f0fa288cc88>])), 
-         Transform(
-          Or(
-           Transform(
-            Transform(
-             DepthFirst(
-              Any(restrict='0123456789'), 1, None, 
-              rest=Any(restrict='0123456789')), 
-             Transformation([<function add at 0x7f0fa288cc88>])), 
-            Transformation([<function <lambda> at 0xe5b628>])), 
-           And(
-            And(
-             Literal('('), 
-             Transform(
-              DepthFirst(
-               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              Transformation([<function add at 0x7f0fa288cc88>])), 
-             Delayed(matcher=<loop>)), 
-            Transform(
-             DepthFirst(
-              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             Transformation([<function add at 0x7f0fa288cc88>])), 
-            Literal(')'))), 
-          Transformation([<function <lambda> at 0x12cec88>]))), 
-        0, None, 
-        rest=And(
-         Transform(
-          Any(restrict='*/'), 
-          Transformation([<function <lambda> at 0x12ceb78>])), 
-         Transform(
-          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-          Transformation([<function add at 0x7f0fa288cc88>])), 
-         Transform(
-          Or(
-           Transform(
-            Transform(
-             DepthFirst(
-              Any(restrict='0123456789'), 1, None, 
-              rest=Any(restrict='0123456789')), 
-             Transformation([<function add at 0x7f0fa288cc88>])), 
-            Transformation([<function <lambda> at 0xe5b628>])), 
-           And(
-            And(
-             Literal('('), 
-             Transform(
-              DepthFirst(
-               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-              Transformation([<function add at 0x7f0fa288cc88>])), 
-             Delayed(matcher=<loop>)), 
-            Transform(
-             DepthFirst(
-              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-             Transformation([<function add at 0x7f0fa288cc88>])), 
-            Literal(')'))), 
-          Transformation([<function <lambda> at 0x12cec88>]))))), 
-      Transformation([<function <lambda> at 0x12ced10>]))))), 
-  Transformation([<function <lambda> at 0x12ce9e0>])))''')
-        
-    def test_simple(self):
-        expression  = Delayed()
-        number      = Digit()[1:,...]
-        expression += (number | '(' / expression / ')')
-
-        description = str(expression)
-        self.assert_same(description, r'''Delayed(
- matcher=Or(
-  Transform(
-   DepthFirst(
-    Any(restrict='0123456789'), 1, None, rest=Any(restrict='0123456789')), 
-   Transformation([<function add at 0x7f4dc50f9d10>])), 
-  And(
-   And(
-    Literal('('), 
-    Transform(
-     DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-     Transformation([<function add at 0x7f4dc50f9d10>])), 
-    Delayed(matcher=<loop>)), 
-   Transform(
-    DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
-    Transformation([<function add at 0x7f4dc50f9d10>])), 
-   Literal(')'))))''')
-
+#    def test_str(self):
+#        class Term(Node): pass
+#        class Factor(Node): pass
+#        class Expression(Node): pass
+#
+#        expression  = Delayed()
+#        number      = Digit()[1:,...]                      > 'number'
+#        term        = (number | '(' / expression / ')')    > Term
+#        muldiv      = Any('*/')                            > 'operator'
+#        factor      = (term / (muldiv / term)[0::])        > Factor
+#        addsub      = Any('+-')                            > 'operator'
+#        expression += (factor / (addsub / factor)[0::])    > Expression
+#
+#        description = str(expression)
+#        self.assert_same(description, r'''Delayed(
+# matcher=Transform(
+#  And(
+#   Transform(
+#    And(
+#     Transform(
+#      Or(
+#       Transform(
+#        Transform(
+#         DepthFirst(
+#          Any(restrict='0123456789'), 1, None, 
+#          rest=Any(restrict='0123456789')), 
+#         Transformation([<function add at 0x7f0fa288cc88>])), 
+#        Transformation([<function <lambda> at 0xe5b628>])), 
+#       And(
+#        And(
+#         Literal('('), 
+#         Transform(
+#          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#          Transformation([<function add at 0x7f0fa288cc88>])), 
+#         Delayed(matcher=<loop>)), 
+#        Transform(
+#         DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#         Transformation([<function add at 0x7f0fa288cc88>])), 
+#        Literal(')'))), 
+#      Transformation([<function <lambda> at 0x12cec88>])), 
+#     Transform(
+#      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#      Transformation([<function add at 0x7f0fa288cc88>])), 
+#     DepthFirst(
+#      And(
+#       Transform(
+#        Any(restrict='*/'), 
+#        Transformation([<function <lambda> at 0x12ceb78>])), 
+#       Transform(
+#        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#        Transformation([<function add at 0x7f0fa288cc88>])), 
+#       Transform(
+#        Or(
+#         Transform(
+#          Transform(
+#           DepthFirst(
+#            Any(restrict='0123456789'), 1, None, 
+#            rest=Any(restrict='0123456789')), 
+#           Transformation([<function add at 0x7f0fa288cc88>])), 
+#          Transformation([<function <lambda> at 0xe5b628>])), 
+#         And(
+#          And(
+#           Literal('('), 
+#           Transform(
+#            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#            Transformation([<function add at 0x7f0fa288cc88>])), 
+#           Delayed(matcher=<loop>)), 
+#          Transform(
+#           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#           Transformation([<function add at 0x7f0fa288cc88>])), 
+#          Literal(')'))), 
+#        Transformation([<function <lambda> at 0x12cec88>]))), 
+#      0, None, 
+#      rest=And(
+#       Transform(
+#        Any(restrict='*/'), 
+#        Transformation([<function <lambda> at 0x12ceb78>])), 
+#       Transform(
+#        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#        Transformation([<function add at 0x7f0fa288cc88>])), 
+#       Transform(
+#        Or(
+#         Transform(
+#          Transform(
+#           DepthFirst(
+#            Any(restrict='0123456789'), 1, None, 
+#            rest=Any(restrict='0123456789')), 
+#           Transformation([<function add at 0x7f0fa288cc88>])), 
+#          Transformation([<function <lambda> at 0xe5b628>])), 
+#         And(
+#          And(
+#           Literal('('), 
+#           Transform(
+#            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#            Transformation([<function add at 0x7f0fa288cc88>])), 
+#           Delayed(matcher=<loop>)), 
+#          Transform(
+#           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#           Transformation([<function add at 0x7f0fa288cc88>])), 
+#          Literal(')'))), 
+#        Transformation([<function <lambda> at 0x12cec88>]))))), 
+#    Transformation([<function <lambda> at 0x12ced10>])), 
+#   Transform(
+#    DepthFirst(
+#     Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#    Transformation([<function add at 0x7f0fa288cc88>])), 
+#   DepthFirst(
+#    And(
+#     Transform(
+#      Any(restrict='+-'), Transformation([<function <lambda> at 0x12cea68>])), 
+#     Transform(
+#      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#      Transformation([<function add at 0x7f0fa288cc88>])), 
+#     Transform(
+#      And(
+#       Transform(
+#        Or(
+#         Transform(
+#          Transform(
+#           DepthFirst(
+#            Any(restrict='0123456789'), 1, None, 
+#            rest=Any(restrict='0123456789')), 
+#           Transformation([<function add at 0x7f0fa288cc88>])), 
+#          Transformation([<function <lambda> at 0xe5b628>])), 
+#         And(
+#          And(
+#           Literal('('), 
+#           Transform(
+#            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#            Transformation([<function add at 0x7f0fa288cc88>])), 
+#           Delayed(matcher=<loop>)), 
+#          Transform(
+#           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#           Transformation([<function add at 0x7f0fa288cc88>])), 
+#          Literal(')'))), 
+#        Transformation([<function <lambda> at 0x12cec88>])), 
+#       Transform(
+#        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#        Transformation([<function add at 0x7f0fa288cc88>])), 
+#       DepthFirst(
+#        And(
+#         Transform(
+#          Any(restrict='*/'), 
+#          Transformation([<function <lambda> at 0x12ceb78>])), 
+#         Transform(
+#          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#          Transformation([<function add at 0x7f0fa288cc88>])), 
+#         Transform(
+#          Or(
+#           Transform(
+#            Transform(
+#             DepthFirst(
+#              Any(restrict='0123456789'), 1, None, 
+#              rest=Any(restrict='0123456789')), 
+#             Transformation([<function add at 0x7f0fa288cc88>])), 
+#            Transformation([<function <lambda> at 0xe5b628>])), 
+#           And(
+#            And(
+#             Literal('('), 
+#             Transform(
+#              DepthFirst(
+#               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#              Transformation([<function add at 0x7f0fa288cc88>])), 
+#             Delayed(matcher=<loop>)), 
+#            Transform(
+#             DepthFirst(
+#              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#             Transformation([<function add at 0x7f0fa288cc88>])), 
+#            Literal(')'))), 
+#          Transformation([<function <lambda> at 0x12cec88>]))), 
+#        0, None, 
+#        rest=And(
+#         Transform(
+#          Any(restrict='*/'), 
+#          Transformation([<function <lambda> at 0x12ceb78>])), 
+#         Transform(
+#          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#          Transformation([<function add at 0x7f0fa288cc88>])), 
+#         Transform(
+#          Or(
+#           Transform(
+#            Transform(
+#             DepthFirst(
+#              Any(restrict='0123456789'), 1, None, 
+#              rest=Any(restrict='0123456789')), 
+#             Transformation([<function add at 0x7f0fa288cc88>])), 
+#            Transformation([<function <lambda> at 0xe5b628>])), 
+#           And(
+#            And(
+#             Literal('('), 
+#             Transform(
+#              DepthFirst(
+#               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#              Transformation([<function add at 0x7f0fa288cc88>])), 
+#             Delayed(matcher=<loop>)), 
+#            Transform(
+#             DepthFirst(
+#              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#             Transformation([<function add at 0x7f0fa288cc88>])), 
+#            Literal(')'))), 
+#          Transformation([<function <lambda> at 0x12cec88>]))))), 
+#      Transformation([<function <lambda> at 0x12ced10>]))), 
+#    0, None, 
+#    rest=And(
+#     Transform(
+#      Any(restrict='+-'), Transformation([<function <lambda> at 0x12cea68>])), 
+#     Transform(
+#      DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#      Transformation([<function add at 0x7f0fa288cc88>])), 
+#     Transform(
+#      And(
+#       Transform(
+#        Or(
+#         Transform(
+#          Transform(
+#           DepthFirst(
+#            Any(restrict='0123456789'), 1, None, 
+#            rest=Any(restrict='0123456789')), 
+#           Transformation([<function add at 0x7f0fa288cc88>])), 
+#          Transformation([<function <lambda> at 0xe5b628>])), 
+#         And(
+#          And(
+#           Literal('('), 
+#           Transform(
+#            DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#            Transformation([<function add at 0x7f0fa288cc88>])), 
+#           Delayed(matcher=<loop>)), 
+#          Transform(
+#           DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#           Transformation([<function add at 0x7f0fa288cc88>])), 
+#          Literal(')'))), 
+#        Transformation([<function <lambda> at 0x12cec88>])), 
+#       Transform(
+#        DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#        Transformation([<function add at 0x7f0fa288cc88>])), 
+#       DepthFirst(
+#        And(
+#         Transform(
+#          Any(restrict='*/'), 
+#          Transformation([<function <lambda> at 0x12ceb78>])), 
+#         Transform(
+#          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#          Transformation([<function add at 0x7f0fa288cc88>])), 
+#         Transform(
+#          Or(
+#           Transform(
+#            Transform(
+#             DepthFirst(
+#              Any(restrict='0123456789'), 1, None, 
+#              rest=Any(restrict='0123456789')), 
+#             Transformation([<function add at 0x7f0fa288cc88>])), 
+#            Transformation([<function <lambda> at 0xe5b628>])), 
+#           And(
+#            And(
+#             Literal('('), 
+#             Transform(
+#              DepthFirst(
+#               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#              Transformation([<function add at 0x7f0fa288cc88>])), 
+#             Delayed(matcher=<loop>)), 
+#            Transform(
+#             DepthFirst(
+#              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#             Transformation([<function add at 0x7f0fa288cc88>])), 
+#            Literal(')'))), 
+#          Transformation([<function <lambda> at 0x12cec88>]))), 
+#        0, None, 
+#        rest=And(
+#         Transform(
+#          Any(restrict='*/'), 
+#          Transformation([<function <lambda> at 0x12ceb78>])), 
+#         Transform(
+#          DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#          Transformation([<function add at 0x7f0fa288cc88>])), 
+#         Transform(
+#          Or(
+#           Transform(
+#            Transform(
+#             DepthFirst(
+#              Any(restrict='0123456789'), 1, None, 
+#              rest=Any(restrict='0123456789')), 
+#             Transformation([<function add at 0x7f0fa288cc88>])), 
+#            Transformation([<function <lambda> at 0xe5b628>])), 
+#           And(
+#            And(
+#             Literal('('), 
+#             Transform(
+#              DepthFirst(
+#               Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#              Transformation([<function add at 0x7f0fa288cc88>])), 
+#             Delayed(matcher=<loop>)), 
+#            Transform(
+#             DepthFirst(
+#              Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#             Transformation([<function add at 0x7f0fa288cc88>])), 
+#            Literal(')'))), 
+#          Transformation([<function <lambda> at 0x12cec88>]))))), 
+#      Transformation([<function <lambda> at 0x12ced10>]))))), 
+#  Transformation([<function <lambda> at 0x12ce9e0>])))''')
+#        
+#    def test_simple(self):
+#        expression  = Delayed()
+#        number      = Digit()[1:,...]
+#        expression += (number | '(' / expression / ')')
+#
+#        description = str(expression)
+#        self.assert_same(description, r'''Delayed(
+# matcher=Or(
+#  Transform(
+#   DepthFirst(
+#    Any(restrict='0123456789'), 1, None, rest=Any(restrict='0123456789')), 
+#   Transformation([<function add at 0x7f4dc50f9d10>])), 
+#  And(
+#   And(
+#    Literal('('), 
+#    Transform(
+#     DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#     Transformation([<function add at 0x7f4dc50f9d10>])), 
+#    Delayed(matcher=<loop>)), 
+#   Transform(
+#    DepthFirst(Any(restrict=' \t'), 0, None, rest=Any(restrict=' \t')), 
+#    Transformation([<function add at 0x7f4dc50f9d10>])), 
+#   Literal(')'))))''')
 
 class ColumnsTest(BaseTest):
     

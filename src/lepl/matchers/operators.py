@@ -657,7 +657,7 @@ class OperatorMixin(NamespaceMixin):
                         'that is not a matcher ({2!r}).'
                 else:
                     msg = 'The operator {0} for {1} was applied to a matcher ' \
-                        '({2!r}).'
+                        '({2}).'
                 msg += ' Check syntax and parentheses.'
                 raise SyntaxError(format(msg, name, self.__class__.__name__, 
                                          other))

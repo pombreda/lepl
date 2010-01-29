@@ -45,12 +45,12 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
     A base class that provides support to all matchers.
     '''
     
-    def __str__(self):
+    def __repr__(self):
         visitor = ConstructorStr()
         return self.postorder(visitor, Matcher)
     
-    def __repr__(self):
-        return '<%s>' % self.__class__.__name__
+    def __str__(self):
+        return self.__repr__()
     
     def tree(self):
         '''
@@ -88,6 +88,7 @@ class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin,
         self._karg(factory=factory)
         self._karg(args=args)
         self._karg(kargs=kargs)
+        self._name = factory.__name__
         
     def _match(self, stream):
         '''
@@ -98,11 +99,8 @@ class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin,
         '''
         matcher = self.factory(*self.args, **self.kargs)
         if self.pure:
-            self._match = lambda stream: \
-                GeneratorWrapper(to_generator(matcher(self, stream)),
-                                 self, stream)
-        else:
-            self._match = tagged_function(self, matcher)
+            matcher = lambda support, s, m=matcher: to_generator(m(support, s))
+        self._match = tagged_function(self, matcher)
         return self._match(stream)
     
     def __repr__(self):
@@ -110,7 +108,10 @@ class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin,
                       self.factory, self.args, self.kargs)
         
     def __str__(self):
-        return self.factory.__name__
+        return format('{0}({1})', self.factory.__name__,
+                      ', '.join(list(map(repr, self.args)) +
+                               [format('{0}={1!r}', key, self.kargs[key])
+                                for key in self.kargs]))
         
         
 def function_matcher_factory(factory):
@@ -120,11 +121,25 @@ def function_matcher_factory(factory):
     return wrapped_factory
 
 
+def function_matcher(matcher):
+    def factory():
+        return matcher
+    factory.__name__ = matcher.__name__
+    return function_matcher_factory(factory)
+
+
 def generator_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
         return UserLayerFacade(False, factory, args, kargs)
     wrapped_factory.factory = factory
     return wrapped_factory
+
+
+def generator_matcher(matcher):
+    def factory():
+        return matcher
+    factory.__name__ = matcher.__name__
+    return generator_matcher_factory(factory)
 
 
 def coerce_(arg, function=None):

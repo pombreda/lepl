@@ -33,7 +33,7 @@ from lepl.core.parser import tagged
 from lepl.matchers.core import Literal
 from lepl.matchers.support import OperatorMatcher, coerce_
 from lepl.matchers.transform import Transformable
-from lepl.support.lib import lmap
+from lepl.support.lib import lmap, format
 
 
 class _BaseSearch(OperatorMatcher):
@@ -175,6 +175,10 @@ class _BaseCombiner(Transformable):
         copy = type(self)(*self.matchers)
         copy.function = self.function.compose(transform.function)
         return copy
+    
+    def __str__(self):
+        return format('{0}({1})', self.__class__.__name__,
+                      ', '.join(map(lambda x: x._name, self.matchers)))
 
 
 class And(_BaseCombiner):

@@ -36,6 +36,9 @@ Note that graph traversal assumes subclasses are hashable and iterable.
 
 class Matcher(_Matcher):
     
+    def __init__(self):
+        self._name = self.__class__.__name__
+    
 #    @abstractmethod 
     def _match(self, stream):
         '''
@@ -60,3 +63,4 @@ class Matcher(_Matcher):
         The implementation should be decorated with @tagged in almost all
         cases.
         '''
+

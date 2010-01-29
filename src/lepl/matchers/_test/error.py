@@ -61,10 +61,14 @@ class MessageTest(TestCase):
         
     def test_bad_format(self):
         '''
-        Test a message with formatting.
+        Test a message with bad formatting.
         '''
-        parser = (Literal('abc') > 'name') ** make_error('msg {0}')
-        assert None == parser.parse('abc')
+        try:
+            parser = (Literal('abc') > 'name') ** make_error('msg {0}')
+            list(parser.match('abc'))
+            assert False, 'expected error'
+        except IndexError:
+            pass
 
     def test_list(self):
         '''
