@@ -31,7 +31,7 @@ Matchers that process results.
 from abc import ABCMeta
 
 from lepl.core.parser import tagged
-from lepl.matchers.support import OperatorMatcher, coerce_
+from lepl.matchers.support import Transformable, coerce_
 from lepl.support.lib import format, str
 from lepl.support.node import Node
 
@@ -95,7 +95,7 @@ class Transformation(object):
             return self
         else:
             return Transformation(functions)
-
+        
     def __call__(self, results, stream_in, stream_out):
         for function in self.functions:
             (results, stream_out) = function(results, stream_in, stream_out)
@@ -120,30 +120,6 @@ class Transformation(object):
         '''
         return iter([])
         
-
-class Transformable(OperatorMatcher):
-    '''
-    All subclasses invoke the function attribute on
-    (results, stream_in, stream_out) when returning their final value.
-    This allows `Transform` instances to be merged directly.
-    '''
-
-    def __init__(self, function=Transformation()):
-        super(Transformable, self).__init__()
-        if not isinstance(function, Transformation):
-            function = Transformation(function)
-        self.function = function
-
-    def compose(self, transform):
-        '''
-        Combine with a transform, returning a new instance.
-        
-        We must return a new instance because the same Transformable may 
-        occur more than once in a graph and we don't want to include the
-        Transform in other cases.
-        '''
-        raise NotImplementedError()
-
 
 class Transform(Transformable):
     '''

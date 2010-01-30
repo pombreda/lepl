@@ -20,10 +20,8 @@
 Support classes for matchers.
 '''
 
-from types import GeneratorType
-
 from lepl.core.config import ParserMixin
-from lepl.core.parser import tagged, tagged_function, GeneratorWrapper
+from lepl.core.parser import tagged_function
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     ConstructorStr, GraphStr
 from lepl.matchers.matcher import Matcher
@@ -70,6 +68,31 @@ class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
         super(OperatorMatcher, self).__init__(name=name, namespace=namespace)
 
 
+class Transformable(OperatorMatcher):
+    '''
+    All subclasses invoke the function attribute on
+    (results, stream_in, stream_out) when returning their final value.
+    This allows `Transform` instances to be merged directly.
+    '''
+
+    def __init__(self, function=None):
+        from lepl.matchers.transform import Transformation
+        super(Transformable, self).__init__()
+        if not isinstance(function, Transformation):
+            function = Transformation(function)
+        self.function = function
+
+    def compose(self, transform):
+        '''
+        Combine with a transform, returning a new instance.
+        
+        We must return a new instance because the same Transformable may 
+        occur more than once in a graph and we don't want to include the
+        Transform in other cases.
+        '''
+        raise NotImplementedError()
+
+
 def to_generator(value):
     '''
     Create a single-shot generator from a value.
@@ -78,33 +101,17 @@ def to_generator(value):
         yield value
 
 
-class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin, 
-                      PostorderWalkerMixin, LogMixin, ParserMixin, Matcher):
+class FacadeMixin(object):
     
-    def __init__(self, pure, factory, args, kargs):
-        super(UserLayerFacade, self).__init__(name=OPERATORS, 
-                                              namespace=DefaultNamespace)
-        self._karg(pure=pure)
+    def __init__(self, factory, args, kargs, *_args, **_kargs):
+        super(FacadeMixin, self).__init__(*_args, **_kargs)
         self._karg(factory=factory)
         self._karg(args=args)
         self._karg(kargs=kargs)
         self._name = factory.__name__
         
-    def _match(self, stream):
-        '''
-        The code below is called once and then replaces itself so that the
-        same logic is not repeated on any following calls.
-        
-        We handle both normal functions (pure=True) and generators.
-        '''
-        matcher = self.factory(*self.args, **self.kargs)
-        if self.pure:
-            matcher = lambda support, s, m=matcher: to_generator(m(support, s))
-        self._match = tagged_function(self, matcher)
-        return self._match(stream)
-    
     def __repr__(self):
-        return format('UserLayerFacade({0}, {1}, {2})', 
+        return format('{0}({1}, {2}, {3})', self.__class__.__name__, 
                       self.factory, self.args, self.kargs)
         
     def __str__(self):
@@ -113,10 +120,48 @@ class UserLayerFacade(OperatorMixin, ArgAsAttributeMixin,
                                [format('{0}={1!r}', key, self.kargs[key])
                                 for key in self.kargs]))
         
+
+class GeneratorFacade(FacadeMixin, OperatorMatcher):
+    
+    def _match(self, stream):
+        '''
+        The code below is called once and then replaces itself so that the
+        same logic is not repeated on any following calls.
+        '''
+        matcher = self.factory(*self.args, **self.kargs)
+        self._match = tagged_function(self, matcher)
+        return self._match(stream)
+
+
+class FunctionFacade(FacadeMixin, Transformable):
+    
+    def __init__(self, factory, args, kargs, function=None):
+        super(FunctionFacade, self).__init__(factory, args, kargs, function)
+    
+    def _match(self, stream):
+        matcher0 = self.factory(*self.args, **self.kargs)
+        if self.function:
+            # if we have a transformation, build a matcher than includes it
+            def matcher1(support, stream_in):
+                try:
+                    (results, stream_out) = matcher0(support, stream_in)
+                    return self.function(results, stream_in, stream_out)
+                except TypeError:
+                    return None
+        else:
+            matcher1 = matcher0
+        matcher2 = lambda support, s, m=matcher1: to_generator(m(support, s))
+        self._match = tagged_function(self, matcher2)
+        return self._match(stream)
+
+    def compose(self, transform):
+        return FunctionFacade(self.factory, self.args, self.kargs,
+                              self.function.compose(transform.function))
+        
         
 def function_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
-        return UserLayerFacade(True, factory, args, kargs)
+        return FunctionFacade(factory, args, kargs)
     wrapped_factory.factory = factory
     return wrapped_factory
 
@@ -130,7 +175,7 @@ def function_matcher(matcher):
 
 def generator_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
-        return UserLayerFacade(False, factory, args, kargs)
+        return GeneratorFacade(factory, args, kargs)
     wrapped_factory.factory = factory
     return wrapped_factory
 
