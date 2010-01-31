@@ -31,7 +31,8 @@ from re import compile as compile_
 
 from lepl.core.parser import tagged
 from lepl.matchers.support import OperatorMatcher, coerce_, \
-    function_matcher_factory
+    function_matcher, function_matcher_factory, generator_matcher, \
+    generator_matcher_factory
 from lepl.support.lib import format
 
 
@@ -94,30 +95,15 @@ def Literal(text):
             pass
     return match
 
-        
-class Empty(OperatorMatcher):
+       
+@function_matcher
+def Empty(support, stream):
     '''
     Match any stream, consumes no input, and returns nothing.
     '''
-    
-    def __init__(self, name=None):
-        super(Empty, self).__init__()
-        self._karg(name=name)
-        if name:
-            self.tag(name)
-    
-    # pylint: disable-msg=R0201
-    # keep things consistent for future subclasses
-    @tagged
-    def _match(self, stream):
-        '''
-        Do the matching (return a generator that provides successive 
-        (result, stream) tuples).  Match any character and progress to 
-        the next.
-        '''
-        yield ([], stream)
-        
-        
+    return ([], stream)
+ 
+
 class Lookahead(OperatorMatcher):
     '''
     Tests to see if the embedded matcher *could* match, but does not do the
@@ -166,45 +152,36 @@ class Lookahead(OperatorMatcher):
         return Lookahead(self.matcher, negated=not self.negated)
             
 
-class Regexp(OperatorMatcher):
+@function_matcher_factory
+def Regexp(pattern):
     '''
     Match a regular expression.  If groups are defined, they are returned
     as results.  Otherwise, the entire expression is returned.
-    '''
+
+    If the pattern contains groups, they are returned as separate results,
+    otherwise the whole match is returned.
     
-    def __init__(self, pattern):
-        '''
-        If the pattern contains groups, they are returned as separate results,
-        otherwise the whole match is returned.
-        
-        :Parameters:
-        
-          pattern
-            The regular expression to match. 
-        '''
-        super(Regexp, self).__init__()
-        self._arg(pattern=pattern)
-        self.tag(repr(pattern))
-        self.__pattern = compile_(pattern)
-        
-    @tagged
-    def _match(self, stream):
-        '''
-        Do the matching (return a generator that provides successive 
-        (result, stream) tuples).
-        '''
+    :Parameters:
+    
+      pattern
+        The regular expression to match. 
+    '''
+    pattern = compile_(pattern)
+    
+    def match(support, stream):
         try:
-            match = self.__pattern.match(stream.text)
+            match = pattern.match(stream.text)
         except AttributeError: # no text method
-            match = self.__pattern.match(stream)
+            match = pattern.match(stream)
         if match:
             eaten = len(match.group())
             if match.groups():
-                yield (list(match.groups()), stream[eaten:])
+                return (list(match.groups()), stream[eaten:])
             else:
-                yield ([match.group()], stream[eaten:])
-            
-            
+                return ([match.group()], stream[eaten:])
+    return match
+        
+
 class Delayed(OperatorMatcher):
     '''
     A placeholder that allows forward references (**+=**).  Before use a 
@@ -238,53 +215,65 @@ class Delayed(OperatorMatcher):
             return self
         
 
-class Eof(OperatorMatcher):
+@function_matcher
+def Eof(support, stream):
     '''
     Match the end of a stream.  Returns nothing.  
 
     This is also aliased to Eos in lepl.derived.
     '''
+    if not stream:
+        return ([], stream)
 
-    def __init__(self):
-        super(Eof, self).__init__()
 
-    # pylint: disable-msg=R0201
-    # consistent for subclasses
-    @tagged
-    def _match(self, stream):
-        '''
-        Attempt to match the stream.
-        '''
-        if not stream:
-            yield ([], stream)
-            
-            
-class Consumer(OperatorMatcher):
+@generator_matcher_factory
+def Consumer(matcher, consume=True):
     '''
     Only accept the match if it consumes data from the input
     '''
-
-    def __init__(self, matcher, consume=True):
-        '''
-        If consume is False, accept when no data is consumed.  
-        '''
-        super(Consumer, self).__init__()
-        self._arg(matcher=coerce_(matcher))
-        self._karg(consume=consume)
+    matcher=coerce_(matcher)
     
-    @tagged
-    def _match(self, stream_in):
+    def match(self, stream_in):
         '''
         Do the match and test whether the stream has progressed.
         '''
         try:
-            generator = self.matcher._match(stream_in)
+            generator = matcher._match(stream_in)
             while True:
                 (result, stream_out) = yield generator
-                if self.consume == (stream_in != stream_out):
+                if consume == (stream_in != stream_out):
                     yield (result, stream_out)
         except StopIteration:
             pass
+    return match
+    
+    
+#class Consumer(OperatorMatcher):
+#    '''
+#    Only accept the match if it consumes data from the input
+#    '''
+#
+#    def __init__(self, matcher, consume=True):
+#        '''
+#        If consume is False, accept when no data is consumed.  
+#        '''
+#        super(Consumer, self).__init__()
+#        self._arg(matcher=coerce_(matcher))
+#        self._karg(consume=consume)
+#    
+#    @tagged
+#    def _match(self, stream_in):
+#        '''
+#        Do the match and test whether the stream has progressed.
+#        '''
+#        try:
+#            generator = self.matcher._match(stream_in)
+#            while True:
+#                (result, stream_out) = yield generator
+#                if self.consume == (stream_in != stream_out):
+#                    yield (result, stream_out)
+#        except StopIteration:
+#            pass
         
         
     

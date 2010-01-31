@@ -57,7 +57,8 @@ The namespace used for global per-thread data for matchers defined here.
 # pylint: disable-msg=C0103
 # it's a class
 NonToken = ABCMeta('NonToken', (object, ), 
-                   {'factories': [Any.factory, Literal.factory]})
+                   {'factories': [Any.factory, Literal.factory,
+                                  Regexp.factory]})
 '''
 ABC used to identify matchers that actually consume from the stream.  These
 are the "leaf" matchers that "do the real work" and they cannot be used at
@@ -69,7 +70,6 @@ functionality.
 '''
 
 NonToken.register(Lookahead)
-NonToken.register(Regexp)
 # don't register Empty() here because it's actually useful as a token(!)
 
 

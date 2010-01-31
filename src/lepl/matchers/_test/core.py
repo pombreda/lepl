@@ -25,7 +25,8 @@ from unittest import TestCase
 
 from lepl._test.base import BaseTest
 from lepl.matchers.combine import And, Or
-from lepl.matchers.core import Any, Literal, Eof, Regexp, Delayed, Lookahead
+from lepl.matchers.core import Any, Literal, Eof, Regexp, Delayed, Lookahead, \
+    Consumer
 from lepl.matchers.derived import Word, Newline, Space, AnyBut, Digit, \
     Integer, Columns
 from lepl.matchers.monitor import Commit
@@ -531,3 +532,25 @@ abcdefghij
                            [['012', '0123', '567',
                              'abc', 'abcd', 'fgh']])
 
+
+class ConsumerTest(BaseTest):
+    
+    def test_simple(self):
+        parser = Consumer(Any()).null_parser()
+        result = parser('a')
+        assert ['a'] == result, result
+        
+    def test_fail(self):
+        parser = Consumer(Any('b')).null_parser()
+        result = parser('a')
+        assert None == result, result
+        
+    def test_complex(self):
+        '''
+        This test requires evaluation of sub-matchers via trampolining; if
+        it fails then there may be an issue with generator_matcher.
+        '''
+        parser = Consumer(Any() & Any('b')).null_parser()
+        result = parser('ab')
+        assert ['a', 'b'] == result, result
+        
