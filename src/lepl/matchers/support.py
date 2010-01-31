@@ -167,7 +167,10 @@ def function_matcher_factory(factory):
 
 
 def function_matcher(matcher):
-    def factory():
+    def factory(*args, **kargs):
+        if args or kargs:
+            raise TypeError(format('{0}() takes no arguments', 
+                                   matcher.__name__))
         return matcher
     factory.__name__ = matcher.__name__
     return function_matcher_factory(factory)
@@ -181,7 +184,10 @@ def generator_matcher_factory(factory):
 
 
 def generator_matcher(matcher):
-    def factory():
+    def factory(*args, **kargs):
+        if args or kargs:
+            raise TypeError(format('{0}() takes no arguments', 
+                                   matcher.__name__))
         return matcher
     factory.__name__ = matcher.__name__
     return generator_matcher_factory(factory)

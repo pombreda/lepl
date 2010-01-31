@@ -41,7 +41,7 @@ def copy_standard_attributes(node, copy, describe=True, transform=True):
     '''
     Handle the additional attributes that matchers may have.
     '''
-    from lepl.matchers.core import Transformable
+    from lepl.matchers.support import Transformable
     if isinstance(node, Transformable) and transform:
         copy.function = node.function
     if describe:

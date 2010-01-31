@@ -32,7 +32,6 @@ from re import compile as compile_
 from lepl.core.parser import tagged
 from lepl.matchers.support import OperatorMatcher, coerce_, \
     function_matcher_factory
-from lepl.matchers.transform import Transformable
 from lepl.support.lib import format
 
 
@@ -95,45 +94,6 @@ def Literal(text):
             pass
     return match
 
-        
-class Literal2(Transformable):
-    '''
-    Match a series of tokens in the stream (**''**).
-    '''
-    
-    def __init__(self, text):
-        '''
-        Typically the argument is a string but a list might be appropriate 
-        with some streams.
-        '''
-        super(Literal, self).__init__()
-        self._arg(text=text)
-        self.tag(repr(text))
-    
-    @tagged
-    def _match(self, stream):
-        '''
-        Do the matching (return a generator that provides successive 
-        (result, stream) tuples).
-
-        Need to be careful here to use only the restricted functionality
-        provided by the stream interface.
-        '''
-        try:
-            if self.text == stream[0:len(self.text)]:
-                yield self.function([self.text], stream, 
-                                    stream[len(self.text):])
-        except IndexError:
-            pass
-        
-    def compose(self, transform):
-        '''
-        Generate a new instance with the composed function from the Transform.
-        '''
-        copy = Literal(self.text)
-        copy.function = self.function.compose(transform.function)
-        return copy
-        
         
 class Empty(OperatorMatcher):
     '''

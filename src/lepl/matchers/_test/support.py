@@ -65,10 +65,10 @@ class DecoratorTest(TestCase):
         assert result == [(['a'], 'b')], result
         result = list(char()[2:,...].match('abcd'))
         assert result == [(['abcd'], ''), (['abc'], 'd'), (['ab'], 'cd')], result
-#        try:
-#            list(char('bad').match('ab'))
-#        except TypeError as e:
-#            assert str(e) == '', str(e)
+        try:
+            list(char('bad').match('ab'))
+        except TypeError as e:
+            assert str(e) == 'char() takes no arguments', str(e)
         
     def test_char_in(self):
         #basicConfig(level=DEBUG)
@@ -88,10 +88,10 @@ class DecoratorTest(TestCase):
                           (['ab'], 'cd'), (['acd'], ''), (['ac'], 'd'), 
                           (['ad'], ''), (['bcd'], ''), (['bc'], 'd'), 
                           (['bd'], ''), (['cd'], '')], result
-#        try:
-#            list(any_char('bad').match('ab'))
-#        except TypeError as e:
-#            assert str(e) == '', str(e)
+        try:
+            list(any_char('bad').match('ab'))
+        except TypeError as e:
+            assert str(e) == 'any_char() takes no arguments', str(e)
         
     def test_any_char_in(self):
         result = list(any_char_in('abc').match('ab'))
