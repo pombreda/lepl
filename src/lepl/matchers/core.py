@@ -31,8 +31,7 @@ from re import compile as compile_
 
 from lepl.core.parser import tagged
 from lepl.matchers.support import OperatorMatcher, coerce_, \
-    function_matcher, function_matcher_factory, generator_matcher, \
-    generator_matcher_factory
+    function_matcher, function_matcher_factory, trampoline_matcher_factory
 from lepl.support.lib import format
 
 
@@ -226,7 +225,7 @@ def Eof(support, stream):
         return ([], stream)
 
 
-@generator_matcher_factory
+@trampoline_matcher_factory
 def Consumer(matcher, consume=True):
     '''
     Only accept the match if it consumes data from the input
@@ -246,34 +245,3 @@ def Consumer(matcher, consume=True):
         except StopIteration:
             pass
     return match
-    
-    
-#class Consumer(OperatorMatcher):
-#    '''
-#    Only accept the match if it consumes data from the input
-#    '''
-#
-#    def __init__(self, matcher, consume=True):
-#        '''
-#        If consume is False, accept when no data is consumed.  
-#        '''
-#        super(Consumer, self).__init__()
-#        self._arg(matcher=coerce_(matcher))
-#        self._karg(consume=consume)
-#    
-#    @tagged
-#    def _match(self, stream_in):
-#        '''
-#        Do the match and test whether the stream has progressed.
-#        '''
-#        try:
-#            generator = self.matcher._match(stream_in)
-#            while True:
-#                (result, stream_out) = yield generator
-#                if self.consume == (stream_in != stream_out):
-#                    yield (result, stream_out)
-#        except StopIteration:
-#            pass
-        
-        
-    

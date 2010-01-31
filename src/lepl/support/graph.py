@@ -221,10 +221,6 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
         super(ArgAsAttributeMixin, self).__init__()
         self.__arg_names = []
         self.__karg_names = []
-# Don't set these by default because subclasses have other ideas, which means
-# they get empty args and kargs atributes. 
-#        self._args(args=args)
-#        self._kargs(kargs)
 
     def __set_attribute(self, name, value):
         '''

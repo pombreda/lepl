@@ -31,9 +31,57 @@ from collections import deque
 
 from lepl.core.parser import tagged
 from lepl.matchers.core import Literal
-from lepl.matchers.support import OperatorMatcher, coerce_
+from lepl.matchers.support import OperatorMatcher, coerce_, \
+    sequence_matcher_factory, trampoline_matcher_factory
 from lepl.matchers.transform import Transformable
 from lepl.support.lib import lmap, format
+
+
+def _cleanup(queue):
+    '''
+    Utility to discard queued/stacked values.
+    '''
+    for (_count, _acc, _stream, generator) in queue:
+        generator.close()
+        
+
+def search_factory(factory):
+    def new_factory(first, start, stop, rest=None):
+        first = coerce_(first)
+        rest = first if rest is None else coerce_(rest)
+        return factory(first, start, stop, rest)
+    new_factory.__name__ = factory.__name__
+    new_factory.__doc__ = factory.__doc__
+    return new_factory
+
+
+#@trampoline_matcher_factory
+#@search_factory
+#def DepthFirst(first, start, stop, rest):
+#    def match(support, stream):
+#        stack = deque()
+#        try:
+#            stack.append((0, [], stream, first._match(stream)))
+#            while stack:
+#                (count1, acc1, stream1, generator) = stack[-1]
+#                extended = False
+#                if stop is None or count1 < stop:
+#                    count2 = count1 + 1
+#                    try:
+#                        (value, stream2) = yield generator
+#                        acc2 = acc1 + value
+#                        stack.append((count2, acc2, stream2, 
+#                                      rest._match(stream2)))
+#                        extended = True
+#                    except StopIteration:
+#                        pass
+#                if not extended:
+#                    if count1 >= start and (stop is None or count1 <= stop):
+#                        yield (acc1, stream1)
+#                    stack.pop()
+#        finally:
+#            _cleanup(stack)
+#    return match
 
 
 class _BaseSearch(OperatorMatcher):
@@ -53,14 +101,6 @@ class _BaseSearch(OperatorMatcher):
         self._arg(start=start)
         self._arg(stop=stop)
         self._karg(rest=coerce_(first if rest is None else rest))
-        
-    @staticmethod
-    def _cleanup(queue):
-        '''
-        Utility called by subclasses.
-        '''
-        for (_count, _acc, _stream, generator) in queue:
-            generator.close()
         
         
 class DepthFirst(_BaseSearch):
@@ -95,7 +135,7 @@ class DepthFirst(_BaseSearch):
                         yield (acc1, stream1)
                     stack.pop()
         finally:
-            self._cleanup(stack)
+            _cleanup(stack)
         
         
 class BreadthFirst(_BaseSearch):
@@ -127,7 +167,7 @@ class BreadthFirst(_BaseSearch):
                 except StopIteration:
                     pass
         finally:
-            self._cleanup(queue)
+            _cleanup(queue)
             
 
 class OrderByResultCount(OperatorMatcher):
@@ -157,6 +197,65 @@ class OrderByResultCount(OperatorMatcher):
         for result in sorted(results,
                              key=lambda x: len(x[0]), reverse=self.ascending):
             yield result
+            
+
+@sequence_matcher_factory
+def DepthNoTrampoline(first, start, stop, rest=None):
+    '''
+    A more efficient search when all matchers are functions (so no need to
+    trampoline).  Depth first (greedy).
+    '''
+    def matcher(support, stream):
+        stack = deque()
+        try:
+            stack.append((0, [], stream, first._match(stream)))
+            while stack:
+                (count1, acc1, stream1, generator) = stack[-1]
+                extended = False
+                if stop is None or count1 < stop:
+                    count2 = count1 + 1
+                    try:
+                        (value, stream2) = next(generator)
+                        acc2 = acc1 + value
+                        stack.append((count2, acc2, stream2, 
+                                      rest._match(stream2)))
+                        extended = True
+                    except StopIteration:
+                        pass
+                if not extended:
+                    if count1 >= start and (stop is None or count1 <= stop):
+                        yield (acc1, stream1)
+                    stack.pop()
+        finally:
+            _cleanup(stack)
+            
+    return matcher
+            
+            
+@sequence_matcher_factory
+def BreadthNoTrampoline(first, start, stop, rest=None):
+    '''
+    A more efficient search when all matchers are functions (so no need to
+    trampoline).  Breadth first (non-greedy).
+    '''
+    def matcher(support, stream):
+        queue = deque()
+        try:
+            queue.append((0, [], stream, first._match(stream)))
+            while queue:
+                (count1, acc1, stream1, generator) = queue.popleft()
+                if count1 >= start and (stop is None or count1 <= stop):
+                    yield (acc1, stream1)
+                count2 = count1 + 1
+                for (value, stream2) in generator:
+                    acc2 = acc1 + value
+                    if stop is None or count2 <= stop:
+                        queue.append((count2, acc2, stream2, 
+                                      rest._match(stream2)))
+        finally:
+            _cleanup(queue)
+            
+    return matcher
 
                 
 class _BaseCombiner(Transformable):

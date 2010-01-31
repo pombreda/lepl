@@ -101,13 +101,13 @@ def to_generator(value):
         yield value
 
 
-class FacadeMixin(object):
+class FactoryWrapper(object):
     
     def __init__(self, factory, args, kargs, *_args, **_kargs):
-        super(FacadeMixin, self).__init__(*_args, **_kargs)
-        self._karg(factory=factory)
-        self._karg(args=args)
-        self._karg(kargs=kargs)
+        super(FactoryWrapper, self).__init__(*_args, **_kargs)
+        self._arg(factory=factory)
+        self._arg(args=args)
+        self._arg(kargs=kargs)
         self._name = factory.__name__
         
     def __repr__(self):
@@ -121,7 +121,13 @@ class FacadeMixin(object):
                                 for key in self.kargs]))
         
 
-class GeneratorFacade(FacadeMixin, OperatorMatcher):
+class TrampolineWrapper(FactoryWrapper, OperatorMatcher):
+    '''
+    A wrapper for source of generators that evaluate other matchers via
+    the trampoline (ie for generators that evaluate matchers via yield).
+    
+    Typically only used for advanced matchers.
+    '''
     
     def _match(self, stream):
         '''
@@ -131,14 +137,59 @@ class GeneratorFacade(FacadeMixin, OperatorMatcher):
         matcher = self.factory(*self.args, **self.kargs)
         self._match = tagged_function(self, matcher)
         return self._match(stream)
+    
 
-
-class FunctionFacade(FacadeMixin, Transformable):
+class TransformableWrapper(FactoryWrapper, Transformable):
+    '''
+    Support for wrappers that are transformable.  These must wrap sources
+    that do not trampoline.
+    '''
     
     def __init__(self, factory, args, kargs, function=None):
-        super(FunctionFacade, self).__init__(factory, args, kargs, function)
+        super(TransformableWrapper, self).__init__(factory, args, kargs, 
+                                                   function)
+        
+    def compose(self, transform):
+        return type(self)(self.factory, self.args, self.kargs,
+                          self.function.compose(transform.function))
+        
+
+
+class SequenceWrapper(TransformableWrapper):
+    '''
+    A wrapper for simple generator factories, where the final matcher is a
+    function that yields a series of matches without evaluating other matchers
+    via the trampoline.
+    '''
     
     def _match(self, stream):
+        '''
+        The code below is called once and then replaces itself so that the
+        same logic is not repeated on any following calls.
+        '''
+        matcher0 = self.factory(*self.args, **self.kargs)
+        if self.function:
+            # if we have a transformation, build a matcher than includes it
+            def matcher1(support, stream_in):
+                for (results, stream_out) in matcher0(support, stream_in):
+                    yield self.function(results, stream_in, stream_out)
+        else:
+            matcher1 = matcher0
+        self._match = tagged_function(self, matcher1)
+        return self._match(stream)
+ 
+
+class FunctionWrapper(TransformableWrapper):
+    '''
+    A wrapper for simple function factories, where the final matcher is a
+    function that returns a single match or None.
+    '''
+    
+    def _match(self, stream):
+        '''
+        The code below is called once and then replaces itself so that the
+        same logic is not repeated on any following calls.
+        '''
         matcher0 = self.factory(*self.args, **self.kargs)
         if self.function:
             # if we have a transformation, build a matcher than includes it
@@ -154,14 +205,46 @@ class FunctionFacade(FacadeMixin, Transformable):
         self._match = tagged_function(self, matcher2)
         return self._match(stream)
 
-    def compose(self, transform):
-        return FunctionFacade(self.factory, self.args, self.kargs,
-                              self.function.compose(transform.function))
         
-        
+def trampoline_matcher_factory(factory):
+    def wrapped_factory(*args, **kargs):
+        return TrampolineWrapper(factory, args, kargs)
+    wrapped_factory.factory = factory
+    return wrapped_factory
+
+
+def trampoline_matcher(matcher):
+    def factory(*args, **kargs):
+        if args or kargs:
+            raise TypeError(format('{0}() takes no arguments', 
+                                   matcher.__name__))
+        return matcher
+    factory.__name__ = matcher.__name__
+    factory.__doc__ = matcher.__doc__
+    return trampoline_matcher_factory(factory)
+
+
+def sequence_matcher_factory(factory):
+    def wrapped_factory(*args, **kargs):
+        return SequenceWrapper(factory, args, kargs)
+    wrapped_factory.factory = factory
+    return wrapped_factory
+
+
+def sequence_matcher(matcher):
+    def factory(*args, **kargs):
+        if args or kargs:
+            raise TypeError(format('{0}() takes no arguments', 
+                                   matcher.__name__))
+        return matcher
+    factory.__name__ = matcher.__name__
+    factory.__doc__ = matcher.__doc__
+    return sequence_matcher_factory(factory)
+
+
 def function_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
-        return FunctionFacade(factory, args, kargs)
+        return FunctionWrapper(factory, args, kargs)
     wrapped_factory.factory = factory
     return wrapped_factory
 
@@ -173,24 +256,8 @@ def function_matcher(matcher):
                                    matcher.__name__))
         return matcher
     factory.__name__ = matcher.__name__
+    factory.__doc__ = matcher.__doc__
     return function_matcher_factory(factory)
-
-
-def generator_matcher_factory(factory):
-    def wrapped_factory(*args, **kargs):
-        return GeneratorFacade(factory, args, kargs)
-    wrapped_factory.factory = factory
-    return wrapped_factory
-
-
-def generator_matcher(matcher):
-    def factory(*args, **kargs):
-        if args or kargs:
-            raise TypeError(format('{0}() takes no arguments', 
-                                   matcher.__name__))
-        return matcher
-    factory.__name__ = matcher.__name__
-    return generator_matcher_factory(factory)
 
 
 def coerce_(arg, function=None):

@@ -21,9 +21,13 @@ Rewriters modify the graph of matchers before it is used to generate a
 parser.
 '''
 
+from functools import reduce
+from operator import and_
+
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
 from lepl.matchers.matcher import Matcher
+from lepl.matchers.support import FunctionWrapper
 from lepl.support.lib import lmap, format
 
 
@@ -130,7 +134,7 @@ def post_clone(function):
     '''
     Generate a clone function that applies the given function to the newly
     constructed node, except for Delayed instances (which are effectively
-    proxies and so have no functionality of their own (so, when used with 
+    proxies and so have no functionality of their own) (so, when used with 
     `DelayedClone`, effectively performs a map on the graph).
     '''
     from lepl.matchers.core import Delayed
@@ -379,6 +383,45 @@ def set_arguments(type_, **extra_kargs):
                 for key in extra_kargs:
                     kargs[key] = extra_kargs[key]
             return clone(node, args, kargs)
+        return graph.postorder(DelayedClone(new_clone), Matcher)
+    return rewriter
+
+
+def function_only(spec):
+    '''
+    Replace given matchers if all arguments are FunctionWrapper instances.
+    
+    `spec` is a map from original matcher type to ([attributes], replacement)
+    where attributes are attribute names to check for functions and 
+    replacement is a new class with the same signature as the original.
+    '''
+
+    def rewriter(graph):
+        def new_clone(node, args, kargs):
+            type_ = type(node)
+            if type_ in spec:
+                ok = True
+                (attributes, replacement) = spec[type(node)]
+                for attribute in attributes:
+                    # we don't know if these are lists or single values,
+                    # so auto-detect
+                    value = getattr(node, attribute)
+                    if isinstance(value, Matcher):
+                        ok = ok and isinstance(value, FunctionWrapper)
+                    else:
+                        for matcher in value:
+                            ok = ok and isinstance(value, FunctionWrapper)
+                    if not ok:
+                        break
+                if ok:
+                    type_ = replacement
+            try:
+                copy = type_(*args, **kargs)
+                copy_standard_attributes(node, copy)
+                return copy
+            except TypeError as err:
+                raise TypeError(format('Error cloning {0} with ({1}, {2}): {3}',
+                                       type_, args, kargs, err))
         return graph.postorder(DelayedClone(new_clone), Matcher)
     return rewriter
 

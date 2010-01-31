@@ -61,6 +61,7 @@ class MemoTest(TestCase):
         
         seq.config.left_memoize().trace(True)
         p = seq.null_matcher()
+        print(p.matcher)
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]

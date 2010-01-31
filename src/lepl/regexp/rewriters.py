@@ -42,7 +42,8 @@ None).
 from logging import getLogger
 
 from lepl.matchers.matcher import Matcher
-from lepl.matchers.support import FunctionFacade, GeneratorFacade
+from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
+    TrampolineWrapper
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty
 from lepl.regexp.matchers import NfaRegexp
 from lepl.regexp.interval import Character
@@ -320,7 +321,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             log.debug(format('DFS: not rewritten: {0!r}', original))
             return original
         
-    def clone_facade(use, original, factory, args, kargs):
+    def clone_wrapper(use, original, factory, args, kargs):
         if factory in map_:
             log.debug(format('Found {0}', factory))
             return map_[factory](use, original, *args, **kargs)
@@ -334,8 +335,9 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             Transform: clone_transform,
             Literal.factory: clone_literal,
             DepthFirst: clone_dfs,
-            FunctionFacade: clone_facade,
-            GeneratorFacade: clone_facade}
+            FunctionWrapper: clone_wrapper,
+            SequenceWrapper: clone_wrapper,
+            TrampolineWrapper: clone_wrapper}
     
     def clone_(node, args, kargs):
         '''
