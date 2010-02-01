@@ -23,6 +23,8 @@ Base class for matchers.
 
 from abc import ABCMeta, abstractmethod
 
+from lepl.support.lib import format
+
 # pylint: disable-msg=C0103, W0105
 # Python 2.6
 #class Matcher(metaclass=ABCMeta):
@@ -32,7 +34,6 @@ ABC used to identify matchers.
 
 Note that graph traversal assumes subclasses are hashable and iterable.
 '''
-
 
 class Matcher(_Matcher):
     
@@ -64,3 +65,27 @@ class Matcher(_Matcher):
         cases.
         '''
 
+# Python 2.6
+#class FactoryMatcher(metaclass=ABCMeta):
+_FactoryMatcher = ABCMeta('_FactoryMatcher', (object, ), {})
+'''
+ABC used to identify factory matchers (have a property factory that 
+identifies the matcher they generate).
+'''
+
+
+class FactoryMatcher(_FactoryMatcher):
+    
+    def __init__(self, *args, **kargs):
+        super(FactoryMatcher, self).__init__(*args, **kargs)
+
+    def __repr__(self):
+        return format('{0}({1}, {2}, {3}, {4})', self.__class__.__name__, 
+                      self.function, self.factory, self.args, self.kargs)
+        
+    def __str__(self):
+        return format('{0}({1})', self.factory.__name__,
+                      ', '.join(list(map(repr, self.args)) +
+                               [format('{0}={1!r}', key, self.kargs[key])
+                                for key in self.kargs]))
+        

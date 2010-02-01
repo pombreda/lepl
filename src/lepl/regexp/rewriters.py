@@ -321,7 +321,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             log.debug(format('DFS: not rewritten: {0!r}', original))
             return original
         
-    def clone_wrapper(use, original, factory, args, kargs):
+    def clone_wrapper(use, original, factory, *args, **kargs):
         if factory in map_:
             log.debug(format('Found {0}', factory))
             return map_[factory](use, original, *args, **kargs)
@@ -334,7 +334,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             And: clone_and,
             Transform: clone_transform,
             Literal.factory: clone_literal,
-            DepthFirst: clone_dfs,
+            DepthFirst.factory: clone_dfs,
             FunctionWrapper: clone_wrapper,
             SequenceWrapper: clone_wrapper,
             TrampolineWrapper: clone_wrapper}

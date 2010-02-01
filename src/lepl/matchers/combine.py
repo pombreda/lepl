@@ -55,120 +55,68 @@ def search_factory(factory):
     return new_factory
 
 
-#@trampoline_matcher_factory
-#@search_factory
-#def DepthFirst(first, start, stop, rest):
-#    def match(support, stream):
-#        stack = deque()
-#        try:
-#            stack.append((0, [], stream, first._match(stream)))
-#            while stack:
-#                (count1, acc1, stream1, generator) = stack[-1]
-#                extended = False
-#                if stop is None or count1 < stop:
-#                    count2 = count1 + 1
-#                    try:
-#                        (value, stream2) = yield generator
-#                        acc2 = acc1 + value
-#                        stack.append((count2, acc2, stream2, 
-#                                      rest._match(stream2)))
-#                        extended = True
-#                    except StopIteration:
-#                        pass
-#                if not extended:
-#                    if count1 >= start and (stop is None or count1 <= stop):
-#                        yield (acc1, stream1)
-#                    stack.pop()
-#        finally:
-#            _cleanup(stack)
-#    return match
-
-
-class _BaseSearch(OperatorMatcher):
-    '''
-    Support for search (repetition) classes.
-    '''
-    
-    def __init__(self, first, start, stop, rest=None):
-        '''
-        Subclasses repeat a match between 'start' and 'stop' times, inclusive.
-        
-        The first match is made with 'first'.  Subsequent matches are made
-        with 'rest' (if undefined, 'first' is used).
-        '''
-        super(_BaseSearch, self).__init__()
-        self._arg(first=coerce_(first))
-        self._arg(start=start)
-        self._arg(stop=stop)
-        self._karg(rest=coerce_(first if rest is None else rest))
-        
-        
-class DepthFirst(_BaseSearch):
+@trampoline_matcher_factory
+@search_factory
+def DepthFirst(first, start, stop, rest):
     '''
     (Post order) Depth first repetition (typically used via `Repeat`).
     '''
-
-    @tagged
-    def _match(self, stream):
-        '''
-        Attempt to match the stream.
-        '''
+    def match(support, stream):
         stack = deque()
         try:
-            stack.append((0, [], stream, self.first._match(stream)))
+            stack.append((0, [], stream, first._match(stream)))
             while stack:
                 (count1, acc1, stream1, generator) = stack[-1]
                 extended = False
-                if self.stop is None or count1 < self.stop:
+                if stop is None or count1 < stop:
                     count2 = count1 + 1
                     try:
                         (value, stream2) = yield generator
                         acc2 = acc1 + value
                         stack.append((count2, acc2, stream2, 
-                                      self.rest._match(stream2)))
+                                      rest._match(stream2)))
                         extended = True
                     except StopIteration:
                         pass
                 if not extended:
-                    if count1 >= self.start and \
-                            (self.stop is None or count1 <= self.stop):
+                    if count1 >= start and (stop is None or count1 <= stop):
                         yield (acc1, stream1)
                     stack.pop()
         finally:
             _cleanup(stack)
-        
-        
-class BreadthFirst(_BaseSearch):
+            
+    return match
+
+
+@trampoline_matcher_factory
+@search_factory
+def BreadthFirst(first, start, stop, rest):
     '''
     (Level order) Breadth first repetition (typically used via `Repeat`).
     '''
-    
-    @tagged
-    def _match(self, stream):
-        '''
-        Attempt to match the stream.
-        '''
+    def match(support, stream):
         queue = deque()
         try:
-            queue.append((0, [], stream, self.first._match(stream)))
+            queue.append((0, [], stream, first._match(stream)))
             while queue:
                 (count1, acc1, stream1, generator) = queue.popleft()
-                if count1 >= self.start and \
-                        (self.stop is None or count1 <= self.stop):
+                if count1 >= start and (stop is None or count1 <= stop):
                     yield (acc1, stream1)
                 count2 = count1 + 1
                 try:
                     while True:
                         (value, stream2) = yield generator
                         acc2 = acc1 + value
-                        if self.stop is None or count2 <= self.stop:
+                        if stop is None or count2 <= stop:
                             queue.append((count2, acc2, stream2, 
-                                          self.rest._match(stream2)))
+                                          rest._match(stream2)))
                 except StopIteration:
                     pass
         finally:
             _cleanup(queue)
             
+    return match
+
 
 class OrderByResultCount(OperatorMatcher):
     '''

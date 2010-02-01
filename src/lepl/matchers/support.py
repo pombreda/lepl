@@ -24,7 +24,7 @@ from lepl.core.config import ParserMixin
 from lepl.core.parser import tagged_function
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     ConstructorStr, GraphStr
-from lepl.matchers.matcher import Matcher
+from lepl.matchers.matcher import Matcher, FactoryMatcher
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
     DefaultNamespace
 from lepl.support.lib import LogMixin, basestring, format
@@ -49,6 +49,11 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
     
     def __str__(self):
         return self.__repr__()
+    
+    @property
+    def kargs(self):
+        (_, kargs) = self._constructor_args()
+        return kargs
     
     def tree(self):
         '''
@@ -101,27 +106,17 @@ def to_generator(value):
         yield value
 
 
-class FactoryWrapper(object):
+class _FactoryWrapper(FactoryMatcher, OperatorMatcher):
     
-    def __init__(self, factory, args, kargs, *_args, **_kargs):
-        super(FactoryWrapper, self).__init__(*_args, **_kargs)
+    def __init__(self, factory, *args, **kargs):
+        super(_FactoryWrapper, self).__init__()
         self._arg(factory=factory)
-        self._arg(args=args)
-        self._arg(kargs=kargs)
+        self._args(args=args)
+        self._kargs(kargs)
         self._name = factory.__name__
         
-    def __repr__(self):
-        return format('{0}({1}, {2}, {3})', self.__class__.__name__, 
-                      self.factory, self.args, self.kargs)
-        
-    def __str__(self):
-        return format('{0}({1})', self.factory.__name__,
-                      ', '.join(list(map(repr, self.args)) +
-                               [format('{0}={1!r}', key, self.kargs[key])
-                                for key in self.kargs]))
-        
 
-class TrampolineWrapper(FactoryWrapper, OperatorMatcher):
+class TrampolineWrapper(_FactoryWrapper):
     '''
     A wrapper for source of generators that evaluate other matchers via
     the trampoline (ie for generators that evaluate matchers via yield).
@@ -139,23 +134,22 @@ class TrampolineWrapper(FactoryWrapper, OperatorMatcher):
         return self._match(stream)
     
 
-class TransformableWrapper(FactoryWrapper, Transformable):
-    '''
-    Support for wrappers that are transformable.  These must wrap sources
-    that do not trampoline.
-    '''
+class _TransformableFactoryWrapper(FactoryMatcher, Transformable):
     
-    def __init__(self, factory, args, kargs, function=None):
-        super(TransformableWrapper, self).__init__(factory, args, kargs, 
-                                                   function)
+    def __init__(self, factory, *args, **kargs):
+        super(_TransformableFactoryWrapper, self).__init__(function=None)
+        self._arg(factory=factory)
+        self._args(args=args)
+        self._kargs(kargs=kargs)
+        self._name = factory.__name__
         
     def compose(self, transform):
-        return type(self)(self.factory, self.args, self.kargs,
-                          self.function.compose(transform.function))
+        copy = type(self)(self.factory, *self.args, **self.kargs)
+        copy.function = self.function.compose(transform.function)
+        return copy
         
 
-
-class SequenceWrapper(TransformableWrapper):
+class SequenceWrapper(_TransformableFactoryWrapper):
     '''
     A wrapper for simple generator factories, where the final matcher is a
     function that yields a series of matches without evaluating other matchers
@@ -179,7 +173,7 @@ class SequenceWrapper(TransformableWrapper):
         return self._match(stream)
  
 
-class FunctionWrapper(TransformableWrapper):
+class FunctionWrapper(_TransformableFactoryWrapper):
     '''
     A wrapper for simple function factories, where the final matcher is a
     function that returns a single match or None.
@@ -208,7 +202,7 @@ class FunctionWrapper(TransformableWrapper):
         
 def trampoline_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
-        return TrampolineWrapper(factory, args, kargs)
+        return TrampolineWrapper(factory, *args, **kargs)
     wrapped_factory.factory = factory
     return wrapped_factory
 
@@ -226,7 +220,7 @@ def trampoline_matcher(matcher):
 
 def sequence_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
-        return SequenceWrapper(factory, args, kargs)
+        return SequenceWrapper(factory, *args, **kargs)
     wrapped_factory.factory = factory
     return wrapped_factory
 
@@ -244,7 +238,7 @@ def sequence_matcher(matcher):
 
 def function_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
-        return FunctionWrapper(factory, args, kargs)
+        return FunctionWrapper(factory, *args, **kargs)
     wrapped_factory.factory = factory
     return wrapped_factory
 

@@ -24,8 +24,7 @@ from collections import deque
 from logging import getLogger
 
 from lepl.lexer.matchers import BaseToken, Lexer, LexerError, NonToken
-from lepl.matchers.matcher import Matcher
-from lepl.matchers.support import FactoryWrapper
+from lepl.matchers.matcher import Matcher, FactoryMatcher
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.support.lib import format
 
@@ -43,7 +42,7 @@ def find_tokens(matcher):
     while stack:
         matcher = stack.popleft()
         if matcher not in visited:
-            if isinstance(matcher, FactoryWrapper) \
+            if isinstance(matcher, FactoryMatcher) \
                     and matcher.factory in NonToken.factories:
                 non_tokens.add(matcher)
                 visited.add(matcher.factory)

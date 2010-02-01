@@ -26,7 +26,7 @@ Decorator tests.
 from unittest import TestCase
 
 from lepl.matchers.support import function_matcher_factory, function_matcher, \
-    generator_matcher_factory, generator_matcher
+    sequence_matcher_factory, sequence_matcher
     
 
 @function_matcher
@@ -41,13 +41,13 @@ def char_in(chars):
             return ([stream[0]], stream[1:])
     return match
 
-@generator_matcher
+@sequence_matcher
 def any_char(support, stream):
     while stream:
         yield ([stream[0]], stream[1:])
         stream = stream[1:]
 
-@generator_matcher_factory
+@sequence_matcher_factory
 def any_char_in(chars):
     def match(support, stream):
         while stream:

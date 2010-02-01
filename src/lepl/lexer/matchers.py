@@ -44,7 +44,7 @@ from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.stream.stream import LocationStream, DEFAULT_STREAM_FACTORY
-from lepl.support.lib import format, str
+from lepl.support.lib import format, str, lmap
 
 
 # pylint: disable-msg=W0105
@@ -57,8 +57,8 @@ The namespace used for global per-thread data for matchers defined here.
 # pylint: disable-msg=C0103
 # it's a class
 NonToken = ABCMeta('NonToken', (object, ), 
-                   {'factories': [Any.factory, Literal.factory,
-                                  Regexp.factory]})
+                   {'factories': lmap(lambda x: x.factory,
+                                      [Any, Literal, Regexp])})
 '''
 ABC used to identify matchers that actually consume from the stream.  These
 are the "leaf" matchers that "do the real work" and they cannot be used at
