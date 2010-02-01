@@ -107,7 +107,7 @@ Running this gives the result::
 '''
 
 from lepl.contrib.matchers import SmartSeparator2
-from lepl.core.config import Configuration
+from lepl.core.config import Configuration, ConfigBuilder
 from lepl.core.manager import GeneratorManager
 from lepl.core.rewriters import memoize, flatten, compose_transforms, \
     auto_memoize, context_memoize, optimize_or
@@ -141,6 +141,7 @@ from lepl.support.node import Node, make_dict, join_with
 __all__ = [
         # lepl.core.config
         'Configuration',
+        'ConfigBuilder',
         # lepl.contrib.matchers
         'SmartSeparator2',
         # lepl.matchers.error

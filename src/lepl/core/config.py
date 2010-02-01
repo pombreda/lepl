@@ -169,6 +169,15 @@ class ConfigBuilder(object):
         from lepl.core.manager import GeneratorManager
         return self.add_monitor(GeneratorManager(queue_len))
     
+    def no_trampoline(self, spec=None):
+        from lepl.core.rewriters import function_only
+        from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
+            BreadthFirst, BreadthNoTrampoline
+        if spec is None:
+            spec = {DepthFirst: (('first', 'rest'), DepthNoTrampoline),
+                    BreadthFirst: (('first', 'rest'), BreadthNoTrampoline)}
+        return self.add_rewriter(function_only(spec))
+    
     def compile_to_dfa(self, force=False, alphabet=None):
         from lepl.regexp.matchers import DfaRegexp
         from lepl.regexp.rewriters import regexp_rewriter

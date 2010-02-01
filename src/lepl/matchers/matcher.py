@@ -80,8 +80,8 @@ class FactoryMatcher(_FactoryMatcher):
         super(FactoryMatcher, self).__init__(*args, **kargs)
 
     def __repr__(self):
-        return format('{0}({1}, {2}, {3}, {4})', self.__class__.__name__, 
-                      self.function, self.factory, self.args, self.kargs)
+        return format('{0}({1}, {2}, {3})', self.__class__.__name__, 
+                      self.factory, self.args, self.kargs)
         
     def __str__(self):
         return format('{0}({1})', self.factory.__name__,

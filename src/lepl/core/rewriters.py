@@ -410,7 +410,7 @@ def function_only(spec):
                         ok = ok and isinstance(value, FunctionWrapper)
                     else:
                         for matcher in value:
-                            ok = ok and isinstance(value, FunctionWrapper)
+                            ok = ok and isinstance(matcher, FunctionWrapper)
                     if not ok:
                         break
                 if ok:

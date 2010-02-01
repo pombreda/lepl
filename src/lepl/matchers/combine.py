@@ -31,8 +31,8 @@ from collections import deque
 
 from lepl.core.parser import tagged
 from lepl.matchers.core import Literal
-from lepl.matchers.support import OperatorMatcher, coerce_, \
-    sequence_matcher_factory, trampoline_matcher_factory
+from lepl.matchers.support import coerce_, sequence_matcher_factory, \
+    trampoline_matcher_factory
 from lepl.matchers.transform import Transformable
 from lepl.support.lib import lmap, format
 
@@ -118,22 +118,18 @@ def BreadthFirst(first, start, stop, rest):
     return match
 
 
-class OrderByResultCount(OperatorMatcher):
+@trampoline_matcher_factory
+def OrderByResultCount(matcher, ascending=True):
     '''
     Modify a matcher to return results in length order.
     '''
-    
-    def __init__(self, matcher, ascending=True):
-        super(OrderByResultCount, self).__init__()
-        self._arg(matcher=coerce_(matcher, Literal))
-        self._karg(ascending=ascending)
-        
-    @tagged
-    def _match(self, stream):
+    matcher = coerce_(matcher, Literal)
+
+    def match(support, stream):
         '''
         Attempt to match the stream.
         '''
-        generator = self.matcher._match(stream)
+        generator = matcher._match(stream)
         results = []
         try:
             while True:
@@ -143,12 +139,15 @@ class OrderByResultCount(OperatorMatcher):
         except StopIteration:
             pass
         for result in sorted(results,
-                             key=lambda x: len(x[0]), reverse=self.ascending):
+                             key=lambda x: len(x[0]), reverse=ascending):
             yield result
+            
+    return match
             
 
 @sequence_matcher_factory
-def DepthNoTrampoline(first, start, stop, rest=None):
+@search_factory
+def DepthNoTrampoline(first, start, stop, rest):
     '''
     A more efficient search when all matchers are functions (so no need to
     trampoline).  Depth first (greedy).
@@ -181,7 +180,8 @@ def DepthNoTrampoline(first, start, stop, rest=None):
             
             
 @sequence_matcher_factory
-def BreadthNoTrampoline(first, start, stop, rest=None):
+@search_factory
+def BreadthNoTrampoline(first, start, stop, rest):
     '''
     A more efficient search when all matchers are functions (so no need to
     trampoline).  Breadth first (non-greedy).
