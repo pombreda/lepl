@@ -17,8 +17,22 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Allow global per-thread values to be defined within a certain scope.  This
-allows with contexts to influence local statements.
+Allow global per-thread values to be defined within a certain scope in a
+way that supports multiple values, temporary changes inside with contexts,
+etc.
+
+This is implemented in two layers.  The base layer is a map from keys
+to values which isolates different, broad, functionalities.  Despite the name,
+a NamespaceMap can map from any key to any value - it's just a thread-local
+map.  However, typically is it used with Namespaces because they have support
+for some useful idioms.
+
+A Namespace is, as described above, associated with a name in the thread's
+NamespaceMap.  It manages state for some functionality, so is another map,
+forming the second layer.  The motivating example of a Namespace is the
+OperatorNamespace, which maps from operators to matchers.  This uses the
+support in Namespace that allows values to be over-ridden within a certain
+scope to support overriding matchers for matching spaces.
 '''
 
 from collections import deque
@@ -51,12 +65,13 @@ class NamespaceMap(local):
     def get(self, name, default=None):
         '''
         This gets the namespace associated with the name, creating a new
-        namespace from the second arguent if necessary.
+        namespace from the second argument if necessary.
         '''
-        from lepl.matchers.operators import DefaultNamespace
+        from lepl.matchers.operators import OperatorNamespace
+        if default is None:
+            default = OperatorNamespace
         if name not in self.__map:
-            self.__map[name] = DefaultNamespace() if default is None \
-                                                  else default()
+            self.__map[name] = default() 
         return self.__map[name] 
 
 

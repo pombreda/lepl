@@ -230,13 +230,15 @@ __SINGLETONS = {}
 Map from factory (constructor/class) to singleton.
 '''
 
-def singleton(factory):
+def singleton(key, factory=None):
     '''
     Manage singletons for various types.
     '''
-    if factory not in __SINGLETONS:
-        __SINGLETONS[factory] = factory()
-    return __SINGLETONS[factory]
+    if key not in __SINGLETONS:
+        if not factory:
+            factory = key
+        __SINGLETONS[key] = factory()
+    return __SINGLETONS[key]
 
 
 def format(template, *args, **kargs):
@@ -245,3 +247,4 @@ def format(template, *args, **kargs):
     can cause errors.
     '''
     return str(template).format(*args, **kargs)
+

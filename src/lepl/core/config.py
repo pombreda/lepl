@@ -381,6 +381,7 @@ class ConfigBuilder(object):
     
     def clear(self):
         self.__default = False
+        self.__changed = True
         self.__rewriters = []
         self.__monitors = []
         self.__stream_factory = DEFAULT_STREAM_FACTORY

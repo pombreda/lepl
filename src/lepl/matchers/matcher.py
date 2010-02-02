@@ -22,8 +22,9 @@ Base class for matchers.
 
 
 from abc import ABCMeta, abstractmethod
+from types import FunctionType
 
-from lepl.support.lib import format
+from lepl.support.lib import format, singleton
 
 # pylint: disable-msg=C0103, W0105
 # Python 2.6
@@ -88,4 +89,38 @@ class FactoryMatcher(_FactoryMatcher):
                       ', '.join(list(map(repr, self.args)) +
                                [format('{0}={1!r}', key, self.kargs[key])
                                 for key in self.kargs]))
+        
+
+class Relations(object):
+    
+    def __init__(self, base):
+        self.base = base
+        self.factories = set()
+        
+    def add_factory(self, child):
+        self.factories.add(child.factory)
+        
+    def child_of(self, child):
+        if isinstance(child, FactoryMatcher):
+            return child.factory in self.factories
+        else:
+            return isinstance(child, self.base)
+    
+        
+def is_child(child, base):
+    relations = singleton(base, lambda: Relations(base))
+    return relations.child_of(child)
+
+def add_child(base, child):
+    relations = singleton(base, lambda: Relations(base))
+    if isinstance(child, FunctionType) and hasattr(child, 'factory'):
+        relations.add_factory(child)
+    elif isinstance(base, ABCMeta) and isinstance(child, type):
+        relations.base.register(child)
+    else:
+        raise Exception(format('Cannot add {0} to {1}', child, base))
+
+def add_children(base, *children):
+    for child in children:
+        add_child(base, child)
         

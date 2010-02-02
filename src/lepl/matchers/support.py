@@ -26,7 +26,7 @@ from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     ConstructorStr, GraphStr
 from lepl.matchers.matcher import Matcher, FactoryMatcher
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
-    DefaultNamespace
+    OperatorNamespace
 from lepl.support.lib import LogMixin, basestring, format
 
 # pylint: disable-msg=C0103,W0212
@@ -69,7 +69,7 @@ class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
     A base class that provides support to all matchers with operators.
     '''
     
-    def __init__(self, name=OPERATORS, namespace=DefaultNamespace):
+    def __init__(self, name=OPERATORS, namespace=OperatorNamespace):
         super(OperatorMatcher, self).__init__(name=name, namespace=namespace)
 
 

@@ -25,7 +25,7 @@ from lepl.support.context import Namespace, NamespaceMixin, Scope
 from lepl.support.lib import open_stop, format, basestring
 
 
-class DefaultNamespace(Namespace):
+class OperatorNamespace(Namespace):
     '''
     Define the default operators.
     '''
@@ -36,7 +36,7 @@ class DefaultNamespace(Namespace):
         from lepl.matchers.derived import Space, Add, Apply, KApply, Drop, \
             Repeat, Map
         from lepl.matchers.combine import And, Or, First
-        super(DefaultNamespace, self).__init__({
+        super(OperatorNamespace, self).__init__({
             SPACE_OPT: lambda a, b: And(a, Space()[0:,...], b),
             SPACE_REQ: lambda a, b: And(a, Space()[1:,...], b),
             ADD:       lambda a, b: Add(And(a, b)),
@@ -96,7 +96,7 @@ class Override(Scope):
                   add=None, and_=None, or_=None, not_=None, 
                   apply_=None, apply_raw=None, kargs=None, 
                   raise_=None, first=None, map_=None):
-        super(Override, self).__init__(OPERATORS, DefaultNamespace,
+        super(Override, self).__init__(OPERATORS, OperatorNamespace,
             {SPACE_OPT: space_opt, SPACE_REQ: space_req,
              REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
              NOT: not_, APPLY: apply_, APPLY_RAW: apply_raw,

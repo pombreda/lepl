@@ -24,7 +24,7 @@ from collections import deque
 from logging import getLogger
 
 from lepl.lexer.matchers import BaseToken, Lexer, LexerError, NonToken
-from lepl.matchers.matcher import Matcher, FactoryMatcher
+from lepl.matchers.matcher import Matcher, is_child
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.support.lib import format
 
@@ -42,13 +42,8 @@ def find_tokens(matcher):
     while stack:
         matcher = stack.popleft()
         if matcher not in visited:
-            if isinstance(matcher, FactoryMatcher) \
-                    and matcher.factory in NonToken.factories:
+            if is_child(matcher, NonToken):
                 non_tokens.add(matcher)
-                visited.add(matcher.factory)
-            elif isinstance(matcher, NonToken):
-                non_tokens.add(matcher)
-            visited.add(matcher)
             if isinstance(matcher, BaseToken):
                 tokens.add(matcher)
                 if matcher.content:
@@ -57,6 +52,7 @@ def find_tokens(matcher):
                 for child in matcher:
                     if isinstance(child, Matcher):
                         stack.append(child)
+            visited.add(matcher)
     if tokens and non_tokens:
         raise LexerError(
             format('The grammar contains a mix of Tokens and non-Token '
