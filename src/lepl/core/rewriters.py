@@ -21,13 +21,10 @@ Rewriters modify the graph of matchers before it is used to generate a
 parser.
 '''
 
-from functools import reduce
-from operator import and_
-
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
-from lepl.matchers.matcher import Matcher
-from lepl.matchers.support import FunctionWrapper
+from lepl.matchers.matcher import Matcher, is_child
+from lepl.matchers.support import TransformableFactoryWrapper
 from lepl.support.lib import lmap, format
 
 
@@ -398,23 +395,20 @@ def function_only(spec):
 
     def rewriter(graph):
         def new_clone(node, args, kargs):
-            type_ = type(node)
-            if type_ in spec:
-                ok = True
-                (attributes, replacement) = spec[type(node)]
-                for attribute in attributes:
-                    # we don't know if these are lists or single values,
-                    # so auto-detect
-                    value = getattr(node, attribute)
-                    if isinstance(value, Matcher):
-                        ok = ok and isinstance(value, FunctionWrapper)
-                    else:
-                        for matcher in value:
-                            ok = ok and isinstance(matcher, FunctionWrapper)
-                    if not ok:
+            for type_ in spec:
+                if is_child(node, type_):
+                    ok = True
+                    (attributes, replacement) = spec[type(node)]
+                    for attribute in attributes:
+                        print(attribute)
+                        value = getattr(node, attribute)
+                        print(value)
+                        ok = is_child(value, TransformableFactoryWrapper)
+                        if not ok:
+                            break
+                    if ok:
+                        type_ = replacement
                         break
-                if ok:
-                    type_ = replacement
             try:
                 copy = type_(*args, **kargs)
                 copy_standard_attributes(node, copy)

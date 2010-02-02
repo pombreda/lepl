@@ -69,20 +69,20 @@ fun_parser = parser.string_parser()
 #print(default_parser.matcher)
 #print(clear_parser.matcher)
 #print(dfa_parser.matcher)
-#print(fun_parser.matcher)
+print(fun_parser.matcher)
 
-def default(): assert default_parser(text)
-def clear(): assert clear_parser(text)
-def dfa(): assert dfa_parser(text)
+#def default(): assert default_parser(text)
+#def clear(): assert clear_parser(text)
+#def dfa(): assert dfa_parser(text)
 def fun(): assert fun_parser(text)
 
 
 def time():
     from timeit import Timer
     n = 10
-    print(Timer("default()", "from __main__ import default").timeit(number=n))
-    print(Timer("clear()", "from __main__ import clear").timeit(number=n))
-    print(Timer("dfa()", "from __main__ import dfa").timeit(number=n))
+#    print(Timer("default()", "from __main__ import default").timeit(number=n))
+#    print(Timer("clear()", "from __main__ import clear").timeit(number=n))
+#    print(Timer("dfa()", "from __main__ import dfa").timeit(number=n))
     print(Timer("fun()", "from __main__ import fun").timeit(number=n))
 
 if __name__ == '__main__':

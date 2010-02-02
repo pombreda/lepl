@@ -60,7 +60,7 @@ class SmartSeparator2(_BaseSeparator):
                 if optional:
                     required = copy(matcher)
                     required.matcher = temp
-            elif is_child(matcher, BaseSearch):
+            elif is_child(matcher, BaseSearch, fail=False):
                 # this introspection only works because Repeat sets named
                 # (ie kargs) arguments. 
                 optional = (matcher.start == 0)

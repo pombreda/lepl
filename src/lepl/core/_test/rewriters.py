@@ -25,7 +25,7 @@ from unittest import TestCase
 from lepl import Any, Delayed, Optional, Node, Drop, And
 from lepl.support.graph import preorder
 from lepl.matchers.matcher import Matcher
-from lepl.matchers.support import _TransformableFactoryWrapper
+from lepl.matchers.support import TransformableFactoryWrapper
 from lepl.core.rewriters import DelayedClone
 
 
@@ -138,7 +138,7 @@ class ComposeTransformsTest(TestCase):
         result = parser('a')[0]
         assert result == 'axy', result
         # TODO - better test
-        assert isinstance(parser.matcher, _TransformableFactoryWrapper)
+        assert isinstance(parser.matcher, TransformableFactoryWrapper)
     
     def test_and(self):
         matcher = (Any() & Optional(Any())) > append('x')
@@ -184,7 +184,7 @@ class OptimizeOrTest(TestCase):
         matcher.string_parser()
         # TODO - better test
         assert isinstance(matcher.matcher.matchers[0], 
-                          _TransformableFactoryWrapper)
+                          TransformableFactoryWrapper)
         
     def test_liberal(self):
         matcher = Delayed()
@@ -194,5 +194,5 @@ class OptimizeOrTest(TestCase):
         matcher.string_parser()
         # TODO - better test
         assert isinstance(matcher.matcher.matchers[0], 
-                          _TransformableFactoryWrapper)
+                          TransformableFactoryWrapper)
         

@@ -90,6 +90,43 @@ class FactoryMatcher(_FactoryMatcher):
                                [format('{0}={1!r}', key, self.kargs[key])
                                 for key in self.kargs]))
         
+        
+class MatcherTypeException(Exception):
+    '''
+    Used to flag problems related to matcher types.
+    '''
+    
+def raiseException(msg):
+    raise MatcherTypeException(msg)
+
+
+def case_type(matcher, if_factory, if_matcher):
+    if isinstance(matcher, FunctionType) and hasattr(matcher, 'factory'):
+        return if_factory(matcher.factory)
+    elif issubclass(matcher, Matcher):
+        return if_matcher(matcher)
+    else:
+        raise MatcherTypeException(
+            format('{0} does not appear to be a matcher type', matcher))
+
+
+def case_instance(matcher, if_wrapper, if_matcher):
+    from lepl.matchers.support import FactoryMatcher
+    try:
+        if isinstance(matcher, FactoryMatcher):
+            return if_wrapper(matcher.factory)
+    except TypeError:
+        pass # bug in python impl
+    if isinstance(matcher, Matcher):
+        return if_matcher(matcher)
+    else:
+        raise MatcherTypeException(
+            format('{0} does not appear to be a matcher', matcher))
+
+
+def matcher_type(matcher):
+    return case_type(matcher, id, id)
+
 
 class Relations(object):
     
@@ -97,28 +134,37 @@ class Relations(object):
         self.base = base
         self.factories = set()
         
-    def add_factory(self, child):
-        self.factories.add(child.factory)
+    def add_child(self, child):
+        return case_type(child,
+                         lambda m: self.factories.add(m),
+                         lambda m: self.base.register(m))
         
     def child_of(self, child):
-        if isinstance(child, FactoryMatcher):
-            return child.factory in self.factories
-        else:
-            return isinstance(child, self.base)
-    
+        return case_instance(child,
+                             lambda m: m in self.factories,
+                             lambda m: m is self.base or
+                             (isinstance(self.base, type) and 
+                              isinstance(m, self.base)))
         
-def is_child(child, base):
-    relations = singleton(base, lambda: Relations(base))
-    return relations.child_of(child)
+        
+def relations(base):
+    table = singleton(Relations, dict)
+    if base not in table:
+        table[base] = Relations(base)
+    return table[base]
+    
+
+def is_child(child, base, fail=True):
+    try:
+        return relations(base).child_of(child)
+    except MatcherTypeException as e:
+        if fail:
+            raise e
+        else:
+            return False
 
 def add_child(base, child):
-    relations = singleton(base, lambda: Relations(base))
-    if isinstance(child, FunctionType) and hasattr(child, 'factory'):
-        relations.add_factory(child)
-    elif isinstance(base, ABCMeta) and isinstance(child, type):
-        relations.base.register(child)
-    else:
-        raise Exception(format('Cannot add {0} to {1}', child, base))
+    relations(base).add_child(child)
 
 def add_children(base, *children):
     for child in children:

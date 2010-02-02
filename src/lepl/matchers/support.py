@@ -24,7 +24,7 @@ from lepl.core.config import ParserMixin
 from lepl.core.parser import tagged_function
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     ConstructorStr, GraphStr
-from lepl.matchers.matcher import Matcher, FactoryMatcher
+from lepl.matchers.matcher import Matcher, FactoryMatcher, add_child
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
     OperatorNamespace
 from lepl.support.lib import LogMixin, basestring, format
@@ -106,17 +106,17 @@ def to_generator(value):
         yield value
 
 
-class _FactoryWrapper(FactoryMatcher, OperatorMatcher):
+class FactoryWrapper(FactoryMatcher, OperatorMatcher):
     
     def __init__(self, factory, *args, **kargs):
-        super(_FactoryWrapper, self).__init__()
+        super(FactoryWrapper, self).__init__()
         self._arg(factory=factory)
         self._args(args=args)
         self._kargs(kargs)
         self._name = factory.__name__
         
 
-class TrampolineWrapper(_FactoryWrapper):
+class TrampolineWrapper(FactoryWrapper):
     '''
     A wrapper for source of generators that evaluate other matchers via
     the trampoline (ie for generators that evaluate matchers via yield).
@@ -134,10 +134,10 @@ class TrampolineWrapper(_FactoryWrapper):
         return self._match(stream)
     
 
-class _TransformableFactoryWrapper(FactoryMatcher, Transformable):
+class TransformableFactoryWrapper(FactoryMatcher, Transformable):
     
     def __init__(self, factory, *args, **kargs):
-        super(_TransformableFactoryWrapper, self).__init__(function=None)
+        super(TransformableFactoryWrapper, self).__init__(function=None)
         self._arg(factory=factory)
         self._args(args=args)
         self._kargs(kargs=kargs)
@@ -149,7 +149,7 @@ class _TransformableFactoryWrapper(FactoryMatcher, Transformable):
         return copy
         
 
-class SequenceWrapper(_TransformableFactoryWrapper):
+class SequenceWrapper(TransformableFactoryWrapper):
     '''
     A wrapper for simple generator factories, where the final matcher is a
     function that yields a series of matches without evaluating other matchers
@@ -173,7 +173,7 @@ class SequenceWrapper(_TransformableFactoryWrapper):
         return self._match(stream)
  
 
-class FunctionWrapper(_TransformableFactoryWrapper):
+class FunctionWrapper(TransformableFactoryWrapper):
     '''
     A wrapper for simple function factories, where the final matcher is a
     function that returns a single match or None.
@@ -222,6 +222,7 @@ def sequence_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
         return SequenceWrapper(factory, *args, **kargs)
     wrapped_factory.factory = factory
+    add_child(TransformableFactoryWrapper, wrapped_factory)
     return wrapped_factory
 
 
@@ -240,6 +241,7 @@ def function_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
         return FunctionWrapper(factory, *args, **kargs)
     wrapped_factory.factory = factory
+    add_child(TransformableFactoryWrapper, wrapped_factory)
     return wrapped_factory
 
 
