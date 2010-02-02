@@ -23,7 +23,8 @@ Contributed matchers.
 from copy import copy
 
 from lepl.matchers.derived import Optional
-from lepl.matchers.combine import And, Or #, _BaseSearch
+from lepl.matchers.combine import And, Or, BaseSearch
+from lepl.matchers.matcher import is_child
 from lepl.matchers.transform import Transform
 from lepl.matchers.operators import _BaseSeparator
 
@@ -59,7 +60,9 @@ class SmartSeparator2(_BaseSeparator):
                 if optional:
                     required = copy(matcher)
                     required.matcher = temp
-            elif isinstance(matcher, _BaseSearch):
+            elif is_child(matcher, BaseSearch):
+                # this introspection only works because Repeat sets named
+                # (ie kargs) arguments. 
                 optional = (matcher.start == 0)
                 if optional:
                     required = copy(matcher)

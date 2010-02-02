@@ -72,14 +72,17 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
                          'of d, b, g or n.')
     add_ = Add if add_ else Identity
     return {DEPTH_FIRST:
-                add_(DepthFirst(first, start, stop, rest)),
+                add_(DepthFirst(first=first, start=start, 
+                                stop=stop, rest=rest)),
             BREADTH_FIRST: 
-                add_(BreadthFirst(first, start, stop, rest)),
+                add_(BreadthFirst(first=first, start=start, 
+                                  stop=stop, rest=rest)),
             GREEDY:        
-                add_(OrderByResultCount(BreadthFirst(first, start, 
-                                                     stop, rest))),
+                add_(OrderByResultCount(BreadthFirst(first=first, start=start, 
+                                                     stop=stop, rest=rest))),
             NON_GREEDY:
-                add_(OrderByResultCount(BreadthFirst(first, start, stop, rest),
+                add_(OrderByResultCount(BreadthFirst(first=first, start=start, 
+                                                     stop=stop, rest=rest),
                                        False))
             }[algorithm]
             

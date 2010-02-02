@@ -1,3 +1,4 @@
+from lepl.matchers.matcher import add_children
 
 # Copyright 2009 Andrew Cooke
 
@@ -27,6 +28,7 @@ Matchers that combine sub-matchers (And, Or etc).
 # pylint: disable-msg=R0901, R0904, W0142
 # lepl conventions
 
+from abc import ABCMeta
 from collections import deque
 
 from lepl.core.parser import tagged
@@ -35,6 +37,20 @@ from lepl.matchers.support import coerce_, sequence_matcher_factory, \
     trampoline_matcher_factory
 from lepl.matchers.transform import Transformable
 from lepl.support.lib import lmap, format
+
+
+# pylint: disable-msg=C0103, W0105
+# Python 2.6
+#class BaseSearch(metaclass=ABCMeta):
+_BaseSearch = ABCMeta('_BaseSearch', (object, ), {})
+'''
+ABC used to identify matchers.  
+
+Note that graph traversal assumes subclasses are hashable and iterable.
+'''
+
+class BaseSearch(_BaseSearch):
+    pass
 
 
 def _cleanup(queue):
@@ -204,6 +220,10 @@ def BreadthNoTrampoline(first, start, stop, rest):
             _cleanup(queue)
             
     return matcher
+
+
+add_children(BaseSearch, DepthFirst, BreadthFirst, \
+             DepthNoTrampoline, BreadthNoTrampoline)
 
                 
 class _BaseCombiner(Transformable):
