@@ -24,7 +24,7 @@ parser.
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
 from lepl.matchers.matcher import Matcher, is_child
-from lepl.matchers.support import TransformableFactoryWrapper
+from lepl.matchers.support import TransformableFactoryWrapper, no_factory
 from lepl.support.lib import lmap, format
 
 
@@ -395,21 +395,24 @@ def function_only(spec):
 
     def rewriter(graph):
         def new_clone(node, args, kargs):
+            ok = False
             for type_ in spec:
                 if is_child(node, type_):
-                    ok = True
-                    (attributes, replacement) = spec[type(node)]
+                    (attributes, replacement) = spec[type_]
                     for attribute in attributes:
-                        print(attribute)
                         value = getattr(node, attribute)
-                        print(value)
                         ok = is_child(value, TransformableFactoryWrapper)
                         if not ok:
                             break
                     if ok:
                         type_ = replacement
                         break
+            if not ok:
+                type_ = type(node)
             try:
+                if type_ is not type(node):
+                    # we need to drop the factory argument
+                    args, kargs = no_factory(args, kargs)
                 copy = type_(*args, **kargs)
                 copy_standard_attributes(node, copy)
                 return copy

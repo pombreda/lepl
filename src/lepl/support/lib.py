@@ -248,3 +248,6 @@ def format(template, *args, **kargs):
     '''
     return str(template).format(*args, **kargs)
 
+
+def identity(x):
+    return x

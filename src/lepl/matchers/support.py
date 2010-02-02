@@ -48,7 +48,11 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         return self.postorder(visitor, Matcher)
     
     def __str__(self):
-        return self.__repr__()
+        (args, kargs) = self._constructor_args()
+        return format('{0}({1})', self.__class__.__name__,
+                      ', '.join(list(map(str, args)) +
+                               [format('{0}={1}', key, kargs[key])
+                                for key in kargs]))
     
     @property
     def kargs(self):
@@ -106,9 +110,17 @@ def to_generator(value):
         yield value
 
 
+def no_factory(args, kargs):
+    try:
+        del kargs['factory']
+    except KeyError:
+        args = args[1:]
+    return (args, kargs)
+
+
 class FactoryWrapper(FactoryMatcher, OperatorMatcher):
     
-    def __init__(self, factory, *args, **kargs):
+    def __init__(self, factory=None, *args, **kargs):
         super(FactoryWrapper, self).__init__()
         self._arg(factory=factory)
         self._args(args=args)
@@ -136,7 +148,7 @@ class TrampolineWrapper(FactoryWrapper):
 
 class TransformableFactoryWrapper(FactoryMatcher, Transformable):
     
-    def __init__(self, factory, *args, **kargs):
+    def __init__(self, factory=None, *args, **kargs):
         super(TransformableFactoryWrapper, self).__init__(function=None)
         self._arg(factory=factory)
         self._args(args=args)
@@ -199,7 +211,7 @@ class FunctionWrapper(TransformableFactoryWrapper):
         self._match = tagged_function(self, matcher2)
         return self._match(stream)
 
-        
+
 def trampoline_matcher_factory(factory):
     def wrapped_factory(*args, **kargs):
         return TrampolineWrapper(factory, *args, **kargs)

@@ -24,7 +24,7 @@ Base class for matchers.
 from abc import ABCMeta, abstractmethod
 from types import FunctionType
 
-from lepl.support.lib import format, singleton
+from lepl.support.lib import format, singleton, identity
 
 # pylint: disable-msg=C0103, W0105
 # Python 2.6
@@ -86,8 +86,8 @@ class FactoryMatcher(_FactoryMatcher):
         
     def __str__(self):
         return format('{0}({1})', self.factory.__name__,
-                      ', '.join(list(map(repr, self.args)) +
-                               [format('{0}={1!r}', key, self.kargs[key])
+                      ', '.join(list(map(str, self.args)) +
+                               [format('{0}={1}', key, self.kargs[key])
                                 for key in self.kargs]))
         
         
@@ -125,7 +125,10 @@ def case_instance(matcher, if_wrapper, if_matcher):
 
 
 def matcher_type(matcher):
-    return case_type(matcher, id, id)
+    return case_type(matcher, identity, identity)
+
+def matcher_instance(matcher):
+    return case_instance(matcher, identity, identity)
 
 
 class Relations(object):
@@ -140,14 +143,18 @@ class Relations(object):
                          lambda m: self.base.register(m))
         
     def child_of(self, child):
-        return case_instance(child,
-                             lambda m: m in self.factories,
-                             lambda m: m is self.base or
-                             (isinstance(self.base, type) and 
-                              isinstance(m, self.base)))
+        return case_instance(child, 
+                             lambda m: m is self.base or m in self.factories,
+                             lambda m: isinstance(self.base, type) 
+                             and isinstance(m, self.base))
         
-        
+
 def relations(base):
+    # if base is a factory then we want the related type
+    try:
+        base = matcher_type(base)
+    except MatcherTypeException:
+        pass
     table = singleton(Relations, dict)
     if base not in table:
         table[base] = Relations(base)
