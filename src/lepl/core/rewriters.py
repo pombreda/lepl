@@ -23,8 +23,9 @@ parser.
 
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
-from lepl.matchers.matcher import Matcher, is_child
-from lepl.matchers.support import TransformableFactoryWrapper, no_factory
+from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher
+from lepl.matchers.support import TransformableFactoryWrapper, no_factory, \
+    FactoryMatcher
 from lepl.support.lib import lmap, format
 
 
@@ -400,8 +401,15 @@ def function_only(spec):
                 if is_child(node, type_):
                     (attributes, replacement) = spec[type_]
                     for attribute in attributes:
-                        value = getattr(node, attribute)
-                        ok = is_child(value, TransformableFactoryWrapper)
+                        if attribute.startswith('*'):
+                            values = getattr(node, attribute[1:])
+                            for value in values:
+                                ok = is_child(value, TransformableFactoryWrapper)
+                                if not ok:
+                                    break
+                        else:
+                            value = getattr(node, attribute)
+                            ok = is_child(value, TransformableFactoryWrapper)
                         if not ok:
                             break
                     if ok:
@@ -410,7 +418,7 @@ def function_only(spec):
             if not ok:
                 type_ = type(node)
             try:
-                if type_ is not type(node):
+                if type_ is not type(node):# and is_child(type(node), FactoryMatcher):
                     # we need to drop the factory argument
                     args, kargs = no_factory(args, kargs)
                 copy = type_(*args, **kargs)

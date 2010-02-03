@@ -36,7 +36,7 @@ class SmartSeparator2(_BaseSeparator):
     '''
     A substitute `Separator` with different semantics for optional matchers.
     This identifies optional matchers by type (whether they subclass 
-    `_BaseSearch`) and then constructs a replacement that adds space only
+    `BaseSearch`) and then constructs a replacement that adds space only
     when both matchers are used.
     
     See also `SmartSeparator1`, which is more general but less efficient.

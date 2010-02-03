@@ -1,4 +1,4 @@
-from lepl.matchers.matcher import add_children
+from lepl.matchers.matcher import add_children, add_child
 
 # Copyright 2009 Andrew Cooke
 
@@ -287,6 +287,39 @@ class And(_BaseCombiner):
                     generator.close()
 
 
+@sequence_matcher_factory
+def AndNoTrampoline(*matchers):
+    '''
+    Used as an optimisation when sub-matchers do not require the trampoline.
+    '''
+    matchers = lmap(coerce_, matchers)
+    
+    def matcher(support, stream_in):
+        if matchers:
+            stack = deque([([], matchers[0]._match(stream_in), matchers[1:])])
+            append = stack.append
+            pop = stack.pop
+            try:
+                while stack:
+                    (result, generator, queued) = pop()
+                    try:
+                        (value, stream_out) = next(generator)
+                        append((result, generator, queued))
+                        if queued:
+                            append((result+value, 
+                                    queued[0]._match(stream_out), 
+                                    queued[1:]))
+                        else:
+                            yield (result+value, stream_out)
+                    except StopIteration:
+                        pass
+            finally:
+                for (result, generator, queued) in stack:
+                    generator.close()
+                    
+    return matcher
+        
+        
 class Or(_BaseCombiner):
     '''
     Match one of the given matchers (**|**).
