@@ -44,15 +44,44 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
     '''
     
     def __repr__(self):
-        visitor = ConstructorStr()
-        return self.postorder(visitor, Matcher)
+#        visitor = ConstructorStr()
+#        return self.postorder(visitor, Matcher)
+#        (args, kargs) = self._constructor_args()
+#        return format('{0}(\n{1})', self.__class__.__name__,
+#                      ',\n'.join([self.__fmt_repr(1, arg) for arg in args] +
+#                                 [self.__fmt_repr(1, kargs[key], key)
+#                                  for key in kargs]))
+        return self.indented_repr(0)
+                      
+    def _fmt_repr(self, indent, value, key=None):
+        if isinstance(value, Matcher):
+            return value.indented_repr(indent, key)
+        else:
+            return (' ' * indent) + (key + '=' if key else '') + repr(value)
+        
+    def indented_repr(self, indent0, key=None):
+        (args, kargs) = self._constructor_args()
+        compact = len(args) + len(kargs) < 2
+        indent1 = 0 if compact else indent0 + 1 
+        contents = [self._fmt_repr(indent1, arg) for arg in args] + \
+            [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
+        return format('{0}{1}{2}({3}{4})', 
+                      ' ' * indent0,
+                      key + '=' if key else '',
+                      self._small_str,
+                      '' if compact else '\n',
+                      ',\n'.join(contents))
+        
+    def _fmt_str(self, value, key=None):
+        return (key + '=' if key else '') + \
+            value._small_str if isinstance(value, Matcher) else str(value)
     
     def __str__(self):
         (args, kargs) = self._constructor_args()
-        return format('{0}({1})', self.__class__.__name__,
-                      ', '.join(list(map(str, args)) +
-                               [format('{0}={1}', key, kargs[key])
-                                for key in kargs]))
+        contents = [self._fmt_str(arg) for arg in args] + \
+            [self._fmt_str(kargs[key], key) for key in kargs]
+        return format('{0}({1})', self._small_str,
+                      ', '.join(contents))
     
     @property
     def kargs(self):

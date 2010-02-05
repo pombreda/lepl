@@ -175,8 +175,8 @@ class ConfigBuilder(object):
             BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline
         if spec is None:
             spec = {DepthFirst: (('first', 'rest'), DepthNoTrampoline),
-                    BreadthFirst: (('first', 'rest'), BreadthNoTrampoline)}#,
-                    #And: (('*matchers',), AndNoTrampoline)}
+                    BreadthFirst: (('first', 'rest'), BreadthNoTrampoline),
+                    And: (('*matchers',), AndNoTrampoline)}
         return self.add_rewriter(function_only(spec))
     
     def compile_to_dfa(self, force=False, alphabet=None):

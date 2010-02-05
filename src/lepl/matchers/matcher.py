@@ -39,7 +39,7 @@ Note that graph traversal assumes subclasses are hashable and iterable.
 class Matcher(_Matcher):
     
     def __init__(self):
-        self._name = self.__class__.__name__
+        self._small_str = self.__class__.__name__
     
 #    @abstractmethod 
     def _match(self, stream):
@@ -66,6 +66,13 @@ class Matcher(_Matcher):
         cases.
         '''
 
+#    @abstractmethod
+    def indented_repr(self, indent, key=None):
+        '''
+        Called by repr; should recursively call contents.
+        '''
+        
+
 # Python 2.6
 #class FactoryMatcher(metaclass=ABCMeta):
 _FactoryMatcher = ABCMeta('_FactoryMatcher', (object, ), {})
@@ -80,7 +87,6 @@ class FactoryMatcher(_FactoryMatcher):
     def __init__(self, *args, **kargs):
         super(FactoryMatcher, self).__init__(*args, **kargs)
         self.__factory = None
-        # TODO - _name needs to be short_str or similar
         
     @property
     def factory(self):
@@ -91,17 +97,21 @@ class FactoryMatcher(_FactoryMatcher):
         if not self.__factory:
             assert factory
             self.__factory = factory
-            self._name = factory.__name__
+            self._small_str = factory.__name__
 
-    def __repr__(self):
-        return format('{0}({1}, {2}, {3})', self.__class__.__name__, 
-                      self.factory, self.args, self.kargs)
-        
-    def __str__(self):
-        return format('{0}({1})', self.factory.__name__,
-                      ', '.join(list(map(str, self.args)) +
-                               [format('{0}={1}', key, self.kargs[key])
-                                for key in self.kargs]))
+    def indented_repr(self, indent0, key=None):
+        (args, kargs) = self._constructor_args()
+        compact = len(args) + len(kargs) < 2
+        indent1 = 0 if compact else indent0 + 1 
+        contents = [self._fmt_repr(indent1, arg) for arg in args] + \
+            [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
+        return format('{0}{1}{2}<{3}>({4}{5})', 
+                      ' ' * indent0, 
+                      key + '=' if key else '',
+                      self.__class__.__name__,
+                      self._small_str,
+                      '' if compact else '\n',
+                      ',\n'.join(contents))
         
         
 class MatcherTypeException(Exception):
