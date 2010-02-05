@@ -110,22 +110,12 @@ def to_generator(value):
         yield value
 
 
-def no_factory(args, kargs):
-    try:
-        del kargs['factory']
-    except KeyError:
-        args = args[1:]
-    return (args, kargs)
-
-
 class FactoryWrapper(FactoryMatcher, OperatorMatcher):
     
-    def __init__(self, factory=None, *args, **kargs):
+    def __init__(self, *args, **kargs):
         super(FactoryWrapper, self).__init__()
-        self._arg(factory=factory)
         self._args(args=args)
         self._kargs(kargs)
-        self._name = factory.__name__
         
 
 class TrampolineWrapper(FactoryWrapper):
@@ -148,15 +138,14 @@ class TrampolineWrapper(FactoryWrapper):
 
 class TransformableFactoryWrapper(FactoryMatcher, Transformable):
     
-    def __init__(self, factory=None, *args, **kargs):
-        super(TransformableFactoryWrapper, self).__init__(function=None)
-        self._arg(factory=factory)
+    def __init__(self, *args, **kargs):
+        super(TransformableFactoryWrapper, self).__init__()
         self._args(args=args)
         self._kargs(kargs=kargs)
-        self._name = factory.__name__
         
     def compose(self, transform):
-        copy = type(self)(self.factory, *self.args, **self.kargs)
+        copy = type(self)(*self.args, **self.kargs)
+        copy.factory = self.factory
         copy.function = self.function.compose(transform.function)
         return copy
         
@@ -212,60 +201,43 @@ class FunctionWrapper(TransformableFactoryWrapper):
         return self._match(stream)
 
 
-def trampoline_matcher_factory(factory):
-    def wrapped_factory(*args, **kargs):
-        return TrampolineWrapper(factory, *args, **kargs)
-    wrapped_factory.factory = factory
-    return wrapped_factory
+def make_wrapper_factory(wrapper, factory):
+    def wrapper_factory(*args, **kargs):
+        made = wrapper(*args, **kargs)
+        made.factory = factory
+        return made
+    wrapper_factory.factory = factory
+    return wrapper_factory
 
+
+def make_factory(maker, matcher):
+    def factory(*args, **kargs):
+        if args or kargs:
+            raise TypeError(format('{0}() takes no arguments', 
+                                   matcher.__name__))
+        return matcher
+    factory.__name__ = matcher.__name__
+    factory.__doc__ = matcher.__doc__
+    return maker(factory)
+
+
+def trampoline_matcher_factory(factory):
+    return make_wrapper_factory(TrampolineWrapper, factory)
 
 def trampoline_matcher(matcher):
-    def factory(*args, **kargs):
-        if args or kargs:
-            raise TypeError(format('{0}() takes no arguments', 
-                                   matcher.__name__))
-        return matcher
-    factory.__name__ = matcher.__name__
-    factory.__doc__ = matcher.__doc__
-    return trampoline_matcher_factory(factory)
-
+    return make_factory(trampoline_matcher_factory, matcher)
 
 def sequence_matcher_factory(factory):
-    def wrapped_factory(*args, **kargs):
-        return SequenceWrapper(factory, *args, **kargs)
-    wrapped_factory.factory = factory
-    add_child(TransformableFactoryWrapper, wrapped_factory)
-    return wrapped_factory
-
+    return make_wrapper_factory(SequenceWrapper, factory)
 
 def sequence_matcher(matcher):
-    def factory(*args, **kargs):
-        if args or kargs:
-            raise TypeError(format('{0}() takes no arguments', 
-                                   matcher.__name__))
-        return matcher
-    factory.__name__ = matcher.__name__
-    factory.__doc__ = matcher.__doc__
-    return sequence_matcher_factory(factory)
-
+    return make_factory(sequence_matcher_factory, matcher)
 
 def function_matcher_factory(factory):
-    def wrapped_factory(*args, **kargs):
-        return FunctionWrapper(factory, *args, **kargs)
-    wrapped_factory.factory = factory
-    add_child(TransformableFactoryWrapper, wrapped_factory)
-    return wrapped_factory
-
+    return make_wrapper_factory(FunctionWrapper, factory)
 
 def function_matcher(matcher):
-    def factory(*args, **kargs):
-        if args or kargs:
-            raise TypeError(format('{0}() takes no arguments', 
-                                   matcher.__name__))
-        return matcher
-    factory.__name__ = matcher.__name__
-    factory.__doc__ = matcher.__doc__
-    return function_matcher_factory(factory)
+    return make_factory(function_matcher_factory, matcher)
 
 
 def coerce_(arg, function=None):

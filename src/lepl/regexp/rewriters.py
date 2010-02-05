@@ -321,7 +321,8 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             log.debug(format('DFS: not rewritten: {0!r}', original))
             return original
         
-    def clone_wrapper(use, original, factory, *args, **kargs):
+    def clone_wrapper(use, original, *args, **kargs):
+        factory = original.factory
         if factory in map_:
             log.debug(format('Found {0}', factory))
             return map_[factory](use, original, *args, **kargs)

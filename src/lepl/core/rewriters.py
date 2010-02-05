@@ -24,8 +24,7 @@ parser.
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher
-from lepl.matchers.support import TransformableFactoryWrapper, no_factory, \
-    FactoryMatcher
+from lepl.matchers.support import TransformableFactoryWrapper
 from lepl.support.lib import lmap, format
 
 
@@ -48,6 +47,8 @@ def copy_standard_attributes(node, copy, describe=True, transform=True):
         copy.function = node.function
     if describe:
         copy.describe = node.describe 
+    if isinstance(node, FactoryMatcher):
+        copy.factory = node.factory
 
 
 class DelayedClone(Visitor):    
@@ -418,9 +419,6 @@ def function_only(spec):
             if not ok:
                 type_ = type(node)
             try:
-                if type_ is not type(node):# and is_child(type(node), FactoryMatcher):
-                    # we need to drop the factory argument
-                    args, kargs = no_factory(args, kargs)
                 copy = type_(*args, **kargs)
                 copy_standard_attributes(node, copy)
                 return copy

@@ -79,6 +79,19 @@ class FactoryMatcher(_FactoryMatcher):
     
     def __init__(self, *args, **kargs):
         super(FactoryMatcher, self).__init__(*args, **kargs)
+        self.__factory = None
+        # TODO - _name needs to be short_str or similar
+        
+    @property
+    def factory(self):
+        return self.__factory
+    
+    @factory.setter
+    def factory(self, factory):
+        if not self.__factory:
+            assert factory
+            self.__factory = factory
+            self._name = factory.__name__
 
     def __repr__(self):
         return format('{0}({1}, {2}, {3})', self.__class__.__name__, 
