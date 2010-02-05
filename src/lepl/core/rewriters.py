@@ -405,7 +405,9 @@ def function_only(spec):
                         if attribute.startswith('*'):
                             values = getattr(node, attribute[1:])
                             for value in values:
-                                ok = is_child(value, TransformableFactoryWrapper)
+                                # this is *not* is_child, because we are
+                                # looking at the wrapper class directly
+                                ok = isinstance(value, TransformableFactoryWrapper)
                                 if not ok:
                                     break
                         else:

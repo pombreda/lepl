@@ -195,4 +195,16 @@ class OptimizeOrTest(TestCase):
         # TODO - better test
         assert isinstance(matcher.matcher.matchers[0], 
                           TransformableFactoryWrapper)
+
+
+class AndNoTrampolineTest(TestCase):
+    
+    def test_replace(self):
+        matcher = And('a', 'b')
+        matcher.config.clear().no_trampoline()
+        parser = matcher.null_parser()
+        text = str(parser.matcher)
+        assert 'AndNoTrampoline(Literal, Literal)' == text, text
+
+        
         

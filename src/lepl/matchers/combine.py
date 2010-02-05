@@ -243,10 +243,6 @@ class _BaseCombiner(Transformable):
         copy.function = self.function.compose(transform.function)
         return copy
     
-#    def __str__(self):
-#        return format('{0}({1})', self.__class__.__name__,
-#                      ', '.join(map(lambda x: x._name, self.matchers)))
-
 
 class And(_BaseCombiner):
     '''

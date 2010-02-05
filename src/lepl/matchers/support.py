@@ -23,8 +23,8 @@ Support classes for matchers.
 from lepl.core.config import ParserMixin
 from lepl.core.parser import tagged_function
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
-    ConstructorStr, GraphStr
-from lepl.matchers.matcher import Matcher, FactoryMatcher, add_child
+    GraphStr
+from lepl.matchers.matcher import Matcher, FactoryMatcher
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
     OperatorNamespace
 from lepl.support.lib import LogMixin, basestring, format
@@ -44,13 +44,6 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
     '''
     
     def __repr__(self):
-#        visitor = ConstructorStr()
-#        return self.postorder(visitor, Matcher)
-#        (args, kargs) = self._constructor_args()
-#        return format('{0}(\n{1})', self.__class__.__name__,
-#                      ',\n'.join([self.__fmt_repr(1, arg) for arg in args] +
-#                                 [self.__fmt_repr(1, kargs[key], key)
-#                                  for key in kargs]))
         return self.indented_repr(0)
                       
     def _fmt_repr(self, indent, value, key=None):
