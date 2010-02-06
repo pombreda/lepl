@@ -24,8 +24,8 @@ parser.
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher
-from lepl.matchers.support import TransformableFactoryWrapper
-from lepl.support.lib import lmap, format
+from lepl.matchers.support import NoTrampolineTransformableWrapper
+from lepl.support.lib import lmap, format, basestring
 
 
 def clone(node, args, kargs):
@@ -160,20 +160,22 @@ def flatten(graph):
         The flattening cloner.
         '''
         table = {And: '*matchers', Or: '*matchers'}
-        if type(node) in table:
-            attribute_name = table[type(node)]
-            new_args = []
-            for arg in old_args:
-                if type(arg) is type(node) \
-                        and not arg.function \
-                        and not node.function:
-                    if attribute_name.startswith('*'):
-                        new_args.extend(getattr(arg, attribute_name[1:]))
+        new_args = []
+        for type_ in table:
+            if is_child(node, type_):
+                attribute_name = table[type_]
+                for arg in old_args:
+                    if type(arg) is type(node) \
+                            and not arg.function \
+                            and not node.function:
+                        if attribute_name.startswith('*'):
+                            new_args.extend(getattr(arg, attribute_name[1:]))
+                        else:
+                            new_args.append(getattr(arg, attribute_name))
                     else:
-                        new_args.append(getattr(arg, attribute_name))
-                else:
-                    new_args.append(arg)
-        else:
+                        new_args.append(arg)
+                break
+        if not new_args:
             new_args = old_args
         return clone(node, new_args, kargs)
     return graph.postorder(DelayedClone(new_clone), Matcher)
@@ -396,6 +398,9 @@ def function_only(spec):
     '''
 
     def rewriter(graph):
+        def type_ok(value):
+            return isinstance(value, basestring) \
+                or isinstance(value, NoTrampolineTransformableWrapper)
         def new_clone(node, args, kargs):
             ok = False
             for type_ in spec:
@@ -407,12 +412,12 @@ def function_only(spec):
                             for value in values:
                                 # this is *not* is_child, because we are
                                 # looking at the wrapper class directly
-                                ok = isinstance(value, TransformableFactoryWrapper)
+                                ok = type_ok(value)
                                 if not ok:
                                     break
                         else:
                             value = getattr(node, attribute)
-                            ok = is_child(value, TransformableFactoryWrapper)
+                            ok = type_ok(value)
                         if not ok:
                             break
                     if ok:

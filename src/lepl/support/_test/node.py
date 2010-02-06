@@ -25,6 +25,8 @@ from unittest import TestCase
 
 from lepl import Delayed, Digit, Any, Node, make_error, throw, Or, Space, \
     AnyBut, Eos
+from lepl.support.graph import preorder, postorder, order, \
+    PREORDER, POSTORDER, LEAF
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, R0201, R0903
@@ -181,3 +183,32 @@ class ChildrenTest(TestCase):
         for c in a:
             assert c == 'a', c
 
+
+class OrderTest(TestCase):
+
+    def tree(self):
+        return Node('a', 
+                 Node('b',
+                   Node('c',
+                     Node('d'),
+                     Node('e')),
+                   Node('f')), 
+                 Node('g'), 
+                 Node('h',
+                   Node('i',
+                     Node('j'),
+                     Node('k')),
+                   Node('l')))
+    
+    def order(self, tree, flags):
+        return list(map(lambda x: x[0], order(tree, flags, Node, LEAF)))
+    
+    def test_orders(self):
+        tree = self.tree()
+        ordered = self.order(tree, PREORDER)
+        assert ordered == ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'], ordered
+        ordered = self.order(tree, POSTORDER)
+        assert ordered == ['d', 'e', 'c', 'f', 'b', 'g', 'j', 'k', 'i', 'l', 'h', 'a'], ordered
+        
+        
+    

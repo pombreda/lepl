@@ -43,7 +43,7 @@ from logging import getLogger
 
 from lepl.matchers.matcher import Matcher
 from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
-    TrampolineWrapper
+    TrampolineWrapper, TransformableTrampolineWrapper
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty
 from lepl.regexp.matchers import NfaRegexp
 from lepl.regexp.interval import Character
@@ -338,7 +338,8 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             DepthFirst.factory: clone_dfs,
             FunctionWrapper: clone_wrapper,
             SequenceWrapper: clone_wrapper,
-            TrampolineWrapper: clone_wrapper}
+            TrampolineWrapper: clone_wrapper,
+            TransformableTrampolineWrapper: clone_wrapper}
     
     def clone_(node, args, kargs):
         '''

@@ -20,6 +20,8 @@
 Support classes for matchers.
 '''
 
+from inspect import getfullargspec
+
 from lepl.core.config import ParserMixin
 from lepl.core.parser import tagged_function, GeneratorWrapper
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
@@ -67,7 +69,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         
     def _fmt_str(self, value, key=None):
         return (key + '=' if key else '') + \
-            value._small_str if isinstance(value, Matcher) else str(value)
+            value._small_str if isinstance(value, Matcher) else repr(value)
     
     def __str__(self):
         (args, kargs) = self._constructor_args()
@@ -88,7 +90,6 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         visitor = GraphStr()
         return self.postorder(visitor)
     
-
 
 class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
     '''
@@ -124,6 +125,76 @@ class Transformable(OperatorMatcher):
         raise NotImplementedError()
 
 
+class BaseFactoryMatcher(FactoryMatcher):
+    '''
+    This must be used as a mixin with something that inherits from 
+    ArgsAsAttribute (ie the usual matcher classes).
+    '''
+    
+    def __init__(self, *args, **kargs):
+        super(FactoryMatcher, self).__init__()
+        self.__args = args
+        self.__kargs = kargs
+        self.__factory = None
+        self.__small_str = None
+        
+    def __args_as_attributes(self):
+        spec = getfullargspec(self.factory)
+        names = list(spec.args)
+        for name in names:
+            if name in self.__kargs:
+                self._karg(**{name: self.__kargs[name]})
+                del self.__kargs[name]
+            elif self.__args:
+                self._arg(**{name: self.__args[0]})
+                self.__args = self.__args[1:]
+            else:
+                has_default = spec.defaults and name in spec.defaults
+                has_default = has_default or \
+                    spec.kwonlydefaults and name in spec.kwonlydefaults
+                if not has_default:
+                    self._warn(format('No value for argument {0} in {1}', 
+                                      name, self._small_str))
+        if self.__args:
+            if spec.varargs:
+                self._args(**{spec.varargs: self.__args})
+            else:
+                self._warn(format('No *args parameter for {0} in {1}',
+                                  self.__args, self._small_str))
+        if self.__kargs:
+            if spec.varkw:
+                self.__kargs(**{spec.varkw: self.__kargs})
+            else:
+                self._warn(format('No **kargs parameter for {0} in {1}',
+                                  self.__kargs, self._small_str))
+        
+    @property
+    def factory(self):
+        return self.__factory
+    
+    @factory.setter
+    def factory(self, factory):
+        if not self.__factory:
+            assert factory
+            self.__factory = factory
+            self._small_str = self.__small_str if self.__small_str else factory.__name__
+            self.__args_as_attributes()
+
+    def indented_repr(self, indent0, key=None):
+        (args, kargs) = self._constructor_args()
+        compact = len(args) + len(kargs) < 2
+        indent1 = 0 if compact else indent0 + 1 
+        contents = [self._fmt_repr(indent1, arg) for arg in args] + \
+            [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
+        return format('{0}{1}{2}<{3}>({4}{5})', 
+                      ' ' * indent0, 
+                      key + '=' if key else '',
+                      self.__class__.__name__,
+                      self._small_str,
+                      '' if compact else '\n',
+                      ',\n'.join(contents))
+        
+        
 def to_generator(value):
     '''
     Create a single-shot generator from a value.
@@ -132,15 +203,7 @@ def to_generator(value):
         yield value
 
 
-class FactoryWrapper(FactoryMatcher, OperatorMatcher):
-    
-    def __init__(self, *args, **kargs):
-        super(FactoryWrapper, self).__init__()
-        self._args(args=args)
-        self._kargs(kargs)
-        
-
-class TrampolineWrapper(FactoryWrapper):
+class TrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
     '''
     A wrapper for source of generators that evaluate other matchers via
     the trampoline (ie for generators that evaluate matchers via yield).
@@ -153,26 +216,23 @@ class TrampolineWrapper(FactoryWrapper):
         The code below is called once and then replaces itself so that the
         same logic is not repeated on any following calls.
         '''
-        matcher = self.factory(*self.args, **self.kargs)
+        (args, kargs) = self._constructor_args()
+        matcher = self.factory(*args, **kargs)
         self._match = tagged_function(self, matcher)
         return self._match(stream)
     
 
-class TransformableFactoryWrapper(FactoryMatcher, Transformable):
+class TransformableWrapper(BaseFactoryMatcher, Transformable):
     
-    def __init__(self, *args, **kargs):
-        super(TransformableFactoryWrapper, self).__init__()
-        self._args(args=args)
-        self._kargs(kargs=kargs)
-        
     def compose(self, transform):
-        copy = type(self)(*self.args, **self.kargs)
+        (args, kargs) = self._constructor_args()
+        copy = type(self)(*args, **kargs)
         copy.factory = self.factory
         copy.function = self.function.compose(transform.function)
         return copy
         
 
-class TransformableTrampolineWrapper(TransformableFactoryWrapper):
+class TransformableTrampolineWrapper(TransformableWrapper):
     '''
     A wrapper for source of generators that evaluate other matchers via
     the trampoline (ie for generators that evaluate matchers via yield).
@@ -185,28 +245,34 @@ class TransformableTrampolineWrapper(TransformableFactoryWrapper):
         The code below is called once and then replaces itself so that the
         same logic is not repeated on any following calls.
         '''
-        matcher0 = self.factory(*self.args, **self.kargs)
+        (args, kargs) = self._constructor_args()
+        matcher0 = self.factory(*args, **kargs)
         if self.function:
             def matcher1(support, stream_in):
                 generator = matcher0(support, stream_in)
                 try:
+                    value = next(generator)
                     while True:
-                        value = next(generator)
                         if type(value) is GeneratorWrapper:
                             response = yield value
-                            generator.send(response)
+                            value = generator.send(response)
                         else:
                             (results, stream_out) = value
                             yield self.function(results, stream_in, stream_out)
+                            value = next(generator)
                 except StopIteration:
                     pass
         else:
             matcher1 = matcher0
         self._match = tagged_function(self, matcher1)
         return self._match(stream)
+    
+    
+class NoTrampolineTransformableWrapper(TransformableWrapper):
+    pass
 
 
-class SequenceWrapper(TransformableFactoryWrapper):
+class SequenceWrapper(NoTrampolineTransformableWrapper):
     '''
     A wrapper for simple generator factories, where the final matcher is a
     function that yields a series of matches without evaluating other matchers
@@ -218,7 +284,8 @@ class SequenceWrapper(TransformableFactoryWrapper):
         The code below is called once and then replaces itself so that the
         same logic is not repeated on any following calls.
         '''
-        matcher0 = self.factory(*self.args, **self.kargs)
+        (args, kargs) = self._constructor_args()
+        matcher0 = self.factory(*args, **kargs)
         if self.function:
             # if we have a transformation, build a matcher than includes it
             def matcher1(support, stream_in):
@@ -230,7 +297,7 @@ class SequenceWrapper(TransformableFactoryWrapper):
         return self._match(stream)
  
 
-class FunctionWrapper(TransformableFactoryWrapper):
+class FunctionWrapper(NoTrampolineTransformableWrapper):
     '''
     A wrapper for simple function factories, where the final matcher is a
     function that returns a single match or None.
@@ -241,7 +308,8 @@ class FunctionWrapper(TransformableFactoryWrapper):
         The code below is called once and then replaces itself so that the
         same logic is not repeated on any following calls.
         '''
-        matcher0 = self.factory(*self.args, **self.kargs)
+        (args, kargs) = self._constructor_args()
+        matcher0 = self.factory(*args, **kargs)
         if self.function:
             # if we have a transformation, build a matcher than includes it
             def matcher1(support, stream_in):

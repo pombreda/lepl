@@ -20,12 +20,13 @@
 Tests for the lepl.rewriters module.
 '''
 
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Any, Delayed, Optional, Node, Drop, And
 from lepl.support.graph import preorder
-from lepl.matchers.matcher import Matcher
-from lepl.matchers.support import TransformableFactoryWrapper
+from lepl.matchers.matcher import Matcher, is_child
+from lepl.matchers.support import TransformableWrapper
 from lepl.core.rewriters import DelayedClone
 
 
@@ -138,7 +139,7 @@ class ComposeTransformsTest(TestCase):
         result = parser('a')[0]
         assert result == 'axy', result
         # TODO - better test
-        assert isinstance(parser.matcher, TransformableFactoryWrapper)
+        assert isinstance(parser.matcher, TransformableWrapper)
     
     def test_and(self):
         matcher = (Any() & Optional(Any())) > append('x')
@@ -146,7 +147,7 @@ class ComposeTransformsTest(TestCase):
         parser = matcher.null_parser()
         result = parser('a')[0]
         assert result == 'ax', result
-        assert isinstance(parser.matcher, And)
+        assert is_child(parser.matcher, And), type(parser.matcher)
     
     def test_loop(self):
         matcher = Delayed()
@@ -184,7 +185,7 @@ class OptimizeOrTest(TestCase):
         matcher.string_parser()
         # TODO - better test
         assert isinstance(matcher.matcher.matchers[0], 
-                          TransformableFactoryWrapper)
+                          TransformableWrapper)
         
     def test_liberal(self):
         matcher = Delayed()
@@ -194,17 +195,19 @@ class OptimizeOrTest(TestCase):
         matcher.string_parser()
         # TODO - better test
         assert isinstance(matcher.matcher.matchers[0], 
-                          TransformableFactoryWrapper)
+                          TransformableWrapper)
 
 
 class AndNoTrampolineTest(TestCase):
     
     def test_replace(self):
+        #basicConfig(level=DEBUG)
         matcher = And('a', 'b')
         matcher.config.clear().no_trampoline()
         parser = matcher.null_parser()
         text = str(parser.matcher)
-        assert 'AndNoTrampoline(Literal, Literal)' == text, text
+        #assert "AndNoTrampoline('a', 'b')" == text, text
+        assert "AndNoTrampoline(Literal, Literal)" == text, text
         result = parser('ab')
         assert result == ['a', 'b'], result
          

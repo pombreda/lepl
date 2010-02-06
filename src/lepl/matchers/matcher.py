@@ -83,37 +83,11 @@ identifies the matcher they generate).
 
 
 class FactoryMatcher(_FactoryMatcher):
-    
-    def __init__(self, *args, **kargs):
-        super(FactoryMatcher, self).__init__(*args, **kargs)
-        self.__factory = None
-        
-    @property
-    def factory(self):
-        return self.__factory
-    
-    @factory.setter
-    def factory(self, factory):
-        if not self.__factory:
-            assert factory
-            self.__factory = factory
-            self._small_str = factory.__name__
+    '''
+    Imagine an abstract property called 'factory' below.
+    '''
 
-    def indented_repr(self, indent0, key=None):
-        (args, kargs) = self._constructor_args()
-        compact = len(args) + len(kargs) < 2
-        indent1 = 0 if compact else indent0 + 1 
-        contents = [self._fmt_repr(indent1, arg) for arg in args] + \
-            [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
-        return format('{0}{1}{2}<{3}>({4}{5})', 
-                      ' ' * indent0, 
-                      key + '=' if key else '',
-                      self.__class__.__name__,
-                      self._small_str,
-                      '' if compact else '\n',
-                      ',\n'.join(contents))
-        
-        
+
 class MatcherTypeException(Exception):
     '''
     Used to flag problems related to matcher types.
