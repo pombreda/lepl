@@ -21,7 +21,7 @@ Support classes for matchers.
 '''
 
 from lepl.core.config import ParserMixin
-from lepl.core.parser import tagged_function
+from lepl.core.parser import tagged_function, GeneratorWrapper
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     GraphStr
 from lepl.matchers.matcher import Matcher, FactoryMatcher
@@ -172,6 +172,40 @@ class TransformableFactoryWrapper(FactoryMatcher, Transformable):
         return copy
         
 
+class TransformableTrampolineWrapper(TransformableFactoryWrapper):
+    '''
+    A wrapper for source of generators that evaluate other matchers via
+    the trampoline (ie for generators that evaluate matchers via yield).
+    
+    Typically only used for advanced matchers.
+    '''
+    
+    def _match(self, stream):
+        '''
+        The code below is called once and then replaces itself so that the
+        same logic is not repeated on any following calls.
+        '''
+        matcher0 = self.factory(*self.args, **self.kargs)
+        if self.function:
+            def matcher1(support, stream_in):
+                generator = matcher0(support, stream_in)
+                try:
+                    while True:
+                        value = next(generator)
+                        if type(value) is GeneratorWrapper:
+                            response = yield value
+                            generator.send(response)
+                        else:
+                            (results, stream_out) = value
+                            yield self.function(results, stream_in, stream_out)
+                except StopIteration:
+                    pass
+        else:
+            matcher1 = matcher0
+        self._match = tagged_function(self, matcher1)
+        return self._match(stream)
+
+
 class SequenceWrapper(TransformableFactoryWrapper):
     '''
     A wrapper for simple generator factories, where the final matcher is a
@@ -243,11 +277,18 @@ def make_factory(maker, matcher):
     return maker(factory)
 
 
-def trampoline_matcher_factory(factory):
-    return make_wrapper_factory(TrampolineWrapper, factory)
+def trampoline_matcher_factory(transformable=True):
+    def wrapper(factory):
+        if transformable:
+            return make_wrapper_factory(TransformableTrampolineWrapper, factory)
+        else:
+            return make_wrapper_factory(TrampolineWrapper, factory)
+    return wrapper
 
-def trampoline_matcher(matcher):
-    return make_factory(trampoline_matcher_factory, matcher)
+def trampoline_matcher(transformable=True):
+    def wrapper(matcher):
+        return make_factory(trampoline_matcher_factory(transformable), matcher)
+    return wrapper
 
 def sequence_matcher_factory(factory):
     return make_wrapper_factory(SequenceWrapper, factory)

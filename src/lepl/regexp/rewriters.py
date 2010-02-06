@@ -194,7 +194,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             return RegexpContainer.build(original, regexp, alphabet, 
                                          matcher_type, use)
         except Unsuitable:
-            log.debug(format('Or not rewritten: {0!r}', original))
+            log.debug(format('Or not rewritten: {0}', original))
             return original
 
     def clone_and(use, original, *matchers):
@@ -240,7 +240,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
                                  original.function))
                 return original
         except Unsuitable:
-            log.debug(format('And: not rewritten: {0!r}', original))
+            log.debug(format('And: not rewritten: {0}', original))
             return original
     
     def clone_transform(use, original, matcher, function, 
@@ -278,7 +278,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
                                  original.function))
                 return original
         except Unsuitable:
-            log.debug(format('Transform: not rewritten: {0!r}', original))
+            log.debug(format('Transform: not rewritten: {0}', original))
             return original
         
     def clone_literal(use, original, text):
@@ -318,7 +318,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
                                          matcher_type, use, 
                                          add_reqd=stop is None)
         except Unsuitable:
-            log.debug(format('DFS: not rewritten: {0!r}', original))
+            log.debug(format('DFS: not rewritten: {0}', original))
             return original
         
     def clone_wrapper(use, original, *args, **kargs):

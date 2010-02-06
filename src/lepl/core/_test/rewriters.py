@@ -205,6 +205,7 @@ class AndNoTrampolineTest(TestCase):
         parser = matcher.null_parser()
         text = str(parser.matcher)
         assert 'AndNoTrampoline(Literal, Literal)' == text, text
-
-        
+        result = parser('ab')
+        assert result == ['a', 'b'], result
+         
         

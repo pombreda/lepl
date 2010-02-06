@@ -71,7 +71,7 @@ def search_factory(factory):
     return new_factory
 
 
-@trampoline_matcher_factory
+@trampoline_matcher_factory(False)
 @search_factory
 def DepthFirst(first, start, stop, rest):
     '''
@@ -104,7 +104,7 @@ def DepthFirst(first, start, stop, rest):
     return match
 
 
-@trampoline_matcher_factory
+@trampoline_matcher_factory(False)
 @search_factory
 def BreadthFirst(first, start, stop, rest):
     '''
@@ -134,7 +134,7 @@ def BreadthFirst(first, start, stop, rest):
     return match
 
 
-@trampoline_matcher_factory
+@trampoline_matcher_factory(False)
 def OrderByResultCount(matcher, ascending=True):
     '''
     Modify a matcher to return results in length order.
@@ -267,7 +267,11 @@ class And(_BaseCombiner):
                 while stack:
                     (result, generator, matchers) = pop()
                     try:
-                        (value, stream_out) = yield generator
+                        x = yield generator
+                        if not x:
+                            print(generator)
+                        (value, stream_out) = x
+                        #(value, stream_out) = yield generator
                         append((result, generator, matchers))
                         if matchers:
                             append((result+value, 

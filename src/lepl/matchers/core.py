@@ -225,7 +225,7 @@ def Eof(support, stream):
         return ([], stream)
 
 
-@trampoline_matcher_factory
+@trampoline_matcher_factory(False)
 def Consumer(matcher, consume=True):
     '''
     Only accept the match if it consumes data from the input
