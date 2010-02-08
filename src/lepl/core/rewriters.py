@@ -23,7 +23,8 @@ parser.
 
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
-from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher
+from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
+    matcher_type, matcher_instance, MatcherTypeException, matcher_map
 from lepl.matchers.support import NoTrampolineTransformableWrapper
 from lepl.support.lib import lmap, format, basestring
 
@@ -159,22 +160,21 @@ def flatten(graph):
         '''
         The flattening cloner.
         '''
-        table = {And: '*matchers', Or: '*matchers'}
+        table = matcher_map({And: '*matchers', Or: '*matchers'})
         new_args = []
-        for type_ in table:
-            if is_child(node, type_):
-                attribute_name = table[type_]
-                for arg in old_args:
-                    if type(arg) is type(node) \
-                            and not arg.function \
-                            and not node.function:
-                        if attribute_name.startswith('*'):
-                            new_args.extend(getattr(arg, attribute_name[1:]))
-                        else:
-                            new_args.append(getattr(arg, attribute_name))
+        type_ = matcher_type(node, fail=False)
+        if type_ in table:
+            attribute_name = table[type_]
+            for arg in old_args:
+                if matcher_type(arg, fail=False) is type_ \
+                        and not arg.function \
+                        and not node.function:
+                    if attribute_name.startswith('*'):
+                        new_args.extend(getattr(arg, attribute_name[1:]))
                     else:
-                        new_args.append(arg)
-                break
+                        new_args.append(getattr(arg, attribute_name))
+                else:
+                    new_args.append(arg)
         if not new_args:
             new_args = old_args
         return clone(node, new_args, kargs)
@@ -457,18 +457,21 @@ class NodeStats(object):
         '''
         Add a node of a given type.
         '''
+        try:
+            node_type = matcher_type(node)
+        except MatcherTypeException:
+            node_type = type(node)
         if type_ & LEAF:
             self.leaves += 1
-        if type_ & NONTREE and isinstance(node, Matcher):
+        if type_ & NONTREE and is_child(node_type, Matcher, fail=False):
             self.loops += 1
         try:
             if node not in self.__known:
                 self.__known.add(node)
-                node_type = type(node)
                 if node_type not in self.types:
                     self.types[node_type] = set()
                 self.types[node_type].add(node)
-                if isinstance(node, Matcher):
+                if is_child(node_type, Matcher):
                     self.total += 1
                 else:
                     self.others += 1
@@ -493,6 +496,6 @@ class NodeStats(object):
                         'unhashable: {unhashable:3d}\n', **self.__dict__)
         keys = list(self.types.keys())
         keys.sort(key=repr)
-        types = '\n'.join([format('{0:40s}: {1:3d}', key, self.types[key])
+        types = '\n'.join([format('{0:40s}: {1:3d}', key, len(self.types[key]))
                            for key in keys])
         return counts + types

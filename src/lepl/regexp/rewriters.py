@@ -41,7 +41,7 @@ None).
 
 from logging import getLogger
 
-from lepl.matchers.matcher import Matcher
+from lepl.matchers.matcher import Matcher, matcher_map
 from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
     TrampolineWrapper, TransformableTrampolineWrapper
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty
@@ -330,16 +330,16 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             log.debug(format('No clone for {0}, {1}', factory, map_.keys()))
             return original
         
-    map_ = {Any.factory: clone_any, 
-            Or: clone_or, 
-            And: clone_and,
-            Transform: clone_transform,
-            Literal.factory: clone_literal,
-            DepthFirst.factory: clone_dfs,
-            FunctionWrapper: clone_wrapper,
-            SequenceWrapper: clone_wrapper,
-            TrampolineWrapper: clone_wrapper,
-            TransformableTrampolineWrapper: clone_wrapper}
+    map_ = matcher_map({Any: clone_any, 
+                        Or: clone_or, 
+                        And: clone_and,
+                        Transform: clone_transform,
+                        Literal: clone_literal,
+                        DepthFirst: clone_dfs,
+                        FunctionWrapper: clone_wrapper,
+                        SequenceWrapper: clone_wrapper,
+                        TrampolineWrapper: clone_wrapper,
+                        TransformableTrampolineWrapper: clone_wrapper})
     
     def clone_(node, args, kargs):
         '''

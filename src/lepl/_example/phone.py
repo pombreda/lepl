@@ -24,19 +24,69 @@
 Examples from the documentation.
 '''
 
+from logging import basicConfig, DEBUG
+
 from lepl import *
 from lepl._example.support import Example
 
 
 class PhoneExample(Example):
     
+    def test_fragment1(self):
+        
+        name    = Word()              > 'name'
+        matcher = name / ','
+        parser = matcher.string_parser()
+        self.examples([(lambda: parser('andrew, 3333253'),
+                        "[('name', 'andrew'), ',']")])
+    
+    def test_fragment2(self):
+        
+        name    = Word()              > 'name'
+        phone   = Integer()           > 'phone'
+        matcher = name / ',' / phone
+        parser = matcher.string_parser()
+        self.examples([(lambda: parser('andrew, 3333253'),
+                        "[('name', 'andrew'), ',', ' ', ('phone', '3333253')]")])
+    
+    def test_fragment3(self):
+        
+        name    = Word()              > 'name'
+        matcher = name                > make_dict
+        parser = matcher.string_parser()
+        self.examples([(lambda: parser('andrew, 3333253'),
+                        "[{'name': 'andrew,'}]")])
+    
+    def test_fragment4(self):
+        
+        basicConfig(level=DEBUG)
+        
+        name    = Word()              > 'name'
+        matcher = name / ','          > make_dict
+        matcher.config.clear().flatten()
+        parser = matcher.string_parser()
+        print(repr(parser.matcher))
+        matcher.config.clear().flatten().compose_transforms().trace(True)
+        parser = matcher.string_parser()
+        print(repr(parser.matcher))
+        self.examples([(lambda: parser('andrew, 3333253'),
+                        "[{'name': 'andrew,'}]")])
     
     def test_basic_parser(self):
+        
+        #basicConfig(level=DEBUG)
 
         name    = Word()              > 'name'
         phone   = Integer()           > 'phone'
         matcher = name / ',' / phone  > make_dict
         
+#        matcher.config.clear()
+#        print()
+#        print(repr(matcher.string_parser().matcher))
+#        matcher.config.clear().flatten()
+#        print(repr(matcher.string_parser().matcher))
+#        matcher.config.clear().flatten().compose_transforms()
+#        print(repr(matcher.string_parser().matcher))
         parser = matcher.string_parser()
 
         self.examples([(lambda: parser('andrew, 3333253'),

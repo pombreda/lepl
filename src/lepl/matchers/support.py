@@ -20,13 +20,13 @@
 Support classes for matchers.
 '''
 
-from inspect import getfullargspec
+from inspect import getargspec
 
 from lepl.core.config import ParserMixin
 from lepl.core.parser import tagged_function, GeneratorWrapper
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     GraphStr
-from lepl.matchers.matcher import Matcher, FactoryMatcher
+from lepl.matchers.matcher import Matcher, FactoryMatcher, add_child
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
     OperatorNamespace
 from lepl.support.lib import LogMixin, basestring, format
@@ -124,6 +124,20 @@ class Transformable(OperatorMatcher):
         '''
         raise NotImplementedError()
 
+    def indented_repr(self, indent0, key=None):
+        (args, kargs) = self._constructor_args()
+        compact = len(args) + len(kargs) < 2
+        indent1 = 0 if compact else indent0 + 1 
+        contents = [self._fmt_repr(indent1, arg) for arg in args] + \
+            [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
+        return format('{0}{1}{2}:{3}({4}{5})', 
+                      ' ' * indent0,
+                      key + '=' if key else '',
+                      self._small_str,
+                      self.function,
+                      '' if compact else '\n',
+                      ',\n'.join(contents))
+        
 
 class BaseFactoryMatcher(FactoryMatcher):
     '''
@@ -139,8 +153,9 @@ class BaseFactoryMatcher(FactoryMatcher):
         self.__small_str = None
         
     def __args_as_attributes(self):
-        spec = getfullargspec(self.factory)
+        spec = getargspec(self.factory)
         names = list(spec.args)
+        defaults = dict(zip(names[::-1], spec.defaults if spec.defaults else []))
         for name in names:
             if name in self.__kargs:
                 self._karg(**{name: self.__kargs[name]})
@@ -149,10 +164,7 @@ class BaseFactoryMatcher(FactoryMatcher):
                 self._arg(**{name: self.__args[0]})
                 self.__args = self.__args[1:]
             else:
-                has_default = spec.defaults and name in spec.defaults
-                has_default = has_default or \
-                    spec.kwonlydefaults and name in spec.kwonlydefaults
-                if not has_default:
+                if name not in defaults:
                     self._warn(format('No value for argument {0} in {1}', 
                                       name, self._small_str))
         if self.__args:
@@ -230,6 +242,21 @@ class TransformableWrapper(BaseFactoryMatcher, Transformable):
         copy.factory = self.factory
         copy.function = self.function.compose(transform.function)
         return copy
+    
+    def indented_repr(self, indent0, key=None):
+        (args, kargs) = self._constructor_args()
+        compact = len(args) + len(kargs) < 2
+        indent1 = 0 if compact else indent0 + 1 
+        contents = [self._fmt_repr(indent1, arg) for arg in args] + \
+            [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
+        return format('{0}{1}{2}<{3}:{4}>({5}{6})', 
+                      ' ' * indent0, 
+                      key + '=' if key else '',
+                      self.__class__.__name__,
+                      self._small_str,
+                      self.function,
+                      '' if compact else '\n',
+                      ',\n'.join(contents))
         
 
 class TransformableTrampolineWrapper(TransformableWrapper):
@@ -255,7 +282,9 @@ class TransformableTrampolineWrapper(TransformableWrapper):
                     while True:
                         if type(value) is GeneratorWrapper:
                             response = yield value
-                            value = generator.send(response)
+                            value2 = generator.send(response)
+                            print(value2, value)
+                            value = value2
                         else:
                             (results, stream_out) = value
                             yield self.function(results, stream_in, stream_out)
@@ -331,6 +360,7 @@ def make_wrapper_factory(wrapper, factory):
         made.factory = factory
         return made
     wrapper_factory.factory = factory
+    add_child(Matcher, wrapper_factory)
     return wrapper_factory
 
 

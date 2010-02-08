@@ -21,9 +21,10 @@ Tests for the lepl.rewriters module.
 '''
 
 from logging import basicConfig, DEBUG
+from re import sub
 from unittest import TestCase
 
-from lepl import Any, Delayed, Optional, Node, Drop, And
+from lepl import Any, Or, Delayed, Optional, Node, Drop, And, Join
 from lepl.support.graph import preorder
 from lepl.matchers.matcher import Matcher, is_child
 from lepl.matchers.support import TransformableWrapper
@@ -206,9 +207,56 @@ class AndNoTrampolineTest(TestCase):
         matcher.config.clear().no_trampoline()
         parser = matcher.null_parser()
         text = str(parser.matcher)
-        #assert "AndNoTrampoline('a', 'b')" == text, text
-        assert "AndNoTrampoline(Literal, Literal)" == text, text
+        assert "AndNoTrampoline('a', 'b')" == text, text
+        #assert "AndNoTrampoline(Literal, Literal)" == text, text
         result = parser('ab')
         assert result == ['a', 'b'], result
          
+
+class FlattenTest(TestCase):
+    
+    def test_flatten_and(self):
+        matcher = And('a', And('b', 'c'))
+        matcher.config.clear().flatten()
+        parser = matcher.null_parser()
+        text = str(parser.matcher)
+        assert text == "And('a', 'b', 'c')", text
+        result = parser('abcd')
+        assert result == ['a', 'b', 'c'], result
+        
+    def test_no_flatten_and(self):
+        matcher = And('a', Join(And('b', 'c')))
+        matcher.config.clear().flatten()
+        parser = matcher.null_parser()
+        text = str(parser.matcher)
+        assert text == "And('a', Transform)", text
+        result = parser('abcd')
+        assert result == ['a', 'bc'], result
+        
+    def test_flatten_and_transform(self):
+        matcher = Join(And('a', And('b', 'c')))
+        matcher.config.clear().flatten()
+        parser = matcher.null_parser()
+        text = sub('<.*>', '<>', str(parser.matcher))
+        assert text == "Transform(And, Transformation([<>]))", text
+        result = parser('abcd')
+        assert result == ['abc'], result
+        
+    def test_flatten_or(self):
+        matcher = Or('a', Or('b', 'c'))
+        matcher.config.clear().flatten()
+        parser = matcher.null_parser()
+        text = str(parser.matcher)
+        assert text == "Or(Literal, Literal, Literal)", text
+        result = parser('abcd')
+        assert result == ['a'], result
+        
+    def test_no_flatten_or(self):
+        matcher = Or('a', Join(Or('b', 'c')))
+        matcher.config.clear().flatten()
+        parser = matcher.null_parser()
+        text = str(parser.matcher)
+        assert text == "Or(Literal, Transform)", text
+        result = parser('abcd')
+        assert result == ['a'], result
         

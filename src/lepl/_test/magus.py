@@ -30,7 +30,8 @@ from unittest import TestCase
 
 from lepl import *
 from lepl.support.graph import ConstructorWalker
-from lepl.matchers.matcher import Matcher
+from lepl.matchers.matcher import Matcher, canonical_matcher_type,\
+    MatcherTypeException
 from lepl.matchers.memo import _LMemo, _RMemo
 from lepl.matchers.transform import Transform, Transformation
 from lepl.core.rewriters import DelayedClone, NodeStats
@@ -123,7 +124,7 @@ class CloneTest(TestCase):
         dotted_name = function & Eos()
         desc0 = NodeStats(dotted_name)
         #print(desc0)
-        assert desc0.total == 27, desc0
+        assert desc0.total == 14, desc0
         self.assert_count(desc0, And, 5)
         self.assert_count(desc0, Or, 2)
         self.assert_count(desc0, Delayed, 2)
@@ -132,7 +133,7 @@ class CloneTest(TestCase):
         desc1 = NodeStats(clone1)
         #print(desc1)
         # flattened two matchers - one each of And and Or
-        assert desc1.total == 25, desc1
+        assert desc1.total == 13, desc1
         self.assert_count(desc1, And, 4)
         self.assert_count(desc1, Or, 1)
         self.assert_count(desc1, Delayed, 2)
@@ -143,7 +144,7 @@ class CloneTest(TestCase):
         desc2 = NodeStats(clone2)
         #print(desc2)
         # compressed two transforms
-        assert desc2.total == 23, desc2
+        assert desc2.total == 13, desc2
         self.assert_count(desc2, And, 4)
         self.assert_count(desc2, Or, 1)
         self.assert_count(desc2, Delayed, 2)
@@ -153,22 +154,22 @@ class CloneTest(TestCase):
         clone3 = memoize(RMemo)(clone2)
         desc3 = NodeStats(clone3) 
         #print(desc3)
-        assert desc3.total == 44, desc3
-        self.assert_count(desc3, _RMemo, 21)
+        assert desc3.total == 13, desc3
+        self.assert_count(desc3, _RMemo, 19) # 2 lower since funcs
         self.assert_count(desc3, Delayed, 2)
 
         clone4 = memoize(LMemo)(clone2)
         desc4 = NodeStats(clone4) 
         #print(desc4)
-        assert desc4.total == 44, desc4
-        self.assert_count(desc4, _LMemo, 21)
+        assert desc4.total == 13, desc4
+        self.assert_count(desc4, _LMemo, 19) # 2 lower since funcs
         self.assert_count(desc4, Delayed, 2)
         
         clone5 = context_memoize()(clone2)
         desc5 = NodeStats(clone5) 
         #print(desc5)
-        assert desc5.total == 44, desc5
-        self.assert_count(desc5, _RMemo, 16)
+        assert desc5.total == 13, desc5
+        self.assert_count(desc5, _RMemo, 14) # 2 lower since funcs
         self.assert_count(desc5, _LMemo, 5)
         self.assert_count(desc5, Delayed, 2)
         
@@ -188,6 +189,10 @@ class CloneTest(TestCase):
         '''
         Check the count for a given type.
         '''
+        try:
+            type_ = canonical_matcher_type(type_)
+        except MatcherTypeException:
+            pass
         assert type_ in desc.types and len(desc.types[type_]) == count, \
             len(desc.types[type_]) if type_ in desc.types else type_
 

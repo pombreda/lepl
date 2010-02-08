@@ -654,11 +654,10 @@ class OperatorMixin(NamespaceMixin):
             if is_match != isinstance(other, Matcher):
                 if is_match:
                     msg = 'The operator {0} for {1} was applied to something ' \
-                        'that is not a matcher ({2!r}).'
+                        'that is not a matcher ({2}).'
                 else:
                     msg = 'The operator {0} for {1} was applied to a matcher ' \
                         '({2}).'
                 msg += ' Check syntax and parentheses.'
-                raise SyntaxError(format(msg, name, self.__class__.__name__, 
-                                         other))
+                raise SyntaxError(format(msg, name, self, other))
 

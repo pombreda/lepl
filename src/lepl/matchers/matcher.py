@@ -104,7 +104,8 @@ def case_type(matcher, if_factory, if_matcher):
         return if_matcher(matcher)
     else:
         raise MatcherTypeException(
-            format('{0} does not appear to be a matcher type', matcher))
+            format('{0} ({1}) does not appear to be a matcher type', 
+                   matcher, type(matcher)))
 
 
 def case_instance(matcher, if_wrapper, if_matcher):
@@ -114,15 +115,42 @@ def case_instance(matcher, if_wrapper, if_matcher):
             return if_wrapper(matcher.factory)
     except TypeError:
         pass # bug in python impl
+    # may already be unpacked
+    if isinstance(matcher, FunctionType):
+        return if_wrapper(matcher)
     if isinstance(matcher, Matcher):
         return if_matcher(matcher)
     else:
         raise MatcherTypeException(
-            format('{0} does not appear to be a matcher', matcher))
+            format('{0} ({1}) does not appear to be a matcher', 
+                   matcher, type(matcher)))
 
 
-def matcher_type(matcher):
+def canonical_matcher_type(matcher):
+    '''
+    Given a "constructor" (either a real constructor, or an annotated 
+    function), generate something that uniquely identifies that (the class
+    for real constructors, and the embedded function for the output from 
+    the factories).
+    '''
     return case_type(matcher, identity, identity)
+
+def matcher_type(matcher, fail=True):
+    '''
+    '''
+    try:
+        return case_instance(matcher, identity, type)
+    except MatcherTypeException as e:
+        if fail:
+            raise e
+        else:
+            return False
+
+def matcher_map(map_):
+    '''
+    Rewrite a map whose keys are matchers to use canonical_matcher_type.
+    '''
+    return dict((canonical_matcher_type(key), map_[key]) for key in map_)
 
 def matcher_instance(matcher):
     return case_instance(matcher, identity, identity)
@@ -149,7 +177,7 @@ class Relations(object):
 def relations(base):
     # if base is a factory then we want the related type
     try:
-        base = matcher_type(base)
+        base = canonical_matcher_type(base)
     except MatcherTypeException:
         pass
     table = singleton(Relations, dict)
