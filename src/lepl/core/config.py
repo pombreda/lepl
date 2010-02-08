@@ -172,11 +172,13 @@ class ConfigBuilder(object):
     def no_trampoline(self, spec=None):
         from lepl.core.rewriters import function_only
         from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
-            BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline
+            BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
+            Or, OrNoTrampoline
         if spec is None:
             spec = {DepthFirst: (('first', 'rest'), DepthNoTrampoline),
                     BreadthFirst: (('first', 'rest'), BreadthNoTrampoline),
-                    And: (('*matchers',), AndNoTrampoline)}
+                    And: (('*matchers',), AndNoTrampoline),
+                    Or: (('*matchers',), OrNoTrampoline)}
         return self.add_rewriter(function_only(spec))
     
     def compile_to_dfa(self, force=False, alphabet=None):

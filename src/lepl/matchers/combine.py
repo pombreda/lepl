@@ -244,44 +244,6 @@ class _BaseCombiner(Transformable):
         return copy
     
 
-#class And(_BaseCombiner):
-#    '''
-#    Match one or more matchers in sequence (**&**).
-#    It can be used indirectly by placing ``&`` between matchers.
-#    '''
-#    
-#    @tagged
-#    def _match(self, stream_in):
-#        '''
-#        Do the matching (return a generator that provides successive 
-#        (result, stream) tuples).  Results from the different matchers are
-#        combined together as elements in a list.
-#        '''
-#        if self.matchers:
-#            stack = deque([([], 
-#                            self.matchers[0]._match(stream_in), 
-#                            self.matchers[1:])])
-#            append = stack.append
-#            pop = stack.pop
-#            try:
-#                while stack:
-#                    (result, generator, matchers) = pop()
-#                    try:
-#                        (value, stream_out) = yield generator
-#                        append((result, generator, matchers))
-#                        if matchers:
-#                            append((result+value, 
-#                                    matchers[0]._match(stream_out), 
-#                                    matchers[1:]))
-#                        else:
-#                            yield self.function(result+value, stream_in, 
-#                                                stream_out)
-#                    except StopIteration:
-#                        pass
-#            finally:
-#                for (result, generator, matchers) in stack:
-#                    generator.close()
-
 @trampoline_matcher_factory(True)
 def And(*matchers):
     '''
@@ -351,7 +313,8 @@ def AndNoTrampoline(*matchers):
     return matcher
         
         
-class Or(_BaseCombiner):
+@trampoline_matcher_factory(True)
+def Or(*matchers):
     '''
     Match one of the given matchers (**|**).
     It can be used indirectly by placing ``|`` between matchers.
@@ -361,22 +324,42 @@ class Or(_BaseCombiner):
     continue to the right.  String arguments will be coerced to 
     literal matches.
     '''
-    
-    @tagged
-    def _match(self, stream_in):
+    matchers = lmap(coerce_, matchers)
+   
+    def match(support, stream_in):
         '''
         Do the matching (return a generator that provides successive 
         (result, stream) tuples).  The result will correspond to one of the
         sub-matchers (starting from the left).
         '''
-        for matcher in self.matchers:
+        for matcher in matchers:
             generator = matcher._match(stream_in)
             try:
                 while True:
-                    (results, stream_out) = (yield generator)
-                    yield self.function(results, stream_in, stream_out)
+                    yield (yield generator)
             except StopIteration:
                 pass
+            
+    return match
+
+
+@sequence_matcher_factory
+def OrNoTrampoline(*matchers):
+    '''
+    Used as an optimisation when sub-matchers do not require the trampoline.
+    '''
+    matchers = lmap(coerce_, matchers)
+   
+    def match(support, stream_in):
+        '''
+        Do the matching (return a generator that provides successive 
+        (result, stream) tuples).  The result will correspond to one of the
+        sub-matchers (starting from the left).
+        '''
+        for matcher in matchers:
+            for result in matcher._match(stream_in):
+                yield result
+    return match
 
 
 class First(_BaseCombiner):

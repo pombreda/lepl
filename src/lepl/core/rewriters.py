@@ -24,7 +24,8 @@ parser.
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
-    matcher_type, matcher_instance, MatcherTypeException, matcher_map
+    matcher_type, matcher_instance, MatcherTypeException, matcher_map,\
+    canonical_matcher_type
 from lepl.matchers.support import NoTrampolineTransformableWrapper
 from lepl.support.lib import lmap, format, basestring
 
@@ -276,8 +277,8 @@ def left_loops(node):
                     if child not in known:
                         stack.append(family)
                         known.add(child)
-                if not isinstance(parent, Or) and \
-                        not isinstance(child, Lookahead):
+                if not is_child(parent, Or, fail=False) and \
+                        not is_child(child, Lookahead, fail=False):
                     break
     
                     
@@ -317,9 +318,11 @@ def optimize_or(conservative=True):
                         if isinstance(x, Delayed)]:
             for loop in either_loops(delayed, conservative):
                 for i in range(len(loop)):
-                    if isinstance(loop[i], Or):
+                    if is_child(loop[i], Or, fail=False):
                         # we cannot be at the end of the list here, since that
                         # is a Delayed instance
+                        # copy from tuple to list
+                        loop[i].matchers = list(loop[i].matchers)
                         matchers = loop[i].matchers
                         target = loop[i+1]
                         # move target to end of list

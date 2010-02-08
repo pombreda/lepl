@@ -151,6 +151,7 @@ class BaseFactoryMatcher(FactoryMatcher):
         self.__kargs = kargs
         self.__factory = None
         self.__small_str = None
+        self.__cached_matcher = None
         
     def __args_as_attributes(self):
         spec = getargspec(self.factory)
@@ -206,6 +207,13 @@ class BaseFactoryMatcher(FactoryMatcher):
                       '' if compact else '\n',
                       ',\n'.join(contents))
         
+    @property
+    def _cached_matcher(self):
+        if not self.__cached_matcher:
+            (args, kargs) = self._constructor_args()
+            self.__cached_matcher = self.factory(*args, **kargs)
+        return self.__cached_matcher
+        
         
 def to_generator(value):
     '''
@@ -225,8 +233,7 @@ class TrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
     
     @tagged
     def _match(self, stream):
-        (args, kargs) = self._constructor_args()
-        generator = self.factory(*args, **kargs)(self, stream)
+        generator = self._cached_matcher(self, stream)
         try:
             value = next(generator)
             while True:
@@ -278,8 +285,7 @@ class TransformableTrampolineWrapper(TransformableWrapper):
     
     @tagged
     def _match(self, stream_in):
-        (args, kargs) = self._constructor_args()
-        generator = self.factory(*args, **kargs)(self, stream_in)
+        generator = self._cached_matcher(self, stream_in)
         try:
             value = next(generator)
             while True:
@@ -310,9 +316,7 @@ class SequenceWrapper(NoTrampolineTransformableWrapper):
     
     @tagged
     def _match(self, stream_in):
-        (args, kargs) = self._constructor_args()
-        for (results, stream_out) in \
-                self.factory(*args, **kargs)(self, stream_in):
+        for (results, stream_out) in self._cached_matcher(self, stream_in):
             yield self.function(results, stream_in, stream_out)
  
 
@@ -324,9 +328,8 @@ class FunctionWrapper(NoTrampolineTransformableWrapper):
     
     @tagged
     def _match(self, stream_in):
-        (args, kargs) = self._constructor_args()
         try:
-            (results, stream_out) = self.factory(*args, **kargs)(self, stream_in)
+            (results, stream_out) = self._cached_matcher(self, stream_in)
             yield self.function(results, stream_in, stream_out)
         except TypeError:
             pass

@@ -247,7 +247,7 @@ class FlattenTest(TestCase):
         matcher.config.clear().flatten()
         parser = matcher.null_parser()
         text = str(parser.matcher)
-        assert text == "Or(Literal, Literal, Literal)", text
+        assert text == "Or('a', 'b', 'c')", text
         result = parser('abcd')
         assert result == ['a'], result
         
@@ -256,7 +256,7 @@ class FlattenTest(TestCase):
         matcher.config.clear().flatten()
         parser = matcher.null_parser()
         text = str(parser.matcher)
-        assert text == "Or(Literal, Transform)", text
+        assert text == "Or('a', Transform)", text
         result = parser('abcd')
         assert result == ['a'], result
         
