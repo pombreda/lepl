@@ -59,7 +59,7 @@ class PhoneExample(Example):
     
     def test_fragment4(self):
         
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         name    = Word()              > 'name'
         matcher = name / ','          > make_dict
@@ -70,7 +70,7 @@ class PhoneExample(Example):
         parser = matcher.string_parser()
         print(repr(parser.matcher))
         self.examples([(lambda: parser('andrew, 3333253'),
-                        "[{'name': 'andrew,'}]")])
+                        "[{'name': 'andrew'}]")])
     
     def test_basic_parser(self):
         

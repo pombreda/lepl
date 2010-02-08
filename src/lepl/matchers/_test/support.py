@@ -22,7 +22,7 @@ Decorator tests.
 (These need to be copied into an example and the tutorial). 
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.matchers.support import function_matcher_factory, function_matcher, \
@@ -61,9 +61,13 @@ class DecoratorTest(TestCase):
     
     def test_char(self):
         #basicConfig(level=DEBUG)
-        result = list(char().match('ab'))
+        matcher = char()
+#        matcher.config.clear().trace(True)
+        result = list(matcher.match('ab'))
         assert result == [(['a'], 'b')], result
-        result = list(char()[2:,...].match('abcd'))
+        matcher = char()[2:,...]
+#        matcher.config.clear().trace(True)
+        result = list(matcher.match('abcd'))
         assert result == [(['abcd'], ''), (['abc'], 'd'), (['ab'], 'cd')], result
         try:
             list(char('bad').match('ab'))

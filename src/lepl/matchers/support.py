@@ -23,7 +23,7 @@ Support classes for matchers.
 from inspect import getargspec
 
 from lepl.core.config import ParserMixin
-from lepl.core.parser import tagged_function, GeneratorWrapper
+from lepl.core.parser import tagged_function, GeneratorWrapper, tagged
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     GraphStr
 from lepl.matchers.matcher import Matcher, FactoryMatcher, add_child
@@ -223,15 +223,24 @@ class TrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
     Typically only used for advanced matchers.
     '''
     
+    @tagged
     def _match(self, stream):
-        '''
-        The code below is called once and then replaces itself so that the
-        same logic is not repeated on any following calls.
-        '''
         (args, kargs) = self._constructor_args()
-        matcher = self.factory(*args, **kargs)
-        self._match = tagged_function(self, matcher)
-        return self._match(stream)
+        generator = self.factory(*args, **kargs)(self, stream)
+        try:
+            value = next(generator)
+            while True:
+                if type(value) is GeneratorWrapper:
+                    try:
+                        response = yield value
+                        value = generator.send(response)
+                    except StopIteration as e:
+                        value = generator.throw(e)
+                else:
+                    yield value
+                    value = next(generator)
+        except StopIteration:
+            pass
     
 
 class TransformableWrapper(BaseFactoryMatcher, Transformable):
@@ -267,34 +276,25 @@ class TransformableTrampolineWrapper(TransformableWrapper):
     Typically only used for advanced matchers.
     '''
     
-    def _match(self, stream):
-        '''
-        The code below is called once and then replaces itself so that the
-        same logic is not repeated on any following calls.
-        '''
+    @tagged
+    def _match(self, stream_in):
         (args, kargs) = self._constructor_args()
-        matcher0 = self.factory(*args, **kargs)
-        if self.function:
-            def matcher1(support, stream_in):
-                generator = matcher0(support, stream_in)
-                try:
+        generator = self.factory(*args, **kargs)(self, stream_in)
+        try:
+            value = next(generator)
+            while True:
+                if type(value) is GeneratorWrapper:
+                    try:
+                        response = yield value
+                        value = generator.send(response)
+                    except StopIteration as e:
+                        value = generator.throw(e)
+                else:
+                    (results, stream_out) = value
+                    yield self.function(results, stream_in, stream_out)
                     value = next(generator)
-                    while True:
-                        if type(value) is GeneratorWrapper:
-                            response = yield value
-                            value2 = generator.send(response)
-                            print(value2, value)
-                            value = value2
-                        else:
-                            (results, stream_out) = value
-                            yield self.function(results, stream_in, stream_out)
-                            value = next(generator)
-                except StopIteration:
-                    pass
-        else:
-            matcher1 = matcher0
-        self._match = tagged_function(self, matcher1)
-        return self._match(stream)
+        except StopIteration:
+            pass
     
     
 class NoTrampolineTransformableWrapper(TransformableWrapper):
@@ -308,22 +308,12 @@ class SequenceWrapper(NoTrampolineTransformableWrapper):
     via the trampoline.
     '''
     
-    def _match(self, stream):
-        '''
-        The code below is called once and then replaces itself so that the
-        same logic is not repeated on any following calls.
-        '''
+    @tagged
+    def _match(self, stream_in):
         (args, kargs) = self._constructor_args()
-        matcher0 = self.factory(*args, **kargs)
-        if self.function:
-            # if we have a transformation, build a matcher than includes it
-            def matcher1(support, stream_in):
-                for (results, stream_out) in matcher0(support, stream_in):
-                    yield self.function(results, stream_in, stream_out)
-        else:
-            matcher1 = matcher0
-        self._match = tagged_function(self, matcher1)
-        return self._match(stream)
+        for (results, stream_out) in \
+                self.factory(*args, **kargs)(self, stream_in):
+            yield self.function(results, stream_in, stream_out)
  
 
 class FunctionWrapper(NoTrampolineTransformableWrapper):
@@ -332,26 +322,14 @@ class FunctionWrapper(NoTrampolineTransformableWrapper):
     function that returns a single match or None.
     '''
     
-    def _match(self, stream):
-        '''
-        The code below is called once and then replaces itself so that the
-        same logic is not repeated on any following calls.
-        '''
+    @tagged
+    def _match(self, stream_in):
         (args, kargs) = self._constructor_args()
-        matcher0 = self.factory(*args, **kargs)
-        if self.function:
-            # if we have a transformation, build a matcher than includes it
-            def matcher1(support, stream_in):
-                try:
-                    (results, stream_out) = matcher0(support, stream_in)
-                    return self.function(results, stream_in, stream_out)
-                except TypeError:
-                    return None
-        else:
-            matcher1 = matcher0
-        matcher2 = lambda support, s, m=matcher1: to_generator(m(support, s))
-        self._match = tagged_function(self, matcher2)
-        return self._match(stream)
+        try:
+            (results, stream_out) = self.factory(*args, **kargs)(self, stream_in)
+            yield self.function(results, stream_in, stream_out)
+        except TypeError:
+            pass
 
 
 def make_wrapper_factory(wrapper, factory):
