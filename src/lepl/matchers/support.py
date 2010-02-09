@@ -46,25 +46,33 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
     '''
     
     def __repr__(self):
-        return self._indented_repr(0)
+        return self._indented_repr(0, set())
                       
-    def _fmt_repr(self, indent, value, key=None):
+    def _fmt_repr(self, indent, value, visited, key=None):
+        prefix = (' ' * indent) + (key + '=' if key else '')
         if is_child(value, Matcher, fail=False):
-            return value._indented_repr(indent, key)
+            if value in visited:
+                return prefix + '[' + value._small_str + ']'
+            else:
+                return value._indented_repr(indent, visited, key)
         else:
-            return (' ' * indent) + (key + '=' if key else '') + repr(value)
+            return prefix + repr(value)
         
-    def _indented_repr(self, indent0, key=None):
-        (args, kargs) = self._constructor_args()
-        indent1 = 0 if self._fmt_compact else indent0 + 1 
-        contents = [self._fmt_repr(indent1, arg) for arg in args] + \
-            [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
+    def _format_repr(self, indent, key, contents):
         return format('{0}{1}{2}({3}{4})', 
-                      ' ' * indent0,
+                      ' ' * indent,
                       key + '=' if key else '',
                       self._small_str,
                       '' if self._fmt_compact else '\n',
                       ',\n'.join(contents))
+        
+    def _indented_repr(self, indent0, visited, key=None):
+        visited.add(self)
+        (args, kargs) = self._constructor_args()
+        indent1 = 0 if self._fmt_compact else indent0 + 1 
+        contents = [self._fmt_repr(indent1, arg, visited) for arg in args] + \
+            [self._fmt_repr(indent1, kargs[key], visited, key) for key in kargs]
+        return self._format_repr(indent0, key, contents)
         
     @property
     def _fmt_compact(self):
@@ -142,13 +150,9 @@ class Transformable(OperatorMatcher):
         '''
         raise NotImplementedError()
 
-    def _indented_repr(self, indent0, key=None):
-        (args, kargs) = self._constructor_args()
-        indent1 = 0 if self._fmt_compact else indent0 + 1 
-        contents = [self._fmt_repr(indent1, arg) for arg in args] + \
-            [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
+    def _format_repr(self, indent, key, contents):
         return format('{0}{1}{2}:{3}({4}{5})', 
-                      ' ' * indent0,
+                      ' ' * indent,
                       key + '=' if key else '',
                       self._small_str,
                       self.function,
@@ -210,13 +214,9 @@ class BaseFactoryMatcher(FactoryMatcher):
             self._small_str = self.__small_str if self.__small_str else factory.__name__
             self.__args_as_attributes()
 
-    def _indented_repr(self, indent0, key=None):
-        (args, kargs) = self._constructor_args()
-        indent1 = 0 if self._fmt_compact else indent0 + 1 
-        contents = [self._fmt_repr(indent1, arg) for arg in args] + \
-            [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
+    def _format_repr(self, indent, key, contents):
         return format('{0}{1}{2}<{3}>({4}{5})', 
-                      ' ' * indent0, 
+                      ' ' * indent, 
                       key + '=' if key else '',
                       self.__class__.__name__,
                       self._small_str,
@@ -275,13 +275,9 @@ class TransformableWrapper(BaseFactoryMatcher, Transformable):
         copy.function = self.function.compose(transform.function)
         return copy
     
-    def _indented_repr(self, indent0, key=None):
-        (args, kargs) = self._constructor_args()
-        indent1 = 0 if self._fmt_compact else indent0 + 1 
-        contents = [self._fmt_repr(indent1, arg) for arg in args] + \
-            [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
+    def _format_repr(self, indent, key, contents):
         return format('{0}{1}{2}<{3}:{4}>({5}{6})', 
-                      ' ' * indent0, 
+                      ' ' * indent, 
                       key + '=' if key else '',
                       self.__class__.__name__,
                       self._small_str,

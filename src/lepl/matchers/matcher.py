@@ -104,7 +104,7 @@ def case_type(matcher, if_factory, if_matcher):
         return if_matcher(matcher)
     else:
         raise MatcherTypeException(
-            format('{0} ({1}) does not appear to be a matcher type', 
+            format('{0!s} ({1}) does not appear to be a matcher type', 
                    matcher, type(matcher)))
 
 
@@ -122,7 +122,7 @@ def case_instance(matcher, if_wrapper, if_matcher):
         return if_matcher(matcher)
     else:
         raise MatcherTypeException(
-            format('{0} ({1}) does not appear to be a matcher', 
+            format('{0!s} ({1}) does not appear to be a matcher', 
                    matcher, type(matcher)))
 
 
