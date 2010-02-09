@@ -82,7 +82,7 @@ class _RMemo(OperatorMatcher):
         self._arg(matcher=matcher)
         self.__table = {}
         self.__state = State.singleton()
-        self.tag(self.matcher.describe)
+        #self.tag(self.matcher.describe)
         
     @tagged
     def _match(self, stream):

@@ -155,21 +155,21 @@ class CloneTest(TestCase):
         desc3 = NodeStats(clone3) 
         #print(desc3)
         assert desc3.total == 14, desc3
-        self.assert_count(desc3, _RMemo, 19) # 2 lower since funcs
+        self.assert_count(desc3, _RMemo, 14)
         self.assert_count(desc3, Delayed, 2)
 
         clone4 = memoize(LMemo)(clone2)
         desc4 = NodeStats(clone4) 
         #print(desc4)
         assert desc4.total == 14, desc4
-        self.assert_count(desc4, _LMemo, 19) # 2 lower since funcs
+        self.assert_count(desc4, _LMemo, 14)
         self.assert_count(desc4, Delayed, 2)
         
         clone5 = context_memoize()(clone2)
         desc5 = NodeStats(clone5) 
         #print(desc5)
         assert desc5.total == 14, desc5
-        self.assert_count(desc5, _RMemo, 14) # 2 lower since funcs
+        self.assert_count(desc5, _RMemo, 9)
         self.assert_count(desc5, _LMemo, 5)
         self.assert_count(desc5, Delayed, 2)
         

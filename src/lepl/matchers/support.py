@@ -26,7 +26,7 @@ from lepl.core.config import ParserMixin
 from lepl.core.parser import tagged_function, GeneratorWrapper, tagged
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     GraphStr
-from lepl.matchers.matcher import Matcher, FactoryMatcher, add_child
+from lepl.matchers.matcher import Matcher, FactoryMatcher, add_child, is_child
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
     OperatorNamespace
 from lepl.support.lib import LogMixin, basestring, format
@@ -46,26 +46,44 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
     '''
     
     def __repr__(self):
-        return self.indented_repr(0)
+        return self._indented_repr(0)
                       
     def _fmt_repr(self, indent, value, key=None):
-        if isinstance(value, Matcher):
-            return value.indented_repr(indent, key)
+        if is_child(value, Matcher, fail=False):
+            return value._indented_repr(indent, key)
         else:
             return (' ' * indent) + (key + '=' if key else '') + repr(value)
         
-    def indented_repr(self, indent0, key=None):
+    def _indented_repr(self, indent0, key=None):
         (args, kargs) = self._constructor_args()
-        compact = len(args) + len(kargs) < 2
-        indent1 = 0 if compact else indent0 + 1 
+        indent1 = 0 if self._fmt_compact else indent0 + 1 
         contents = [self._fmt_repr(indent1, arg) for arg in args] + \
             [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
         return format('{0}{1}{2}({3}{4})', 
                       ' ' * indent0,
                       key + '=' if key else '',
                       self._small_str,
-                      '' if compact else '\n',
+                      '' if self._fmt_compact else '\n',
                       ',\n'.join(contents))
+        
+    @property
+    def _fmt_compact(self):
+        (args, kargs) = self._constructor_args()
+        if len(args) + len(kargs) > 1:
+            return False
+        for arg in args:
+            try:
+                if not arg._fmt_compact:
+                    return False
+            except AttributeError:
+                pass
+        for arg in kargs:
+            try:
+                if not arg._fmt_compact:
+                    return False
+            except AttributeError:
+                pass
+        return True
         
     def _fmt_str(self, value, key=None):
         return (key + '=' if key else '') + \
@@ -124,10 +142,9 @@ class Transformable(OperatorMatcher):
         '''
         raise NotImplementedError()
 
-    def indented_repr(self, indent0, key=None):
+    def _indented_repr(self, indent0, key=None):
         (args, kargs) = self._constructor_args()
-        compact = len(args) + len(kargs) < 2
-        indent1 = 0 if compact else indent0 + 1 
+        indent1 = 0 if self._fmt_compact else indent0 + 1 
         contents = [self._fmt_repr(indent1, arg) for arg in args] + \
             [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
         return format('{0}{1}{2}:{3}({4}{5})', 
@@ -135,7 +152,7 @@ class Transformable(OperatorMatcher):
                       key + '=' if key else '',
                       self._small_str,
                       self.function,
-                      '' if compact else '\n',
+                      '' if self._fmt_compact else '\n',
                       ',\n'.join(contents))
         
 
@@ -193,10 +210,9 @@ class BaseFactoryMatcher(FactoryMatcher):
             self._small_str = self.__small_str if self.__small_str else factory.__name__
             self.__args_as_attributes()
 
-    def indented_repr(self, indent0, key=None):
+    def _indented_repr(self, indent0, key=None):
         (args, kargs) = self._constructor_args()
-        compact = len(args) + len(kargs) < 2
-        indent1 = 0 if compact else indent0 + 1 
+        indent1 = 0 if self._fmt_compact else indent0 + 1 
         contents = [self._fmt_repr(indent1, arg) for arg in args] + \
             [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
         return format('{0}{1}{2}<{3}>({4}{5})', 
@@ -204,7 +220,7 @@ class BaseFactoryMatcher(FactoryMatcher):
                       key + '=' if key else '',
                       self.__class__.__name__,
                       self._small_str,
-                      '' if compact else '\n',
+                      '' if self._fmt_compact else '\n',
                       ',\n'.join(contents))
         
     @property
@@ -259,10 +275,9 @@ class TransformableWrapper(BaseFactoryMatcher, Transformable):
         copy.function = self.function.compose(transform.function)
         return copy
     
-    def indented_repr(self, indent0, key=None):
+    def _indented_repr(self, indent0, key=None):
         (args, kargs) = self._constructor_args()
-        compact = len(args) + len(kargs) < 2
-        indent1 = 0 if compact else indent0 + 1 
+        indent1 = 0 if self._fmt_compact else indent0 + 1 
         contents = [self._fmt_repr(indent1, arg) for arg in args] + \
             [self._fmt_repr(indent1, kargs[key], key) for key in kargs]
         return format('{0}{1}{2}<{3}:{4}>({5}{6})', 
@@ -271,7 +286,7 @@ class TransformableWrapper(BaseFactoryMatcher, Transformable):
                       self.__class__.__name__,
                       self._small_str,
                       self.function,
-                      '' if compact else '\n',
+                      '' if self._fmt_compact else '\n',
                       ',\n'.join(contents))
         
 
