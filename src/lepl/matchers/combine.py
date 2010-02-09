@@ -361,8 +361,9 @@ def OrNoTrampoline(*matchers):
                 yield result
     return match
 
-
-class First(_BaseCombiner):
+       
+@trampoline_matcher_factory(True)
+def First(*matchers):
     '''
     Match the first successful matcher only (**%**).
     It can be used indirectly by placing ``%`` between matchers.
@@ -373,13 +374,7 @@ class First(_BaseCombiner):
     coerced to literal matches.
     '''
     
-    @tagged
-    def _match(self, stream):
-        '''
-        Do the matching (return a generator that provides successive 
-        (result, stream) tuples).  The result will correspond to one of the
-        sub-matchers (starting from the left).
-        '''
+    def match(self, stream):
         matched = False
         for matcher in self.matchers:
             generator = matcher._match(stream)
@@ -391,5 +386,7 @@ class First(_BaseCombiner):
                 pass
             if matched:
                 break
-            
+
+    return match
+
 

@@ -63,7 +63,7 @@ clear_parser = parser.string_parser()
 parser.config.clear().compile_to_dfa().flatten().compose_transforms()
 dfa_parser = parser.string_parser()
 
-parser.config.clear().flatten().compose_transforms().no_trampoline()
+parser.config.clear().compile_to_nfa().flatten().compose_transforms().no_trampoline().auto_memoize()
 fun_parser = parser.string_parser()
 
 print(default_parser.matcher, '\n')

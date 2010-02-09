@@ -32,6 +32,7 @@ from abc import ABCMeta
 from itertools import count
 
 from lepl.matchers.core import OperatorMatcher
+from lepl.matchers.matcher import is_child
 from lepl.core.parser import tagged, GeneratorWrapper
 from lepl.support.state import State
 from lepl.support.lib import LogMixin, empty, format
@@ -58,7 +59,7 @@ def RMemo(matcher):
     '''
     Wrap in the _RMemo cache if required.
     '''
-    if isinstance(matcher, NoMemo):
+    if is_child(matcher, NoMemo, fail=False):
         return matcher
     else:
         return _RMemo(matcher)
@@ -168,7 +169,7 @@ def LMemo(matcher):
     '''
     Wrap in the _LMemo cache if required.
     '''
-    if isinstance(matcher, NoMemo):
+    if is_child(matcher, NoMemo, fail=False):
         return matcher
     else:
         return _LMemo(matcher)

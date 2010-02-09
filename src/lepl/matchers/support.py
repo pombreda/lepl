@@ -370,13 +370,19 @@ def trampoline_matcher(transformable=True):
     return wrapper
 
 def sequence_matcher_factory(factory):
-    return make_wrapper_factory(SequenceWrapper, factory)
+    from lepl.matchers.memo import NoMemo
+    wrapper = make_wrapper_factory(SequenceWrapper, factory)
+    add_child(NoMemo, wrapper)
+    return wrapper
 
 def sequence_matcher(matcher):
     return make_factory(sequence_matcher_factory, matcher)
 
 def function_matcher_factory(factory):
-    return make_wrapper_factory(FunctionWrapper, factory)
+    from lepl.matchers.memo import NoMemo
+    wrapper = make_wrapper_factory(FunctionWrapper, factory)
+    add_child(NoMemo, wrapper)
+    return wrapper
 
 def function_matcher(matcher):
     return make_factory(function_matcher_factory, matcher)
