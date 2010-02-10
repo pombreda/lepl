@@ -123,10 +123,17 @@ class DecoratorTest(TestCase):
             assert False, 'expected error'
         except TypeError:
             pass
-        @function_matcher
-        def foo(a): return
-        assert False, 'expected error'
-        @function_matcher_factory
-        def foo(a, *, b=None): return
-        assert False, 'expected error'
+        try:
+            @function_matcher
+            def foo(a): return
+            assert False, 'expected error'
+        except TypeError:
+            pass
+        try:
+            @function_matcher_factory
+            def foo(a, *, b=None): return
+            assert False, 'expected error'
+        except TypeError:
+            pass
+            
         

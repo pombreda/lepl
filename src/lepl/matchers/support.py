@@ -353,9 +353,49 @@ class FunctionWrapper(NoTrampolineTransformableWrapper):
             yield self.function(results, stream_in, stream_out)
         except TypeError:
             pass
+        
+
+def check_matcher(matcher):
+    '''
+    Check that the signature takes support + stream.
+    '''
+    check_args(matcher)
+    spec = getargspec(matcher)
+    if len(spec.args) != 2:
+        raise TypeError(format(
+'''The function {0} cannot be used as a matcher because it does not have
+exactly two parameters.
+
+A typical definition will look like:
+
+def {0}(support, stream):
+    ...
+
+where 'support' is a BaseMatcher instance (support for logging, etc) and 
+'stream' is a SimpleStream instance (which supports access via stream[i]
+and truncation via stream[i:]).''', matcher.__name__))
+        
+        
+def check_args(func):
+    '''
+    Check that the factory doesn't use any of those modern haifalutin 
+    extensions...
+    '''
+    try:
+        getargspec(func)
+        ok = True
+    except:
+        ok = False
+    if not ok:
+        raise TypeError(format(
+'''The function {0} uses Python 3 style parameters (keyword only, etc).
+These are not supported by LEPL factory wrappers currently.  If you really
+need this functionality, subclass BaseMatcher.''', func.__name__))
+ 
 
 
 def make_wrapper_factory(wrapper, factory):
+    check_args(factory)
     def wrapper_factory(*args, **kargs):
         made = wrapper(*args, **kargs)
         made.factory = factory
@@ -387,6 +427,7 @@ def trampoline_matcher_factory(transformable=True):
 
 def trampoline_matcher(transformable=True):
     def wrapper(matcher):
+        check_matcher(matcher)
         return make_factory(trampoline_matcher_factory(transformable), matcher)
     return wrapper
 
@@ -397,6 +438,7 @@ def sequence_matcher_factory(factory):
     return wrapper
 
 def sequence_matcher(matcher):
+    check_matcher(matcher)
     return make_factory(sequence_matcher_factory, matcher)
 
 def function_matcher_factory(factory):
@@ -406,6 +448,7 @@ def function_matcher_factory(factory):
     return wrapper
 
 def function_matcher(matcher):
+    check_matcher(matcher)
     return make_factory(function_matcher_factory, matcher)
 
 
