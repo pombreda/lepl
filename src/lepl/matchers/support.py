@@ -23,7 +23,7 @@ Support classes for matchers.
 from inspect import getargspec
 
 from lepl.core.config import ParserMixin
-from lepl.core.parser import tagged_function, GeneratorWrapper, tagged
+from lepl.core.parser import GeneratorWrapper, tagged
 from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
     GraphStr
 from lepl.matchers.matcher import Matcher, FactoryMatcher, add_child, is_child
@@ -67,6 +67,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
                       ',\n'.join(contents))
         
     def _indented_repr(self, indent0, visited, key=None):
+        visited = set(visited) # copy so only block parents
         visited.add(self)
         (args, kargs) = self._constructor_args()
         indent1 = 0 if self._fmt_compact else indent0 + 1 
@@ -114,7 +115,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         An ASCII tree for display.
         '''
         visitor = GraphStr()
-        return self.postorder(visitor)
+        return self.postorder(visitor, Matcher)
     
 
 class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
@@ -175,7 +176,15 @@ class BaseFactoryMatcher(FactoryMatcher):
         self.__cached_matcher = None
         
     def __args_as_attributes(self):
-        spec = getargspec(self.factory)
+        try:
+            # function wrapper, so we have two levels, and we must construct
+            # a new, empty function
+            def empty(): return
+            empty.__doc__ = self.factory.factory.__doc__
+            empty.__name__ = self.factory.factory.__name__
+            spec = getargspec(empty)
+        except:
+            spec = getargspec(self.factory)
         names = list(spec.args)
         defaults = dict(zip(names[::-1], spec.defaults if spec.defaults else []))
         for name in names:
@@ -186,21 +195,28 @@ class BaseFactoryMatcher(FactoryMatcher):
                 self._arg(**{name: self.__args[0]})
                 self.__args = self.__args[1:]
             else:
-                if name not in defaults:
-                    self._warn(format('No value for argument {0} in {1}', 
-                                      name, self._small_str))
+                if name in defaults:
+                    self._arg(**{name: defaults[name]})
+                else:
+                    raise TypeError(format("No value for argument '{0}' in "
+                                           "{1}(...)", 
+                                           name, self._small_str))
         if self.__args:
             if spec.varargs:
                 self._args(**{spec.varargs: self.__args})
             else:
-                self._warn(format('No *args parameter for {0} in {1}',
-                                  self.__args, self._small_str))
+                raise TypeError(format("No parameter matches the argument "
+                                       "{0!r} in {1}(...)", 
+                                       self.__args[0], self._small_str))
         if self.__kargs:
-            if spec.varkw:
-                self.__kargs(**{spec.varkw: self.__kargs})
+            if spec.keywords:
+                self.__kargs(**{spec.keywords: self.__kargs})
             else:
-                self._warn(format('No **kargs parameter for {0} in {1}',
-                                  self.__kargs, self._small_str))
+                name = list(self.__kargs.keys())[0]
+                value = self.__kargs[name]
+                raise TypeError(format("No parameter matches the argument "
+                                       "{0}={1!r} in {2}(...)", 
+                                       name, value, self._small_str))
         
     @property
     def factory(self):
@@ -211,7 +227,8 @@ class BaseFactoryMatcher(FactoryMatcher):
         if not self.__factory:
             assert factory
             self.__factory = factory
-            self._small_str = self.__small_str if self.__small_str else factory.__name__
+            self._small_str = self.__small_str if self.__small_str \
+                                               else factory.__name__
             self.__args_as_attributes()
 
     def _format_repr(self, indent, key, contents):
@@ -231,14 +248,6 @@ class BaseFactoryMatcher(FactoryMatcher):
         return self.__cached_matcher
         
         
-def to_generator(value):
-    '''
-    Create a single-shot generator from a value.
-    '''
-    if value is not None:
-        yield value
-
-
 class TrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
     '''
     A wrapper for source of generators that evaluate other matchers via
@@ -364,6 +373,7 @@ def make_factory(maker, matcher):
         return matcher
     factory.__name__ = matcher.__name__
     factory.__doc__ = matcher.__doc__
+    factory.factory = matcher
     return maker(factory)
 
 

@@ -106,4 +106,27 @@ class DecoratorTest(TestCase):
         assert result == [(['abc'], 'd'), (['ab'], 'cd'), 
                           (['ac'], 'd'), (['bc'], 'd')], result
     
-           
+    def test_bad_args(self):
+        basicConfig(level=DEBUG)
+        try:
+            char(foo='abc')
+            assert False, 'expected error'
+        except TypeError:
+            pass
+        try:
+            char('abc')
+            assert False, 'expected error'
+        except TypeError:
+            pass
+        try:
+            char_in()
+            assert False, 'expected error'
+        except TypeError:
+            pass
+        @function_matcher
+        def foo(a): return
+        assert False, 'expected error'
+        @function_matcher_factory
+        def foo(a, *, b=None): return
+        assert False, 'expected error'
+        

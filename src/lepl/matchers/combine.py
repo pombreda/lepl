@@ -62,6 +62,9 @@ def _cleanup(queue):
         
 
 def search_factory(factory):
+    '''
+    Add the arg processing common to all searching.
+    '''
     def new_factory(first, start, stop, rest=None):
         first = coerce_(first)
         rest = first if rest is None else coerce_(rest)

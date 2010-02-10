@@ -24,8 +24,7 @@ parser.
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
-    matcher_type, matcher_instance, MatcherTypeException, matcher_map,\
-    canonical_matcher_type
+    matcher_type, MatcherTypeException, matcher_map
 from lepl.matchers.support import NoTrampolineTransformableWrapper
 from lepl.support.lib import lmap, format, basestring
 

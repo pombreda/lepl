@@ -20,8 +20,9 @@
 The main configuration object and various standard configurations.
 '''
 
-from lepl.stream.stream import DEFAULT_STREAM_FACTORY
 from lepl.core.parser import make_matcher, make_parser
+from lepl.stream.stream import DEFAULT_STREAM_FACTORY
+from lepl.support.lib import lmap
 
 # A major driver for this being separate is that it decouples dependency loops
 
@@ -48,11 +49,17 @@ class Configuration(object):
         
         `stream_factory` constructs a stream from the given input.
         '''
-        self.rewriters = rewriters
+        self.__rewriters = rewriters
         self.monitors = monitors
         if stream_factory is None:
             stream_factory = DEFAULT_STREAM_FACTORY
         self.stream_factory = stream_factory
+        
+    @property
+    def rewriters(self):
+        rewriters = list(self.__rewriters)
+        rewriters.sort(key=lambda x: x[1])
+        return lmap(lambda x: x[0], rewriters)
         
     
 
@@ -73,10 +80,12 @@ class ConfigBuilder(object):
         self.__stream_factory = DEFAULT_STREAM_FACTORY
         self.__alphabet = None
         
-    def add_rewriter(self, rewriter):
+    # raw access to basic components
+        
+    def add_rewriter(self, rewriter, order=1000):
         self.__default = False
         self.__changed = True
-        self.__rewriters.append(rewriter)
+        self.__rewriters.append((rewriter, order))
         return self
 
     def add_monitor(self, monitor):
@@ -128,82 +137,17 @@ class ConfigBuilder(object):
     def changed(self):
         return self.__changed
     
-    def flatten(self):
-        from lepl.core.rewriters import flatten
-        return self.add_rewriter(flatten)
-        
-    def compose_transforms(self):
-        from lepl.core.rewriters import compose_transforms
-        return self.add_rewriter(compose_transforms)
-        
-    def optimize_or(self, conservative=True):
-        from lepl.core.rewriters import optimize_or
-        return self.add_rewriter(optimize_or(conservative))
-        
-    def lexer(self, alphabet=None, discard=None, source=None):
-        from lepl.lexer.rewriters import lexer_rewriter
-        self.alphabet = alphabet
-        return self.add_rewriter(
-            lexer_rewriter(alphabet=self.alphabet, discard=discard,
-                           source=source))
+    # rewriters
     
-    def auto_memoize(self, conservative=None):
-        from lepl.core.rewriters import auto_memoize
-        return self.add_rewriter(auto_memoize(conservative))
-    
-    def left_memoize(self):
-        from lepl.core.rewriters import memoize
-        from lepl.matchers.memo import LMemo
-        return self.add_rewriter(memoize(LMemo))
-    
-    def right_memoize(self):
-        from lepl.core.rewriters import memoize
-        from lepl.matchers.memo import RMemo
-        return self.add_rewriter(memoize(RMemo))
-    
-    def trace(self, enabled=False):
-        from lepl.core.trace import TraceResults
-        return self.add_monitor(TraceResults(enabled))
-    
-    def manage(self, queue_len=0):
-        from lepl.core.manager import GeneratorManager
-        return self.add_monitor(GeneratorManager(queue_len))
-    
-    def no_trampoline(self, spec=None):
-        from lepl.core.rewriters import function_only
-        from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
-            BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
-            Or, OrNoTrampoline
-        if spec is None:
-            spec = {DepthFirst: (('first', 'rest'), DepthNoTrampoline),
-                    BreadthFirst: (('first', 'rest'), BreadthNoTrampoline),
-                    And: (('*matchers',), AndNoTrampoline),
-                    Or: (('*matchers',), OrNoTrampoline)}
-        return self.add_rewriter(function_only(spec))
-    
-    def compile_to_dfa(self, force=False, alphabet=None):
-        from lepl.regexp.matchers import DfaRegexp
-        from lepl.regexp.rewriters import regexp_rewriter
-        self.alphabet = alphabet
-        return self.add_rewriter(
-                    regexp_rewriter(self.alphabet, force, DfaRegexp))
-    
-    def compile_to_nfa(self, force=False, alphabet=None):
-        from lepl.regexp.matchers import NfaRegexp
-        from lepl.regexp.rewriters import regexp_rewriter
-        self.alphabet = alphabet
-        return self.add_rewriter(
-                    regexp_rewriter(self.alphabet, force, NfaRegexp))
-        
-    def set_arguments(self, type_, **kargs):
+    def set_arguments(self, type_, order=0, **kargs):
         '''
         Set the given keyword arguments on all matchers of the given `type_`
         (ie class) in the grammar.
         '''
         from lepl.core.rewriters import set_arguments
-        return self.add_rewriter(set_arguments(type_, **kargs))
+        return self.add_rewriter(set_arguments(type_, **kargs), order)
         
-    def set_alphabet_arg(self, alphabet):
+    def set_alphabet_arg(self, alphabet, order=0):
         '''
         Set `alphabet` on various matchers.  This is useful when using an 
         unusual alphabet (most often when using line-aware parsing), as
@@ -217,11 +161,11 @@ class ConfigBuilder(object):
         from lepl.regexp.matchers import BaseRegexp
         from lepl.lexer.matchers import BaseToken
         self.alphabet = alphabet
-        self.set_arguments(BaseRegexp, alphabet=self.alphabet)
-        self.set_arguments(BaseToken, alphabet=self.alphabet)
+        self.set_arguments(BaseRegexp, order=order, alphabet=self.alphabet)
+        self.set_arguments(BaseToken, order=order, alphabet=self.alphabet)
         return self
 
-    def set_block_policy_arg(self, block_policy):
+    def set_block_policy_arg(self, block_policy, order=0):
         '''
         Set the block policy on all `Block` instances.
         
@@ -231,7 +175,78 @@ class ConfigBuilder(object):
         or `block_start` is specified.
         '''
         from lepl.offside.matchers import Block
-        return self.set_arguments(Block, policy=block_policy)
+        return self.set_arguments(Block, order=order, policy=block_policy)
+    
+    def flatten(self, order=10):
+        from lepl.core.rewriters import flatten
+        return self.add_rewriter(flatten, order)
+        
+    def compile_to_dfa(self, force=False, alphabet=None, order=20):
+        from lepl.regexp.matchers import DfaRegexp
+        from lepl.regexp.rewriters import regexp_rewriter
+        self.alphabet = alphabet
+        return self.add_rewriter(
+                    regexp_rewriter(self.alphabet, force, DfaRegexp))
+    
+    def compile_to_nfa(self, force=False, alphabet=None, order=20):
+        from lepl.regexp.matchers import NfaRegexp
+        from lepl.regexp.rewriters import regexp_rewriter
+        self.alphabet = alphabet
+        return self.add_rewriter(
+                    regexp_rewriter(self.alphabet, force, NfaRegexp))
+        
+    def optimize_or(self, conservative=True, order=30):
+        from lepl.core.rewriters import optimize_or
+        return self.add_rewriter(optimize_or(conservative), order)
+        
+    def lexer(self, alphabet=None, discard=None, source=None, order=40):
+        from lepl.lexer.rewriters import lexer_rewriter
+        self.alphabet = alphabet
+        return self.add_rewriter(
+            lexer_rewriter(alphabet=self.alphabet, discard=discard,
+                           source=source), order)
+    
+    def no_trampoline(self, spec=None, order=50):
+        from lepl.core.rewriters import function_only
+        from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
+            BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
+            Or, OrNoTrampoline
+        if spec is None:
+            spec = {DepthFirst: (('first', 'rest'), DepthNoTrampoline),
+                    BreadthFirst: (('first', 'rest'), BreadthNoTrampoline),
+                    And: (('*matchers',), AndNoTrampoline),
+                    Or: (('*matchers',), OrNoTrampoline)}
+        return self.add_rewriter(function_only(spec), order)
+    
+    def compose_transforms(self, order=60):
+        from lepl.core.rewriters import compose_transforms
+        return self.add_rewriter(compose_transforms, order)
+        
+    def auto_memoize(self, conservative=None, order=100):
+        from lepl.core.rewriters import auto_memoize
+        return self.add_rewriter(auto_memoize(conservative))
+    
+    def left_memoize(self, order=100):
+        from lepl.core.rewriters import memoize
+        from lepl.matchers.memo import LMemo
+        return self.add_rewriter(memoize(LMemo))
+    
+    def right_memoize(self, order=100):
+        from lepl.core.rewriters import memoize
+        from lepl.matchers.memo import RMemo
+        return self.add_rewriter(memoize(RMemo))
+    
+    # monitors
+    
+    def trace(self, enabled=False):
+        from lepl.core.trace import TraceResults
+        return self.add_monitor(TraceResults(enabled))
+    
+    def manage(self, queue_len=0):
+        from lepl.core.manager import GeneratorManager
+        return self.add_monitor(GeneratorManager(queue_len))
+    
+    # packages
     
     def blocks(self, block_policy=None, block_start=None):
         '''
@@ -397,6 +412,7 @@ class ConfigBuilder(object):
         self.compose_transforms()
         self.lexer()
         self.auto_memoize()
+        self.no_trampoline()
         self.trace()
         return self
 

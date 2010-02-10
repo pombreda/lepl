@@ -19,6 +19,7 @@
 Tests for the combining matchers.
 '''
 
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.matchers.combine import DepthFirst, BreadthFirst
@@ -31,6 +32,7 @@ class DirectionTest1(TestCase):
         return Any()
     
     def test_depth(self):
+        basicConfig(level=DEBUG)
         matcher = DepthFirst(self.matcher(), 1, 2).null_matcher()
         results = list(map(''.join, map(lambda x: x[0], matcher('123'))))
         assert results == ['12', '1'], results
