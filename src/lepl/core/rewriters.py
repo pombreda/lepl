@@ -369,7 +369,7 @@ def context_memoize(conservative=True):
             else:
                 return RMemo(copy)
         return graph.postorder(DelayedClone(new_clone), Matcher)
-    rewriter.__name__ = context_memoize.__name__
+    rewriter.__name__ = format('context_memoize({0})', conservative)
     return rewriter
 
 

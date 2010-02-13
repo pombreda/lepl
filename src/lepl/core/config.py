@@ -64,9 +64,49 @@ class Configuration(object):
     def rewriters(self):
         rewriters = list(self.__rewriters)
         rewriters.sort(key=lambda x: x[1])
-        return lmap(lambda x: x[0], rewriters)
-        
+        rewriters = lmap(lambda x: x[0], rewriters)
+        print(rewriters)
+        return rewriters
     
+
+_AUTO_MEMOIZE = {}
+def auto_memoize(conservative=None):
+    '''
+    Provide an unchanging source of the auto_memoize rewriter so that it
+    can be deleted if necessary.
+    '''
+    from lepl.core.rewriters import auto_memoize as am
+    global _AUTO_MEMOIZE
+    if conservative not in _AUTO_MEMOIZE:
+        _AUTO_MEMOIZE[conservative] = am(conservative)
+    return _AUTO_MEMOIZE[conservative]
+    
+_LEFT_MEMOIZE = None
+def left_memoize():
+    '''
+    Provide an unchanging source of the left memoize rewriter so that it
+    can be deleted if necessary.
+    '''
+    from lepl.core.rewriters import memoize
+    from lepl.matchers.memo import LMemo
+    global _LEFT_MEMOIZE
+    if not _LEFT_MEMOIZE:
+        _LEFT_MEMOIZE = memoize(LMemo)
+    return _LEFT_MEMOIZE
+
+_RIGHT_MEMOIZE = None
+def right_memoize():
+    '''
+    Provide an unchanging source of the right memoize rewriter so that it
+    can be deleted if necessary.
+    '''
+    from lepl.core.rewriters import memoize
+    from lepl.matchers.memo import RMemo
+    global _RIGHT_MEMOIZE
+    if not _RIGHT_MEMOIZE:
+        _RIGHT_MEMOIZE = memoize(RMemo)
+    return _RIGHT_MEMOIZE
+
 
 class ConfigBuilder(object):
     
@@ -91,6 +131,12 @@ class ConfigBuilder(object):
         self.__default = False
         self.__changed = True
         self.__rewriters.append((rewriter, order))
+        return self
+    
+    def remove_rewriter(self, rewriter):
+        self.__default = False
+        self.__changed = True
+        self.__rewriters = [r for r in self.__rewriters if r[0] is not rewriter]
         return self
 
     def add_monitor(self, monitor):
@@ -152,7 +198,7 @@ class ConfigBuilder(object):
         from lepl.core.rewriters import set_arguments
         return self.add_rewriter(set_arguments(type_, **kargs), order)
         
-    def set_alphabet_arg(self, alphabet, order=0):
+    def set_alphabet_arg(self, alphabet=None, order=0):
         '''
         Set `alphabet` on various matchers.  This is useful when using an 
         unusual alphabet (most often when using line-aware parsing), as
@@ -165,9 +211,14 @@ class ConfigBuilder(object):
         '''
         from lepl.regexp.matchers import BaseRegexp
         from lepl.lexer.matchers import BaseToken
-        self.alphabet = alphabet
-        self.set_arguments(BaseRegexp, order=order, alphabet=self.alphabet)
-        self.set_arguments(BaseToken, order=order, alphabet=self.alphabet)
+        if alphabet:
+            self.alphabet = alphabet
+        else:
+            alphabet = self.alphabet
+        if not alphabet:
+            raise ValueError('An alphabet must be provided or already set')
+        self.set_arguments(BaseRegexp, order=order, alphabet=alphabet)
+        self.set_arguments(BaseToken, order=order, alphabet=alphabet)
         return self
 
     def set_block_policy_arg(self, block_policy, order=0):
@@ -228,18 +279,21 @@ class ConfigBuilder(object):
         return self.add_rewriter(compose_transforms, order)
         
     def auto_memoize(self, conservative=None, order=100):
-        from lepl.core.rewriters import auto_memoize
-        return self.add_rewriter(auto_memoize(conservative))
+        return self.add_rewriter(auto_memoize(conservative), order)
     
     def left_memoize(self, order=100):
-        from lepl.core.rewriters import memoize
-        from lepl.matchers.memo import LMemo
-        return self.add_rewriter(memoize(LMemo))
+        return self.add_rewriter(left_memoize(), order)
     
     def right_memoize(self, order=100):
-        from lepl.core.rewriters import memoize
-        from lepl.matchers.memo import RMemo
-        return self.add_rewriter(memoize(RMemo))
+        return self.add_rewriter(right_memoize(), order)
+    
+    def no_memoize(self):
+        if self.__default:
+            self.default()
+        for conservative in (None, True, False):
+            self.remove_rewriter(auto_memoize(conservative))
+        self.remove_rewriter(left_memoize)
+        return self.remove_rewriter(right_memoize)
     
     # monitors
     

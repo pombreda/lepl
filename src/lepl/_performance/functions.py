@@ -57,7 +57,7 @@ parser = line[1:, '\n']
    
 default_parser = parser.string_parser()
 
-parser.config.clear()
+parser.config.no_memoize()
 clear_parser = parser.string_parser()
 
 parser.config.clear().compile_to_dfa().flatten().compose_transforms()

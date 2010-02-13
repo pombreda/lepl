@@ -106,7 +106,7 @@ def lexer_rewriter(alphabet=None, discard=None, source=None):
     # use '' to have no discard at all
     if discard is None:
         discard = '[ \t\r\n]'
-    def rewriter(matcher):
+    def lexer(matcher):
         '''
         Either construct the lexer, or warn that none found.
         '''
@@ -116,4 +116,4 @@ def lexer_rewriter(alphabet=None, discard=None, source=None):
         else:
             log.info('Lexer rewriter used, but no tokens found.')
             return matcher
-    return rewriter
+    return lexer
