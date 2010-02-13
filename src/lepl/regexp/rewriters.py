@@ -378,4 +378,5 @@ def regexp_rewriter(alphabet, use=True, matcher=NfaRegexp):
         if isinstance(graph, RegexpContainer):
             graph = graph.matcher
         return graph 
+    rewriter.__name__ = format('regexp_rewriter({0})', matcher.__name__)
     return rewriter

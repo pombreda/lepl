@@ -22,7 +22,7 @@ Decorator tests.
 (These need to be copied into an example and the tutorial). 
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.matchers.support import function_matcher_factory, function_matcher, \
@@ -69,10 +69,6 @@ class DecoratorTest(TestCase):
 #        matcher.config.clear().trace(True)
         result = list(matcher.match('abcd'))
         assert result == [(['abcd'], ''), (['abc'], 'd'), (['ab'], 'cd')], result
-        try:
-            list(char('bad').match('ab'))
-        except TypeError as e:
-            assert str(e) == 'char() takes no arguments', str(e)
         
     def test_char_in(self):
         #basicConfig(level=DEBUG)
@@ -92,10 +88,6 @@ class DecoratorTest(TestCase):
                           (['ab'], 'cd'), (['acd'], ''), (['ac'], 'd'), 
                           (['ad'], ''), (['bcd'], ''), (['bc'], 'd'), 
                           (['bd'], ''), (['cd'], '')], result
-        try:
-            list(any_char('bad').match('ab'))
-        except TypeError as e:
-            assert str(e) == 'any_char() takes no arguments', str(e)
         
     def test_any_char_in(self):
         result = list(any_char_in('abc').match('ab'))
@@ -107,7 +99,7 @@ class DecoratorTest(TestCase):
                           (['ac'], 'd'), (['bc'], 'd')], result
     
     def test_bad_args(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         try:
             char(foo='abc')
             assert False, 'expected error'

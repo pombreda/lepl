@@ -49,11 +49,16 @@ class Configuration(object):
         
         `stream_factory` constructs a stream from the given input.
         '''
+        if rewriters is None:
+            rewriters = []
         self.__rewriters = rewriters
         self.monitors = monitors
         if stream_factory is None:
             stream_factory = DEFAULT_STREAM_FACTORY
         self.stream_factory = stream_factory
+        
+    def add_rewriter(self, rewriter, order=1000):
+        self.__rewriters.append((rewriter, order))
         
     @property
     def rewriters(self):
@@ -186,14 +191,14 @@ class ConfigBuilder(object):
         from lepl.regexp.rewriters import regexp_rewriter
         self.alphabet = alphabet
         return self.add_rewriter(
-                    regexp_rewriter(self.alphabet, force, DfaRegexp))
+                    regexp_rewriter(self.alphabet, force, DfaRegexp), order)
     
     def compile_to_nfa(self, force=False, alphabet=None, order=20):
         from lepl.regexp.matchers import NfaRegexp
         from lepl.regexp.rewriters import regexp_rewriter
         self.alphabet = alphabet
         return self.add_rewriter(
-                    regexp_rewriter(self.alphabet, force, NfaRegexp))
+                    regexp_rewriter(self.alphabet, force, NfaRegexp), order)
         
     def optimize_or(self, conservative=True, order=30):
         from lepl.core.rewriters import optimize_or
@@ -413,7 +418,7 @@ class ConfigBuilder(object):
         self.lexer()
         self.auto_memoize()
         self.no_trampoline()
-        self.trace()
+        self.compile_to_nfa()
         return self
 
 

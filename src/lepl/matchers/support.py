@@ -176,6 +176,13 @@ class BaseFactoryMatcher(FactoryMatcher):
         self.__cached_matcher = None
         
     def __args_as_attributes(self):
+        '''
+        Validate the arguments passed to the constructor against the spec for 
+        the factory (necessary because we use *args and so the user doesn't
+        get the feedback they will expect if they make a mistake).  As a side
+        effect we also associated arguments with names and expand defaults
+        so that attributes are more predictable.
+        '''
         try:
             # function wrapper, so we have two levels, and we must construct
             # a new, empty function

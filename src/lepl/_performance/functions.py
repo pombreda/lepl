@@ -63,12 +63,13 @@ clear_parser = parser.string_parser()
 parser.config.clear().compile_to_dfa().flatten().compose_transforms()
 dfa_parser = parser.string_parser()
 
-parser.config.clear().compile_to_nfa().flatten().compose_transforms().no_trampoline().auto_memoize()
+# THIS DOESN'T HAVE DFA REGEXPS!
+parser.config.clear().compile_to_dfa().flatten().compose_transforms().no_trampoline()
 fun_parser = parser.string_parser()
 
 print(default_parser.matcher, '\n')
 print(clear_parser.matcher, '\n')
-print(dfa_parser.matcher, '\n')
+print(repr(dfa_parser.matcher), '\n')
 print(repr(fun_parser.matcher), '\n')
 
 def default(): assert default_parser(text)
