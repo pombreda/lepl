@@ -77,7 +77,7 @@ class Configuration(object):
     
 
 _AUTO_MEMOIZE = {}
-def auto_memoize(conservative=None):
+def auto_memoize(conservative=None, full=False):
     '''
     Provide an unchanging source of the auto_memoize rewriter so that it
     can be deleted if necessary.
@@ -85,8 +85,8 @@ def auto_memoize(conservative=None):
     from lepl.core.rewriters import auto_memoize as am
     global _AUTO_MEMOIZE
     if conservative not in _AUTO_MEMOIZE:
-        _AUTO_MEMOIZE[conservative] = am(conservative)
-    return _AUTO_MEMOIZE[conservative]
+        _AUTO_MEMOIZE[(conservative, full)] = am(conservative, full)
+    return _AUTO_MEMOIZE[(conservative, full)]
     
 _LEFT_MEMOIZE = None
 def left_memoize():
@@ -411,7 +411,7 @@ class ConfigBuilder(object):
     def compose_transforms(self, order=60):
         '''
         Combine transforms (functions applied to results) with matchers.
-        This may slightly improve efficiency.
+        This may improve efficiency.
         
         This is part of the default configuration.
         
@@ -423,22 +423,31 @@ class ConfigBuilder(object):
         from lepl.core.rewriters import compose_transforms
         return self.add_rewriter(compose_transforms, order)
         
-    def auto_memoize(self, conservative=None, order=100):
+    def auto_memoize(self, conservative=None, full=False, order=100):
         '''
-        Add memoization so that (1) complex matching is more efficient and
-        (2) left recursive grammars do not loop indefinitely.  In most
-        cases this makes the parser significantly slower (typically by a
-        factor of 2), but more robust.
+        LEPL can add memoization so that (1) complex matching is more 
+        efficient and (2) left recursive grammars do not loop indefinitely.  
+        However, in many common cases memoization decreases performance.
+        This matcher therefore, by default, only adds memoization if it
+        appears necessary for stability (case 2 above, when left recursion
+        is possible).
         
-        This is part of the default configuration.  It can be removed by
-        calling `no_memoizer()`.
+        The `conservative` parameter fine-tunes some details and is best
+        left at the default value (None) (see docs for the rewriter itself).
+        
+        The `full` parameter can be used (set to True) to add memoization
+        for case (1) above, in addition to case (2).
+        
+        This is part of the default configuration.
+        
+        See also `no_memoize()`.
         
         Adding or removing a rewriter means that the default configuration 
         will be cleared (if no rewriters are added, the default configuration 
         is used, but as soon as one rewriter is given explicitly the default 
         is discarded, and only the rewriters explicitly added are used).        
         '''
-        return self.add_rewriter(auto_memoize(conservative), order)
+        return self.add_rewriter(auto_memoize(conservative, full), order)
     
     def left_memoize(self, order=100):
         '''
@@ -468,15 +477,21 @@ class ConfigBuilder(object):
     
     def no_memoize(self):
         '''
-        Remove memoization.  If called before any other configuration method
-        it will first load the default configuration.  In this way it can
-        be used, in a single call, to enable the default without memoization.
-        See `auto_memoize()`.
+        Remove memoization.  To use the default configuration without
+        memoization, specify `config.default().no_memoize()` (specifying
+        just `config.no_memoize()` will use the empty configuration for the
+        reason explained below).
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as any configuration is given explicitly the 
+        default is discarded, and only the added rewriters are used).
         '''
         if self.__default:
             self.default()
         for conservative in (None, True, False):
-            self.remove_rewriter(auto_memoize(conservative))
+            for full in (True, False):
+                self.remove_rewriter(auto_memoize(conservative, full))
         self.remove_rewriter(left_memoize)
         return self.remove_rewriter(right_memoize)
     

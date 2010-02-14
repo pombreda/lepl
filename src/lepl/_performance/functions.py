@@ -57,24 +57,24 @@ parser = line[1:, '\n']
    
 default_parser = parser.string_parser()
 
-parser.config.no_memoize()
+parser.config.clear()
 clear_parser = parser.string_parser()
 
-parser.config.clear().compile_to_dfa().flatten().compose_transforms()
-dfa_parser = parser.string_parser()
+parser.config.default().no_memoize().auto_memoize(full=False)
+parser_1 = parser.string_parser()
 
-parser.config.clear().compile_to_dfa().flatten().compose_transforms().direct_eval()
-fun_parser = parser.string_parser()
+parser.config.default().no_memoize().auto_memoize(full=True)
+parser_2 = parser.string_parser()
 
-#print(default_parser.matcher, '\n')
-#print(clear_parser.matcher, '\n')
-#print(repr(dfa_parser.matcher), '\n')
-#print(repr(fun_parser.matcher), '\n')
+print(default_parser.matcher, '\n')
+print(clear_parser.matcher, '\n')
+print(repr(parser_1.matcher), '\n')
+print(repr(parser_2.matcher), '\n')
 
 def default(): assert default_parser(text)
 def clear(): assert clear_parser(text)
-def dfa(): assert dfa_parser(text)
-def fun(): assert fun_parser(text)
+def parser1(): assert parser_1(text)
+def parser2(): assert parser_2(text)
 
 
 def time():
@@ -82,8 +82,8 @@ def time():
     n = 10
     print(Timer("default()", "from __main__ import default").timeit(number=n))
     print(Timer("clear()", "from __main__ import clear").timeit(number=n))
-    print(Timer("dfa()", "from __main__ import dfa").timeit(number=n))
-    print(Timer("fun()", "from __main__ import fun").timeit(number=n))
+    print(Timer("parser1()", "from __main__ import parser1").timeit(number=n))
+    print(Timer("parser2()", "from __main__ import parser2").timeit(number=n))
 
 if __name__ == '__main__':
     time()

@@ -165,7 +165,7 @@ class CloneTest(TestCase):
         self.assert_count(desc4, _LMemo, 14)
         self.assert_count(desc4, Delayed, 2)
         
-        clone5 = context_memoize()(clone2)
+        clone5 = context_memoize(full=True)(clone2)
         desc5 = NodeStats(clone5) 
         #print(desc5)
         assert desc5.total == 14, desc5

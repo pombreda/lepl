@@ -216,7 +216,7 @@ def memoize(memoizer):
     return rewriter
 
 
-def auto_memoize(conservative=None):
+def auto_memoize(conservative=None, full=False):
     '''
     Generate an all-purpose memoizing rewriter.  It is typically called after
     flattening and composing transforms.
@@ -240,7 +240,7 @@ def auto_memoize(conservative=None):
         graph = optimize_or(False if conservative is None 
                             else conservative)(graph)
         graph = context_memoize(True if conservative is None 
-                                else conservative)(graph)
+                                else conservative, full)(graph)
         return graph
     rewriter.__name__ = auto_memoize.__name__
     return rewriter
@@ -335,7 +335,7 @@ def optimize_or(conservative=True):
     return rewriter
 
 
-def context_memoize(conservative=True):
+def context_memoize(conservative=True, full=False):
     '''
     Generate a memoizer that only applies LMemo to left recursive loops.
     Everything else can use the simpler RMemo.
@@ -366,6 +366,8 @@ def context_memoize(conservative=True):
                 return copy
             elif node in dangerous:
                 return LMemo(copy)
+            elif not full:
+                return copy
             else:
                 return RMemo(copy)
         return graph.postorder(DelayedClone(new_clone), Matcher)
