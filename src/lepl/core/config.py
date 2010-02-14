@@ -41,8 +41,9 @@ class Configuration(object):
     def __init__(self, rewriters=None, monitors=None, stream_factory=None):
         '''
         `rewriters` are functions that take and return a matcher tree.  They
-        can add memoisation, restructure the tree, etc.  They are applied left
-        to right.
+        can add memoisation, restructure the tree, etc.  They are given
+        as (function, order) pairs, where `order` controls the order in which
+        they are applied (lowest first).
         
         `monitors` are factories that return implementations of `ActiveMonitor`
         or `PassiveMonitor` and will be invoked by `trampoline()`. 
@@ -57,16 +58,22 @@ class Configuration(object):
             stream_factory = DEFAULT_STREAM_FACTORY
         self.stream_factory = stream_factory
         
-    def add_rewriter(self, rewriter, order=1000):
-        self.__rewriters.append((rewriter, order))
-        
     @property
-    def rewriters(self):
+    def ordered_rewriters(self):
+        '''
+        The list of rewriters, sorted, without the orders.
+        '''
         rewriters = list(self.__rewriters)
         rewriters.sort(key=lambda x: x[1])
         rewriters = lmap(lambda x: x[0], rewriters)
-        print(rewriters)
         return rewriters
+    
+    @property
+    def raw_rewriters(self):
+        '''
+        The rewriters, with orders.
+        '''
+        return list(self.__rewriters)
     
 
 _AUTO_MEMOIZE = {}
@@ -116,7 +123,7 @@ class ConfigBuilder(object):
         # config is generated (so if the user sets anything, then that takes
         # priority and is from an empty state)
         self.__default = True
-        # this is set whenever and config is changed.  it is cleared when
+        # this is set whenever any config is changed.  it is cleared when
         # the configuration is read.  so if is is false then the configuration
         # is the same as previously read
         self.__changed = True
@@ -128,24 +135,51 @@ class ConfigBuilder(object):
     # raw access to basic components
         
     def add_rewriter(self, rewriter, order=1000):
+        '''
+        Add a rewriter that will be applied to the matcher graph when the
+        parser is generated.  Rewriters are sorted with the lowest `order`
+        first.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
+        '''
         self.__default = False
         self.__changed = True
         self.__rewriters.append((rewriter, order))
         return self
     
     def remove_rewriter(self, rewriter):
+        '''
+        Remove a rewriter from the current configuration.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
+        '''
         self.__default = False
         self.__changed = True
         self.__rewriters = [r for r in self.__rewriters if r[0] is not rewriter]
         return self
 
     def add_monitor(self, monitor):
+        '''
+        Add a monitor to the current configuration.  Monitors are called
+        from within the trampolining process and can be used to track 
+        evaluation, control resource use, etc.
+        '''
         self.__default = False
         self.__changed = True
         self.__monitors.append(monitor)
         return self
     
     def stream_factory(self, stream_factory=DEFAULT_STREAM_FACTORY):
+        '''
+        Specify the stream factory.  This is used to generate the input stream
+        for the parser.
+        '''
         self.__default = False
         self.__changed = True
         self.__stream_factory = stream_factory
@@ -153,6 +187,14 @@ class ConfigBuilder(object):
 
     @property
     def configuration(self):
+        '''
+        The current configuration.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
+        '''
         if self.__default:
             self.default()
         self.__changed = False
@@ -161,13 +203,19 @@ class ConfigBuilder(object):
     
     @configuration.setter
     def configuration(self, configuration):
-        self.__rewriters = list(configuration.rewriters)
+        self.__rewriters = list(configuration.raw_rewriters)
         self.__monitors = list(configuration.monitors)
         self.__stream_factory = configuration.stream_factory
         self.__changed = True
     
     @property
     def alphabet(self):
+        '''
+        The alphabet used.
+        
+        Typically this is Unicode, which is the default.  It is needed for
+        the generation of regular expressions. 
+        '''
         from lepl.regexp.unicode import UnicodeAlphabet
         if not self.__alphabet:
             self.__alphabet = UnicodeAlphabet.instance()
@@ -186,6 +234,11 @@ class ConfigBuilder(object):
                 
     @property
     def changed(self):
+        '''
+        Has the config been changed by the user since it was last returned
+        via `configuration`?  if not, any previously generated parser can be
+        reused.
+        '''
         return self.__changed
     
     # rewriters
@@ -194,6 +247,11 @@ class ConfigBuilder(object):
         '''
         Set the given keyword arguments on all matchers of the given `type_`
         (ie class) in the grammar.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
         '''
         from lepl.core.rewriters import set_arguments
         return self.add_rewriter(set_arguments(type_, **kargs), order)
@@ -208,6 +266,11 @@ class ConfigBuilder(object):
         Although this option is often required for line aware parsing,
         you normally do not need to call this because it is called by 
         `default_line_aware` (and `line_aware`).
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
         '''
         from lepl.regexp.matchers import BaseRegexp
         from lepl.lexer.matchers import BaseToken
@@ -229,15 +292,41 @@ class ConfigBuilder(object):
         you normally do not need to call this because it is called by 
         `default_line_aware` (and `line_aware`) if either `block_policy` 
         or `block_start` is specified.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
         '''
         from lepl.offside.matchers import Block
         return self.set_arguments(Block, order=order, policy=block_policy)
     
     def flatten(self, order=10):
+        '''
+        Combined nested `And()` and `Or()` matchers.  This does not change
+        the parser semantics, but improves efficiency.
+        
+        This is part of the default configuration.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
+        '''
         from lepl.core.rewriters import flatten
         return self.add_rewriter(flatten, order)
         
     def compile_to_dfa(self, force=False, alphabet=None, order=20):
+        '''
+        Compile simple matchers to DFA regular expressions.  This improves
+        efficiency but may change the parser semantics slightly (DFA regular
+        expressions do not provide backtracking / alternative matches).
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
+        '''
         from lepl.regexp.matchers import DfaRegexp
         from lepl.regexp.rewriters import regexp_rewriter
         self.alphabet = alphabet
@@ -245,6 +334,17 @@ class ConfigBuilder(object):
                     regexp_rewriter(self.alphabet, force, DfaRegexp), order)
     
     def compile_to_nfa(self, force=False, alphabet=None, order=20):
+        '''
+        Compile simple matchers to NFA regular expressions.  This improves
+        efficiency and should not change the parser semantics.
+        
+        This is part of the default configuration.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
+        '''
         from lepl.regexp.matchers import NfaRegexp
         from lepl.regexp.rewriters import regexp_rewriter
         self.alphabet = alphabet
@@ -252,17 +352,51 @@ class ConfigBuilder(object):
                     regexp_rewriter(self.alphabet, force, NfaRegexp), order)
         
     def optimize_or(self, conservative=True, order=30):
+        '''
+        Rearrange arguments to `Or()` so that left-recursive matchers are
+        tested last.  This improves efficient, but may alter the parser
+        semantics (the ordering of multiple results with ambiguous grammars 
+        may change).
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
+        '''
         from lepl.core.rewriters import optimize_or
         return self.add_rewriter(optimize_or(conservative), order)
         
     def lexer(self, alphabet=None, discard=None, source=None, order=40):
+        '''
+        Detect the use of `Token()` and modify the parser to use the lexer.
+        If tokens are not used, this has no effect on parsing.
+        
+        This is part of the default configuration.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
+        '''
         from lepl.lexer.rewriters import lexer_rewriter
         self.alphabet = alphabet
         return self.add_rewriter(
             lexer_rewriter(alphabet=self.alphabet, discard=discard,
                            source=source), order)
     
-    def no_trampoline(self, spec=None, order=50):
+    def direct_eval(self, spec=None, order=50):
+        '''
+        Combine simple matchers so that they are evaluated without 
+        trampolining.  This improves efficiency (particularly because it
+        reduces the number of matchers that can be memoized).
+        
+        This is part of the default configuration.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
+        '''
         from lepl.core.rewriters import function_only
         from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
             BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
@@ -275,19 +409,70 @@ class ConfigBuilder(object):
         return self.add_rewriter(function_only(spec), order)
     
     def compose_transforms(self, order=60):
+        '''
+        Combine transforms (functions applied to results) with matchers.
+        This may slightly improve efficiency.
+        
+        This is part of the default configuration.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).
+        '''
         from lepl.core.rewriters import compose_transforms
         return self.add_rewriter(compose_transforms, order)
         
     def auto_memoize(self, conservative=None, order=100):
+        '''
+        Add memoization so that (1) complex matching is more efficient and
+        (2) left recursive grammars do not loop indefinitely.  In most
+        cases this makes the parser significantly slower (typically by a
+        factor of 2), but more robust.
+        
+        This is part of the default configuration.  It can be removed by
+        calling `no_memoizer()`.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).        
+        '''
         return self.add_rewriter(auto_memoize(conservative), order)
     
     def left_memoize(self, order=100):
+        '''
+        Add memoization that can detect and stabilise left-recursion.  This
+        makes the parser more robust (so it can handle more grammars) but
+        also significantly slower.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).        
+        '''
         return self.add_rewriter(left_memoize(), order)
     
     def right_memoize(self, order=100):
+        '''
+        Add memoization that can make some complex parsers (with a lot of
+        backtracking) more efficient.  In most cases, however, it makes
+        the parser slower.
+        
+        Adding or removing a rewriter means that the default configuration 
+        will be cleared (if no rewriters are added, the default configuration 
+        is used, but as soon as one rewriter is given explicitly the default 
+        is discarded, and only the rewriters explicitly added are used).  
+        '''      
         return self.add_rewriter(right_memoize(), order)
     
     def no_memoize(self):
+        '''
+        Remove memoization.  If called before any other configuration method
+        it will first load the default configuration.  In this way it can
+        be used, in a single call, to enable the default without memoization.
+        See `auto_memoize()`.
+        '''
         if self.__default:
             self.default()
         for conservative in (None, True, False):
@@ -298,10 +483,16 @@ class ConfigBuilder(object):
     # monitors
     
     def trace(self, enabled=False):
+        '''
+        Add a monitor to trace results.  See `TraceResults()`.
+        '''
         from lepl.core.trace import TraceResults
         return self.add_monitor(TraceResults(enabled))
     
     def manage(self, queue_len=0):
+        '''
+        Add a monitor to manage resources.  See `GeneratorManager()`.
+        '''
         from lepl.core.manager import GeneratorManager
         return self.add_monitor(GeneratorManager(queue_len))
     
@@ -453,10 +644,16 @@ class ConfigBuilder(object):
         self.flatten()
         self.compose_transforms()
         self.auto_memoize()
+        self.direct_eval()
+        self.compile_to_nfa()
         return self
         
     
     def clear(self):
+        '''
+        Delete any earlier configuration and disable the default (so no
+        rewriters or monitors are used).
+        '''
         self.__default = False
         self.__changed = True
         self.__rewriters = []
@@ -466,12 +663,21 @@ class ConfigBuilder(object):
         return self
 
     def default(self):
+        '''
+        Provide the default configuration (deleting what may have been
+        configured previously).  This is called automatically if no other
+        configuration is specified.  It provides a moderately efficient,
+        stable parser.
+        
+        Additional efficiency can be achieved with `no_memoize()`, but
+        then left-recursive grammars (which are a bad idea anyway) may fail. 
+        '''
         self.clear()
         self.flatten()
         self.compose_transforms()
         self.lexer()
         self.auto_memoize()
-        self.no_trampoline()
+        self.direct_eval()
         self.compile_to_nfa()
         return self
 

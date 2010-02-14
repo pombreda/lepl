@@ -204,7 +204,7 @@ class AndNoTrampolineTest(TestCase):
     def test_replace(self):
         #basicConfig(level=DEBUG)
         matcher = And('a', 'b')
-        matcher.config.clear().no_trampoline()
+        matcher.config.clear().direct_eval()
         parser = matcher.null_parser()
         text = str(parser.matcher)
         assert "AndNoTrampoline('a', 'b')" == text, text
