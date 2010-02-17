@@ -41,7 +41,7 @@ class MemoTest(TestCase):
         seq   += letter & Optional(seq)
         
         #print(seq)
-        seq.config.right_memoize().trace(True)
+        seq.config.clear().right_memoize().trace(True)
         p = seq.string_matcher()
         #print(p.matcher)
         
@@ -59,9 +59,9 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += Optional(seq) & letter
         
-        seq.config.left_memoize().trace(True)
+        seq.config.clear().left_memoize().trace(True)
         p = seq.null_matcher()
-        print(p.matcher)
+        #print(p.matcher)
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
@@ -76,7 +76,7 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += Optional(seq) & letter
         
-        seq.config.left_memoize().trace(True)
+        seq.config.clear().left_memoize().trace(True)
         p = seq.string_matcher()
         results = list(p('ab'))
         assert len(results) == 2, len(results)
@@ -92,7 +92,7 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += letter | (seq  & letter)
         
-        seq.config.left_memoize().trace(True)
+        seq.config.clear().left_memoize().trace(True)
         p = seq.string_matcher()
         results = list(p('abcdef'))
         assert len(results) == 6, len(results)
@@ -124,7 +124,7 @@ class MemoTest(TestCase):
         termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
         sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
-        sentence.config.left_memoize().trace()
+        sentence.config.clear().left_memoize().trace()
         p = sentence.string_matcher()
         
         text = 'every boy or some girl and helen and john or pat knows ' \

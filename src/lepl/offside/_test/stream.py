@@ -62,6 +62,7 @@ class LineTest(TestCase):
         assert parser('aabc') == ['bc']
         # what happens with an empty match?
         check = ~Literal('aa') & Regexp('.*')
+        check.config.no_full_match()
         assert check.parse('aa') == ['']
         assert parser('aa') == ['']
         

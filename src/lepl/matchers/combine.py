@@ -1,4 +1,3 @@
-from lepl.matchers.matcher import add_children, add_child
 
 # Copyright 2009 Andrew Cooke
 
@@ -31,12 +30,12 @@ Matchers that combine sub-matchers (And, Or etc).
 from abc import ABCMeta
 from collections import deque
 
-from lepl.core.parser import tagged
 from lepl.matchers.core import Literal
+from lepl.matchers.matcher import add_children
 from lepl.matchers.support import coerce_, sequence_matcher_factory, \
     trampoline_matcher_factory
 from lepl.matchers.transform import Transformable
-from lepl.support.lib import lmap, format
+from lepl.support.lib import lmap, format, document
 
 
 # pylint: disable-msg=C0103, W0105
@@ -69,9 +68,7 @@ def search_factory(factory):
         first = coerce_(first)
         rest = first if rest is None else coerce_(rest)
         return factory(first, start, stop, rest)
-    new_factory.__name__ = factory.__name__
-    new_factory.__doc__ = factory.__doc__
-    return new_factory
+    return document(new_factory, factory)
 
 
 @trampoline_matcher_factory(False)

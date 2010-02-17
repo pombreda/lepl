@@ -31,6 +31,7 @@ class FilterException(Exception):
     '''
     Raised when there are problems with filtering.
     '''
+    
 
 class BaseDelegateSource(Source):
     '''
@@ -104,19 +105,6 @@ class BaseTransformedSource(BaseDelegateSource):
         except StopIteration:
             self.total_length = self.__length
             return (None, None)
-        
-
-class TransformedSource(BaseTransformedSource):
-    '''
-    Transform a `LocationStream`.
-    '''
-
-    @staticmethod
-    def transformed_stream(transform, stream, factory=DEFAULT_STREAM_FACTORY):
-        '''
-        Generated a transformed stream.
-        '''
-        return factory(TransformedSource(transform, stream))
         
 
 class FilteredSource(BaseTransformedSource):

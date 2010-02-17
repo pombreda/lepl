@@ -29,7 +29,7 @@ from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
 from lepl.matchers.matcher import Matcher, FactoryMatcher, add_child, is_child
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
     OperatorNamespace
-from lepl.support.lib import LogMixin, basestring, format
+from lepl.support.lib import LogMixin, basestring, format, document
 
 # pylint: disable-msg=C0103,W0212
 # (consistent interfaces)
@@ -187,8 +187,7 @@ class BaseFactoryMatcher(FactoryMatcher):
             # function wrapper, so we have two levels, and we must construct
             # a new, empty function
             def empty(): return
-            empty.__doc__ = self.factory.factory.__doc__
-            empty.__name__ = self.factory.factory.__name__
+            document(empty, self.factory.factory)
             spec = getargspec(empty)
         except:
             spec = getargspec(self.factory)
@@ -391,7 +390,7 @@ def check_args(func):
     try:
         getargspec(func)
         ok = True
-    except:
+    except Exception as e:
         ok = False
     if not ok:
         raise TypeError(format(
@@ -418,13 +417,18 @@ def make_factory(maker, matcher):
             raise TypeError(format('{0}() takes no arguments', 
                                    matcher.__name__))
         return matcher
-    factory.__name__ = matcher.__name__
-    factory.__doc__ = matcher.__doc__
+    document(factory, matcher)
     factory.factory = matcher
     return maker(factory)
 
 
 def trampoline_matcher_factory(transformable=True):
+    if not isinstance(transformable, bool):
+        raise ValueError(
+            'trampoline_matcher_factory must be used as a function:'
+            '\n  @trampoline_matcher_factory()'
+            '\n  def MyMatcherFactory(...):'
+            '\n      ....')
     def wrapper(factory):
         if transformable:
             return make_wrapper_factory(TransformableTrampolineWrapper, factory)
@@ -433,6 +437,12 @@ def trampoline_matcher_factory(transformable=True):
     return wrapper
 
 def trampoline_matcher(transformable=True):
+    if not isinstance(transformable, bool):
+        raise ValueError(
+            'trampoline_matcher must be used as a function:'
+            '\n  @trampoline_matcher()'
+            '\n  def MyMatcherFactory(...):'
+            '\n      ....')
     def wrapper(matcher):
         check_matcher(matcher)
         return make_factory(trampoline_matcher_factory(transformable), matcher)

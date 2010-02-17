@@ -303,12 +303,14 @@ class ErrorTest(TestCase):
         it just fails to match).
         '''
         token = Token('[a-z]+')(Any())
+        token.config.no_full_match()
         parser = token.string_parser()
         assert parser('a') == ['a'], parser('a')
         # even though this matches the token, the Any() sub-matcher doesn't
         # consume all the contents
         assert parser('ab') == None, parser('ab')
         token = Token('[a-z]+')(Any(), complete=False)
+        token.config.no_full_match()
         parser = token.string_parser()
         assert parser('a') == ['a'], parser('a')
         # whereas this is fine, since complete=False
@@ -319,7 +321,7 @@ class ErrorTest(TestCase):
         If discard is '', discard nothing.
         '''
         token = Token('a')
-        token.config.lexer(discard='')
+        token.config.lexer(discard='').no_full_match()
         parser = token[1:].null_parser()
         result = parser('aa')
         assert result == ['a', 'a'], result

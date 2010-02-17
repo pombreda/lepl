@@ -251,3 +251,15 @@ def format(template, *args, **kargs):
 
 def identity(x):
     return x
+
+
+def document(destn, source, text=None):
+    '''
+    Copy function name and docs.
+    '''
+    if text:
+        destn.__name__ = text
+    else:
+        destn.__name__ = source.__name__
+    destn.__doc__ = source.__doc__
+    return destn

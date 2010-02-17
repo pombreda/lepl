@@ -71,6 +71,7 @@ class LeftRecursiveTest(TestCase):
         item    += item[1:] 
         expr     = item & Drop(Eos())
 
+        expr.config.no_full_match()
         parser = expr.string_parser()
 #        print(parser.matcher)
         parser('abc')

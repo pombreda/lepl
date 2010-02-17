@@ -60,16 +60,16 @@ default_parser = parser.string_parser()
 parser.config.clear()
 clear_parser = parser.string_parser()
 
-parser.config.default().no_memoize().auto_memoize(full=False)
+parser.config.no_memoize().auto_memoize(full=False)
 parser_1 = parser.string_parser()
 
-parser.config.default().no_memoize().auto_memoize(full=True)
+parser.config.no_memoize().auto_memoize(full=True)
 parser_2 = parser.string_parser()
 
-print(default_parser.matcher, '\n')
-print(clear_parser.matcher, '\n')
-print(repr(parser_1.matcher), '\n')
-print(repr(parser_2.matcher), '\n')
+#print(default_parser.matcher, '\n')
+#print(clear_parser.matcher, '\n')
+#print(repr(parser_1.matcher), '\n')
+#print(repr(parser_2.matcher), '\n')
 
 def default(): assert default_parser(text)
 def clear(): assert clear_parser(text)

@@ -310,6 +310,12 @@ class StreamView(object):
         return (line, index)
     
     def __bool__(self):
+        # looking at this code later it seems odd that "offset" doesn't
+        # appear here.  what i think happens is that when we are at the end
+        # of the stream (when this will return false) we have an empty 
+        # underlying line.  in other words, remember that this is a 
+        # proxy to the entire stream, and so this reflects whether there
+        # is any data in the entire stream, not only in the current line. 
         return bool(self.__line.line)
     
     def __nonzero__(self):
@@ -567,7 +573,7 @@ class Source(_Source):
     def __next__(self):
         '''
         Subclasses should return (line, location_state) where line is None
-        when the nuderlying stream has expired.  This should NOT raise
+        when the underlying stream has expired.  This should NOT raise
         StopIteration - that is handled by StreamView.
         '''
     

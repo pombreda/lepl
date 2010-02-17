@@ -54,6 +54,7 @@ class AndTest(BaseTest):
         self.assert_join([1], Any() & Any(), [])
         
     def assert_join(self, stream, match, target):
+        match.config.no_full_match()
         result = [''.join(map(str, l)) 
                   for (l, _s) in match.match_items(stream)]
         assert target == result, result
@@ -94,6 +95,7 @@ class FirstTest(BaseTest):
         bline = AnyBut(s[0:] & Newline())[1:]
         line = aline % ~bline
         parser = line[0:,~(s[0:] & Newline())]
+        parser.config.no_full_match()
         n = len(list(parser.match('#define A 1\ncrap n stuff\n#define B 22\n')))
         assert n == 16, n
         r = parser.parse('#define A 1\ncrap n stuff\n#define B 22\n')
@@ -721,7 +723,9 @@ class ConsumerTest(BaseTest):
         assert ['a'] == result, result
         
     def test_fail(self):
-        parser = Consumer(Any('b')).null_parser()
+        matcher = Consumer(Any('b'))
+        matcher.config.no_full_match()
+        parser = matcher.null_parser()
         result = parser('a')
         assert None == result, result
         

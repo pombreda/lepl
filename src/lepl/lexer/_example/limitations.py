@@ -53,4 +53,5 @@ class Limitations(Example):
         self.examples([(lambda: incomplete.parse('abc'), "None")])
         abc = Token('abc')
         incomplete = abc(Literal('ab'), complete=False)
+        incomplete.config.no_full_match()
         self.examples([(lambda: incomplete.parse('abc'), "['ab']")])

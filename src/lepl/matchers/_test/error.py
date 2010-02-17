@@ -40,6 +40,7 @@ class MessageTest(TestCase):
         Test a message with no formatting.
         '''
         parser = (Literal('abc') > 'name') ** make_error('msg')
+        parser.config.no_full_match()
         node = parser.parse('abc')[0]
         assert isinstance(node, Error)
         assert node[0] == 'abc', node[0]
@@ -52,6 +53,7 @@ class MessageTest(TestCase):
         Test a message with formatting.
         '''
         parser = (Literal('abc') > 'name') ** make_error('msg {stream_in}')
+        parser.config.no_full_match()
         node = parser.parse('abc')[0]
         assert isinstance(node, Error)
         assert node[0] == 'abc', node[0]
@@ -65,6 +67,7 @@ class MessageTest(TestCase):
         '''
         try:
             parser = (Literal('abc') > 'name') ** make_error('msg {0}')
+            parser.config.no_full_match()
             list(parser.match('abc'))
             assert False, 'expected error'
         except IndexError:
@@ -75,6 +78,7 @@ class MessageTest(TestCase):
         Code has an exception for handling lists.
         '''
         parser = (Literal([1, 2, 3]) > 'name') ** make_error('msg {stream_in}')
+        parser.config.no_full_match()
         node = parser.parse([1, 2, 3])[0]
         assert isinstance(node, Error)
         assert node[0] == [1, 2, 3], node[0]

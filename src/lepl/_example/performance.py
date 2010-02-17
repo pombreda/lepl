@@ -56,7 +56,7 @@ def build(config):
     line.configuration = config
     return line.string_parser()
 
-def default(): return build(Configuration.default())
+def default(): return build(Configuration)
 def managed(): return build(Configuration.managed())
 def nfa(): return build(Configuration.nfa())
 def dfa(): return build(Configuration.dfa())

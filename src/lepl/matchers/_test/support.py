@@ -62,21 +62,25 @@ class DecoratorTest(TestCase):
     def test_char(self):
         #basicConfig(level=DEBUG)
         matcher = char()
-#        matcher.config.clear().trace(True)
+        matcher.config.no_full_match()
         result = list(matcher.match('ab'))
         assert result == [(['a'], 'b')], result
         matcher = char()[2:,...]
-#        matcher.config.clear().trace(True)
+        matcher.config.no_full_match()
         result = list(matcher.match('abcd'))
         assert result == [(['abcd'], ''), (['abc'], 'd'), (['ab'], 'cd')], result
         
     def test_char_in(self):
         #basicConfig(level=DEBUG)
-        result = list(char_in('abc').match('ab'))
+        matcher = char_in('abc')
+        matcher.config.no_full_match()
+        result = list(matcher.match('ab'))
         assert result == [(['a'], 'b')], result
-        result = list(char_in('abc').match('pqr'))
+        result = list(matcher.match('pqr'))
         assert result == [], result
-        result = list(char_in('abc')[2:,...].match('abcd'))
+        matcher = char_in('abc')[2:,...]
+        matcher.config.no_full_match()
+        result = list(matcher.match('abcd'))
         assert result == [(['abc'], 'd'), (['ab'], 'cd')], result
         
     def test_any_char(self):

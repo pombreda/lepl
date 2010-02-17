@@ -97,6 +97,7 @@ else:
             assert str(b) == 'aaaaaaaaaaaaaaab123456789abc801234000eax0/240'
     
             # and then we can parse it
+            header.config.no_full_match()
             p = header.parse(b)[0]
 #            print(p)
     # Node

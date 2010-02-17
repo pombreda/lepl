@@ -26,7 +26,7 @@ from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
     matcher_type, MatcherTypeException, matcher_map
 from lepl.matchers.support import NoTrampolineTransformableWrapper
-from lepl.support.lib import lmap, format, basestring
+from lepl.support.lib import lmap, format, basestring, document
 
 
 def clone(node, args, kargs):
@@ -212,8 +212,8 @@ def memoize(memoizer):
         Embed the memoizer within the cloner.
         '''
         return graph.postorder(DelayedClone(post_clone(memoizer)), Matcher)
-    rewriter.__name__ = format('memoize(%s)', memoizer.__name__)
-    return rewriter
+    return document(rewriter, memoize, 
+                    format('memoize({0})', memoizer.__name__))
 
 
 def auto_memoize(conservative=None, full=False):
@@ -242,8 +242,7 @@ def auto_memoize(conservative=None, full=False):
         graph = context_memoize(True if conservative is None 
                                 else conservative, full)(graph)
         return graph
-    rewriter.__name__ = auto_memoize.__name__
-    return rewriter
+    return document(rewriter, auto_memoize)
 
 
 def left_loops(node):
@@ -331,8 +330,7 @@ def optimize_or(conservative=True):
                         del matchers[index]
                         matchers.append(target)
         return graph
-    rewriter.__name__ = optimize_or.__name__
-    return rewriter
+    return document(rewriter, optimize_or)
 
 
 def context_memoize(conservative=True, full=False):
@@ -371,8 +369,8 @@ def context_memoize(conservative=True, full=False):
             else:
                 return RMemo(copy)
         return graph.postorder(DelayedClone(new_clone), Matcher)
-    rewriter.__name__ = format('context_memoize({0})', conservative)
-    return rewriter
+    return document(rewriter, context_memoize,
+                    format('context_memoize({0})', conservative))
 
 
 def set_arguments(type_, **extra_kargs):
@@ -393,8 +391,8 @@ def set_arguments(type_, **extra_kargs):
                     kargs[key] = extra_kargs[key]
             return clone(node, args, kargs)
         return graph.postorder(DelayedClone(new_clone), Matcher)
-    rewriter.__name__ = format('set_arguments({0})', extra_kargs)
-    return rewriter
+    return document(rewriter, set_arguments,
+                    format('set_arguments({0})', extra_kargs))
 
 
 def function_only(spec):
@@ -442,8 +440,7 @@ def function_only(spec):
                 raise TypeError(format('Error cloning {0} with ({1}, {2}): {3}',
                                        type_, args, kargs, err))
         return graph.postorder(DelayedClone(new_clone), Matcher)
-    rewriter.__name__ = function_only.__name__
-    return rewriter
+    return document(rewriter, function_only)
 
 
 class NodeStats(object):

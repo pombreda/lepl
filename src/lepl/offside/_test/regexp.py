@@ -35,6 +35,6 @@ class RegexpTest(TestCase):
     def test_start(self):
         #basicConfig(level=DEBUG)
         match = DfaRegexp('(*SOL)a*')
-        match.config.default_line_aware()
+        match.config.default_line_aware().no_full_match()
         result = list(match.match_string('abc'))[0][0]
         assert result == ['a'], result

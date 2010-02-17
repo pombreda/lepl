@@ -117,7 +117,9 @@ class RandomTest(TestCase):
         for _ in range(100):
             expression = random_expression(3, match_alphabet) 
             string = random_string(3, string_alphabet)
-            lepl_result = DfaRegexp(expression).parse(string)
+            matcher = DfaRegexp(expression)
+            matcher.config.no_full_match()
+            lepl_result = matcher.parse(string)
             if lepl_result:
                 lepl_result = lepl_result[0]
             #log.debug(format('{0} {1} {2}', expression, string, lepl_result))

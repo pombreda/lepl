@@ -143,7 +143,7 @@ same for (argument,
         # this also tests left recursion and blocks
         line += BLine(word | Empty()) | block
         program = line[:]
-        program.config.default_line_aware(block_policy=4, block_start=3)
+        program.config.default_line_aware(block_policy=4, block_start=3).no_full_match()
         parser = program.string_parser()
         result = parser('''
    foo

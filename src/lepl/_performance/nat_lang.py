@@ -54,7 +54,7 @@ def natural_language():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    p = sentence.null_matcher(Configuration.default())
+    p = sentence.null_matcher(Configuration)
     #p = sentence.null_matcher(Configuration.dfa())
     #p = sentence.null_matcher()
     print(p.matcher)

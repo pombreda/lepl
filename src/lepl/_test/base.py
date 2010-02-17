@@ -27,10 +27,12 @@ from unittest import TestCase
 class BaseTest(TestCase):
     
     def assert_direct(self, stream, match, target):
+        match.config.no_full_match()
         result = [x for (x, _s) in match.match_string(stream)]
         assert target == result, result
     
     def assert_list(self, stream, match, target):
+        match.config.no_full_match()
         matcher = match.items_matcher()
         #print(matcher.matcher)
         result = [x for (x, _s) in matcher(stream)]

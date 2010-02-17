@@ -48,7 +48,7 @@ from lepl.regexp.core import Choice, Sequence, Repeat, Empty
 from lepl.regexp.matchers import NfaRegexp
 from lepl.regexp.interval import Character
 from lepl.core.rewriters import copy_standard_attributes, clone, DelayedClone
-from lepl.support.lib import format, str
+from lepl.support.lib import format, str, document
 
 
 class RegexpContainer(object):
@@ -378,5 +378,5 @@ def regexp_rewriter(alphabet, use=True, matcher=NfaRegexp):
         if isinstance(graph, RegexpContainer):
             graph = graph.matcher
         return graph 
-    rewriter.__name__ = format('regexp_rewriter({0})', matcher.__name__)
-    return rewriter
+    return document(rewriter, regexp_rewriter,
+                    format('regexp_rewriter({0})', matcher.__name__))

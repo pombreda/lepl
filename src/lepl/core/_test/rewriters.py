@@ -128,14 +128,14 @@ class ComposeTransformsTest(TestCase):
         
     def test_simple(self):
         matcher = Any() > append('x')
-        matcher.config.compose_transforms()
+        matcher.config.clear().compose_transforms()
         parser = matcher.null_parser()
         result = parser('a')[0]
         assert result == 'ax', result
         
     def test_double(self):
         matcher = (Any() > append('x')) > append('y')
-        matcher.config.compose_transforms()
+        matcher.config.clear().compose_transforms()
         parser = matcher.null_parser()
         result = parser('a')[0]
         assert result == 'axy', result
@@ -144,7 +144,7 @@ class ComposeTransformsTest(TestCase):
     
     def test_and(self):
         matcher = (Any() & Optional(Any())) > append('x')
-        matcher.config.compose_transforms()
+        matcher.config.clear().compose_transforms()
         parser = matcher.null_parser()
         result = parser('a')[0]
         assert result == 'ax', result
@@ -153,7 +153,7 @@ class ComposeTransformsTest(TestCase):
     def test_loop(self):
         matcher = Delayed()
         matcher += (Any() | matcher) > append('x')
-        matcher.config.compose_transforms()
+        matcher.config.clear().compose_transforms()
         parser = matcher.null_parser()
         result = parser('a')[0]
         assert result == 'ax', result
@@ -167,7 +167,7 @@ class ComposeTransformsTest(TestCase):
         term        = number                               > Term
         factor      = term | Drop(Optional(term))
         
-        factor.config.compose_transforms()
+        factor.config.clear().compose_transforms()
         p = factor.string_parser()
         ast = p('1')[0]
         assert type(ast) == Term, type(ast)
@@ -182,7 +182,7 @@ class OptimizeOrTest(TestCase):
         matcher = Delayed()
         matcher += matcher | Any()
         assert isinstance(matcher.matcher.matchers[0], Delayed)
-        matcher.config.optimize_or(True)
+        matcher.config.clear().optimize_or(True)
         matcher.string_parser()
         # TODO - better test
         assert isinstance(matcher.matcher.matchers[0], 
@@ -192,7 +192,7 @@ class OptimizeOrTest(TestCase):
         matcher = Delayed()
         matcher += matcher | Any()
         assert isinstance(matcher.matcher.matchers[0], Delayed)
-        matcher.config.optimize_or(False)
+        matcher.config.clear().optimize_or(False)
         matcher.string_parser()
         # TODO - better test
         assert isinstance(matcher.matcher.matchers[0], 

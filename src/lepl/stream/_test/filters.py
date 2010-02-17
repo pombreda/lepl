@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.filters module.
+Tests for the lepl.stream.filters module.
 '''
 
 #from logging import basicConfig, DEBUG
@@ -77,15 +77,17 @@ class ExcludeTest(TestCase):
         #basicConfig(level=DEBUG)
         def vowel(x):
             return x in 'aeiou'
+        def parser(matcher):
+            matcher.config.no_full_match()
+            return matcher.string_matcher()
         stream1 = 'abcdef\nghijklm\n'
-        matcher = Exclude(vowel)(Any()[:]).string_matcher()
-        (match, _stream) = next(matcher('abcdef\nghijklm\n'))
+        (match, _stream) = next(parser(Exclude(vowel)(Any()[:]))('abcdef\nghijklm\n'))
         assert match[0:2] == ['b', 'c'], match[0:2]
-        (_result, stream) = next(Exclude(vowel)(Any()[0]).match_string(stream1))
+        (_result, stream) = next(parser(Exclude(vowel)(Any()[0]))(stream1))
         assert stream[0] == 'a', stream[0]
-        (_result, stream) = next(Exclude(vowel)(Any()).match_string(stream1))
+        (_result, stream) = next(parser(Exclude(vowel)(Any()))(stream1))
         assert stream[0] == 'c', stream[0]
-        (_result, stream) = next(Exclude(vowel)(Any()[5]).match_string(stream1))
+        (_result, stream) = next(parser(Exclude(vowel)(Any()[5]))(stream1))
         assert stream.line_number == 2, stream.line_number == 2
         assert stream.line_offset == 0, stream.line_offset == 0
         assert len(match) == 12, len(match)
