@@ -35,7 +35,7 @@ class RewriteTest(TestCase):
     def test_any(self):
         #basicConfig(level=DEBUG)
         char = Any()
-        char.config.compile_to_nfa(force=True).no_full_match()
+        char.config.clear().compile_to_nfa(force=True)
         matcher = char.null_matcher()
         results = list(matcher('abc'))
         assert results == [(['a'], 'bc')], results
@@ -44,7 +44,7 @@ class RewriteTest(TestCase):
     def test_or(self):
         #basicConfig(level=DEBUG)
         rx = Any('a') | Any('b') 
-        rx.config.compile_to_nfa(force=True).no_full_match()
+        rx.config.clear().compile_to_nfa(force=True)
         matcher = rx.null_matcher()
         results = list(matcher('bq'))
         assert results == [(['b'], 'q')], results
@@ -54,7 +54,7 @@ class RewriteTest(TestCase):
         
     def test_plus(self):
         rx = Any('a') + Any('b') 
-        rx.config.compile_to_nfa(force=True).no_full_match()
+        rx.config.clear().compile_to_nfa(force=True)
         matcher = rx.null_matcher()
         results = list(matcher('abq'))
         assert results == [(['ab'], 'q')], results
@@ -62,7 +62,7 @@ class RewriteTest(TestCase):
         
     def test_add(self):
         rx = Add(And(Any('a'), Any('b'))) 
-        rx.config.compile_to_nfa(force=True).no_full_match()
+        rx.config.clear().compile_to_nfa(force=True)
         matcher = rx.null_matcher()
         results = list(matcher('abq'))
         assert results == [(['ab'], 'q')], results
@@ -70,14 +70,14 @@ class RewriteTest(TestCase):
         
     def test_literal(self):
         rx = Literal('abc')
-        rx.config.compile_to_nfa(force=True).no_full_match()
+        rx.config.clear().compile_to_nfa(force=True)
         matcher = rx.null_matcher()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
         results = list(matcher('abcd'))
         assert results == [(['abc'], 'd')], results
         
         rx = Literal('abc') >> (lambda x: x+'e')
-        rx.config.compose_transforms().compile_to_nfa(force=True).no_full_match()
+        rx.config.clear().compose_transforms().compile_to_nfa(force=True)
         matcher = rx.null_matcher()
         results = list(matcher('abcd'))
         assert results == [(['abce'], 'd')], results

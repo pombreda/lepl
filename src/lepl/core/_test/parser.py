@@ -70,6 +70,7 @@ class RepeatTest(TestCase):
         matcher = Any()[:,...]
         matcher.config.full_match(False)
         matcher = matcher.string_matcher()
+        print(repr(matcher.matcher))
         results = [m for (m, _s) in matcher('abc')]
         assert results == [['abc'], ['ab'], ['a'], []], results
 

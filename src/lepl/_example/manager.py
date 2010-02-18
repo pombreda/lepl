@@ -39,7 +39,8 @@ class ResourceExample(Example):
 
     def test_limit(self):
         expr = Literal('*')[:,...][2] & Eos()
-        expr.config.manage(1)
+        # clear is here because the original test didn't have such a complex config
+        expr.config.clear().manage(1)
         matcher = expr.match('*' * 4)
         self.examples([(lambda: list(matcher), 
                         "[(['****'], ''), (['***', '*'], '')]")])

@@ -85,20 +85,29 @@ class DecoratorTest(TestCase):
         
     def test_any_char(self):
         #basicConfig(level=DEBUG)
-        result = list(any_char().match('ab'))
+        matcher = any_char()
+        # with this set we have an extra eos that messes things up
+        matcher.config.no_full_match()
+        result = list(matcher.match('ab'))
         assert result == [(['a'], 'b'), (['b'], '')], result
-        result = list(any_char()[2:,...].match('abcd'))
+        matcher = any_char()[2:,...]
+        matcher.config.no_full_match()
+        result = list(matcher.match('abcd'))
         assert result == [(['abcd'], ''), (['abc'], 'd'), (['abd'], ''), 
                           (['ab'], 'cd'), (['acd'], ''), (['ac'], 'd'), 
                           (['ad'], ''), (['bcd'], ''), (['bc'], 'd'), 
                           (['bd'], ''), (['cd'], '')], result
         
     def test_any_char_in(self):
-        result = list(any_char_in('abc').match('ab'))
+        matcher = any_char_in('abc')
+        matcher.config.no_full_match()
+        result = list(matcher.match('ab'))
         assert result == [(['a'], 'b'), (['b'], '')], result
-        result = list(any_char_in('abc').match('pqr'))
+        result = list(matcher.match('pqr'))
         assert result == [], result
-        result = list(any_char_in('abc')[2:,...].match('abcd'))
+        matcher = any_char_in('abc')[2:,...]
+        matcher.config.no_full_match()
+        result = list(matcher.match('abcd'))
         assert result == [(['abc'], 'd'), (['ab'], 'cd'), 
                           (['ac'], 'd'), (['bc'], 'd')], result
     

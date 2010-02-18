@@ -57,7 +57,8 @@ def stream():
         termphrase += simple_tp | (termphrase & join & termphrase) > TermPhrase
         sentence    = termphrase & verbphrase & termphrase & Eos() > Sentence
 
-    p = sentence.string_matcher(Configuration(rewriters=[auto_memoize(False)]))
+    sentence.config.no_memoize()
+    p = sentence.string_matcher()
     results = list(p('every boy or some girl and helen and john or pat knows\n'
                      'and respects or loves every boy or some girl and pat or\n'
                      'john and helen'))
@@ -71,7 +72,8 @@ def time():
     # 56.6
     # auto-memoize brings that down to 30 (24 for nat_lang)
     # now 34 after bug fixes
-    
+    # after rewrite (functional + new config) 38 with default
+    # 
 
 def profile():
     '''

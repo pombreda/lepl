@@ -55,6 +55,7 @@ class LexerExample(Example):
         symbol = Token('[^0-9a-zA-Z \t\r\n]')
         number = value >> float
         add = number & ~symbol('+') & number > sum
+        add.config.no_full_match()
         self.examples([
             (lambda: add.parse('12+30'), 'None')])
 

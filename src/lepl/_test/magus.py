@@ -34,7 +34,8 @@ from lepl.matchers.matcher import Matcher, canonical_matcher_type,\
     MatcherTypeException, is_child
 from lepl.matchers.memo import _LMemo, _RMemo
 from lepl.matchers.transform import Transform, Transformation
-from lepl.core.rewriters import DelayedClone, NodeStats
+from lepl.core.rewriters import DelayedClone, NodeStats, Flatten, Memoize, \
+    ContextMemoize, ComposeTransforms
 
 
 class MagusTest(TestCase):
@@ -129,7 +130,7 @@ class CloneTest(TestCase):
         self.assert_count(desc0, Or, 2)
         self.assert_count(desc0, Delayed, 2)
         
-        clone1 = flatten(dotted_name)
+        clone1 = Flatten()(dotted_name)
         desc1 = NodeStats(clone1)
         #print(desc1)
         # flattened two matchers - one each of And and Or
@@ -140,7 +141,7 @@ class CloneTest(TestCase):
         self.assert_count(desc1, Transform, 7)
         self.assert_count(desc1, Transformation, 7)
         
-        clone2 = compose_transforms(clone1)
+        clone2 = ComposeTransforms()(clone1)
         desc2 = NodeStats(clone2)
         #print(desc2)
         # compressed two transforms
@@ -151,21 +152,21 @@ class CloneTest(TestCase):
         self.assert_count(desc2, Transform, 5)
         self.assert_count(desc2, Transformation, 5)
         
-        clone3 = memoize(RMemo)(clone2)
+        clone3 = Memoize(RMemo)(clone2)
         desc3 = NodeStats(clone3) 
         #print(desc3)
         assert desc3.total == 14, desc3
         self.assert_count(desc3, _RMemo, 14)
         self.assert_count(desc3, Delayed, 2)
 
-        clone4 = memoize(LMemo)(clone2)
+        clone4 = Memoize(LMemo)(clone2)
         desc4 = NodeStats(clone4) 
         #print(desc4)
         assert desc4.total == 14, desc4
         self.assert_count(desc4, _LMemo, 14)
         self.assert_count(desc4, Delayed, 2)
         
-        clone5 = context_memoize(full=True)(clone2)
+        clone5 = ContextMemoize(full=True)(clone2)
         desc5 = NodeStats(clone5) 
         #print(desc5)
         assert desc5.total == 14, desc5

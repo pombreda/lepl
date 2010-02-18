@@ -26,18 +26,23 @@ from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
     matcher_type, MatcherTypeException, matcher_map
 from lepl.matchers.support import NoTrampolineTransformableWrapper
-from lepl.support.lib import lmap, format, basestring, document
+from lepl.support.lib import lmap, format, basestring, LogMixin
 
 
-class Rewriter(object):
+class Rewriter(LogMixin):
     
     SET_ARGUMENTS = 0
+    FULL_MATCH = 5
     FLATTEN = 10
-    COMPOSE_TRANSFORMS = 20
+    COMPILE_REGEXP = 20
     OPTIMIZE_OR = 30
+    LEXER = 40
+    DIRECT_EVALUATION = 50
+    COMPOSE_TRANSFORMS = 60
     MEMOIZE = 100
        
     def __init__(self, order, name=None, exclusive=True):
+        super(Rewriter, self).__init__()
         self.order = order
         self.name = name if name else self.__class__.__name__
         self.exclusive = exclusive
@@ -277,7 +282,7 @@ class Memoize(Rewriter):
     def __init__(self, memoizer):
         super(Memoize, self).__init__(Rewriter.MEMOIZE,
                                       format('Memoize({0})', memoizer.__name__))
-        self.memoize = memoizer
+        self.memoizer = memoizer
         
     def __call__(self, graph):
         return graph.postorder(DelayedClone(post_clone(self.memoizer)), Matcher)
@@ -472,7 +477,7 @@ class SetArguments(Rewriter):
         return graph.postorder(DelayedClone(new_clone), Matcher)
 
 
-def function_only(spec):
+class DirectEvaluation(Rewriter):
     '''
     Replace given matchers if all arguments are FunctionWrapper instances.
     
@@ -480,16 +485,29 @@ def function_only(spec):
     where attributes are attribute names to check for functions and 
     replacement is a new class with the same signature as the original.
     '''
+    
+    def __init__(self, spec=None):
+        from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
+            BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
+            Or, OrNoTrampoline
+        super(DirectEvaluation, self).__init__(Rewriter.DIRECT_EVALUATION,
+            format('DirectEvaluation({0})', spec))
+        if spec is None:
+            spec = {DepthFirst: (('first', 'rest'), DepthNoTrampoline),
+                    BreadthFirst: (('first', 'rest'), BreadthNoTrampoline),
+                    And: (('*matchers',), AndNoTrampoline),
+                    Or: (('*matchers',), OrNoTrampoline)}
+        self.spec = spec
 
-    def rewriter(graph):
+    def __call__(self, graph):
         def type_ok(value):
             return isinstance(value, basestring) \
                 or isinstance(value, NoTrampolineTransformableWrapper)
         def new_clone(node, args, kargs):
             ok = False
-            for type_ in spec:
+            for type_ in self.spec:
                 if is_child(node, type_):
-                    (attributes, replacement) = spec[type_]
+                    (attributes, replacement) = self.spec[type_]
                     for attribute in attributes:
                         if attribute.startswith('*'):
                             values = getattr(node, attribute[1:])
@@ -517,7 +535,27 @@ def function_only(spec):
                 raise TypeError(format('Error cloning {0} with ({1}, {2}): {3}',
                                        type_, args, kargs, err))
         return graph.postorder(DelayedClone(new_clone), Matcher)
-    return document(rewriter, function_only)
+    
+    
+class FullMatch(Rewriter):
+    '''
+    If the parser fails, raise an error at the maxiumum depth.
+    
+    `eos` controls whether or not the entire input must be consumed for the
+    parse to be considered a success. 
+    '''
+    
+    def __init__(self, eos=True):
+        super(FullMatch, self).__init__(Rewriter.FULL_MATCH,
+                                       format('FullMatch({0})', eos))
+        self.eos = eos
+        
+    def __call__(self, graph):
+        from lepl.matchers.core import Eof
+        from lepl.stream.maxdepth import FullMatch
+        if self.eos:
+            graph = graph & Eof()
+        return FullMatch(graph)
 
 
 class NodeStats(object):

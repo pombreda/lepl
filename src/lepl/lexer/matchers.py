@@ -41,7 +41,7 @@ from lepl.matchers.support import BaseMatcher, coerce_
 from lepl.core.parser import tagged
 from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import BaseRegexp
-from lepl.regexp.rewriters import regexp_rewriter
+from lepl.regexp.rewriters import CompileRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.stream.stream import LocationStream, DEFAULT_STREAM_FACTORY
 from lepl.support.lib import format, str
@@ -170,7 +170,7 @@ class BaseToken(OperatorMatcher, NoMemo):
         expression and extract the equivalent text.
         '''
         if isinstance(regexp, Matcher):
-            rewriter = regexp_rewriter(alphabet)
+            rewriter = CompileRegexp(alphabet)
             rewrite = rewriter(regexp)
             if isinstance(rewrite, BaseRegexp):
                 regexp = str(rewrite.regexp)

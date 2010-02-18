@@ -287,7 +287,7 @@ class ErrorTest(TestCase):
         An unexpected character fails to match.
         '''
         token = Token('a')
-        token.config.lexer(discard='b')
+        token.config.clear().lexer(discard='b')
         parser = token.null_parser()
         assert parser('a') == ['a'], parser('a')
         assert parser('b') == None, parser('b')

@@ -64,7 +64,8 @@ def left():
     with Separator(Regexp(r'\s*')):
         pair += Optional(pair) & '(' & Optional(pair) & ')' 
     #p = pair.string_matcher(Configuration.dfa())
-    p = pair.string_matcher(Configuration(rewriters=[auto_memoize(False)]))
+    p.config.clear.auto_memoize(False)
+    p = pair.string_matcher()
     results = list(p(make_data(6)))
     print(len(results))
 

@@ -21,8 +21,8 @@ Rewrite a matcher graph to include lexing.
 '''
 
 from collections import deque
-from logging import getLogger
 
+from lepl.core.rewriters import Rewriter
 from lepl.lexer.matchers import BaseToken, Lexer, LexerError, NonToken
 from lepl.matchers.matcher import Matcher, is_child
 from lepl.regexp.unicode import UnicodeAlphabet
@@ -77,7 +77,7 @@ def assert_not_token(node, visited):
                 assert_not_token(child, visited)
 
 
-def lexer_rewriter(alphabet=None, discard=None, source=None):
+class AddLexer(Rewriter):
     '''
     This is required when using Tokens.  It does the following:
     - Find all tokens in the matcher graph
@@ -99,21 +99,23 @@ def lexer_rewriter(alphabet=None, discard=None, source=None):
     offside parsing).
     '''
 
-    log = getLogger('lepl.lexer.rewriters.lexer_rewriter')
-
-    if alphabet is None:
-        alphabet = UnicodeAlphabet.instance()
-    # use '' to have no discard at all
-    if discard is None:
-        discard = '[ \t\r\n]'
-    def lexer(matcher):
-        '''
-        Either construct the lexer, or warn that none found.
-        '''
-        tokens = find_tokens(matcher)
+    def __init__(self, alphabet=None, discard=None, source=None):
+        if alphabet is None:
+            alphabet = UnicodeAlphabet.instance()
+        # use '' to have no discard at all
+        if discard is None:
+            discard = '[ \t\r\n]'
+        super(AddLexer, self).__init__(Rewriter.LEXER,
+            format('Lexer({0}, {1}, {2})', alphabet, discard, source))
+        self.alphabet = alphabet
+        self.discard = discard
+        self.source = source
+        
+    def __call__(self, graph):
+        tokens = find_tokens(graph)
         if tokens:
-            return Lexer(matcher, tokens, alphabet, discard, source=source)
+            return Lexer(graph, tokens, self.alphabet, self.discard, 
+                         source=self.source)
         else:
-            log.info('Lexer rewriter used, but no tokens found.')
-            return matcher
-    return lexer
+            self._info('Lexer rewriter used, but no tokens found.')
+            return graph

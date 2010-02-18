@@ -227,7 +227,7 @@ def make_matcher(matcher, stream, config, kargs):
     This constructs a function that returns a generator that provides a 
     sequence of matches.
     '''
-    for rewriter in config.ordered_rewriters:
+    for rewriter in config.rewriters:
         matcher = rewriter(matcher)
     (m_stack, m_value) = prepare_monitors(config.monitors)
     # pylint bug here? (E0601)

@@ -109,8 +109,6 @@ Running this gives the result::
 from lepl.contrib.matchers import SmartSeparator2
 from lepl.core.config import Configuration, ConfigBuilder
 from lepl.core.manager import GeneratorManager
-from lepl.core.rewriters import memoize, Flatten, compose_transforms, \
-    auto_memoize, context_memoize, optimize_or
 from lepl.core.trace import RecordDeepest, TraceResults
 from lepl.matchers.combine import And, Or, First
 from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
@@ -127,13 +125,11 @@ from lepl.matchers.memo import RMemo, LMemo, MemoException
 from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
     GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
-from lepl.lexer.rewriters import lexer_rewriter
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
     ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
-from lepl.regexp.rewriters import regexp_rewriter
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.stream.stream import DEFAULT_STREAM_FACTORY
 from lepl.support.node import Node, make_dict, join_with
@@ -223,8 +219,6 @@ __all__ = [
         'Token',
         'LexerError',
         'RuntimeLexerError',
-        # lepl.lexer.rewriters
-        'lexer_rewriter',
         # lepl.core.manager
         'GeneratorManager',
         # lepl.core.trace
@@ -239,17 +233,8 @@ __all__ = [
         # lepl.regexp.matchers
         'NfaRegexp',
         'DfaRegexp',
-        # lepl.regexp.rewriters
-        'regexp_rewriter',
         # lepl.regexp.unicode
         'UnicodeAlphabet',
-        # lepl.core.rewriters
-        'memoize',
-        'Flatten',
-        'compose_transforms',
-        'auto_memoize',
-        'context_memoize',
-        'optimize_or',
         # lepl.offside.lexer
         'Indent',
         'Eol',

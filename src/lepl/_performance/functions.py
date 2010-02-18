@@ -60,10 +60,10 @@ default_parser = parser.string_parser()
 parser.config.clear()
 clear_parser = parser.string_parser()
 
-parser.config.no_memoize().auto_memoize(full=False)
+parser.config.clear().auto_memoize(full=False)
 parser_1 = parser.string_parser()
 
-parser.config.no_memoize().auto_memoize(full=True)
+parser.config.clear().auto_memoize(full=True)
 parser_2 = parser.string_parser()
 
 #print(default_parser.matcher, '\n')

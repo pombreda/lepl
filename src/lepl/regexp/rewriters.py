@@ -47,7 +47,8 @@ from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty
 from lepl.regexp.matchers import NfaRegexp
 from lepl.regexp.interval import Character
-from lepl.core.rewriters import copy_standard_attributes, clone, DelayedClone
+from lepl.core.rewriters import copy_standard_attributes, clone, \
+    DelayedClone, Rewriter
 from lepl.support.lib import format, str, document
 
 
@@ -359,9 +360,10 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
     return clone_
 
 
-def regexp_rewriter(alphabet, use=True, matcher=NfaRegexp):
+class CompileRegexp(Rewriter):
     '''
-    Create a rewriter that uses the given alphabet and matcher.
+    A rewriter that uses the given alphabet and matcher to compile simple
+    matchers.
     
     The "use" parameter controls when regular expressions are substituted.
     If true, they are always used.  If false, they are used only if they
@@ -369,14 +371,17 @@ def regexp_rewriter(alphabet, use=True, matcher=NfaRegexp):
     gives more efficient parsers because it avoids converting already
     efficient literal matchers to regular expressions.
     '''
-    def rewriter(graph):
-        '''
-        The rewriter, using the given alphabet.
-        '''
-        new_clone = make_clone(alphabet, clone, matcher, use)
+    
+    def __init__(self, alphabet, use=True, matcher=NfaRegexp):
+        super(CompileRegexp, self).__init__(Rewriter.COMPILE_REGEXP,
+            format('CompileRegexp({0}, {1}, {2})', alphabet, use, matcher))
+        self.alphabet = alphabet
+        self.use = use
+        self.matcher = matcher
+        
+    def __call__(self, graph):
+        new_clone = make_clone(self.alphabet, clone, self.matcher, self.use)
         graph = graph.postorder(DelayedClone(new_clone), Matcher)
         if isinstance(graph, RegexpContainer):
             graph = graph.matcher
         return graph 
-    return document(rewriter, regexp_rewriter,
-                    format('regexp_rewriter({0})', matcher.__name__))

@@ -38,9 +38,9 @@ def full_left():
     with Separator(Regexp(r'\s*')):
         ab += (ab & 'b') | 'a'
 #        ab += 'a' | (ab & 'b')
-    p = (ab & Eos()).string_matcher(Configuration(rewriters=[auto_memoize]
-#                                                  ,monitors=[TraceResults(True)]
-                                                  ))
+    m = ab & Eos()
+    m.config.clear().auto_memoize()
+    p = m.string_matcher()
     results = list(p('a' + ('\nb' * 1000)))
     assert len(results) == 1
     print('done')

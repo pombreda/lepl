@@ -50,6 +50,7 @@ class Limitations(Example):
         #basicConfig(level=DEBUG)
         abc = Token('abc')
         incomplete = abc(Literal('ab'))
+        incomplete.config.no_full_match()
         self.examples([(lambda: incomplete.parse('abc'), "None")])
         abc = Token('abc')
         incomplete = abc(Literal('ab'), complete=False)

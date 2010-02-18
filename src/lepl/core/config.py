@@ -22,7 +22,6 @@ The main configuration object and various standard configurations.
 
 from lepl.core.parser import make_matcher, make_parser
 from lepl.stream.stream import DEFAULT_STREAM_FACTORY
-from lepl.support.lib import lmap
 
 # A major driver for this being separate is that it decouples dependency loops
 
@@ -41,9 +40,7 @@ class Configuration(object):
     def __init__(self, rewriters=None, monitors=None, stream_factory=None):
         '''
         `rewriters` are functions that take and return a matcher tree.  They
-        can add memoisation, restructure the tree, etc.  They are given
-        as (function, order) pairs, where `order` controls the order in which
-        they are applied (lowest first).
+        can add memoisation, restructure the tree, etc.
         
         `monitors` are factories that return implementations of `ActiveMonitor`
         or `PassiveMonitor` and will be invoked by `trampoline()`. 
@@ -51,7 +48,7 @@ class Configuration(object):
         `stream_factory` constructs a stream from the given input.
         '''
         if rewriters is None:
-            rewriters = []
+            rewriters = set()
         self.__rewriters = rewriters
         self.monitors = monitors
         if stream_factory is None:
@@ -59,73 +56,12 @@ class Configuration(object):
         self.stream_factory = stream_factory
         
     @property
-    def ordered_rewriters(self):
-        '''
-        The list of rewriters, sorted, without the orders.
-        '''
+    def rewriters(self):
         rewriters = list(self.__rewriters)
-        rewriters.sort(key=lambda x: x[1])
-        rewriters = lmap(lambda x: x[0], rewriters)
+        rewriters.sort()
+        #print([str(m) for m in rewriters])
         return rewriters
-    
-    @property
-    def raw_rewriters(self):
-        '''
-        The rewriters, with orders.
-        '''
-        return list(self.__rewriters)
-    
-
-_AUTO_MEMOIZE = {}
-def auto_memoize(conservative=None, full=False):
-    '''
-    Provide an unchanging source of the auto_memoize rewriter so that it
-    can be deleted if necessary.
-    '''
-    from lepl.core.rewriters import auto_memoize as am
-    global _AUTO_MEMOIZE
-    if conservative not in _AUTO_MEMOIZE:
-        _AUTO_MEMOIZE[(conservative, full)] = am(conservative, full)
-    return _AUTO_MEMOIZE[(conservative, full)]
-    
-_LEFT_MEMOIZE = None
-def left_memoize():
-    '''
-    Provide an unchanging source of the left memoize rewriter so that it
-    can be deleted if necessary.
-    '''
-    from lepl.core.rewriters import memoize
-    from lepl.matchers.memo import LMemo
-    global _LEFT_MEMOIZE
-    if not _LEFT_MEMOIZE:
-        _LEFT_MEMOIZE = memoize(LMemo)
-    return _LEFT_MEMOIZE
-
-_RIGHT_MEMOIZE = None
-def right_memoize():
-    '''
-    Provide an unchanging source of the right memoize rewriter so that it
-    can be deleted if necessary.
-    '''
-    from lepl.core.rewriters import memoize
-    from lepl.matchers.memo import RMemo
-    global _RIGHT_MEMOIZE
-    if not _RIGHT_MEMOIZE:
-        _RIGHT_MEMOIZE = memoize(RMemo)
-    return _RIGHT_MEMOIZE
-
-_FULL_MATCH = {}
-def full_match(eos=True):
-    '''
-    Provide an unchanging source of the full match rewriter so that it
-    can be deleted if necessary.
-    '''
-    from lepl.stream.maxdepth import full_match as fm
-    global _FULL_MATCH
-    if eos not in _FULL_MATCH:
-        _FULL_MATCH[eos] = fm(eos)
-    return _FULL_MATCH[eos]
-
+        
 
 class ConfigBuilder(object):
     
@@ -136,7 +72,7 @@ class ConfigBuilder(object):
         # the configuration is read.  so if is is false then the configuration
         # is the same as previously read
         self.__changed = True
-        self.__rewriters = []
+        self.__rewriters = set()
         self.__monitors = []
         self.__stream_factory = DEFAULT_STREAM_FACTORY
         self.__alphabet = None
@@ -151,29 +87,38 @@ class ConfigBuilder(object):
         
     # raw access to basic components
         
-    def add_rewriter(self, rewriter, order=1000):
+    def add_rewriter(self, rewriter):
         '''
         Add a rewriter that will be applied to the matcher graph when the
-        parser is generated.  Rewriters are sorted with the lowest `order`
-        first.
+        parser is generated.
         '''
         self.__start()
         self.__changed = True
-        self.__rewriters.append((rewriter, order))
+        # we need to remove before adding to ensure last added is the one
+        # used (exclusive rewriters are equal)
+        if rewriter in self.__rewriters:
+            self.__rewriters.remove(rewriter)
+        self.__rewriters.add(rewriter)
         return self
     
     def remove_rewriter(self, rewriter):
         '''
         Remove a rewriter from the current configuration.
-        
-        Adding or removing a rewriter means that the default configuration 
-        will be cleared (if no rewriters are added, the default configuration 
-        is used, but as soon as one rewriter is given explicitly the default 
-        is discarded, and only the rewriters explicitly added are used).
         '''
         self.__start()
         self.__changed = True
-        self.__rewriters = [r for r in self.__rewriters if r[0] is not rewriter]
+        self.__rewriters = set(r for r in self.__rewriters 
+                               if r is not rewriter)
+        return self
+
+    def remove_rewriters(self, type_):
+        '''
+        Remove all rewriters of a given type from the current configuration.
+        '''
+        self.__start()
+        self.__changed = True
+        self.__rewriters = set(r for r in self.__rewriters 
+                               if not isinstance(r, type_))
         return self
 
     def add_monitor(self, monitor):
@@ -257,15 +202,22 @@ class ConfigBuilder(object):
     
     # rewriters
     
-    def set_arguments(self, type_, order=0, **kargs):
+    def set_arguments(self, type_, **kargs):
         '''
         Set the given keyword arguments on all matchers of the given `type_`
         (ie class) in the grammar.
         '''
-        from lepl.core.rewriters import set_arguments
-        return self.add_rewriter(set_arguments(type_, **kargs), order)
+        from lepl.core.rewriters import SetArguments
+        return self.add_rewriter(SetArguments(type_, **kargs))
+    
+    def no_set_arguments(self):
+        '''
+        Remove all rewriters that set arguments.
+        '''
+        from lepl.core.rewriters import SetArguments
+        return self.remove_rewriters(SetArguments)
         
-    def set_alphabet_arg(self, alphabet=None, order=0):
+    def set_alphabet_arg(self, alphabet=None):
         '''
         Set `alphabet` on various matchers.  This is useful when using an 
         unusual alphabet (most often when using line-aware parsing), as
@@ -284,11 +236,11 @@ class ConfigBuilder(object):
             alphabet = self.alphabet
         if not alphabet:
             raise ValueError('An alphabet must be provided or already set')
-        self.set_arguments(BaseRegexp, order=order, alphabet=alphabet)
-        self.set_arguments(BaseToken, order=order, alphabet=alphabet)
+        self.set_arguments(BaseRegexp, alphabet=alphabet)
+        self.set_arguments(BaseToken, alphabet=alphabet)
         return self
 
-    def set_block_policy_arg(self, block_policy, order=0):
+    def set_block_policy_arg(self, block_policy):
         '''
         Set the block policy on all `Block` instances.
         
@@ -298,9 +250,9 @@ class ConfigBuilder(object):
         or `block_start` is specified.
         '''
         from lepl.offside.matchers import Block
-        return self.set_arguments(Block, order=order, policy=block_policy)
+        return self.set_arguments(Block, policy=block_policy)
     
-    def full_match(self, eos=True, order=5):
+    def full_match(self, eos=True):
         '''
         Raise an error if the match fails.  If `eos` is True then this
         requires that the entire input is matched, otherwise it only requires
@@ -309,108 +261,140 @@ class ConfigBuilder(object):
         This is part of the default configuration.  It can be removed with
         `no_full_match()`.
         '''
-        self.no_full_match()
-        return self.add_rewriter(full_match(eos), order)
+        from lepl.core.rewriters import FullMatch
+        return self.add_rewriter(FullMatch(eos))
         
     def no_full_match(self):
         '''
         Disable the automatic generation of an error if the match fails.
         '''
-        for eos in (True, False):
-            self.remove_rewriter(full_match(eos))
-        return self
+        from lepl.core.rewriters import FullMatch
+        return self.remove_rewriters(FullMatch)
     
     def flatten(self):
         '''
         Combined nested `And()` and `Or()` matchers.  This does not change
         the parser semantics, but improves efficiency.
         
-        This is part of the default configuration.
+        This is part of the default configuration.  It can be removed with
+        `no_flatten`.
         '''
         from lepl.core.rewriters import Flatten
-        return self.add_rewriter(Flatten(), Flatten().order)
+        return self.add_rewriter(Flatten())
+    
+    def no_flatten(self):
+        '''
+        Disable the combination of nested `And()` and `Or()` matchers.
+        '''
+        from lepl.core.rewriters import Flatten
+        return self.remove_rewriters(Flatten)
         
-    def compile_to_dfa(self, force=False, alphabet=None, order=20):
+    def compile_to_dfa(self, force=False, alphabet=None):
         '''
         Compile simple matchers to DFA regular expressions.  This improves
         efficiency but may change the parser semantics slightly (DFA regular
         expressions do not provide backtracking / alternative matches).
         '''
         from lepl.regexp.matchers import DfaRegexp
-        from lepl.regexp.rewriters import regexp_rewriter
+        from lepl.regexp.rewriters import CompileRegexp
         self.alphabet = alphabet
-        return self.add_rewriter(
-                    regexp_rewriter(self.alphabet, force, DfaRegexp), order)
+        return self.add_rewriter(CompileRegexp(self.alphabet, force, DfaRegexp))
     
-    def compile_to_nfa(self, force=False, alphabet=None, order=20):
+    def compile_to_nfa(self, force=False, alphabet=None):
         '''
         Compile simple matchers to NFA regular expressions.  This improves
         efficiency and should not change the parser semantics.
         
-        This is part of the default configuration.
+        This is part of the default configuration.  It can be removed with
+        `no_compile_regexp`.
         '''
         from lepl.regexp.matchers import NfaRegexp
-        from lepl.regexp.rewriters import regexp_rewriter
+        from lepl.regexp.rewriters import CompileRegexp
         self.alphabet = alphabet
-        return self.add_rewriter(
-                    regexp_rewriter(self.alphabet, force, NfaRegexp), order)
-        
-    def optimize_or(self, conservative=True, order=30):
+        return self.add_rewriter(CompileRegexp(self.alphabet, force, NfaRegexp))
+
+    def no_compile_regexp(self):
+        '''
+        Disable compilation of simple matchers to regular expressions.
+        '''
+        from lepl.regexp.rewriters import CompileRegexp
+        return self.remove_rewriters(CompileRegexp)
+    
+    def optimize_or(self, conservative=True):
         '''
         Rearrange arguments to `Or()` so that left-recursive matchers are
         tested last.  This improves efficient, but may alter the parser
         semantics (the ordering of multiple results with ambiguous grammars 
         may change).
-        
-        This is included in the default configuration as part of 
-        `auto_memoize`.
         '''
-        from lepl.core.rewriters import optimize_or
-        return self.add_rewriter(optimize_or(conservative), order)
+        from lepl.core.rewriters import OptimizeOr
+        return self.add_rewriter(OptimizeOr(conservative))
+    
+    def no_optimize_or(self):
+        '''
+        Disable the re-ordering of some `Or()` arguments.
+        '''
+        from lepl.core.rewriters import OptimizeOr
+        return self.remove_rewriters(OptimizeOr)
         
-    def lexer(self, alphabet=None, discard=None, source=None, order=40):
+    def lexer(self, alphabet=None, discard=None, source=None):
         '''
         Detect the use of `Token()` and modify the parser to use the lexer.
         If tokens are not used, this has no effect on parsing.
         
-        This is part of the default configuration.
+        This is part of the default configuration.  It can be disabled with
+        `no_lexer`.
         '''
-        from lepl.lexer.rewriters import lexer_rewriter
+        from lepl.lexer.rewriters import AddLexer
         self.alphabet = alphabet
         return self.add_rewriter(
-            lexer_rewriter(alphabet=self.alphabet, discard=discard,
-                           source=source), order)
+            AddLexer(alphabet=self.alphabet, discard=discard, source=source))
+        
+    def no_lexer(self):
+        '''
+        Disable support for the lexer.
+        '''
+        from lepl.lexer.rewriters import AddLexer
+        self.remove_rewriters(AddLexer)
     
-    def direct_eval(self, spec=None, order=50):
+    def direct_eval(self, spec=None):
         '''
         Combine simple matchers so that they are evaluated without 
         trampolining.  This improves efficiency (particularly because it
         reduces the number of matchers that can be memoized).
         
-        This is part of the default configuration.
+        This is part of the default configuration.  It can be removed with
+        `no_direct_eval`.
         '''
-        from lepl.core.rewriters import function_only
-        from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
-            BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
-            Or, OrNoTrampoline
-        if spec is None:
-            spec = {DepthFirst: (('first', 'rest'), DepthNoTrampoline),
-                    BreadthFirst: (('first', 'rest'), BreadthNoTrampoline),
-                    And: (('*matchers',), AndNoTrampoline),
-                    Or: (('*matchers',), OrNoTrampoline)}
-        return self.add_rewriter(function_only(spec), order)
+        from lepl.core.rewriters import DirectEvaluation
+        return self.add_rewriter(DirectEvaluation(spec))
     
-    def compose_transforms(self, order=60):
+    def no_direct_eval(self):
+        '''
+        Disable direct evaluation.
+        '''
+        from lepl.core.rewriters import DirectEvaluation
+        return self.remove_rewriters(DirectEvaluation)
+    
+    def compose_transforms(self):
         '''
         Combine transforms (functions applied to results) with matchers.
         This may improve efficiency.
         
-        This is part of the default configuration.
+        This is part of the default configuration.  It can be removed with
+        `no_compose_transforms`.
         '''
-        from lepl.core.rewriters import compose_transforms
-        return self.add_rewriter(compose_transforms, order)
+        from lepl.core.rewriters import ComposeTransforms
+        return self.add_rewriter(ComposeTransforms())
+    
+    def no_compose_transforms(self):
+        '''
+        Disable the composition of transforms.
+        '''
+        from lepl.core.rewriters import ComposeTransforms
+        self.remove_rewriters(ComposeTransforms)
         
-    def auto_memoize(self, conservative=None, full=False, order=100):
+    def auto_memoize(self, conservative=None, full=False):
         '''
         LEPL can add memoization so that (1) complex matching is more 
         efficient and (2) left recursive grammars do not loop indefinitely.  
@@ -429,26 +413,31 @@ class ConfigBuilder(object):
         
         See also `no_memoize()`.
         '''
+        from lepl.core.rewriters import AutoMemoize
         self.no_memoize()
-        return self.add_rewriter(auto_memoize(conservative, full), order)
+        return self.add_rewriter(AutoMemoize(conservative, full))
     
-    def left_memoize(self, order=100):
+    def left_memoize(self):
         '''
         Add memoization that can detect and stabilise left-recursion.  This
         makes the parser more robust (so it can handle more grammars) but
         also significantly slower.
         '''
+        from lepl.core.rewriters import Memoize
+        from lepl.matchers.memo import LMemo
         self.no_memoize()
-        return self.add_rewriter(left_memoize(), order)
+        return self.add_rewriter(Memoize(LMemo))
     
-    def right_memoize(self, order=100):
+    def right_memoize(self):
         '''
         Add memoization that can make some complex parsers (with a lot of
         backtracking) more efficient.  In most cases, however, it makes
         the parser slower.
         '''      
+        from lepl.core.rewriters import Memoize
+        from lepl.matchers.memo import RMemo
         self.no_memoize()
-        return self.add_rewriter(right_memoize(), order)
+        return self.add_rewriter(Memoize(RMemo))
     
     def no_memoize(self):
         '''
@@ -457,12 +446,10 @@ class ConfigBuilder(object):
         just `config.no_memoize()` will use the empty configuration for the
         reason explained below).
         '''
-        for conservative in (None, True, False):
-            for full in (True, False):
-                self.remove_rewriter(auto_memoize(conservative, full))
-        self.remove_rewriter(left_memoize)
-        return self.remove_rewriter(right_memoize)
-    
+        from lepl.core.rewriters import AutoMemoize, Memoize
+        self.remove_rewriters(Memoize)
+        return self.remove_rewriters(AutoMemoize)
+        
     def blocks(self, block_policy=None, block_start=None):
         '''
         Set the given `block_policy` on all block elements and add a 
@@ -635,7 +622,7 @@ class ConfigBuilder(object):
         '''
         self.__started = True
         self.__changed = True
-        self.__rewriters = []
+        self.__rewriters = set()
         self.__monitors = []
         self.__stream_factory = DEFAULT_STREAM_FACTORY
         self.__alphabet = None
