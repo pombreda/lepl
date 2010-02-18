@@ -29,6 +29,62 @@ from lepl.matchers.support import NoTrampolineTransformableWrapper
 from lepl.support.lib import lmap, format, basestring, document
 
 
+class Rewriter(object):
+    
+    SET_ARGUMENTS = 0
+    FLATTEN = 10
+    COMPOSE_TRANSFORMS = 20
+    OPTIMIZE_OR = 30
+    MEMOIZE = 100
+       
+    def __init__(self, order, name=None, exclusive=True):
+        self.order = order
+        self.name = name if name else self.__class__.__name__
+        self.exclusive = exclusive
+        
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        return self.exclusive or self is other
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def __hash__(self):
+        if self.exclusive:
+            return hash(self.__class__)
+        else:
+            return super(Rewriter, self).__hash__()
+        
+    def __lt__(self, other):
+        if not isinstance(other, Rewriter):
+            return True
+        elif self.exclusive or self.order != other.order:
+            return self.order < other.order
+        else:
+            return hash(self) < hash(other)
+            
+    def __ge__(self, other):
+        return not self.__lt__(other)
+    
+    def __gt__(self, other):
+        if not isinstance(other, Rewriter):
+            return True
+        elif self.exclusive or self.order != other.order:
+            return self.order > other.order
+        else:
+            return hash(self) > hash(other)
+
+    def __le__(self, other):
+        return not self.__gt__(other)
+    
+    def __call__(self, matcher):
+        return matcher
+    
+    def __str__(self):
+        return self.name
+    
+    
 def clone(node, args, kargs):
     '''
     Clone including matcher-specific attributes.
@@ -151,75 +207,85 @@ def post_clone(function):
     return new_clone
 
 
-def flatten(graph):
+class Flatten(Rewriter):
     '''
     A rewriter that flattens `And` and `Or` lists.
     '''
-    from lepl.matchers.combine import And, Or
-    def new_clone(node, old_args, kargs):
-        '''
-        The flattening cloner.
-        '''
-        table = matcher_map({And: '*matchers', Or: '*matchers'})
-        new_args = []
-        type_ = matcher_type(node, fail=False)
-        if type_ in table:
-            attribute_name = table[type_]
-            for arg in old_args:
-                if matcher_type(arg, fail=False) is type_ \
-                        and not arg.function \
-                        and not node.function:
-                    if attribute_name.startswith('*'):
-                        new_args.extend(getattr(arg, attribute_name[1:]))
+    
+    def __init__(self):
+        super(Flatten, self).__init__(Rewriter.FLATTEN)
+    
+    def __call__(self, graph):
+        from lepl.matchers.combine import And, Or
+        def new_clone(node, old_args, kargs):
+            '''
+            The flattening cloner.
+            '''
+            table = matcher_map({And: '*matchers', Or: '*matchers'})
+            new_args = []
+            type_ = matcher_type(node, fail=False)
+            if type_ in table:
+                attribute_name = table[type_]
+                for arg in old_args:
+                    if matcher_type(arg, fail=False) is type_ \
+                            and not arg.function \
+                            and not node.function:
+                        if attribute_name.startswith('*'):
+                            new_args.extend(getattr(arg, attribute_name[1:]))
+                        else:
+                            new_args.append(getattr(arg, attribute_name))
                     else:
-                        new_args.append(getattr(arg, attribute_name))
-                else:
-                    new_args.append(arg)
-        if not new_args:
-            new_args = old_args
-        return clone(node, new_args, kargs)
-    return graph.postorder(DelayedClone(new_clone), Matcher)
+                        new_args.append(arg)
+            if not new_args:
+                new_args = old_args
+            return clone(node, new_args, kargs)
+        return graph.postorder(DelayedClone(new_clone), Matcher)
+    
 
-
-def compose_transforms(graph):
+class ComposeTransforms(Rewriter):
     '''
     A rewriter that joins adjacent transformations into a single
     operation, avoiding trampolining in some cases.
     '''
-    from lepl.matchers.transform import Transform, Transformable
-    def new_clone(node, args, kargs):
-        '''
-        The joining cloner.
-        '''
-        # must always clone to expose the matcher (which was cloned earlier - 
-        # it is not node.matcher)
-        copy = clone(node, args, kargs)
-        if isinstance(copy, Transform) \
-                and isinstance(copy.matcher, Transformable):
-            return copy.matcher.compose(copy)
-        else:
-            return copy
-    return graph.postorder(DelayedClone(new_clone), Matcher)
+
+    def __init__(self):
+        super(ComposeTransforms, self).__init__(Rewriter.COMPOSE_TRANSFORMS)
+        
+    def __call__(self, graph):
+        from lepl.matchers.transform import Transform, Transformable
+        def new_clone(node, args, kargs):
+            '''
+            The joining cloner.
+            '''
+            # must always clone to expose the matcher (which was cloned earlier - 
+            # it is not node.matcher)
+            copy = clone(node, args, kargs)
+            if isinstance(copy, Transform) \
+                    and isinstance(copy.matcher, Transformable):
+                return copy.matcher.compose(copy)
+            else:
+                return copy
+        return graph.postorder(DelayedClone(new_clone), Matcher)
 
 
-def memoize(memoizer):
+class Memoize(Rewriter):
     '''
     A rewriter that adds the given memoizer to all nodes in the matcher
     graph.
     '''
-    def rewriter(graph):
-        '''
-        Embed the memoizer within the cloner.
-        '''
-        return graph.postorder(DelayedClone(post_clone(memoizer)), Matcher)
-    return document(rewriter, memoize, 
-                    format('memoize({0})', memoizer.__name__))
+    
+    def __init__(self, memoizer):
+        super(Memoize, self).__init__(Rewriter.MEMOIZE,
+                                      format('Memoize({0})', memoizer.__name__))
+        self.memoize = memoizer
+        
+    def __call__(self, graph):
+        return graph.postorder(DelayedClone(post_clone(self.memoizer)), Matcher)
 
 
-def auto_memoize(conservative=None, full=False):
+class AutoMemoize(Rewriter):
     '''
-    Generate an all-purpose memoizing rewriter.  It is typically called after
-    flattening and composing transforms.
+    Generate an all-purpose memoizing rewriter.
     
     This rewrites the matcher graph to:
     1 - rewrite recursive `Or` calls so that terminating clauses are
@@ -233,16 +299,19 @@ def auto_memoize(conservative=None, full=False):
     `context_memoize(True)` are used.  This gives conservative memoisation 
     with minimal rewriting of alternatives.
     '''
-    def rewriter(graph):
-        '''
-        Apply the two sub-rewriters in turn.
-        '''
-        graph = optimize_or(False if conservative is None 
-                            else conservative)(graph)
-        graph = context_memoize(True if conservative is None 
-                                else conservative, full)(graph)
+    
+    def __init__(self, conservative=None, full=False):
+        super(AutoMemoize, self).__init__(Rewriter.MEMOIZE,
+            format('AutoMemoize({0}, {1})', conservative, full))
+        self.conservative = conservative
+        self.full = full
+
+    def __call__(self, graph):
+        graph = OptimizeOr(False if self.conservative is None 
+                           else self.conservative)(graph)
+        graph = ContextMemoize(True if self.conservative is None 
+                               else self.conservative, self.full)(graph)
         return graph
-    return document(rewriter, auto_memoize)
 
 
 def left_loops(node):
@@ -292,10 +361,10 @@ def either_loops(node, conservative):
         return left_loops(node)
     
 
-def optimize_or(conservative=True):
+class OptimizeOr(Rewriter):
     '''
-    Generate a rewriter that re-arranges `Or` matcher contents for
-    left--recursive loops.
+    A rewriter that re-arranges `Or` matcher contents for left--recursive 
+    loops.
     
     When a left-recursive rule is used, it is much more efficient if it
     appears last in an `Or` statement, since that forces the alternates
@@ -308,15 +377,17 @@ def optimize_or(conservative=True):
     `conservative` refers to the algorithm used to detect loops; False
     may classify some left--recursive loops as right--recursive.
     '''
-    from lepl.matchers.core import Delayed
-    from lepl.matchers.combine import Or
-    def rewriter(graph):
-        '''
-        The Or-rewriting rewriter.
-        '''
+    
+    def __init__(self, conservative=True):
+        super(OptimizeOr, self).__init__(Rewriter.OPTIMIZE_OR)
+        self.conservative = conservative
+
+    def __call__(self, graph):
+        from lepl.matchers.core import Delayed
+        from lepl.matchers.combine import Or
         for delayed in [x for x in preorder(graph, Matcher) 
                         if isinstance(x, Delayed)]:
-            for loop in either_loops(delayed, conservative):
+            for loop in either_loops(delayed, self.conservative):
                 for i in range(len(loop)):
                     if is_child(loop[i], Or, fail=False):
                         # we cannot be at the end of the list here, since that
@@ -330,26 +401,29 @@ def optimize_or(conservative=True):
                         del matchers[index]
                         matchers.append(target)
         return graph
-    return document(rewriter, optimize_or)
 
 
-def context_memoize(conservative=True, full=False):
+class ContextMemoize(Rewriter):
     '''
-    Generate a memoizer that only applies LMemo to left recursive loops.
+    A memoizer that only applies LMemo to left recursive loops.
     Everything else can use the simpler RMemo.
     
     `conservative` refers to the algorithm used to detect loops; False
     may classify some left--recursive loops as right--recursive.
     '''
-    from lepl.matchers.core import Delayed
-    from lepl.matchers.memo import LMemo, RMemo
-    def rewriter(graph):
-        '''
-        Detect loops and clone appropriately.
-        '''
+    
+    def __init__(self, conservative=True, full=False):
+        super(ContextMemoize, self).__init__(Rewriter.MEMOIZE,
+            format('ContextMemoize({0}, {1})', conservative, full))
+        self.conservative = conservative
+        self.full = full
+
+    def __call__(self, graph):
+        from lepl.matchers.core import Delayed
+        from lepl.matchers.memo import LMemo, RMemo
         dangerous = set()
         for head in order(graph, NONTREE, Matcher):
-            for loop in either_loops(head, conservative):
+            for loop in either_loops(head, self.conservative):
                 for node in loop:
                     dangerous.add(node)
         def new_clone(node, args, kargs):
@@ -364,35 +438,38 @@ def context_memoize(conservative=True, full=False):
                 return copy
             elif node in dangerous:
                 return LMemo(copy)
-            elif not full:
+            elif not self.full:
                 return copy
             else:
                 return RMemo(copy)
         return graph.postorder(DelayedClone(new_clone), Matcher)
-    return document(rewriter, context_memoize,
-                    format('context_memoize({0})', conservative))
 
 
-def set_arguments(type_, **extra_kargs):
+class SetArguments(Rewriter):
     '''
     Add/replace named arguments while cloning.
+    
+    This rewriter is not exclusive - several different instances canb be
+    defined in parallel.
     '''
-    def rewriter(graph):
-        '''
-        Rewrite with some arguments fixed.
-        '''
+    
+    def __init__(self, type_, **extra_kargs):
+        super(SetArguments, self).__init__(Rewriter.SET_ARGUMENTS,
+            format('SetArguments({0}, {1})', type_, extra_kargs), False)
+        self.type = type_
+        self.extra_kargs = extra_kargs
+        
+    def __call__(self, graph):
         def new_clone(node, args, kargs):
             '''
             As clone, but add in any extra kargs if the node is an instance
             of the given type.
             '''
-            if isinstance(node, type_):
-                for key in extra_kargs:
-                    kargs[key] = extra_kargs[key]
+            if isinstance(node, self.type):
+                for key in self.extra_kargs:
+                    kargs[key] = self.extra_kargs[key]
             return clone(node, args, kargs)
         return graph.postorder(DelayedClone(new_clone), Matcher)
-    return document(rewriter, set_arguments,
-                    format('set_arguments({0})', extra_kargs))
 
 
 def function_only(spec):

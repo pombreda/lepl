@@ -109,7 +109,7 @@ Running this gives the result::
 from lepl.contrib.matchers import SmartSeparator2
 from lepl.core.config import Configuration, ConfigBuilder
 from lepl.core.manager import GeneratorManager
-from lepl.core.rewriters import memoize, flatten, compose_transforms, \
+from lepl.core.rewriters import memoize, Flatten, compose_transforms, \
     auto_memoize, context_memoize, optimize_or
 from lepl.core.trace import RecordDeepest, TraceResults
 from lepl.matchers.combine import And, Or, First
@@ -245,7 +245,7 @@ __all__ = [
         'UnicodeAlphabet',
         # lepl.core.rewriters
         'memoize',
-        'flatten',
+        'Flatten',
         'compose_transforms',
         'auto_memoize',
         'context_memoize',

@@ -320,15 +320,15 @@ class ConfigBuilder(object):
             self.remove_rewriter(full_match(eos))
         return self
     
-    def flatten(self, order=10):
+    def flatten(self):
         '''
         Combined nested `And()` and `Or()` matchers.  This does not change
         the parser semantics, but improves efficiency.
         
         This is part of the default configuration.
         '''
-        from lepl.core.rewriters import flatten
-        return self.add_rewriter(flatten, order)
+        from lepl.core.rewriters import Flatten
+        return self.add_rewriter(Flatten(), Flatten().order)
         
     def compile_to_dfa(self, force=False, alphabet=None, order=20):
         '''
@@ -361,6 +361,9 @@ class ConfigBuilder(object):
         tested last.  This improves efficient, but may alter the parser
         semantics (the ordering of multiple results with ambiguous grammars 
         may change).
+        
+        This is included in the default configuration as part of 
+        `auto_memoize`.
         '''
         from lepl.core.rewriters import optimize_or
         return self.add_rewriter(optimize_or(conservative), order)
