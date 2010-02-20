@@ -357,8 +357,12 @@ class SequenceWrapper(NoTrampolineTransformableWrapper):
             yield self.function(results, stream_in, stream_out)
  
     def _untagged_match(self, stream_in):
-        for (results, stream_out) in self._cached_matcher(self, stream_in):
-            yield self.function(results, stream_in, stream_out)
+        if self.function:
+            for (results, stream_out) in self._cached_matcher(self, stream_in):
+                yield self.function(results, stream_in, stream_out)
+        else:
+            for results in self._cached_matcher(self, stream_in):
+                yield results
  
 
 class FunctionWrapper(NoTrampolineTransformableWrapper):
@@ -376,12 +380,17 @@ class FunctionWrapper(NoTrampolineTransformableWrapper):
             pass
         
     def _untagged_match(self, stream_in):
-        try:
-            (results, stream_out) = self._cached_matcher(self, stream_in)
-            yield self.function(results, stream_in, stream_out)
-        except TypeError:
-            pass
-        
+        if self.function:
+            try:
+                (results, stream_out) = self._cached_matcher(self, stream_in)
+                yield self.function(results, stream_in, stream_out)
+            except TypeError:
+                pass
+        else:
+            result = self._cached_matcher(self, stream_in)
+            if result is not None:
+                yield result
+            
 
 def check_matcher(matcher):
     '''

@@ -77,6 +77,7 @@ def time():
     print(t.timeit(number=100)) 
     # new (functions etc) system, no compile
     # 30.3 default - difficult to get faster than that
+    # now 28.3 with fixed rewriting
 
 
 def profile():

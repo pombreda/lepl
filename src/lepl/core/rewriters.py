@@ -23,9 +23,13 @@ parser.
 
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
+from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
+    BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
+    Or, OrNoTrampoline
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
     matcher_type, MatcherTypeException, matcher_map
-from lepl.matchers.support import NoTrampolineTransformableWrapper
+from lepl.matchers.support import NoTrampolineTransformableWrapper,\
+    TransformableTrampolineWrapper
 from lepl.support.lib import lmap, format, basestring, LogMixin
 
 
@@ -479,52 +483,41 @@ class SetArguments(Rewriter):
 
 class DirectEvaluation(Rewriter):
     '''
-    Replace given matchers if all arguments are FunctionWrapper instances.
+    Replace given matchers if all Matcher arguments are subclasses of
+    `NoTrampolineTransformableWrapper`
     
-    `spec` is a map from original matcher type to ([attributes], replacement)
-    where attributes are attribute names to check for functions and 
-    replacement is a new class with the same signature as the original.
+    `spec` is a map from original matcher type to the replacement.
     '''
     
     def __init__(self, spec=None):
-        from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
-            BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
-            Or, OrNoTrampoline
         super(DirectEvaluation, self).__init__(Rewriter.DIRECT_EVALUATION,
             format('DirectEvaluation({0})', spec))
         if spec is None:
-            spec = {DepthFirst: (('first', 'rest'), DepthNoTrampoline),
-                    BreadthFirst: (('first', 'rest'), BreadthNoTrampoline),
-                    And: (('*matchers',), AndNoTrampoline),
-                    Or: (('*matchers',), OrNoTrampoline)}
+            spec = {DepthFirst: DepthNoTrampoline,
+                    BreadthFirst: BreadthNoTrampoline,
+                    And: AndNoTrampoline,
+                    Or: OrNoTrampoline}
         self.spec = spec
 
     def __call__(self, graph):
-        def type_ok(value):
-            return isinstance(value, basestring) \
-                or isinstance(value, NoTrampolineTransformableWrapper)
         def new_clone(node, args, kargs):
-            found = [type_ for type_ in self.spec if is_child(node, type_)]
-            try:
-                if found:
-                    found = found[0]
-                    ok = True
-                    (attributes, replacement) = self.spec[found]
-                    for attribute in attributes:
-                        for value in (args if attribute.startswith('*')
-                                      else [kargs[attribute]]):
-                            # this is *not* is_child, because we are
-                            # looking at the wrapper class directly
-                            if not type_ok(value):
-                                ok = False
-                                break
-                else:
-                    ok = False
-            except Exception as e:
-                self._warn(format('Error rewriting {0}: {1}', node, e))
-                print(node, e, args, kargs)
-                ok = False
-            type_ = replacement if ok else type(node)
+            type_, ok = None, False
+            for parent in self.spec:
+                if is_child(node, parent):
+                    type_ = self.spec[parent]
+            if type_:
+                ok = True
+                for arg in args:
+                    if isinstance(arg, Matcher) and not \
+                            isinstance(arg, NoTrampolineTransformableWrapper):
+                        ok = False
+                for name in kargs:
+                    arg = kargs[name]
+                    if isinstance(arg, Matcher) and not \
+                            isinstance(arg, NoTrampolineTransformableWrapper):
+                        ok = False
+            if not ok:
+                type_ = type(node)
             try:
                 copy = type_(*args, **kargs)
                 copy_standard_attributes(node, copy)
