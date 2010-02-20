@@ -29,7 +29,7 @@ Performance related tests.
 from lepl import *
 
 
-def stream():
+def matcher():
     '''
     Compared to nat_lang, this focuses on the stream.  It does not use any 
     monitor.  Note multiple lines.
@@ -57,8 +57,14 @@ def stream():
         termphrase += simple_tp | (termphrase & join & termphrase) > TermPhrase
         sentence    = termphrase & verbphrase & termphrase & Eos() > Sentence
 
-    sentence.config.no_memoize()
+    sentence.config
     p = sentence.string_matcher()
+    print(repr(p.matcher))
+    return p
+
+p = matcher()
+
+def stream():
     results = list(p('every boy or some girl and helen and john or pat knows\n'
                      'and respects or loves every boy or some girl and pat or\n'
                      'john and helen'))
@@ -69,11 +75,9 @@ def time():
     from timeit import Timer
     t = Timer("stream()", "from __main__ import stream")
     print(t.timeit(number=100)) 
-    # 56.6
-    # auto-memoize brings that down to 30 (24 for nat_lang)
-    # now 34 after bug fixes
-    # after rewrite (functional + new config) 38 with default
-    # 
+    # new (functions etc) system, no compile
+    # 30.3 default - difficult to get faster than that
+
 
 def profile():
     '''

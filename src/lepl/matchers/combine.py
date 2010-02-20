@@ -171,7 +171,7 @@ def DepthNoTrampoline(first, start, stop, rest):
     def matcher(support, stream):
         stack = deque()
         try:
-            stack.append((0, [], stream, first._match(stream)))
+            stack.append((0, [], stream, first._untagged_match(stream)))
             while stack:
                 (count1, acc1, stream1, generator) = stack[-1]
                 extended = False
@@ -181,7 +181,7 @@ def DepthNoTrampoline(first, start, stop, rest):
                         (value, stream2) = next(generator)
                         acc2 = acc1 + value
                         stack.append((count2, acc2, stream2, 
-                                      rest._match(stream2)))
+                                      rest._untagged_match(stream2)))
                         extended = True
                     except StopIteration:
                         pass
@@ -205,7 +205,7 @@ def BreadthNoTrampoline(first, start, stop, rest):
     def matcher(support, stream):
         queue = deque()
         try:
-            queue.append((0, [], stream, first._match(stream)))
+            queue.append((0, [], stream, first._untagged_match(stream)))
             while queue:
                 (count1, acc1, stream1, generator) = queue.popleft()
                 if count1 >= start and (stop is None or count1 <= stop):
@@ -215,7 +215,7 @@ def BreadthNoTrampoline(first, start, stop, rest):
                     acc2 = acc1 + value
                     if stop is None or count2 <= stop:
                         queue.append((count2, acc2, stream2, 
-                                      rest._match(stream2)))
+                                      rest._untagged_match(stream2)))
         finally:
             _cleanup(queue)
             
@@ -289,7 +289,7 @@ def AndNoTrampoline(*matchers):
     
     def matcher(support, stream_in):
         if matchers:
-            stack = deque([([], matchers[0]._match(stream_in), matchers[1:])])
+            stack = deque([([], matchers[0]._untagged_match(stream_in), matchers[1:])])
             append = stack.append
             pop = stack.pop
             try:
@@ -300,7 +300,7 @@ def AndNoTrampoline(*matchers):
                         append((result, generator, queued))
                         if queued:
                             append((result+value, 
-                                    queued[0]._match(stream_out), 
+                                    queued[0]._untagged_match(stream_out), 
                                     queued[1:]))
                         else:
                             yield (result+value, stream_out)
@@ -357,7 +357,7 @@ def OrNoTrampoline(*matchers):
         sub-matchers (starting from the left).
         '''
         for matcher in matchers:
-            for result in matcher._match(stream_in):
+            for result in matcher._untagged_match(stream_in):
                 yield result
     return match
 

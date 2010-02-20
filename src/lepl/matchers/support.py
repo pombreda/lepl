@@ -330,7 +330,18 @@ class TransformableTrampolineWrapper(TransformableWrapper):
     
     
 class NoTrampolineTransformableWrapper(TransformableWrapper):
-    pass
+    
+    def __init__(self, *args, **kargs):
+        super(NoTrampolineTransformableWrapper, self).__init__(*args, **kargs)
+
+    #@abstractmethod
+    def _untagged_match(self, stream):
+        '''
+        This should work like `_match()`, but without any tagged wrapper.
+        
+        It would be nice if both could be generated dynamically, but
+        cut + paste appears to be faster, and this is an optimisation. 
+        '''
 
 
 class SequenceWrapper(NoTrampolineTransformableWrapper):
@@ -345,6 +356,10 @@ class SequenceWrapper(NoTrampolineTransformableWrapper):
         for (results, stream_out) in self._cached_matcher(self, stream_in):
             yield self.function(results, stream_in, stream_out)
  
+    def _untagged_match(self, stream_in):
+        for (results, stream_out) in self._cached_matcher(self, stream_in):
+            yield self.function(results, stream_in, stream_out)
+ 
 
 class FunctionWrapper(NoTrampolineTransformableWrapper):
     '''
@@ -354,6 +369,13 @@ class FunctionWrapper(NoTrampolineTransformableWrapper):
     
     @tagged
     def _match(self, stream_in):
+        try:
+            (results, stream_out) = self._cached_matcher(self, stream_in)
+            yield self.function(results, stream_in, stream_out)
+        except TypeError:
+            pass
+        
+    def _untagged_match(self, stream_in):
         try:
             (results, stream_out) = self._cached_matcher(self, stream_in)
             yield self.function(results, stream_in, stream_out)

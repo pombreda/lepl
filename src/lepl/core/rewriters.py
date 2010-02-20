@@ -37,8 +37,8 @@ class Rewriter(LogMixin):
     COMPILE_REGEXP = 20
     OPTIMIZE_OR = 30
     LEXER = 40
-    DIRECT_EVALUATION = 50
-    COMPOSE_TRANSFORMS = 60
+    COMPOSE_TRANSFORMS = 50
+    DIRECT_EVALUATION = 60
     MEMOIZE = 100
        
     def __init__(self, order, name=None, exclusive=True):
@@ -504,29 +504,27 @@ class DirectEvaluation(Rewriter):
             return isinstance(value, basestring) \
                 or isinstance(value, NoTrampolineTransformableWrapper)
         def new_clone(node, args, kargs):
-            ok = False
-            for type_ in self.spec:
-                if is_child(node, type_):
-                    (attributes, replacement) = self.spec[type_]
+            found = [type_ for type_ in self.spec if is_child(node, type_)]
+            try:
+                if found:
+                    found = found[0]
+                    ok = True
+                    (attributes, replacement) = self.spec[found]
                     for attribute in attributes:
-                        if attribute.startswith('*'):
-                            values = getattr(node, attribute[1:])
-                            for value in values:
-                                # this is *not* is_child, because we are
-                                # looking at the wrapper class directly
-                                ok = type_ok(value)
-                                if not ok:
-                                    break
-                        else:
-                            value = getattr(node, attribute)
-                            ok = type_ok(value)
-                        if not ok:
-                            break
-                    if ok:
-                        type_ = replacement
-                        break
-            if not ok:
-                type_ = type(node)
+                        for value in (args if attribute.startswith('*')
+                                      else [kargs[attribute]]):
+                            # this is *not* is_child, because we are
+                            # looking at the wrapper class directly
+                            if not type_ok(value):
+                                ok = False
+                                break
+                else:
+                    ok = False
+            except Exception as e:
+                self._warn(format('Error rewriting {0}: {1}', node, e))
+                print(node, e, args, kargs)
+                ok = False
+            type_ = replacement if ok else type(node)
             try:
                 copy = type_(*args, **kargs)
                 copy_standard_attributes(node, copy)
