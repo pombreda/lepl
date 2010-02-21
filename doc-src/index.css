@@ -1,0 +1,169 @@
+
+html {
+ background: white;
+}
+
+body {
+  font-family: georgia;
+}
+
+h1 {
+  font-size: 300%;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 161.6%;
+  font-weight: bold;
+}
+
+pre {
+  margin-top: 5px;
+  padding: 5px;
+  background: #f8f8f8;  
+  font-weight: bold;
+}
+
+p {
+  font-size: 123.1%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted #306000;
+  font-weight: bold;
+}
+
+ul {
+  margin-top: 5px;
+}
+
+li {
+  list-style-position: outside;
+  list-style-type: disc;
+  margin-top: 2px;
+  margin-left: 20px;
+  font-size: 123.1%;
+}
+
+li.contents {
+ list-style-type: circle;
+}
+
+ul > li:first-child {
+  margin-top: 0px;
+}
+
+p.quote {
+  font-size: 100%;
+  font-style: italic;
+  text-align: justify;
+}
+
+span.attribution {
+  font-style: normal;
+}
+
+div#hd {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+div#hd-right {
+  color: #306000;
+}
+
+div#hd-left h1 {
+  text-align: center;
+}
+
+div#col1 p, div#q1 p {
+  margin-right: 10px;
+}
+
+div#left p, div#archive p {
+  margin-right: 20px;
+}
+
+div.item h2 {
+  margin-right: 20px;
+  margin-bottom: 5px;
+  float: left;
+}
+
+div#col2 p, div#col2 h2, div#q2 p, div#q2 h2 {
+  margin-left: 10px;
+}
+
+div#col2 li, div#q2 li {
+  margin-left: 30px;
+}
+
+div.item {
+  margin-top: 25px;
+}
+
+div#left > div.item:first-child, div#col1 > div.item:first-child, div#col2 > div.item:first-child {
+  margin-top: 0px;
+}
+
+div.item p {
+  margin-top: 3px;
+}
+
+div.item p:first-child {
+  margin-top: 0px;
+}
+
+div.item p.quote {
+  margin-top: 10px;
+}
+
+div#ft {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 108%;
+}
+
+div#ft p, div#archive p, div#archive li, div#left p, div#left li {
+  font-size: 108%;
+}
+
+div#links p {
+  margin-top: 10px;
+  font-size: 85%;
+  text-align: justify;
+}
+
+div#links {
+  color: #f8f8f8;
+}
+
+div#links a {
+  border-bottom: none;
+}
+
+div#tt {
+  height: 280px;
+  overflow: auto;
+  background-color: #f8f8f8;
+  padding: 5px;
+  margin-right: 10px;
+  font-family: monospace;
+  color: #808080;
+}
+
+div#pause {
+  color: #e0e0e0;
+}
+
+span.comment {
+  color: #008000;
+}
+
+span.code {
+  color: #000000;
+}
+

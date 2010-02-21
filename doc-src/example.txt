@@ -1,0 +1,58 @@
+Python 3.1 (r31:73572, Oct 24 2009, 05:39:09)
+[GCC 4.4.1 [gcc-4_4-branch revision 150839]] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> # this example parses an arithemtic expression, with parentheses
+>>> # and correct precedence
+>>> from lepl import *
+>>> # first, define the nodes we will use to store the results
+>>> # (these will form an AST - abstract syntax tree)
+>>> class Term(Node): pass
+>>> class Factor(Node): pass
+>>> class Expression(Node): pass
+>>> # expressions are recursive, so we need to introduce them here
+>>> expr   = Delayed()
+>>> # now we can define the grammar
+>>> number = Digit()[1:,...]                          > 'number'
+>>> spaces = Drop(Regexp(r'\s*'))
+>>> with Separator(spaces):
+...     term    = number | '(' & expr & ')'           > Term
+...     muldiv  = Any('*/')                           > 'operator'
+...     factor  = term & (muldiv & term)[:]           > Factor
+...     addsub  = Any('+-')                           > 'operator'
+...     expr   += factor & (addsub & factor)[:]       > Expression
+...     line    = expr & Eos()    
+...
+>>> # that's it; now we can generate the parser from the grammar
+>>> parser = line.string_parser()
+>>> # and parse a simple expression
+>>> result = parser('1 + 2 * (3 + 4 - 5)')[0]
+Exception RuntimeError: 'generator ignored GeneratorExit' in <generator object _matcher at 0xce0d20> ignored
+>>> result
+Expression(...)
+>>> print(result)
+Expression
+ +- Factor
+ |   `- Term
+ |       `- number '1'
+ +- operator '+'
+ `- Factor
+     +- Term
+     |   `- number '2'
+     +- operator '*'
+     `- Term
+         +- '('
+         +- Expression
+         |   +- Factor
+         |   |   `- Term
+         |   |       `- number '3'
+         |   +- operator '+'
+         |   +- Factor
+         |   |   `- Term
+         |   |       `- number '4'
+         |   +- operator '-'
+         |   `- Factor
+         |       `- Term
+         |           `- number '5'
+         `- ')'
+PAUSE
+CLEAR
