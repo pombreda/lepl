@@ -26,11 +26,11 @@ from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
 from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
     BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
     Or, OrNoTrampoline
+from lepl.matchers.core import Delayed
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
     matcher_type, MatcherTypeException, matcher_map
-from lepl.matchers.support import NoTrampolineTransformableWrapper,\
-    TransformableTrampolineWrapper
-from lepl.support.lib import lmap, format, basestring, LogMixin
+from lepl.matchers.support import NoTrampolineTransformableWrapper
+from lepl.support.lib import lmap, format, LogMixin
 
 
 class Rewriter(LogMixin):
@@ -294,33 +294,47 @@ class Memoize(Rewriter):
 
 class AutoMemoize(Rewriter):
     '''
-    Generate an all-purpose memoizing rewriter.
+    Apply two different memoizers, one to left recursive loops and the
+    other elsewhere (either can be omitted).
     
-    This rewrites the matcher graph to:
-    1 - rewrite recursive `Or` calls so that terminating clauses are
-    checked first.
-    2 - add memoizers as appropriate
-    
-    This rewriting may change the order in which different results for
-    an ambiguous grammar are returned.
-    
-    If ``conservative`` is not specified then `optimize_or(False)` and
-    `context_memoize(True)` are used.  This gives conservative memoisation 
-    with minimal rewriting of alternatives.
+    `conservative` refers to the algorithm used to detect loops; False
+    may classify some left--recursive loops as right--recursive.
     '''
     
-    def __init__(self, conservative=None, full=False):
+    def __init__(self, conservative=False, left=None, right=None):
         super(AutoMemoize, self).__init__(Rewriter.MEMOIZE,
-            format('AutoMemoize({0}, {1})', conservative, full))
+            format('AutoMemoize({0}, {1}, {2})', conservative, left, right))
         self.conservative = conservative
-        self.full = full
+        self.left = left
+        self.right = right
 
     def __call__(self, graph):
-        graph = OptimizeOr(False if self.conservative is None 
-                           else self.conservative)(graph)
-        graph = ContextMemoize(True if self.conservative is None 
-                               else self.conservative, self.full)(graph)
-        return graph
+        dangerous = set()
+        for head in order(graph, NONTREE, Matcher):
+            for loop in either_loops(head, self.conservative):
+                for node in loop:
+                    dangerous.add(node)
+        def new_clone(node, args, kargs):
+            '''
+            Clone with the appropriate memoizer 
+            (cannot use post_clone as need to test original)
+            '''
+            copy = clone(node, args, kargs)
+            if isinstance(node, Delayed):
+                # no need to memoize the proxy (if we do, we also break 
+                # rewriting, since we "hide" the Delayed instance)
+                return copy
+            elif node in dangerous:
+                if self.left:
+                    return self.left(copy)
+                else:
+                    return copy
+            else:
+                if self.right:
+                    return self.right(copy)
+                else:
+                    return copy
+        return graph.postorder(DelayedClone(new_clone), Matcher)
 
 
 def left_loops(node):
@@ -410,48 +424,6 @@ class OptimizeOr(Rewriter):
                         del matchers[index]
                         matchers.append(target)
         return graph
-
-
-class ContextMemoize(Rewriter):
-    '''
-    A memoizer that only applies LMemo to left recursive loops.
-    Everything else can use the simpler RMemo.
-    
-    `conservative` refers to the algorithm used to detect loops; False
-    may classify some left--recursive loops as right--recursive.
-    '''
-    
-    def __init__(self, conservative=True, full=False):
-        super(ContextMemoize, self).__init__(Rewriter.MEMOIZE,
-            format('ContextMemoize({0}, {1})', conservative, full))
-        self.conservative = conservative
-        self.full = full
-
-    def __call__(self, graph):
-        from lepl.matchers.core import Delayed
-        from lepl.matchers.memo import LMemo, RMemo
-        dangerous = set()
-        for head in order(graph, NONTREE, Matcher):
-            for loop in either_loops(head, self.conservative):
-                for node in loop:
-                    dangerous.add(node)
-        def new_clone(node, args, kargs):
-            '''
-            Clone with the appropriate memoizer 
-            (cannot use post_clone as need to test original)
-            '''
-            copy = clone(node, args, kargs)
-            if isinstance(node, Delayed):
-                # no need to memoize the proxy (if we do, we also break 
-                # rewriting, since we "hide" the Delayed instance)
-                return copy
-            elif node in dangerous:
-                return LMemo(copy)
-            elif not self.full:
-                return copy
-            else:
-                return RMemo(copy)
-        return graph.postorder(DelayedClone(new_clone), Matcher)
 
 
 class SetArguments(Rewriter):

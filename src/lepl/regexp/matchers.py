@@ -83,7 +83,7 @@ class NfaRegexp(BaseRegexp):
         super(NfaRegexp, self).__init__(regexp, alphabet)
         self.__cached_matcher = None
         
-    def __matcher(self):
+    def _compile(self):
         '''
         Compile the matcher.
         '''
@@ -97,7 +97,7 @@ class NfaRegexp(BaseRegexp):
         '''
         Actually do the work of matching.
         '''
-        matches = self.__matcher()(stream_in)
+        matches = self._compile()(stream_in)
         for (_terminal, match, stream_out) in matches:
             yield self.function([match], stream_in, stream_out)
 
@@ -116,7 +116,7 @@ class DfaRegexp(BaseRegexp):
         super(DfaRegexp, self).__init__(regexp, alphabet)
         self.__cached_matcher = None
 
-    def __matcher(self):
+    def _compile(self):
         '''
         Compile the matcher.
         '''
@@ -130,7 +130,7 @@ class DfaRegexp(BaseRegexp):
         '''
         Actually do the work of matching.
         '''
-        match = self.__matcher()(stream_in)
+        match = self._compile()(stream_in)
         if match is not None:
             (_terminals, match, stream_out) = match
             yield self.function([match], stream_in, stream_out)

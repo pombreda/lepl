@@ -679,7 +679,7 @@ class NfaPattern(LogMixin):
 
           - stream - the current stream
         '''
-        self._debug(str(self.__table))
+        #self._debug(str(self.__table))
         stack = deque()
         (map_, empties) = self.__table[0]
         stack.append((map_, None, empties, [], stream))

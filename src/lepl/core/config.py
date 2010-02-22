@@ -320,12 +320,18 @@ class ConfigBuilder(object):
         from lepl.regexp.rewriters import CompileRegexp
         return self.remove_rewriters(CompileRegexp)
     
-    def optimize_or(self, conservative=True):
+    def optimize_or(self, conservative=False):
         '''
         Rearrange arguments to `Or()` so that left-recursive matchers are
-        tested last.  This improves efficient, but may alter the parser
+        tested last.  This improves efficiency, but may alter the parser
         semantics (the ordering of multiple results with ambiguous grammars 
         may change).
+        
+        `conservative` refers to the algorithm used to detect loops; False
+        may classify some left--recursive loops as right--recursive.
+
+        This is part of the default configuration.  It can be removed with
+        `no_optimize_or`.        
         '''
         from lepl.core.rewriters import OptimizeOr
         return self.add_rewriter(OptimizeOr(conservative))
@@ -403,19 +409,26 @@ class ConfigBuilder(object):
         appears necessary for stability (case 2 above, when left recursion
         is possible).
         
-        The `conservative` parameter fine-tunes some details and is best
-        left at the default value (None) (see docs for the rewriter itself).
+        The ``conservative`` parameter controls how left-recursive loops are
+        detected.  If False (default) then matchers are assumed to "consume"
+        input.  This may be incorrect, in which case some left-recursive loops
+        may be missed.  If True then all loops are considered left-recursive.
+        This is safer, but results in much more expensive (slower) memoisation. 
         
         The `full` parameter can be used (set to True) to add memoization
-        for case (1) above, in addition to case (2).
+        for case (1) above, in addition to case (2).  In other words, when
+        True, all nodes are memozied; when False (the default) only 
+        left-recursive nodes are memoized.
         
         This is part of the default configuration.
         
         See also `no_memoize()`.
         '''
         from lepl.core.rewriters import AutoMemoize
+        from lepl.matchers.memo import LMemo, RMemo
         self.no_memoize()
-        return self.add_rewriter(AutoMemoize(conservative, full))
+        return self.add_rewriter(AutoMemoize(conservative, LMemo,
+                                             RMemo if full else None))
     
     def left_memoize(self):
         '''
@@ -560,6 +573,15 @@ class ConfigBuilder(object):
         from lepl.core.manager import GeneratorManager
         return self.add_monitor(GeneratorManager(queue_len))
     
+    def no_monitors(self):
+        '''
+        Remove all monitors.
+        '''
+        self.__start()
+        self.__changed = True
+        self.__monitors = []
+        return self
+    
     # packages
     
     def default_line_aware(self, alphabet=None, parser_factory=None,
@@ -610,6 +632,7 @@ class ConfigBuilder(object):
         self.flatten()
         self.compose_transforms()
         self.auto_memoize()
+        self.optimize_or()
         self.direct_eval()
         self.compile_to_nfa()
         self.full_match()

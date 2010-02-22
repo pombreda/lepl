@@ -332,5 +332,3 @@ class _RecordDeepest(_TraceResults):
             self.n_before, '\n'.join(self._before),
             self.n_done_after, '\n'.join(self._done_after),
             self.n_results_after, '\n'.join(self._results_after))
-        
-

@@ -123,7 +123,7 @@ def FullMatch(matcher):
                     # remove facade from around stream
                     (result2, stream3) = result1
                     yield (result2, stream3.stream)
-                except:
+                except StopIteration:
                     yield result2
         except StopIteration:
             if first:
@@ -139,7 +139,7 @@ class FullMatchException(Exception):
                          "\nLine {1}, character {2} of {3}.",
                          stream, stream.line_number, stream.line_offset,
                          stream.source)
-        except:
+        except AttributeError:
             msg = format("The match failed at '{0}'.", stream)
         super(FullMatchException, self).__init__(msg)
         self.stream = stream

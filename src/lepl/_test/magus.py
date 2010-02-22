@@ -32,10 +32,10 @@ from lepl import *
 from lepl.support.graph import ConstructorWalker
 from lepl.matchers.matcher import Matcher, canonical_matcher_type,\
     MatcherTypeException, is_child
-from lepl.matchers.memo import _LMemo, _RMemo
+from lepl.matchers.memo import _LMemo, _RMemo, LMemo, RMemo
 from lepl.matchers.transform import Transform, Transformation
 from lepl.core.rewriters import DelayedClone, NodeStats, Flatten, Memoize, \
-    ContextMemoize, ComposeTransforms
+    ComposeTransforms, AutoMemoize
 
 
 class MagusTest(TestCase):
@@ -166,7 +166,7 @@ class CloneTest(TestCase):
         self.assert_count(desc4, _LMemo, 14)
         self.assert_count(desc4, Delayed, 2)
         
-        clone5 = ContextMemoize(full=True)(clone2)
+        clone5 = AutoMemoize(left=LMemo, right=RMemo)(clone2)
         desc5 = NodeStats(clone5) 
         #print(desc5)
         assert desc5.total == 14, desc5
