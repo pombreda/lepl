@@ -256,7 +256,7 @@ class BaseFactoryMatcher(FactoryMatcher):
         
 class TrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
     '''
-    A wrapper for source of generators that evaluate other matchers via
+    A wrapper for sources of generators that evaluate other matchers via
     the trampoline (ie for generators that evaluate matchers via yield).
     
     Typically only used for advanced matchers.
@@ -457,7 +457,7 @@ def trampoline_matcher_factory(transformable=True):
     if not isinstance(transformable, bool):
         raise ValueError(
             'trampoline_matcher_factory must be used as a function:'
-            '\n  @trampoline_matcher_factory()'
+            '\n  @trampoline_matcher_factory(transformable=True)'
             '\n  def MyMatcherFactory(...):'
             '\n      ....')
     def wrapper(factory):

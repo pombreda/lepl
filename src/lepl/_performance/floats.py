@@ -50,7 +50,7 @@ def floats():
     parser = line.string_parser()
     
     print(repr(parser.matcher))
-    for _i in range(300): # increased from 30 to 300 for new code
+    for _i in range(3000): # increased from 30 to 3000 for new code
         results = parser('1.2e3 + 2.3e4 * (3.4e5 + 4.5e6 - 5.6e7)')
         assert isinstance(results[0], Expression)
     print(results[0])
@@ -66,7 +66,7 @@ def time():
     # 5.0,3.7,2.9,3.1 for nfa
     # wow - new code, with standard config, functions etc, 0.5
     # increase to 300, avoids parser building bias: 2.2
-    # non-conservative memo by default: 1.5
+    # increase to 3000, improved memo: 20.2
     
 
 def profile():
