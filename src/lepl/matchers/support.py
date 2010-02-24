@@ -129,25 +129,25 @@ class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
 
 class Transformable(OperatorMatcher):
     '''
-    All subclasses invoke the function attribute on
-    (results, stream_in, stream_out) when returning their final value.
+    All subclasses must expose and apply wrapper, and implement compose.
+    
     This allows `Transform` instances to be merged directly.
     '''
 
     def __init__(self, function=None):
-        from lepl.matchers.transform import Transformation
+        from lepl.matchers.transform import TransformationWrapper
         super(Transformable, self).__init__()
-        if not isinstance(function, Transformation):
-            function = Transformation(function)
-        self.function = function
+        if not isinstance(function, TransformationWrapper):
+            function = TransformationWrapper(function)
+        self.wrapper = function
 
-    def compose(self, transform):
+    def compose(self, wrapper):
         '''
-        Combine with a transform, returning a new instance.
+        Combine with a transformation wrapper, returning a new instance.
         
         We must return a new instance because the same Transformable may 
         occur more than once in a graph and we don't want to include the
-        Transform in other cases.
+        transformation in other cases.
         '''
         raise NotImplementedError()
 
@@ -156,7 +156,7 @@ class Transformable(OperatorMatcher):
                       ' ' * indent,
                       key + '=' if key else '',
                       self._small_str,
-                      self.function,
+                      self.wrapper,
                       '' if self._fmt_compact else '\n',
                       ',\n'.join(contents))
         
@@ -266,28 +266,26 @@ class TrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
     def _match(self, stream):
         generator = self._cached_matcher(self, stream)
         try:
-            value = next(generator)
             while True:
-                if type(value) is GeneratorWrapper:
+                value = next(generator)
+                while type(value) is GeneratorWrapper:
                     try:
                         response = yield value
                         value = generator.send(response)
-                    except StopIteration as e:
-                        value = generator.throw(e)
-                else:
-                    yield value
-                    value = next(generator)
+                    except StopIteration:
+                        value = generator.throw(StopIteration)
+                yield value
         except StopIteration:
             pass
     
 
 class TransformableWrapper(BaseFactoryMatcher, Transformable):
     
-    def compose(self, transform):
+    def compose(self, wrapper):
         (args, kargs) = self._constructor_args()
         copy = type(self)(*args, **kargs)
         copy.factory = self.factory
-        copy.function = self.function.compose(transform.function)
+        copy.wrapper = self.wrapper.compose(wrapper)
         return copy
     
     def _format_repr(self, indent, key, contents):
@@ -296,7 +294,7 @@ class TransformableWrapper(BaseFactoryMatcher, Transformable):
                       key + '=' if key else '',
                       self.__class__.__name__,
                       self._small_str,
-                      self.function,
+                      self.wrapper,
                       '' if self._fmt_compact else '\n',
                       ',\n'.join(contents))
         
@@ -311,23 +309,21 @@ class TransformableTrampolineWrapper(TransformableWrapper):
     
     @tagged
     def _match(self, stream_in):
+        from lepl.matchers.transform import raise_
         generator = self._cached_matcher(self, stream_in)
-        try:
-            value = next(generator)
-            while True:
-                if type(value) is GeneratorWrapper:
+        while True:
+            try:
+                value = next(generator)
+                while type(value) is GeneratorWrapper:
                     try:
                         response = yield value
                         value = generator.send(response)
-                    except StopIteration as e:
-                        value = generator.throw(e)
-                else:
-                    (results, stream_out) = value
-                    yield self.function(results, stream_in, stream_out)
-                    value = next(generator)
-        except StopIteration:
-            pass
-    
+                    except StopIteration as e1:
+                        value = generator.throw(e1)
+                yield self.wrapper.function(lambda: value)
+            except StopIteration:
+                yield self.wrapper.function(lambda: raise_(StopIteration))
+                
     
 class NoTrampolineTransformableWrapper(TransformableWrapper):
     
@@ -353,16 +349,20 @@ class SequenceWrapper(NoTrampolineTransformableWrapper):
     
     @tagged
     def _match(self, stream_in):
-        for (results, stream_out) in self._cached_matcher(self, stream_in):
-            yield self.function(results, stream_in, stream_out)
+        from lepl.matchers.transform import raise_
+        function = self.wrapper.function
+        for results in self._cached_matcher(self, stream_in):
+            yield function(lambda: results) if function else results
+        while True:
+            yield function(lambda: raise_(StopIteration))
  
     def _untagged_match(self, stream_in):
-        if self.function:
-            for (results, stream_out) in self._cached_matcher(self, stream_in):
-                yield self.function(results, stream_in, stream_out)
-        else:
-            for results in self._cached_matcher(self, stream_in):
-                yield results
+        from lepl.matchers.transform import raise_
+        function = self.wrapper.function
+        for results in self._cached_matcher(self, stream_in):
+            yield function(lambda: results) if function else results
+        while True:
+            yield function(lambda: raise_(StopIteration))
  
 
 class FunctionWrapper(NoTrampolineTransformableWrapper):
@@ -373,24 +373,23 @@ class FunctionWrapper(NoTrampolineTransformableWrapper):
     
     @tagged
     def _match(self, stream_in):
-        try:
-            (results, stream_out) = self._cached_matcher(self, stream_in)
-            yield self.function(results, stream_in, stream_out)
-        except TypeError:
-            pass
+        from lepl.matchers.transform import raise_
+        function = self.wrapper.function
+        results = self._cached_matcher(self, stream_in)
+        if results is None: 
+            yield function(lambda: raise_(StopIteration))
+        else:
+            yield function(lambda: results)
         
     def _untagged_match(self, stream_in):
-        if self.function:
-            try:
-                (results, stream_out) = self._cached_matcher(self, stream_in)
-                yield self.function(results, stream_in, stream_out)
-            except TypeError:
-                pass
+        from lepl.matchers.transform import raise_
+        function = self.wrapper.function
+        results = self._cached_matcher(self, stream_in)
+        if results is None: 
+            yield function(lambda: raise_(StopIteration))
         else:
-            result = self._cached_matcher(self, stream_in)
-            if result is not None:
-                yield result
-            
+            yield function(lambda: results)
+
 
 def check_matcher(matcher):
     '''

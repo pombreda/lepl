@@ -47,7 +47,7 @@ class LocationTest(TestCase):
         except SyntaxError as e:
             assert e.filename == r"str: '\n   \n   111  xxx 222\n\n'"
             assert e.lineno == 3
-            assert e.offset == 9
+            assert e.offset == 9, e.offset
             assert e.text == '   111  xxx 222\n', repr(e.text)
         
     def test_location_content(self):

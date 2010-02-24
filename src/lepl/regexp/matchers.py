@@ -24,6 +24,7 @@ calls the standard Python regular expression library (and so is faster).
 '''
 
 from lepl.matchers.support import Transformable
+from lepl.matchers.transform import raise_
 from lepl.core.parser import tagged
 from lepl.regexp.core import Compiler
 from lepl.regexp.unicode import UnicodeAlphabet
@@ -44,26 +45,20 @@ class BaseRegexp(Transformable):
         self._karg(alphabet=alphabet)
         self.tag(regexp)
         
-    def compose(self, transform):
+    def compose(self, wrapper):
         '''
         Implement the Transformable interface.
         '''
-        return self.compose_transformation(transform.function)
-    
-    def compose_transformation(self, transformation):
-        '''
-        Create a new copy that combines both transformations.
-        '''
         copy = type(self)(self.regexp, self.alphabet)
-        copy.function = self.function.compose(transformation)
+        copy.wrapper = self.wrapper.compose(wrapper)
         return copy
     
-    def precompose_transformation(self, transformation):
+    def precompose(self, wrapper):
         '''
         Like compose, but does the given transformation first.
         '''
         copy = type(self)(self.regexp, self.alphabet)
-        copy.function = self.function.precompose(transformation)
+        copy.wrapper = self.wrapper.precompose(wrapper)
         return copy
     
 
@@ -97,9 +92,12 @@ class NfaRegexp(BaseRegexp):
         '''
         Actually do the work of matching.
         '''
+        function = self.wrapper.function
         matches = self._compile()(stream_in)
         for (_terminal, match, stream_out) in matches:
-            yield self.function([match], stream_in, stream_out)
+            yield function(lambda: ([match], stream_out))
+        while True:
+            yield function(lambda: raise_(StopIteration))
 
         
 
@@ -130,8 +128,11 @@ class DfaRegexp(BaseRegexp):
         '''
         Actually do the work of matching.
         '''
+        function = self.wrapper.function
         match = self._compile()(stream_in)
         if match is not None:
             (_terminals, match, stream_out) = match
-            yield self.function([match], stream_in, stream_out)
+            yield function(lambda: ([match], stream_out))
+        while True:
+            yield function(lambda: raise_(StopIteration))
 

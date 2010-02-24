@@ -110,7 +110,7 @@ def copy_standard_attributes(node, copy, describe=True, transform=True):
     '''
     from lepl.matchers.support import Transformable
     if isinstance(node, Transformable) and transform:
-        copy.function = node.function
+        copy.wrapper = node.wrapper
     if describe:
         copy.describe = node.describe 
     if isinstance(node, FactoryMatcher):
@@ -183,7 +183,7 @@ class DelayedClone(Visitor):
         from lepl.matchers.core import Delayed
         from lepl.matchers.transform import Transformable
         if isinstance(node, Delayed) and node.matcher and \
-                not (isinstance(node, Transformable) and node.function):
+                not (isinstance(node, Transformable) and node.wrapper):
             return node.matcher
         else:
             return node
@@ -237,8 +237,8 @@ class Flatten(Rewriter):
                 attribute_name = table[type_]
                 for arg in old_args:
                     if matcher_type(arg, fail=False) is type_ \
-                            and not arg.function \
-                            and not node.function:
+                            and not arg.wrapper \
+                            and not node.wrapper:
                         if attribute_name.startswith('*'):
                             new_args.extend(getattr(arg, attribute_name[1:]))
                         else:
@@ -271,7 +271,7 @@ class ComposeTransforms(Rewriter):
             copy = clone(node, args, kargs)
             if isinstance(copy, Transform) \
                     and isinstance(copy.matcher, Transformable):
-                return copy.matcher.compose(copy)
+                return copy.matcher.compose(copy.wrapper)
             else:
                 return copy
         return graph.postorder(DelayedClone(new_clone), Matcher)

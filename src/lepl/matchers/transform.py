@@ -17,7 +17,20 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Matchers that process results.
+A transformation is a function that modifies the result of calling a matcher
+once.
+
+From the point of view of a transformation, a matcher is a function that 
+takes no arguments and either returns (results, stream_out) or raises a 
+StopIteration (note - this is an interface - the way you typically define 
+matchers doesn't conform to that interface, but decorators like 
+@function_matcher etc do the necessary work to adapt things as necessary).
+
+A transformation takes a single argument - a matcher (as described above).  
+The transformation, when called, should return either return a (result, 
+stream_out) pair, or raise a StopIteration.  A null transformation, 
+therefore, would simply evaluate the matcher it receives:
+    null_transform = lambda matcher: matcher()
 '''
 
 
@@ -55,57 +68,69 @@ ABC used to control `Apply`, so that the results list is supplied as "*args".
 ApplyArgs.register(Node)
 
 
-
-class Transformation(object):
-    '''
-    A transformation is a wrapper for a series of functions that are applied
-    to a result. 
+class NullTransformation(object):
     
-    A function takes three arguments (results, stream_in, stream_out)
-    and returns the tuple (results, stream_out).
+    def __call__(self, matcher):
+        return matcher()
+    
+    def __bool__(self):
+        return False
+    
+    # Python 2.6
+    def __nonzero__(self):
+        return self.__bool__()
+    
+
+class TransformationWrapper(object):
+    '''
+    Helper object that composes transformations and also keeps a list of
+    the separate transformations for introspection.
     '''
     
     def __init__(self, functions=None):
         '''
-        We accept wither a list of a functions or a single value.
+        We accept either a list of a functions or a single value.
         '''
         functions = [] if functions is None else functions
         if not isinstance(functions, list):
             functions = [functions]
-        self.functions = functions
+        self.functions = []
+        self.function = NullTransformation()
+        self.extend(functions)
         
-    def compose(self, transformation):
+    def extend(self, functions):
+        for function in functions:
+            self.append(function)
+            
+    def append(self, function):
+        if self.function:
+            self.function = \
+                lambda matcher, f=self.function: function(lambda: f(matcher))
+        else:
+            self.function = function
+        self.functions.append(function)
+        
+    def compose(self, wrapper):
         '''
-        Apply transformation to the results of this function.
+        Apply wrapped transformations to the results of this wrapper.
         '''
         functions = list(self.functions)
-        functions.extend(transformation.functions)
-        if functions == self.functions:
-            return self
-        else:
-            return Transformation(functions)
+        functions.extend(wrapper.functions)
+        return TransformationWrapper(functions)
 
-    def precompose(self, transformation):
+    def precompose(self, wrapper):
         '''
         Insert the transformation before the existing functions.
         '''
-        functions = list(transformation.functions)
+        functions = list(wrapper.functions)
         functions.extend(self.functions)
-        if functions == self.functions:
-            return self
-        else:
-            return Transformation(functions)
-        
-    def __call__(self, results, stream_in, stream_out):
-        for function in self.functions:
-            (results, stream_out) = function(results, stream_in, stream_out)
-        return (results, stream_out)
+        return TransformationWrapper(functions)
         
     def __str__(self):
         return str(self.functions)
         
     def __repr__(self):
-        return format('Transformation({0!r})', self.functions)
+        return format('TransformationWrapper({0!r})', self.functions)
     
     def __bool__(self):
         return bool(self.functions)
@@ -119,6 +144,13 @@ class Transformation(object):
         Co-operate with graph routines.
         '''
         return iter([])
+    
+    
+def raise_(e):
+    '''
+    Let raise be used as a function.
+    '''
+    raise e
         
 
 class Transform(Transformable):
@@ -132,11 +164,12 @@ class Transform(Transformable):
         super(Transform, self).__init__(function)
         self._arg(matcher=coerce_(matcher))
         # it's ok that this overwrites the same thing from Transformable
-        # (Transformable cannot have an argument because it is subclass to
-        # matcher without explicit functions)
-        if not isinstance(function, Transformation):
-            function = Transformation(function)
-        self._arg(function=function)
+        # (Transformable cannot have an argument because it subclasses
+        # OperatorMatcher, and passing in function as a constructor arg
+        # is a nightmare).
+        if not isinstance(function, TransformationWrapper):
+            function = TransformationWrapper(function)
+        self._arg(wrapper=function)
 
     @tagged
     def _match(self, stream_in):
@@ -144,17 +177,18 @@ class Transform(Transformable):
         Do the matching (return a generator that provides successive
         (result, stream) tuples).
         '''
-        try:
-            generator = self.matcher._match(stream_in)
-            while True:
-                (results, stream_out) = yield generator
-                yield self.function(results, stream_in, stream_out)
-        except StopIteration:
-            pass
+        function = self.wrapper.function
+        generator = self.matcher._match(stream_in)
+        while True:
+            try:
+                results = yield generator
+                yield function(lambda: results)
+            except StopIteration:
+                yield function(lambda: raise_(StopIteration))
+            
         
-    def compose(self, transform):
+    def compose(self, function):
         '''
         Create a new Transform that includes the extra processing. 
         '''
-        return Transform(self.matcher, 
-                         self.function.compose(transform.function))
+        return Transform(self.matcher, self.wrapper.compose(function))

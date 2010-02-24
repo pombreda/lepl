@@ -30,8 +30,8 @@ from lepl.matchers.core import Regexp, Lookahead, Any, Eof, Literal, Empty
 from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
     NON_GREEDY
 from lepl.matchers.support import OperatorMatcher, coerce_
-from lepl.matchers.transform import Transformation, Transform, ApplyArgs, \
-    ApplyRaw
+from lepl.matchers.transform import TransformationWrapper, Transform, \
+    ApplyArgs, ApplyRaw
 from lepl.support.lib import assert_type, lmap, format, basestring
 
  
@@ -96,9 +96,9 @@ def Apply(matcher, function, raw=False, args=False):
     (or ``>=`` to set ``raw=True``, or ``*`` to set ``args=True``) 
     to the right of a matcher.
 
-    If the function is a `Transformation` it is used directly.  Otherwise
-    a `Transformation` is constructed via the `raw` and `args` parameters, 
-    as described below.
+    If the function is a `TransformationWrapper` it is used directly.  
+    Otherwise a `TransformationWrapper` is constructed via the `raw` and 
+    `args` parameters, as described below.
 
     **Note:** The creation of named pairs (when a string argument is
     used) behaves more like a mapping than a single function invocation.
@@ -147,7 +147,9 @@ def Apply(matcher, function, raw=False, args=False):
     raw = raw or (type(function) is type and issubclass(function, ApplyRaw))
     args = args or (type(function) is type 
                       and issubclass(function, ApplyArgs))
-    if not isinstance(function, Transformation):
+    if isinstance(function, TransformationWrapper):
+        transformation = function
+    else:
         if isinstance(function, basestring):
             function = lambda results, f=function: \
                             lmap(lambda x: (f, x), results)
@@ -161,8 +163,10 @@ def Apply(matcher, function, raw=False, args=False):
         else:
             if not raw:
                 function = lambda results, f=function: [f(results)]
-        function = lambda results, sin, sout, f=function: (f(results), sout)
-    return Transform(matcher, function).tag('Apply')
+        def transformation(matcher):
+            (results, stream_out) = matcher()
+            return (function(results), stream_out)
+    return Transform(matcher, transformation).tag('Apply')
 
 
 def args(function):
@@ -184,9 +188,6 @@ def KApply(matcher, function, raw=False):
     It can be used indirectly by placing ``**=`` to the right of the matcher.
 
     The function will be applied with the following keyword arguments:
-
-      stream_in
-        The stream passed to the matcher.
 
       stream_out
         The stream returned from the matcher.
@@ -212,12 +213,12 @@ def KApply(matcher, function, raw=False):
         and so should match the ``([results], stream)`` type expected by
         other matchers.
         '''
-    def fun(results, stream_in, stream_out):
+    def fun(matcher):
         '''
         Apply args as **kargs.
         '''
+        (results, stream_out) = matcher()
         kargs = {'results': results,
-                 'stream_in': stream_in,
                  'stream_out': stream_out}
         if raw:
             return function(**kargs)
@@ -288,11 +289,12 @@ def Map(matcher, function):
 
 
 
-def add(results, _stream_in, stream_out):
+def add(matcher):
     '''
     The transformation used in `Add` - we carefully use "+" in as generic
     a manner as possible.
     '''
+    (results, stream_out) = matcher()
     if results:
         result = results[0]
         for extra in results[1:]:
@@ -314,7 +316,7 @@ def Add(matcher):
     Join tokens in the result using the "+" operator (**+**).
     This joins strings and merges lists.  
     '''
-    return Apply(matcher, Transformation(add)).tag('Add')
+    return Apply(matcher, TransformationWrapper(add)).tag('Add')
 
 
 def Join(*matchers):

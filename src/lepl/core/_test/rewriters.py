@@ -238,7 +238,7 @@ class FlattenTest(TestCase):
         matcher.config.clear().flatten()
         parser = matcher.null_parser()
         text = sub('<.*>', '<>', str(parser.matcher))
-        assert text == "Transform(And, Transformation([<>]))", text
+        assert text == "Transform(And, TransformationWrapper([<>]))", text
         result = parser('abcd')
         assert result == ['abc'], result
         

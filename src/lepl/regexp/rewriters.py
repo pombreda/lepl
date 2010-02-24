@@ -112,8 +112,8 @@ class RegexpContainer(object):
             matcher = single(alphabet, node, regexp, matcher_type, transform)
             # if matcher is a Transformable with a Transformation other than
             # the standard empty_adapter then we must stop
-            if len(matcher.function.functions) > 1:
-                cls.log.debug(format('Force matcher: {0}', matcher.function))
+            if len(matcher.wrapper.functions) > 1:
+                cls.log.debug(format('Force matcher: {0}', matcher.wrapper))
                 return matcher
         else:
             matcher = node
@@ -125,22 +125,23 @@ def single(alphabet, node, regexp, matcher_type, transform=True):
     Create a matcher for the given regular expression.
     '''
     # avoid dependency loops
-    from lepl.matchers.transform import Transformation
+    from lepl.matchers.transform import TransformationWrapper
     matcher = matcher_type(regexp, alphabet)
     copy_standard_attributes(node, matcher, describe=False, transform=transform)
-    return matcher.precompose_transformation(Transformation(empty_adapter))
+    return matcher.precompose(TransformationWrapper(empty_adapter))
 
 
-def empty_adapter(results, _sin, sout):
+def empty_adapter(matcher):
     '''
     There is a fundamental mismatch between regular expressions and the 
     recursive descent parser on how empty matchers are handled.  The main 
     parser uses empty lists; regexp uses an empty string.  This is a hack
     that converts from one to the other.  I do not see a better solution.
     '''
+    (results, stream_out) = matcher()
     if results == ['']:
         results = []
-    return (results, sout)
+    return (results, stream_out)
 
         
 class Unsuitable(Exception):
@@ -164,7 +165,8 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
     from lepl.matchers.derived import add
     from lepl.matchers.combine import And, Or, DepthFirst
     from lepl.matchers.core import Any, Literal
-    from lepl.matchers.transform import Transformable, Transform, Transformation
+    from lepl.matchers.transform import Transformable, Transform, \
+        TransformationWrapper
 
     log = getLogger('lepl.regexp.rewriters.make_clone')
     
@@ -213,24 +215,24 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             # if we have regexp sub-expressions, join them
             regexp = Sequence(regexps, alphabet)
             log.debug(format('And: cloning {0}', regexp))
-            if use and len(original.function.functions) > 1 \
-                    and original.function.functions[0] is add:
+            if use and len(original.wrapper.functions) > 1 \
+                    and original.wrapper.functions[0] is add:
                 # we have additional functions, so cannot take regexp higher,
                 # but use is True, so return a new matcher.
                 # hack to copy across other functions
-                original.function = \
-                        Transformation(original.function.functions[1:])
+                original.wrapper = \
+                        TransformationWrapper(original.wrapper.functions[1:])
                 log.debug('And: OK (final)')
                 # NEED TEST FOR THIS
                 return single(alphabet, original, regexp, matcher_type) 
-            elif len(original.function.functions) == 1 \
-                    and original.function.functions[0] is add:
+            elif len(original.wrapper.functions) == 1 \
+                    and original.wrapper.functions[0] is add:
                 # OR JUST ONE?
                 # lucky!  we just combine and continue
                 log.debug('And: OK')
                 return RegexpContainer.build(original, regexp, alphabet, 
                                              matcher_type, use, transform=False)
-            elif not original.function:
+            elif not original.wrapper:
                 # regexp can't return multiple values, so hope that we have
                 # an add
                 log.debug('And: add required')
@@ -238,45 +240,46 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
                                              matcher_type, use, add_reqd=True)
             else:
                 log.debug(format('And: wrong transformation: {0!r}',
-                                 original.function))
+                                 original.wrapper))
                 return original
         except Unsuitable:
             log.debug(format('And: not rewritten: {0}', original))
             return original
     
-    def clone_transform(use, original, matcher, function, 
+    def clone_transform(use, original, matcher, wrapper, 
                           _raw=False, _args=False):
         '''
-        We can assume that function is a transformation.  add joins into
+        We can assume that wrapper is a transformation.  add joins into
         a sequence.
         '''
-        assert isinstance(function, Transformation)
+        assert isinstance(wrapper, TransformationWrapper)
         try:
             # this is the only place add is required
             (use, [regexp]) = RegexpContainer.to_regexps(use, [matcher], 
                                                          add_reqd=True)
             log.debug(format('Transform: cloning {0}', regexp))
-            if use and len(function.functions) > 1 \
-                    and function.functions[0] is add:
+            if use and len(wrapper.functions) > 1 \
+                    and wrapper.functions[0] is add:
                 # we have additional functions, so cannot take regexp higher,
                 # but use is True, so return a new matcher.
                 # hack to copy across other functions
-                original.function = Transformation(function.functions[1:])
+                original.wrapper = \
+                    TransformationWrapper().extend(wrapper.functions[1:])
                 log.debug('Transform: OK (final)')
                 # NEED TEST FOR THIS
                 return single(alphabet, original, regexp, matcher_type) 
-            elif len(function.functions) == 1 and function.functions[0] is add:
+            elif len(wrapper.functions) == 1 and wrapper.functions[0] is add:
                 # exactly what we wanted!  combine and continue
                 log.debug('Transform: OK')
                 return RegexpContainer.build(original, regexp, alphabet, 
                                              matcher_type, use, transform=False)
-            elif not function:
+            elif not wrapper:
                 # we're just forwarding the add_reqd from before here
                 log.debug('Transform: empty, add required')
                 return RegexpContainer(original, regexp, use, add_reqd=True)
             else:
                 log.debug(format('Transform: wrong transformation: {0!r}',
-                                 original.function))
+                                 original.wrapper))
                 return original
         except Unsuitable:
             log.debug(format('Transform: not rewritten: {0}', original))

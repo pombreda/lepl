@@ -37,6 +37,13 @@ from lepl.support.node import Node
 # (dude this is just a test)
 
     
+class AnyTest(TestCase):
+    
+    def test_any(self):
+        result = Any().parse('a')
+        assert result, result
+
+
 class AndTest(BaseTest):
 
     def test_simple(self):

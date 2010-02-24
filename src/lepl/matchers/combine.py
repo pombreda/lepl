@@ -235,12 +235,12 @@ class _BaseCombiner(Transformable):
         super(_BaseCombiner, self).__init__()
         self._args(matchers=lmap(coerce_, matchers))
         
-    def compose(self, transform):
+    def compose(self, wrapper):
         '''
         Generate a new instance with the composed function from the Transform.
         '''
         copy = type(self)(*self.matchers)
-        copy.function = self.function.compose(transform.function)
+        copy.wrapper = self.wrapper.compose(wrapper)
         return copy
     
 

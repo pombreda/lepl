@@ -66,7 +66,7 @@ def time():
     # 5.0,3.7,2.9,3.1 for nfa
     # wow - new code, with standard config, functions etc, 0.5
     # increase to 300, avoids parser building bias: 2.2
-    # increase to 3000, improved memo: 20.2
+    # increase to 3000, improved memo: 20
     
 
 def profile():
