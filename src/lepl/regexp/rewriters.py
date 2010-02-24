@@ -131,7 +131,7 @@ def single(alphabet, node, regexp, matcher_type, transform=True):
     return matcher.precompose(TransformationWrapper(empty_adapter))
 
 
-def empty_adapter(matcher):
+def empty_adapter(_stream, matcher):
     '''
     There is a fundamental mismatch between regular expressions and the 
     recursive descent parser on how empty matchers are handled.  The main 

@@ -163,7 +163,7 @@ def Apply(matcher, function, raw=False, args=False):
         else:
             if not raw:
                 function = lambda results, f=function: [f(results)]
-        def transformation(matcher):
+        def transformation(stream_in, matcher):
             (results, stream_out) = matcher()
             return (function(results), stream_out)
     return Transform(matcher, transformation).tag('Apply')
@@ -213,12 +213,13 @@ def KApply(matcher, function, raw=False):
         and so should match the ``([results], stream)`` type expected by
         other matchers.
         '''
-    def fun(matcher):
+    def fun(stream_in, matcher):
         '''
         Apply args as **kargs.
         '''
         (results, stream_out) = matcher()
         kargs = {'results': results,
+                 'stream_in': stream_in,
                  'stream_out': stream_out}
         if raw:
             return function(**kargs)
@@ -289,7 +290,7 @@ def Map(matcher, function):
 
 
 
-def add(matcher):
+def add(_stream, matcher):
     '''
     The transformation used in `Add` - we carefully use "+" in as generic
     a manner as possible.
@@ -589,8 +590,10 @@ class _Columns(OperatorMatcher):
             '''
             Generate a transformer function that replaces the stream_out.
             '''
-            return lambda results, _stream_in, _stream_out: \
-                                                    (results, replacement)
+            def transformation(_stream, matcher):
+                (results, _stream_out) = matcher()
+                return (results, replacement)
+            return transformation
         # left and right are the indices for the column
         # matchers is the list of matchers that will be joined by And
         # previous is the "column before", which must be modified so that

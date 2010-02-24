@@ -26,11 +26,12 @@ StopIteration (note - this is an interface - the way you typically define
 matchers doesn't conform to that interface, but decorators like 
 @function_matcher etc do the necessary work to adapt things as necessary).
 
-A transformation takes a single argument - a matcher (as described above).  
-The transformation, when called, should return either return a (result, 
-stream_out) pair, or raise a StopIteration.  A null transformation, 
-therefore, would simply evaluate the matcher it receives:
-    null_transform = lambda matcher: matcher()
+A transformation takes two arguments - the initial stream and a matcher 
+(as described above).  The transformation, when called, should return 
+either return a (result, stream_out) pair, or raise a StopIteration.  
+A null transformation, therefore, would simply evaluate the matcher it 
+receives:
+    null_transform = lambda stream, matcher: matcher()
 '''
 
 
@@ -70,7 +71,7 @@ ApplyArgs.register(Node)
 
 class NullTransformation(object):
     
-    def __call__(self, matcher):
+    def __call__(self, _stream, matcher):
         return matcher()
     
     def __bool__(self):
@@ -105,7 +106,8 @@ class TransformationWrapper(object):
     def append(self, function):
         if self.function:
             self.function = \
-                lambda matcher, f=self.function: function(lambda: f(matcher))
+                lambda stream, matcher, f=self.function: \
+                    function(stream, lambda: f(stream, matcher))
         else:
             self.function = function
         self.functions.append(function)
@@ -182,9 +184,9 @@ class Transform(Transformable):
         while True:
             try:
                 results = yield generator
-                yield function(lambda: results)
+                yield function(stream_in, lambda: results)
             except StopIteration:
-                yield function(lambda: raise_(StopIteration))
+                yield function(stream_in, lambda: raise_(StopIteration))
             
         
     def compose(self, function):

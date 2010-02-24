@@ -320,9 +320,10 @@ class TransformableTrampolineWrapper(TransformableWrapper):
                         value = generator.send(response)
                     except StopIteration as e1:
                         value = generator.throw(e1)
-                yield self.wrapper.function(lambda: value)
+                yield self.wrapper.function(stream_in, lambda: value)
             except StopIteration:
-                yield self.wrapper.function(lambda: raise_(StopIteration))
+                yield self.wrapper.function(stream_in, 
+                                            lambda: raise_(StopIteration))
                 
     
 class NoTrampolineTransformableWrapper(TransformableWrapper):
@@ -352,17 +353,17 @@ class SequenceWrapper(NoTrampolineTransformableWrapper):
         from lepl.matchers.transform import raise_
         function = self.wrapper.function
         for results in self._cached_matcher(self, stream_in):
-            yield function(lambda: results) if function else results
+            yield function(stream_in, lambda: results) if function else results
         while True:
-            yield function(lambda: raise_(StopIteration))
+            yield function(stream_in, lambda: raise_(StopIteration))
  
     def _untagged_match(self, stream_in):
         from lepl.matchers.transform import raise_
         function = self.wrapper.function
         for results in self._cached_matcher(self, stream_in):
-            yield function(lambda: results) if function else results
+            yield function(stream_in, lambda: results) if function else results
         while True:
-            yield function(lambda: raise_(StopIteration))
+            yield function(stream_in, lambda: raise_(StopIteration))
  
 
 class FunctionWrapper(NoTrampolineTransformableWrapper):
@@ -377,18 +378,20 @@ class FunctionWrapper(NoTrampolineTransformableWrapper):
         function = self.wrapper.function
         results = self._cached_matcher(self, stream_in)
         if results is None: 
-            yield function(lambda: raise_(StopIteration))
+            yield function(stream_in, lambda: raise_(StopIteration))
         else:
-            yield function(lambda: results)
+            yield function(stream_in, lambda: results) \
+                if function else results
         
     def _untagged_match(self, stream_in):
         from lepl.matchers.transform import raise_
         function = self.wrapper.function
         results = self._cached_matcher(self, stream_in)
         if results is None: 
-            yield function(lambda: raise_(StopIteration))
+            yield function(stream_in, lambda: raise_(StopIteration))
         else:
-            yield function(lambda: results)
+            yield function(stream_in, lambda: results) \
+                if function else results
 
 
 def check_matcher(matcher):
