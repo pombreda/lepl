@@ -148,7 +148,7 @@ def Apply(matcher, function, raw=False, args=False):
     args = args or (type(function) is type 
                       and issubclass(function, ApplyArgs))
     if isinstance(function, TransformationWrapper):
-        transformation = function
+        apply = function
     else:
         if isinstance(function, basestring):
             function = lambda results, f=function: \
@@ -163,10 +163,10 @@ def Apply(matcher, function, raw=False, args=False):
         else:
             if not raw:
                 function = lambda results, f=function: [f(results)]
-        def transformation(stream_in, matcher):
+        def apply(stream_in, matcher):
             (results, stream_out) = matcher()
             return (function(results), stream_out)
-    return Transform(matcher, transformation).tag('Apply')
+    return Transform(matcher, apply).tag('Apply')
 
 
 def args(function):
@@ -590,10 +590,10 @@ class _Columns(OperatorMatcher):
             '''
             Generate a transformer function that replaces the stream_out.
             '''
-            def transformation(_stream, matcher):
+            def replace_out(_stream, matcher):
                 (results, _stream_out) = matcher()
                 return (results, replacement)
-            return transformation
+            return replace_out
         # left and right are the indices for the column
         # matchers is the list of matchers that will be joined by And
         # previous is the "column before", which must be modified so that

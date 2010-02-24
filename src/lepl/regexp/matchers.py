@@ -96,7 +96,7 @@ class NfaRegexp(BaseRegexp):
         matches = self._compile()(stream_in)
         for (_terminal, match, stream_out) in matches:
             yield function(stream_in, lambda: ([match], stream_out)) \
-                if function else [match]
+                if function else ([match], stream_out)
         while True:
             yield function(stream_in, lambda: raise_(StopIteration))
 
@@ -134,7 +134,7 @@ class DfaRegexp(BaseRegexp):
         if match is not None:
             (_terminals, match, stream_out) = match
             yield function(stream_in, lambda: ([match], stream_out)) \
-                if function else [match]
+                if function else ([match], stream_out)
         while True:
             yield function(stream_in, lambda: raise_(StopIteration))
 

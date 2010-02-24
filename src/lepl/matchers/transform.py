@@ -129,10 +129,10 @@ class TransformationWrapper(object):
         return TransformationWrapper(functions)
         
     def __str__(self):
-        return str(self.functions)
+        return '<' + ','.join(map(lambda x: x.__name__, self.functions)) + '>'
         
     def __repr__(self):
-        return format('TransformationWrapper({0!r})', self.functions)
+        return format('TransformationWrapper({0})', self)
     
     def __bool__(self):
         return bool(self.functions)

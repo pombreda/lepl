@@ -78,6 +78,7 @@ def time():
     # new (functions etc) system, no compile
     # 30.3 default - difficult to get faster than that
     # now 28.8 with fixed rewriting
+    # 34.7 with new transformations
 
 
 def profile():

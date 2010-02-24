@@ -210,460 +210,428 @@ class StrTest(TestCase):
         expression += (factor / (addsub / factor)[0::])    > Expression
 
         description = repr(expression)
-        self.assert_same(description, r'''Delayed(matcher=Transform:[<function <lambda> at 0xfc96b0>](
- TransformableTrampolineWrapper<And:[]>(
-  Transform:[<function <lambda> at 0xfc9490>](
-   TransformableTrampolineWrapper<And:[]>(
-    Transform:[<function <lambda> at 0xfc9270>](
-     TransformableTrampolineWrapper<Or:[]>(
-      Transform:[<function <lambda> at 0xfc9160>](
-       Transform:[<function add at 0xbce628>](
+        self.assert_same(description, r'''Delayed(matcher=Transform:<apply>(
+ TransformableTrampolineWrapper<And:<>>(
+  Transform:<apply>(
+   TransformableTrampolineWrapper<And:<>>(
+    Transform:<apply>(
+     TransformableTrampolineWrapper<Or:<>>(
+      Transform:<apply>(
+       Transform:<add>(
         TrampolineWrapper<DepthFirst>(
          start=1,
          stop=None,
-         rest=FunctionWrapper<Any:[]>('0123456789'),
-         first=FunctionWrapper<Any:[]>('0123456789')),
-        Transformation([<function add at 0xbce628>])),
-       Transformation([<function <lambda> at 0xfc9160>])),
-      TransformableTrampolineWrapper<And:[]>(
-       TransformableTrampolineWrapper<And:[]>(
+         rest=FunctionWrapper<Any:<>>('0123456789'),
+         first=FunctionWrapper<Any:<>>('0123456789')),
+        TransformationWrapper(<add>)),
+       TransformationWrapper(<apply>)),
+      TransformableTrampolineWrapper<And:<>>(
+       TransformableTrampolineWrapper<And:<>>(
         '(',
-        Transform:[<function add at 0xbce628>](
+        Transform:<add>(
          TrampolineWrapper<DepthFirst>(
           start=0,
           stop=None,
-          rest=FunctionWrapper<Any:[]>(' \t'),
-          first=FunctionWrapper<Any:[]>(' \t')),
-         Transformation([<function add at 0xbce628>])),
+          rest=FunctionWrapper<Any:<>>(' \t'),
+          first=FunctionWrapper<Any:<>>(' \t')),
+         TransformationWrapper(<add>)),
         [Delayed]),
-       Transform:[<function add at 0xbce628>](
+       Transform:<add>(
         TrampolineWrapper<DepthFirst>(
          start=0,
          stop=None,
-         rest=FunctionWrapper<Any:[]>(' \t'),
-         first=FunctionWrapper<Any:[]>(' \t')),
-        Transformation([<function add at 0xbce628>])),
+         rest=FunctionWrapper<Any:<>>(' \t'),
+         first=FunctionWrapper<Any:<>>(' \t')),
+        TransformationWrapper(<add>)),
        ')')),
-     Transformation([<function <lambda> at 0xfc9270>])),
-    Transform:[<function add at 0xbce628>](
+     TransformationWrapper(<apply>)),
+    Transform:<add>(
      TrampolineWrapper<DepthFirst>(
       start=0,
       stop=None,
-      rest=FunctionWrapper<Any:[]>(' \t'),
-      first=FunctionWrapper<Any:[]>(' \t')),
-     Transformation([<function add at 0xbce628>])),
+      rest=FunctionWrapper<Any:<>>(' \t'),
+      first=FunctionWrapper<Any:<>>(' \t')),
+     TransformationWrapper(<add>)),
     TrampolineWrapper<DepthFirst>(
      start=0,
      stop=None,
-     rest=TransformableTrampolineWrapper<And:[]>(
-      Transform:[<function <lambda> at 0xfc9380>](
-       FunctionWrapper<Any:[]>('*/'),
-       Transformation([<function <lambda> at 0xfc9380>])),
-      Transform:[<function add at 0xbce628>](
+     rest=TransformableTrampolineWrapper<And:<>>(
+      Transform:<apply>(
+       FunctionWrapper<Any:<>>('*/'),
+       TransformationWrapper(<apply>)),
+      Transform:<add>(
        TrampolineWrapper<DepthFirst>(
         start=0,
         stop=None,
-        rest=FunctionWrapper<Any:[]>(' \t'),
-        first=FunctionWrapper<Any:[]>(' \t')),
-       Transformation([<function add at 0xbce628>])),
-      Transform:[<function <lambda> at 0xfc9270>](
-       TransformableTrampolineWrapper<Or:[]>(
-        Transform:[<function <lambda> at 0xfc9160>](
-         Transform:[<function add at 0xbce628>](
+        rest=FunctionWrapper<Any:<>>(' \t'),
+        first=FunctionWrapper<Any:<>>(' \t')),
+       TransformationWrapper(<add>)),
+      Transform:<apply>(
+       TransformableTrampolineWrapper<Or:<>>(
+        Transform:<apply>(
+         Transform:<add>(
           TrampolineWrapper<DepthFirst>(
            start=1,
            stop=None,
-           rest=FunctionWrapper<Any:[]>('0123456789'),
-           first=FunctionWrapper<Any:[]>('0123456789')),
-          Transformation([<function add at 0xbce628>])),
-         Transformation([<function <lambda> at 0xfc9160>])),
-        TransformableTrampolineWrapper<And:[]>(
-         TransformableTrampolineWrapper<And:[]>(
+           rest=FunctionWrapper<Any:<>>('0123456789'),
+           first=FunctionWrapper<Any:<>>('0123456789')),
+          TransformationWrapper(<add>)),
+         TransformationWrapper(<apply>)),
+        TransformableTrampolineWrapper<And:<>>(
+         TransformableTrampolineWrapper<And:<>>(
           '(',
-          Transform:[<function add at 0xbce628>](
+          Transform:<add>(
            TrampolineWrapper<DepthFirst>(
             start=0,
             stop=None,
-            rest=FunctionWrapper<Any:[]>(' \t'),
-            first=FunctionWrapper<Any:[]>(' \t')),
-           Transformation([<function add at 0xbce628>])),
+            rest=FunctionWrapper<Any:<>>(' \t'),
+            first=FunctionWrapper<Any:<>>(' \t')),
+           TransformationWrapper(<add>)),
           [Delayed]),
-         Transform:[<function add at 0xbce628>](
+         Transform:<add>(
           TrampolineWrapper<DepthFirst>(
            start=0,
            stop=None,
-           rest=FunctionWrapper<Any:[]>(' \t'),
-           first=FunctionWrapper<Any:[]>(' \t')),
-          Transformation([<function add at 0xbce628>])),
+           rest=FunctionWrapper<Any:<>>(' \t'),
+           first=FunctionWrapper<Any:<>>(' \t')),
+          TransformationWrapper(<add>)),
          ')')),
-       Transformation([<function <lambda> at 0xfc9270>]))),
-     first=TransformableTrampolineWrapper<And:[]>(
-      Transform:[<function <lambda> at 0xfc9380>](
-       FunctionWrapper<Any:[]>('*/'),
-       Transformation([<function <lambda> at 0xfc9380>])),
-      Transform:[<function add at 0xbce628>](
+       TransformationWrapper(<apply>))),
+     first=TransformableTrampolineWrapper<And:<>>(
+      Transform:<apply>(
+       FunctionWrapper<Any:<>>('*/'),
+       TransformationWrapper(<apply>)),
+      Transform:<add>(
        TrampolineWrapper<DepthFirst>(
         start=0,
         stop=None,
-        rest=FunctionWrapper<Any:[]>(' \t'),
-        first=FunctionWrapper<Any:[]>(' \t')),
-       Transformation([<function add at 0xbce628>])),
-      Transform:[<function <lambda> at 0xfc9270>](
-       TransformableTrampolineWrapper<Or:[]>(
-        Transform:[<function <lambda> at 0xfc9160>](
-         Transform:[<function add at 0xbce628>](
+        rest=FunctionWrapper<Any:<>>(' \t'),
+        first=FunctionWrapper<Any:<>>(' \t')),
+       TransformationWrapper(<add>)),
+      Transform:<apply>(
+       TransformableTrampolineWrapper<Or:<>>(
+        Transform:<apply>(
+         Transform:<add>(
           TrampolineWrapper<DepthFirst>(
            start=1,
            stop=None,
-           rest=FunctionWrapper<Any:[]>('0123456789'),
-           first=FunctionWrapper<Any:[]>('0123456789')),
-          Transformation([<function add at 0xbce628>])),
-         Transformation([<function <lambda> at 0xfc9160>])),
-        TransformableTrampolineWrapper<And:[]>(
-         TransformableTrampolineWrapper<And:[]>(
+           rest=FunctionWrapper<Any:<>>('0123456789'),
+           first=FunctionWrapper<Any:<>>('0123456789')),
+          TransformationWrapper(<add>)),
+         TransformationWrapper(<apply>)),
+        TransformableTrampolineWrapper<And:<>>(
+         TransformableTrampolineWrapper<And:<>>(
           '(',
-          Transform:[<function add at 0xbce628>](
+          Transform:<add>(
            TrampolineWrapper<DepthFirst>(
             start=0,
             stop=None,
-            rest=FunctionWrapper<Any:[]>(' \t'),
-            first=FunctionWrapper<Any:[]>(' \t')),
-           Transformation([<function add at 0xbce628>])),
+            rest=FunctionWrapper<Any:<>>(' \t'),
+            first=FunctionWrapper<Any:<>>(' \t')),
+           TransformationWrapper(<add>)),
           [Delayed]),
-         Transform:[<function add at 0xbce628>](
+         Transform:<add>(
           TrampolineWrapper<DepthFirst>(
            start=0,
            stop=None,
-           rest=FunctionWrapper<Any:[]>(' \t'),
-           first=FunctionWrapper<Any:[]>(' \t')),
-          Transformation([<function add at 0xbce628>])),
+           rest=FunctionWrapper<Any:<>>(' \t'),
+           first=FunctionWrapper<Any:<>>(' \t')),
+          TransformationWrapper(<add>)),
          ')')),
-       Transformation([<function <lambda> at 0xfc9270>]))))),
-   Transformation([<function <lambda> at 0xfc9490>])),
-  Transform:[<function add at 0xbce628>](
+       TransformationWrapper(<apply>))))),
+   TransformationWrapper(<apply>)),
+  Transform:<add>(
    TrampolineWrapper<DepthFirst>(
     start=0,
     stop=None,
-    rest=FunctionWrapper<Any:[]>(' \t'),
-    first=FunctionWrapper<Any:[]>(' \t')),
-   Transformation([<function add at 0xbce628>])),
+    rest=FunctionWrapper<Any:<>>(' \t'),
+    first=FunctionWrapper<Any:<>>(' \t')),
+   TransformationWrapper(<add>)),
   TrampolineWrapper<DepthFirst>(
    start=0,
    stop=None,
-   rest=TransformableTrampolineWrapper<And:[]>(
-    Transform:[<function <lambda> at 0xfc95a0>](
-     FunctionWrapper<Any:[]>('+-'),
-     Transformation([<function <lambda> at 0xfc95a0>])),
-    Transform:[<function add at 0xbce628>](
+   rest=TransformableTrampolineWrapper<And:<>>(
+    Transform:<apply>(
+     FunctionWrapper<Any:<>>('+-'),
+     TransformationWrapper(<apply>)),
+    Transform:<add>(
      TrampolineWrapper<DepthFirst>(
       start=0,
       stop=None,
-      rest=FunctionWrapper<Any:[]>(' \t'),
-      first=FunctionWrapper<Any:[]>(' \t')),
-     Transformation([<function add at 0xbce628>])),
-    Transform:[<function <lambda> at 0xfc9490>](
-     TransformableTrampolineWrapper<And:[]>(
-      Transform:[<function <lambda> at 0xfc9270>](
-       TransformableTrampolineWrapper<Or:[]>(
-        Transform:[<function <lambda> at 0xfc9160>](
-         Transform:[<function add at 0xbce628>](
+      rest=FunctionWrapper<Any:<>>(' \t'),
+      first=FunctionWrapper<Any:<>>(' \t')),
+     TransformationWrapper(<add>)),
+    Transform:<apply>(
+     TransformableTrampolineWrapper<And:<>>(
+      Transform:<apply>(
+       TransformableTrampolineWrapper<Or:<>>(
+        Transform:<apply>(
+         Transform:<add>(
           TrampolineWrapper<DepthFirst>(
            start=1,
            stop=None,
-           rest=FunctionWrapper<Any:[]>('0123456789'),
-           first=FunctionWrapper<Any:[]>('0123456789')),
-          Transformation([<function add at 0xbce628>])),
-         Transformation([<function <lambda> at 0xfc9160>])),
-        TransformableTrampolineWrapper<And:[]>(
-         TransformableTrampolineWrapper<And:[]>(
+           rest=FunctionWrapper<Any:<>>('0123456789'),
+           first=FunctionWrapper<Any:<>>('0123456789')),
+          TransformationWrapper(<add>)),
+         TransformationWrapper(<apply>)),
+        TransformableTrampolineWrapper<And:<>>(
+         TransformableTrampolineWrapper<And:<>>(
           '(',
-          Transform:[<function add at 0xbce628>](
+          Transform:<add>(
            TrampolineWrapper<DepthFirst>(
             start=0,
             stop=None,
-            rest=FunctionWrapper<Any:[]>(' \t'),
-            first=FunctionWrapper<Any:[]>(' \t')),
-           Transformation([<function add at 0xbce628>])),
+            rest=FunctionWrapper<Any:<>>(' \t'),
+            first=FunctionWrapper<Any:<>>(' \t')),
+           TransformationWrapper(<add>)),
           [Delayed]),
-         Transform:[<function add at 0xbce628>](
+         Transform:<add>(
           TrampolineWrapper<DepthFirst>(
            start=0,
            stop=None,
-           rest=FunctionWrapper<Any:[]>(' \t'),
-           first=FunctionWrapper<Any:[]>(' \t')),
-          Transformation([<function add at 0xbce628>])),
+           rest=FunctionWrapper<Any:<>>(' \t'),
+           first=FunctionWrapper<Any:<>>(' \t')),
+          TransformationWrapper(<add>)),
          ')')),
-       Transformation([<function <lambda> at 0xfc9270>])),
-      Transform:[<function add at 0xbce628>](
+       TransformationWrapper(<apply>)),
+      Transform:<add>(
        TrampolineWrapper<DepthFirst>(
         start=0,
         stop=None,
-        rest=FunctionWrapper<Any:[]>(' \t'),
-        first=FunctionWrapper<Any:[]>(' \t')),
-       Transformation([<function add at 0xbce628>])),
+        rest=FunctionWrapper<Any:<>>(' \t'),
+        first=FunctionWrapper<Any:<>>(' \t')),
+       TransformationWrapper(<add>)),
       TrampolineWrapper<DepthFirst>(
        start=0,
        stop=None,
-       rest=TransformableTrampolineWrapper<And:[]>(
-        Transform:[<function <lambda> at 0xfc9380>](
-         FunctionWrapper<Any:[]>('*/'),
-         Transformation([<function <lambda> at 0xfc9380>])),
-        Transform:[<function add at 0xbce628>](
+       rest=TransformableTrampolineWrapper<And:<>>(
+        Transform:<apply>(
+         FunctionWrapper<Any:<>>('*/'),
+         TransformationWrapper(<apply>)),
+        Transform:<add>(
          TrampolineWrapper<DepthFirst>(
           start=0,
           stop=None,
-          rest=FunctionWrapper<Any:[]>(' \t'),
-          first=FunctionWrapper<Any:[]>(' \t')),
-         Transformation([<function add at 0xbce628>])),
-        Transform:[<function <lambda> at 0xfc9270>](
-         TransformableTrampolineWrapper<Or:[]>(
-          Transform:[<function <lambda> at 0xfc9160>](
-           Transform:[<function add at 0xbce628>](
+          rest=FunctionWrapper<Any:<>>(' \t'),
+          first=FunctionWrapper<Any:<>>(' \t')),
+         TransformationWrapper(<add>)),
+        Transform:<apply>(
+         TransformableTrampolineWrapper<Or:<>>(
+          Transform:<apply>(
+           Transform:<add>(
             TrampolineWrapper<DepthFirst>(
              start=1,
              stop=None,
-             rest=FunctionWrapper<Any:[]>('0123456789'),
-             first=FunctionWrapper<Any:[]>('0123456789')),
-            Transformation([<function add at 0xbce628>])),
-           Transformation([<function <lambda> at 0xfc9160>])),
-          TransformableTrampolineWrapper<And:[]>(
-           TransformableTrampolineWrapper<And:[]>(
+             rest=FunctionWrapper<Any:<>>('0123456789'),
+             first=FunctionWrapper<Any:<>>('0123456789')),
+            TransformationWrapper(<add>)),
+           TransformationWrapper(<apply>)),
+          TransformableTrampolineWrapper<And:<>>(
+           TransformableTrampolineWrapper<And:<>>(
             '(',
-            Transform:[<function add at 0xbce628>](
+            Transform:<add>(
              TrampolineWrapper<DepthFirst>(
               start=0,
               stop=None,
-              rest=FunctionWrapper<Any:[]>(' \t'),
-              first=FunctionWrapper<Any:[]>(' \t')),
-             Transformation([<function add at 0xbce628>])),
+              rest=FunctionWrapper<Any:<>>(' \t'),
+              first=FunctionWrapper<Any:<>>(' \t')),
+             TransformationWrapper(<add>)),
             [Delayed]),
-           Transform:[<function add at 0xbce628>](
+           Transform:<add>(
             TrampolineWrapper<DepthFirst>(
              start=0,
              stop=None,
-             rest=FunctionWrapper<Any:[]>(' \t'),
-             first=FunctionWrapper<Any:[]>(' \t')),
-            Transformation([<function add at 0xbce628>])),
+             rest=FunctionWrapper<Any:<>>(' \t'),
+             first=FunctionWrapper<Any:<>>(' \t')),
+            TransformationWrapper(<add>)),
            ')')),
-         Transformation([<function <lambda> at 0xfc9270>]))),
-       first=TransformableTrampolineWrapper<And:[]>(
-        Transform:[<function <lambda> at 0xfc9380>](
-         FunctionWrapper<Any:[]>('*/'),
-         Transformation([<function <lambda> at 0xfc9380>])),
-        Transform:[<function add at 0xbce628>](
+         TransformationWrapper(<apply>))),
+       first=TransformableTrampolineWrapper<And:<>>(
+        Transform:<apply>(
+         FunctionWrapper<Any:<>>('*/'),
+         TransformationWrapper(<apply>)),
+        Transform:<add>(
          TrampolineWrapper<DepthFirst>(
           start=0,
           stop=None,
-          rest=FunctionWrapper<Any:[]>(' \t'),
-          first=FunctionWrapper<Any:[]>(' \t')),
-         Transformation([<function add at 0xbce628>])),
-        Transform:[<function <lambda> at 0xfc9270>](
-         TransformableTrampolineWrapper<Or:[]>(
-          Transform:[<function <lambda> at 0xfc9160>](
-           Transform:[<function add at 0xbce628>](
+          rest=FunctionWrapper<Any:<>>(' \t'),
+          first=FunctionWrapper<Any:<>>(' \t')),
+         TransformationWrapper(<add>)),
+        Transform:<apply>(
+         TransformableTrampolineWrapper<Or:<>>(
+          Transform:<apply>(
+           Transform:<add>(
             TrampolineWrapper<DepthFirst>(
              start=1,
              stop=None,
-             rest=FunctionWrapper<Any:[]>('0123456789'),
-             first=FunctionWrapper<Any:[]>('0123456789')),
-            Transformation([<function add at 0xbce628>])),
-           Transformation([<function <lambda> at 0xfc9160>])),
-          TransformableTrampolineWrapper<And:[]>(
-           TransformableTrampolineWrapper<And:[]>(
+             rest=FunctionWrapper<Any:<>>('0123456789'),
+             first=FunctionWrapper<Any:<>>('0123456789')),
+            TransformationWrapper(<add>)),
+           TransformationWrapper(<apply>)),
+          TransformableTrampolineWrapper<And:<>>(
+           TransformableTrampolineWrapper<And:<>>(
             '(',
-            Transform:[<function add at 0xbce628>](
+            Transform:<add>(
              TrampolineWrapper<DepthFirst>(
               start=0,
               stop=None,
-              rest=FunctionWrapper<Any:[]>(' \t'),
-              first=FunctionWrapper<Any:[]>(' \t')),
-             Transformation([<function add at 0xbce628>])),
+              rest=FunctionWrapper<Any:<>>(' \t'),
+              first=FunctionWrapper<Any:<>>(' \t')),
+             TransformationWrapper(<add>)),
             [Delayed]),
-           Transform:[<function add at 0xbce628>](
+           Transform:<add>(
             TrampolineWrapper<DepthFirst>(
              start=0,
              stop=None,
-             rest=FunctionWrapper<Any:[]>(' \t'),
-             first=FunctionWrapper<Any:[]>(' \t')),
-            Transformation([<function add at 0xbce628>])),
+             rest=FunctionWrapper<Any:<>>(' \t'),
+             first=FunctionWrapper<Any:<>>(' \t')),
+            TransformationWrapper(<add>)),
            ')')),
-         Transformation([<function <lambda> at 0xfc9270>]))))),
-     Transformation([<function <lambda> at 0xfc9490>]))),
-   first=TransformableTrampolineWrapper<And:[]>(
-    Transform:[<function <lambda> at 0xfc95a0>](
-     FunctionWrapper<Any:[]>('+-'),
-     Transformation([<function <lambda> at 0xfc95a0>])),
-    Transform:[<function add at 0xbce628>](
+         TransformationWrapper(<apply>))))),
+     TransformationWrapper(<apply>))),
+   first=TransformableTrampolineWrapper<And:<>>(
+    Transform:<apply>(
+     FunctionWrapper<Any:<>>('+-'),
+     TransformationWrapper(<apply>)),
+    Transform:<add>(
      TrampolineWrapper<DepthFirst>(
       start=0,
       stop=None,
-      rest=FunctionWrapper<Any:[]>(' \t'),
-      first=FunctionWrapper<Any:[]>(' \t')),
-     Transformation([<function add at 0xbce628>])),
-    Transform:[<function <lambda> at 0xfc9490>](
-     TransformableTrampolineWrapper<And:[]>(
-      Transform:[<function <lambda> at 0xfc9270>](
-       TransformableTrampolineWrapper<Or:[]>(
-        Transform:[<function <lambda> at 0xfc9160>](
-         Transform:[<function add at 0xbce628>](
+      rest=FunctionWrapper<Any:<>>(' \t'),
+      first=FunctionWrapper<Any:<>>(' \t')),
+     TransformationWrapper(<add>)),
+    Transform:<apply>(
+     TransformableTrampolineWrapper<And:<>>(
+      Transform:<apply>(
+       TransformableTrampolineWrapper<Or:<>>(
+        Transform:<apply>(
+         Transform:<add>(
           TrampolineWrapper<DepthFirst>(
            start=1,
            stop=None,
-           rest=FunctionWrapper<Any:[]>('0123456789'),
-           first=FunctionWrapper<Any:[]>('0123456789')),
-          Transformation([<function add at 0xbce628>])),
-         Transformation([<function <lambda> at 0xfc9160>])),
-        TransformableTrampolineWrapper<And:[]>(
-         TransformableTrampolineWrapper<And:[]>(
+           rest=FunctionWrapper<Any:<>>('0123456789'),
+           first=FunctionWrapper<Any:<>>('0123456789')),
+          TransformationWrapper(<add>)),
+         TransformationWrapper(<apply>)),
+        TransformableTrampolineWrapper<And:<>>(
+         TransformableTrampolineWrapper<And:<>>(
           '(',
-          Transform:[<function add at 0xbce628>](
+          Transform:<add>(
            TrampolineWrapper<DepthFirst>(
             start=0,
             stop=None,
-            rest=FunctionWrapper<Any:[]>(' \t'),
-            first=FunctionWrapper<Any:[]>(' \t')),
-           Transformation([<function add at 0xbce628>])),
+            rest=FunctionWrapper<Any:<>>(' \t'),
+            first=FunctionWrapper<Any:<>>(' \t')),
+           TransformationWrapper(<add>)),
           [Delayed]),
-         Transform:[<function add at 0xbce628>](
+         Transform:<add>(
           TrampolineWrapper<DepthFirst>(
            start=0,
            stop=None,
-           rest=FunctionWrapper<Any:[]>(' \t'),
-           first=FunctionWrapper<Any:[]>(' \t')),
-          Transformation([<function add at 0xbce628>])),
+           rest=FunctionWrapper<Any:<>>(' \t'),
+           first=FunctionWrapper<Any:<>>(' \t')),
+          TransformationWrapper(<add>)),
          ')')),
-       Transformation([<function <lambda> at 0xfc9270>])),
-      Transform:[<function add at 0xbce628>](
+       TransformationWrapper(<apply>)),
+      Transform:<add>(
        TrampolineWrapper<DepthFirst>(
         start=0,
         stop=None,
-        rest=FunctionWrapper<Any:[]>(' \t'),
-        first=FunctionWrapper<Any:[]>(' \t')),
-       Transformation([<function add at 0xbce628>])),
+        rest=FunctionWrapper<Any:<>>(' \t'),
+        first=FunctionWrapper<Any:<>>(' \t')),
+       TransformationWrapper(<add>)),
       TrampolineWrapper<DepthFirst>(
        start=0,
        stop=None,
-       rest=TransformableTrampolineWrapper<And:[]>(
-        Transform:[<function <lambda> at 0xfc9380>](
-         FunctionWrapper<Any:[]>('*/'),
-         Transformation([<function <lambda> at 0xfc9380>])),
-        Transform:[<function add at 0xbce628>](
+       rest=TransformableTrampolineWrapper<And:<>>(
+        Transform:<apply>(
+         FunctionWrapper<Any:<>>('*/'),
+         TransformationWrapper(<apply>)),
+        Transform:<add>(
          TrampolineWrapper<DepthFirst>(
           start=0,
           stop=None,
-          rest=FunctionWrapper<Any:[]>(' \t'),
-          first=FunctionWrapper<Any:[]>(' \t')),
-         Transformation([<function add at 0xbce628>])),
-        Transform:[<function <lambda> at 0xfc9270>](
-         TransformableTrampolineWrapper<Or:[]>(
-          Transform:[<function <lambda> at 0xfc9160>](
-           Transform:[<function add at 0xbce628>](
+          rest=FunctionWrapper<Any:<>>(' \t'),
+          first=FunctionWrapper<Any:<>>(' \t')),
+         TransformationWrapper(<add>)),
+        Transform:<apply>(
+         TransformableTrampolineWrapper<Or:<>>(
+          Transform:<apply>(
+           Transform:<add>(
             TrampolineWrapper<DepthFirst>(
              start=1,
              stop=None,
-             rest=FunctionWrapper<Any:[]>('0123456789'),
-             first=FunctionWrapper<Any:[]>('0123456789')),
-            Transformation([<function add at 0xbce628>])),
-           Transformation([<function <lambda> at 0xfc9160>])),
-          TransformableTrampolineWrapper<And:[]>(
-           TransformableTrampolineWrapper<And:[]>(
+             rest=FunctionWrapper<Any:<>>('0123456789'),
+             first=FunctionWrapper<Any:<>>('0123456789')),
+            TransformationWrapper(<add>)),
+           TransformationWrapper(<apply>)),
+          TransformableTrampolineWrapper<And:<>>(
+           TransformableTrampolineWrapper<And:<>>(
             '(',
-            Transform:[<function add at 0xbce628>](
+            Transform:<add>(
              TrampolineWrapper<DepthFirst>(
               start=0,
               stop=None,
-              rest=FunctionWrapper<Any:[]>(' \t'),
-              first=FunctionWrapper<Any:[]>(' \t')),
-             Transformation([<function add at 0xbce628>])),
+              rest=FunctionWrapper<Any:<>>(' \t'),
+              first=FunctionWrapper<Any:<>>(' \t')),
+             TransformationWrapper(<add>)),
             [Delayed]),
-           Transform:[<function add at 0xbce628>](
+           Transform:<add>(
             TrampolineWrapper<DepthFirst>(
              start=0,
              stop=None,
-             rest=FunctionWrapper<Any:[]>(' \t'),
-             first=FunctionWrapper<Any:[]>(' \t')),
-            Transformation([<function add at 0xbce628>])),
+             rest=FunctionWrapper<Any:<>>(' \t'),
+             first=FunctionWrapper<Any:<>>(' \t')),
+            TransformationWrapper(<add>)),
            ')')),
-         Transformation([<function <lambda> at 0xfc9270>]))),
-       first=TransformableTrampolineWrapper<And:[]>(
-        Transform:[<function <lambda> at 0xfc9380>](
-         FunctionWrapper<Any:[]>('*/'),
-         Transformation([<function <lambda> at 0xfc9380>])),
-        Transform:[<function add at 0xbce628>](
+         TransformationWrapper(<apply>))),
+       first=TransformableTrampolineWrapper<And:<>>(
+        Transform:<apply>(
+         FunctionWrapper<Any:<>>('*/'),
+         TransformationWrapper(<apply>)),
+        Transform:<add>(
          TrampolineWrapper<DepthFirst>(
           start=0,
           stop=None,
-          rest=FunctionWrapper<Any:[]>(' \t'),
-          first=FunctionWrapper<Any:[]>(' \t')),
-         Transformation([<function add at 0xbce628>])),
-        Transform:[<function <lambda> at 0xfc9270>](
-         TransformableTrampolineWrapper<Or:[]>(
-          Transform:[<function <lambda> at 0xfc9160>](
-           Transform:[<function add at 0xbce628>](
+          rest=FunctionWrapper<Any:<>>(' \t'),
+          first=FunctionWrapper<Any:<>>(' \t')),
+         TransformationWrapper(<add>)),
+        Transform:<apply>(
+         TransformableTrampolineWrapper<Or:<>>(
+          Transform:<apply>(
+           Transform:<add>(
             TrampolineWrapper<DepthFirst>(
              start=1,
              stop=None,
-             rest=FunctionWrapper<Any:[]>('0123456789'),
-             first=FunctionWrapper<Any:[]>('0123456789')),
-            Transformation([<function add at 0xbce628>])),
-           Transformation([<function <lambda> at 0xfc9160>])),
-          TransformableTrampolineWrapper<And:[]>(
-           TransformableTrampolineWrapper<And:[]>(
+             rest=FunctionWrapper<Any:<>>('0123456789'),
+             first=FunctionWrapper<Any:<>>('0123456789')),
+            TransformationWrapper(<add>)),
+           TransformationWrapper(<apply>)),
+          TransformableTrampolineWrapper<And:<>>(
+           TransformableTrampolineWrapper<And:<>>(
             '(',
-            Transform:[<function add at 0xbce628>](
+            Transform:<add>(
              TrampolineWrapper<DepthFirst>(
               start=0,
               stop=None,
-              rest=FunctionWrapper<Any:[]>(' \t'),
-              first=FunctionWrapper<Any:[]>(' \t')),
-             Transformation([<function add at 0xbce628>])),
+              rest=FunctionWrapper<Any:<>>(' \t'),
+              first=FunctionWrapper<Any:<>>(' \t')),
+             TransformationWrapper(<add>)),
             [Delayed]),
-           Transform:[<function add at 0xbce628>](
+           Transform:<add>(
             TrampolineWrapper<DepthFirst>(
              start=0,
              stop=None,
-             rest=FunctionWrapper<Any:[]>(' \t'),
-             first=FunctionWrapper<Any:[]>(' \t')),
-            Transformation([<function add at 0xbce628>])),
+             rest=FunctionWrapper<Any:<>>(' \t'),
+             first=FunctionWrapper<Any:<>>(' \t')),
+            TransformationWrapper(<add>)),
            ')')),
-         Transformation([<function <lambda> at 0xfc9270>]))))),
-     Transformation([<function <lambda> at 0xfc9490>]))))),
- Transformation([<function <lambda> at 0xfc96b0>])))''')
-        
-    def test_simple(self):
-        expression  = Delayed()
-        number      = Digit()[1:,...]
-        expression += (number | '(' / expression / ')')
-
-        description = repr(expression)
-        self.assert_same(description, r'''Delayed(matcher=TransformableTrampolineWrapper<Or:[]>(
- Transform:[<function add at 0xbce628>](
-  TrampolineWrapper<DepthFirst>(
-   start=1,
-   stop=None,
-   rest=FunctionWrapper<Any:[]>('0123456789'),
-   first=FunctionWrapper<Any:[]>('0123456789')),
-  Transformation([<function add at 0xbce628>])),
- TransformableTrampolineWrapper<And:[]>(
-  TransformableTrampolineWrapper<And:[]>(
-   '(',
-   Transform:[<function add at 0xbce628>](
-    TrampolineWrapper<DepthFirst>(
-     start=0,
-     stop=None,
-     rest=FunctionWrapper<Any:[]>(' \t'),
-     first=FunctionWrapper<Any:[]>(' \t')),
-    Transformation([<function add at 0xbce628>])),
-   [Delayed]),
-  Transform:[<function add at 0xbce628>](
-   TrampolineWrapper<DepthFirst>(
-    start=0,
-    stop=None,
-    rest=FunctionWrapper<Any:[]>(' \t'),
-    first=FunctionWrapper<Any:[]>(' \t')),
-   Transformation([<function add at 0xbce628>])),
-  ')')))''')
-        description = expression.tree()
+         TransformationWrapper(<apply>))))),
+     TransformationWrapper(<apply>))))),
+ TransformationWrapper(<apply>)))''')
+        expression.config.no_full_match().no_compile_regexp()
+        parser = expression.null_parser()
+        description = parser.matcher.tree()
         self.assert_same(description, r"""Delayed
  `- matcher TransformableTrampolineWrapper
      +- Transform

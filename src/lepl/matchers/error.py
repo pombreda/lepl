@@ -33,12 +33,12 @@ def make_error(msg):
     
     Invoke as ``** make_error('bad results: {results}')``, for example.
     '''
-    def fun(stream_out, results):
+    def fun(stream_in, stream_out, results):
         '''
         Create the error node when results are available.
         '''
         return Error(results,
-            *syntax_error_args(msg, stream_out, results))
+            *syntax_error_args(msg, stream_in, stream_out, results))
     return fun
 
 
@@ -51,11 +51,11 @@ OFFSET = 'offset'
 LINE = 'line'
 
 
-def syntax_error_args(msg, stream_out, results):
+def syntax_error_args(msg, stream_in, stream_out, results):
     '''
     Helper function for constructing format dictionary.
     '''
-    kargs = syntax_error_kargs(stream_out, results)
+    kargs = syntax_error_kargs(stream_in, stream_out, results)
     filename = kargs[FILENAME]
     lineno = kargs[LINENO]
     offset = kargs[OFFSET]
@@ -64,22 +64,22 @@ def syntax_error_args(msg, stream_out, results):
     return (format(msg, **kargs), (filename, lineno, offset, line))
 
 
-def syntax_error_kargs(stream_out, results):
+def syntax_error_kargs(stream_in, stream_out, results):
     '''
     Helper function for constructing format dictionary.
     '''
     try:
-        (lineno, offset, _depth, line, filename) = stream_out.location
+        (lineno, offset, _depth, line, filename) = stream_in.location
         offset += 1 # appears to be 1-based?
     except AttributeError:
         filename = '<unknown> - use stream for better error reporting'
         lineno = -1
         offset = -1
         try:
-            line = '...' + stream_out
+            line = '...' + stream_in
         except TypeError:
-            line = ['...'] + stream_out
-    kargs = {STREAM_OUT: stream_out, 
+            line = ['...'] + stream_in
+    kargs = {STREAM_IN: stream_in, STREAM_OUT: stream_out, 
              RESULTS: results, FILENAME: filename, 
              LINENO: lineno, OFFSET:offset, LINE:line}
     return kargs
@@ -89,11 +89,11 @@ def raise_error(msg):
     '''
     As `make_error()`, but also raise the result.
     '''
-    def fun(stream_out, results):
+    def fun(stream_in, stream_out, results):
         '''
         Delay raising the error until called in the parser.
         '''
-        raise make_error(msg)(stream_out, results)
+        raise make_error(msg)(stream_in, stream_out, results)
     return fun
 
 

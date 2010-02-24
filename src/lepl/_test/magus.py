@@ -139,7 +139,7 @@ class CloneTest(TestCase):
         self.assert_count(desc1, Or, 1)
         self.assert_count(desc1, Delayed, 2)
         self.assert_count(desc1, Transform, 7)
-        self.assert_count(desc1, Transformation, 7)
+        self.assert_count(desc1, TransformationWrapper, 7)
         
         clone2 = ComposeTransforms()(clone1)
         desc2 = NodeStats(clone2)
@@ -150,7 +150,7 @@ class CloneTest(TestCase):
         self.assert_count(desc2, Or, 1)
         self.assert_count(desc2, Delayed, 2)
         self.assert_count(desc2, Transform, 5)
-        self.assert_count(desc2, Transformation, 5)
+        self.assert_count(desc2, TransformationWrapper, 5)
         
         clone3 = Memoize(RMemo)(clone2)
         desc3 = NodeStats(clone3) 
