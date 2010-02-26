@@ -111,8 +111,6 @@ def copy_standard_attributes(node, copy, describe=True, transform=True):
     from lepl.matchers.support import Transformable
     if isinstance(node, Transformable) and transform:
         copy.wrapper = node.wrapper
-    if describe:
-        copy.describe = node.describe 
     if isinstance(node, FactoryMatcher):
         copy.factory = node.factory
 

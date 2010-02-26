@@ -398,7 +398,7 @@ class ConfigBuilder(object):
         Disable the composition of transforms.
         '''
         from lepl.core.rewriters import ComposeTransforms
-        self.remove_rewriters(ComposeTransforms)
+        return self.remove_rewriters(ComposeTransforms)
         
     def auto_memoize(self, conservative=False, full=False):
         '''

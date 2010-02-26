@@ -82,7 +82,6 @@ class _RMemo(OperatorMatcher):
         self._arg(matcher=matcher)
         self.__table = {}
         self.__state = State.singleton()
-        #self.tag(self.matcher.describe)
         
     def _match(self, stream):
         '''
@@ -156,7 +155,7 @@ i, self.__table, stream, type(stream), self.__cached_stream, matcher))
         for i in count():
             yield (yield GeneratorWrapper(self.__read(i, matcher, stream), 
                             _DummyMatcher(self.__class__.__name__, 
-                                          matcher.describe), 
+                                          matcher), 
                             stream))
 
 
@@ -170,7 +169,13 @@ class _DummyMatcher(object):
         '''
         Making this lazy has no effect on efficiency for nested.right.
         '''
-        self.describe = format('{0}({1})', outer, inner)
+        self.__cached_repr = format('{0}({1})', outer, inner)
+        
+    def __repr__(self):
+        return self.__cached_repr
+    
+    def __str__(self):
+        return self.__cached_repr
         
         
 def LMemo(matcher):
@@ -196,7 +201,6 @@ class _LMemo(OperatorMatcher):
         self._arg(matcher=matcher)
         self.__caches = {}
         self.__state = State.singleton()
-        self.tag(self.matcher.describe)
         
     @tagged
     def _match(self, stream):

@@ -125,8 +125,6 @@ class Lookahead(OperatorMatcher):
         super(Lookahead, self).__init__()
         self._arg(matcher=coerce_(matcher))
         self._karg(negated=negated)
-        if negated:
-            self.tag('~')
     
     @tagged
     def _match(self, stream):

@@ -20,11 +20,11 @@
 Tests for the lepl.rewriters module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from re import sub
 from unittest import TestCase
 
-from lepl import Any, Or, Delayed, Optional, Node, Drop, And, Join
+from lepl import Any, Or, Delayed, Optional, Node, Drop, And, Join, Digit
 from lepl.support.graph import preorder
 from lepl.matchers.matcher import Matcher, is_child
 from lepl.matchers.support import TransformableWrapper
@@ -47,17 +47,19 @@ class DelayedCloneTest(TestCase):
     
     def assert_clone(self, matcher):
         copy = matcher.postorder(DelayedClone(), Matcher)
+    
+    def _assert_clone(self, matcher, copy):
         original = preorder(matcher, Matcher)
         duplicate = preorder(copy, Matcher)
         try:
             while True:
                 o = next(original)
                 d = next(duplicate)
-                assert type(o) == type(d), (o, d)
+                assert type(o) == type(d), (str(o), str(d), o, d)
                 if isinstance(o, Matcher):
-                    assert o is not d, (o, d)
+                    assert o is not d, (str(o), str(d), o, d)
                 else:
-                    assert o is d, (o, d)
+                    assert o is d, (str(o), str(d), o, d)
         except StopIteration:
             self.assert_empty(original, 'original')
             self.assert_empty(duplicate, 'duplicate')
@@ -112,6 +114,34 @@ class DelayedCloneTest(TestCase):
         matcher = a | b | c
         self.assert_clone(matcher)
         self.assert_relative(matcher)
+        
+    def test_full_config_loop(self):
+        matcher = Delayed()
+        matcher += Any() & matcher
+        matcher.config.no_full_match()
+        copy = matcher.string_parser().matcher
+        self._assert_clone(matcher, copy)
+                
+    def test_transformed_etc(self):
+        class Term(Node): pass
+        class Factor(Node): pass
+        class Expression(Node): pass
+
+        expression  = Delayed()
+        number      = Digit()[1:,...]                      > 'number'
+        term        = (number | '(' / expression / ')')    > Term
+        muldiv      = Any('*/')                            > 'operator'
+        factor      = (term / (muldiv / term)[0::])        > Factor
+        addsub      = Any('+-')                            > 'operator'
+        expression += (factor / (addsub / factor)[0::])    > Expression
+
+        self.assert_clone(expression)
+        self.assert_relative(expression)
+        expression.config.no_full_match().no_compile_regexp()
+        expression.config.no_compose_transforms().no_direct_eval()
+        expression.config.no_flatten()
+        copy = expression.string_parser().matcher
+        self._assert_clone(expression, copy)
                 
 
 def append(x):

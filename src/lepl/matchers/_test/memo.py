@@ -20,7 +20,7 @@
 Tests for the lepl.memo module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Delayed, Any, Optional, Node, Literals, Eos, Token

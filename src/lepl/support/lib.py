@@ -171,17 +171,7 @@ class LogMixin(object):
         self._info = self._log.info
         self._warn = self._log.warn
         self._error = self._log.error
-        self.describe = self.__class__.__name__
         
-    def tag(self, *args):
-        '''
-        Construct a tag from the class name and an optional set of extra values.
-        '''
-        # pylint: disable-msg=W0141
-        self.describe = format('{0}({1})', self.__class__.__name__, 
-                               ','.join(map(str, args)))
-        return self
-    
 
 def safe_in(value, container, default=False):
     '''

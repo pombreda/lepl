@@ -43,7 +43,6 @@ class BaseRegexp(Transformable):
         super(BaseRegexp, self).__init__()
         self._arg(regexp=regexp)
         self._karg(alphabet=alphabet)
-        self.tag(regexp)
         
     def compose(self, wrapper):
         '''

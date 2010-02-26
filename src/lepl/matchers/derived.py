@@ -166,7 +166,7 @@ def Apply(matcher, function, raw=False, args=False):
         def apply(stream_in, matcher):
             (results, stream_out) = matcher()
             return (function(results), stream_out)
-    return Transform(matcher, apply).tag('Apply')
+    return Transform(matcher, apply)
 
 
 def args(function):
@@ -225,7 +225,7 @@ def KApply(matcher, function, raw=False):
             return function(**kargs)
         else:
             return ([function(**kargs)], stream_out)
-    return Transform(matcher, fun).tag('KApply')
+    return Transform(matcher, fun)
 
         
 def AnyBut(exclude=None):
@@ -236,7 +236,7 @@ def AnyBut(exclude=None):
     The argument should be a list of tokens (or a string of suitable 
     characters) to exclude, or a matcher.  If omitted all tokens are accepted.
     '''
-    return And(~Lookahead(coerce_(exclude, Any)), Any()).tag('AnyBut')
+    return And(~Lookahead(coerce_(exclude, Any)), Any())
             
 
 def Optional(matcher):
@@ -317,7 +317,7 @@ def Add(matcher):
     Join tokens in the result using the "+" operator (**+**).
     This joins strings and merges lists.  
     '''
-    return Apply(matcher, TransformationWrapper(add)).tag('Add')
+    return Apply(matcher, TransformationWrapper(add))
 
 
 def Join(*matchers):
@@ -332,14 +332,14 @@ def Drop(matcher):
     '''
     Do the match, but return nothing (**~**).  The ~ prefix is equivalent.
     '''
-    return Apply(matcher, lambda l: [], raw=True).tag('Drop')
+    return Apply(matcher, lambda l: [], raw=True)
 
 
 def Substitute(matcher, value):
     '''
     Replace each return value with that given.
     '''
-    return Map(matcher, lambda x: value).tag('Substitute')
+    return Map(matcher, lambda x: value)
 
 
 def Name(matcher, name):
@@ -350,7 +350,7 @@ def Name(matcher, name):
     the given name and whose second value is the matched token.  The Node 
     class recognises this form and associates such values with named attributes.
     '''
-    return Map(matcher, name).tag("Name('{0}')" % name)
+    return Map(matcher, name)
 
 
 Eos = Eof

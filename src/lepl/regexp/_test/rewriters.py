@@ -58,7 +58,7 @@ class RewriteTest(TestCase):
         matcher = rx.null_matcher()
         results = list(matcher('abq'))
         assert results == [(['ab'], 'q')], results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
         
     def test_add(self):
         rx = Add(And(Any('a'), Any('b'))) 
@@ -66,13 +66,13 @@ class RewriteTest(TestCase):
         matcher = rx.null_matcher()
         results = list(matcher('abq'))
         assert results == [(['ab'], 'q')], results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
         
     def test_literal(self):
         rx = Literal('abc')
         rx.config.clear().compile_to_nfa(force=True)
         matcher = rx.null_matcher()
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
         results = list(matcher('abcd'))
         assert results == [(['abc'], 'd')], results
         
@@ -82,7 +82,7 @@ class RewriteTest(TestCase):
         results = list(matcher('abcd'))
         assert results == [(['abce'], 'd')], results
         print(repr(matcher.matcher))
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
         
     def test_dfs(self):
         expected = [(['abcd'], ''), (['abc'], 'd'), (['ab'], 'cd'), 
@@ -98,7 +98,7 @@ class RewriteTest(TestCase):
         matcher = rx.null_matcher()
         results = list(matcher('abcd'))
         assert results == expected, results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
     
     def test_complex(self):
         #basicConfig(level=DEBUG)
@@ -112,7 +112,7 @@ class RewriteTest(TestCase):
                            (['baaa'], 'aax'), (['baa'], 'aaax')], results
         results = list(matcher('ba'))
         assert results == [], results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
 
     def test_integer(self):
         rx = Integer()
@@ -120,7 +120,7 @@ class RewriteTest(TestCase):
         matcher = rx.null_matcher()
         results = list(matcher('12x'))
         assert results == [(['12'], 'x'), (['1'], '2x')], results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
         
     def test_float(self):
         rx = Float()
@@ -128,7 +128,7 @@ class RewriteTest(TestCase):
         matcher = rx.null_matcher()
         results = list(matcher('1.2x'))
         assert results == [(['1.2'], 'x'), (['1.'], '2x'), (['1'], '.2x')], results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
         
     def test_star(self):
         rx = Add(Star('a')) 
@@ -136,7 +136,7 @@ class RewriteTest(TestCase):
         matcher = rx.null_matcher()
         results = list(matcher('aa'))
         assert results == [(['aa'], ''), (['a'], 'a'), ([], 'aa')], results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
         
     def test_word(self):
         #basicConfig(level=DEBUG)
@@ -145,5 +145,5 @@ class RewriteTest(TestCase):
         matcher = rx.null_matcher()
         results = list(matcher('aa'))
         assert results == [(['aa'], ''), (['a'], 'a')], results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.describe
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
         

@@ -67,11 +67,11 @@ class GeneratorWrapper(object):
     '''
 
     def __init__(self, generator, matcher, stream):
+        self.__generator = generator
         self.matcher = matcher
         self.stream = stream
-        self.describe = None
-        self.__generator = generator
-    
+        self.__cached_repr = None
+        
     def __next__(self):
         return next(self.__generator)
             
@@ -106,10 +106,12 @@ class GeneratorWrapper(object):
         '''
         Lazily evaluated for speed - saves 1/3 of time spent in constructor
         '''
-        if not self.describe:
-            self.describe = format('{0}({1!r})', 
-                                   self.matcher.describe, self.stream)
-        return self.describe
+        if not self.__cached_repr:
+            self.__cached_repr = format('{0}({1!r})', self.matcher, self.stream)
+        return self.__cached_repr
+    
+    def __str__(self):
+        return self.__repr__()
         
 
 def trampoline(main, m_stack=None, m_value=None):
@@ -214,7 +216,7 @@ def trampoline(main, m_stack=None, m_value=None):
                             log.debug(format('Top of stack: {0}', stack[-1]))
                         log.warn(format_exc())
                         for generator in stack:
-                            log.debug('Stack: ' + generator.matcher.describe)
+                            log.debug(format('Stack: {0}', generator))
     finally:
         # record the remaining stack
         while m_stack and stack:
