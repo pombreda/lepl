@@ -264,19 +264,10 @@ class TrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
     
     @tagged
     def _match(self, stream):
-        generator = self._cached_matcher(self, stream)
-        try:
-            while True:
-                value = next(generator)
-                while type(value) is GeneratorWrapper:
-                    try:
-                        response = yield value
-                        value = generator.send(response)
-                    except StopIteration:
-                        value = generator.throw(StopIteration)
-                yield value
-        except StopIteration:
-            pass
+        generator = GeneratorWrapper(self._cached_matcher(self, stream), 
+                                     self, stream)
+        while True:
+            yield(yield generator)
     
 
 class TransformableWrapper(BaseFactoryMatcher, Transformable):
@@ -311,16 +302,11 @@ class TransformableTrampolineWrapper(TransformableWrapper):
     def _match(self, stream_in):
         from lepl.matchers.transform import raise_
         function = self.wrapper.function
-        generator = self._cached_matcher(self, stream_in)
+        generator = GeneratorWrapper(self._cached_matcher(self, stream_in), 
+                                     self, stream_in)
         while True:
             try:
-                value = next(generator)
-                while type(value) is GeneratorWrapper:
-                    try:
-                        response = yield value
-                        value = generator.send(response)
-                    except StopIteration as e1:
-                        value = generator.throw(e1)
+                value = yield generator
                 yield function(stream_in, lambda: value) \
                     if function else value
             except StopIteration as e:

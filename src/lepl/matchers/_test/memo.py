@@ -20,10 +20,10 @@
 Tests for the lepl.memo module.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl import Delayed, Any, Optional, Node, Literals, Eos
+from lepl import Delayed, Any, Optional, Node, Literals, Eos, Token
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321
@@ -140,3 +140,79 @@ class MemoTest(TestCase):
         #print(count)
         assert count == 392, count
     
+    
+class RecursionTest(TestCase):
+    
+    def right(self):
+        matcher = Delayed()
+        matcher += Any() & Optional(matcher)
+        return matcher
+    
+    def right_token(self):
+        matcher = Delayed()
+        matcher += Token(Any()) & Optional(matcher)
+        return matcher
+    
+    def left(self):
+        matcher = Delayed()
+        matcher += Optional(matcher) & Any()
+        return matcher
+    
+    def left_token(self):
+        matcher = Delayed()
+        matcher += Optional(matcher) & Token(Any())
+        return matcher
+    
+    def do_test(self, parser):
+        result = parser('ab')
+        assert result == ['a', 'b'], result
+        result = parser('aa')
+        assert result == ['a', 'a'], result
+        result = parser('aaa')
+        assert result == ['a', 'a', 'a'], result
+        result = parser('aba')
+        assert result == ['a', 'b', 'a'], result
+        
+    def test_right_string(self):
+        matcher = self.right()
+        matcher.config.no_full_match().auto_memoize(full=True)
+        self.do_test(matcher.string_parser())
+        
+    def test_right_null(self):
+        matcher = self.right()
+        matcher.config.no_full_match().auto_memoize(full=True)
+        self.do_test(matcher.null_parser())
+
+    def test_right_token_string(self):
+        #basicConfig(level=DEBUG)
+        matcher = self.right_token()
+        matcher.config.no_full_match().auto_memoize(full=True)
+        self.do_test(matcher.string_parser())
+        
+    def test_right_token_null(self):
+        #basicConfig(level=DEBUG)
+        matcher = self.right_token()
+        matcher.config.no_full_match().auto_memoize(full=True)
+        self.do_test(matcher.null_parser())
+        
+    def test_left_string(self):
+        matcher = self.left()
+        matcher.config.no_full_match().auto_memoize(full=True)
+        self.do_test(matcher.string_parser())
+        
+    def test_left_null(self):
+        matcher = self.left()
+        matcher.config.no_full_match().auto_memoize(full=True)
+        self.do_test(matcher.null_parser())
+
+    def test_left_token_string(self):
+        matcher = self.left_token()
+        matcher.config.no_full_match().auto_memoize(full=True)
+        self.do_test(matcher.string_parser())
+        
+    def test_left_token_null(self):
+        matcher = self.left_token()
+        matcher.config.no_full_match().auto_memoize(full=True)
+        self.do_test(matcher.null_parser())
+
+        

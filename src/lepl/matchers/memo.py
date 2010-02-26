@@ -84,7 +84,6 @@ class _RMemo(OperatorMatcher):
         self.__state = State.singleton()
         #self.tag(self.matcher.describe)
         
-    @tagged
     def _match(self, stream):
         '''
         Attempt to match the stream.
@@ -100,9 +99,11 @@ class _RMemo(OperatorMatcher):
                 # means that we can return a table around this generator 
                 # immediately.
                 self.__table[key] = RTable(self.matcher._match(stream))
-            return self.__table[key].generator(self.matcher, stream)
-        except TypeError: # unhashable type; cannot cache
-            self._warn(format('Cannot memoize (cannot hash {0!r})', stream))
+            return GeneratorWrapper(self.__table[key].generator(self.matcher, stream),
+                                    self, stream)
+        except TypeError as e: # unhashable type; cannot cache
+            self._warn(format('Cannot memoize (cannot hash {0!r}: {1})', 
+                              stream, e))
             return self.matcher._match(stream)
 
 
@@ -118,18 +119,25 @@ class RTable(LogMixin):
         self.__table = []
         self.__stopped = False
         self.__active = False
+        self.__cached_stream = None
         
-    def __read(self, i):
+    def __read(self, i, matcher, stream):
         '''
         Either return a value from previous cached values or call the
         embedded generator to get the next value (and then store it).
         '''
         if self.__active:
-            raise MemoException('Left recursion with RMemo?')
+            raise MemoException(format('''Left recursion with RMemo?
+i: {0}
+table: {1!r}
+stream: {2}/{3} (initially {4})
+matcher: {5!s}''', 
+i, self.__table, stream, type(stream), self.__cached_stream, matcher))
         try:
             while i >= len(self.__table) and not self.__stopped:
                 try:
                     self.__active = True
+                    self.__cached_stream = stream
                     result = yield self.__generator
                 finally:
                     self.__active = False
@@ -146,7 +154,7 @@ class RTable(LogMixin):
         A proxy to the "real" generator embedded inside the cache.
         '''
         for i in count():
-            yield (yield GeneratorWrapper(self.__read(i), 
+            yield (yield GeneratorWrapper(self.__read(i, matcher, stream), 
                             _DummyMatcher(self.__class__.__name__, 
                                           matcher.describe), 
                             stream))

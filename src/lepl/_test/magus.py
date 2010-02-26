@@ -179,7 +179,7 @@ class CloneTest(TestCase):
             clone3.parse_string('1join()')
             assert False, 'Expected error'
         except MemoException as error:
-            assert str(error) == 'Left recursion with RMemo?', str(error)
+            assert 'Left recursion with RMemo?' in str(error), str(error)
         
         clone4.config.clear()
         clone4.parse_string('1join()')

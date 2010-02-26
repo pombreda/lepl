@@ -48,7 +48,8 @@ def right():
     pair = Delayed()
     with Separator(Regexp(r'\s*')):
         pair += '(' & Optional(pair) & ')' & Optional(pair)
-    p = pair.string_matcher(Configuration(rewriters=[memoize(RMemo)]))
+    pair.config.clear().auto_memoize()
+    p = pair.string_matcher()
     results = list(p(make_data(10)))
     print(len(results))
 
@@ -64,7 +65,7 @@ def left():
     with Separator(Regexp(r'\s*')):
         pair += Optional(pair) & '(' & Optional(pair) & ')' 
     #p = pair.string_matcher(Configuration.dfa())
-    p.config.clear.auto_memoize(False)
+    pair.config.clear().auto_memoize()
     p = pair.string_matcher()
     results = list(p(make_data(6)))
     print(len(results))
@@ -94,7 +95,8 @@ p.print_stats(35)
     cProfile.run('{0}()'.format(name), 'nested.prof')
 
 if __name__ == '__main__':
-    time('left')
+#    time('left')
+    time('right')
 #    profile('left')
 #    right()
 #    left()

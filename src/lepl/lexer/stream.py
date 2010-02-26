@@ -76,7 +76,7 @@ class TokenSource(BaseDelegateSource):
         assert isinstance(stream, LocationStream)
         # join is unused(?) but passed on to ContentStream
         super(TokenSource, self).__init__(str(stream.source),
-                                          stream.source.join)
+                                          stream.source.join, True)
         self.__tokens = iter(tokens)
         self.__token_count = 0
     
@@ -97,6 +97,12 @@ class TokenSource(BaseDelegateSource):
         except StopIteration:
             self.total_length = self.__token_count
             return (None, None)
+        
+    def hash_line(self, line, location):
+        '''
+        A line looks like [(['Tk0'], '1')], we extract the text.
+        '''
+        return hash(line[0][1]) ^ hash(location)
         
 
 def lexed_location_stream(tokens, discard, stream, source=None):

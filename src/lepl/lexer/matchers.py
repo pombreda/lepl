@@ -38,7 +38,7 @@ from lepl.matchers.memo import NoMemo
 from lepl.matchers.operators import ADD, AND, OR, APPLY, APPLY_RAW, \
     NOT, KARGS, RAISE, REPEAT, FIRST, MAP
 from lepl.matchers.support import BaseMatcher, coerce_
-from lepl.core.parser import tagged
+from lepl.core.parser import tagged, GeneratorWrapper
 from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import CompileRegexp
@@ -201,8 +201,8 @@ class BaseToken(OperatorMatcher, NoMemo):
         if not self.compiled:
             raise LexerError(
                 format('A {0} token has not been compiled. '
-                       'You must use the lexer_rewriter with Tokens. '
-                       'This can be done by using Configuration.tokens().',
+                       'You must use the lexer rewriter with Tokens. '
+                       'This can be done by using matcher.config.lexer().',
                        self.__class__.__name__))
         if stream:
             (tokens, contents) = stream[0]
@@ -212,16 +212,11 @@ class BaseToken(OperatorMatcher, NoMemo):
                     yield ([contents], stream[1:])
                 else:
                     new_stream = self.__new_stream(contents, stream)
-                    # pylint: disable-msg=W0212
-                    # implementation, not public, method
                     generator = self.content._match(new_stream)
-                    try:
-                        while True:
-                            (value, stream_out) = yield generator
-                            if not stream_out or not self.complete:
-                                yield (value, stream[1:])
-                    except StopIteration:
-                        return
+                    while True:
+                        (result, stream_out) = yield generator
+                        if not stream_out or not self.complete:
+                            yield (result, stream[1:])
         
     def __str__(self):
         return format('{0}: {1!r}', self.id_, self.regexp)

@@ -344,7 +344,7 @@ class StreamView(object):
             return repr(self)
     
     def __hash__(self):
-        return hash(type(self.__line)) ^ self.__offset
+        return hash(type(self.__line)) ^ hash(self.__line) ^ self.__offset
     
     def __eq__(self, other):
         # pylint: disable-msg=W0212
@@ -352,6 +352,7 @@ class StreamView(object):
         return type(self) is type(other) and \
             self.__line == other.__line and \
             self.__offset == other.__offset
+    
     
     @property
     def location(self):
@@ -506,6 +507,16 @@ class DefaultStreamFactory(StreamFactory):
             
             def __repr__(self):
                 return repr(self.line)
+            
+            def __hash__(self):
+                return self.source.hash_line(self.line, self.__location_state)
+            
+            def __eq__(self, other):
+                e = self.source == other.source
+                if not self.source.single:
+                    e = e and self.__location_state == other.__location_state
+                return e
+                
     
         return StreamView(Line().next)
     
@@ -561,9 +572,14 @@ class Source(_Source):
     Support for sources.
     '''
     
-    def __init__(self, description=None, join=''.join):
+    def __init__(self, description=None, join=''.join, single=False):
+        '''
+        `description` and `join` should be obvious; `single` indicates that
+        hash and equality depend on a single line (eg for tokens).
+        '''
         self.__description = description
         self.join = join
+        self.single = single
         self.total_length = None
     
     def __iter__(self):
@@ -606,6 +622,10 @@ class Source(_Source):
         A description of the source.
         '''
         return self.__description
+    
+    def hash_line(self, line, location):
+        raise Exception(format('No hash for {0!r}, {1!r} ({2})',
+                               line, location, self.__class__.__name__))
  
  
 class LineSource(Source):
@@ -661,6 +681,13 @@ class LineSource(Source):
         else:
             return self.join([])
         
+    def hash_line(self, line, location):
+        '''
+        The has for a line depends on the entire location.
+        '''
+        (character_count, line_count) = location
+        return character_count + 100 * line_count
+        
     
 class CharacterSource(Source):
     '''
@@ -703,6 +730,9 @@ class CharacterSource(Source):
         character_count = location_state
         return (None, offset, character_count + offset, 
                 self.join(line), str(self))
+        
+    def hash_line(self, line, character_count):
+        return character_count
         
 
 def list_join(lists):

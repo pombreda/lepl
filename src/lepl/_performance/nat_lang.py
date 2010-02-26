@@ -103,7 +103,7 @@ def natural_language2():
 
 def time():
     from timeit import Timer
-    t = Timer("naturalLanguage()", "from __main__ import naturalLanguage")
+    t = Timer("naturalLanguage()", "from __main__ import natural_language")
     print(t.timeit(number=1))
     # without compilation, and with smart dfa switch:
     # with dfa: 12.4

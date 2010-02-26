@@ -104,7 +104,7 @@ class TransformationWrapper(object):
             self.append(function)
             
     def append(self, function):
-        if self.function:
+        if self:
             self.function = \
                 lambda stream, matcher, f=self.function: \
                     function(stream, lambda: f(stream, matcher))

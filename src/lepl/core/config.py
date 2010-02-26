@@ -400,7 +400,7 @@ class ConfigBuilder(object):
         from lepl.core.rewriters import ComposeTransforms
         self.remove_rewriters(ComposeTransforms)
         
-    def auto_memoize(self, conservative=None, full=False):
+    def auto_memoize(self, conservative=False, full=False):
         '''
         LEPL can add memoization so that (1) complex matching is more 
         efficient and (2) left recursive grammars do not loop indefinitely.  

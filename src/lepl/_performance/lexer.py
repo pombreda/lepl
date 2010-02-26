@@ -25,6 +25,7 @@ Performance related tests.
 # pylint: disable-msg=E1101
 
 from __future__ import print_function
+from logging import basicConfig, DEBUG
 from math import sin, cos
 from operator import add, sub, mul, truediv
 
@@ -33,7 +34,7 @@ from lepl import *
 
 def lexer():
     
-    #basicConfig(level=DEBUG)
+    basicConfig(level=DEBUG)
         
     class BinaryExpression(Node):
         def __float__(self):
@@ -78,30 +79,34 @@ def lexer():
     
     diff    = factor & ~symbol('-') & expr          > Difference
     sum_    = factor & ~symbol('+') & expr          > Sum
-    expr   += sum_ | diff | factor | value
+    expr   += sum_ | diff | factor
     
-    line    = expr & Eos()
-    parser  = line.null_parser(Configuration.tokens())
+    line    = Trace(expr & Eos())
+    line.config.auto_memoize(full=True).no_flatten().trace(True).no_direct_eval().no_compile_regexp()
+#    parser  = line.null_parser()
+    parser  = line.string_parser()
+#    print(repr(parser.matcher))
     
     def myeval(text):
         result = parser(text)[0]
         return float(result)
     
-    for i in range(1,1001):
-        print('.', end='')
-        p = i % 100 == 0
-        if p: print()
-        x = myeval('1')
-        if p: print(x)
-        x = myeval('1 + 2*3')
-        if p: print(x)
-        x = myeval('1 - 4 / (3 - 1)')
-        if p: print(x)
-        x = myeval('1 -4 / (3 -1)')
-        if p: print(x)
-        x = myeval('1 + 2*sin(3+ 4) - 5')
-        if p: print(x)
+#    for i in range(1,11):
+#        print('.', end='')
+#        p = i % 100 == 0
+#        if p: print()
+#        x = myeval('1')
+#        if p: print(x)
+#        x = myeval('1 + 2*3')
+#        if p: print(x)
+#        x = myeval('1 - 4 / (3 - 1)')
+#        if p: print(x)
+#        x = myeval('1 -4 / (3 -1)')
+#        if p: print(x)
+#        x = myeval('1 + 2*sin(3+ 4) - 5')
+#        if p: print(x)
 
+    print(myeval('1+2+3'))
 
 def time():
     from timeit import Timer
