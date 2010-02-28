@@ -65,42 +65,15 @@ class GeneratorWrapper(object):
     It is also used by `trampoline()` to recognise generators that must 
     be evaluated (rather than being treated as normal values).
     '''
+    
+    __slots__ = ['generator', 'matcher', 'stream', 
+                 '_GeneratorWrapper__cached_repr', '__weakref__']
 
     def __init__(self, generator, matcher, stream):
-        self.__generator = generator
+        self.generator = generator
         self.matcher = matcher
         self.stream = stream
         self.__cached_repr = None
-        
-    def __next__(self):
-        return next(self.__generator)
-            
-    def next(self):
-        '''
-        For Python 2.6
-        '''
-        return self.__next__()
-    
-    def send(self, value):
-        '''
-        Pass a value back "into" the generator (standard Python method).
-        '''
-        return self.__generator.send(value)
-    
-    def throw(self, value):
-        '''
-        Raise an exception in the generator (standard Python method).
-        '''
-        return self.__generator.throw(value)
-                
-    def __iter__(self):
-        return self
-                
-    def close(self):
-        '''
-        Close the generator (used in with contexts; standard Python method).
-        '''
-        self.__generator.close()
         
     def __repr__(self):
         '''
@@ -149,7 +122,7 @@ def trampoline(main, m_stack=None, m_value=None):
                     if m_value:
                         m_value.before_next(value)
                     # and evaluate
-                    value = next(value)
+                    value = next(value.generator)
                     if m_value:
                         m_value.after_next(value)
                 # if we don't have a coroutine then we have a result that
@@ -167,7 +140,7 @@ def trampoline(main, m_stack=None, m_value=None):
                             if m_value:
                                 m_value.before_throw(stack[-1], value)
                             # raise it inside the coroutine
-                            value = stack[-1].throw(value)
+                            value = stack[-1].generator.throw(value)
                             if m_value:
                                 m_value.after_throw(value)
                         # handle ordinary values
@@ -175,7 +148,7 @@ def trampoline(main, m_stack=None, m_value=None):
                             if m_value:
                                 m_value.before_send(stack[-1], value)
                             # inject it into the coroutine
-                            value = stack[-1].send(value)
+                            value = stack[-1].generator.send(value)
                             if m_value:
                                 m_value.after_send(value)
                     # otherwise, the stack is completely unwound so return

@@ -57,7 +57,7 @@ def _cleanup(queue):
     Utility to discard queued/stacked values.
     '''
     for (_count, _acc, _stream, generator) in queue:
-        generator.close()
+        generator.generator.close()
         
 
 def search_factory(factory):
@@ -190,7 +190,8 @@ def DepthNoTrampoline(first, start, stop, rest):
                         yield (acc1, stream1)
                     stack.pop()
         finally:
-            _cleanup(stack)
+            for (_count, _acc, _stream, generator) in stack:
+                generator.close()
             
     return matcher
             
@@ -217,7 +218,8 @@ def BreadthNoTrampoline(first, start, stop, rest):
                         queue.append((count2, acc2, stream2, 
                                       rest._untagged_match(stream2)))
         finally:
-            _cleanup(queue)
+            for (_count, _acc, _stream, generator) in queue:
+                generator.close()
             
     return matcher
 
@@ -275,7 +277,7 @@ def And(*matchers):
                         pass
             finally:
                 for (result, generator, queued) in stack:
-                    generator.close()
+                    generator.generator.close()
                     
     return match
 

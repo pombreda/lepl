@@ -51,24 +51,15 @@ def NamedResult(name, matcher, out=stderr):
                      format_stream(stream_in)),
               file=out)
     
-    @tagged
     def match(support, stream):
         count = 0
         generator = matcher._match(stream)
         try:
-            value = next(generator)
             while True:
-                if type(value) is GeneratorWrapper:
-                    try:
-                        response = yield value
-                        value = generator.send(response)
-                    except StopIteration as e:
-                        value = generator.throw(e)
-                else:
-                    count += 1
-                    record_success(count, stream, value)
-                    yield value
-                    value = next(generator)
+                value = yield generator
+                count += 1
+                record_success(count, stream, value)
+                yield value
         except StopIteration:
             record_failure(count, stream)
 

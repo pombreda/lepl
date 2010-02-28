@@ -46,7 +46,7 @@ def floats():
         line    = Trace(expr) & Eos()
     
     #basicConfig(level=DEBUG)
-    line.config
+    line.config.auto_memoize()
     parser = line.string_parser()
     
     print(repr(parser.matcher))
@@ -67,6 +67,7 @@ def time():
     # wow - new code, with standard config, functions etc, 0.5
     # increase to 300, avoids parser building bias: 2.2
     # increase to 3000, improved memo: 20
+    # before changing GeneratorWrapper: 18.8,19.8,18.9; after: 17.8,18.3,18.1
     
 
 def profile():

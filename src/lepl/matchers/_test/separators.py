@@ -20,12 +20,14 @@
 Tests for separators (space handling).
 '''
 
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import And, Optional, Space, Separator, SmartSeparator1, \
     SmartSeparator2, Eos
 
 
+#basicConfig(level=DEBUG)
 PRINT = False
 
 

@@ -23,7 +23,7 @@ Tools for logging and tracing.
 # we abuse conventions to give a consistent interface 
 # pylint: disable-msg=C0103
 
-from lepl.core.monitor import ActiveMonitor, ValueMonitor
+from lepl.core.monitor import ActiveMonitor, ValueMonitor, StackMonitor
 from lepl.support.lib import CircularFifo, LogMixin, sample, format, str
 
 
@@ -155,7 +155,9 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         try:
             (lineno, offset, depth, _text, _source) = \
                     self.generator.stream.location
-            if lineno < 0:
+            if not isinstance(lineno, int):
+                locn = format('{0:<3d}', offset)
+            elif lineno < 0:
                 locn = '  eof  '
             else:
                 locn = format('{0:3d}.{1:<3d}', lineno, offset)
@@ -327,3 +329,34 @@ class _RecordDeepest(_TraceResults):
             self.n_before, '\n'.join(self._before),
             self.n_done_after, '\n'.join(self._done_after),
             self.n_results_after, '\n'.join(self._results_after))
+
+
+class StreamMonitor(StackMonitor):
+    
+    def __init__(self):
+        self._streams = {}
+        
+    
+    def push(self, generator):
+        '''
+        Called before adding a generator to the stack.
+        '''
+        stream = generator.stream
+        type_ = type(stream)
+        new = False
+        if type_ not in self._streams:
+            print(format('Found new stream type: {0}', type_))
+            self._streams[type_] = set()
+            new = True
+        streams = self._streams[type_]
+        if stream not in streams:
+            streams.add(stream)
+            if stream in streams:
+                new = True
+        if new:
+            print(format('Found new stream: {0} ({1})', stream, type_))
+            print(format(' source {0} ({1}) {2}', 
+                         stream.source, type(stream.source), 
+                         stream.source.single))
+            
+    

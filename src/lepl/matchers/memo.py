@@ -202,7 +202,6 @@ class _LMemo(OperatorMatcher):
         self.__caches = {}
         self.__state = State.singleton()
         
-    @tagged
     def _match(self, stream):
         '''
         Attempt to match the stream.

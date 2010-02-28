@@ -24,9 +24,10 @@ Performance related tests.
 #@PydevCodeAnalysisIgnore
 
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 
 from lepl import *
+from lepl.core.trace import StreamMonitor
 
 
 def natural_language():
@@ -54,11 +55,11 @@ def natural_language():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    p = sentence.null_matcher(Configuration)
-    #p = sentence.null_matcher(Configuration.dfa())
-    #p = sentence.null_matcher()
-    print(p.matcher)
-    for _i in range(1000):
+    sentence.config.auto_memoize(full=True)
+    sentence.config.add_monitor(StreamMonitor)
+    p = sentence.string_matcher()
+    print(repr(p.matcher))
+    for _i in range(100):
         assert len(list(p('every boy or some girl and helen and john or pat knows '
                           'and respects or loves every boy or some girl and pat or '
                           'john and helen'))) == 392  
@@ -93,9 +94,11 @@ def natural_language2():
     termphrase += simple_tp | (termphrase & join & termphrase) > TermPhrase
     sentence    = termphrase & verbphrase & termphrase & Eos() > Sentence
 
-    p = sentence.null_matcher(Configuration.tokens())
-    print(p.matcher)
-    for _i in range(1000):
+    sentence.config.auto_memoize(full=True)
+    #sentence.config.add_monitor(StreamMonitor)
+    p = sentence.string_matcher()
+    print(repr(p.matcher))
+    for _i in range(100):
         assert len(list(p('every boy or some girl and helen and john or pat knows '
                           'and respects or loves every boy or some girl and pat or '
                           'john and helen'))) == 392  
@@ -103,7 +106,7 @@ def natural_language2():
 
 def time():
     from timeit import Timer
-    t = Timer("naturalLanguage()", "from __main__ import natural_language")
+    t = Timer("natural_language()", "from __main__ import natural_language")
     print(t.timeit(number=1))
     # without compilation, and with smart dfa switch:
     # with dfa: 12.4
@@ -124,6 +127,12 @@ def time():
     # and slightly worse (28) for auto_memoize(True)
     # DFA (and so NFA) makes things slower (40)
     # (expected - converting literal to FSA)
+    
+    # new code (4.0), count reduced to 100
+    # stream - null 42, string 28, null full 2, string full 58
+    # tokens - null 14, string 25, null full 5, string full 22
+    #          null full no direct 5, string full no direct 30
+    #          back to 1000, null full 46 (so it's not caching the whole text)
     
 
 def profile():

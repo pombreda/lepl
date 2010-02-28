@@ -34,7 +34,7 @@ from lepl import *
 
 def lexer():
     
-    basicConfig(level=DEBUG)
+    #basicConfig(level=DEBUG)
         
     class BinaryExpression(Node):
         def __float__(self):
@@ -82,31 +82,34 @@ def lexer():
     expr   += sum_ | diff | factor
     
     line    = Trace(expr & Eos())
-    line.config.auto_memoize(full=True).no_flatten().trace(True).no_direct_eval().no_compile_regexp()
-#    parser  = line.null_parser()
-    parser  = line.string_parser()
-#    print(repr(parser.matcher))
+    line.config.auto_memoize(full=True)
+    # this only gives crazy-fast times with the null parser because that
+    # parser uses a "naive" source, which hashes the entire string and
+    # so recognises that calls are duplicated.  if the string parser is
+    # used the string is wrapped in a StringIO that reads line by line
+    # and so hashing cannot recognise that the entire input is as before 
+    parser  = line.null_parser()
+#    parser  = line.string_parser()
     
     def myeval(text):
         result = parser(text)[0]
         return float(result)
     
-#    for i in range(1,11):
-#        print('.', end='')
-#        p = i % 100 == 0
-#        if p: print()
-#        x = myeval('1')
-#        if p: print(x)
-#        x = myeval('1 + 2*3')
-#        if p: print(x)
-#        x = myeval('1 - 4 / (3 - 1)')
-#        if p: print(x)
-#        x = myeval('1 -4 / (3 -1)')
-#        if p: print(x)
-#        x = myeval('1 + 2*sin(3+ 4) - 5')
-#        if p: print(x)
+    for i in range(1,1001):
+        print('.', end='')
+        p = i % 100 == 0
+        if p: print()
+        x = myeval('1')
+        if p: print(x)
+        x = myeval('1 + 2*3')
+        if p: print(x)
+        x = myeval('1 - 4 / (3 - 1)')
+        if p: print(x)
+        x = myeval('1 -4 / (3 -1)')
+        if p: print(x)
+        x = myeval('1 + 2*sin(3+ 4) - 5')
+        if p: print(x)
 
-    print(myeval('1+2+3'))
 
 def time():
     from timeit import Timer
@@ -122,6 +125,7 @@ def time():
     # 0.77 with RMemo
     # 0.69 with LMemo
     # 0.77 with auto_memoize
+    # 1.7 after many changes to memoization, etc
     
 
 def profile():
@@ -137,9 +141,9 @@ p.print_stats(35)
     cProfile.run('lexer()', 'lexer.prof')
 
 if __name__ == '__main__':
-#    time()
+    time()
 #    profile()
-    lexer()
+#    lexer()
 
     
     

@@ -102,7 +102,10 @@ class TokenSource(BaseDelegateSource):
         '''
         A line looks like [(['Tk0'], '1')], we extract the text.
         '''
-        return hash(line[0][1]) ^ hash(location)
+        if line is None:
+            return 0
+        else:
+            return hash(line[0][1]) ^ hash(location)
         
 
 def lexed_location_stream(tokens, discard, stream, source=None):
@@ -153,7 +156,8 @@ class ContentSource(BaseDelegateSource):
         There's just a single line from the token contents.
         '''
         super(ContentSource, self).__init__(str(stream.source),
-                                            stream.source.join)
+                                            stream.source.join,
+                                            single=True)
         self.__line = text
         self.__stream = stream
         self.__used = False
@@ -177,3 +181,5 @@ class ContentSource(BaseDelegateSource):
         else:
             return self.join([])
 
+    def hash_line(self, line, location):
+        return hash(line)

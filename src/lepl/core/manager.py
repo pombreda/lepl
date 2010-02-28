@@ -259,7 +259,7 @@ class GeneratorRef(object):
         '''
         generator = self.__wrapper()
         if generator:
-            generator.close()
+            generator.generator.close()
             
     def __str__(self):
         generator = self.__wrapper()

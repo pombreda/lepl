@@ -344,7 +344,10 @@ class StreamView(object):
             return repr(self)
     
     def __hash__(self):
-        return hash(type(self.__line)) ^ hash(self.__line) ^ self.__offset
+        h = hash(self.__line) ^ self.__offset
+        if self.__line.source.single:
+            h = h^ hash(type(self.__line))
+        return h
     
     def __eq__(self, other):
         # pylint: disable-msg=W0212
@@ -352,7 +355,6 @@ class StreamView(object):
         return type(self) is type(other) and \
             self.__line == other.__line and \
             self.__offset == other.__offset
-    
     
     @property
     def location(self):
@@ -728,8 +730,11 @@ class CharacterSource(Source):
         the line currently being processed, and a description of the source.
         '''
         character_count = location_state
-        return (None, offset, character_count + offset, 
-                self.join(line), str(self))
+        if line is None:
+            return (-1, -1, -1, None, str(self))
+        else:
+            return (None, offset, character_count + offset, 
+                    self.join(line), str(self))
         
     def hash_line(self, line, character_count):
         return character_count
