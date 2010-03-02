@@ -196,7 +196,7 @@ def trampoline(main, m_stack=None, m_value=None):
             m_stack.pop(pop())
                     
                 
-def make_matcher(matcher, stream, config, kargs):
+def make_matcher(matcher, stream_factory, config, kargs):
     '''
     Make a matcher.  Rewrite the matcher and prepare the input for a parser.
     This constructs a function that returns a generator that provides a 
@@ -209,8 +209,9 @@ def make_matcher(matcher, stream, config, kargs):
     # pylint: disable-msg=W0212, E0601
     # (_match is meant to be hidden)
     # pylint: disable-msg=W0142
-    parser = lambda arg: trampoline(matcher._match(stream(arg, **kargs)), 
-                                    m_stack=m_stack, m_value=m_value)
+    parser = lambda arg: \
+        trampoline(matcher._match(stream_factory(arg, **kargs)), 
+                   m_stack=m_stack, m_value=m_value)
     parser.matcher = matcher
     return parser
 
