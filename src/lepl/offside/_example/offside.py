@@ -24,7 +24,7 @@ Show how the BLine and Block tokens can be used
 #@PydevCodeAnalysisIgnore
 
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example
@@ -96,7 +96,7 @@ ghijk:
         statement += (empty | simple | ifblock | function) > list
         program = statement[:]
         
-        program.config.default_line_aware(block_policy=2)
+        program.config.default_line_aware(block_policy=2).no_full_match()
         parser = program.string_parser()
 
         self.examples([(lambda: parser('''

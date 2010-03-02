@@ -30,6 +30,7 @@ from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.monitor import BlockMonitor
 from lepl.offside.regexp import SOL as _SOL, EOL as _EOL
 from lepl.stream.filters import ExcludeSequence
+from lepl.support.lib import format
 from lepl.lexer.matchers import Token
 
 
@@ -78,7 +79,6 @@ DEFAULT_POLICY = constant_indent(DEFAULT_TABSIZE)
 '''
 By default, expect an indent equivalent to a tab.
 '''
-
 
 # pylint: disable-msg=E1101, W0212, R0901, R0904
 # pylint conventions
@@ -129,7 +129,7 @@ class Block(OperatorMatcher):
         self._karg(indent=indent)
         self.monitor_class = BlockMonitor
         self.__monitor = None
-        self.__streams = WeakKeyDictionary()
+        self.__streams = set()
         
     def on_push(self, monitor):
         '''
@@ -153,10 +153,11 @@ class Block(OperatorMatcher):
         then evaluate the contents.
         '''
         # detect a nested call
-        if stream_in in self.__streams:
+        (_line_no, _line_off, char_off, _desc, _text) = stream_in.location
+        if char_off in self.__streams:
             self._debug('Avoided left recursive call to Block.')
             return
-        self.__streams[stream_in] = True
+        self.__streams.add(char_off)
         try:
             (indent, _stream) = yield self.indent._match(stream_in)
             current = self.__monitor.indent
@@ -168,7 +169,7 @@ class Block(OperatorMatcher):
             while True:
                 yield (yield generator)
         finally:
-            del self.__streams[stream_in]
+            self.__streams.remove(char_off)
 
 
 # pylint: disable-msg=C0103

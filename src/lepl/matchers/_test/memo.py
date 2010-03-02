@@ -20,7 +20,7 @@
 Tests for the lepl.memo module.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Delayed, Any, Optional, Node, Literals, Eos, Token, Or
@@ -178,11 +178,6 @@ class RecursionTest(TestCase):
         assert result == ['a', 'a', 'a'], result
         result = parser('aba')
         assert result == ['a', 'b', 'a'], result
-        
-    def test_right_string(self):
-        matcher = self.right()
-        matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.string_parser())
         
     def test_right_string(self):
         matcher = self.right()

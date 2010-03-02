@@ -347,16 +347,15 @@ class StreamMonitor(StackMonitor):
         if type_ not in self._streams:
             print(format('Found new stream type: {0}', type_))
             self._streams[type_] = set()
-            new = True
         streams = self._streams[type_]
         if stream not in streams:
             streams.add(stream)
             if stream in streams:
                 new = True
         if new:
-            print(format('Found new stream: {0} ({1})', stream, type_))
-            print(format(' source {0} ({1}) {2}', 
-                         stream.source, type(stream.source), 
-                         stream.source.single))
+            print(format('Found new stream: {2} {0} ({1})', 
+                         stream, type_, hash(stream)))
+            print(format(' source {1} ({0})', 
+                         stream.source, type(stream.source)))
             
     

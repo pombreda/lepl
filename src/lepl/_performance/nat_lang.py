@@ -35,6 +35,8 @@ def natural_language():
     This focuses on the LMemo cache.  It does not use any monitor or stream.
     '''
     
+    basicConfig(level=DEBUG)
+    
     class VerbPhrase(Node): pass
     class DetPhrase(Node): pass
     class SimpleTp(Node): pass
@@ -55,9 +57,9 @@ def natural_language():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    sentence.config.auto_memoize(full=True)
-    sentence.config.add_monitor(StreamMonitor)
-    p = sentence.string_matcher()
+    sentence.config.auto_memoize(full=True).no_full_match()
+    #sentence.config.add_monitor(StreamMonitor)
+    p = sentence.null_matcher()
     print(repr(p.matcher))
     for _i in range(100):
         assert len(list(p('every boy or some girl and helen and john or pat knows '
@@ -133,6 +135,8 @@ def time():
     # tokens - null 14, string 25, null full 5, string full 22
     #          null full no direct 5, string full no direct 30
     #          back to 1000, null full 46 (so it's not caching the whole text)
+    # after revising hashes/eq
+    # stream - null 5.2, string 6, null full 3, string full 3
     
 
 def profile():

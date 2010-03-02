@@ -41,8 +41,8 @@ class Indent(BaseToken):
         if id_ is None:
             id_ = START
         super(Indent, self).__init__(content=content, id_=id_, 
-                                          alphabet=alphabet, complete=complete, 
-                                          compiled=compiled)
+                                     alphabet=alphabet, complete=complete, 
+                                     compiled=compiled)
         self.regexp = '(*SOL)[ \t]*'
                 
         

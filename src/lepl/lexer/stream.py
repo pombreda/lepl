@@ -98,15 +98,21 @@ class TokenSource(BaseDelegateSource):
             self.total_length = self.__token_count
             return (None, None)
         
-    def hash_line(self, line, location):
+    def hash_line(self, line):
         '''
         A line looks like [(['Tk0'], '1')], we extract the text.
         '''
         if line is None:
             return 0
         else:
-            return hash(line[0][1]) ^ hash(location)
+            return hash(line.line[0][1])
         
+    def eq_line(self, line, other):
+        '''
+        A line.line looks like [(['Tk0'], '1')], we extract the text.
+        '''
+        return line.line == other.line
+    
 
 def lexed_location_stream(tokens, discard, stream, source=None):
     '''
@@ -157,7 +163,7 @@ class ContentSource(BaseDelegateSource):
         '''
         super(ContentSource, self).__init__(str(stream.source),
                                             stream.source.join,
-                                            single=True)
+                                            base=text)
         self.__line = text
         self.__stream = stream
         self.__used = False
@@ -181,5 +187,10 @@ class ContentSource(BaseDelegateSource):
         else:
             return self.join([])
 
-    def hash_line(self, line, location):
-        return hash(line)
+    def hash_line(self, line):
+        return hash(line.line) ^ hash(line.location_state)
+
+    def eq_line(self, line, other):
+        return line.line == other.line \
+            and self == other.source
+    

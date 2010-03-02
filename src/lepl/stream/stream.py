@@ -85,6 +85,27 @@ we take care to make them compact.
 One result of keeping things compact is that there's no inheritance tree for
 those classes; instead different sources are wrapped in `Source` instances 
 which provide a general iterator over "lines".
+
+
+Hashes
+------
+
+Hashing (and equality) of streams is important because it is used by the 
+memoisation classes.  Normally a hash depends on (1) the underlying source
+and (2) the position of the stream within the source.  This changes slightly
+for tokens, where (1) becomes the content of the token.
+
+Things are complicated slightly because the location within the source
+depends on the offset in the stream view relative to the line, plus the
+offset of the line relative to the source.
+
+We are also constrained by the following design decisions: (i) the stream
+must resemble a string or similar; (ii) lines are implemented by a single
+class that delegates source-specific functionality to the source.
+
+The simplest solution (although perhaps not the most efficient) seems to
+be for the stream view to use hash(line) ^ offset, and for hash(line) to
+be delegated to the source (and similarly for equality).
 '''
 
 from abc import ABCMeta, abstractmethod, abstractproperty
@@ -344,17 +365,12 @@ class StreamView(object):
             return repr(self)
     
     def __hash__(self):
-        h = hash(self.__line) ^ self.__offset
-        if self.__line.source.single:
-            h = h^ hash(type(self.__line))
-        return h
+        return hash(self.__line) ^ self.__offset
     
     def __eq__(self, other):
-        # pylint: disable-msg=W0212
-        # type is checked manually
         return type(self) is type(other) and \
-            self.__line == other.__line and \
-            self.__offset == other.__offset
+            self.__offset == other.__offset and \
+            self.__line == other.__line
     
     @property
     def location(self):
@@ -455,6 +471,12 @@ class StreamFactory(_StreamFactory):
         '''
         assert isinstance(stream, SimpleStream), type(stream)
         return stream
+    
+    
+class _Line(object):
+    '''
+    Provide a common base class for all lines.
+    '''
 
 
 class DefaultStreamFactory(StreamFactory):
@@ -464,20 +486,20 @@ class DefaultStreamFactory(StreamFactory):
     
     def __call__(self, source_):
         
-        class Line(object):
+        class Line(_Line):
             '''
             This class is specific to a single dataset.
             '''
-            
             source = source_
-            __slots__ = ['line', 'previous_length', '_Line__location_state', 
+            __slots__ = ['line', 'previous_length', 'location_state', 
                          '_Line__next']
             
             def __init__(self, line=None, previous_length=0, 
                          location_state=None):
+                super(Line, self).__init__()
                 self.line = line
                 self.previous_length = previous_length
-                self.__location_state = location_state
+                self.location_state = location_state
                 self.__next = None
                 
             def location(self, offset):
@@ -485,7 +507,7 @@ class DefaultStreamFactory(StreamFactory):
                 Provide location from the source.
                 '''
                 return self.source.location(offset, self.line, 
-                                            self.__location_state)
+                                            self.location_state)
                     
             @property
             def next(self):
@@ -511,14 +533,11 @@ class DefaultStreamFactory(StreamFactory):
                 return repr(self.line)
             
             def __hash__(self):
-                return self.source.hash_line(self.line, self.__location_state)
+                return self.source.hash_line(self)
             
             def __eq__(self, other):
-                e = self.source == other.source
-                if not self.source.single:
-                    e = e and self.__location_state == other.__location_state
-                return e
-                
+                return isinstance(other, _Line) and \
+                    self.source.eq_line(self, other)
     
         return StreamView(Line().next)
     
@@ -533,7 +552,8 @@ class DefaultStreamFactory(StreamFactory):
         '''
         Wrap a string.
         '''
-        return self(LineSource(StringIO(text), sample('str: ', repr(text))))
+        return self(LineSource(StringIO(text), sample('str: ', repr(text)),
+                               base=text))
     
     def from_lines(self, lines, source=None, join=''.join):
         '''
@@ -574,15 +594,17 @@ class Source(_Source):
     Support for sources.
     '''
     
-    def __init__(self, description=None, join=''.join, single=False):
+    def __init__(self, description=None, join=''.join, base=None):
         '''
-        `description` and `join` should be obvious; `single` indicates that
-        hash and equality depend on a single line (eg for tokens).
+        `description` and `join` should be obvious; base is used as the
+        source of identity.
         '''
         self.__description = description
         self.join = join
-        self.single = single
         self.total_length = None
+        self.__base = base
+        self.__cached_hash = super(Source, self).__hash__() \
+            if base is None else hash(self.__base)
     
     def __iter__(self):
         return self
@@ -625,9 +647,22 @@ class Source(_Source):
         '''
         return self.__description
     
-    def hash_line(self, line, location):
+    def __hash__(self):
+        return self.__cached_hash
+    
+    def __eq__(self, other):
+        return type(other) is type(self) and \
+            other is self if self.__base is None \
+            else other.__base == self.__base 
+    
+    def hash_line(self, line):
         raise Exception(format('No hash for {0!r}, {1!r} ({2})',
-                               line, location, self.__class__.__name__))
+                               line.line, line.location, 
+                               self.__class__.__name__))
+        
+    def eq_line(self, line, other):
+        raise Exception(format('No eq for {0!r}, {1!r} ({2})',
+                               line, other, self.__class__.__name__))
  
  
 class LineSource(Source):
@@ -637,14 +672,16 @@ class LineSource(Source):
     offset, to calculate location.
     '''
     
-    def __init__(self, lines, description=None, join=''.join):
+    def __init__(self, lines, description=None, join=''.join, base=None):
         '''
-        lines is an iterator over the lines, description will be provided
-        as part of location, and joinis used to combine lines together.
+        `lines` is an iterator over the lines, description will be provided
+        as part of location, and join is used to combine lines together.
+        `base` is the base hash for the entire stream (if not give a unique
+        value is used).
         '''
         super(LineSource, self).__init__(
                         repr(lines) if description is None else description,
-                        join)
+                        join, base)
         self.__lines = iter(lines)
         self.__line_count = 1 # one-based indexing
         self.__character_count = 0
@@ -683,13 +720,20 @@ class LineSource(Source):
         else:
             return self.join([])
         
-    def hash_line(self, line, location):
+    def hash_line(self, line):
         '''
-        The has for a line depends on the entire location.
+        The hash for a line depends on the entire location.
         '''
-        (character_count, line_count) = location
-        return character_count + 100 * line_count
+        (character_count, line_count) = line.location_state
+        return (character_count + 100 * line_count) ^ hash(self)
         
+    def eq_line(self, line, other):
+        '''
+        Equality depends on matching location and base.
+        '''
+        return line.location_state == other.location_state \
+            and self == other.source
+    
     
 class CharacterSource(Source):
     '''
@@ -736,8 +780,13 @@ class CharacterSource(Source):
             return (None, offset, character_count + offset, 
                     self.join(line), str(self))
         
-    def hash_line(self, line, character_count):
-        return character_count
+    def hash_line(self, line):
+        return line.location_state ^ hash(self)
+        
+    def eq_line(self, line, other):
+        return line.location_state == other.location_state \
+            and line.line == other.line \
+            and other.source == self
         
 
 def list_join(lists):
