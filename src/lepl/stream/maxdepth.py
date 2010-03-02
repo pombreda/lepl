@@ -110,24 +110,25 @@ def facade_factory(stream):
 
 
 @trampoline_matcher_factory()
-def FullMatch(matcher):
+def FullMatch(matcher, eos=False):
+    
     def _matcher(support, stream1):
         (stream2, memory) = facade_factory(stream1)
         generator = matcher._match(stream2)
         first = True
         try:
             while True:
-                result1 = yield generator
+                (result2, stream3) = yield generator
+                # drop stream wrapper
+                stream4 = stream3.stream
+                if first and eos and stream4:
+                    break
+                yield (result2, stream4)
                 first = False
-                try:
-                    # remove facade from around stream
-                    (result2, stream3) = result1
-                    yield (result2, stream3.stream)
-                except StopIteration:
-                    yield result2
         except StopIteration:
-            if first:
-                raise FullMatchException(memory.deepest)
+            pass
+        if first:
+            raise FullMatchException(memory.deepest)
     return _matcher
 
 

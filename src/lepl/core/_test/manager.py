@@ -48,9 +48,9 @@ class LimitedDepthTest(LogMixin, TestCase):
         #basicConfig(level=DEBUG)
         # there was a major bug here that made this test vary often
         # it should now be fixed
-        self.assert_range(3, 'g', [15,1,1,1,3,3,6,6,10,10,10,15,15,15,15], 4)
-        self.assert_range(3, 'b', [15,0,1,1,5,5,5,5,5,5,5,5,5,15,15,15], 4)
-        self.assert_range(3, 'd', [15,1,1,3,3,6,6,10,10,10,15,15,15], 4)
+        self.assert_range(3, 'g', [15,1,1,1,1,3,3,3,6,6,6,10,10,10,15], 4)
+        self.assert_range(3, 'b', [15,1,1,1,1,5,5,5,5,5,5,5,5,5,5,15], 4)
+        self.assert_range(3, 'd', [15,1,1,1,3,3,6,6,6,10,10,10,15], 4)
         
     def assert_range(self, n_match, direcn, results, multiplier):
         for index in range(len(results)):

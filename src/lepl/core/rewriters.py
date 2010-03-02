@@ -506,17 +506,14 @@ class FullMatch(Rewriter):
     parse to be considered a success. 
     '''
     
-    def __init__(self, eos=True):
+    def __init__(self, eos=False):
         super(FullMatch, self).__init__(Rewriter.FULL_MATCH,
                                        format('FullMatch({0})', eos))
         self.eos = eos
         
     def __call__(self, graph):
-        from lepl.matchers.core import Eof
         from lepl.stream.maxdepth import FullMatch
-        if self.eos:
-            graph = graph & Eof()
-        return FullMatch(graph)
+        return FullMatch(graph, self.eos)
 
 
 class NodeStats(object):

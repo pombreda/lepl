@@ -22,7 +22,7 @@ Tests for the lepl.stream.maxdepth module.
 
 
 from unittest import TestCase
-from lepl import Any, Eos
+from lepl import Any, Eos, Optional
 from lepl.stream.maxdepth import FullMatch, FullMatchException, facade_factory
 
 
@@ -71,3 +71,55 @@ Line 1, character 2 of str: 'aab'."""
         matcher.config.clear()
         result = list(matcher.match('a'))
         assert result == [(['a'], '')], result
+        
+
+class FullMatchConfigTest(TestCase):
+    
+    def test_exception(self):
+        matcher = Any('a')
+        matcher.config.full_match(eos=False)
+        try:
+            list(matcher.match('b'))
+            assert False, 'expected error'
+        except FullMatchException as e:
+            assert str(e) == "The match failed at 'b'."
+            
+    def test_eos(self):
+        matcher = Optional(Any('a'))
+        matcher.config.full_match(eos=True)
+        try:
+            list(matcher.match('b'))
+            assert False, 'expected error'
+        except FullMatchException as e:
+            assert str(e) == "The match failed at 'b'."
+            
+    def test_message(self):
+        matcher = Any('a')
+        matcher.config.full_match(eos=False)
+        try:
+            list(matcher.match_string('b'))
+            assert False, 'expected error'
+        except FullMatchException as e:
+            assert str(e) == """The match failed at 'b',
+Line 1, character 0 of str: 'b'."""
+            
+    def test_location(self):
+        matcher = Any('a')[:]
+        matcher.config.full_match(eos=True)
+        try:
+            list(matcher.match_string('aab'))
+            assert False, 'expected error'
+        except FullMatchException as e:
+            assert str(e) == """The match failed at 'b',
+Line 1, character 2 of str: 'aab'."""
+            
+    def test_ok(self):
+        matcher = Any('a')
+        matcher.config.full_match(eos=False)
+        result = list(matcher.match('a'))
+        assert result == [(['a'], '')], result
+        matcher.config.full_match(eos=True)
+        result = list(matcher.match('a'))
+        assert result == [(['a'], '')], result
+        
+    

@@ -634,231 +634,230 @@ class StrTest(TestCase):
         parser = expression.null_parser()
         description = parser.matcher.tree()
         self.assert_same(description, r"""TransformableTrampolineWrapper
- `- TransformableTrampolineWrapper
-     +- Transform
-     |   +- Delayed
-     |   |   `- matcher TransformableTrampolineWrapper
-     |   |       +- TransformableTrampolineWrapper
-     |   |       |   +- TransformableTrampolineWrapper
-     |   |       |   |   +- NfaRegexp
-     |   |       |   |   |   +- Sequence(...)
-     |   |       |   |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |   |   `- TransformableTrampolineWrapper
-     |   |       |   |       +- '('
-     |   |       |   |       +- NfaRegexp
-     |   |       |   |       |   +- Sequence(...)
-     |   |       |   |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |   |       +- Transform
-     |   |       |   |       |   +-  <loop>
-     |   |       |   |       |   `- TransformationWrapper(<apply>)
-     |   |       |   |       +- NfaRegexp
-     |   |       |   |       |   +- Sequence(...)
-     |   |       |   |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |   |       `- ')'
-     |   |       |   +- NfaRegexp
-     |   |       |   |   +- Sequence(...)
-     |   |       |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |   `- TrampolineWrapper
-     |   |       |       +- start 0
-     |   |       |       +- stop None
-     |   |       |       +- rest TransformableTrampolineWrapper
-     |   |       |       |   +- FunctionWrapper
-     |   |       |       |   |   `- '*/'
-     |   |       |       |   +- NfaRegexp
-     |   |       |       |   |   +- Sequence(...)
-     |   |       |       |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |       |   `- TransformableTrampolineWrapper
-     |   |       |       |       +- NfaRegexp
-     |   |       |       |       |   +- Sequence(...)
-     |   |       |       |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |       |       `- TransformableTrampolineWrapper
-     |   |       |       |           +- '('
-     |   |       |       |           +- NfaRegexp
-     |   |       |       |           |   +- Sequence(...)
-     |   |       |       |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |       |           +- Transform
-     |   |       |       |           |   +-  <loop>
-     |   |       |       |           |   `- TransformationWrapper(<apply>)
-     |   |       |       |           +- NfaRegexp
-     |   |       |       |           |   +- Sequence(...)
-     |   |       |       |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |       |           `- ')'
-     |   |       |       `- first TransformableTrampolineWrapper
-     |   |       |           +- FunctionWrapper
-     |   |       |           |   `- '*/'
-     |   |       |           +- NfaRegexp
-     |   |       |           |   +- Sequence(...)
-     |   |       |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |           `- TransformableTrampolineWrapper
-     |   |       |               +- NfaRegexp
-     |   |       |               |   +- Sequence(...)
-     |   |       |               |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |               `- TransformableTrampolineWrapper
-     |   |       |                   +- '('
-     |   |       |                   +- NfaRegexp
-     |   |       |                   |   +- Sequence(...)
-     |   |       |                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |                   +- Transform
-     |   |       |                   |   +-  <loop>
-     |   |       |                   |   `- TransformationWrapper(<apply>)
-     |   |       |                   +- NfaRegexp
-     |   |       |                   |   +- Sequence(...)
-     |   |       |                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       |                   `- ')'
-     |   |       +- NfaRegexp
-     |   |       |   +- Sequence(...)
-     |   |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |       `- TrampolineWrapper
-     |   |           +- start 0
-     |   |           +- stop None
-     |   |           +- rest TransformableTrampolineWrapper
-     |   |           |   +- FunctionWrapper
-     |   |           |   |   `- '+-'
-     |   |           |   +- NfaRegexp
-     |   |           |   |   +- Sequence(...)
-     |   |           |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |   `- TransformableTrampolineWrapper
-     |   |           |       +- TransformableTrampolineWrapper
-     |   |           |       |   +- NfaRegexp
-     |   |           |       |   |   +- Sequence(...)
-     |   |           |       |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |       |   `- TransformableTrampolineWrapper
-     |   |           |       |       +- '('
-     |   |           |       |       +- NfaRegexp
-     |   |           |       |       |   +- Sequence(...)
-     |   |           |       |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |       |       +- Transform
-     |   |           |       |       |   +-  <loop>
-     |   |           |       |       |   `- TransformationWrapper(<apply>)
-     |   |           |       |       +- NfaRegexp
-     |   |           |       |       |   +- Sequence(...)
-     |   |           |       |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |       |       `- ')'
-     |   |           |       +- NfaRegexp
-     |   |           |       |   +- Sequence(...)
-     |   |           |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |       `- TrampolineWrapper
-     |   |           |           +- start 0
-     |   |           |           +- stop None
-     |   |           |           +- rest TransformableTrampolineWrapper
-     |   |           |           |   +- FunctionWrapper
-     |   |           |           |   |   `- '*/'
-     |   |           |           |   +- NfaRegexp
-     |   |           |           |   |   +- Sequence(...)
-     |   |           |           |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |           |   `- TransformableTrampolineWrapper
-     |   |           |           |       +- NfaRegexp
-     |   |           |           |       |   +- Sequence(...)
-     |   |           |           |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |           |       `- TransformableTrampolineWrapper
-     |   |           |           |           +- '('
-     |   |           |           |           +- NfaRegexp
-     |   |           |           |           |   +- Sequence(...)
-     |   |           |           |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |           |           +- Transform
-     |   |           |           |           |   +-  <loop>
-     |   |           |           |           |   `- TransformationWrapper(<apply>)
-     |   |           |           |           +- NfaRegexp
-     |   |           |           |           |   +- Sequence(...)
-     |   |           |           |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |           |           `- ')'
-     |   |           |           `- first TransformableTrampolineWrapper
-     |   |           |               +- FunctionWrapper
-     |   |           |               |   `- '*/'
-     |   |           |               +- NfaRegexp
-     |   |           |               |   +- Sequence(...)
-     |   |           |               |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |               `- TransformableTrampolineWrapper
-     |   |           |                   +- NfaRegexp
-     |   |           |                   |   +- Sequence(...)
-     |   |           |                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |                   `- TransformableTrampolineWrapper
-     |   |           |                       +- '('
-     |   |           |                       +- NfaRegexp
-     |   |           |                       |   +- Sequence(...)
-     |   |           |                       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |                       +- Transform
-     |   |           |                       |   +-  <loop>
-     |   |           |                       |   `- TransformationWrapper(<apply>)
-     |   |           |                       +- NfaRegexp
-     |   |           |                       |   +- Sequence(...)
-     |   |           |                       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |           |                       `- ')'
-     |   |           `- first TransformableTrampolineWrapper
-     |   |               +- FunctionWrapper
-     |   |               |   `- '+-'
-     |   |               +- NfaRegexp
-     |   |               |   +- Sequence(...)
-     |   |               |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |               `- TransformableTrampolineWrapper
-     |   |                   +- TransformableTrampolineWrapper
-     |   |                   |   +- NfaRegexp
-     |   |                   |   |   +- Sequence(...)
-     |   |                   |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                   |   `- TransformableTrampolineWrapper
-     |   |                   |       +- '('
-     |   |                   |       +- NfaRegexp
-     |   |                   |       |   +- Sequence(...)
-     |   |                   |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                   |       +- Transform
-     |   |                   |       |   +-  <loop>
-     |   |                   |       |   `- TransformationWrapper(<apply>)
-     |   |                   |       +- NfaRegexp
-     |   |                   |       |   +- Sequence(...)
-     |   |                   |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                   |       `- ')'
-     |   |                   +- NfaRegexp
-     |   |                   |   +- Sequence(...)
-     |   |                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                   `- TrampolineWrapper
-     |   |                       +- start 0
-     |   |                       +- stop None
-     |   |                       +- rest TransformableTrampolineWrapper
-     |   |                       |   +- FunctionWrapper
-     |   |                       |   |   `- '*/'
-     |   |                       |   +- NfaRegexp
-     |   |                       |   |   +- Sequence(...)
-     |   |                       |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                       |   `- TransformableTrampolineWrapper
-     |   |                       |       +- NfaRegexp
-     |   |                       |       |   +- Sequence(...)
-     |   |                       |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                       |       `- TransformableTrampolineWrapper
-     |   |                       |           +- '('
-     |   |                       |           +- NfaRegexp
-     |   |                       |           |   +- Sequence(...)
-     |   |                       |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                       |           +- Transform
-     |   |                       |           |   +-  <loop>
-     |   |                       |           |   `- TransformationWrapper(<apply>)
-     |   |                       |           +- NfaRegexp
-     |   |                       |           |   +- Sequence(...)
-     |   |                       |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                       |           `- ')'
-     |   |                       `- first TransformableTrampolineWrapper
-     |   |                           +- FunctionWrapper
-     |   |                           |   `- '*/'
-     |   |                           +- NfaRegexp
-     |   |                           |   +- Sequence(...)
-     |   |                           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                           `- TransformableTrampolineWrapper
-     |   |                               +- NfaRegexp
-     |   |                               |   +- Sequence(...)
-     |   |                               |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                               `- TransformableTrampolineWrapper
-     |   |                                   +- '('
-     |   |                                   +- NfaRegexp
-     |   |                                   |   +- Sequence(...)
-     |   |                                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                                   +- Transform
-     |   |                                   |   +-  <loop>
-     |   |                                   |   `- TransformationWrapper(<apply>)
-     |   |                                   +- NfaRegexp
-     |   |                                   |   +- Sequence(...)
-     |   |                                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xd2cb10>
-     |   |                                   `- ')'
-     |   `- TransformationWrapper(<apply>)
-     `- FunctionWrapper""")
+ +- Transform
+ |   +- Delayed
+ |   |   `- matcher TransformableTrampolineWrapper
+ |   |       +- TransformableTrampolineWrapper
+ |   |       |   +- TransformableTrampolineWrapper
+ |   |       |   |   +- NfaRegexp
+ |   |       |   |   |   +- Sequence(...)
+ |   |       |   |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |   |   `- TransformableTrampolineWrapper
+ |   |       |   |       +- '('
+ |   |       |   |       +- NfaRegexp
+ |   |       |   |       |   +- Sequence(...)
+ |   |       |   |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |   |       +- Transform
+ |   |       |   |       |   +-  <loop>
+ |   |       |   |       |   `- TransformationWrapper(<apply>)
+ |   |       |   |       +- NfaRegexp
+ |   |       |   |       |   +- Sequence(...)
+ |   |       |   |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |   |       `- ')'
+ |   |       |   +- NfaRegexp
+ |   |       |   |   +- Sequence(...)
+ |   |       |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |   `- TrampolineWrapper
+ |   |       |       +- start 0
+ |   |       |       +- stop None
+ |   |       |       +- rest TransformableTrampolineWrapper
+ |   |       |       |   +- FunctionWrapper
+ |   |       |       |   |   `- '*/'
+ |   |       |       |   +- NfaRegexp
+ |   |       |       |   |   +- Sequence(...)
+ |   |       |       |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |       |   `- TransformableTrampolineWrapper
+ |   |       |       |       +- NfaRegexp
+ |   |       |       |       |   +- Sequence(...)
+ |   |       |       |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |       |       `- TransformableTrampolineWrapper
+ |   |       |       |           +- '('
+ |   |       |       |           +- NfaRegexp
+ |   |       |       |           |   +- Sequence(...)
+ |   |       |       |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |       |           +- Transform
+ |   |       |       |           |   +-  <loop>
+ |   |       |       |           |   `- TransformationWrapper(<apply>)
+ |   |       |       |           +- NfaRegexp
+ |   |       |       |           |   +- Sequence(...)
+ |   |       |       |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |       |           `- ')'
+ |   |       |       `- first TransformableTrampolineWrapper
+ |   |       |           +- FunctionWrapper
+ |   |       |           |   `- '*/'
+ |   |       |           +- NfaRegexp
+ |   |       |           |   +- Sequence(...)
+ |   |       |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |           `- TransformableTrampolineWrapper
+ |   |       |               +- NfaRegexp
+ |   |       |               |   +- Sequence(...)
+ |   |       |               |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |               `- TransformableTrampolineWrapper
+ |   |       |                   +- '('
+ |   |       |                   +- NfaRegexp
+ |   |       |                   |   +- Sequence(...)
+ |   |       |                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |                   +- Transform
+ |   |       |                   |   +-  <loop>
+ |   |       |                   |   `- TransformationWrapper(<apply>)
+ |   |       |                   +- NfaRegexp
+ |   |       |                   |   +- Sequence(...)
+ |   |       |                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       |                   `- ')'
+ |   |       +- NfaRegexp
+ |   |       |   +- Sequence(...)
+ |   |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |       `- TrampolineWrapper
+ |   |           +- start 0
+ |   |           +- stop None
+ |   |           +- rest TransformableTrampolineWrapper
+ |   |           |   +- FunctionWrapper
+ |   |           |   |   `- '+-'
+ |   |           |   +- NfaRegexp
+ |   |           |   |   +- Sequence(...)
+ |   |           |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |   `- TransformableTrampolineWrapper
+ |   |           |       +- TransformableTrampolineWrapper
+ |   |           |       |   +- NfaRegexp
+ |   |           |       |   |   +- Sequence(...)
+ |   |           |       |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |       |   `- TransformableTrampolineWrapper
+ |   |           |       |       +- '('
+ |   |           |       |       +- NfaRegexp
+ |   |           |       |       |   +- Sequence(...)
+ |   |           |       |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |       |       +- Transform
+ |   |           |       |       |   +-  <loop>
+ |   |           |       |       |   `- TransformationWrapper(<apply>)
+ |   |           |       |       +- NfaRegexp
+ |   |           |       |       |   +- Sequence(...)
+ |   |           |       |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |       |       `- ')'
+ |   |           |       +- NfaRegexp
+ |   |           |       |   +- Sequence(...)
+ |   |           |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |       `- TrampolineWrapper
+ |   |           |           +- start 0
+ |   |           |           +- stop None
+ |   |           |           +- rest TransformableTrampolineWrapper
+ |   |           |           |   +- FunctionWrapper
+ |   |           |           |   |   `- '*/'
+ |   |           |           |   +- NfaRegexp
+ |   |           |           |   |   +- Sequence(...)
+ |   |           |           |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |           |   `- TransformableTrampolineWrapper
+ |   |           |           |       +- NfaRegexp
+ |   |           |           |       |   +- Sequence(...)
+ |   |           |           |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |           |       `- TransformableTrampolineWrapper
+ |   |           |           |           +- '('
+ |   |           |           |           +- NfaRegexp
+ |   |           |           |           |   +- Sequence(...)
+ |   |           |           |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |           |           +- Transform
+ |   |           |           |           |   +-  <loop>
+ |   |           |           |           |   `- TransformationWrapper(<apply>)
+ |   |           |           |           +- NfaRegexp
+ |   |           |           |           |   +- Sequence(...)
+ |   |           |           |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |           |           `- ')'
+ |   |           |           `- first TransformableTrampolineWrapper
+ |   |           |               +- FunctionWrapper
+ |   |           |               |   `- '*/'
+ |   |           |               +- NfaRegexp
+ |   |           |               |   +- Sequence(...)
+ |   |           |               |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |               `- TransformableTrampolineWrapper
+ |   |           |                   +- NfaRegexp
+ |   |           |                   |   +- Sequence(...)
+ |   |           |                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |                   `- TransformableTrampolineWrapper
+ |   |           |                       +- '('
+ |   |           |                       +- NfaRegexp
+ |   |           |                       |   +- Sequence(...)
+ |   |           |                       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |                       +- Transform
+ |   |           |                       |   +-  <loop>
+ |   |           |                       |   `- TransformationWrapper(<apply>)
+ |   |           |                       +- NfaRegexp
+ |   |           |                       |   +- Sequence(...)
+ |   |           |                       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |           |                       `- ')'
+ |   |           `- first TransformableTrampolineWrapper
+ |   |               +- FunctionWrapper
+ |   |               |   `- '+-'
+ |   |               +- NfaRegexp
+ |   |               |   +- Sequence(...)
+ |   |               |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |               `- TransformableTrampolineWrapper
+ |   |                   +- TransformableTrampolineWrapper
+ |   |                   |   +- NfaRegexp
+ |   |                   |   |   +- Sequence(...)
+ |   |                   |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                   |   `- TransformableTrampolineWrapper
+ |   |                   |       +- '('
+ |   |                   |       +- NfaRegexp
+ |   |                   |       |   +- Sequence(...)
+ |   |                   |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                   |       +- Transform
+ |   |                   |       |   +-  <loop>
+ |   |                   |       |   `- TransformationWrapper(<apply>)
+ |   |                   |       +- NfaRegexp
+ |   |                   |       |   +- Sequence(...)
+ |   |                   |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                   |       `- ')'
+ |   |                   +- NfaRegexp
+ |   |                   |   +- Sequence(...)
+ |   |                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                   `- TrampolineWrapper
+ |   |                       +- start 0
+ |   |                       +- stop None
+ |   |                       +- rest TransformableTrampolineWrapper
+ |   |                       |   +- FunctionWrapper
+ |   |                       |   |   `- '*/'
+ |   |                       |   +- NfaRegexp
+ |   |                       |   |   +- Sequence(...)
+ |   |                       |   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                       |   `- TransformableTrampolineWrapper
+ |   |                       |       +- NfaRegexp
+ |   |                       |       |   +- Sequence(...)
+ |   |                       |       |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                       |       `- TransformableTrampolineWrapper
+ |   |                       |           +- '('
+ |   |                       |           +- NfaRegexp
+ |   |                       |           |   +- Sequence(...)
+ |   |                       |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                       |           +- Transform
+ |   |                       |           |   +-  <loop>
+ |   |                       |           |   `- TransformationWrapper(<apply>)
+ |   |                       |           +- NfaRegexp
+ |   |                       |           |   +- Sequence(...)
+ |   |                       |           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                       |           `- ')'
+ |   |                       `- first TransformableTrampolineWrapper
+ |   |                           +- FunctionWrapper
+ |   |                           |   `- '*/'
+ |   |                           +- NfaRegexp
+ |   |                           |   +- Sequence(...)
+ |   |                           |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                           `- TransformableTrampolineWrapper
+ |   |                               +- NfaRegexp
+ |   |                               |   +- Sequence(...)
+ |   |                               |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                               `- TransformableTrampolineWrapper
+ |   |                                   +- '('
+ |   |                                   +- NfaRegexp
+ |   |                                   |   +- Sequence(...)
+ |   |                                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                                   +- Transform
+ |   |                                   |   +-  <loop>
+ |   |                                   |   `- TransformationWrapper(<apply>)
+ |   |                                   +- NfaRegexp
+ |   |                                   |   +- Sequence(...)
+ |   |                                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
+ |   |                                   `- ')'
+ |   `- TransformationWrapper(<apply>)
+ `- False""")
 
 class ColumnsTest(BaseTest):
     

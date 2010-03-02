@@ -34,7 +34,7 @@ from string import ascii_letters, ascii_lowercase
 from lepl import *
 
 # need to generate random input because memoisation trivially handles
-# repeated calls with same nput
+# repeated calls with same input
 lines = []
 for i in range(1000):
     values = []
@@ -50,7 +50,7 @@ for i in range(1000):
         values.append(name + '=' + value)
     lines.append('Namespace(' + ', '.join(values) + ')')
 text = '\n'.join(lines)
-print(text)
+#print(text)
 
 #basicConfig(level=DEBUG)
 
