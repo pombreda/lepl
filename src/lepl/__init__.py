@@ -123,7 +123,11 @@ from lepl.matchers.derived import Apply, args, KApply, Regexp, Join, \
 from lepl.matchers.error import Error, make_error, raise_error, throw
 from lepl.matchers.memo import RMemo, LMemo, MemoException
 from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
-    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST
+    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST, DroppedSpace
+from lepl.matchers.support import function_matcher, function_matcher_factory, \
+    sequence_matcher, sequence_matcher_factory, \
+    trampoline_matcher, trampoline_matcher_factory
+from lepl.matchers.variables import TrackVariables
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
@@ -196,7 +200,6 @@ __all__ = [
         'SignedEFloat', 
         'Float', 
         'Word',
-        'Separator',
         'DropEmpty',
         'Literals',
         'String',
@@ -205,16 +208,26 @@ __all__ = [
         'NON_GREEDY',
         'DEPTH_FIRST',
         'BREADTH_FIRST',
+        # lepl.matchers.support
+        'function_matcher', 
+        'function_matcher_factory',
+        'sequence_matcher', 
+        'sequence_matcher_factory',
+        'trampoline_matcher', 
+        'trampoline_matcher_factory',
+        # lepl.matchers.variables
+        'TrackVariables',
+        # lepl.stream.stream
+        'DEFAULT_STREAM_FACTORY',
+        # lepl.matchers.operators
+        'Override',
+        'Separator',
+        'SmartSeparator1',
+        'DroppedSpace',
         # lepl.support.node
         'Node',
         'make_dict',
         'join_with',
-        # lepl.stream.stream
-        'DEFAULT_STREAM_FACTORY',
-        # lepl.match.operators
-        'Override',
-        'Separator',
-        'SmartSeparator1',
         # lepl.lexer.matchers
         'Token',
         'LexerError',

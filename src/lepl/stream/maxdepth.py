@@ -90,7 +90,12 @@ def facade_factory(stream):
    
         @property
         def text(self):
-            return self.__stream.text
+            # this is a hack needed for inter-op with python regexps, which
+            # only accept strings.  it's identical to the hack in Regexp().
+            try:
+                return self.__stream.text
+            except AttributeError:
+                return self.__stream
     
         @property
         def source(self):

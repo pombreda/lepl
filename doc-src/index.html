@@ -210,7 +210,7 @@ charByChar = asynch(function(tt, text, speed, pause, nl) {
     } else {
       tt.get('lastChild').append(text.charAt(0));
       if (nl) {tt.set('scrollTop', tt.get('scrollHeight'));}
-      charByChar(Math.random()*speed, 
+      charByChar(speed / 2 + Math.random() * speed / 2, 
                  tt, text.substring(1), speed, pause, false);
     }
   } else {

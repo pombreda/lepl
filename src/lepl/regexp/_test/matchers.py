@@ -20,7 +20,7 @@
 Tests for the lepl.regexp.matchers module.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Separator, Regexp, NfaRegexp, Trace, DfaRegexp
@@ -71,6 +71,11 @@ class MatchersTest(TestCase):
         
         results = list(phrase.match('Abc Def'))
         assert len(results) == 2, results
+        
+    def test_full_match(self):
+        basicConfig(level=DEBUG)
+        matcher = Regexp('a')
+        assert matcher.parse('a')
         
 
 

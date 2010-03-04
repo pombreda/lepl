@@ -1,3 +1,8 @@
+'''
+Created on 3 Mar 2010
+
+@author: andrew
+'''
 
 # Copyright 2009 Andrew Cooke
 

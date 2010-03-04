@@ -1,4 +1,3 @@
-from __future__ import generators
 
 # Copyright 2010 Andrew Cooke
 
@@ -23,6 +22,7 @@ Display information when matchers that are bound to variables are called.
 This is possible thanks to a neat trick suggested by Carl Banks on c.l.p 
 '''
 
+from __future__ import generators
 from contextlib import contextmanager
 from sys import stderr, _getframe
 
@@ -42,7 +42,9 @@ def NamedResult(name, matcher, out=stderr):
     
     def record_success(count, stream_in, result):
         (value, stream_out) = result
-        print(format('{0} {1} = {2}\n    "{3}" -> "{4}"', count, name, value, 
+        count_desc = format(' ({0})', count) if count > 1 else ''
+        print(format('{0}{1} = {2}\n    "{3}" -> "{4}"', 
+                     name, count_desc, value, 
                      format_stream(stream_in), format_stream(stream_out)), 
               file=out)
         
@@ -66,23 +68,60 @@ def NamedResult(name, matcher, out=stderr):
     return match
 
 
+def _adjust(text, width, pad=False, left=False):
+    if len(text) > width:
+        text = text[:width-3] + '...'
+    if pad and len(text) < width:
+        space = ' ' * (width - len(text))
+        if left:
+            text = space + text
+        else:
+            text = text + space
+    return text
+
+
+def name(name, show_failures=True, width=80, out=stderr):
+    
+    left = 3 * width // 5 - 1
+    right = 2 * width // 5 - 1
+    
+    def namer(stream_in, matcher):
+        try:
+            (result, stream_out) = matcher()
+            stream = _adjust(format('stream = \'{0}\'', stream_out), right) 
+            str_name = _adjust(name, left // 4, True, True)
+            match = _adjust(format(' {0} = {1}', str_name, result),
+                            left, True)
+            print(match + ' ' + stream, file=out)
+            return (result, stream_out)
+        except StopIteration:
+            if show_failures:
+                stream = _adjust(format('stream = \'{0}\'', stream_in), right) 
+                str_name = _adjust(name, left // 4, True, True)
+                match = _adjust(format(' {0} failed', str_name), left, True)
+                print(match + ' ' + stream, file=out)
+            raise StopIteration
+        
+    return namer
+
+
 @contextmanager
-def log_these_variables():
+def TrackVariables(on=True, show_failures=True, width=80, out=stderr):
     before = _getframe(2).f_locals.copy()
-    x = _getframe(2).f_globals.copy()
     yield None
     after = _getframe(2).f_locals
-    y = _getframe(2).f_globals
-    originals = {}
+    warned = False
     for key in after:
         value = after[key]
-        if key not in before or value != before[key]:
-            # unwrap anything that has already been wrapped
-            if value in originals:
-                value = originals[value]
-            wrapped = NamedResult(key, value)
-            originals[wrapped] = value
-            print(repr(wrapped))
-            _getframe(2).f_locals[key] = wrapped
-            
+        if on and key not in before or value != before[key]:
+            try:
+                value.wrapper.append(name(key, show_failures, width, out))
+            except:
+                if not warned:
+                    print('Unfortunately the following matchers cannot '
+                          'be tracked:')
+                    warned = True
+                print(format('  {0} = {1}', key, value))
+                    
+
 

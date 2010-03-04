@@ -20,10 +20,11 @@
 Tests for the lepl.matchers.variables module.
 '''
 
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.matchers.core import Any
-from lepl.matchers.variables import NamedResult, log_these_variables
+from lepl.matchers.variables import NamedResult, TrackVariables
 
 
 class ExplicitTest(TestCase):
@@ -38,8 +39,9 @@ class ExplicitTest(TestCase):
         list(parser('abc'))
         
     def test_context(self):
-        with log_these_variables():
-            bar = Any()[:]
+        basicConfig(level=DEBUG)
+        with TrackVariables():
+            bar = Any()
         print(repr(bar))
         list(bar.match('abc'))
         

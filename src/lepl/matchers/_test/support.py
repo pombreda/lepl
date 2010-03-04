@@ -22,7 +22,7 @@ Decorator tests.
 (These need to be copied into an example and the tutorial). 
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.matchers.support import function_matcher_factory, function_matcher, \
@@ -141,4 +141,16 @@ class DecoratorTest(TestCase):
         except TypeError:
             pass
             
+
+class FunctionMatcherBugTest(TestCase):
+    
+    def test_bug(self):
+        #basicConfig(level=DEBUG)
+        from string import ascii_uppercase
+        @function_matcher
+        def capital(support, stream):
+            if stream[0] in ascii_uppercase:
+                return ([stream[0]], stream[1:])
+        parser = capital()[3]
+        assert parser.parse_string('ABC')
         

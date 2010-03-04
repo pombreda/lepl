@@ -857,7 +857,7 @@ class StrTest(TestCase):
  |   |                                   |   `- alphabet <lepl.regexp.unicode.UnicodeAlphabet object at 0xe5a8d0>
  |   |                                   `- ')'
  |   `- TransformationWrapper(<apply>)
- `- False""")
+ `- True""")
 
 class ColumnsTest(BaseTest):
     

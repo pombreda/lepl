@@ -332,10 +332,13 @@ class _RecordDeepest(_TraceResults):
 
 
 class StreamMonitor(StackMonitor):
+    '''
+    This prints (not logs) data about streams.  It is intended for debugging,
+    not normal use.
+    '''
     
     def __init__(self):
         self._streams = {}
-        
     
     def push(self, generator):
         '''

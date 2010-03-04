@@ -157,7 +157,7 @@ def raise_(e):
 
 class Transform(Transformable):
     '''
-    Apply a function to (result, stream_in, stream_out)
+    Apply a function to (stream_in, matcher)
 
     Typically used via `Apply` and `KApply`.
     '''

@@ -58,10 +58,11 @@ def natural_language():
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
     sentence.config.auto_memoize().no_full_match()
-    #sentence.config.add_monitor(StreamMonitor)
+    sentence.config.add_monitor(StreamMonitor)
     p = sentence.string_matcher()
     print(repr(p.matcher))
-    for _i in range(100):
+    #for _i in range(100):
+    for _i in range(1):
         assert len(list(p('every boy or some girl and helen and john or pat knows '
                           'and respects or loves every boy or some girl and pat or '
                           'john and helen'))) == 392  
@@ -153,9 +154,9 @@ p.print_stats(35)
     cProfile.run('natural_language()', 'nat_lang.prof')
 
 if __name__ == '__main__':
-    time()
+#    time()
 #    profile()
-#    natural_language()
+    natural_language()
 
     
     

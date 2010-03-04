@@ -252,7 +252,7 @@ class ConfigBuilder(object):
         from lepl.offside.matchers import Block
         return self.set_arguments(Block, policy=block_policy)
     
-    def full_match(self, eos=False):
+    def full_match(self, eos=True):
         '''
         Raise an error if the match fails.  If `eos` is True then this
         requires that the entire input is matched, otherwise it only requires

@@ -170,6 +170,19 @@ class Separator(_BaseSeparator):
         return (lambda a, b: And(a, separator, b),
                 self._repeat(separator))
         
+        
+class DroppedSpace(Separator):
+    '''
+    Skip spaces (by default, one or more Space()).  Any argument is dropped.
+    '''
+    
+    def __init__(self, space=None):
+        from lepl.matchers.derived import Space, Drop
+        if space is None:
+            space = Space()[:]
+        space = Drop(space)
+        super(DroppedSpace, self).__init__(space)
+        
 
 class SmartSeparator1(_BaseSeparator):
     '''
