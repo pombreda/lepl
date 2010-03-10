@@ -20,10 +20,10 @@
 Tests for the lepl.regexp.matchers module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl import Separator, Regexp, NfaRegexp, Trace, DfaRegexp
+from lepl import Separator, Regexp, NfaRegexp, DfaRegexp
 
 
 # pylint: disable-msg=C0103, C0111, C0301
@@ -73,7 +73,7 @@ class MatchersTest(TestCase):
         assert len(results) == 2, results
         
     def test_full_match(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         matcher = Regexp('a')
         assert matcher.parse('a')
         

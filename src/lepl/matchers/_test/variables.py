@@ -20,7 +20,8 @@
 Tests for the lepl.matchers.variables module.
 '''
 
-from logging import basicConfig, DEBUG
+from io import StringIO
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.matchers.core import Any
@@ -30,19 +31,36 @@ from lepl.matchers.variables import NamedResult, TrackVariables
 class ExplicitTest(TestCase):
     
     def test_wrapper(self):
-        matcher = NamedResult('foo', Any()[:])
-        print(repr(matcher))
+        output = StringIO()
+        matcher = NamedResult('foo', Any()[:], out=output)
+        repr(matcher)
         matcher.config.clear()
         parser = matcher.string_matcher()
-        print(repr(parser.matcher))
-        print(type(parser))
         list(parser('abc'))
+        text = output.getvalue()
+        assert text == '''foo = ['a', 'b', 'c']
+    "abc" -> ""
+foo (2) = ['a', 'b']
+    "abc" -> "c"
+foo (3) = ['a']
+    "abc" -> "bc"
+foo (4) = []
+    "abc" -> "abc"
+! foo (after 4 matches)
+    "abc"
+''', '>' + text + '<'
         
     def test_context(self):
-        basicConfig(level=DEBUG)
-        with TrackVariables():
+        #basicConfig(level=DEBUG)
+        output = StringIO()
+        with TrackVariables(out=output):
             bar = Any()
-        print(repr(bar))
+        bar.config.no_full_match()
+        repr(bar)
         list(bar.match('abc'))
-        
+        text = output.getvalue()
+        assert text == '''         bar = ['a']                            stream = 'bc'
+         bar failed                             stream = 'abc'
+''', '>' + text + '<'
+
         

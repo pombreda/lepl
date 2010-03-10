@@ -1,5 +1,9 @@
 #!/bin/bash
 
+PYTHONPATH=./src python3 -i < src/lepl/_example/web_script.py > doc-src/example.txt 2>&1
+sed -i -e 's/\(.+\)\(>>>.*\)/\1\n\2/g' doc-src/example.txt
+sed -i -e 's/\(.\)\(\.\.\.\)/\1\n\2/g' doc-src/example.txt
+
 RELEASE=`egrep "version=" setup.py | sed -e "s/.*'\(.*\)'.*/\\1/"`
 VERSION=`echo $RELEASE | sed -e "s/.*?\([0-9]\.[0-9]\).*/\\1/"`
 

@@ -34,20 +34,22 @@ query.parse('spicy meatballs OR "el bulli restaurant"')
 # the input stream is consumed.  This can be very useful for debugging.
 
 # Just before calling the parser above we configured full memoization.
-# This means that each matcher records previous matchers and so avoids
+# This means that each matcher records previous matches and so avoids
 # earlier work.  The (lack of a) trace on a second call reflects this:
 query.parse('spicy meatballs OR "el bulli restaurant"')
+# (the response appeared without calling any more matchers)
 
-# TODO - sub matcher memoization
- 
 
-# You probably noticed that some "surprising" syntax above, in the
-# way that we specify repeated matches - using [1:] for "one or more".
+# You probably noticed some "surprising" syntax above, in the way 
+# that we specify repeated matches - using [1:] for "one or more".
 # This may seem a little odd, but soon feels very natural.
 
 # For example, this means "between 3 and 5" (inclusive):
 Any()[3:5].parse('1234')
 Any()[3:5].parse('123456')
+# It's also common to use [:] or [0:] to mean "zero or more":
+Any()[:].parse('123456')
+# (LEPL is greedy by default, and so matches as much as possible) 
 
 # And often, once we've matched something several times, we want to
 # join the results together - we can use [...] for that:
@@ -60,60 +62,107 @@ Any()[3:5, Drop(';')].parse('1;2;3;4')
 
 # While we're looking at LEPL's syntax, it's worth pointing out that
 # & and | do what you would expect:
-(Digit() | Letter())[:].parse('abc123')
-(Digit() & Letter())[:].parse('1a')
+(Digit() | Letter())[6].parse('abc123')
+(Digit() & Letter()).parse('1a')
 
 
-
-
-# A LEPL parser is built from matchers - you can define them yourself.
-# For example, let's define a matcher for Capital letters
-
+# It's also easy to define your own matchers.  They can be as simple
+# as a single function:
 from string import ascii_uppercase
 
 @function_matcher
 def Capital(support, stream):
     if stream[0] in ascii_uppercase:
         return ([stream[0]], stream[1:])
-    
 # As you can see, a matcher takes a stream and, if the start of the
 # stream matches, returns that (in a list) and the rest of the stream.
 
-# We can test it out 
-# (note how @function_matcher has changed how we call the matcher):
-parser1 = Capital()
-parser1.parse('A')
-
-# LEPL automatically adds support for repetition:
-parser2 = Capital()[3]
-parser2.parse('ABC')
-
-# which can have upper and lower bounds:
-parser3 = Capital()[1:5]
-parser3.parse('ABCD')
-
-# and can join together matched letters:
-parser4 = Capital()[3, ...]
-parser4.parse('ABC')
-
-# If the parser fails to match, we get an error:
-parser4.parse('ABCD')
+# This works as you would expect:
+Capital().parse('A')
+Capital().parse('a')
 
 
-# But often we don't need to define our own matchers, because LEPL
-# already provides a wide range.
+# So far we have focused mainly on recognising structure in text,
+# but parsing is also about processing that structure.
 
-# For example, Any(...) will match any of its arguments:
+# We can process text as it is matched by calling functions.
+# Each function takes a stream and a matcher:
+def print_text(result):
+    print('matched', result)
+    return list(result)
 
-from string import ascii_lowercase
-parser5 = Any(ascii_lowercase)[4]
-parser5.match('abcd')
+word = ~Lookahead('OR') & Word()
+phrase = String()
+with DroppedSpace():
+    text = (phrase | word)[1:] > print_text
+    query = text[:, Drop('OR')]
 
-# And we can combine matchers together:
-parser6 = Capital() + Any(ascii_lowercase)[1:,...]
-parser6.parse('Capitalized')
+query.parse('spicy meatballs OR "el bulli restaurant"')
 
-# We can easily build more complex parsers:
-lowercase = Any(ascii_lowercase)[1:,...]
-first = Capital() + Any(ascii_lowercase)[1:,...]
-following = 
+# Another way LEPL can help with processing is by constructing a tree
+# (eg an AST).  To illustrate this, let's extend the original example
+# to include labelled parameters, like "site:acooke.org":
+
+class Text(Node):
+    pass
+
+class Parameter(Node):
+    pass
+
+class Alternative(Node):
+    pass
+
+word = ~Lookahead('OR') & Word()
+phrase = String()
+label = word & Drop(':') > 'label'
+value = (phrase | word) > 'value'
+with DroppedSpace():
+    parameter = label & value > Parameter
+    text = (phrase | word) > 'text'
+    alternative = (parameter | text)[1:] > Alternative
+    query = alternative[:, Drop('OR')]
+
+result = query.parse('word "a phrase" OR that OR this site:within.site')
+
+# Each alternative is a separate tree
+for alt in result:
+    print(str(alt))
+
+
+# and tree members can be accessed directly:
+result[2].Parameter[0].label[0]
+
+
+# LEPL can also handle ambiguous grammars, returning multiple results,
+# so can be used to solve problems that occupy a middle ground between
+# parsing and search.
+
+# For example, we can use LEPL to list all the possible ways that a
+# phone number can be displayed, if the characters on the keypad are
+# used.
+
+# This also shows how easy it is to extend LEPL with a new matcher.
+# Here the matcher Digit() enumerates all possible ways the number can 
+# be displayed.
+
+@sequence_matcher
+def Digit(support, stream):
+    digits = {'1': '',     '2': 'abc',  '3': 'def',
+              '4': 'ghi',  '5': 'jkl',  '6': 'mno',
+              '7': 'pqrs', '8': 'tuv',  '9': 'wxyz',
+              '0': ''}
+    if stream:
+        digit, tail = stream[0], stream[1:]
+        yield ([digit], tail)
+        if digit in digits:
+            for letter in digits[digit]:
+                yield ([letter], tail)
+
+results = Digit()[13, ...].match('1-800-7246837')
+
+# results is a generator - LEPL lazily matches data "on demand"
+print type(results)
+
+words = map(lambda result: result[0][0], results)
+assert '1-800-painter' in words
+
