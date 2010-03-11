@@ -49,7 +49,7 @@ def right():
     with Separator(Regexp(r'\s*')):
         pair += '(' & Optional(pair) & ')' & Optional(pair)
     pair.config.clear().auto_memoize()
-    p = pair.string_matcher()
+    p = pair.get_match_string()
     results = list(p(make_data(10)))
     print(len(results))
 
@@ -66,7 +66,7 @@ def left():
         pair += Optional(pair) & '(' & Optional(pair) & ')' 
     #p = pair.string_matcher(Configuration.dfa())
     pair.config.clear().auto_memoize()
-    p = pair.string_matcher()
+    p = pair.get_match_string()
     results = list(p(make_data(6)))
     print(len(results))
 

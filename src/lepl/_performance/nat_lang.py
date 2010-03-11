@@ -59,7 +59,7 @@ def natural_language():
 
     sentence.config.auto_memoize().no_full_match()
     sentence.config.add_monitor(StreamMonitor)
-    p = sentence.string_matcher()
+    p = sentence.get_match_string()
     print(repr(p.matcher))
     #for _i in range(100):
     for _i in range(1):
@@ -99,7 +99,7 @@ def natural_language2():
 
     sentence.config.auto_memoize(full=True)
     #sentence.config.add_monitor(StreamMonitor)
-    p = sentence.string_matcher()
+    p = sentence.get_match_string()
     print(repr(p.matcher))
     for _i in range(100):
         assert len(list(p('every boy or some girl and helen and john or pat knows '

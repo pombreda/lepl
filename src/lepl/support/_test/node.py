@@ -58,7 +58,7 @@ class NodeTest(TestCase):
         addsub      = Any('+-')                            > 'operator'
         expression += (factor / (addsub / factor)[0::])    > Expression
         
-        p = expression.string_parser()
+        p = expression.get_parse_string()
         ast = p('1 + 2 * (3 + 4 - 5)')
         assert str26(ast[0]) == """Expression
  +- Factor
@@ -133,7 +133,7 @@ class ErrorTest(TestCase):
         expression += (factor / (addsub / factor)[0:,r'\s*'])                >  Expression
         line        = expression / Eos()
        
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         
         try:
             parser('1 + 2 * 3 + 4 - 5)')[0]

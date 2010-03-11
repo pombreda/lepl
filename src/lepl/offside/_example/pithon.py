@@ -54,7 +54,7 @@ class PythonExample(Example):
         
         program = (line[:] & Eos())
         program.config.default_line_aware(block_policy=rightmost)
-        parser = program.string_parser()
+        parser = program.get_parse_string()
         
         result = parser('''
 # this is a grammar with a similar 

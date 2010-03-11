@@ -60,7 +60,7 @@ class FlattenTest(TestCase):
         matcher = Literal('a') & Literal('b') & Literal('c')
         assert str(matcher) == "And(And, Literal)", str(matcher)
         matcher.config.clear().flatten()
-        parser = matcher.string_parser()
+        parser = matcher.get_parse_string()
         assert str(parser.matcher) == "And(Literal, Literal, Literal)", str(parser.matcher)
 
 
@@ -69,7 +69,7 @@ class RepeatTest(TestCase):
     def test_depth(self):
         matcher = Any()[:,...]
         matcher.config.full_match(False)
-        matcher = matcher.string_matcher()
+        matcher = matcher.get_match_string()
         print(repr(matcher.matcher))
         results = [m for (m, _s) in matcher('abc')]
         assert results == [['abc'], ['ab'], ['a'], []], results
@@ -77,7 +77,7 @@ class RepeatTest(TestCase):
     def test_breadth(self):
         matcher = Any()[::'b',...]
         matcher.config.full_match(False)
-        matcher = matcher.string_matcher()
+        matcher = matcher.get_match_string()
         results = [m for (m, _s) in matcher('abc')]
         assert results == [[], ['a'], ['ab'], ['abc']], results
         

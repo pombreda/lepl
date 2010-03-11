@@ -47,7 +47,7 @@ def floats():
     
     #basicConfig(level=DEBUG)
     line.config.auto_memoize()
-    parser = line.string_parser()
+    parser = line.get_parse_string()
     
     print(repr(parser.matcher))
     for _i in range(3000): # increased from 30 to 3000 for new code

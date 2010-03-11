@@ -119,7 +119,7 @@ class DelayedCloneTest(TestCase):
         matcher = Delayed()
         matcher += Any() & matcher
         matcher.config.no_full_match()
-        copy = matcher.string_parser().matcher
+        copy = matcher.get_parse_string().matcher
         self._assert_clone(matcher, copy)
                 
     def test_transformed_etc(self):
@@ -140,7 +140,7 @@ class DelayedCloneTest(TestCase):
         expression.config.no_full_match().no_compile_regexp()
         expression.config.no_compose_transforms().no_direct_eval()
         expression.config.no_flatten()
-        copy = expression.string_parser().matcher
+        copy = expression.get_parse_string().matcher
         self._assert_clone(expression, copy)
                 
 
@@ -152,21 +152,21 @@ class ComposeTransformsTest(TestCase):
     def test_null(self):
         matcher = Any() > append('x')
         matcher.config.clear()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         result = parser('a')[0]
         assert result == 'ax', result
         
     def test_simple(self):
         matcher = Any() > append('x')
         matcher.config.clear().compose_transforms()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         result = parser('a')[0]
         assert result == 'ax', result
         
     def test_double(self):
         matcher = (Any() > append('x')) > append('y')
         matcher.config.clear().compose_transforms()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         result = parser('a')[0]
         assert result == 'axy', result
         # TODO - better test
@@ -175,7 +175,7 @@ class ComposeTransformsTest(TestCase):
     def test_and(self):
         matcher = (Any() & Optional(Any())) > append('x')
         matcher.config.clear().compose_transforms()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         result = parser('a')[0]
         assert result == 'ax', result
         assert is_child(parser.matcher, And), type(parser.matcher)
@@ -184,7 +184,7 @@ class ComposeTransformsTest(TestCase):
         matcher = Delayed()
         matcher += (Any() | matcher) > append('x')
         matcher.config.clear().compose_transforms()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         result = parser('a')[0]
         assert result == 'ax', result
         assert isinstance(parser.matcher, Delayed)
@@ -198,7 +198,7 @@ class ComposeTransformsTest(TestCase):
         factor      = term | Drop(Optional(term))
         
         factor.config.clear().compose_transforms()
-        p = factor.string_parser()
+        p = factor.get_parse_string()
         ast = p('1')[0]
         assert type(ast) == Term, type(ast)
         assert ast[0] == '1', ast[0]
@@ -213,7 +213,7 @@ class OptimizeOrTest(TestCase):
         matcher += matcher | Any()
         assert isinstance(matcher.matcher.matchers[0], Delayed)
         matcher.config.clear().optimize_or(True)
-        matcher.string_parser()
+        matcher.get_parse_string()
         # TODO - better test
         assert isinstance(matcher.matcher.matchers[0], 
                           TransformableWrapper)
@@ -223,7 +223,7 @@ class OptimizeOrTest(TestCase):
         matcher += matcher | Any()
         assert isinstance(matcher.matcher.matchers[0], Delayed)
         matcher.config.clear().optimize_or(False)
-        matcher.string_parser()
+        matcher.get_parse_string()
         # TODO - better test
         assert isinstance(matcher.matcher.matchers[0], 
                           TransformableWrapper)
@@ -235,7 +235,7 @@ class AndNoTrampolineTest(TestCase):
         #basicConfig(level=DEBUG)
         matcher = And('a', 'b')
         matcher.config.clear().direct_eval()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         text = str(parser.matcher)
         assert "AndNoTrampoline('a', 'b')" == text, text
         #assert "AndNoTrampoline(Literal, Literal)" == text, text
@@ -248,7 +248,7 @@ class FlattenTest(TestCase):
     def test_flatten_and(self):
         matcher = And('a', And('b', 'c'))
         matcher.config.clear().flatten()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         text = str(parser.matcher)
         assert text == "And('a', 'b', 'c')", text
         result = parser('abcd')
@@ -257,7 +257,7 @@ class FlattenTest(TestCase):
     def test_no_flatten_and(self):
         matcher = And('a', Join(And('b', 'c')))
         matcher.config.clear().flatten()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         text = str(parser.matcher)
         assert text == "And('a', Transform)", text
         result = parser('abcd')
@@ -266,7 +266,7 @@ class FlattenTest(TestCase):
     def test_flatten_and_transform(self):
         matcher = Join(And('a', And('b', 'c')))
         matcher.config.clear().flatten()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         text = sub('<.*>', '<>', str(parser.matcher))
         assert text == "Transform(And, TransformationWrapper(<>))", text
         result = parser('abcd')
@@ -275,7 +275,7 @@ class FlattenTest(TestCase):
     def test_flatten_or(self):
         matcher = Or('a', Or('b', 'c'))
         matcher.config.clear().flatten()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         text = str(parser.matcher)
         assert text == "Or('a', 'b', 'c')", text
         result = parser('abcd')
@@ -284,7 +284,7 @@ class FlattenTest(TestCase):
     def test_no_flatten_or(self):
         matcher = Or('a', Join(Or('b', 'c')))
         matcher.config.clear().flatten()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         text = str(parser.matcher)
         assert text == "Or('a', Transform)", text
         result = parser('abcd')

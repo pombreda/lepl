@@ -41,7 +41,7 @@ class OffsideExample(Example):
         scope += BLine(word[:] & introduce) & Block(line[:]) > list
         program = line[:]
         program.config.default_line_aware(block_policy=2)
-        parser = program.string_parser()
+        parser = program.get_parse_string()
         self.examples([(lambda: parser('''
 abc def
 ghijk:
@@ -61,7 +61,7 @@ ghijk:
         statement += (simple | empty | block) > list
         program = statement[:]
         program.config.default_line_aware(block_policy=2)
-        parser = program.string_parser()
+        parser = program.get_parse_string()
         self.examples([(lambda: parser('''
 abc def
 ghijk:
@@ -97,7 +97,7 @@ ghijk:
         program = statement[:]
         
         program.config.default_line_aware(block_policy=2).no_full_match()
-        parser = program.string_parser()
+        parser = program.get_parse_string()
 
         self.examples([(lambda: parser('''
 this is a grammar with a similar 
@@ -144,7 +144,7 @@ same for (argument,
         line += BLine(word | Empty()) | block
         program = line[:]
         program.config.default_line_aware(block_policy=4, block_start=3).no_full_match()
-        parser = program.string_parser()
+        parser = program.get_parse_string()
         result = parser('''
    foo
        bar

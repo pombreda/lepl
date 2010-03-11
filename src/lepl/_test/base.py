@@ -33,7 +33,7 @@ class BaseTest(TestCase):
     
     def assert_list(self, stream, match, target):
         match.config.no_full_match()
-        matcher = match.items_matcher()
+        matcher = match.get_match_items()
         #print(matcher.matcher)
         result = [x for (x, _s) in matcher(stream)]
         assert target == result, result

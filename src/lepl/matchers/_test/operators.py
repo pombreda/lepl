@@ -70,13 +70,13 @@ class SpaceTest(TestCase):
         with Separator(~Space()):
             s1 = self.word()[1:]
         s1.config.no_full_match()
-        s1 = s1.string_parser()
+        s1 = s1.get_parse_string()
         assert not s1("abc")
         assert s1("a bc")
         with Separator(None):
             s2 = self.word()[1:]
         s2.config.no_full_match()
-        s2 = s2.string_parser()
+        s2 = s2.get_parse_string()
         assert s2("abc")
         assert not s2("a bc")
 

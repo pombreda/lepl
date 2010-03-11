@@ -154,7 +154,7 @@ else:
             # node or a subclass
             expr += spaces & (node | other) & spaces
         
-        return expr.string_parser()
+        return expr.get_parse_string()
     
     
     __PARSER = None

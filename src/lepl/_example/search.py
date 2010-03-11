@@ -39,23 +39,17 @@ class SearchExample(Example):
         
         any = Any()[:,...]
         split = any & any & Eos()
-        match = split.string_matcher()
+        match = split.get_parse_string_all()
 
-        def example1():
-            return [pair[0] for pair in match('****')]
-        
-        self.examples([(example1, 
+        self.examples([(lambda: list(match('****')), 
 "[['****'], ['***', '*'], ['**', '**'], ['*', '***'], ['****']]")])
         
     def test_generous(self):
         
         any = Any()[::'b',...]
         split = any & any & Eos()
-        match = split.string_matcher()
-
-        def example1():
-            return [pair for (pair, _stream) in match('****')]
+        match = split.get_parse_string_all()
         
-        self.examples([(example1, 
+        self.examples([(lambda: list(match('****')), 
 "[['****'], ['*', '***'], ['**', '**'], ['***', '*'], ['****']]")])
         

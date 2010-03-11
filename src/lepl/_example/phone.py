@@ -37,7 +37,7 @@ class PhoneExample(Example):
         name    = Word()              > 'name'
         matcher = name / ','
         matcher.config.no_full_match()
-        parser = matcher.string_parser()
+        parser = matcher.get_parse_string()
         self.examples([(lambda: parser('andrew, 3333253'),
                         "[('name', 'andrew'), ',']")])
     
@@ -47,7 +47,7 @@ class PhoneExample(Example):
         phone   = Integer()           > 'phone'
         matcher = name / ',' / phone
         matcher.config.no_full_match()
-        parser = matcher.string_parser()
+        parser = matcher.get_parse_string()
         self.examples([(lambda: parser('andrew, 3333253'),
                         "[('name', 'andrew'), ',', ' ', ('phone', '3333253')]")])
     
@@ -56,7 +56,7 @@ class PhoneExample(Example):
         name    = Word()              > 'name'
         matcher = name                > make_dict
         matcher.config.no_full_match()
-        parser = matcher.string_parser()
+        parser = matcher.get_parse_string()
         self.examples([(lambda: parser('andrew, 3333253'),
                         "[{'name': 'andrew,'}]")])
     
@@ -67,10 +67,10 @@ class PhoneExample(Example):
         name    = Word()              > 'name'
         matcher = name / ','          > make_dict
         matcher.config.clear().flatten()
-        parser = matcher.string_parser()
+        parser = matcher.get_parse_string()
         #print(repr(parser.matcher))
         matcher.config.clear().flatten().compose_transforms().trace(True)
-        parser = matcher.string_parser()
+        parser = matcher.get_parse_string()
         #print(repr(parser.matcher))
         self.examples([(lambda: parser('andrew, 3333253'),
                         "[{'name': 'andrew'}]")])
@@ -85,12 +85,12 @@ class PhoneExample(Example):
         
 #        matcher.config.clear()
 #        print()
-#        print(repr(matcher.string_parser().matcher))
+#        print(repr(matcher.get_parse_string().matcher))
 #        matcher.config.clear().flatten()
-#        print(repr(matcher.string_parser().matcher))
+#        print(repr(matcher.get_parse_string().matcher))
 #        matcher.config.clear().flatten().compose_transforms()
-#        print(repr(matcher.string_parser().matcher))
-        parser = matcher.string_parser()
+#        print(repr(matcher.get_parse_string().matcher))
+        parser = matcher.get_parse_string()
 
         self.examples([(lambda: parser('andrew, 3333253'),
                         "[{'phone': '3333253', 'name': 'andrew'}]"),

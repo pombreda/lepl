@@ -35,14 +35,14 @@ class DirectionTest1(TestCase):
         #basicConfig(level=DEBUG)
         matcher = DepthFirst(self.matcher(), 1, 2)
         matcher.config.no_full_match()
-        matcher = matcher.null_matcher()
+        matcher = matcher.get_match()
         results = list(map(''.join, map(lambda x: x[0], matcher('123'))))
         assert results == ['12', '1'], results
         
     def test_breadth(self):
         matcher = BreadthFirst(self.matcher(), 1, 2)
         matcher.config.no_full_match()
-        matcher = matcher.null_matcher()
+        matcher = matcher.get_match()
         results = list(map(''.join, map(lambda x: x[0], matcher('123'))))
         assert results == ['1', '12'], results
         
@@ -54,13 +54,13 @@ class DirectionTest2(TestCase):
     def test_depth(self):
         matcher = DepthFirst(self.matcher(), 1, 2)
         matcher.config.no_full_match()
-        matcher = matcher.null_matcher()
+        matcher = matcher.get_match()
         results = list(map(''.join, map(lambda x: x[0], matcher('123'))))
         assert results == ['3', '23', '2', '13', '12', '1'], results
         
     def test_breadth(self):
         matcher = BreadthFirst(self.matcher(), 1, 2)
         matcher.config.no_full_match()
-        matcher = matcher.null_matcher()
+        matcher = matcher.get_match()
         results = list(map(''.join, map(lambda x: x[0], matcher('123'))))
         assert results == ['3', '2', '1', '23', '13', '12'], results

@@ -38,7 +38,7 @@ class LineAwareExamples(Example):
         end = DfaRegexp('(*EOL)')
         line = start & words & end
         line.config.default_line_aware()
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         self.examples([(lambda: parser('  abc def'), 
                         "['  ', ['abc', 'def'], '']")])
 
@@ -50,7 +50,7 @@ class LineAwareExamples(Example):
         end = EOL()
         line = start & words & end
         line.config.default_line_aware()
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         self.examples([(lambda: parser('  abc def'), 
                         "['  ', ['abc', 'def']]")])
 
@@ -59,7 +59,7 @@ class LineAwareExamples(Example):
         words = Token(Word(Lower()))[:] > list
         line = Indent() & words & Eol()
         line.config.default_line_aware(tabsize=4)
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         self.examples([(lambda: parser('\tabc def'), 
                         "['    ', ['abc', 'def'], '']")])
 
@@ -68,7 +68,7 @@ class LineAwareExamples(Example):
         words = Token(Word(Lower()))[:] > list
         line = Line(words)
         line.config.default_line_aware(tabsize=4)
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         self.examples([(lambda: parser('\tabc def'), 
                         "[['abc', 'def']]")])
     
@@ -78,7 +78,7 @@ class LineAwareExamples(Example):
         CLine = ContinuedLineFactory(r'\+')
         line = CLine(words)
         line.config.default_line_aware()
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         self.examples([(lambda: parser('''abc def +
 ghi'''), 
                         "[['abc', 'def', 'ghi']]")])

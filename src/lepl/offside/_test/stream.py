@@ -37,7 +37,7 @@ class LineTest(TestCase):
         quoted = Regexp("'[^']'")
         line = BLine(text(quoted))
         line.config.default_line_aware()
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         try:
             parser("'a'")
             assert False, 'Expected error'
@@ -50,7 +50,7 @@ class LineTest(TestCase):
         quoted = Regexp("'[^']'")
         line = BLine(text(quoted))
         line.config.default_line_aware(block_start=0)
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         assert parser("'a'") == ["'a'"]
         
     def test_offset(self):
@@ -58,7 +58,7 @@ class LineTest(TestCase):
         text = Token('[^\n\r]+')
         line = BLine(text(~Literal('aa') & Regexp('.*')))
         line.config.default_line_aware(block_start=0)
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         assert parser('aabc') == ['bc']
         # what happens with an empty match?
         check = ~Literal('aa') & Regexp('.*')
@@ -70,7 +70,7 @@ class LineTest(TestCase):
         #basicConfig(level=DEBUG)
         line = DfaRegexp('(*SOL)[a-z]*(*EOL)')
         line.config.default_line_aware()
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         assert parser('abc') == ['abc']
         
 

@@ -30,7 +30,7 @@ class SearchTest(TestCase):
         query          = word_or_phrase[1:, space]    > Query
         separator      = Drop(space & 'OR' & space)
         alternatives   = query[:, separator]          > Alternatives
-        return alternatives.string_parser()
+        return alternatives.get_parse_string()
         
     def test_word(self):
         result = self.compile()('word')

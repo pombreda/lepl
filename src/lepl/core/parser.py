@@ -196,11 +196,11 @@ def trampoline(main, m_stack=None, m_value=None):
             m_stack.pop(pop())
                     
                 
-def make_matcher(matcher, stream_factory, config, kargs):
+def make_raw_parser(matcher, stream_factory, config):
     '''
-    Make a matcher.  Rewrite the matcher and prepare the input for a parser.
+    Make a parser.  Rewrite the matcher and prepare the input for a parser.
     This constructs a function that returns a generator that provides a 
-    sequence of matches.
+    sequence of matches (ie (results, stream) pairs).
     '''
     for rewriter in config.rewriters:
         matcher = rewriter(matcher)
@@ -209,26 +209,37 @@ def make_matcher(matcher, stream_factory, config, kargs):
     # pylint: disable-msg=W0212, E0601
     # (_match is meant to be hidden)
     # pylint: disable-msg=W0142
-    parser = lambda arg: \
+    parser = lambda arg, **kargs: \
         trampoline(matcher._match(stream_factory(arg, **kargs)), 
                    m_stack=m_stack, m_value=m_value)
     parser.matcher = matcher
     return parser
 
 
-def make_parser(matcher):
+def make_multiple(raw):
     '''
-    Convert a matcher (from `make_matcher`) to a parser (which returns a 
-    single result or None).
+    Convert a raw parser to return a generator of results.
+    '''
+    def multiple(arg):
+        '''
+        Adapt a raw parser to behave as expected for the matcher interface.
+        '''
+        return map(lambda x: x[0], raw(arg))
+    multiple.matcher = raw.matcher
+    return multiple
+
+
+def make_single(raw):
+    '''
+    Convert a raw parser to return a single result or None.
     '''
     def single(arg):
         '''
-        Adapt a matcher to behave as expected for the parser interface.
+        Adapt a raw parser to behave as expected for the parser interface.
         '''
         try:
-            return next(matcher(arg))[0]
+            return next(raw(arg))[0]
         except StopIteration:
             return None
-    single.matcher = matcher.matcher
+    single.matcher = raw.matcher
     return single
-

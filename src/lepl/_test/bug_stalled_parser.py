@@ -44,7 +44,7 @@ class LeftRecursiveTest(TestCase):
 #    
 #        expr     = item[:2] & Drop(Eos())
 ##        parser = expr.string_parser(Configuration(rewriters=[memoize(LMemo)]))
-#        parser = expr.string_parser()
+#        parser = expr.get_parse_string()
 #        print(parser.matcher)
 #
 #        parser('abc')
@@ -60,7 +60,7 @@ class LeftRecursiveTest(TestCase):
 #        item    += item[1:] | ~Lookahead('\\')
 #    
 #        expr     = item & Drop(Eos())
-#        parser = expr.string_parser()
+#        parser = expr.get_parse_string()
 #        print(parser.matcher)
 #
 #        parser('abc')
@@ -72,6 +72,6 @@ class LeftRecursiveTest(TestCase):
         expr     = item & Drop(Eos())
 
         expr.config.no_full_match()
-        parser = expr.string_parser()
+        parser = expr.get_parse_string()
 #        print(parser.matcher)
         parser('abc')

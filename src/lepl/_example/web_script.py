@@ -161,7 +161,7 @@ def Digit(support, stream):
 results = Digit()[13, ...].match('1-800-7246837')
 
 # results is a generator - LEPL lazily matches data "on demand"
-print type(results)
+print(type(results))
 
 words = map(lambda result: result[0][0], results)
 assert '1-800-painter' in words

@@ -35,7 +35,7 @@ class ExplicitTest(TestCase):
         matcher = NamedResult('foo', Any()[:], out=output)
         repr(matcher)
         matcher.config.clear()
-        parser = matcher.string_matcher()
+        parser = matcher.get_match_string()
         list(parser('abc'))
         text = output.getvalue()
         assert text == '''foo = ['a', 'b', 'c']

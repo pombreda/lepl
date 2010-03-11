@@ -88,7 +88,7 @@ class Calculator(Example):
         expr   += sum_ | diff | factor | value
         
         line    = expr & Eos()
-        parser  = line.null_parser()
+        parser  = line.get_parse()
         
         def calculate(text):
             return float(parser(text)[0])

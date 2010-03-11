@@ -631,7 +631,7 @@ class StrTest(TestCase):
          TransformationWrapper(<apply>))))),
      TransformationWrapper(<apply>))))),
  TransformationWrapper(<apply>)))''')
-        parser = expression.null_parser()
+        parser = expression.get_parse()
         description = parser.matcher.tree()
         self.assert_same(description, r"""TransformableTrampolineWrapper
  +- Transform
@@ -884,14 +884,14 @@ abcdefghij
 class ConsumerTest(BaseTest):
     
     def test_simple(self):
-        parser = Consumer(Any()).null_parser()
+        parser = Consumer(Any()).get_parse()
         result = parser('a')
         assert ['a'] == result, result
         
     def test_fail(self):
         matcher = Consumer(Any('b'))
         matcher.config.no_full_match()
-        parser = matcher.null_parser()
+        parser = matcher.get_parse()
         result = parser('a')
         assert None == result, result
         
@@ -900,7 +900,7 @@ class ConsumerTest(BaseTest):
         This test requires evaluation of sub-matchers via trampolining; if
         it fails then there may be an issue with generator_matcher.
         '''
-        parser = Consumer(Any() & Any('b')).null_parser()
+        parser = Consumer(Any() & Any('b')).get_parse()
         result = parser('ab')
         assert ['a', 'b'] == result, result
         

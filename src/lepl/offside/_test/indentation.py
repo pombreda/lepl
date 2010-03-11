@@ -50,7 +50,7 @@ left
         line3 = indent('    ') & word('four') + Eol()
         expr = (line1 & line2 & line3)
         expr.config.default_line_aware()
-        parser = expr.string_parser()
+        parser = expr.get_parse_string()
         result = parser(text)
         assert result == ['', '', 'left', '    ', 'four'], result
         
@@ -75,7 +75,7 @@ class TabTest(TestCase):
         line3 = indent('     ') & word('spaceandtab') & ~Eol()
         expr = line1 & line2 & line3
         expr.config.default_line_aware(tabsize=4).trace(True)
-        parser = expr.string_parser()
+        parser = expr.get_parse_string()
         result = parser(text)
         #print(result)
         assert result == ['', ' ', 'onespace', '     ', 'spaceandtab'], result

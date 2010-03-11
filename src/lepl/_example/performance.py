@@ -56,7 +56,7 @@ Examples from the documentation.
 #        line    = Trace(expr) & Eos()
 #    
 #    line.configuration = config
-#    return line.string_parser()
+#    return line.get_parse_string()
 #
 #def default(): return build(Configuration)
 #def managed(): return build(Configuration.managed())

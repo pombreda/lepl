@@ -53,7 +53,7 @@ class ArgsExample(Example):
             karg   = ((ident & Drop('=') & value)            > tuple) >> 'karg'
             expr   = (karg | arg)[:, comma] & Drop(Eos())    > Node
             
-        parser = expr.string_parser()
+        parser = expr.get_parse_string()
 #        ast = parser('True, type=rect, sizes=[3, 4], coords = ([1,2],[3,4])')
 #        self.examples([(lambda: ast[0], '''Node
 # +- arg True

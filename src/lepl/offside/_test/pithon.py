@@ -54,7 +54,7 @@ class PithonTest(TestCase):
         
         program = (line[:] & Eos())
         program.config.default_line_aware(block_policy=rightmost).trace(True)
-        return program.string_parser()
+        return program.get_parse_string()
     
     def test_blocks(self):
         #basicConfig(level=DEBUG)

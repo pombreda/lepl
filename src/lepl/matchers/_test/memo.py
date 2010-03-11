@@ -42,7 +42,7 @@ class MemoTest(TestCase):
         
         #print(seq)
         seq.config.clear().right_memoize().trace(True)
-        p = seq.string_matcher()
+        p = seq.get_match_string()
         #print(p.matcher)
         
         results = list(p('ab'))
@@ -60,7 +60,7 @@ class MemoTest(TestCase):
         seq   += Optional(seq) & letter
         
         seq.config.clear().left_memoize().trace(True)
-        p = seq.null_matcher()
+        p = seq.get_match()
         #print(p.matcher)
         results = list(p('ab'))
         assert len(results) == 2, len(results)
@@ -77,7 +77,7 @@ class MemoTest(TestCase):
         seq   += Optional(seq) & letter
         
         seq.config.clear().left_memoize().trace(True)
-        p = seq.string_matcher()
+        p = seq.get_match_string()
         results = list(p('ab'))
         assert len(results) == 2, len(results)
         assert results[0][0] == ['a', 'b'], results[0][0]
@@ -93,7 +93,7 @@ class MemoTest(TestCase):
         seq   += letter | (seq  & letter)
         
         seq.config.clear().left_memoize().trace(True)
-        p = seq.string_matcher()
+        p = seq.get_match_string()
         results = list(p('abcdef'))
         assert len(results) == 6, len(results)
         assert results[0][0] == ['a'], results[0][0]
@@ -125,7 +125,7 @@ class MemoTest(TestCase):
         sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
         sentence.config.clear().left_memoize().trace()
-        p = sentence.string_matcher()
+        p = sentence.get_match_string()
         
         text = 'every boy or some girl and helen and john or pat knows ' \
                'and respects or loves every boy or some girl and pat or ' \
@@ -182,129 +182,129 @@ class RecursionTest(TestCase):
     def test_right_string(self):
         matcher = self.right()
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_right_null(self):
         matcher = self.right()
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
 
     def test_right_token_string(self):
         #basicConfig(level=DEBUG)
         matcher = self.right_token()
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_right_token_null(self):
         #basicConfig(level=DEBUG)
         matcher = self.right_token()
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
         
     def test_right_token_string_content(self):
         #basicConfig(level=DEBUG)
         matcher = self.right_token(True)
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_right_token_null_content(self):
         #basicConfig(level=DEBUG)
         matcher = self.right_token(True)
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
         
     def test_right_string_clear(self):
         matcher = self.right()
         matcher.config.clear().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_right_null_clear(self):
         matcher = self.right()
         matcher.config.clear().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
 
     def test_right_token_string_clear(self):
         #basicConfig(level=DEBUG)
         matcher = self.right_token()
         matcher.config.clear().auto_memoize(full=True).lexer().trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_right_token_null_clear(self):
         #basicConfig(level=DEBUG)
         matcher = self.right_token()
         matcher.config.clear().auto_memoize(full=True).lexer().trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
         
     def test_right_token_string_clear_content(self):
         #basicConfig(level=DEBUG)
         matcher = self.right_token(True)
         matcher.config.clear().auto_memoize(full=True).lexer().trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_right_token_null_clear_content(self):
         #basicConfig(level=DEBUG)
         matcher = self.right_token(True)
         matcher.config.clear().auto_memoize(full=True).lexer().trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
         
     def test_left_string(self):
         matcher = self.left()
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_left_null(self):
         matcher = self.left()
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
 
     def test_left_token_string(self):
         matcher = self.left_token()
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_left_token_null(self):
         matcher = self.left_token()
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
 
     def test_left_token_string_content(self):
         matcher = self.left_token(True)
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_left_token_null_content(self):
         matcher = self.left_token(True)
         matcher.config.no_full_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
 
     def test_left_string_clear(self):
         matcher = self.left()
         matcher.config.clear().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_left_null_clear(self):
         matcher = self.left()
         matcher.config.clear().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
 
     def test_left_token_string_clear(self):
         matcher = self.left_token()
         matcher.config.clear().auto_memoize(full=True).lexer().trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_left_token_null_clear(self):
         matcher = self.left_token()
         matcher.config.clear().auto_memoize(full=True).lexer().trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
 
     def test_left_token_string_clear_content(self):
         matcher = self.left_token(True)
         matcher.config.clear().auto_memoize(full=True).lexer().trace(True)
-        self.do_test(matcher.string_parser())
+        self.do_test(matcher.get_parse_string())
         
     def test_left_token_null_clear_content(self):
         matcher = self.left_token(True)
         matcher.config.clear().auto_memoize(full=True).lexer().trace(True)
-        self.do_test(matcher.null_parser())
+        self.do_test(matcher.get_parse())
 
         

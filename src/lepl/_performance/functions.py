@@ -64,16 +64,16 @@ line  = Drop('Namespace(') & arg[1:,Drop(', ')] & Drop(')') > combine
 parser = line[1:, '\n']
 
 parser.config.no_full_match()
-default_parser = parser.string_parser()
+default_parser = parser.get_parse_string()
 
 parser.config.clear()
-clear_parser = parser.string_parser()
+clear_parser = parser.get_parse_string()
 
 parser.config.default().auto_memoize(full=False).no_full_match()
-parser_1 = parser.string_parser()
+parser_1 = parser.get_parse_string()
 
 parser.config.default().auto_memoize(full=True).no_full_match()
-parser_2 = parser.string_parser()
+parser_2 = parser.get_parse_string()
 
 #print(default_parser.matcher, '\n')
 #print(clear_parser.matcher, '\n')

@@ -79,7 +79,7 @@ class ExcludeTest(TestCase):
             return x in 'aeiou'
         def parser(matcher):
             matcher.config.no_full_match()
-            return matcher.string_matcher()
+            return matcher.get_match_string()
         stream1 = 'abcdef\nghijklm\n'
         (match, _stream) = next(parser(Exclude(vowel)(Any()[:]))('abcdef\nghijklm\n'))
         assert match[0:2] == ['b', 'c'], match[0:2]

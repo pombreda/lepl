@@ -40,7 +40,7 @@ def full_left():
 #        ab += 'a' | (ab & 'b')
     m = ab & Eos()
     m.config.clear().auto_memoize()
-    p = m.string_matcher()
+    p = m.get_match_string()
     results = list(p('a' + ('\nb' * 1000)))
     assert len(results) == 1
     print('done')

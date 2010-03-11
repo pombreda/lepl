@@ -37,11 +37,11 @@ class Limitations(Example):
         A (signed) integer will consume a - sign. 
         '''
         tokens = (Token(Integer()) | Token(r'\-'))[:] & Eos()
-        self.examples([(lambda: list(tokens.match('1-2')), 
-                        "[(['1', '-2'], None[0:])]")])
+        self.examples([(lambda: list(tokens.parse_all('1-2')), 
+                        "[['1', '-2']]")])
         matchers = (Integer() | Literal('-'))[:] & Eos()
-        self.examples([(lambda: list(matchers.match('1-2')), 
-                        "[(['1', '-2'], ''), (['1', '-', '2'], '')]")])
+        self.examples([(lambda: list(matchers.parse_all('1-2')), 
+                        "[['1', '-2'], ['1', '-', '2']]")])
     
     def test_complete(self):
         '''

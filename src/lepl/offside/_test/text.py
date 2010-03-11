@@ -65,7 +65,7 @@ class TextTest(TestCase):
         program = statement[:]
         
         program.config.default_line_aware(block_policy=2)
-        return program.string_parser()
+        return program.get_parse_string()
         
     def do_parse(self, parser):
         return parser('''pass

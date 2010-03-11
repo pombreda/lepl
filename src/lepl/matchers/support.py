@@ -501,5 +501,3 @@ def coerce_(arg, function=None):
         from lepl.matchers.core import Literal
         function = Literal
     return function(arg) if isinstance(arg, basestring) else arg
-
-

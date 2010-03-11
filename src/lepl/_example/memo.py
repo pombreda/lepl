@@ -33,7 +33,7 @@ class MemoExample(Example):
     def test_right(self):
         
         matcher = Any('a')[:] & Any('a')[:] & RMemo(Any('b')[4])
-        self.examples([(lambda: len(list(matcher.match('aaaabbbb'))), "5")])
+        self.examples([(lambda: len(list(matcher.parse_all('aaaabbbb'))), "5")])
     
     def test_left(self):
         
@@ -58,7 +58,7 @@ class MemoExample(Example):
         sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
         sentence.config.left_memoize().trace()
-        p = sentence.null_matcher()
+        p = sentence.get_parse_string_all()
         self.examples([(lambda: 
             len(list(p('every boy or some girl and helen and john or pat knows '
                        'and respects or loves every boy or some girl and pat or '

@@ -50,7 +50,7 @@ class RegexpTest(TestCase):
         #basicConfig(level=DEBUG)
         bad = BLine(Token('[^a]*'))
         bad.config.line_aware(block_policy=2).left_memoize()
-        parser = bad.string_parser()
+        parser = bad.get_parse_string()
         result = parser('123')
         assert result == ['123'], result
         
@@ -60,7 +60,7 @@ class RegexpTest(TestCase):
         bad.config.default_line_aware(block_policy=2, 
                                       parser_factory=make_str_parser)
         bad.config.trace(True)
-        parser = bad.string_parser()
+        parser = bad.get_parse_string()
         result = parser('123')
         assert result == ['123'], result
         
@@ -70,7 +70,7 @@ class RegexpTest(TestCase):
         bad.config.default_line_aware(block_policy=2,
                                       parser_factory=make_str_parser)
         bad.config.trace(True)
-        parser = bad.string_parser() 
+        parser = bad.get_parse_string() 
         result = parser(str('123'))
         assert result == [str('123')], result
         

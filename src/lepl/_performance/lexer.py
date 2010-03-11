@@ -88,8 +88,8 @@ def lexer():
     # so recognises that calls are duplicated.  if the string parser is
     # used the string is wrapped in a StringIO that reads line by line
     # and so hashing cannot recognise that the entire input is as before 
-    parser  = line.null_parser()
-#    parser  = line.string_parser()
+    parser  = line.get_parse()
+#    parser  = line.get_parse_string()
     
     def myeval(text):
         result = parser(text)[0]

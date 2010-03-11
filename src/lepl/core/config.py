@@ -20,7 +20,7 @@
 The main configuration object and various standard configurations.
 '''
 
-from lepl.core.parser import make_matcher, make_parser
+from lepl.core.parser import make_raw_parser, make_single, make_multiple
 from lepl.stream.stream import DEFAULT_STREAM_FACTORY
 
 # A major driver for this being separate is that it decouples dependency loops
@@ -680,54 +680,133 @@ class ParserMixin(object):
     def __init__(self, *args, **kargs):
         super(ParserMixin, self).__init__(*args, **kargs)
         self.config = ConfigBuilder()
-        self.__matcher_cache = None
+        self.__raw_parser_cache = None
         self.__from = None
 
-    def __matcher(self, from_, kargs):
-        if self.config.changed or self.__matcher_cache is None \
+    def _raw_parser(self, from_):
+        if self.config.changed or self.__raw_parser_cache is None \
                 or self.__from != from_:
             config = self.config.configuration
             self.__from = from_
             stream_factory = getattr(config.stream_factory, 'from_' + from_)
-            self.__matcher_cache = \
-                make_matcher(self, stream_factory, config, kargs)
-        return self.__matcher_cache
+            self.__raw_parser_cache = \
+                make_raw_parser(self, stream_factory, config)
+        return self.__raw_parser_cache
     
-    def file_parser(self, **kargs):
-        '''
-        Construct a parser for file objects that uses a stream 
-        internally and returns a single result.
-        '''
-        return make_parser(self.file_matcher(**kargs))
     
-    def items_parser(self, **kargs):
+    def get_match_file(self):
         '''
-        Construct a parser for a sequence of times (an item is something
-        that would be matched by `Any`) that uses a stream internally and 
-        returns a single result.
+        Get a function that will parse the contents of a file, 
+        returning a sequence of (results, stream) pairs and using a 
+        stream internally.
         '''
-        return make_parser(self.items_matcher(**kargs))
+        return self._raw_parser('file')
+        
+    def get_match_items(self):
+        '''
+        Get a function that will parse the contents of a sequence of items 
+        (an item is something that would be matched by `Any`), returning a 
+        sequence of (results, stream) pairs and using a stream internally.
+        '''
+        return self._raw_parser('items')
+        
+    def get_match_path(self):
+        '''
+        Get a function that will parse the contents of a file, 
+        returning a sequence of (results, stream) pairs and using a 
+        stream internally.
+        '''
+        return self._raw_parser('path')
+        
+    def get_match_string(self,):
+        '''
+        Get a function that will parse the contents of a string, 
+        returning a sequence of (results, stream) pairs and using a 
+        stream internally.
+        '''
+        return self._raw_parser('string')
     
-    def path_parser(self, **kargs):
+    def get_match(self):
         '''
-        Construct a parser for a file that uses a stream 
-        internally and returns a single result.
-        '''
-        return make_parser(self.path_matcher(**kargs))
-    
-    def string_parser(self, **kargs):
-        '''
-        Construct a parser for strings that uses a stream 
-        internally and returns a single result.
-        '''
-        return make_parser(self.string_matcher(**kargs))
-    
-    def null_parser(self, **kargs):
-        '''
-        Construct a parser for strings and lists that returns a single result
+        Get a function that will parse the contents of a string or list, 
+        returning a sequence of (results, stream) pairs 
         (this does not use streams).
         '''
-        return make_parser(self.null_matcher(**kargs))
+        return self._raw_parser('null')
+    
+    
+    def match_file(self, file_, **kargs):
+        '''
+        Parse the contents of a file, returning a sequence of 
+        (results, stream) pairs and using a stream internally.
+        '''
+        return self.get_match_file()(file_, **kargs)
+        
+    def match_items(self, list_, **kargs):
+        '''
+        Parse the contents of a sequence of items (an item is something
+        that would be matched by `Any`), returning a sequence of 
+        (results, stream) pairs and using a stream internally.
+        '''
+        return self.get_match_items()(list_, **kargs)
+        
+    def match_path(self, path, **kargs):
+        '''
+        Parse the contents of a file, returning a sequence of 
+        (results, stream) pairs and using a stream internally.
+        '''
+        return self.get_match_path()(path, **kargs)
+        
+    def match_string(self, string, **kargs):
+        '''
+        Parse the contents of a string, returning a sequence of 
+        (results, stream) pairs and using a stream internally.
+        '''
+        return self.get_match_string()(string, **kargs)
+    
+    def match(self, stream, **kargs):
+        '''
+        Parse the contents of a string or list, returning a sequence of 
+        (results, stream) pairs (this does not use streams).
+        '''
+        return self.get_match()(stream, **kargs)
+    
+    
+    def get_parse_file(self):
+        '''
+        Get a function that will parse the contents of a file, 
+        returning a single match and using a stream internally.
+        '''
+        return make_single(self.get_match_file())
+        
+    def get_parse_items(self):
+        '''
+        Get a function that will parse the contents of a sequence of items 
+        (an item is something that would be matched by `Any`), 
+        returning a single match and using a stream internally.
+        '''
+        return make_single(self.get_match_items())
+        
+    def get_parse_path(self):
+        '''
+        Get a function that will parse the contents of a file, 
+        returning a single match and using a stream internally.
+        '''
+        return make_single(self.get_match_path())
+        
+    def get_parse_string(self):
+        '''
+        Get a function that will parse the contents of a string, 
+        returning a single match and using a stream internally.
+        '''
+        return make_single(self.get_match_string())
+    
+    def get_parse(self):
+        '''
+        Get a function that will parse the contents of a string or list, 
+        returning a single match (this does not use streams).
+        '''
+        return make_single(self.get_match())
     
     
     def parse_file(self, file_, **kargs):
@@ -735,7 +814,7 @@ class ParserMixin(object):
         Parse the contents of a file, returning a single match and using a
         stream internally.
         '''
-        return self.file_parser(**kargs)(file_)
+        return self.get_parse_file()(file_, **kargs)
         
     def parse_items(self, list_, **kargs):
         '''
@@ -743,98 +822,99 @@ class ParserMixin(object):
         that would be matched by `Any`), returning a single match and using a
         stream internally.
         '''
-        return self.items_parser(**kargs)(list_)
+        return self.get_parse_items()(list_, **kargs)
         
     def parse_path(self, path, **kargs):
         '''
         Parse the contents of a file, returning a single match and using a
         stream internally.
         '''
-        return self.path_parser(**kargs)(path)
+        return self.get_parse_path()(path, **kargs)
         
     def parse_string(self, string, **kargs):
         '''
         Parse the contents of a string, returning a single match and using a
         stream internally.
         '''
-        return self.string_parser(**kargs)(string)
+        return self.get_parse_string()(string, **kargs)
     
     def parse(self, stream, **kargs):
         '''
         Parse the contents of a string or list, returning a single match (this
         does not use streams).
         '''
-        return self.null_parser(**kargs)(stream)
+        return self.get_parse()(stream, **kargs)
     
     
-    def file_matcher(self, **kargs):
+    def get_parse_file_all(self):
         '''
-        Construct a parser for file objects that returns a sequence of matches
-        and uses a stream internally.
+        Get a function that will parse the contents of a file, 
+        returning a sequence of matches and using a stream internally.
         '''
-        return self.__matcher('file', kargs)
-    
-    def items_matcher(self, **kargs):
+        return make_multiple(self.get_match_file())
+        
+    def get_parse_items_all(self):
         '''
-        Construct a parser for a sequence of items (an item is something that
-        would be matched by `Any`) that returns a sequence of matches
-        and uses a stream internally.
+        Get a function that will parse a sequence of items 
+        (an item is something that would be matched by `Any`), 
+        returning a sequence of matches and using a stream internally.
         '''
-        return self.__matcher('items', kargs)
-    
-    def path_matcher(self, **kargs):
+        return make_multiple(self.get_match_items())
+        
+    def get_parse_path_all(self):
         '''
-        Construct a parser for a file that returns a sequence of matches
-        and uses a stream internally.
+        Get a function that will parse a file, returning a 
+        sequence of matches and using a stream internally.
         '''
-        return self.__matcher('path', kargs)
-    
-    def string_matcher(self, **kargs):
+        return make_multiple(self.get_match_path())
+        
+    def get_parse_string_all(self):
         '''
-        Construct a parser for strings that returns a sequence of matches
-        and uses a stream internally.
+        Get a function that will parse a string, returning a 
+        sequence of matches and using a stream internally.
         '''
-        return self.__matcher('string', kargs)
+        return make_multiple(self.get_match_string())
 
-    def null_matcher(self, **kargs):
+    def get_parse_all(self):
         '''
-        Construct a parser for strings and lists list objects that returns a 
+        Get a function that will parse a string or list, returning a 
         sequence of matches (this does not use streams).
         '''
-        return self.__matcher('null', kargs)
+        return make_multiple(self.get_match())
 
-    def match_file(self, file_, **kargs):
+    
+    def parse_file_all(self, file_, **kargs):
         '''
         Parse the contents of a file, returning a sequence of matches and using 
         a stream internally.
         '''
-        return self.file_matcher(**kargs)(file_)
+        return self.get_parse_file_all()(file_, **kargs)
         
-    def match_items(self, list_, **kargs):
+    def parse_items_all(self, list_, **kargs):
         '''
         Parse a sequence of items (an item is something that would be matched
         by `Any`), returning a sequence of matches and using a
         stream internally.
         '''
-        return self.items_matcher(**kargs)(list_)
+        return self.get_parse_items_all()(list_, **kargs)
         
-    def match_path(self, path, **kargs):
+    def parse_path_all(self, path, **kargs):
         '''
         Parse a file, returning a sequence of matches and using a
         stream internally.
         '''
-        return self.path_matcher(**kargs)(path)
+        return self.get_parse_path_all()(path, **kargs)
         
-    def match_string(self, string, **kargs):
+    def parse_string_all(self, string, **kargs):
         '''
         Parse a string, returning a sequence of matches and using a
         stream internally.
         '''
-        return self.string_matcher(**kargs)(string)
+        return self.get_parse_string_all()(string, **kargs)
 
-    def match(self, stream, **kargs):
+    def parse_all(self, stream, **kargs):
         '''
         Parse a string or list, returning a sequence of matches 
         (this does not use streams).
         '''
-        return self.null_matcher(**kargs)(stream)
+        return self.get_parse_all()(stream, **kargs)

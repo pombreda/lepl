@@ -88,7 +88,7 @@ class TokenRewriteTest(TestCase):
         '''
         reals = (Token(Float()) >> float)[:]
         reals.config.lexer()
-        parser = reals.null_parser()
+        parser = reals.get_parse()
         results = parser('1 2.3')
         assert results == [1.0, 2.3], results
     
@@ -98,7 +98,7 @@ class TokenRewriteTest(TestCase):
         '''
         words = Token('[a-z]+')[:]
         words.config.lexer(discard='.')
-        parser = words.null_parser()
+        parser = words.get_parse()
         results = parser('abc defXghi')
         assert results == ['abc', 'def', 'ghi'], results
         
@@ -109,7 +109,7 @@ class TokenRewriteTest(TestCase):
         #basicConfig(level=DEBUG)
         words = Token('[a-z]+')[:]
         words.config.lexer()
-        parser = words.null_parser()
+        parser = words.get_parse()
         try:
             parser('abc defXghi')
             assert False, 'expected error'
@@ -123,7 +123,7 @@ class TokenRewriteTest(TestCase):
         #basicConfig(level=DEBUG)
         words = Token('[a-z]+')[:]
         words.config.lexer()
-        parser = words.string_parser()
+        parser = words.get_parse_string()
         try:
             parser('abc defXghi')
             assert False, 'expected error'
@@ -161,7 +161,7 @@ class TokenRewriteTest(TestCase):
         line    = expr & Eos()
         
         line.config.trace(True).lexer()
-        parser = line.string_parser()
+        parser = line.get_parse_string()
         results = str26(parser('1 + 2*sin(3+ 4) - 5')[0])
         assert results == """Expression
  +- Factor
@@ -247,7 +247,7 @@ class TokenRewriteTest(TestCase):
         expr   += sum_ | diff | factor | value
         
         line    = expr & Eos()
-        parser  = line.null_parser()
+        parser  = line.get_parse()
         
         def myeval(text):
             return float(parser(text)[0])
@@ -270,7 +270,7 @@ class ErrorTest(TestCase):
         '''
         bad = Token(Any()) & Any()
         try:
-            bad.null_parser()
+            bad.get_parse()
             assert False, 'expected failure'
         except LexerError as err:
             assert str(err) == 'The grammar contains a mix of Tokens and ' \
@@ -288,7 +288,7 @@ class ErrorTest(TestCase):
         '''
         token = Token('a')
         token.config.clear().lexer(discard='b')
-        parser = token.null_parser()
+        parser = token.get_parse()
         assert parser('a') == ['a'], parser('a')
         assert parser('b') == None, parser('b')
         try:
@@ -304,14 +304,14 @@ class ErrorTest(TestCase):
         '''
         token = Token('[a-z]+')(Any())
         token.config.no_full_match()
-        parser = token.string_parser()
+        parser = token.get_parse_string()
         assert parser('a') == ['a'], parser('a')
         # even though this matches the token, the Any() sub-matcher doesn't
         # consume all the contents
         assert parser('ab') == None, parser('ab')
         token = Token('[a-z]+')(Any(), complete=False)
         token.config.no_full_match()
-        parser = token.string_parser()
+        parser = token.get_parse_string()
         assert parser('a') == ['a'], parser('a')
         # whereas this is fine, since complete=False
         assert parser('ab') == ['a'], parser('ab')
@@ -322,7 +322,7 @@ class ErrorTest(TestCase):
         '''
         token = Token('a')
         token.config.lexer(discard='').no_full_match()
-        parser = token[1:].null_parser()
+        parser = token[1:].get_parse()
         result = parser('aa')
         assert result == ['a', 'a'], result
         try:

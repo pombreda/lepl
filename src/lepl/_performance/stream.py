@@ -58,7 +58,7 @@ def matcher():
         sentence    = termphrase & verbphrase & termphrase & Eos() > Sentence
 
     sentence.config
-    p = sentence.string_matcher()
+    p = sentence.get_match_string()
     print(repr(p.matcher))
     return p
 
