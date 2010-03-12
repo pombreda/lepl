@@ -1,4 +1,4 @@
-# Welcome to LEPL - a parser for Python 2.6+
+# Welcome to LEPL - a parser for Python 2.6+ (including 3!)
 
 # All these examples will assume that we have imported the main package
 from lepl import *
@@ -47,6 +47,10 @@ query.parse('spicy meatballs OR "el bulli restaurant"')
 # For example, this means "between 3 and 5" (inclusive):
 Any()[3:5].parse('1234')
 Any()[3:5].parse('123456')
+# (the error above is expected - our grammar specified 3 to 5
+# characters, but the input contained 6.  This can be disabled 
+# using matcher.config.no_full_match())
+
 # It's also common to use [:] or [0:] to mean "zero or more":
 Any()[:].parse('123456')
 # (LEPL is greedy by default, and so matches as much as possible) 
@@ -77,24 +81,27 @@ def Capital(support, stream):
 # As you can see, a matcher takes a stream and, if the start of the
 # stream matches, returns that (in a list) and the rest of the stream.
 
-# This works as you would expect:
+# This works (and fails) as you would expect:
 Capital().parse('A')
 Capital().parse('a')
-
+# (again, this error is expected - we defined a matcher for capitals,
+# but the input was lower case).
 
 # So far we have focused mainly on recognising structure in text,
 # but parsing is also about processing that structure.
 
 # We can process text as it is matched by calling functions.
-# Each function takes a stream and a matcher:
-def print_text(result):
-    print('matched', result)
-    return list(result)
+# The function is called with the results just matched:
+def print_and_group_text(results):
+    # print what we just matched
+    print('matched', results)
+    # wrap in an extra list for grouping
+    return list(results)
 
 word = ~Lookahead('OR') & Word()
 phrase = String()
 with DroppedSpace():
-    text = (phrase | word)[1:] > print_text
+    text = (phrase | word)[1:] > print_and_group_text
     query = text[:, Drop('OR')]
 
 query.parse('spicy meatballs OR "el bulli restaurant"')
@@ -141,9 +148,9 @@ result[2].Parameter[0].label[0]
 # phone number can be displayed, if the characters on the keypad are
 # used.
 
-# This also shows how easy it is to extend LEPL with a new matcher.
-# Here the matcher Digit() enumerates all possible ways the number can 
-# be displayed.
+# This also shows how easy it is to extend LEPL with a new matcher that
+# returns multiple (alternative) matches.  Here the matcher Digit() 
+# enumerates all possible ways the number can be displayed.
 
 @sequence_matcher
 def Digit(support, stream):
@@ -158,11 +165,5 @@ def Digit(support, stream):
             for letter in digits[digit]:
                 yield ([letter], tail)
 
-results = Digit()[13, ...].match('1-800-7246837')
-
-# results is a generator - LEPL lazily matches data "on demand"
-print(type(results))
-
-words = map(lambda result: result[0][0], results)
-assert '1-800-painter' in words
-
+results = Digit()[13, ...].parse_all('1-800-7246837')
+assert ['1-800-painter'] in results

@@ -1,12 +1,9 @@
 #!/bin/bash
 
-cat > example.txt <<EOF
-Python 3.1 (r31:73572, Oct 24 2009, 05:39:09)
-[GCC 4.4.1 [gcc-4_4-branch revision 150839]] on linux2
-Type "help", "copyright", "credits" or "license" for more information.
->>>
-EOF
-echo -n ">>> " >> example.txt
+killall empty
+sleep 1
+
+rm -f example.txt
 
 PYTHONPATH=src empty -f -i in.fifo -o out.fifo -p empty.pid -L empty.log python3
 IFS=$'\n'
@@ -21,10 +18,15 @@ do
   echo $line | empty -s -o in.fifo
   echo $line >> example.txt
 done
+while [ 1 ]; do
+  empty -r -t 1 -i out.fifo >> example.txt 2> /dev/null
+  if [ $? == 255 ]; then break; fi
+done
 
+echo >> example.txt
 echo 'PAUSE' >> example.txt
 echo -n 'CLEAR' >> example.txt
 
-kill `cat empty.pid`
+killall empty
 
 mv example.txt doc-src
