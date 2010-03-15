@@ -17,7 +17,7 @@ Generator Management
   <api/redirect.html#lepl.manager.GeneratorManager>`_ monitor must be added to
   the :ref:`configuration`.
 
-:ref:`backtracking` within LEPL is implemented using generators.  These are
+:ref:`backtracking` within Lepl is implemented using generators.  These are
 semi--autonomous *loop--like* blocks of code that can be paused and restarted.
 Each matcher (in simple terms) has, at its core, a generator that provides
 successive matches.  Backtracking means saving these generators for future use

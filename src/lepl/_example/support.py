@@ -23,6 +23,8 @@
 Examples from the documentation.
 '''
 
+from re import sub
+
 from logging import getLogger
 from unittest import TestCase
 from traceback import format_exception_only, format_exc
@@ -42,4 +44,6 @@ class Example(TestCase):
                 result = ''.join(format_exception_only(type(e), e))
             # Python 2.6 unicode strings - hack removal
             result = result.replace("u'", "'")
+            result = sub('<(.+) 0x[0-9a-fA-F]*>', '<\\1 0x...>', result)
+            target = sub('<(.+) 0x[0-9a-fA-F]*>', '<\\1 0x...>', target)
             assert target == result, '"' + result + '" != "' + target + '"'

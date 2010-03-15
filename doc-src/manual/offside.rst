@@ -5,7 +5,7 @@
 Line--Aware Parsing and the Offside Rule
 ========================================
 
-From release 3.3 LEPL includes support to simplify parsing text where lines
+From release 3.3 Lepl includes support to simplify parsing text where lines
 and whitespace are significant.  For example, in both Python and Haskell, the
 relative indentation of lines changes the meaning of a program.  There are
 also many simpler cases where a matcher should be applied to a single line (or
@@ -15,7 +15,7 @@ At the end of this section is an :ref:`example <python_example>` that handles
 indentation in a similar way to Python.
 
 There is nothing special about spaces and newline characters, of course, so in
-principle it was always possible to handle such grammars in LEPL, but in
+principle it was always possible to handle such grammars in Lepl, but in
 practice doing so was frustratingly complex.  The new extensions make things
 much simpler.
 
@@ -42,7 +42,7 @@ control over exactly what options are used).
 Line Aware Alphabet
 -------------------
 
-LEPL treats the data to be parsed as a stream --- typically a stream of
+Lepl treats the data to be parsed as a stream --- typically a stream of
 characters, or tokens.  For line--aware parsing, however, it is important to
 know about `lines`, so we must add extra markers to the stream.
 `LineAwareConfiguration()
@@ -64,7 +64,7 @@ The markers can be matched with `SOL()
 The start and end of line markers are not returned by the matchers.
 
 The extra markers are also added to the alphabet used (Unicode by default), so
-that LEPL's regular expressions (the `DfaRegexp()
+that Lepl's regular expressions (the `DfaRegexp()
 <api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_ and `NfaRegexp()
 <api/redirect.html#lepl.regexp.matchers.NfaRegexp>`_ matchers) can match the
 start and end of lines (using ``(*SOL)`` and ``(*EOL)``).
@@ -97,7 +97,7 @@ The `LineAwareConfiguration()
 Indent and Eol Tokens
 ---------------------
 
-We can use tokens with line--aware alphabets.  LEPL includes two tokens that
+We can use tokens with line--aware alphabets.  Lepl includes two tokens that
 do the basic work: `Indent() <api/redirect.html#lepl.offside.lexer.Indent>`_
 and `Eol() <api/redirect.html#lepl.offside.lexer.Eol>`_.  As you might expect,
 the first of these matches the start of line marker plus any additional
@@ -173,7 +173,7 @@ section.
 Offside Rule and Blocks
 -----------------------
 
-In addition to the above, LEPL simplifies offside rule parsing with the
+In addition to the above, Lepl simplifies offside rule parsing with the
 concept of "blocks", which allow text to be described in terms of nested
 sections.  Again, this is most simply configured via `LineAwareConfiguration()
 <api/redirect.html#lepl.offside.config.LineAwareConfiguration>`_ (either the
@@ -206,7 +206,7 @@ contains.
 In a little more detail: `Block()
 <api/redirect.html#lepl.offside.matchers.Block>`_ and `BLine()
 <api/redirect.html#lepl.offside.matchers.BLine>`_ collaborate with a monitor
-(an advanced feature of LEPL that allows matchers to share data as they are
+(an advanced feature of Lepl that allows matchers to share data as they are
 added to or leave the call stack) to share the "current indentation level".
 
 Because blocks can be nested we typically have a recursive grammar.  For
@@ -263,7 +263,7 @@ many spaces are required for a single level of indentation.  Alternatively,
 .. note::
 
   When blocks are used regular expressions are automatically modified to
-  exclude ``(*SOL)`` and ``(*EOL)``.  In general this means that LEPL simply
+  exclude ``(*SOL)`` and ``(*EOL)``.  In general this means that Lepl simply
   "does the right thing" and you don't to worry about modifying regular
   expressions to match or exclude the line markers.
   

@@ -17,7 +17,7 @@ The final section gives some `implementation details`_.
 Literal 
 -------
 
-`[API] <api/redirect.html#lepl.matchers.Literal>`_
+`[API] <api/redirect.html#lepl.matchers.core.Literal>`_
 This matcher identifies a given string.  For example, ``Literal('hello')``
 will give the result "hello" when that text is at the start of a stream::
 
@@ -25,7 +25,7 @@ will give the result "hello" when that text is at the start of a stream::
   ['hello']
 
 In many cases it is not necessary to use `Literal()
-<api/redirect.html#lepl.matchers.Literal>`_ explicitly.  Most matchers, when
+<api/redirect.html#lepl.matchers.core.Literal>`_ explicitly.  Most matchers, when
 they receive a string as a constructor argument, will automatically create a
 literal match from the given text.
 
@@ -51,13 +51,13 @@ in a given string.  For example::
 And (&)
 -------
 
-`[API] <api/redirect.html#lepl.matchers.And>`_ This matcher combines other
+`[API] <api/redirect.html#lepl.matchers.combine.And>`_ This matcher combines other
 matchers in order.  For example::
 
   >>> And(Any('h'), Any()).parse_string('hello world')
   ['h', 'e']
 
-All matchers must succeed for `And() <api/redirect.html#lepl.matchers.And>`_
+All matchers must succeed for `And() <api/redirect.html#lepl.matchers.combine.And>`_
 as a whole to succeed::
 
   >>> And(Any('h'), Any('x')).parse_string('hello world')
@@ -74,7 +74,7 @@ unless a :ref:`separator <spaces>` is being used.
 Or (|)
 ------
 
-`[API] <api/redirect.html#lepl.matchers.Or>`_ This matcher searches through a
+`[API] <api/redirect.html#lepl.matchers.combine.Or>`_ This matcher searches through a
 list of other matchers to find a successful match.  For example::
 
   >>> Or(Any('x'), Any('h'), Any('z')).parse_string('hello world')
@@ -94,8 +94,8 @@ the other possibilities::
   >>> next(matcher)
   (['h', 'e', 'l'], 'lo world')
 
-This shows how `Or() <api/redirect.html#lepl.matchers.Or>`_ supports
-"backtracking".  LEPL may call a matcher times before a result is found that
+This shows how `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ supports
+"backtracking".  Lepl may call a matcher times before a result is found that
 "fits" with the rest of the grammar.
 
 
@@ -175,7 +175,7 @@ empty result list.
 
 It fails if the match would not be possible (specifying a string as matcher is
 equivalent to using `Literal()
-<api/redirect.html#lepl.matchers.Literal>`_)::
+<api/redirect.html#lepl.matchers.core.Literal>`_)::
 
   >>> Lookahead('hello').parse_string('goodbye cruel world')
   None
@@ -196,7 +196,7 @@ When preceded by a ``~`` the logic is reversed::
 
   This change in behaviour is specific to `Lookahead()
   <api/redirect.html#lepl.matchers.Lookahead>`_ --- usually ``~`` applies
-  `Drop() <api/redirect.html#lepl.functions.Drop>`_ as described below.
+  `Drop() <api/redirect.html#lepl.matchers.derived.Drop>`_ as described below.
 
 
 .. index:: Drop(), ~
@@ -204,7 +204,7 @@ When preceded by a ``~`` the logic is reversed::
 Drop (~)
 --------
 
-`[API] <api/redirect.html#lepl.functions.Drop>`_ This matcher calls another
+`[API] <api/redirect.html#lepl.matchers.derived.Drop>`_ This matcher calls another
 matcher, but discards the results::
 
   >>> (Drop('hello') / 'world').parse_string('hello world')
@@ -217,7 +217,7 @@ together, with optional spaces between).
 
 This is different to `Lookahead()
 <api/redirect.html#lepl.matchers.Lookahead>`_ because the matcher after
-`Drop() <api/redirect.html#lepl.functions.Drop>`_ receives a stream that has
+`Drop() <api/redirect.html#lepl.matchers.derived.Drop>`_ receives a stream that has
 "moved on" to the next part of the input.  With `Lookahead()
 <api/redirect.html#lepl.matchers.Lookahead>`_ the stream is not advanced and
 so this example will fail::
@@ -329,11 +329,11 @@ Many more matchers are described in the `API Documentation
 `Punctuation() <api/redirect.html#lepl.functions.Punctuation>`_,
 `Regexp() <api/redirect.html#lepl.matchers.Regexp>`_,
 `SignedEFloat() <api/redirect.html#lepl.functions.SignedEFloat>`_,
-`SignedFloat() <api/redirect.html#lepl.functions.SignedFloat>`_,
+`SignedFloat() <api/redirect.html#lepl.matchers.derived.SignedFloat>`_,
 `SignedInteger() <api/redirect.html#lepl.functions.SignedInteger>`_,
 `SkipTo() <api/redirect.html#lepl.functions.SkipTo>`_,
-`Space() <api/redirect.html#lepl.functions.Space>`_,
-`Star() <api/redirect.html#lepl.functions.Star>`_,
+`Space() <api/redirect.html#lepl.matchers.derived.Space>`_,
+`Star() <api/redirect.html#lepl.matchers.derived.Star>`_,
 `String() <api/redirect.html#lepl.functions.String>`_,
 `Substitute() <api/redirect.html#lepl.functions.Substitute>`_,
 `Trace() <api/redirect.html#lepl.matchers.Trace>`_,
@@ -362,7 +362,7 @@ possible matches, the generator will exit.
 
 Most simple matchers will return a generator that yields a single value.
 Generators that return multiple values are used in backtracking.  For example,
-the `Or() <api/redirect.html#lepl.matchers.Or>`_ generator may yield once for
+the `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ generator may yield once for
 each sub--match in turn (in practice some sub-matchers may return generators
 that themselves return many values, while others may fail immediately, so it
 is not a direct 1--to--1 correspondence).
@@ -378,7 +378,7 @@ strings, so matching should work on a variety of streams, including
 inhomogeneous lists of objects.
 
 All matcher implementations should subclass the ABC `Matcher
-<api/redirect.html#lepl.operators.Matcher>`_.  Most will do so by inheriting
+<api/redirect.html#lepl.matchers.operators.Matcher>`_.  Most will do so by inheriting
 from `BaseMatcher <api/redirect.html#lepl.functions.BaseMatcher>`_ which
 provides support for operators.
 

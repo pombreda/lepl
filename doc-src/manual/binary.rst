@@ -11,25 +11,25 @@ Binary Data
 
    The ``bin`` package is very new and still under active development.  The 
    API may change significantly (even between minor releases).  And the
-   code is more likely to contain bugs than other parts of LEPL.
+   code is more likely to contain bugs than other parts of Lepl.
 
    This documentation is rather short and incomplete; it will be extended as
    the package is developed further.
 
 The ``bin`` package supports both parsing and (re-)constructing binary data.
-It uses the core LEPL engine which, because of Python's relaxed typing and
+It uses the core Lepl engine which, because of Python's relaxed typing and
 calling conventions, is not restricted to parsing text.  But it also adds
 additional support to help address problems that are unique to handling binary
 data.
 
 The first few sections below discuss the representation of data.  This (rather
 tedious) detail is necessary to precisely define how binary values are handled
-by LEPL.
+by Lepl.
 
 Abstract Model
 --------------
 
-LEPL models binary data as an array of bits, visualised from left to right.
+Lepl models binary data as an array of bits, visualised from left to right.
 The zeroth index is the least significant bit and is visualised as being
 "leftmost".  For a value with `n` bits, the `n-1` index is the most
 significant bit, visualised as being "rightmost".
@@ -40,13 +40,13 @@ Literal Representation
 ----------------------
 
 Binary values can be expressed in a variety of ways.  Conversion from a
-literal form to LEPL's internal model may require passing through an
-intermediate byte-based form.  If so, LEPL preserves bit order within a byte
+literal form to Lepl's internal model may require passing through an
+intermediate byte-based form.  If so, Lepl preserves bit order within a byte
 (ie the least significant bit of a Python ``byte`` corresponds to the least
-significant bit in LEPL's abstract model).  However, the `order of bytes` will
+significant bit in Lepl's abstract model).  However, the `order of bytes` will
 vary, depending on whether the encoding is little- or big-endian.
 
-The following table summarises the representations support by LEPL:
+The following table summarises the representations support by Lepl:
 
 +-----------+--------+----------------------------------------+-----------+
 |Base       |Notation|Description                             | n(bits)   |
@@ -56,7 +56,7 @@ The following table summarises the representations support by LEPL:
 |           |        |Python's own rules.                     |           |
 |           |        |Resulting bytes stored little-endian.   |           |
 |           +--------+----------------------------------------+-----------+
-|           |'0b010' |String, converted by LEPL using Python's|n(digits)  |
+|           |'0b010' |String, converted by Lepl using Python's|n(digits)  |
 |           |        |int() function, but with length from    |           |
 |           |        |number of characters following '0b'.    |           |
 |           |        |Resulting bytes stored little-endian.   |           |
@@ -70,12 +70,12 @@ The following table summarises the representations support by LEPL:
 |           |        |Python's own rules.                     |           |
 |           |        |Resulting bytes stored little-endian.   |           |
 |           +--------+----------------------------------------+-----------+
-|           |'0o073' |String, converted by LEPL using Python's|3*n(digits)|
+|           |'0o073' |String, converted by Lepl using Python's|3*n(digits)|
 |           |        |int() function, but with length from    |           |
 |           |        |number of characters following '0o'.    |           |
 |           |        |Resulting bytes stored little-endian.   |           |
 |           +--------+----------------------------------------+-----------+
-|           |'073o0' |String, converted by LEPL using Python's|3*n(digits)|
+|           |'073o0' |String, converted by Lepl using Python's|3*n(digits)|
 |           |        |int() function, but with length from    |           |
 |           |        |number of characters preceding 'o0'.    |           |
 |           |        |Resulting bytes stored **big-endian**.  |           |
@@ -87,11 +87,11 @@ The following table summarises the representations support by LEPL:
 |           |        |Python's own rules.                     |           |
 |           |        |Resulting bytes stored little-endian.   |           |
 |           +--------+----------------------------------------+-----------+
-|           |'0d1980'|String, converted by LEPL using Python's|32         |
+|           |'0d1980'|String, converted by Lepl using Python's|32         |
 |           |'1980'  |int() function.                         |           |
 |           |        |Resulting bytes stored little-endian.   |           |
 |           +--------+----------------------------------------+-----------+
-|           |'1980d0'|String, converted by LEPL using Python's|32         |
+|           |'1980d0'|String, converted by Lepl using Python's|32         |
 |           |        |int() function.                         |           |
 |           |        |Resulting bytes stored **big-endian**.  |           |
 +-----------+--------+----------------------------------------+-----------+
@@ -100,12 +100,12 @@ The following table summarises the representations support by LEPL:
 |           |        |Python's own rules.                     |           |
 |           |        |Resulting bytes stored little-endian.   |           |
 |           +--------+----------------------------------------+-----------+
-|           |'0xfe01'|String, converted by LEPL using Python's|4*n(digits)|
+|           |'0xfe01'|String, converted by Lepl using Python's|4*n(digits)|
 |           |        |int() function, but with length from    |           |
 |           |        |number of characters following '0o'.    |           |
 |           |        |Resulting bytes stored little-endian.   |           |
 |           +--------+----------------------------------------+-----------+
-|           |'fe01x0'|String, converted by LEPL using Python's|4*n(digits)|
+|           |'fe01x0'|String, converted by Lepl using Python's|4*n(digits)|
 |           |        |int() function, but with length from    |           |
 |           |        |number of characters preceding 'o0'.    |           |
 |           |        |Resulting bytes stored **big-endian**.  |           |
@@ -116,18 +116,18 @@ The following table summarises the representations support by LEPL:
 .. note::
 
    Big-endian encoded values must be a whole number of bytes.  This is because
-   the byte order must be reversed during translation to LEPL's internal
+   the byte order must be reversed during translation to Lepl's internal
    model, and this process is undefined if the data do not completely define a
    series of bytes.
 
-   In contrast, little-endian encoded data match LEPL's abstract model and
+   In contrast, little-endian encoded data match Lepl's abstract model and
    so the value can be truncated directly at the given number of bits.
 
 Examples
 --------
 
 The table below shows, for various representations, the corresponding binary
-data in LEPL's internal model.
+data in Lepl's internal model.
 
 ============= =======================
 Literal Value Internal Model (length)
@@ -175,7 +175,7 @@ bits (3x8+4).
 BitString
 ---------
 
-The `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ class is an implementation of LEPL's abstract model
+The `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ class is an implementation of Lepl's abstract model
 described above.  It has similar semantics to Python's strings, in that a
 single entry (a bit - the equivalent of a character in a string) is still a
 `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_::
@@ -207,7 +207,7 @@ described earlier.
 Matching
 --------
 
-A `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ can be passed to a LEPL matcher in the same way as a Python
+A `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ can be passed to a Lepl matcher in the same way as a Python
 string.  The matchers will "automatically" match and construct the binary data.
 
 The ``lepl.bin.matchers`` package defines some additional matchers to help

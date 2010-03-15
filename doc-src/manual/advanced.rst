@@ -37,21 +37,21 @@ Rewriting
 ---------
 
 A grammar is specified by :ref:`matchers`, giving a collection of Python
-objects.  More exactly, a directed graph of objects is created.  LEPL 2 was
+objects.  More exactly, a directed graph of objects is created.  Lepl 2 was
 designed so that this graph can be examined and modified before it is used as
 a parser.
 
 .. note::
 
-  Modifying the matcher graph is a very powerful tool --- it allows LEPL to
+  Modifying the matcher graph is a very powerful tool --- it allows Lepl to
   use some of the techniques that make "compiled" parsers more efficient ---
   but it can also introduce quite subtle errors.  The addition of
   user--defined rewriters is not encouraged unless you are *very* familiar
-  with LEPL.
+  with Lepl.
 
 .. note::
 
-  LEPL presents all matchers via a uniform interface, but in practice there
+  Lepl presents all matchers via a uniform interface, but in practice there
   are two distinct types: core classes and functions.  Only the core class
   instances are present in the graph described above.  The functions are
   evaluated during the definition of the grammar and return (usually after
@@ -72,13 +72,13 @@ rewriters are available:
 Flatten And, Or
 
   The `flatten <api/redirect.html#lepl.rewriters.flatten>`_ rewriter
-  combines nested `And() <api/redirect.html#lepl.matchers.And>`_ and `Or()
-  <api/redirect.html#lepl.matchers.Or>`_ functions.  This helps improve
+  combines nested `And() <api/redirect.html#lepl.matchers.combine.And>`_ and `Or()
+  <api/redirect.html#lepl.matchers.combine.Or>`_ functions.  This helps improve
   efficiency.
 
   Nested matchers typically occur because each ``&`` and ``|`` operator
   generates a new matcher, so a sequence of matchers separated by ``&``, for
-  example, generates several `And() <api/redirect.html#lepl.matchers.And>`_
+  example, generates several `And() <api/redirect.html#lepl.matchers.combine.And>`_
   functions.  This rewriter moves them into a single matcher, as might be
   expected from reading the grammar.  This should not change the "meaning" of
   the grammar or the results returned.
@@ -124,20 +124,20 @@ Global Memoizer
 Optimize Or For Left Recursion
 
   When a left--recursive rule occurs in an `Or()
-  <api/redirect.html#lepl.matchers.Or>`_ matcher it is usually most efficient
+  <api/redirect.html#lepl.matchers.combine.Or>`_ matcher it is usually most efficient
   to make it the right--most alternative.  This allows other rules to consume
   input before the recursive rule is (re-)called.
 
   The `optimize_or(conservative)
   <api/redirect.html#lepl.rewriters.optimize_or>`_ rewriter tries to detect
   left--recursive rules and re-arranges `Or()
-  <api/redirect.html#lepl.matchers.Or>`_ matcher contents appropriately.
+  <api/redirect.html#lepl.matchers.combine.Or>`_ matcher contents appropriately.
 
   The ``conservative`` parameter supplied to this rewriter (and a few more
   below) indicates how left--recursive rules are detected.  If true, all
   recursive paths are assumed to be left recursive.  If false then only those
   matchers that are in the left--most position of multiple arguments are used
-  (except for `Or() <api/redirect.html#lepl.matchers.Or>`_).
+  (except for `Or() <api/redirect.html#lepl.matchers.combine.Or>`_).
 
   This matcher is used in the default :ref:`configuration` via the
   `auto_memoize(conservative)
@@ -190,7 +190,7 @@ Rewriting as Regular Expressions
   `Float() <api/redirect.html#lepl.functions.Float>`_).
 
   It makes little sense to replace efficient, simple matchers like `Literal()
-  <api/redirect.html#lepl.matchers.Literal>`_ with regular expressions so the
+  <api/redirect.html#lepl.matchers.core.Literal>`_ with regular expressions so the
   function `regexp_rewriter()
   <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ takes a ``use``
   parameter.  When this parameter is ``False`` regular expressions are only
@@ -231,7 +231,7 @@ Identifying Tokens and Building a Lexer
 Search and Backtracking
 -----------------------
 
-Since LEPL supports full backtracking via generators it is possible to request
+Since Lepl supports full backtracking via generators it is possible to request
 all the alternative parses for a given input::
 
   >>> from lepl import *
@@ -281,23 +281,23 @@ to the various streams returned by the current match (none if this is a final
 node, one for a simple match, several if the matcher backtracks).
 
 So far so good.  Unfortunately the process is more complicated for `And()
-<api/redirect.html#lepl.matchers.And>`_ and `Or()
-<api/redirect.html#lepl.matchers.Or>`_.
+<api/redirect.html#lepl.matchers.combine.And>`_ and `Or()
+<api/redirect.html#lepl.matchers.combine.Or>`_.
 
-In the case of `And() <api/redirect.html#lepl.matchers.And>`_, the first
+In the case of `And() <api/redirect.html#lepl.matchers.combine.And>`_, the first
 matcher is matched first.  The child nodes correspond to the various (with
 backtracking) results of this match.  At each child node, the second matcher
 is applied, generating new children.  This repeats until the scope of the
-`And() <api/redirect.html#lepl.matchers.And>`_ terminates at a depth in the
+`And() <api/redirect.html#lepl.matchers.combine.And>`_ terminates at a depth in the
 tree corresponding to the children of the last matcher.  Since `And()
-<api/redirect.html#lepl.matchers.And>`_ fails unless all matchers match, only
+<api/redirect.html#lepl.matchers.combine.And>`_ fails unless all matchers match, only
 the final child nodes are possible results.  As a consequence, both breadth
 and depth first searches would return the same ordering.  The `And()
-<api/redirect.html#lepl.matchers.And>`_ match is therefore unambiguous and the
+<api/redirect.html#lepl.matchers.combine.And>`_ match is therefore unambiguous and the
 implementation has no way to specify the (essentially meaningless) choice
 between the two searches.
 
-In the case of `Or() <api/redirect.html#lepl.matchers.Or>`_ we must select
+In the case of `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ we must select
 both the matcher and the result from the results available for that matcher.
 A natural approach is to assign the first generation of children to the choice
 of matcher, and the second level to the choice of result for the (parent)
@@ -321,7 +321,7 @@ context (during backtracking, for example), the stored result can be returned
 without repeating the work needed to generate it.  This improves the
 efficiency of the parser.
 
-LEPL 2 has two memoizers.  The simplest is `RMemo()
+Lepl 2 has two memoizers.  The simplest is `RMemo()
 <api/redirect.html#lepl.memo.RMemo>`_ which is a simple cache based on the
 stream supplied.
 

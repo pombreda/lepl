@@ -5,7 +5,7 @@
 Implementation
 ==============
 
-LEPL is, in many ways, a very traditional recursive descent parser.  This
+Lepl is, in many ways, a very traditional recursive descent parser.  This
 chapter does not describe the basic ideas behind recursive descent parsing
 [*]_.  Instead I will focus on the details that are unique to this particular
 implementation.
@@ -106,7 +106,7 @@ extending the simple cache with a counter that blocks recursion past that
 depth.
 
 This approach is implemented in `LMemo() <api/redirect.html#lepl.memo.LMemo>`_
-which makes LEPL robust to left--recursive grammars.
+which makes Lepl robust to left--recursive grammars.
 
 
 .. index:: rewriting, graph, flattening
@@ -122,7 +122,7 @@ cyclic) graph.  By storing the constructor arguments for the matcher objects
 The base classes for the graph are in the `graph
 <api/redirect.html#lepl.graph>`_ package (the `node
 <api/redirect.html#lepl.node>`_ package, used for ASTs, builds on these
-classes so many of the tools used internally within LEPL may also be useful to
+classes so many of the tools used internally within Lepl may also be useful to
 process ASTs).  Matcher graph rewriting occurs during parser construction
 (see the `parser <api/redirect.html#lepl.parser>`_ package).
 
@@ -140,7 +140,7 @@ for ASTs).
 Streams
 -------
 
-LEPL can process simple strings and lists, but it can also use its own stream
+Lepl can process simple strings and lists, but it can also use its own stream
 abstraction, which implements the `LocationStream()
 <api/redirect.html#lepl.stream.LocationStream>`_ interface.  This tracks the
 position of each character within the source (useful for errors and, in the

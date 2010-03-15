@@ -114,7 +114,8 @@ class TokenRewriteTest(TestCase):
             parser('abc defXghi')
             assert False, 'expected error'
         except RuntimeLexerError as err:
-            assert str(err) == 'No lexer for \'Xghi\'.', str(err)
+            assert str(err) == "No lexer for 'Xghi' at line 1 " \
+                "character 7 of str: 'abc defXghi'.", str(err)
         
     def test_good_error_msg(self):
         '''
@@ -295,7 +296,8 @@ class ErrorTest(TestCase):
             parser('c')
             assert False, 'expected failure'
         except RuntimeLexerError as err:
-            assert str(err) == 'No lexer for \'c\'.', str(err)
+            assert str(err) == "No lexer for 'c' at line 1 " \
+                "character 0 of str: 'c'.", str(err)
 
     def test_incomplete(self):
         '''
@@ -303,14 +305,14 @@ class ErrorTest(TestCase):
         it just fails to match).
         '''
         token = Token('[a-z]+')(Any())
-        token.config.no_full_match()
+        token.config.no_full_first_match()
         parser = token.get_parse_string()
         assert parser('a') == ['a'], parser('a')
         # even though this matches the token, the Any() sub-matcher doesn't
         # consume all the contents
         assert parser('ab') == None, parser('ab')
         token = Token('[a-z]+')(Any(), complete=False)
-        token.config.no_full_match()
+        token.config.no_full_first_match()
         parser = token.get_parse_string()
         assert parser('a') == ['a'], parser('a')
         # whereas this is fine, since complete=False
@@ -321,7 +323,7 @@ class ErrorTest(TestCase):
         If discard is '', discard nothing.
         '''
         token = Token('a')
-        token.config.lexer(discard='').no_full_match()
+        token.config.lexer(discard='').no_full_first_match()
         parser = token[1:].get_parse()
         result = parser('aa')
         assert result == ['a', 'a'], result

@@ -38,10 +38,9 @@ class LineAwareExamples(Example):
         end = DfaRegexp('(*EOL)')
         line = start & words & end
         line.config.default_line_aware()
-        parser = line.get_parse_string()
+        parser = line.get_parse()
         self.examples([(lambda: parser('  abc def'), 
                         "['  ', ['abc', 'def'], '']")])
-
 
     def test_match(self):
         #basicConfig(level=DEBUG)
@@ -49,8 +48,8 @@ class LineAwareExamples(Example):
         words = Word()[:,~Space()[:]] > list
         end = EOL()
         line = start & words & end
-        line.config.default_line_aware()
-        parser = line.get_parse_string()
+        line.config.default_line_aware().no_compile_regexp()
+        parser = line.get_parse()
         self.examples([(lambda: parser('  abc def'), 
                         "['  ', ['abc', 'def']]")])
 

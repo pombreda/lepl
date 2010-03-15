@@ -49,7 +49,7 @@ Any()[3:5].parse('1234')
 Any()[3:5].parse('123456')
 # (the error above is expected - our grammar specified 3 to 5
 # characters, but the input contained 6.  This can be disabled 
-# using matcher.config.no_full_match())
+# using matcher.config.no_full_first_match())
 
 # It's also common to use [:] or [0:] to mean "zero or more":
 Any()[:].parse('123456')

@@ -38,7 +38,7 @@ class MatchersTest(TestCase):
         with Separator(~Regexp(r'\s*')):
             word = NfaRegexp('[A-Z][a-z]*')
             phrase = word[1:]
-        phrase.config.no_full_match()
+        phrase.config.no_full_first_match()
             
         results = list(phrase.match('Abc'))
         assert len(results) == 3, results
@@ -59,7 +59,7 @@ class MatchersTest(TestCase):
         with Separator(~Regexp(r'\s*')):
             word = DfaRegexp('[A-Z][a-z]*')
             phrase = word[1:]
-        phrase.config.no_full_match()
+        phrase.config.no_full_first_match()
         
         results = list(phrase.match('Abc'))
         assert len(results) == 1, results
@@ -72,7 +72,7 @@ class MatchersTest(TestCase):
         results = list(phrase.match('Abc Def'))
         assert len(results) == 2, results
         
-    def test_full_match(self):
+    def test_full_first_match(self):
         #basicConfig(level=DEBUG)
         matcher = Regexp('a')
         assert matcher.parse('a')

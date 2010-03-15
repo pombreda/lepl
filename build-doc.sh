@@ -1,31 +1,30 @@
 #!/bin/bash
 
-PYTHONPATH=./src python3 -i < src/lepl/_example/web_script.py > doc-src/example.txt 2>&1
-sed -i -e 's/\(.+\)\(>>>.*\)/\1\n\2/g' doc-src/example.txt
-sed -i -e 's/\(.\)\(\.\.\.\)/\1\n\2/g' doc-src/example.txt
-
 RELEASE=`egrep "version=" setup.py | sed -e "s/.*'\(.*\)'.*/\\1/"`
 VERSION=`echo $RELEASE | sed -e "s/.*?\([0-9]\.[0-9]\).*/\\1/"`
 
-sed -i -e "s/release = .*/release = '$RELEASE'/" doc-src/conf.py
-sed -i -e "s/version = .*/version = '$VERSION'/" doc-src/conf.py
+sed -i -e "s/release = .*/release = '$RELEASE'/" doc-src/manual/conf.py
+sed -i -e "s/version = .*/version = '$VERSION'/" doc-src/manual/conf.py
 
 sed -i -e "s/__version__ = .*/__version__ = '$RELEASE'/" src/lepl/__init__.py
 
 rm -fr doc
 
-pushd doc-src
+pushd doc-src/manual
 ./index.sh
 popd
 
-sphinx-build -b html doc-src/ doc
+sphinx-build -b html doc-src/manual doc
 
 # this is a bit of a hack, but people want to jump directly to the text
 # so we skip the contents
-pushd doc
-sed -i -e 's/href="intro.html"/href="intro-1.html"/' index.html
-sed -i -e 's/A Tutorial for LEPL/Tutorial Contents/' intro-1.html
-popd
+#pushd doc
+#sed -i -e 's/href="intro.html"/href="intro-1.html"/' index.html
+#sed -i -e 's/A Tutorial for LEPL/Tutorial Contents/' intro-1.html
+#popd
 
 epydoc -v -o doc/api --html --graph=all --docformat=restructuredtext -v --exclude="_experiment" --exclude="_performance" --exclude="_example" --debug src/*
 
+cp doc-src/example.txt doc
+cp doc-src/index.html doc
+cp doc-src/index.css doc

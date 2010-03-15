@@ -115,38 +115,60 @@ def facade_factory(stream):
 
 
 @trampoline_matcher_factory()
-def FullMatch(matcher, eos=False):
+def FullFirstMatch(matcher, eos=True):
+    '''
+    Raise an exception if the first match fails (if eos=False) or does not
+    consume the entire input stream (eos=True).  The exception includes 
+    information about the location of the deepest match.
+    
+    This only works for the first match because we cannot reset the stream
+    facade for subsequent matches (also, if you want multiple matches you
+    probably want more sophisticated error handling than this).
+    '''
     
     def _matcher(support, stream1):
+        # add facade to stream
         (stream2, memory) = facade_factory(stream1)
+        
+        # first match
         generator = matcher._match(stream2)
-        first = True
         try:
-            while True:
-                (result2, stream3) = yield generator
-                # drop stream wrapper
-                stream4 = stream3.stream
-                if first and eos and stream4:
-                    break
-                yield (result2, stream4)
-                first = False
+            (result2, stream3) = yield generator
+            if eos and stream3.stream:
+                raise FullFirstMatchException(memory.deepest)
+            else:
+                yield (result2, stream3.stream)
         except StopIteration:
-            pass
-        if first:
-            raise FullMatchException(memory.deepest)
+            raise FullFirstMatchException(memory.deepest)
+        
+        # subsequent matches:
+        while True:
+            (result2, stream3) = yield generator
+            # drop stream wrapper
+            yield (result2, stream3.stream)
+
     return _matcher
 
 
-class FullMatchException(Exception):
+class FullFirstMatchException(Exception):
+    '''
+    The exception raised by `FullFirstMatch`.  This includes information
+    about the deepest point read in the stream. 
+    '''
     
     def __init__(self, stream):
         try:
-            msg = format("The match failed at '{0}',"
-                         "\nLine {1}, character {2} of {3}.",
-                         stream, stream.line_number, stream.line_offset,
-                         stream.source)
+            if stream.line_number is None:
+                msg = format("The match failed at '{0}',"
+                             "\nIndex {1} of {2}.",
+                             stream, stream.line_offset, stream.source)
+            else:
+                msg = format("The match failed at '{0}',"
+                             "\nLine {1}, character {2} of {3}.",
+                             stream, stream.line_number, stream.line_offset,
+                             stream.source)
         except AttributeError:
             msg = format("The match failed at '{0}'.", stream)
-        super(FullMatchException, self).__init__(msg)
+        super(FullFirstMatchException, self).__init__(msg)
         self.stream = stream
 

@@ -109,9 +109,10 @@ be delegated to the source (and similarly for equality).
 '''
 
 from abc import ABCMeta, abstractmethod, abstractproperty
-from io import StringIO
+from io import StringIO, IOBase
 
-from lepl.support.lib import open_stop, sample, format, basestring, str
+from lepl.support.lib import open_stop, sample, format, basestring, str,\
+    LogMixin
 
 
 class StreamException(Exception):
@@ -428,11 +429,20 @@ _StreamFactory = ABCMeta('_StreamFactory', (object, ), {})
 '''ABC used to identify stream factories.'''
 
 
+def list_join(lists):
+    '''
+    Join function for lists (appends lists together).
+    '''
+    joined = []
+    for list_ in lists:
+        joined.extend(list_)
+    return joined
+
 class StreamFactory(_StreamFactory):
     '''
     Support for Stream Factories.
     '''
-
+    
     @abstractmethod
     def from_file(self, file_):
         '''
@@ -479,11 +489,14 @@ class _Line(object):
     '''
 
 
-class DefaultStreamFactory(StreamFactory):
+class DefaultStreamFactory(StreamFactory, LogMixin):
     '''
     A source of Line instances, parameterised by the source.
     '''
     
+    def __init__(self):
+        super(StreamFactory, self).__init__()
+
     def __call__(self, source_):
         
         class Line(_Line):
@@ -542,18 +555,25 @@ class DefaultStreamFactory(StreamFactory):
         return StreamView(Line().next)
     
 
-    def from_path(self, path):
+    def from_path(self, path, source=None, join=''.join, 
+                  flags='rt', buffering=1):
         '''
         Open the file with line buffering.
         '''
-        return self(LineSource(open(path, 'rt', buffering=1), path))
+        if source is None:
+            source = path
+        return self(LineSource(open(path, flags, buffering=buffering), 
+                               source, join))
     
-    def from_string(self, text):
+    def from_string(self, text, source=None, join=''.join, base=None):
         '''
         Wrap a string.
         '''
-        return self(LineSource(StringIO(text), sample('str: ', repr(text)),
-                               base=text))
+        if source is None:
+            source = sample('str: ', repr(text))
+        if base is None:
+            base = text
+        return self(LineSource(StringIO(text), source, join, base=base))
     
     def from_lines(self, lines, source=None, join=''.join):
         '''
@@ -564,20 +584,37 @@ class DefaultStreamFactory(StreamFactory):
             source = sample('lines: ', repr(lines))
         return self(LineSource(lines, source, join))
     
-    def from_items(self, items, source=None, line_length=80):
+    def from_items(self, items, source=None, join=list_join, 
+                   sub_list=False, line_length=80):
         '''
         Wrap an iterator over items (or a list).
         '''
         if source is None:
             source = sample('items: ', repr(items))
-        return self(CharacterSource(items, source, list_join, line_length))
+        return self(CharacterSource(items, source, join=join, 
+                                    line_length=line_length, sub_list=sub_list))
     
-    def from_file(self, file_):
+    def from_file(self, file_, source=None, join=''.join):
         '''
         Wrap a file.
         '''
-        return self(LineSource(file_, getattr(file_, 'name', '<file>')) )
-        
+        if source is None:
+            source = getattr(file_, 'name', None)
+        return self.from_lines(file_, source, join)
+    
+    def auto(self, source, **kargs):
+        '''
+        Auto-detect type and wrap appropriately.
+        '''
+        if isinstance(source, basestring):
+            return self.from_string(source, **kargs)
+        elif isinstance(source, IOBase):
+            # this will use file name attribute if available, then treat as
+            # a source of lines
+            return self.from_file(source, **kargs)
+        else:
+            return self.from_null(source, **kargs)
+            
 
 DEFAULT_STREAM_FACTORY = DefaultStreamFactory()
 
@@ -667,15 +704,17 @@ class Source(_Source):
  
 class LineSource(Source):
     '''
-    Wrap a source of lines (like a file iterator), so that it provides
-    both the line and associated state that can be used later, with an
-    offset, to calculate location.
+    Wrap a source of lines (like a file iterator, or, more abstractly, 
+    anything consistent with IOBase), so that it provides both the line and 
+    associated state that can be used later, with an offset, to calculate 
+    location.
     '''
     
     def __init__(self, lines, description=None, join=''.join, base=None):
         '''
-        `lines` is an iterator over the lines, description will be provided
-        as part of location, and join is used to combine lines together.
+        `lines` must provide an iterator over the lines, description will be 
+        provided as part of location, and join is used to combine lines 
+        together.
         `base` is the base hash for the entire stream (if not give a unique
         value is used).
         '''
@@ -700,7 +739,7 @@ class LineSource(Source):
             return (line, (character_count, line_count))
         except StopIteration:
             self.total_length = self.__character_count
-            return (None, (-1, -1))
+            return (self.join([]), (-1, -1))
     
     def location(self, offset, line, location_state):
         '''
@@ -735,6 +774,15 @@ class LineSource(Source):
             and self == other.source
     
     
+class _SubList(list):
+    
+    def __str__(self):
+        return str([x[0] for x in self])
+    
+    def __repr__(self):
+        return repr([x[0] for x in self])
+    
+    
 class CharacterSource(Source):
     '''
     Wrap a sequence of characters (like a string or list) so that it provides
@@ -744,20 +792,28 @@ class CharacterSource(Source):
     (since they work on a "per line" basis).
     '''
     
-    def __init__(self, characters, description=None, join=''.join, 
-                 line_length=80):
+    def __init__(self, characters, description=None, join=list_join, 
+                 line_length=80, sub_list=False):
+        '''
+        line_length is the size on which items are grouped.
+        
+        sub_list indicates whether each each item is wrapped in a list.
+        If true then they can be joined with list_join.
+        '''
         super(CharacterSource, self).__init__(
                     repr(characters) if description is None else description,
-                    join)          
+                    join=join)          
         self.__characters = iter(characters)
         self.__line_length = line_length
+        self.__sub_list = sub_list
         self.__character_count = 0
     
     def __next__(self):
-        line = []
+        line = _SubList() if self.__sub_list else []
         for _index in range(self.__line_length):
             try:
-                line.append(next(self.__characters))
+                value = next(self.__characters)
+                line.append([value] if self.__sub_list else value)
             except StopIteration:
                 break
         if line:
@@ -766,7 +822,7 @@ class CharacterSource(Source):
             return (line, character_count)
         else:
             self.total_length = self.__character_count
-            return (None, -1)
+            return (self.join([]), -1)
     
     def location(self, offset, line, location_state):
         '''
@@ -778,7 +834,7 @@ class CharacterSource(Source):
             return (-1, -1, -1, None, str(self))
         else:
             return (None, offset, character_count + offset, 
-                    self.join(line), str(self))
+                    line, str(self))
         
     def hash_line(self, line):
         return line.location_state ^ hash(self)
@@ -788,12 +844,3 @@ class CharacterSource(Source):
             and line.line == other.line \
             and other.source == self
         
-
-def list_join(lists):
-    '''
-    Join function for lists (appends lists together).
-    '''
-    joined = []
-    for list_ in lists:
-        joined.extend(list_)
-    return joined

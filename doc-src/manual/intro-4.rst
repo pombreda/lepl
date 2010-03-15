@@ -51,7 +51,7 @@ languages, that we need to handle groupings of different priorities.  For
 example, in the expression "1 + 2 * 3", "2*3" groups more tightly than the
 addition (so we get 7 and not 9 as the correct result).
 
-With LEPL this priority is implicit in the parser.  Priority is determined by
+With Lepl this priority is implicit in the parser.  Priority is determined by
 structuring the recursive calls necessary for repeated handling of groups as a
 series of layers.  Which is much easier to show than explain in words::
 
@@ -148,7 +148,7 @@ different result::
   >>> print(ast)
   1.0
 
-This isn't as bad as it looks.  LEPL does find the result we are expecting,
+This isn't as bad as it looks.  Lepl does find the result we are expecting,
 it's just not the first result found, which is what ``parse()`` shows.  We can
 see how many results are found::
 
@@ -160,7 +160,7 @@ and it turns out the result we expect is the last one.
 You can understand what has happened by tracing out how the text is matched:
 
 * ``group3`` is defined as ``group2 | add | sub``, so ``group2`` is tried
-  first (`Or() <api/redirect.html#lepl.matchers.Or>`_ evaluates from left to right)
+  first (`Or() <api/redirect.html#lepl.matchers.combine.Or>`_ evaluates from left to right)
 
 * ``group2`` is defined as ``group1 | mul | div``, so ``group1`` is tried
   first
@@ -169,7 +169,7 @@ You can understand what has happened by tracing out how the text is matched:
 
 * ``parens`` fails to match, because the input does not start with "("
 
-* so the next alternative in the `Or() <api/redirect.html#lepl.matchers.Or>`_ for ``group1`` is tried, which is
+* so the next alternative in the `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ for ``group1`` is tried, which is
   ``number``
 
 * ``number`` succeeds and has nothing following it
@@ -180,17 +180,17 @@ You can understand what has happened by tracing out how the text is matched:
 .. warning::
 
    The exercise above, while useful, is not always completely accurate,
-   because LEPL may modify the matchers before using them.  You are most
+   because Lepl may modify the matchers before using them.  You are most
    likely to see this when using a grammar with left--recursion (see below)
-   --- LEPL may re-arrange the order of matchers inside `Or() <api/redirect.html#lepl.matchers.Or>`_ so that the
+   --- Lepl may re-arrange the order of matchers inside `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ so that the
    left--recursive case comes last.
 
-   With the default configuration LEPL should always maintain the basic logic
+   With the default configuration Lepl should always maintain the basic logic
    of the grammar --- the result will be consistent with the parser given ---
    but the order of the matches may not be what is expected from the arguments
    above.
 
-   If the order is critical you can control LEPL's optimisations by giving an
+   If the order is critical you can control Lepl's optimisations by giving an
    explicit :ref:`configuration`.
 
 There's an easy fix for this (but see comments on efficiency below), which is
@@ -281,10 +281,10 @@ The issues above do not result in incorrect results (once we add `Eos() <api/red
 but they do make the parser less efficient.  To see this we first need to
 separate the parsing process into two separate stages.
 
-When a parser is used, via the ``parse()`` or ``match()`` methods, LEPL must
+When a parser is used, via the ``parse()`` or ``match()`` methods, Lepl must
 first do some preparatory work (compiling regular expressions, for example)
 before actually parsing the input data.  This preparation usually needs to be
-done just once, so LEPL provides methods that allow the prepared code (the
+done just once, so Lepl provides methods that allow the prepared code (the
 parser) to be saved and reused.
 
 Any talk of efficiency usually addresses only the second stage --- parsing the
@@ -312,7 +312,7 @@ The results above are for the three parsers in the same order as the text
 clear (although thankfully not huge in this case).
 
 Understanding speed variations in detail requires an in--depth understanding
-of LEPL's implementation but, as the examples above show, two good rules of
+of Lepl's implementation but, as the examples above show, two good rules of
 thumb are:
 
 * Try to get the best (longest) parse as the first result, without needing to
@@ -327,8 +327,8 @@ lead back to ``group3`` (which is where we found ``add``...).  That is
 right--recursion, because ``group3`` is on the right.  Left recursion would be
 ``add = group3 & symbol('+') & group2``, with ``group3`` on the left.  This is
 particularly nasty because the parser can "go round in circles" without doing
-any matching (if this isn't clear, trace out how LEPL will try to match
-``group3``).  LEPL includes checks and corrections for this, but they're not
+any matching (if this isn't clear, trace out how Lepl will try to match
+``group3``).  Lepl includes checks and corrections for this, but they're not
 perfect (as we can see above --- the last and slowest example is left
 recursive).
 

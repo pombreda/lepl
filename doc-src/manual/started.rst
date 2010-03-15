@@ -4,7 +4,7 @@
 Getting Started
 ===============
 
-This chapter works through a simple example using LEPL.  For a longer, more
+This chapter works through a simple example using Lepl.  For a longer, more
 detailed example, see the :ref:`Tutorial <tutorial>`.  There are also some
 additional :ref:`examples` at the end of this manual.
 
@@ -17,7 +17,7 @@ matchers and parsers do, and how they can be constructed.
 First Example
 -------------
 
-The structure of a piece of text is described in LEPL using *matchers*.  A
+The structure of a piece of text is described in Lepl using *matchers*.  A
 simple matcher might recognise a letter, digit or space.  More complex
 matchers are built from these to recognise words, equations, etc.
 
@@ -250,22 +250,22 @@ We can write our own function to do this, then call it with ``>``::
 Summary and Going Further
 -------------------------
 
-LEPL can be extended in several ways:
+Lepl can be extended in several ways:
 
 * You can contruct new matchers by combining existing ones.  You will do this
-  all the time using LEPL --- almost every line in the examples above defines
+  all the time using Lepl --- almost every line in the examples above defines
   a new matcher.
 
 * You can define and call functions to process results (using ``>``).  This is
   quite common, too, and there's an example just above.
 
-* You can write your own matchers (see the LEPL source for examples; they
+* You can write your own matchers (see the Lepl source for examples; they
   should inherit from `BaseMatcher
   <api/redirect.html#lepl.functions.BaseMatcher>`_ to take full advantage of
   the operator syntax).  Hopefully this is not often needed.  If you think you
   do need to write a new matcher, feel free to discuss it on the `mailing list
   <http://groups.google.com/group/lepl>`_ --- someone might have already
-  written something, or it's possible I will think it worth adding to LEPL
+  written something, or it's possible I will think it worth adding to Lepl
   myself.
 
 * You can also change the definition of operators (``&``, ``/`` etc; see

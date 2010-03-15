@@ -65,7 +65,7 @@ to go with::
   [12.0, '-', 30.0]
 
 That should be clear enough, I hope.  Remember that ``|`` is another way of
-writing `Or() <api/redirect.html#lepl.matchers.Or>`_.
+writing `Or() <api/redirect.html#lepl.matchers.combine.Or>`_.
 
 .. index:: recursion
 
@@ -112,7 +112,7 @@ because we have a recursive grammar.
 
 But it's unfair to call this a "problem".  Recursive grammars are very useful.
 The real problem is that I haven't shown how to handle recursive definitions
-in LEPL.
+in Lepl.
 
 .. index:: Delayed(), recursion
 
@@ -227,7 +227,7 @@ Both mixed together::
   [23, 'again']
 
 Note how ``('name', value)`` pairs have a special meaning in the `Node() <api/redirect.html#lepl.node.Node>`_
-constructor.  LEPL has a feature that helps exploit this, which I will explain
+constructor.  Lepl has a feature that helps exploit this, which I will explain
 in the next section.
 
 
@@ -243,7 +243,7 @@ small illustration of how they can be used::
   >>> digit = Digit() > 'digit'
   >>> example = (letter | digit)[:] > Node
 
-This uses `Letter() <api/redirect.html#lepl.functions.Letter>`_ and `Digit() <api/redirect.html#lepl.functions.Digit>`_ (both standard LEPL matchers) to match
+This uses `Letter() <api/redirect.html#lepl.functions.Letter>`_ and `Digit() <api/redirect.html#lepl.functions.Digit>`_ (both standard Lepl matchers) to match
 (single) letters and digits.  Each character is sent to a label (eg. ``>
 'letter'``).  This is a special case programmed into the ``>`` operator: when
 the target is a string (like ``'letter'`` or ``'digit```) then a ``('name',
@@ -274,7 +274,7 @@ rather than ``Node(results)``, if ``results`` is the list of results).
 (If this makes no sense, you may need to read the `Python documentation
 <http://docs.python.org/3.0/reference/compound_stmts.html#index-664>`_.)
 
-This is correct --- LEPL is calling `Node()
+This is correct --- Lepl is calling `Node()
 <api/redirect.html#lepl.node.Node>`_ with "\*args".  `Node()
 <api/redirect.html#lepl.node.Node>`_ is being treated in a special way because
 it is registered with the ``ApplyArgs`` ABC, and any ``ApplyArgs`` subclass is
@@ -292,7 +292,7 @@ In the code snippet above, ``target`` will be called as ``target(*results)``.
 Other Node--Related Functions
 -----------------------------
 
-Matchers are implemented in LEPL using nodes.  As a consequence LEPL contains
+Matchers are implemented in Lepl using nodes.  As a consequence Lepl contains
 quite a few library functions that you may find useful.  In particular, it has
 methods for iterating over nodes in a tree (or graph) and support for the
 visitor pattern.  One visitor implementation will (if the node subclass
@@ -314,4 +314,4 @@ What more have we learnt?
 
 * Nodes combine list and dict behaviour.
 
-* LEPL has comprehensive support for nodes (and their subclasses).
+* Lepl has comprehensive support for nodes (and their subclasses).

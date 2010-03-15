@@ -5,7 +5,7 @@
 Licence
 =======
 
-LEPL is licensed under the `Lesser Gnu Public Licence
+Lepl is licensed under the `Lesser Gnu Public Licence
 <http://www.gnu.org/licenses/lgpl.html>`_.  It is copyright 2009 Andrew Cooke
 (andrew@acooke.org) and contributors (see below).
 
@@ -15,18 +15,18 @@ This documentation is licensed under the `Gnu Free Documentation Licence
 
 ::
   
-    LEPL is free software: you can redistribute it and/or modify
+    Lepl is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
   
-    LEPL is distributed in the hope that it will be useful,
+    Lepl is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Lesser General Public License for more details.
   
     You should have received a copy of the GNU Lesser General Public License
-    along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
+    along with Lepl.  If not, see <http://www.gnu.org/licenses/>.
 
 
 .. index:: contributions

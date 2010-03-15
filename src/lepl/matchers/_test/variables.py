@@ -55,7 +55,7 @@ foo (4) = []
         output = StringIO()
         with TrackVariables(out=output):
             bar = Any()
-        bar.config.no_full_match()
+        bar.config.no_full_first_match()
         repr(bar)
         list(bar.match('abc'))
         text = output.getvalue()

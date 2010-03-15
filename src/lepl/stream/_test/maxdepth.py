@@ -23,10 +23,10 @@ Tests for the lepl.stream.maxdepth module.
 
 from unittest import TestCase
 from lepl import Any, Eos, Optional
-from lepl.stream.maxdepth import FullMatch, FullMatchException, facade_factory
+from lepl.stream.maxdepth import FullFirstMatch, FullFirstMatchException, facade_factory
 
 
-class FullMatchTest(TestCase):
+class FullFirstMatchTest(TestCase):
     
     def test_stream(self):
         matcher = Any('a')
@@ -34,92 +34,95 @@ class FullMatchTest(TestCase):
         result = list(matcher.match('b'))
         assert result == [], result
         (stream, _memory) = facade_factory('b')
-        result = list(matcher.match(stream))
+        result = list(matcher.match_null(stream))
         assert result == [], result
     
     def test_exception(self):
-        matcher = FullMatch(Any('a'))
+        matcher = FullFirstMatch(Any('a'))
         matcher.config.clear()
         try:
             list(matcher.match('b'))
             assert False, 'expected error'
-        except FullMatchException as e:
-            assert str(e) == "The match failed at 'b'."
+        except FullFirstMatchException as e:
+            assert str(e) == """The match failed at 'b',
+Line 1, character 0 of str: 'b'.""", str(e)
             
     def test_message(self):
-        matcher = FullMatch(Any('a'))
+        matcher = FullFirstMatch(Any('a'))
         matcher.config.clear()
         try:
             list(matcher.match_string('b'))
             assert False, 'expected error'
-        except FullMatchException as e:
+        except FullFirstMatchException as e:
             assert str(e) == """The match failed at 'b',
-Line 1, character 0 of str: 'b'."""
+Line 1, character 0 of str: 'b'.""", str(e)
             
     def test_location(self):
-        matcher = FullMatch(Any('a')[:] & Eos())
+        matcher = FullFirstMatch(Any('a')[:] & Eos())
         matcher.config.clear()
         try:
             list(matcher.match_string('aab'))
             assert False, 'expected error'
-        except FullMatchException as e:
+        except FullFirstMatchException as e:
             assert str(e) == """The match failed at 'b',
-Line 1, character 2 of str: 'aab'."""
+Line 1, character 2 of str: 'aab'.""", str(e)
             
     def test_ok(self):
-        matcher = FullMatch(Any('a'))
+        matcher = FullFirstMatch(Any('a'))
         matcher.config.clear()
-        result = list(matcher.match('a'))
+        result = list(matcher.match_null('a'))
         assert result == [(['a'], '')], result
         
 
-class FullMatchConfigTest(TestCase):
+class FullFirstMatchConfigTest(TestCase):
     
     def test_exception(self):
         matcher = Any('a')
-        matcher.config.full_match(eos=False)
+        matcher.config.full_first_match(eos=False)
         try:
             list(matcher.match('b'))
             assert False, 'expected error'
-        except FullMatchException as e:
-            assert str(e) == "The match failed at 'b'."
+        except FullFirstMatchException as e:
+            assert str(e) == """The match failed at 'b',
+Line 1, character 0 of str: 'b'.""", str(e)
             
     def test_eos(self):
         matcher = Optional(Any('a'))
-        matcher.config.full_match(eos=True)
+        matcher.config.full_first_match(eos=True)
         try:
             list(matcher.match('b'))
             assert False, 'expected error'
-        except FullMatchException as e:
-            assert str(e) == "The match failed at 'b'."
+        except FullFirstMatchException as e:
+            assert str(e) == """The match failed at 'b',
+Line 1, character 0 of str: 'b'.""", str(e)
             
     def test_message(self):
         matcher = Any('a')
-        matcher.config.full_match(eos=False)
+        matcher.config.full_first_match(eos=False)
         try:
             list(matcher.match_string('b'))
             assert False, 'expected error'
-        except FullMatchException as e:
+        except FullFirstMatchException as e:
             assert str(e) == """The match failed at 'b',
-Line 1, character 0 of str: 'b'."""
+Line 1, character 0 of str: 'b'.""", str(e)
             
     def test_location(self):
         matcher = Any('a')[:]
-        matcher.config.full_match(eos=True)
+        matcher.config.full_first_match(eos=True)
         try:
             list(matcher.match_string('aab'))
             assert False, 'expected error'
-        except FullMatchException as e:
+        except FullFirstMatchException as e:
             assert str(e) == """The match failed at 'b',
-Line 1, character 2 of str: 'aab'."""
+Line 1, character 2 of str: 'aab'.""", str(e)
             
     def test_ok(self):
         matcher = Any('a')
-        matcher.config.full_match(eos=False)
-        result = list(matcher.match('a'))
+        matcher.config.full_first_match(eos=False)
+        result = list(matcher.match_null('a'))
         assert result == [(['a'], '')], result
-        matcher.config.full_match(eos=True)
-        result = list(matcher.match('a'))
+        matcher.config.full_first_match(eos=True)
+        result = list(matcher.match_null('a'))
         assert result == [(['a'], '')], result
         
     

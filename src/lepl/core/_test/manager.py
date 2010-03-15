@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.manager module.
+Tests for the lepl.core.manager module.
 '''
 
 #from logging import basicConfig, DEBUG

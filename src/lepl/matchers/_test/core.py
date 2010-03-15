@@ -49,29 +49,31 @@ class AndTest(BaseTest):
 
     def test_simple(self):
         #basicConfig(level=DEBUG)
-        self.assert_join([1], Any(), ['1'])
-        self.assert_join([1,2], And(Any(), Any()), ['12'])
-        self.assert_join([1,2,3], And(Any(), Any()), ['12'])
+        self.assert_join([1], Any(), [[1]])
+        self.assert_join([1,2], And(Any(), Any()), [[1, 2]])
+        self.assert_join([1,2,3], And(Any(), Any()), [[1, 2]])
         self.assert_join([1], And(Any(), Any()), [])
         
     def test_and(self):
         #basicConfig(level=DEBUG)
-        self.assert_join([1,2], Any() & Any(), ['12'])
-        self.assert_join([1,2,3], Any() & Any(), ['12'])
-        self.assert_join([1,2,3], Any() & Any() & Any(), ['123'])
+        self.assert_join([1,2], Any() & Any(), [[1, 2]])
+        self.assert_join([1,2,3], Any() & Any(), [[1, 2]])
+        self.assert_join([1,2,3], Any() & Any() & Any(), [[1, 2, 3]])
         self.assert_join([1], Any() & Any(), [])
         
     def assert_join(self, stream, match, target):
-        match.config.no_full_match()
-        result = [''.join(map(str, l)) 
-                  for (l, _s) in match.match_items(stream)]
+        match.config.no_full_first_match()
+        result = list(match.parse_items_all(stream, sub_list=False))
         assert target == result, result
 
     def test_add(self):
         #basicConfig(level=DEBUG)
-        self.assert_list(['1','2'], Any() + Any(), [['12']])
-        self.assert_list(['1','2','3'], Any() + Any(), [['12']])
-        self.assert_list(['1','2','3'], Any() + Any() + Any(), [['123']])
+        self.assert_list(['1','2'], Any() + Any(), [['12']], 
+                         sub_list=False, join=''.join)
+        self.assert_list(['1','2','3'], Any() + Any(), [['12']], 
+                         sub_list=False, join=''.join)
+        self.assert_list(['1','2','3'], Any() + Any() + Any(), [['123']], 
+                         sub_list=False, join=''.join)
         self.assert_list(['1'], Any() + Any(), [])
     
     
@@ -103,7 +105,7 @@ class OrTest(BaseTest):
 #        bline = AnyBut(s[0:] & Newline())[1:]
 #        line = aline % ~bline
 #        parser = line[0:,~(s[0:] & Newline())]
-#        parser.config.no_full_match()
+#        parser.config.no_full_first_match()
 #        parser.config.clear()
 #        n = len(list(parser.match('#define A 1\ncrap n stuff\n#define B 22\n')))
 #        assert n == 16, n
@@ -890,7 +892,7 @@ class ConsumerTest(BaseTest):
         
     def test_fail(self):
         matcher = Consumer(Any('b'))
-        matcher.config.no_full_match()
+        matcher.config.no_full_first_match()
         parser = matcher.get_parse()
         result = parser('a')
         assert None == result, result

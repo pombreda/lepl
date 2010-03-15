@@ -42,7 +42,7 @@ class RegexpTest(TestCase):
     def test_invert_bug_1(self):
         #basicConfig(level=DEBUG)
         match = DfaRegexp('(*SOL)[^c]*')
-        match.config.default_line_aware().trace(True).no_full_match()
+        match.config.default_line_aware().trace(True).no_full_first_match()
         result = list(match.match_string('abc'))[0][0]
         assert result == ['ab'], result
         

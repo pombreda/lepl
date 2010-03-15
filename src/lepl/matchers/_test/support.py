@@ -22,7 +22,7 @@ Decorator tests.
 (These need to be copied into an example and the tutorial). 
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.matchers.support import function_matcher_factory, function_matcher, \
@@ -62,37 +62,37 @@ class DecoratorTest(TestCase):
     def test_char(self):
         #basicConfig(level=DEBUG)
         matcher = char()
-        matcher.config.no_full_match()
-        result = list(matcher.match('ab'))
+        matcher.config.no_full_first_match()
+        result = list(matcher.match_null('ab'))
         assert result == [(['a'], 'b')], result
         matcher = char()[2:,...]
-        matcher.config.no_full_match()
-        result = list(matcher.match('abcd'))
+        matcher.config.no_full_first_match()
+        result = list(matcher.match_null('abcd'))
         assert result == [(['abcd'], ''), (['abc'], 'd'), (['ab'], 'cd')], result
         
     def test_char_in(self):
         #basicConfig(level=DEBUG)
         matcher = char_in('abc')
-        matcher.config.no_full_match()
-        result = list(matcher.match('ab'))
+        matcher.config.no_full_first_match()
+        result = list(matcher.match_null('ab'))
         assert result == [(['a'], 'b')], result
-        result = list(matcher.match('pqr'))
+        result = list(matcher.match_null('pqr'))
         assert result == [], result
         matcher = char_in('abc')[2:,...]
-        matcher.config.no_full_match()
-        result = list(matcher.match('abcd'))
+        matcher.config.no_full_first_match()
+        result = list(matcher.match_null('abcd'))
         assert result == [(['abc'], 'd'), (['ab'], 'cd')], result
         
     def test_any_char(self):
         #basicConfig(level=DEBUG)
         matcher = any_char()
         # with this set we have an extra eos that messes things up
-        matcher.config.no_full_match()
-        result = list(matcher.match('ab'))
+        matcher.config.no_full_first_match()
+        result = list(matcher.match_null('ab'))
         assert result == [(['a'], 'b'), (['b'], '')], result
         matcher = any_char()[2:,...]
-        matcher.config.no_full_match()
-        result = list(matcher.match('abcd'))
+        matcher.config.no_full_first_match()
+        result = list(matcher.match_null('abcd'))
         assert result == [(['abcd'], ''), (['abc'], 'd'), (['abd'], ''), 
                           (['ab'], 'cd'), (['acd'], ''), (['ac'], 'd'), 
                           (['ad'], ''), (['bcd'], ''), (['bc'], 'd'), 
@@ -100,14 +100,14 @@ class DecoratorTest(TestCase):
         
     def test_any_char_in(self):
         matcher = any_char_in('abc')
-        matcher.config.no_full_match()
-        result = list(matcher.match('ab'))
+        matcher.config.no_full_first_match()
+        result = list(matcher.match_null('ab'))
         assert result == [(['a'], 'b'), (['b'], '')], result
-        result = list(matcher.match('pqr'))
+        result = list(matcher.match_null('pqr'))
         assert result == [], result
         matcher = any_char_in('abc')[2:,...]
-        matcher.config.no_full_match()
-        result = list(matcher.match('abcd'))
+        matcher.config.no_full_first_match()
+        result = list(matcher.match_null('abcd'))
         assert result == [(['abc'], 'd'), (['ab'], 'cd'), 
                           (['ac'], 'd'), (['bc'], 'd')], result
     

@@ -82,6 +82,13 @@ class Marker(object):
     
     def __len__(self):
         return 1
+    
+    def __radd__(self, other):
+        '''
+        Allow `stream + self` -> `stream` 
+        (so string + EOL = string, for example).
+        '''
+        return other
 
 def as_extension(x):
     return format('(*{0})', x)

@@ -17,11 +17,11 @@ Blame Tim Peters' `test_generators.py
 for starting me thinking about this, but that would have got nowhere without
 Sam Wilmott's `Pattern Matching in Python
 <http://www.wilmott.ca/python/patternmatching.html>`_ from which I have stolen
-almost everything (well, a large chunk of LEPL 1.0, including the repetition
+almost everything (well, a large chunk of Lepl 1.0, including the repetition
 syntax).
 
 `PyParsing <http://pyparsing.wikispaces.com/>`_ was also a major motivation
-(if you don't like the way LEPL handles spaces, you may prefer Paul McGuire's
+(if you don't like the way Lepl handles spaces, you may prefer Paul McGuire's
 package which is, I think, pretty much the standard for simple, recursive
 descent Python parsers).
 
@@ -39,5 +39,5 @@ Thanks for putting that on the web.
 Endnote
 -------
 
-LEPL was written as Israel, with the implicit support of the USA, largely
+Lepl was written as Israel, with the implicit support of the USA, largely
 destroyed Gaza.

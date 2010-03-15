@@ -57,7 +57,7 @@ def natural_language():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    sentence.config.auto_memoize().no_full_match()
+    sentence.config.auto_memoize().no_full_first_match()
     sentence.config.add_monitor(StreamMonitor)
     p = sentence.get_match_string()
     print(repr(p.matcher))

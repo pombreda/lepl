@@ -11,7 +11,7 @@ Parsing a Python Argument List
 
 This problem was discussed on `comp.lang.python
 <http://groups.google.com/group/comp.lang.python/msg/3d0aedf525030865>`_,
-where a pyparsing solution was posted.  The following is the equivalent LEPL
+where a pyparsing solution was posted.  The following is the equivalent Lepl
 solution::
 
   >>> comma  = Drop(',') 

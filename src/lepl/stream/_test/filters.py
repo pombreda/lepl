@@ -78,7 +78,7 @@ class ExcludeTest(TestCase):
         def vowel(x):
             return x in 'aeiou'
         def parser(matcher):
-            matcher.config.no_full_match()
+            matcher.config.no_full_first_match()
             return matcher.get_match_string()
         stream1 = 'abcdef\nghijklm\n'
         (match, _stream) = next(parser(Exclude(vowel)(Any()[:]))('abcdef\nghijklm\n'))
@@ -106,7 +106,7 @@ class ExcludeSequenceTest(TestCase):
         stream = 'ababcdababcabcdbcd'
         matcher = ExcludeSequence(eq, 'abc')
         try:
-            matcher(Any()[:, ...]).parse(stream)
+            matcher(Any()[:, ...]).parse_null(stream)
             assert False, 'expected error'
         except FilterException as error:
             assert str(error) == 'Can only filter LocationStream instances.'

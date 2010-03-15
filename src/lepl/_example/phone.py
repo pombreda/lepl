@@ -36,7 +36,7 @@ class PhoneExample(Example):
         
         name    = Word()              > 'name'
         matcher = name / ','
-        matcher.config.no_full_match()
+        matcher.config.no_full_first_match()
         parser = matcher.get_parse_string()
         self.examples([(lambda: parser('andrew, 3333253'),
                         "[('name', 'andrew'), ',']")])
@@ -46,7 +46,7 @@ class PhoneExample(Example):
         name    = Word()              > 'name'
         phone   = Integer()           > 'phone'
         matcher = name / ',' / phone
-        matcher.config.no_full_match()
+        matcher.config.no_full_first_match()
         parser = matcher.get_parse_string()
         self.examples([(lambda: parser('andrew, 3333253'),
                         "[('name', 'andrew'), ',', ' ', ('phone', '3333253')]")])
@@ -55,7 +55,7 @@ class PhoneExample(Example):
         
         name    = Word()              > 'name'
         matcher = name                > make_dict
-        matcher.config.no_full_match()
+        matcher.config.no_full_first_match()
         parser = matcher.get_parse_string()
         self.examples([(lambda: parser('andrew, 3333253'),
                         "[{'name': 'andrew,'}]")])
@@ -96,16 +96,16 @@ class PhoneExample(Example):
                         "[{'phone': '3333253', 'name': 'andrew'}]"),
                        (lambda: matcher.parse_string('andrew, 3333253')[0],
                         "{'phone': '3333253', 'name': 'andrew'}"),
-                       (lambda: next( (name / ',' / phone).match('andrew, 3333253') ),
-                        "([('name', 'andrew'), ',', ' ', ('phone', '3333253')], '')")])
+                       (lambda: (name / ',' / phone).parse('andrew, 3333253'),
+                        "[('name', 'andrew'), ',', ' ', ('phone', '3333253')]")])
 
 
     def test_components(self):
         
-        self.examples([(lambda: next( (Word() > 'name').match('andrew') ),
-                        "([('name', 'andrew')], '')"),
-                       (lambda: next( (Integer() > 'phone').match('3333253') ),
-                        "([('phone', '3333253')], '')"),
+        self.examples([(lambda: (Word() > 'name').parse('andrew'),
+                        "[('name', 'andrew')]"),
+                       (lambda: (Integer() > 'phone').parse('3333253'),
+                        "[('phone', '3333253')]"),
                        (lambda: dict([('name', 'andrew'), ('phone', '3333253')]),
                         "{'phone': '3333253', 'name': 'andrew'}")])
 

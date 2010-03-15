@@ -17,7 +17,7 @@ Remember that operators are just shorthand for matchers (``&`` instead of
 `And() <api/redirect.html#lepl.match.And>`_ etc).  You don't have to use
 operators --- see the discussion on :ref:`caveatsandlimitations`.
 
-But remember that ``&`` and `And() <api/redirect.html#lepl.matchers.And>`_ *do differ* when using
+But remember that ``&`` and `And() <api/redirect.html#lepl.matchers.combine.And>`_ *do differ* when using
 :ref:`separators`.
 
 
@@ -71,7 +71,7 @@ after.
 Explicitly Exclude Spaces
 -------------------------
 
-By default, repetition in LEPL is greedy.  This means that, no matter what
+By default, repetition in Lepl is greedy.  This means that, no matter what
 `Separator() <api/redirect.html#lepl.match.Separator>`_ is used, `Any()[:]
 <api/redirect.html#lepl.match.Any>`_ will swallow the *entire* input.
 

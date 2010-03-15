@@ -100,7 +100,7 @@ class TokenSource(BaseDelegateSource):
         
     def hash_line(self, line):
         '''
-        A line looks like [(['Tk0'], '1')], we extract the text.
+        Use hash of base + location.
         '''
         if line is None:
             return 0
@@ -113,7 +113,16 @@ class TokenSource(BaseDelegateSource):
         '''
         return line.location_state == other.location_state \
             and self == other.source
-    
+            
+    def text(self, _offset, line):
+        '''
+        Subclasses should override this to return the current line, 
+        if supported.
+        '''
+        if line is None:
+            return ''
+        else:
+            return line[0][1]
 
 def lexed_location_stream(tokens, discard, stream, source=None):
     '''

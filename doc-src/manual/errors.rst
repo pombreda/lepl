@@ -14,7 +14,7 @@ In some applications it is important not only to parse correctly structured
 input, but also to give a helpful responses when the input is incorrectly
 structured.
 
-LEPL provides support for reporting errors in the input in two ways.  First,
+Lepl provides support for reporting errors in the input in two ways.  First,
 it allows a matcher to directly raise an exception.  Second, parse tree nodes
 can be constructed which represent errors; these error nodes can then be used,
 later, to raise exceptions.
@@ -25,7 +25,7 @@ results only to be later discarded during backtracking --- information from
 later in the input stream has shown that the error did not occur.
 
 The implementation of both these approaches is simple, building directly on
-the functionality already available within LEPL (in particular, Nodes and
+the functionality already available within Lepl (in particular, Nodes and
 function invocation).  They should therefore be easy to extend to more complex
 schemes.
 

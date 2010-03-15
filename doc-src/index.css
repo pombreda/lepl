@@ -167,3 +167,6 @@ span.code {
   color: #000000;
 }
 
+div#left * ul {
+  padding-top: 5px;
+}

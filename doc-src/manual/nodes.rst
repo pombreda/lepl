@@ -5,7 +5,7 @@ Results
 
 
 This chapter describes various ways in which results can be structured while
-parsing data with LEPL.
+parsing data with Lepl.
 
 
 Flat List
@@ -43,7 +43,7 @@ Nested Lists
 ------------
 
 Nested lists (S-Expressions) are a traditional way of structuring parse
-results.  With LEPL they are easy to construct with ``> list``::
+results.  With Lepl they are easy to construct with ``> list``::
 
   >>> expr   = Delayed()
   >>> number = Digit()[1:,...]
@@ -75,7 +75,7 @@ explain an otherwise annoying design detail.)
 Trees
 -----
 
-LEPL includes a simple base class, `Node() <api/redirect.html#lepl.node.Node>`_ that can be used to construct
+Lepl includes a simple base class, `Node() <api/redirect.html#lepl.node.Node>`_ that can be used to construct
 trees::
 
   >>> class Term(Node): pass

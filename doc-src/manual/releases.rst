@@ -81,6 +81,14 @@ Date        Version  Description
 ==========  =======  ===========
 
 
+.. release_4_0:
+
+4.0
+---
+
+See :ref:`Lepl 4 - Simpler, Faster, Easier <lepl4>`.
+
+
 .. release_3_3:
 
 3.3, 3.3.3
@@ -132,7 +140,7 @@ hope) support handling the "offside rule" in a later release.
 ---
 
 This release is based on two quite separate themes, both of which have
-required modifications to the LEPL core code to the extent that a new major
+required modifications to the Lepl core code to the extent that a new major
 version is necessary.
 
 First, the handling of whitespace has been revised, extended, and documented.

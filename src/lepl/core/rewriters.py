@@ -36,7 +36,7 @@ from lepl.support.lib import lmap, format, LogMixin
 class Rewriter(LogMixin):
     
     SET_ARGUMENTS = 0
-    FULL_MATCH = 5
+    full_first_match = 5
     FLATTEN = 10
     COMPILE_REGEXP = 20
     OPTIMIZE_OR = 30
@@ -498,7 +498,7 @@ class DirectEvaluation(Rewriter):
         return graph.postorder(DelayedClone(new_clone), Matcher)
     
     
-class FullMatch(Rewriter):
+class FullFirstMatch(Rewriter):
     '''
     If the parser fails, raise an error at the maxiumum depth.
     
@@ -507,13 +507,13 @@ class FullMatch(Rewriter):
     '''
     
     def __init__(self, eos=False):
-        super(FullMatch, self).__init__(Rewriter.FULL_MATCH,
-                                       format('FullMatch({0})', eos))
+        super(FullFirstMatch, self).__init__(Rewriter.full_first_match,
+                                       format('FullFirstMatch({0})', eos))
         self.eos = eos
         
     def __call__(self, graph):
-        from lepl.stream.maxdepth import FullMatch
-        return FullMatch(graph, self.eos)
+        from lepl.stream.maxdepth import FullFirstMatch
+        return FullFirstMatch(graph, self.eos)
 
 
 class NodeStats(object):

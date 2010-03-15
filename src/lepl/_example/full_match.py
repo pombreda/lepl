@@ -1,4 +1,3 @@
-from lepl.stream.maxdepth import FullMatchException
 
 # Copyright 2009 Andrew Cooke
 
@@ -31,13 +30,13 @@ from lepl import *
 from lepl._example.support import Example
 
 
-class FullMatchTest(Example):
+class FullFirstMatchTest(Example):
     
     def run_null(self):
         matcher = Any()[5]
         try:
-            matcher.parse('1234567')
-        except FullMatchException as e:
+            matcher.parse_null('1234567')
+        except FullFirstMatchException as e:
             print(str(e))
             return str(e)
         
@@ -45,7 +44,7 @@ class FullMatchTest(Example):
         matcher = Any()[5]
         try:
             matcher.parse_string('1234567')
-        except FullMatchException as e:
+        except FullFirstMatchException as e:
             print(str(e))
             return str(e)
 

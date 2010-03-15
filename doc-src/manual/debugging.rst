@@ -6,7 +6,7 @@ Debugging
 =========
 
 When a parser fails to match some text it can be difficult (slow, frustrating
-work) to underhand why.  Fortunately, LEPL includes some features that make
+work) to underhand why.  Fortunately, Lepl includes some features that make
 life easier.
 
 .. note::
@@ -22,7 +22,7 @@ life easier.
 Logging
 -------
 
-LEPL uses the standard `Python logging library
+Lepl uses the standard `Python logging library
 <http://docs.python.org/3.1/library/logging.html>`_ and so will display the
 message::
 
@@ -51,7 +51,7 @@ for errors use the ``WARN`` level, and general debug messages use the
 
 .. warning::
 
-  Whenever you have a problem with LEPL, the first thing to do is enable
+  Whenever you have a problem with Lepl, the first thing to do is enable
   ``DEBUG`` logging (see above).  And then read the logs.  Common messages and
   errors are described below.
 
@@ -61,7 +61,7 @@ for errors use the ``WARN`` level, and general debug messages use the
 Stack Traces
 ------------
 
-The trampolining used by LEPL to avoid exhausting the stack means that the
+The trampolining used by Lepl to avoid exhausting the stack means that the
 traceback from the Python exception raised on failure is not that useful.  A
 more useful stack trace, generated from within the trampoline, is logged at
 the ``WARN`` level.
@@ -75,9 +75,9 @@ earlier in the output.  Often it is not the last thing displayed in the log.
 Hashable Streams
 ----------------
 
-LEPL will parse a wide variety of data structures.  Unfortunately, not all
+Lepl will parse a wide variety of data structures.  Unfortunately, not all
 Python's data structures (lists in particular) support hashing.  This means
-that some of LEPL's more advanced features, like memoisation, will not work
+that some of Lepl's more advanced features, like memoisation, will not work
 when a list of data is parsed directly.  Instead you will see warnings
 (assusing that logging is enabled - see above) like::
 
@@ -173,7 +173,7 @@ The number of entries displayed is controlled by optional parameters supplied
 Looking at the output we can see that the first failure after the deepest
 match was a `Lookahead() <api/redirect.html#lepl.match.Lookahead>`_ on the
 input ``' bob, ...'``, after matching a newline, `Literal('\\n')
-<api/redirect.html#lepl.matchers.Literal>`_.  So we are failing to match a
+<api/redirect.html#lepl.matchers.core.Literal>`_.  So we are failing to match a
 space after the newline that separates lines --- this is why the original (see
 :ref:`repetition`) had::
 

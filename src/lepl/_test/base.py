@@ -27,13 +27,13 @@ from unittest import TestCase
 class BaseTest(TestCase):
     
     def assert_direct(self, stream, match, target):
-        match.config.no_full_match()
+        match.config.no_full_first_match()
         result = [x for (x, _s) in match.match_string(stream)]
         assert target == result, result
     
-    def assert_list(self, stream, match, target):
-        match.config.no_full_match()
-        matcher = match.get_match_items()
+    def assert_list(self, stream, match, target, **kargs):
+        match.config.no_full_first_match()
+        matcher = match.get_parse_items_all()
         #print(matcher.matcher)
-        result = [x for (x, _s) in matcher(stream)]
+        result = list(matcher(stream, **kargs))
         assert target == result, result

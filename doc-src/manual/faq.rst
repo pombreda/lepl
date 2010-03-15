@@ -37,8 +37,8 @@ Why isn't my parser matching the full expression? (1)
     
 *why does expression.parse('hello(world)') match just 'hello'*?
 
-In general LEPL is greedy (it tries to matches the longest possible string), 
-but for `Or() <api/redirect.html#lepl.matchers.Or>`_ it will try alternatives left-to-right.  So in this case you 
+In general Lepl is greedy (it tries to matches the longest possible string), 
+but for `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ it will try alternatives left-to-right.  So in this case you 
 should rewrite the parser as::
 
     expression = (word & lpar & word & rpar) | word
@@ -106,7 +106,7 @@ When I change from > to >> my function isn't called
 
 This is because of operator precedence.  ``>>`` binds more tightly than ``>``,
 so ``>>`` is applied only to the result from ``Drop(']')``, which is an empty 
-list (because `Drop() <api/redirect.html#lepl.functions.Drop>`_ discards the results).  Since the list is empty,
+list (because `Drop() <api/redirect.html#lepl.matchers.derived.Drop>`_ discards the results).  Since the list is empty,
 the function ``invert`` is not called.
 
 To fix this place the entire expression in parentheses::

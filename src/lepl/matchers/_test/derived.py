@@ -50,9 +50,9 @@ class RepeatTest(TestCase):
         
     def assert_simple(self, stream, start, stop, step, target):
         matcher = Repeat(RangeMatch(), start, stop, step)
-        matcher.config.no_full_match()
+        matcher.config.no_full_first_match()
         result = [''.join(map(str, l)) 
-                  for (l, _s) in matcher.match_items(stream)]
+                  for (l, _s) in matcher.match_items(stream, sub_list=False)]
         assert target == result, result
         
     def test_mixin(self):
@@ -77,8 +77,9 @@ class RepeatTest(TestCase):
             pass
     
     def assert_mixin(self, match, stream, target):
-        match.config.no_full_match()
-        result = [''.join(map(str, l)) for (l, _s) in match.match_items(stream)]
+        match.config.no_full_first_match()
+        result = [''.join(map(str, l)) 
+                  for (l, _s) in match.match_items(stream, sub_list=False)]
         assert target == result, result
        
     def test_separator(self):
@@ -92,7 +93,7 @@ class RepeatTest(TestCase):
         
     def assert_separator(self, stream, start, stop, step, target):
         matcher = Repeat(Any('abc'), start, stop, step, Any(','))
-        matcher.config.no_full_match()
+        matcher.config.no_full_first_match()
         result = [''.join(l) 
                   for (l, _s) in matcher.match_string(stream)]
         assert target == result, result
@@ -108,7 +109,7 @@ class RepeatTest(TestCase):
         self.assert_separator_mixin(abc[2:3:'b',','], 'a,b,c,a', ['a,b', 'a,b,c'])
 
     def assert_separator_mixin(self, matcher, stream, target):
-        matcher.config.no_full_match()
+        matcher.config.no_full_first_match()
         result = [''.join(map(str, l)) for (l, _s) in matcher.match_string(stream)]
         assert target == result, result
     

@@ -1,7 +1,7 @@
 
 .. _manual:
 
-LEPL Manual
+Lepl Manual
 ===========
 
 There's also a :ref:`Tutorial <tutorial>` which works through an example of a

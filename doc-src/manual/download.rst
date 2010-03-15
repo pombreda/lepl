@@ -4,12 +4,12 @@
 Download And Installation
 =========================
 
-LEPL is only available for Python 3 and 2.6.  See :ref:`versions` for more
+Lepl is only available for Python 3 and 2.6.  See :ref:`versions` for more
 information.
 
 .. warning::
 
-  When a new version of LEPL is close to being released there may be both a
+  When a new version of Lepl is close to being released there may be both a
   stable and a beta version available.  The main documentation (at
   www.acooke.org) describes the latest (possibly beta) version, but source and
   documentation for either version can be :ref:`downloaded <download>`.
@@ -20,7 +20,7 @@ information.
 Installation
 ------------
 
-There are several ways to install LEPL --- they are described below, simplest
+There are several ways to install Lepl --- they are described below, simplest
 first.  If you want a local copy of the manual you should also read the
 :ref:`localdocs` section.
 
@@ -31,14 +31,14 @@ Install With Distribute / Setuptools (easy_install).
 
   `Distribute <http://pypi.python.org/pypi/distribute>`_ and
   `setuptools <http://pypi.python.org/pypi/setuptools>`_ are very similar,
-  and either will install LEPL on Python 2.6.  However, I recommend using
+  and either will install Lepl on Python 2.6.  However, I recommend using
   `distribute <http://pypi.python.org/pypi/distribute>`_ since it also
   works with Python 3 and appears to be better supported.
 
   Once you have installed 
   `distribute <http://pypi.python.org/pypi/distribute>`_ or
   `setuptools <http://pypi.python.org/pypi/setuptools>`_ you can install
-  LEPL with the command
+  Lepl with the command
 
     easy_install lepl
 
@@ -54,12 +54,12 @@ Install With Distutils / setup.py
 
     python setup.py install
 
-  For example, on Gnu/Linux (in the instructions below, "LEPL-xxx" would be
-  "LEPL-\ |release|\ " for the current release)::
+  For example, on Gnu/Linux (in the instructions below, "Lepl-xxx" would be
+  "Lepl-\ |release|\ " for the current release)::
 
-    wget http://lepl.googlecode.com/files/LEPL-xxx.tar.gz
-    tar xvfz LEPL-xxx.tar.gz
-    cd LEPL-xxx
+    wget http://lepl.googlecode.com/files/Lepl-xxx.tar.gz
+    tar xvfz Lepl-xxx.tar.gz
+    cd Lepl-xxx
     python setup.py install
 
 
@@ -79,7 +79,7 @@ beta releases) from the `Support Site
 <http://code.google.com/p/lepl/downloads>`_.
 
 **Stable** source packages are also available from the `Python Package Index
-<http://pypi.python.org/pypi/LEPL/>`_.
+<http://pypi.python.org/pypi/Lepl/>`_.
 
 
 .. index:: Python version
@@ -88,7 +88,7 @@ beta releases) from the `Support Site
 Testing
 -------
 
-Once installed you can test LEPL by running the self-test::
+Once installed you can test Lepl by running the self-test::
 
   >>> from lepl._test import all
   >>> all()

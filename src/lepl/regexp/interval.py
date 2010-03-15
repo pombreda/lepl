@@ -325,7 +325,14 @@ class IntervalMap(dict):
         if self.__index is None:
             self.index()
         if self.__index:
-            index = bisect_left(self.__index, point)
+            try:
+                index = bisect_left(self.__index, point)
+            except TypeError as e:
+                from lepl.regexp.core import RegexpError
+                raise RegexpError(
+"""Input characters are inconsistent with the given alphabet.
+This error is often triggered by using the default configuration with non-text input; disable with matcher.config.no_compile_regexp().
+Alternatively, configure with a suitable alphabet.""")
             if index < len(self.__index):
                 # keep interval for identity on retrieval, just in case
                 (a, b) = interval = self.__intervals[index]

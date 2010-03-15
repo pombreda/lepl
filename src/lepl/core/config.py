@@ -252,24 +252,26 @@ class ConfigBuilder(object):
         from lepl.offside.matchers import Block
         return self.set_arguments(Block, policy=block_policy)
     
-    def full_match(self, eos=True):
+    def full_first_match(self, eos=True):
         '''
-        Raise an error if the match fails.  If `eos` is True then this
+        Raise an error if the first match fails.  If `eos` is True then this
         requires that the entire input is matched, otherwise it only requires
-        that the matcher succeed.
+        that the matcher succeed.  The exception includes information about
+        the deepest read to the stream (which is a good indication of where
+        any error occurs).
         
         This is part of the default configuration.  It can be removed with
-        `no_full_match()`.
+        `no_full_first_match()`.
         '''
-        from lepl.core.rewriters import FullMatch
-        return self.add_rewriter(FullMatch(eos))
+        from lepl.core.rewriters import FullFirstMatch
+        return self.add_rewriter(FullFirstMatch(eos))
         
-    def no_full_match(self):
+    def no_full_first_match(self):
         '''
-        Disable the automatic generation of an error if the match fails.
+        Disable the automatic generation of an error if the first match fails.
         '''
-        from lepl.core.rewriters import FullMatch
-        return self.remove_rewriters(FullMatch)
+        from lepl.core.rewriters import FullFirstMatch
+        return self.remove_rewriters(FullFirstMatch)
     
     def flatten(self):
         '''
@@ -635,7 +637,7 @@ class ConfigBuilder(object):
         self.optimize_or()
         self.direct_eval()
         self.compile_to_nfa()
-        self.full_match()
+        self.full_first_match()
         return self
     
     def clear(self):
@@ -668,7 +670,7 @@ class ConfigBuilder(object):
         self.auto_memoize()
         self.direct_eval()
         self.compile_to_nfa()
-        self.full_match()
+        self.full_first_match()
         return self
 
 
@@ -683,12 +685,15 @@ class ParserMixin(object):
         self.__raw_parser_cache = None
         self.__from = None
 
-    def _raw_parser(self, from_):
+    def _raw_parser(self, from_=None):
         if self.config.changed or self.__raw_parser_cache is None \
                 or self.__from != from_:
             config = self.config.configuration
             self.__from = from_
-            stream_factory = getattr(config.stream_factory, 'from_' + from_)
+            if from_:
+                stream_factory = getattr(config.stream_factory, 'from_' + from_)
+            else:
+                stream_factory = config.stream_factory.auto
             self.__raw_parser_cache = \
                 make_raw_parser(self, stream_factory, config)
         return self.__raw_parser_cache
@@ -726,13 +731,21 @@ class ParserMixin(object):
         '''
         return self._raw_parser('string')
     
-    def get_match(self):
+    def get_match_null(self):
         '''
         Get a function that will parse the contents of a string or list, 
         returning a sequence of (results, stream) pairs 
         (this does not use streams).
         '''
         return self._raw_parser('null')
+    
+    def get_match(self):
+        '''
+        Get a function that will parse input, returning a sequence of 
+        (results, stream) pairs and using a stream internally.  
+        The type of stream is inferred from the input to the parser.
+        '''
+        return self._raw_parser()
     
     
     def match_file(self, file_, **kargs):
@@ -764,10 +777,18 @@ class ParserMixin(object):
         '''
         return self.get_match_string()(string, **kargs)
     
-    def match(self, stream, **kargs):
+    def match_null(self, stream, **kargs):
         '''
         Parse the contents of a string or list, returning a sequence of 
         (results, stream) pairs (this does not use streams).
+        '''
+        return self.get_match_null()(stream, **kargs)
+    
+    def match(self, stream, **kargs):
+        '''
+        Parse the input, returning a sequence of 
+        (results, stream) pairs and using a stream internally.  
+        The type of stream is inferred from the input to the parser.
         '''
         return self.get_match()(stream, **kargs)
     
@@ -801,10 +822,18 @@ class ParserMixin(object):
         '''
         return make_single(self.get_match_string())
     
-    def get_parse(self):
+    def get_parse_null(self):
         '''
         Get a function that will parse the contents of a string or list, 
         returning a single match (this does not use streams).
+        '''
+        return make_single(self.get_match_null())
+    
+    def get_parse(self):
+        '''
+        Get a function that will parse the input, 
+        returning a single match and using a stream internally.
+        The type of stream is inferred from the input to the parser.
         '''
         return make_single(self.get_match())
     
@@ -838,10 +867,17 @@ class ParserMixin(object):
         '''
         return self.get_parse_string()(string, **kargs)
     
-    def parse(self, stream, **kargs):
+    def parse_null(self, stream, **kargs):
         '''
         Parse the contents of a string or list, returning a single match (this
         does not use streams).
+        '''
+        return self.get_parse_null()(stream, **kargs)
+    
+    def parse(self, stream, **kargs):
+        '''
+        Parse the input, returning a single match and using a stream internally.
+        The type of stream is inferred from the input to the parser.
         '''
         return self.get_parse()(stream, **kargs)
     
@@ -875,10 +911,18 @@ class ParserMixin(object):
         '''
         return make_multiple(self.get_match_string())
 
-    def get_parse_all(self):
+    def get_parse_null_all(self):
         '''
         Get a function that will parse a string or list, returning a 
         sequence of matches (this does not use streams).
+        '''
+        return make_multiple(self.get_match_null())
+
+    def get_parse_all(self):
+        '''
+        Get a function that will parse the input, returning a 
+        sequence of matches and using a stream internally.
+        The type of stream is inferred from the input to the parser.
         '''
         return make_multiple(self.get_match())
 
@@ -912,9 +956,17 @@ class ParserMixin(object):
         '''
         return self.get_parse_string_all()(string, **kargs)
 
-    def parse_all(self, stream, **kargs):
+    def parse_null_all(self, stream, **kargs):
         '''
         Parse a string or list, returning a sequence of matches 
         (this does not use streams).
+        '''
+        return self.get_parse_null_all()(stream, **kargs)
+
+    def parse_all(self, stream, **kargs):
+        '''
+        Parse the input, returning a sequence of matches and using a 
+        stream internally. 
+        The type of stream is inferred from the input to the parser.
         '''
         return self.get_parse_all()(stream, **kargs)

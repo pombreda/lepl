@@ -14,7 +14,7 @@ services.  Currently these are:
 * `Source code <http://code.google.com/p/lepl/source/list>`_ repository (a
   regularly updated clone of the entire tree, but not my main repo).
 
-To ask questions, report bugs, and generally discuss LEPL, please post to the
+To ask questions, report bugs, and generally discuss Lepl, please post to the
 `group <http://groups.google.com/group/lepl>`_.
 
 .. toctree::

@@ -69,13 +69,13 @@ class SpaceTest(TestCase):
     def test_spaces(self):
         with Separator(~Space()):
             s1 = self.word()[1:]
-        s1.config.no_full_match()
+        s1.config.no_full_first_match()
         s1 = s1.get_parse_string()
         assert not s1("abc")
         assert s1("a bc")
         with Separator(None):
             s2 = self.word()[1:]
-        s2.config.no_full_match()
+        s2.config.no_full_first_match()
         s2 = s2.get_parse_string()
         assert s2("abc")
         assert not s2("a bc")
@@ -86,7 +86,7 @@ class SmartSpace1Test(TestCase):
     def test_smart_spaces(self):
         with SmartSeparator1(Space()):
             parser = 'a' &  Optional('b') & 'c' & Eos()
-        parser.config.no_full_match()
+        parser.config.no_full_first_match()
         assert parser.parse('a b c')
         assert parser.parse('a c')
         assert not parser.parse('a b c ')

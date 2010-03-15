@@ -35,7 +35,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 Unfortunately the following matchers cannot be tracked:
   query = DepthFirst(0, None, rest=And, first=Transform)
 >>> query.config.auto_memoize(full=True)
-<lepl.core.config.ConfigBuilder object at 0xc52a10>
+<lepl.core.config.ConfigBuilder object at 0xcad650>
 >>> query.parse('spicy meatballs OR "el bulli restaurant"')
       phrase failed                             stream = 'spicy meatballs OR...
         word = ['spicy']                        stream = ' meatballs OR "el ...
@@ -238,7 +238,6 @@ Alternative
 ... 
 >>> results = Digit()[13, ...].parse_all('1-800-7246837')
 >>> assert ['1-800-painter'] in results
->>> 
 >>> 
 PAUSE
 CLEAR

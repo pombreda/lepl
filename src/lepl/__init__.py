@@ -135,6 +135,7 @@ from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
+from lepl.stream.maxdepth import FullFirstMatchException
 from lepl.stream.stream import DEFAULT_STREAM_FACTORY
 from lepl.support.node import Node, make_dict, join_with
 
@@ -248,6 +249,8 @@ __all__ = [
         'DfaRegexp',
         # lepl.regexp.unicode
         'UnicodeAlphabet',
+        # lepl.stream.maxdepth
+        'FullFirstMatchException',
         # lepl.offside.lexer
         'Indent',
         'Eol',
@@ -265,7 +268,7 @@ __all__ = [
         'constant_indent'
        ]
 
-__version__ = '3.3.3'
+__version__ = '4.0'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

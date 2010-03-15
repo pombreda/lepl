@@ -62,9 +62,10 @@ def Any(restrict=None):
                 # it would be nice to make this an error, but for line aware
                 # parsing (and any other heterogenous input) it's legal
                 if not warned[0]:
-                    support._debug(format('Cannot restrict {0} with {1!r}',
+                    support._warn(format('Cannot restrict {0} with {1!r}',
                                           stream[0], restrict))
                     warned[0] = True
+                    ok = False
         if ok:
             return ([stream[0]], stream[1:])
             
@@ -88,7 +89,8 @@ def Literal(text):
         provided by the stream interface.
         '''
         try:
-            if text == stream[0:len(text)]:
+            data = stream[0:len(text)]
+            if text == data:
                 return ([text], stream[len(text):])
         except IndexError:
             pass

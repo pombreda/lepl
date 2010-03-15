@@ -96,7 +96,7 @@ ghijk:
         statement += (empty | simple | ifblock | function) > list
         program = statement[:]
         
-        program.config.default_line_aware(block_policy=2).no_full_match()
+        program.config.default_line_aware(block_policy=2).no_full_first_match()
         parser = program.get_parse_string()
 
         self.examples([(lambda: parser('''
@@ -143,7 +143,7 @@ same for (argument,
         # this also tests left recursion and blocks
         line += BLine(word | Empty()) | block
         program = line[:]
-        program.config.default_line_aware(block_policy=4, block_start=3).no_full_match()
+        program.config.default_line_aware(block_policy=4, block_start=3).no_full_first_match()
         parser = program.get_parse_string()
         result = parser('''
    foo

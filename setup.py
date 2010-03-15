@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='LEPL',
-      version='3.3.3',
+      version='4.0',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -15,11 +15,8 @@ grammars and it can also handle left-recursive grammars.
 The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
-`Release 3.3 <http://www.acooke.org/lepl/releases.html#id1>`_ adds `line-aware
-parsing <http://www.acooke.org/lepl/offside.html>`_, including support for the
-"offside rule".
-
-Release 3.3.3 includes various small improvements after user feedback.
+`Release 4.0 <http://www.acooke.org/lepl/lepl4.0.html>`_ is a major revision,
+giving a library that's simpler, faster, and eaier to use.
 
 Features
 --------
@@ -52,8 +49,8 @@ Features
 * Support for ambiguous grammars (**complete backtracking**).  A
   parser can return more than one result (aka **"parse forests"**).
 
-* Parsers can be made much more **efficient** with automatic memoisation
-  ("packrat parsing").
+* Parsers can be made more **efficient** with automatic memoisation ("packrat
+  parsing").
 
 * Memoisation can detect and control **left-recursive grammars**.  Together
   with LEPL's support for ambiguity this means that "any" grammar can be

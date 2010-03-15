@@ -220,11 +220,11 @@ def make_multiple(raw):
     '''
     Convert a raw parser to return a generator of results.
     '''
-    def multiple(arg):
+    def multiple(arg, **kargs):
         '''
         Adapt a raw parser to behave as expected for the matcher interface.
         '''
-        return map(lambda x: x[0], raw(arg))
+        return map(lambda x: x[0], raw(arg, **kargs))
     multiple.matcher = raw.matcher
     return multiple
 
@@ -233,12 +233,12 @@ def make_single(raw):
     '''
     Convert a raw parser to return a single result or None.
     '''
-    def single(arg):
+    def single(arg, **kargs):
         '''
         Adapt a raw parser to behave as expected for the parser interface.
         '''
         try:
-            return next(raw(arg))[0]
+            return next(raw(arg, **kargs))[0]
         except StopIteration:
             return None
     single.matcher = raw.matcher

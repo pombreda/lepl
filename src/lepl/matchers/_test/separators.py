@@ -63,7 +63,7 @@ class AbcSeparatorTest(TestCase):
         with separator:
             parser = And(Optional('a') & Optional('b') & 'c', Eos())
         ok = True
-        parser.config.no_full_match()
+        parser.config.no_full_first_match()
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse(stream) is not None
             if PRINT:
@@ -76,7 +76,7 @@ class AbcSeparatorTest(TestCase):
         with separator:
             parser = And(Optional('a') & Optional('b') & 'c', Eos())
         ok = True
-        parser.config.no_full_match()
+        parser.config.no_full_first_match()
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse_string(stream) is not None
             if PRINT:
@@ -126,7 +126,7 @@ class AbSeparatorTest(TestCase):
         with separator:
             parser = And(Optional('a') & Optional('b'), Eos())
         ok = True
-        parser.config.no_full_match()
+        parser.config.no_full_first_match()
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse(stream) is not None
             if PRINT:
@@ -139,7 +139,7 @@ class AbSeparatorTest(TestCase):
         with separator:
             parser = And(Optional('a') & Optional('b'), Eos())
         ok = True
-        parser.config.no_full_match()
+        parser.config.no_full_first_match()
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse_string(stream) is not None
             if PRINT:
@@ -189,7 +189,7 @@ class AbcEosSeparatorTest(TestCase):
         with separator:
             parser = Optional('a') & Optional('b') & 'c' & Eos()
         ok = True
-        parser.config.no_full_match()
+        parser.config.no_full_first_match()
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse(stream) is not None
             if PRINT:
@@ -202,7 +202,7 @@ class AbcEosSeparatorTest(TestCase):
         with separator:
             parser = Optional('a') & Optional('b') & 'c' & Eos()
         ok = True
-        parser.config.no_full_match()
+        parser.config.no_full_first_match()
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse_string(stream) is not None
             if PRINT:
@@ -252,7 +252,7 @@ class AbEosSeparatorTest(TestCase):
         with separator:
             parser = Optional('a') & Optional('b') & Eos()
         ok = True
-        parser.config.no_full_match()
+        parser.config.no_full_first_match()
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse(stream) is not None
             if PRINT:
@@ -265,7 +265,7 @@ class AbEosSeparatorTest(TestCase):
         with separator:
             parser = Optional('a') & Optional('b') & Eos()
         ok = True
-        parser.config.no_full_match()
+        parser.config.no_full_first_match()
         for (stream, expected) in zip(streams, expecteds):
             parsed = parser.parse(stream) is not None
             if PRINT:

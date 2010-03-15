@@ -4,14 +4,14 @@ Lepl 4 - Simpler, Faster, Easier
 
 I've made Lepl simpler to use.  For example, if a parser fails to match the
 input, you get an exception with the location of the problem.  If that's not
-what you want, it can be disabled by calling `.config.no_full_match()`
-(configuration got simpler too!).
+what you want, it can be disabled by calling
+``matcher.config.no_full_match()`` (configuration got simpler too!).
 
 Another example: it's easier to add new matchers.  Before, you needed to
 subclass a complex class.  Now, you can add a decorator to a simple function.
 
 Even debugging is simpler.  If you want to understand what the parser is
-doing, add `with TrackVariables()` and the progress of the match will be
+doing, add ``with TrackVariables()`` and the progress of the match will be
 printed to your screen.  The display includes the variable names that you used
 in the code, so it's easy to understand.
 
@@ -31,9 +31,9 @@ A Simpler API
 Configuration
 ~~~~~~~~~~~~~
 
-Matches are now configured via methods on the `.config` attribute.  There's no
-need to hunt round the documentation looking for rewriters -- everything is
-right at your fingertips::
+Matches are now configured via methods on the ``matcher.config`` attribute.
+There's no need to hunt round the documentation looking for rewriters --
+everything is right at your fingertips::
 
    >>> matcher = Any()
    >>> dir(matcher.config)
@@ -49,13 +49,15 @@ right at your fingertips::
 
 Each configuration option has two methods --- one to turn it on, and one to
 turn it off.  These changes are relative to the default configuration [TODO
-reference] unless you first call `.clear()` (which removes all options).
+reference] unless you first call ``.clear()`` (which removes all options).
 
 So, for example::
 
   >>> matcher.config.no_lexer()
 
-removes lexer support from the default configuration, while::
+removes lexer support from the default configuration, while
+
+::
 
   >>> matcher.config.clear().lexer()
 
@@ -87,7 +89,7 @@ And if you use a more specific parse method, you get a more detailed error::
   The match failed at '67',
   Line 1, character 5 of str: '1234567'.
 
-Of course, you can disable this with `.config.no_full_match()`.
+Of course, you can disable this with ``.config.no_full_match()``.
 
 For more details, see the manual [TODO - reference].
 
@@ -95,20 +97,20 @@ For more details, see the manual [TODO - reference].
 Multiple Matches, Parsers
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The new `.parse_all()` method (and related `.parse_string_all()`, etc) returns
-a generator of all possible matches.  This is similar to the old `.match()`
-method (which still exists), but without the remaining streams (which were
-usually not interesting).  If you need multiple matches you'll probably find
-that `.parse_all()` simplifies your code.
+The new ``.parse_all()`` method (and related ``.parse_string_all()``, etc)
+returns a generator of all possible matches.  This is similar to the old
+``.match()`` method (which still exists), but without the remaining streams
+(which were usually not interesting).  If you need multiple matches you'll
+probably find that ``.parse_all()`` simplifies your code.
 
 Also, parsers are now cached (this isn't strictly new - it was also present in
-later Lepl 3 versions).  This means that you can call `.parse()` repeatedly
+later Lepl 3 versions).  This means that you can call ``.parse()`` repeatedly
 without worrying about wasting time re-compiling the parser.
 
 Cached parsers and configuration interact like you would expect --- changing
 the configuration clears the cache so that a new parser is compiled with the
 new settings.  If you want to keep a copy of the parser with the old settings
-(useful in tests) then try `.get_parser()`.
+(useful in tests) then try ``.get_parser()``.
 
 
 Upgrading from Lepl 3
@@ -141,7 +143,7 @@ Adding a new matcher to Lepl is now as easy as writing a function::
   >>> Capital.parse('ABC')
   ['A']
 
-If the matcher supports multiple results then it should `yield` them::
+If the matcher supports multiple results then it should ``yield`` them::
 
   >>> @sequence_matcher
   ... def Digit(support, stream):
@@ -181,8 +183,8 @@ cool new features easier.
 Easier Debugging
 ----------------
 
-The `Trace()` functionality in Lepl has never been easy to understand, for two
-reasons.  First, it tracks *every* matcher.  Second, it's unclear which
+The ``Trace()`` functionality in Lepl has never been easy to understand, for
+two reasons.  First, it tracks *every* matcher.  Second, it's unclear which
 matcher corresponds to which part of the grammar.
 
 Normally, when we debug a program, things are simpler because we can see the
@@ -191,7 +193,7 @@ corners, because it uses parts of Python that were not intended to be used in
 this way, but I think you'll agree that the result is worth the effort.
 
 Here's an example.  The variables that will be displayed must be defined
-inside `with TrackVariables()`::
+inside ``with TrackVariables()``::
 
   >>> with TrackVariables():
   ...     word = ~Lookahead('OR') & Word()
@@ -228,7 +230,7 @@ I spent time profiling, experimenting with different configurations, and have
 tweaked the default settings so that, on average, parsers are faster.  In
 particular, memoisation is used only to detect left--recursive loops (if you
 do want full memoisation you can still configure it, of course, with
-`.config.auto_memoize(full=True)`).
+``.config.auto_memoize(full=True)``).
 
 
 No Trampolining
@@ -250,7 +252,7 @@ possible.
 
 The end result is that trampoling is removed when the grammar is unlikely to
 need it.  If you disagree you add it back through the configuration
-(`.config.no_direct_eval()`).
+(``.config.no_direct_eval()``).
 
 
 Better Memoisation

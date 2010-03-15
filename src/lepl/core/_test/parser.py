@@ -68,7 +68,7 @@ class RepeatTest(TestCase):
     
     def test_depth(self):
         matcher = Any()[:,...]
-        matcher.config.full_match(False)
+        matcher.config.full_first_match(False)
         matcher = matcher.get_match_string()
         print(repr(matcher.matcher))
         results = [m for (m, _s) in matcher('abc')]
@@ -76,7 +76,7 @@ class RepeatTest(TestCase):
 
     def test_breadth(self):
         matcher = Any()[::'b',...]
-        matcher.config.full_match(False)
+        matcher.config.full_first_match(False)
         matcher = matcher.get_match_string()
         results = [m for (m, _s) in matcher('abc')]
         assert results == [[], ['a'], ['ab'], ['abc']], results
