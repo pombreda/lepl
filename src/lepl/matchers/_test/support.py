@@ -17,9 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Decorator tests.
-
-(These need to be copied into an example and the tutorial). 
+Tests for the lepl.matchers.support module
 '''
 
 #from logging import basicConfig, DEBUG

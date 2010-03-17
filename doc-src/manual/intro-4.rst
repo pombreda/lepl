@@ -9,11 +9,9 @@ In the previous sections we have developed a parser that could generate a
 simple AST for repeated addition and subtraction::
 
   >>> from lepl import *
-  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+  >>> number = Optional(symbol('-')) + value >> float
   >>> expr = Delayed()
   >>> add = number & symbol('+') & expr > Node
   >>> sub = number & symbol('-') & expr > Node
@@ -55,11 +53,9 @@ With Lepl this priority is implicit in the parser.  Priority is determined by
 structuring the recursive calls necessary for repeated handling of groups as a
 series of layers.  Which is much easier to show than explain in words::
 
-  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+  >>> number = Optional(symbol('-')) + value >> float
   >>> group2, group3 = Delayed(), Delayed()
 
   >>> # first layer, most tightly grouped, is parens and numbers
@@ -92,12 +88,12 @@ series of layers.  Which is much easier to show than explain in words::
        |   `- ')'
        +- '+'
        `- Node
-	   +- Node
-	   |   +- 5.0
-	   |   +- '/'
-	   |   `- 6.0
-	   +- '+'
-	   `- 7.0
+           +- Node
+           |   +- 5.0
+           |   +- '/'
+           |   `- 6.0
+           +- '+'
+           `- 7.0
 
 Note how each group can pass to the next, and how parentheses return back to
 the first group, giving the overall recursion we need to handle nested groups.
@@ -112,9 +108,9 @@ Ambiguity and Left Recursion
    This and the next section are fairly advanced.  You may want to skip
    them on a first read through.
 
-It's easy, when showing a solution, to pretend that it's obvious and easy.
-But try hiding the code above and then writing the parser yourself.  It's not
-as simple as it looks.
+It's easy, when showing a solution, to pretend that it's obvious.  But try
+hiding the code above and then writing the parser yourself.  It's not as
+simple as it looks.
 
 In this section I will show two possible mistakes you can make (mistakes that
 I made while testing the code for this tutorial).
@@ -123,44 +119,45 @@ The first mistake is the ordering of the definitions for ``group2`` and
 ``group3``.  The following code is almost identical, but gives a very
 different result::
 
-  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
-  >>> group2, group3 = Delayed(), Delayed()
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+  >>> number = Optional(symbol('-')) + value >> float
+  >>> group2, group3b = Delayed(), Delayed()
+
   >>> # first layer, most tightly grouped, is parens and numbers
   ... parens = symbol('(') & group3 & symbol(')')
   >>> group1 = parens | number
+
   >>> # second layer, next most tightly grouped, is multiplication
   ... mul = group1 & symbol('*') & group2 > Node
   >>> div = group1 & symbol('/') & group2 > Node
-
   >>> group2 += group1 | mul | div      # changed!
 
   >>> # third layer, least tightly grouped, is addition
-  ... add = group2 & symbol('+') & group3 > Node
-  >>> sub = group2 & symbol('-') & group3 > Node
-
-  >>> group3 += group2 | add | sub      # changed!
-
+  ... add = group2 & symbol('+') & group3b > Node
+  >>> sub = group2 & symbol('-') & group3b > Node
+  >>> group3b += group2 | add | sub     # changed!
   >>> ast = group3.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
-  1.0
+  [...]
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+',
+  Line 1, character 1 of str: '1+2*(3-4)+5/6+7'.
 
 This isn't as bad as it looks.  Lepl does find the result we are expecting,
-it's just not the first result found, which is what ``parse()`` shows.  We can
-see how many results are found::
+it's just not the first result found, which is what ``parse()`` returns.  We
+can see how many results are found::
 
-  >>> len(list(group3.match('1+2*(3-4)+5/6+7')))
+  >>> group3b.config.no_full_first_match()
+  >>> len(list(group3.parse_all('1+2*(3-4)+5/6+7')))
   6
 
 and it turns out the result we expect is the last one.
 
 You can understand what has happened by tracing out how the text is matched:
 
-* ``group3`` is defined as ``group2 | add | sub``, so ``group2`` is tried
-  first (`Or() <api/redirect.html#lepl.matchers.combine.Or>`_ evaluates from left to right)
+* ``group3b`` is defined as ``group2 | add | sub``, so ``group2`` is tried
+  first (`Or() <api/redirect.html#lepl.matchers.combine.Or>`_ evaluates from
+  left to right)
 
 * ``group2`` is defined as ``group1 | mul | div``, so ``group1`` is tried
   first
@@ -169,21 +166,26 @@ You can understand what has happened by tracing out how the text is matched:
 
 * ``parens`` fails to match, because the input does not start with "("
 
-* so the next alternative in the `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ for ``group1`` is tried, which is
-  ``number``
+* so the next alternative in the `Or()
+  <api/redirect.html#lepl.matchers.combine.Or>`_ for ``group1`` is tried,
+  which is ``number``
 
 * ``number`` succeeds and has nothing following it
 
 * returning back up the stack of pending matchers (``group1``, ``group2``,
-  ``group3``), all have no following matcher, so the match is complete
+  ``group3b``), all have no following matcher, so the match is complete
+
+* so the "successful" parse is ``1.0``, but that hasn't consumed all the
+  input, so we get the error.
 
 .. warning::
 
    The exercise above, while useful, is not always completely accurate,
    because Lepl may modify the matchers before using them.  You are most
    likely to see this when using a grammar with left--recursion (see below)
-   --- Lepl may re-arrange the order of matchers inside `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ so that the
-   left--recursive case comes last.
+   --- Lepl may re-arrange the order of matchers inside `Or()
+   <api/redirect.html#lepl.matchers.combine.Or>`_ so that the left--recursive
+   case comes last.
 
    With the default configuration Lepl should always maintain the basic logic
    of the grammar --- the result will be consistent with the parser given ---
@@ -195,14 +197,14 @@ You can understand what has happened by tracing out how the text is matched:
 
 There's an easy fix for this (but see comments on efficiency below), which is
 to explicitly say that the parser must match the entire output (`Eos()
-<api/redirect.html#lepl.functions.Eos>`_ matches "end of string" or "end of
+<api/redirect.html#lepl.matchers.derived.Eos>`_ matches "end of string" or "end of
 stream").  This works because the sequence described above fails (as some
 input remains), so the next alternative is tried (which in this case would be
 the ``mul`` in ``group2``, since ``group1`` has run out of alternatives).
 Eventually an arrangement of matchers is found that matches the complete
 input::
 
-  >>> expr = group3 & Eos()
+  >>> expr = group3b & Eos()
   >>> print(expr.parse('1+2*(3-4)+5/6+7')[0])
   Node
    +- 1.0
@@ -225,41 +227,41 @@ input::
 	   |   `- 6.0
 	   +- '+'
 	   `- 7.0
-  >>> len(list(expr.match('1+2*(3-4)+5/6+7')))
+  >>> len(list(expr.parse_all('1+2*(3-4)+5/6+7')))
   1
 
 The second mistake is to duplicate the recursive call on both sides of the
 operator.  So below, for example, we have ``add = group3...`` instead of ``add
 = group2...``::
 
-  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
-  >>> group2, group3 = Delayed(), Delayed()
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+  >>> number = Optional(symbol('-')) + value >> float
+  >>> group2, group3c = Delayed(), Delayed()
+
   >>> # first layer, most tightly grouped, is parens and numbers
   ... parens = symbol('(') & group3 & symbol(')')
   >>> group1 = parens | number
+
   >>> # second layer, next most tightly grouped, is multiplication
-
-  ... mul = group2 & symbol('*') & group2 > Node      # changed!
-  >>> div = group2 & symbol('/') & group2 > Node      # changed!
-
+  ... mul = group2 & symbol('*') & group2 > Node     # changed
+  >>> div = group2 & symbol('/') & group2 > Node     # changed
   >>> group2 += mul | div | group1
+
   >>> # third layer, least tightly grouped, is addition
-
-  ... add = group3 & symbol('+') & group3 > Node      # changed!
-  >>> sub = group3 & symbol('-') & group3 > Node      # changed!
-
-  >>> group3 += add | sub | group2
-  >>> ast = group3.parse('1+2*(3-4)+5/6+7')[0]
+  ... add = group3c & symbol('+') & group3c > Node   # changed
+  >>> sub = group3c & symbol('-') & group3c > Node   # changed
+  >>> group3c += add | sub | group2
+  >>> ast = group3c.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
-  1.0
-  >>> len(list(group3.match('1+2*(3-4)+5/6+7')))
+  [...]
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+',
+  Line 1, character 1 of str: '1+2*(3-4)+5/6+7'.
+  >>> group3c.config.no_full_first_match()
+  >>> len(list(group3c.parse_all('1+2*(3-4)+5/6+7')))
   12
-  >>> expr = group3 & Eos()
-  >>> len(list(expr.match('1+2*(3-4)+5/6+7')))
+  >>> expr = group3c & Eos()
+  >>> len(list(expr.parse_all('1+2*(3-4)+5/6+7')))
   5
 
 Here, not only do we get a short match first, but we also get 5 different
@@ -277,49 +279,55 @@ problematic definitions above is a good hint that something is wrong.
 Efficiency
 ----------
 
-The issues above do not result in incorrect results (once we add `Eos() <api/redirect.html#lepl.functions.Eos>`_),
-but they do make the parser less efficient.  To see this we first need to
-separate the parsing process into two separate stages.
+The issues above do not result in incorrect results (once we add `Eos()
+<api/redirect.html#lepl.matchers.derived.Eos>`_), but they do make the parser less
+efficient.  To see this we first need to separate the parsing process into two
+separate stages.
 
-When a parser is used, via the ``parse()`` or ``match()`` methods, Lepl must
-first do some preparatory work (compiling regular expressions, for example)
-before actually parsing the input data.  This preparation usually needs to be
-done just once, so Lepl provides methods that allow the prepared code (the
-parser) to be saved and reused.
+When a parser is used, via the ``parse()``, ``parse_all()`` and ``match()``
+methods, Lepl must first do some preparatory work (compiling regular
+expressions, for example) before actually parsing the input data.  
 
-Any talk of efficiency usually addresses only the second stage --- parsing the
-data.  So if we want to measure this we should make sure to generate the
-parser first, as described above.  We will do this by calling
-``string_parser()``::
+For any particular configuration this work is done once, and then the result
+is cached for re-use.  This gives an efficient system, but for timing tests we
+often want to focus only on the parsing time (since this will dominate if the
+same parser is re-used many times).  So Lepl provides methods that allow the
+prepared code (the parser) to be saved --- these are ``get_parse()``, etc.::
 
-  >>> parser = group3.string_parser()
+  >>> parser = group3.get_parse()
   >>> timeit('parser("1+2*(3-4)+5/6+7")',
   ...     'from __main__ import parser', number=100)
-  3.6650979518890381
+  3.31537699699
 
-  >>> parser = expr.string_parser()
+  >>> parser = (group3b & Eos()).get_parse()
   >>> timeit('parser("1+2*(3-4)+5/6+7")',
   ...     'from __main__ import parser', number=100)
-  4.6738321781158447
+  4.10263490677
 
-  >>> parser = expr.string_parser()
+  >>> parser = (group3c & Eos()).get_parse()
   >>> timeit('parser("1+2*(3-4)+5/6+7")',
   ...     'from __main__ import parser', number=100)
-  4.9616038799285889
+  3.10528898239
 
 The results above are for the three parsers in the same order as the text
-(correct; doesn't produce longest first; ambiguous).  The differences are
-clear (although thankfully not huge in this case).
+(correct; doesn't produce longest first; ambiguous).  The differences appear
+to be significant: the second parser is slower because it has to work through
+more variations; the third is actually faster, probably because, although it
+also has to work through some variations, the ambiguity allows a full match to
+be found earlier.
 
 Understanding speed variations in detail requires an in--depth understanding
-of Lepl's implementation but, as the examples above show, two good rules of
-thumb are:
+of Lepl's implementation but two good rules of thumb are:
 
 * Try to get the best (longest) parse as the first result, without needing to
-  add `Eos() <api/redirect.html#lepl.functions.Eos>`_ (but then add `Eos() <api/redirect.html#lepl.functions.Eos>`_ anyway, in case there's some corner
-  case you didn't expect).
+  add `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_ (but then add
+  `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_ anyway, in case
+  there's some corner case you didn't expect).
 
-* Avoid ambiguity.
+* Avoid ambiguity.  This helps with debugging and usually improves performance
+  (the third example above is a "lucky break" --- until Lepl 4's improved
+  memoisation and handling of left-recursive grammars, that solution was
+  slower).
 
 One final tip: avoid left--recursion.  In the parser above, we have recursion
 where, for example, ``add = group2 & symbol('+') & group3``, because that can
@@ -328,9 +336,10 @@ right--recursion, because ``group3`` is on the right.  Left recursion would be
 ``add = group3 & symbol('+') & group2``, with ``group3`` on the left.  This is
 particularly nasty because the parser can "go round in circles" without doing
 any matching (if this isn't clear, trace out how Lepl will try to match
-``group3``).  Lepl includes checks and corrections for this, but they're not
-perfect (as we can see above --- the last and slowest example is left
-recursive).
+``group3``).  Lepl includes checks and corrections for this, but they use
+memory and slow the parser down (the third case above, which *is* left
+recursive, should get significantly slower as the amount of text to parse
+increases).
 
 .. index:: Node()
 
@@ -350,23 +359,28 @@ the parentheses can go too)::
   ... 
   >>> class Div(Node): pass
   ... 
-  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+
+  >>> # tokens
   >>> value = Token(UnsignedFloat())
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+
+  >>> number = Optional(symbol('-')) + value >> float
   >>> group2, group3 = Delayed(), Delayed()
+
   >>> # first layer, most tightly grouped, is parens and numbers
   ... parens = ~symbol('(') & group3 & ~symbol(')')
   >>> group1 = parens | number
+
   >>> # second layer, next most tightly grouped, is multiplication
   ... mul = group1 & ~symbol('*') & group2 > Mul
   >>> div = group1 & ~symbol('/') & group2 > Div
   >>> group2 += mul | div | group1
+
   >>> # third layer, least tightly grouped, is addition
   ... add = group2 & ~symbol('+') & group3 > Add
   >>> sub = group2 & ~symbol('-') & group3 > Sub
   >>> group3 += add | sub | group2
+
   >>> ast = group3.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
   Add
@@ -378,10 +392,10 @@ the parentheses can go too)::
        |       +- 3.0
        |       `- 4.0
        `- Add
-	   +- Div
-	   |   +- 5.0
-	   |   `- 6.0
-	   `- 7.0
+           +- Div
+           |   +- 5.0
+           |   `- 6.0
+           `- 7.0
 
 Evaluation
 ----------
@@ -411,30 +425,26 @@ for each node type::
   ...
 
   >>> # tokens
-  ... symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
 
-  >>> # support functions etc
-  ... negfloat = lambda x: -float(x)
+  >>> number = Optional(symbol('-')) + value >> float
   >>> group2, group3 = Delayed(), Delayed()
 
   >>> # first layer, most tightly grouped, is parens and numbers
-  ... number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
-  >>> parens = ~symbol('(') & group3 & ~symbol(')')
+  ... parens = ~symbol('(') & group3 & ~symbol(')')
   >>> group1 = parens | number
 
   >>> # second layer, next most tightly grouped, is multiplication
-  ... ml = group1 & ~symbol('*') & group2 > Mul
-  >>> dv = group1 & ~symbol('/') & group2 > Div
-  >>> group2 += ml | dv | group1
+  ... mul_ = group1 & ~symbol('*') & group2 > Mul
+  >>> div_ = group1 & ~symbol('/') & group2 > Div
+  >>> group2 += mul_ | div_ | group1
 
   >>> # third layer, least tightly grouped, is addition
-  ... ad = group2 & ~symbol('+') & group3 > Add
-  >>> sb = group2 & ~symbol('-') & group3 > Sub
-  >>> group3 += ad | sb | group2
+  ... add_ = group2 & ~symbol('+') & group3 > Add
+  >>> sub_ = group2 & ~symbol('-') & group3 > Sub
+  >>> group3 += add_ | sub_ | group2
 
-  >>> # and test
   ... ast = group3.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
   Add
@@ -471,6 +481,6 @@ What have we learnt in this section?
 
 * For efficient parsing, we should be aware of ambiguity and left--recursion.
 
-* We can subclass ``Node`` to add functionality to AST nodes.
+* We can subclass `Node() <api/redirect.html#lepl.support.node.Node>`_ to add functionality to AST nodes.
 
 Thanks for reading!

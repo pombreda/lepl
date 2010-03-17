@@ -116,8 +116,7 @@ class TokenSource(BaseDelegateSource):
             
     def text(self, _offset, line):
         '''
-        Subclasses should override this to return the current line, 
-        if supported.
+        For tokens, this is used only for str() / debug.
         '''
         if line is None:
             return ''

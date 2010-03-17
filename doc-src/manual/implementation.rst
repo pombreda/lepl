@@ -25,7 +25,7 @@ recursive call to a matcher.  Unfortunately, the default Python stack is
 rather small and there is no optimisation of tail--recursive calls.  So the
 degree of recursion is limited.  This problem is exacerbated by a "clean",
 orthogonal design that constructs matchers in a hierarchical manner
-(eg. `Word() <api/redirect.html#lepl.Word>`_ calls, `Any()
+(eg. `Word() <api/redirect.html#lepl.matchers.derived.Word>`_ calls, `Any()
 <api/redirect.html#lepl.Any>`_ to handle character matching; memoisation uses
 nested matchers to manage caches).
 

@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.operators module.
+Tests for the lepl.matchers.operators module.
 '''
 
 from threading import Thread

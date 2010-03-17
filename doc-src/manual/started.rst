@@ -11,7 +11,6 @@ additional :ref:`examples` at the end of this manual.
 After reading this chapter you should have a better understanding of what
 matchers and parsers do, and how they can be constructed.
 
-
 .. index:: example
 
 First Example
@@ -31,10 +30,9 @@ into pieces that are then assembled into the final result.
 The assembly of the matched text can include extra processing that modifies
 the data however you like.
 
-So, ignoring the parser for a moment, we describe a structure (called a
-*grammar*) using matchers then use those matchers to break text into pieces
-that match that structure.  Finally, we process and assemble those pieces to
-give a final result.
+So we describe a structure (called a *grammar*) using matchers then use those
+matchers to break text into pieces that match that structure.  Finally, we
+process and assemble those pieces to give a final result.
 
 An example will make this clearer.  Imagine that we are given a username and a
 phone number, separated by a comma, and we want to split that into the two
@@ -46,19 +44,26 @@ values::
   >>> phone   = Integer()           > 'phone'
   >>> matcher = name / ',' / phone  > make_dict
   
-  >>> parser = matcher.string_parser()
+  >>> parser = matcher.get_parse()
   >>> parser('andrew, 3333253')
   [{'phone': '3333253', 'name': 'andrew'}]
 
 The main body of this program (after the import statements) defines the
-matcher.  The last line uses that to make a ``dict`` that contains the values
-from the string ``'andrew, 3333253'``.
+matcher.  Then the parser is constructed, and, finally, the string ``'andrew,
+3333253'`` parsed to create a ``dict``.
+
+We can shorten the last two lines to::
+
+  >>> matcher.parse('andrew, 3333253')
+  [{'phone': '3333253', 'name': 'andrew'}]
+
+(a parser is still created, inside the matcher).
 
 There's a lot going on here, some of which I will explain in later sections,
 but the most important thing to notice is that ``matcher`` was constructed
 from two simpler matchers [#]_ --- `Word()
-<api/redirect.html#lepl.Word>`_ and `Integer()
-<api/redirect.html#lepl.Integer>`_ [#]_.  It is those two matchers
+<api/redirect.html#lepl.matchers.derived.Word>`_ and `Integer()
+<api/redirect.html#lepl.matchers.derived.Integer>`_ [#]_.  It is those two matchers
 that identify the values 'andrew' (a word) and '3333253' (an integer).
 
 .. [#] In fact there are probably a dozen or so matchers involved here: the
@@ -72,66 +77,59 @@ that identify the values 'andrew' (a word) and '3333253' (an integer).
 .. [#] Matcher names are linked to the API documentation which contains more
        detail.
 
-
 .. index:: matchers, Word(), Integer(), match(), parse_string()
 
 Matchers
 --------
 
-All matchers work in the same way: they take a *stream* of input and produce
-some results and a new stream as output (for now we use strings as simple
-streams).  But, because a matcher may find more than one match, it does not
-return the results and stream directly.  Instead, it returns a *generator*.
+Internally, all matchers work in the same way: they take a *stream* of input
+and produce some results and a new stream as output.  But, because a matcher
+may find more than one match, it does not return the results and stream
+directly.  Instead, it returns a *generator*.
 
 Generators are a fairly new part of Python, rather like lists.  All you need
 to know to use them is that, to read the value, you use the function
 ``next()``.
 
 We can see how this works with the simple generators `Word()
-<api/redirect.html#lepl.Word>`_ and `Integer()
-<api/redirect.html#lepl.Integer>`_::
+<api/redirect.html#lepl.matchers.derived.Word>`_ by calling the ``matcher.match() method::
 
-  >>> next( Word().match('hello world') )
-  (['hello'], ' world')
-  
-  >>> next( Integer().match('123 four five') )
-  (['123'], ' four five')
+  >>> matcher = Word()
+  >>> matcher.config.no_full_first_match()
+  >>> next(matcher.match('hello world') )
+  (['hello'], 'hello world'[5:])
 
-Hopefully you can see the result and the remaining stream in both cases.
+You can see the result and the remaining stream.  We needed to call
+`.config.no_full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_ otherwise we would have triggered an error
+due to incomplete matching (in case you are wondering, that error is from the
+parser that was automatically created when we called ``match()``; individual
+matchers don't check for a complete parse).
 
-We can make a more complicated matcher from these by joining them together
-with `And() <api/redirect.html#lepl.And>`_::
+We can join together matchers with `And() <api/redirect.html#lepl.matchers.combine.And>`_::
 
   >>> next( And(Word(), Space(), Integer()).match('hello 123') )
-  (['hello', ' ', '123'], '')
+  (['hello', ' ', '123'], ''[0:])
 
 which can also be written as::
 
   >>> next( (Word() & Space() & Integer()).match('hello 123') )
-  (['hello', ' ', '123'], '')
+  (['hello', ' ', '123'], ''[0:])
 
 or even::
 
   >>> next( (Word() / Integer()).match('hello 123') )
-  (['hello', ' ', '123'], '')
+  (['hello', ' ', '123'], ''[0:])
 
-because ``&`` is shorthand for `And() <api/redirect.html#lepl.And>`_, while
-``/`` is similar, but allows optional spaces.
+because ``&`` is shorthand for `And()
+<api/redirect.html#lepl.matchers.combine.And>`_, while ``/`` is similar, but
+allows optional spaces.
 
-Note how, in all the examples above, the results are contained in a list and
-the returned stream starts after the results.  Putting the results in a list
-allows a matcher to return more than one result (or none at all).  The new
+We can get an idea of how Lepl works internally by looking at the output
+above.  In particular, note that results are contained in a list and the
+returned stream starts after the results.  Putting the results in a list
+allows a matcher to return more than one result (or none at all) and the new
 stream can be used by another matcher to continue the work on the rest of the
 input data.
-
-This standard behaviour --- taking a stream as an argument then returning a
-list of results and a new stream from a generator --- is useful internally,
-but messy when we only want to see the final results.  So matchers also have
-methods for simplifying the output::
-
-  >>> (Word() / Integer()).parse_string('hello 123')
-  ['hello', ' ', '123']
-
 
 .. index:: /, >, make_dict()
 
@@ -157,13 +155,13 @@ string a *named pair* is generated.
 Since the ``>`` produces a matcher, we can test this at the command line::
 
   >>> next( (Word() > 'name').match('andrew') )
-  ([('name', 'andrew')], '')
+  ([('name', 'andrew')], ''[0:])
 
   >>> next( (Integer() > 'phone').match('3333253') )
-  ([('phone', '3333253')], '')
+  ([('phone', '3333253')], ''[0:])
 
-This makes `make_dict <api/redirect.html#lepl.node.make_dict>`_ easier to
-understand.  Python's standard ``dict()`` will construct a dictionary from
+This makes `make_dict <api/redirect.html#lepl.support.node.make_dict>`_ easier
+to understand.  Python's standard ``dict()`` will construct a dictionary from
 named pairs::
 
   >>> dict([('name', 'andrew'), ('phone', '3333253')])
@@ -172,13 +170,12 @@ named pairs::
 And the results from ``name / ',' / phone`` include named pairs::
 
   >>> next( (name / ',' / phone).match('andrew, 3333253') )
-  ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], '')
+  ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], ''[0:])
 
 Now we know that ``>`` passes results to a function, so it looks like
-`make_dict <api/redirect.html#lepl.make_dict>`_ is almost identical to
-``dict``.  In fact, the only difference is that it strips out results that are
-not named pairs (in this case, the comma and space).
-
+`make_dict <api/redirect.html#lepl.make_dict>`_ is almost identical to the
+Python builtin ``dict``.  In fact, the only difference is that it strips out
+results that are not named pairs (in this case, the comma and space).
 
 .. index:: repetition, [], ~, Drop()
 .. _repetition:
@@ -196,7 +193,7 @@ usernames and phone numbers::
   >>> newline = spaces & Newline() & spaces
   >>> matcher = line[0:,~newline]
 
-  >>> matcher.parse_string('andrew, 3333253\n bob, 12345')
+  >>> matcher.parse('andrew, 3333253\n bob, 12345')
   [{'phone': '3333253', 'name': 'andrew'}, {'phone': '12345', 'name': 'bob'}]
 
 This uses repetition in two places.  First, and simplest, is ``Space()[0:]``.
@@ -243,7 +240,7 @@ We can write our own function to do this, then call it with ``>``::
   >>> newline = spaces & Newline() & spaces
   >>> matcher = line[0:,~newline]   > combine
   
-  >>> matcher.parse_string('andrew, 3333253\n bob, 12345')
+  >>> matcher.parse('andrew, 3333253\n bob, 12345')
   [{'bob': '12345', 'andrew': '3333253'}]
 
 
@@ -259,8 +256,8 @@ Lepl can be extended in several ways:
 * You can define and call functions to process results (using ``>``).  This is
   quite common, too, and there's an example just above.
 
-* You can write your own matchers (see the Lepl source for examples; they
-  should inherit from `BaseMatcher
+* TODO - UPDATE You can write your own matchers (see the Lepl source for
+  examples; they should inherit from `BaseMatcher
   <api/redirect.html#lepl.functions.BaseMatcher>`_ to take full advantage of
   the operator syntax).  Hopefully this is not often needed.  If you think you
   do need to write a new matcher, feel free to discuss it on the `mailing list

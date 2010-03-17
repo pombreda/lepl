@@ -17,10 +17,10 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for separators (space handling).
+Tests for the lepl.matchers.separators module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import And, Optional, Space, Separator, SmartSeparator1, \

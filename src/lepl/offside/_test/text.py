@@ -17,8 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-An example that avoids using tokens (in a sense) with the line aware
-parsing.
+An example that avoids using tokens with the line aware parsing.
 '''
 
 #from logging import basicConfig, DEBUG

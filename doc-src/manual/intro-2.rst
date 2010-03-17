@@ -388,6 +388,7 @@ With those tokens we can now try to rewrite our parser::
   >>> number = value >> float
   >>> add = number & ~symbol('+') & number > sum
   >>> parse('12+30')
+  [...]
   lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+30',
   Line 1, character 2 of str: '12+30'.
 
@@ -410,22 +411,27 @@ Debugging
 What went wrong in the example above?
 
 There is a clue in the error message --- when we use tokens the "match failed
-at" shows the token.  That means that we have a token whose value is "+30",
-which is not what we were expecting.  We expected that the tokens would be
-"12", "+", and "30".  Instead, it seems that the tokens generated are "12" and
-"+30".
+at" message shows the token::
+
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+30',
+  Line 1, character 2 of str: '12+30'.
+
+That means that we have a token whose value is "+30", which is not what we
+were expecting.  We expected that the tokens would be "12", "+", and "30".
+Instead, it seems that the tokens generated are "12" and "+30".
 
 So we can see that the lexer (the part of Lepl that generates the tokens) is
 identifying two `SignedFloat()
 <api/redirect.html#lepl.matchers.derived.SignedFloat>`_ matches.  Matching "+"
-as a ``symbol`` is ignored because `regular expressions return the longest
-match` and "+" is shorter than "+30".
+as a ``symbol`` is ignored because `the lexer chooses the token with the
+longest match` and "+30" is longer than "+".
 
-If you're not sure that "+30" is a valid `SignedFloat()
-<api/redirect.html#lepl.matchers.derived.SignedFloat>`_ it's easy to check::
-
-  >>> SignedFloat().parse('+30')
-  ['+30']
+In a little more detail: the lexer takes the input and breaks it down into
+tokens, from left to right.  So in this case it starts with "12+30", tries
+matching the various tokens, and finds that "12" is the longest (and only)
+match.  It then starts again with what remains, "+30" and finds a match of "+"
+for ``symbol`` and a match of "+30" for ``value``.  It chooses the latter
+because it is longest, and is done.
 
 This illustrates an important restriction on the use of tokens: you have to be
 careful to avoid ambiguity.  This might make them seem pointless, but in
@@ -440,29 +446,28 @@ Tokens (Second Attempt)
 We can avoid the problem above by using unsigned numbers.  But that means that
 we need to worry about signs that are "part of the number" in the parser
 itself.  Since people don't really care about a leading "+" I've only included
-the "-" case below::
+the "-" case (negative numbers) below::
 
   >>> value = Token(UnsignedFloat())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
+  >>> number = Optional(symbol('-')) + value >> float
   >>> add = number & ~symbol('+') & number > sum
   >>> add.parse('12+30')
   [42.0]
   >>> add.parse('12 + -30')
   [-18.0]
 
-There are two important changes here.
+The important chnages here are:
 
-First, I defined ``negfloat`` to create a negative float.  I used a `lambda
-expression <http://docs.python.org/3.0/glossary.html#term-lambda>`_ which is
-just a compact way of defining a function.
+* ``value`` is changed to an ``UnsignedFloat()``
 
-Second, I checked for a ``value`` preceded by ``-`` (which will appear as a
-``symbol`` token) and, for that case, called ``negfloat``.  `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ works
-like you'd expect and, in a similar way to `And()
-<api/redirect.html#lepl.matchers.combine.And>`_ and ``&``, also has a shortcut: ``|``.
+* number has an `Optional()
+  <api/redirect.html#lepl.matchers.derived.Optional>`_ minus (we could also
+  have written this ``symbol('-')[0:1]``)
+
+* the ``+`` joins the optional ``-`` and ``value`` together into a single
+  string, so that when passed to ``float()`` a negative number will be
+  created
 
 Alternative Spaces
 ------------------
@@ -471,17 +476,15 @@ Finally, it is worth noting that you can specify an alternative regular
 expression that will be used to match spaces between tokens.  The way that
 Lepl works is as follows:
 
-  1. An attempt is made to match a token.
+1. An attempt is made to match a token.
 
-  2. If no token matches, an attempt is made to match spaces.
+2. If no token matches, an attempt is made to match spaces.
 
-  3. If no spaces could be matched, an error is raised.
+3. If no spaces could be matched, an error is raised.
 
 The spaces matched in step 2 are defined via a regular expression, which can
 be passed to the :ref:`configuration` (the ``discard`` parameter to
-`lexer_rewriter() <api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_;
-if no value value is given, "\\r\\n\\t " is used).
-
+`.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_).  If no value value is given, "\\r\\n\\t " is used.
 
 Summary
 -------
@@ -492,8 +495,8 @@ What more have we learnt?
 
 * The ``[]`` syntax for repetition is compact and powerful.
 
-* `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ can automate the addition of spaces wherever we use ``&`` or
-  ``[]``.
+* `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ can
+  automate the addition of spaces wherever we use ``&`` or ``[]``.
 
 * Regular expressions are supported, in various different ways.
 

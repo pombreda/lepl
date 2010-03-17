@@ -162,4 +162,4 @@ for significant expansion in future releases).
 
 While writing the binary parser I needed to revisit and revise core routines
 related to graphs.  Various internal interfaces have been simplified; the most
-visible being the `Node() <api/redirect.html#lepl.node.Node>`_ class, which is now more "Pythonesque".
+visible being the `Node() <api/redirect.html#lepl.support.node.Node>`_ class, which is now more "Pythonesque".

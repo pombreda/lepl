@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.stream module.
+Tests for the lepl.stream.stream module.
 '''
 
 from random import choice

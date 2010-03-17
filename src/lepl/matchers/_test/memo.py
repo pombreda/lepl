@@ -17,10 +17,10 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.memo module.
+Tests for the lepl.matchers.memo module.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Delayed, Any, Optional, Node, Literals, Eos, Token, Or

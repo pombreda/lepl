@@ -30,7 +30,7 @@ from lepl import *
 from lepl._example.support import Example
 
 
-class Tutorial1Example(Example):
+class Tutorial2Example(Example):
     
     def run_error(self):
         number = SignedFloat() >> float
@@ -99,6 +99,13 @@ class Tutorial1Example(Example):
         number = value >> float
         add = number & ~symbol('+') & number > sum
         return add.parse_string('12+30')
+    
+    def run_token_2(self, text):
+        value = Token(UnsignedFloat())
+        symbol = Token('[^0-9a-zA-Z \t\r\n]')
+        number = Optional(symbol('-')) + value >> float
+        add = number & ~symbol('+') & number > sum
+        return add.parse(text)
 
     def test_all(self):
         self.examples([
@@ -145,8 +152,12 @@ Line 1, character 2 of str: '12+30'.
 (self.run_regexp,
 """[['aaa']]"""),
 (self.run_token_1,
-"""lepl.stream.maxdepth.FullFirstMatchException: The match failed at '[(['Tk0'], '+30')][0:]',
+"""lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+30',
 Line 1, character 2 of str: '12+30'.
 """),
+(lambda: self.run_token_2('12+30'),
+"""[42.0]"""),
+(lambda: self.run_token_2('12 + -30'),
+"""[-18.0]"""),
 ])
         

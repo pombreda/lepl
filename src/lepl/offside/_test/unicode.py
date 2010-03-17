@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.offside.regexp module.
+Further tests for the lepl.offside.regexp module.
 '''
 
 # pylint: disable-msg=C0111, R0201

@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.functions module.
+Tests for the lepl.matchers.derived module.
 '''
 
 #from logging import basicConfig, DEBUG

@@ -11,9 +11,7 @@ if the expression contained spaces.  Our final version used tokens::
   >>> from lepl import *
   >>> value = Token(UnsignedFloat())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
+  >>> number = Optional(symbol('-')) + value >> float
   >>> add = number & ~symbol('+') & number > sum
   >>> add.parse('12 + -30')
   [-18.0]
@@ -33,11 +31,9 @@ I'll keep the addition symbol.
 
 So here's what we're starting with::
 
-  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+  >>> number = Optional(symbol('-')) + value >> float
   >>> add = number & symbol('+') & number
   >>> add.parse('12 + -30')
   [12.0, '+', -30.0]
@@ -51,11 +47,9 @@ parser.  We could do this in various ways.  One way would be to change
 AST harder (it's better to have one line per AST node), so instead I'm going
 to go with::
 
-  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+  >>> number = Optional(symbol('-')) + value >> float
   >>> add = number & symbol('+') & number
   >>> sub = number & symbol('-') & number
   >>> expr = add | sub
@@ -85,11 +79,9 @@ to be general enough to match a single value).
 What I've just described above is easy to implement, but unfortunately won't
 work::
 
-  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+  >>> number = Optional(symbol('-')) + value >> float
   >>> add = number & symbol('+') & expr
   >>> sub = number & symbol('-') & expr
   >>> expr = add | sub | number
@@ -119,15 +111,14 @@ in Lepl.
 Delayed Matchers
 ----------------
 
-The solution to our problem is to use the `Delayed() <api/redirect.html#lepl.matchers.Delayed>`_ matcher.  This lets us
+The solution to our problem is to use the `Delayed()
+<api/redirect.html#lepl.matchers.core.Delayed>`_ matcher.  This lets us
 introduce something, so that we can use it, and then add a definition later.
 That might sound odd, but it's really simple to use::
 
-  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+  >>> number = Optional(symbol('-')) + value >> float
   >>> expr = Delayed()
   >>> add = number & symbol('+') & expr
   >>> sub = number & symbol('-') & expr
@@ -150,13 +141,12 @@ course) is that we needed something complicated enough for this to be
 worthwhile.
 
 The simplest way of building an AST is almost trivial.  We just send the
-results for the addition and subtraction to `Node() <api/redirect.html#lepl.node.Node>`_::
+results for the addition and subtraction to `Node()
+<api/redirect.html#lepl.support.node.Node>`_::
 
-  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> value = Token(UnsignedFloat())
-  >>> negfloat = lambda x: -float(x)
-  >>> number = Or(value >> float,
-  ...             ~symbol('-') & value >> negfloat)
+  >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
+  >>> number = Optional(symbol('-')) + value >> float
   >>> expr = Delayed()
   >>> add = number & symbol('+') & expr > Node
   >>> sub = number & symbol('-') & expr > Node
@@ -175,12 +165,12 @@ OK, not so exciting, but let's look at that first result::
        +- 2.0
        +- '-'
        `- Node
-	   +- 3.0
-	   +- '+'
-	   `- Node
-	       +- 4.0
-	       +- '-'
-	       `- 5.0
+           +- 3.0
+           +- '+'
+           `- Node
+               +- 4.0
+               +- '-'
+               `- 5.0
 
 That's our first AST.  It's a bit of a lop--sided tree, I admit --- we will
 make some more attractive trees later --- but if you have worked through this
@@ -189,7 +179,6 @@ tutorial from zero, this is a major achievement.  Congratulations!
 (I hope it's clear that the result above is a "picture" of the tree of nodes.
 At the top is the parent node, which has three children: the value ``1.0``;
 the symbol ``'+'``; a ``Node`` with a first child of ``2.0`` etc.)
-
 
 .. index:: nodes, Node()
 
@@ -226,10 +215,9 @@ Both mixed together::
   >>> fb.foo
   [23, 'again']
 
-Note how ``('name', value)`` pairs have a special meaning in the `Node() <api/redirect.html#lepl.node.Node>`_
-constructor.  Lepl has a feature that helps exploit this, which I will explain
-in the next section.
-
+Note how ``('name', value)`` pairs have a special meaning in the `Node()
+<api/redirect.html#lepl.support.node.Node>`_ constructor.  Lepl has a feature
+that helps exploit this, which I will explain in the next section.
 
 .. index:: node attributes
 
@@ -243,11 +231,12 @@ small illustration of how they can be used::
   >>> digit = Digit() > 'digit'
   >>> example = (letter | digit)[:] > Node
 
-This uses `Letter() <api/redirect.html#lepl.functions.Letter>`_ and `Digit() <api/redirect.html#lepl.functions.Digit>`_ (both standard Lepl matchers) to match
-(single) letters and digits.  Each character is sent to a label (eg. ``>
-'letter'``).  This is a special case programmed into the ``>`` operator: when
-the target is a string (like ``'letter'`` or ``'digit```) then a ``('name',
-value)`` pair (see above) is created.
+This uses `Letter() <api/redirect.html#lepl.matchers.derived.Letter>`_ and
+`Digit() <api/redirect.html#lepl.matchers.derived.Digit>`_ (both standard Lepl
+matchers) to match (single) letters and digits.  Each character is sent to a
+label (eg. ``> 'letter'``).  This is a special case programmed into the ``>``
+operator: when the target is a string (like ``'letter'`` or ``'digit'``) then
+a ``('name', value)`` pair (see above) is created.
 
 Later, when the results are passed to the ``Node``, these ``('name', value)``
 pairs become attributes::
@@ -263,25 +252,25 @@ pairs become attributes::
 \*args
 ------
 
-You may have been wondering how a `Node() <api/redirect.html#lepl.node.Node>`_
-constructor works.  Earlier I said that ``>`` sends a list of results as a
-single argument, but, as we've seen in some of the examples above, `Node()
-<api/redirect.html#lepl.node.Node>`_ actually takes a series of values.  So in
-this case it seems as though ``>`` is calling `Node()
-<api/redirect.html#lepl.node.Node>`_ with "\*args" (ie. ``Node(*results)``
-rather than ``Node(results)``, if ``results`` is the list of results).
+You may have been wondering how a `Node()
+<api/redirect.html#lepl.support.node.Node>`_ constructor works.  Earlier I
+said that ``>`` sends a list of results as a single argument, but, as we've
+seen in some of the examples above, `Node()
+<api/redirect.html#lepl.support.node.Node>`_ actually takes a series of
+values.  So in this case it seems as though ``>`` is calling `Node()
+<api/redirect.html#lepl.support.node.Node>`_ with "\*args"
+(ie. ``Node(*results)`` rather than ``Node(results)``, if ``results`` is the
+list of results).
 
 (If this makes no sense, you may need to read the `Python documentation
 <http://docs.python.org/3.0/reference/compound_stmts.html#index-664>`_.)
 
-This is correct --- Lepl is calling `Node()
-<api/redirect.html#lepl.node.Node>`_ with "\*args".  `Node()
-<api/redirect.html#lepl.node.Node>`_ is being treated in a special way because
-it is registered with the ``ApplyArgs`` ABC, and any ``ApplyArgs`` subclass is
-called in this way.
+This is correct.  `Node() <api/redirect.html#lepl.support.node.Node>`_ is
+being treated in a special way because it is registered with the ``ApplyArgs``
+ABC, and any ``ApplyArgs`` subclass is called in this way.
 
 An alternative way to get ``>`` to make a "\*args" style call is to use the
-`args() <api/redirect.html#lepl.functions.args>`_ wrapper::
+`args() <api/redirect.html#lepl.matchers.derived.args>`_ wrapper::
 
   >>> matcher > args(target)
 
@@ -301,16 +290,18 @@ diagrams" we saw above.
 
 These are all a bit advanced for an introductory tutorial, so I will simply
 point you to the `API Documentation <api>`_; in particular the `graph module
-<api/redirect.html#lepl.graph>`_.
+<api/redirect.html#lepl.support.graph>`_.
 
 Summary
 -------
 
 What more have we learnt?
 
-* Recursive grammars are supported with `Delayed() <api/redirect.html#lepl.matchers.Delayed>`_.
+* Recursive grammars are supported with `Delayed()
+  <api/redirect.html#lepl.matchers.core.Delayed>`_.
 
-* `Node() <api/redirect.html#lepl.node.Node>`_ can be used to construct ASTs.
+* `Node() <api/redirect.html#lepl.support.node.Node>`_ can be used to
+  construct ASTs.
 
 * Nodes combine list and dict behaviour.
 

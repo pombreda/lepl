@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.node module.
+Tests for the lepl.support.node module.
 '''
 
 #from logging import basicConfig, DEBUG, INFO
@@ -25,8 +25,7 @@ from unittest import TestCase
 
 from lepl import Delayed, Digit, Any, Node, make_error, throw, Or, Space, \
     AnyBut, Eos
-from lepl.support.graph import preorder, postorder, order, \
-    PREORDER, POSTORDER, LEAF
+from lepl.support.graph import order, PREORDER, POSTORDER, LEAF
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, R0201, R0903

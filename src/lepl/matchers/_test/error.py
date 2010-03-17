@@ -1,4 +1,3 @@
-from lepl.matchers.variables import TrackVariables
 
 # Copyright 2009 Andrew Cooke
 
@@ -18,7 +17,7 @@ from lepl.matchers.variables import TrackVariables
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.error module.
+Tests for the lepl.matchers.error module.
 '''
 
 #from logging import basicConfig, DEBUG
@@ -26,6 +25,7 @@ from unittest import TestCase
 
 from lepl import Literal, Error
 from lepl.matchers.error import make_error
+from lepl.matchers.variables import TrackVariables
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201

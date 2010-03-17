@@ -17,5 +17,5 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-A lexer (tokenizer) for LEPL.
+A lexer (tokenizer) for Lepl.
 '''

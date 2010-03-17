@@ -75,7 +75,7 @@ explain an otherwise annoying design detail.)
 Trees
 -----
 
-Lepl includes a simple base class, `Node() <api/redirect.html#lepl.node.Node>`_ that can be used to construct
+Lepl includes a simple base class, `Node() <api/redirect.html#lepl.support.node.Node>`_ that can be used to construct
 trees::
 
   >>> class Term(Node): pass
@@ -135,7 +135,7 @@ trees::
 	   +- ''
 	   `- ')
 
-The `Node() <api/redirect.html#lepl.node.Node>`_ class functions like an
+The `Node() <api/redirect.html#lepl.support.node.Node>`_ class functions like an
 array of the original results (including spaces)::
 
   >>> [child for child in ast]

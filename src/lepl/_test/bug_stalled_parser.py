@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for a bug.
+Tests for a regexp bug.
 '''
 
 # pylint: disable-msg=W0614, W0401, C0111, R0201

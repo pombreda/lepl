@@ -44,7 +44,7 @@ should rewrite the parser as::
     expression = (word & lpar & word & rpar) | word
     
 Alternatively, you can force the parser to match the entire input by ending
-with `Eos() <api/redirect.html#lepl.functions.Eos>`_::
+with `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_::
 
     expression = word | (word & lpar & word & rpar)
     complete = expression & Eos()   
@@ -68,7 +68,7 @@ Why isn't my parser matching the full expression? (2)
 
 *It seems Float matched the part it liked, and just ignored the rest.*
 
-The simple solution is to add `Eos() <api/redirect.html#lepl.functions.Eos>`_ to the end of the parser, so that the
+The simple solution is to add `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_ to the end of the parser, so that the
 entire stream must match.
 
 But it would be better to use tokens here.  You could have one token for

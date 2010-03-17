@@ -270,7 +270,7 @@ in Python::
   ['a: x; b: y; c: z']
 
 There's no operator equivaluent for this, but a little helper function called
-`args() <api/redirect.html#lepl.functions.args>`_ allows ``>`` to be reused:
+`args() <api/redirect.html#lepl.matchers.derived.args>`_ allows ``>`` to be reused:
 
   >>> (Any()[3] > args(format3)).parse('xyz')
   ['a: x; b: y; c: z']
@@ -308,8 +308,8 @@ Many more matchers are described in the `API Documentation
 `AnyBut() <api/redirect.html#lepl.functions.AnyBut>`_,
 `Columns() <api/redirect.html#lepl.matchers.Columns>`_,
 `Commit() <api/redirect.html#lepl.matchers.Commit>`_,
-`Delayed() <api/redirect.html#lepl.matchers.Delayed>`_,
-`Digit() <api/redirect.html#lepl.functions.Digit>`_,
+`Delayed() <api/redirect.html#lepl.matchers.core.Delayed>`_,
+`Digit() <api/redirect.html#lepl.matchers.derived.Digit>`_,
 `Empty() <api/redirect.html#lepl.matchers.Empty>`_,
 `Eof() <api/redirect.html#lepl.matchers.Eof>`_,
 `Eos() <api/redirect.html#lepl.matchers.Eof>`_,
@@ -317,13 +317,13 @@ Many more matchers are described in the `API Documentation
 `Float() <api/redirect.html#lepl.functions.Float>`_, 
 `Identity() <api/redirect.html#lepl.functions.Identity>`_,
 `Integer() <api/redirect.html#lepl.functions.Integer>`_,
-`Letter() <api/redirect.html#lepl.functions.Letter>`_,
+`Letter() <api/redirect.html#lepl.matchers.derived.Letter>`_,
 `Lower() <api/redirect.html#lepl.functions.Lower>`_,
 `Map() <api/redirect.html#lepl.functions.Map>`_,
 `Name() <api/redirect.html#lepl.functions.Name>`_,
 `Newline() <api/redirect.html#lepl.functions.Newline>`_,
 `OneOrMore() <api/redirect.html#lepl.functions.OneOrMore>`_,
-`Optional() <api/redirect.html#lepl.functions.Optional>`_,
+`Optional() <api/redirect.html#lepl.matchers.derived.Optional>`_,
 `Plus() <api/redirect.html#lepl.functions.Plus>`_,
 `Printable() <api/redirect.html#lepl.functions.Printable>`_,
 `Punctuation() <api/redirect.html#lepl.functions.Punctuation>`_,

@@ -34,15 +34,21 @@ sed -i -r 's/LEPL/Lepl/g' *.rst
 
 
 # lepl 4 fixes
-sed -i -r 's/lepl\.functions\.(SignedFloat|Drop|Space|Star)/lepl.matchers.derived.\1/g' *.rst
+sed -i -r 's/lepl\.(Word|Integer)/lepl.matchers.derived.\1/g' *.rst
+sed -i -r 's/lepl\.(And|Or)/lepl.matchers.combine.\1/g' *.rst
+sed -i -r 's/lepl\.functions\.(SignedFloat|Drop|Space|Star|Optional|Letter|Digit|args|Eos)/lepl.matchers.derived.\1/g' *.rst
 sed -i -r 's/lepl\.matchers\.(And|Or)/lepl.matchers.combine.\1/g' *.rst
-sed -i -r 's/lepl\.matchers\.(Literal)/lepl.matchers.core.\1/g' *.rst
+sed -i -r 's/lepl\.matchers\.(Literal|Delayed)/lepl.matchers.core.\1/g' *.rst
 sed -i -r 's/lepl\.operators\.([A-Za-z]+)/lepl.matchers.operators.\1/g' *.rst
 sed -i -r 's/lepl\.lexer\.functions\.(Token)/lepl.lexer.matchers.\1/g' *.rst
+sed -i -r 's/lepl\.node\.(Node|make_dict)/lepl.support.node.\1/g' *.rst
 
 # lepl 4 direct
-sed -i -r 's/``(SignedFloat|Drop|Space|Star)\(\)``/`\1() <api\/redirect.html#lepl.matchers.derived.\1>`_/g' *.rst
+sed -i -r 's/``(SignedFloat|Drop|Space|Star|Optional|Letter|Digit|args|Eos|Word|Integer)\(\)``/`\1() <api\/redirect.html#lepl.matchers.derived.\1>`_/g' *.rst
 sed -i -r 's/``(And|Or)\(\)``/`\1() <api\/redirect.html#lepl.matchers.combine.\1>`_/g' *.rst
-sed -i -r 's/``(Literal|Regexp)\(\)``/`\1() <api\/redirect.html#lepl.matchers.core.\1>`_/g' *.rst
+sed -i -r 's/``(Literal|Regexp|Delayed)\(\)``/`\1() <api\/redirect.html#lepl.matchers.core.\1>`_/g' *.rst
 sed -i -r 's/``(DroppedSpace|Separator)\(\)``/`\1() <api\/redirect.html#lepl.matchers.operators.\1>`_/g' *.rst
 sed -i -r 's/``(Token)\(\)``/`\1() <api\/redirect.html#lepl.lexer.matchers.\1>`_/g' *.rst
+sed -i -r 's/``(Node|make_dict)\(\)``/`\1() <api\/redirect.html#lepl.support.node.\1>`_/g' *.rst
+sed -i -r 's/``(.config\.)([^\. ]+)(\([^\)]*\))``/`\1\2\3 <api\/redirect.html#lepl.core.config.ConfigBuilder.\2>`_/g' *.rst
+sed -i -r 's/``(matcher\.)([^\. ]+)\(\)``/`\1\2() <api\/redirect.html#lepl.core.config.ParserMixin.\2>`_/g' *.rst

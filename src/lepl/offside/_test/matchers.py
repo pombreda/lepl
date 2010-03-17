@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Currently unused.
+Tests for the lepl.offside.matchers module (currently unused).
 '''
 
 from unittest import TestCase

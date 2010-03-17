@@ -231,7 +231,7 @@ present, or whether you can do what you want more simply and reliably with the
 The following tables show the results of some simple tests for different
 separators, spaces, and functions.  They also illustrate two separate, but
 related, issues: the difference between `And() <api/redirect.html#lepl.matchers.combine.And>`_ and ``&`` when separators
-are present; and how matchers like `Eos() <api/redirect.html#lepl.functions.Eos>`_ function (which is not optional,
+are present; and how matchers like `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_ function (which is not optional,
 but consumes no input).
 
 
@@ -269,7 +269,7 @@ input stream (on the left).  Pay careful attention to spaces in the input.
 
 Different columns of results correspond to the different spearators, whether
 they are matching a single space or "zero or more" spaces, and whether the
-final `Eos() <api/redirect.html#lepl.functions.Eos>`_ matcher is added with ``&`` (which will include the spaces
+final `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_ matcher is added with ``&`` (which will include the spaces
 from the separator) or `And() <api/redirect.html#lepl.matchers.combine.And>`_ (which won't).
 
 So, for example, the final column on the right, below, has results for this

@@ -118,7 +118,7 @@ Name             Type      Action
 ---------------  --------  --------
 ``raise_error``  Function  See above.  `API <api/redirect.html#lepl.node.raise_error>`_
 ---------------  --------  --------
-``Error``        Class     Creates a parse tree node that can be used to trigger a later exception (`Error <api/redirect.html#lepl.node.Error>`_ is a subclass of both `Node <api/redirect.html#lepl.node.Node>`_ and ``SyntaxError``).  `API <api/redirect.html#lepl.node.Error>`_ 
+``Error``        Class     Creates a parse tree node that can be used to trigger a later exception (`Error <api/redirect.html#lepl.node.Error>`_ is a subclass of both `Node <api/redirect.html#lepl.support.node.Node>`_ and ``SyntaxError``).  `API <api/redirect.html#lepl.node.Error>`_ 
 ---------------  --------  --------
 ``throw``        Function  Walks the parse tree (typically this is a sub--tree associated with a matcher's result and `throw <api/redirect.html#lepl.node.throw>`_ is invoked by `Apply() <api/redirect.html#lepl.functions.Apply>`_) and raises the first `Error <api/redirect.html#lepl.node.Error>`_ found.  `API <api/redirect.html#lepl.node.make_throw>`_.
 ---------------  --------  --------

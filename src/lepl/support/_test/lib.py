@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.support module.
+Tests for the lepl.support.lib module.
 '''
 
 from unittest import TestCase

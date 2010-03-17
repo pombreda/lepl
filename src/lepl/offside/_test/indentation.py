@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for indent.
+Tests for indentation aware parsing.
 '''
 
 #from logging import basicConfig, DEBUG
