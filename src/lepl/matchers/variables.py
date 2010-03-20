@@ -106,7 +106,7 @@ def name(name, show_failures=True, width=80, out=stderr):
 
 
 @contextmanager
-def TrackVariables(on=True, show_failures=True, width=80, out=stderr):
+def TraceVariables(on=True, show_failures=True, width=80, out=stderr):
     before = _getframe(2).f_locals.copy()
     yield None
     after = _getframe(2).f_locals

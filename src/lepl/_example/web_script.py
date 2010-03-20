@@ -21,7 +21,7 @@ query.parse('spicy meatballs OR "el bulli restaurant"')
 # have a think, just click on the screen (click again to restart).
 
 # It's interesting to see what is happening in a little more detail:
-with TrackVariables():
+with TraceVariables():
     word = ~Lookahead('OR') & Word()
     phrase = String()
     with DroppedSpace():

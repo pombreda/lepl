@@ -15,7 +15,6 @@ parser in considerable detail.  New users may want to start there.
    operators
    nodes
    errors
-   resources
    debugging
    lexer
    offside

@@ -3,7 +3,6 @@
 Results
 =======
 
-
 This chapter describes various ways in which results can be structured while
 parsing data with Lepl.
 
@@ -26,8 +25,8 @@ tokens (ignoring :ref:`backtracking`).  For example::
   >>>     addsub  = Any('+-')
   >>>     expr   += factor & (addsub & factor)[:]
   >>>     line    = expr & Eos()
-  >>> line.parse_string('1 + 2 * (3 + 4 - 5)')
-  ['1', ' ', '', '+', ' ', '2', ' ', '*', ' ', '(', '', '3', ' ', '', '+', ' ', '4', ' ', '', '-', ' ', '5', '', '', ')', '']
+  >>> line.parse('1 + 2 * (3 + 4 - 5)')
+  ['1', ' ', '', '+', ' ', '2', ' ', '*', ' ', '(', '', '3', ' ', '', '+', ' ', '4', ' ', '', '-', ' ', '5', '', '', ')']
 
 .. index:: Drop()
 .. note::
@@ -55,7 +54,7 @@ results.  With Lepl they are easy to construct with ``> list``::
   >>>     addsub  = Any('+-')
   >>>     expr   += factor & (addsub & factor)[:]
   >>>     line    = expr & Eos()
-  >>> line.parse_string('1 + 2 * (3 + 4 - 5)')
+  >>> line.parse('1 + 2 * (3 + 4 - 5)')
   ['1', '+', '2', '*', ['3', '+', '4', '-', '5']]
 
 .. note::
@@ -63,11 +62,10 @@ results.  With Lepl they are easy to construct with ``> list``::
   ``list`` is just the usual Python constructor.
 
 (Since ``list`` is idempotent (or a fixed point, or *something*) ---
-``list(list(x)) == list(x)`` --- the operator ``>``
-(`lepl.functions.Apply(raw=false)`) has to wrap the result of any function in
-a list.  If this comment is confusing, please ignore it, but it may help
-explain an otherwise annoying design detail.)
-
+``list(list(x)) == list(x)`` --- the operator ``>`` (`Apply(raw=false) <api/redirect.html#lepl.matchers.derived.Apply>`_) has
+to wrap the result of any function in a list.  If this comment is confusing,
+please ignore it, but it may help explain an otherwise annoying design
+detail.)
 
 .. index:: Node(), AST, parse tree, trees
 .. _trees:
@@ -75,7 +73,8 @@ explain an otherwise annoying design detail.)
 Trees
 -----
 
-Lepl includes a simple base class, `Node() <api/redirect.html#lepl.support.node.Node>`_ that can be used to construct
+Lepl includes a simple base class, `Node()
+<api/redirect.html#lepl.support.node.Node>`_ that can be used to construct
 trees::
 
   >>> class Term(Node): pass
@@ -93,9 +92,8 @@ trees::
   >>>     expr   += factor & (addsub & factor)[:]     > Expression
   >>>     line    = expr & Eos()
 
-  >>> ast = line.parse_string('1 + 2 * (3 + 4 - 5)')[0]
-
-  >>> ast
+  >>> ast = line.parse('1 + 2 * (3 + 4 - 5)')[0]
+  >>> print(ast)
   Expression
    +- Factor
    |   +- Term
@@ -111,38 +109,43 @@ trees::
        +- operator '*'
        +- ' '
        `- Term
-	   +- '('
-	   +- ''
-	   +- Expression
-	   |   +- Factor
-	   |   |   +- Term
-	   |   |   |   `- number '3'
-	   |   |   `- ' '
-	   |   +- ''
-	   |   +- operator '+'
-	   |   +- ' '
-	   |   +- Factor
-	   |   |   +- Term
-	   |   |   |   `- number '4'
-	   |   |   `- ' '
-	   |   +- ''
-	   |   +- operator '-'
-	   |   +- ' '
-	   |   `- Factor
-	   |       +- Term
-	   |       |   `- number '5'
-	   |       `- ''
-	   +- ''
-	   `- ')
+           +- '('
+           +- ''
+           +- Expression
+           |   +- Factor
+           |   |   +- Term
+           |   |   |   `- number '3'
+           |   |   `- ' '
+           |   +- ''
+           |   +- operator '+'
+           |   +- ' '
+           |   +- Factor
+           |   |   +- Term
+           |   |   |   `- number '4'
+           |   |   `- ' '
+           |   +- ''
+           |   +- operator '-'
+           |   +- ' '
+           |   `- Factor
+           |       +- Term
+           |       |   `- number '5'
+           |       `- ''
+           +- ''
+           `- ')
 
-The `Node() <api/redirect.html#lepl.support.node.Node>`_ class functions like an
-array of the original results (including spaces)::
+The `Node() <api/redirect.html#lepl.support.node.Node>`_ class functions like
+an array of the original results (including spaces)::
 
   >>> [child for child in ast]
-  [Factor(...), '', ('operator', '+'), ' ', Factor(...)]
+  [Factor(...), '', '+', ' ', Factor(...)]
 
   >>> [ast[i] for i in range(len(ast))]
-  [Factor(...), '', ('operator', '+'), ' ', Factor(...)]
+  [Factor(...), '', '+', ' ', Factor(...)]
+
+.. warning::
+
+   This has changed slightly; before Lepl 4 iterating over values set by named
+   pairs would return the pair (``('operator', '+')`` instead of ``+``).
 
 Nodes also provide attribute access to child nodes and named pairs.  These are
 returned as lists, since sub--node types and names need not be unique::
@@ -153,7 +156,7 @@ returned as lists, since sub--node types and names need not be unique::
   >>> ast.Factor[1].Term[0].number[0]
   '2'
 
-Finally, Nodes extend `SimpleGraphNode()
-<api/redirect.html#lepl.graph.SimpleGraphNode>`_, which means that some of the
-routines in the `graph <api/redirect.html#lepl.graph>`_ package can be used to
-process ASTs.
+Finally, Nodes extend `ConstructorGraphNode()
+<api/redirect.html#lepl.support.graph.ConstructorGraphNode>`_, which means
+that some of the routines in the `graph
+<api/redirect.html#lepl.support.graph>`_ package can be used to process ASTs.

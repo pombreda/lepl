@@ -25,7 +25,7 @@ from io import StringIO
 from unittest import TestCase
 
 from lepl.matchers.core import Any
-from lepl.matchers.variables import NamedResult, TrackVariables
+from lepl.matchers.variables import NamedResult, TraceVariables
 
 
 class ExplicitTest(TestCase):
@@ -53,7 +53,7 @@ foo (4) = []
     def test_context(self):
         #basicConfig(level=DEBUG)
         output = StringIO()
-        with TrackVariables(out=output):
+        with TraceVariables(out=output):
             bar = Any()
         bar.config.no_full_first_match()
         repr(bar)

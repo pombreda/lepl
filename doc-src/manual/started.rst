@@ -11,7 +11,7 @@ additional :ref:`examples` at the end of this manual.
 After reading this chapter you should have a better understanding of what
 matchers and parsers do, and how they can be constructed.
 
-.. index:: example
+.. index:: example, get_parse(), parse()
 
 First Example
 -------------
@@ -63,8 +63,9 @@ There's a lot going on here, some of which I will explain in later sections,
 but the most important thing to notice is that ``matcher`` was constructed
 from two simpler matchers [#]_ --- `Word()
 <api/redirect.html#lepl.matchers.derived.Word>`_ and `Integer()
-<api/redirect.html#lepl.matchers.derived.Integer>`_ [#]_.  It is those two matchers
-that identify the values 'andrew' (a word) and '3333253' (an integer).
+<api/redirect.html#lepl.matchers.derived.Integer>`_ [#]_.  It is those two
+matchers that identify the values 'andrew' (a word) and '3333253' (an
+integer).
 
 .. [#] In fact there are probably a dozen or so matchers involved here: the
        ``,`` is converted into a matcher that matches commas; the ``/``
@@ -77,7 +78,7 @@ that identify the values 'andrew' (a word) and '3333253' (an integer).
 .. [#] Matcher names are linked to the API documentation which contains more
        detail.
 
-.. index:: matchers, Word(), Integer(), match(), parse_string()
+.. index:: matchers, Word(), Integer(), And(), &, match()
 
 Matchers
 --------
@@ -92,7 +93,8 @@ to know to use them is that, to read the value, you use the function
 ``next()``.
 
 We can see how this works with the simple generators `Word()
-<api/redirect.html#lepl.matchers.derived.Word>`_ by calling the ``matcher.match() method::
+<api/redirect.html#lepl.matchers.derived.Word>`_ by calling the
+``matcher.match() method::
 
   >>> matcher = Word()
   >>> matcher.config.no_full_first_match()
@@ -100,12 +102,15 @@ We can see how this works with the simple generators `Word()
   (['hello'], 'hello world'[5:])
 
 You can see the result and the remaining stream.  We needed to call
-`.config.no_full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_ otherwise we would have triggered an error
-due to incomplete matching (in case you are wondering, that error is from the
-parser that was automatically created when we called ``match()``; individual
-matchers don't check for a complete parse).
+`.config.no_full_first_match()
+<api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_
+otherwise we would have triggered an error due to incomplete matching (in case
+you are wondering, that error is from the parser that was automatically
+created when we called ``match()``; individual matchers don't check for a
+complete parse).
 
-We can join together matchers with `And() <api/redirect.html#lepl.matchers.combine.And>`_::
+We can join together matchers with `And()
+<api/redirect.html#lepl.matchers.combine.And>`_::
 
   >>> next( And(Word(), Space(), Integer()).match('hello 123') )
   (['hello', ' ', '123'], ''[0:])
@@ -214,9 +219,8 @@ each repeated item, like commas in a list.
 So ``line[0:,~newline]`` will recognise repeated names and phone numbers,
 separated by spaces and newlines.  The ``~`` used to modify ``newline``
 discards any results so that they do not clutter the final list.  It could
-also have been written as ``Drop(newline)`` --- another example of making a
+also have been written as `Drop(newline) <api/redirect.html#lepl.matchers.derived.Drop>`_ --- another example of making a
 more complex matcher from simpler pieces.
-
 
 Single Dictionary
 -----------------
@@ -242,7 +246,6 @@ We can write our own function to do this, then call it with ``>``::
   
   >>> matcher.parse('andrew, 3333253\n bob, 12345')
   [{'bob': '12345', 'andrew': '3333253'}]
-
 
 Summary and Going Further
 -------------------------

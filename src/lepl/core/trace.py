@@ -83,9 +83,9 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         if self.enabled > 0:
             self.generator = generator
             if type(value) is StopIteration:
-                self.action = format(' stop -> {0}', generator)
+                self.action = format('stop  ->  {0}', generator)
             else:
-                self.action = format('{1!r} -> {0}', generator, value)
+                self.action = format('{1!r}  ->  {0}', generator, value)
     
     def after_throw(self, value):
         '''
@@ -100,7 +100,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         if self.enabled > 0:
             self.generator = generator
-            self.action = format('{1!r} -> {0}', generator, value)
+            self.action = format('{1!r}  ->  {0}', generator, value)
     
     def after_send(self, value):
         '''
@@ -125,7 +125,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         (stream, depth, locn) = self.fmt_stream() 
         return format('{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} '
-                      '{5:>60s} -> {6!r}',
+                      '{5:s}  ->  {6!r}',
                       self.epoch, 
                       stream,
                       locn,
@@ -140,7 +140,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         (stream, depth, locn) = self.fmt_stream() 
         return format('{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} '
-                      '{5:>60s} -> stop',
+                      '{5:s}  ->  stop',
                       self.epoch, 
                       stream,
                       locn,

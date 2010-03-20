@@ -6,7 +6,7 @@ Debugging
 =========
 
 When a parser fails to match some text it can be difficult (slow, frustrating
-work) to underhand why.  Fortunately, Lepl includes some features that make
+work) to understand why.  Fortunately, Lepl includes some features that make
 life easier.
 
 .. note::
@@ -70,57 +70,45 @@ If you have enabled logging, but don't see the stack trace, be sure to check
 earlier in the output.  Often it is not the last thing displayed in the log.
 
 
-.. index:: hash, Cannot test for ... in collection, Cannot add ... to collection
+.. index:: variable traces, TraceVariable
 
-Hashable Streams
-----------------
+Variable Traces
+---------------
 
-Lepl will parse a wide variety of data structures.  Unfortunately, not all
-Python's data structures (lists in particular) support hashing.  This means
-that some of Lepl's more advanced features, like memoisation, will not work
-when a list of data is parsed directly.  Instead you will see warnings
-(assusing that logging is enabled - see above) like::
+The traces described later in this section give a very detailed picture of the
+processing that occurs  within Lepl, but they are  difficult to understand and
+show an overwhelming amount of information.
 
-  Cannot add ... to collection
-  Cannot test for ... in collection
+Often, to understand a problem, it is sufficient to see how the matchers
+associated with variables are being matched.  This is displayed when the
+variables are defined inside a ``with TraceVariables()`` scope::
 
-Fortunately, there is a simple workround for these issues.  Instead of using
-the ``.parse()`` and ``.match()`` methods, use ``.parse_items()`` and
-``.match_items()``.  These wrap the list in a separate stream that does
-support hashing.
+  >>> with TraceVariables():
+  ...     word = ~Lookahead('OR') & Word()
+  ...     phrase = String()
+  ...     with DroppedSpace():
+  ...         text = (phrase | word)[1:] > list
+  ...         query = text[:, Drop('OR')]
+  ...
+  >>> query.parse('spicy meatballs OR "el bulli restaurant"')
+        phrase failed                             stream = 'spicy meatballs OR...
+          word = ['spicy']                        stream = ' meatballs OR "el ...
+        phrase failed                             stream = 'meatballs OR "el b...
+          word = ['meatballs']                    stream = ' OR "el bulli rest...
+        phrase failed                             stream = 'OR "el bulli resta...
+          word failed                             stream = 'OR "el bulli resta...
+        phrase failed                             stream = ' OR "el bulli rest...
+          word failed                             stream = ' OR "el bulli rest...
+          text = [['spicy', 'meatballs']]         stream = ' OR "el bulli rest...
+        phrase = ['el bulli restaurant']          stream = ''
+        phrase failed                             stream = ''
+          word failed                             stream = ''
+          text = [['el bulli restaurant']]        stream = ''
+  [['spicy', 'meatballs'], ['el bulli restaurant']]
 
+The display above shows, on the left, the current match.  On the right is the
+head of the stream (what is left after being matched).
 
-.. index:: Lexer rewriter used but no tokens found
-
-Missing Tokens
---------------
-
-The default `Configuration()
-<api/redirect.html#lepl.config.Configuration>`_ includes processing for
-lexers.  If no lexers are present, this message is logged::
-
-  Lexer rewriter used, but no tokens found.
-
-This is not a problem (assuming you didn't intend to use lexing, of course).
-
-
-.. index:: A Token was specified with a matcher but
-
-Rewriter Order
---------------
-
-Rewriters are applied to the graph of matchers in the order given.  The order may be important.  For example this error::
-
-  A Token was specified with a matcher, but the matcher could not be converted to a regular expression: RMemo
-
-is caused by adding memoization `before` rewriting for the lexer (which
-converts matchers to regular expressions).  This is because the regular
-expresssion rewriter doesn't "know" about memoisastion.  The solution is to
-specify the lexer rewriter first.
-
-
-.. index:: longest match, print_longest()
-.. _deepest_match:
 
 Deepest Matches
 ---------------
@@ -139,25 +127,26 @@ about the longest match::
   
   >>> basicConfig(level=INFO)
 
-  >>> name    = Word()              >= 'name'
-  >>> phone   = Integer()           >= 'phone'
-  >>> line    = name / ',' / phone  >= make_dict
+  >>> name    = Word()              > 'name'
+  >>> phone   = Integer()           > 'phone'
+  >>> line    = name / ',' / phone  > make_dict
   >>> matcher = line[0:,~Newline()]
-  >>> matcher.parse_string('andrew, 3333253\n bob, 12345',
-                            Configuration(monitors=[RecordDeepest()]))
-  INFO:lepl.trace.RecordDeepest:
+  >>> matcher.config.clear().record_deepest()
+  >>> matcher.parse('andrew, 3333253\n bob, 12345')
+  INFO:lepl.core.trace._RecordDeepest:
   Up to 6 matches before and including longest match:
-  00156 '3333253\n'   1.8   (0008) 005  (['3333253'], 'andrew, 3333253\n'[15:]) -> Transform(Apply) -> ([('phone', '3333253')], 'andrew, 3333253\n'[15:])
-  00157 'andrew...'   1.0   (0000) 004    ([('phone', '3333253')], 'andrew, 3333253\n'[15:]) -> And -> ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], 'andrew, 3333253\n'[15:])
-  00158 'andrew...'   1.0   (0000) 003 ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], 'andrew, 3333253\n'[15:]) -> Transform(Apply) -> ([{'phone': '3333253', 'name': 'andrew'}], 'andrew, 3333253\n'[15:])
-  00163 '\n'          1.15  (0015) 004                next(Literal('\n')('andrew, 3333253\n'[15:])) -> (['\n'], ' bob, 12345'[0:])
-  00164 '\n'          1.15  (0015) 005                            (['\n'], ' bob, 12345'[0:]) -> Or -> (['\n'], ' bob, 12345'[0:])
-  00165 '\n'          1.15  (0015) 004               (['\n'], ' bob, 12345'[0:]) -> Transform(Drop) -> ([], ' bob, 12345'[0:])
+  00204 'andrew...'   1.0   (0000) 005 ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], 'andrew, 3333253\n'[15:])  ->  And(And, Transform, Transform)('andrew, 3333253\n'[0:])  ->  ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], 'andrew, 3333253\n'[15:])
+  00205 'andrew...'   1.0   (0000) 004 ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], 'andrew, 3333253\n'[15:])  ->  Transform(And, TransformationWrapper(<apply>))('andrew, 3333253\n'[0:])  ->  ([{'phone': '3333253', 'name': 'andrew'}], 'andrew, 3333253\n'[15:])
+  00212 '\n'          1.15  (0015) 007 next(Literal('\n')('andrew, 3333253\n'[15:]))  ->  (['\n'], ' bob, 12345'[0:])
+  00213 '\n'          1.15  (0015) 008 (['\n'], ' bob, 12345'[0:])  ->  Or(Literal, Literal)('andrew, 3333253\n'[15:])  ->  (['\n'], ' bob, 12345'[0:])
+  00214 '\n'          1.15  (0015) 007 (['\n'], ' bob, 12345'[0:])  ->  Or(Literal, Literal)('andrew, 3333253\n'[15:])  ->  (['\n'], ' bob, 12345'[0:])
+  00215 '\n'          1.15  (0015) 006 (['\n'], ' bob, 12345'[0:])  ->  Transform(Or, TransformationWrapper(<apply>))('andrew, 3333253\n'[15:])  ->  ([], ' bob, 12345'[0:])
   Up to 2 failures following longest match:
-  00176 ' bob, ...'   2.0   (0016) 011                   ([' '], ' bob, 12345'[1:]) -> Lookahead(~) -> stop
-  00177 ' bob, ...'   2.0   (0016) 010                       stop -> And(AnyBut)(' bob, 12345'[0:]) -> stop
+  00230 ' bob, ...'   2.0   (0016) 017 ([' '], ' bob, 12345'[1:])  ->  Lookahead(Any, True)(' bob, 12345'[0:])  ->  stop
+  00231 ' bob, ...'   2.0   (0016) 016 stop  ->  And(Lookahead, Any)(' bob, 12345'[0:])  ->  stop
   Up to 2 successful matches following longest match:
-  00193 'andrew...'   1.0   (0000) 002                  stop -> DepthFirst('andrew, 3333253\n'[0:]) -> ([{'phone': '3333253', 'name': 'andrew'}], 'andrew, 3333253\n'[15:])
+  00254 'andrew...'   1.0   (0000) 003 stop  ->  DepthFirst(0, None, rest=And, first=Transform)('andrew, 3333253\n'[0:])  ->  ([{'phone': '3333253', 'name': 'andrew'}], 'andrew, 3333253\n'[15:])
+  00255 'andrew...'   1.0   (0000) 002 ([{'phone': '3333253', 'name': 'andrew'}], 'andrew, 3333253\n'[15:])  ->  DepthFirst(0, None, rest=And, first=Transform)('andrew, 3333253\n'[0:])  ->  ([{'phone': '3333253', 'name': 'andrew'}], 'andrew, 3333253\n'[15:])
 
 The left column is a counter that increases with time.  The next column is the
 stream, with offset information (line.character and total characters in
@@ -187,7 +176,7 @@ Trace Output
 ------------
 
 The same data can also be displayed to the logs with the `Trace()
-<api/redirect.html#lepl.match.Trace>`_ matcher.  This takes a matcher as an
+<api/redirect.html#lepl.matchers.monitor.Trace>`_ matcher.  This takes a matcher as an
 argument --- tracing is enabled when the selected matcher is called::
 
   >>> from lepl.match import *
@@ -195,54 +184,85 @@ argument --- tracing is enabled when the selected matcher is called::
   
   >>> basicConfig(level=INFO)
 
-  >>> name    = Word()                   >= 'name'
-  >>> phone   = Trace(Integer(), 'here') >= 'phone'
-  >>> line    = name / ',' / phone       >= make_dict
+  >>> name    = Word()                   > 'name'
+  >>> phone   = Trace(Integer(), 'here') > 'phone'
+  >>> line    = name / ',' / phone       > make_dict
   >>> matcher = line[0:,~Newline()]
-  >>> matcher.parse_string('andrew, 3333253\n bob, 12345')
-  INFO:lepl.lexer.rewriters.lexer_rewriter:Lexer rewriter used, but no tokens found.
-  INFO:lepl.trace._TraceResults:00360 '3333253\n'   1.8   (0008) 019                  stop -> DepthFirst('andrew, 3333253\n'[8:]) -> ([], 'andrew, 3333253\n'[8:])
-  INFO:lepl.trace._TraceResults:00361 '3333253\n'   1.8   (0008) 018          ([], 'andrew, 3333253\n'[8:]) -> RTable(DepthFirst) -> ([], 'andrew, 3333253\n'[8:])
-  INFO:lepl.trace._TraceResults:00362 '3333253\n'   1.8   (0008) 017           ([], 'andrew, 3333253\n'[8:]) -> RMemo(DepthFirst) -> ([], 'andrew, 3333253\n'[8:])
-  INFO:lepl.trace._TraceResults:00372 '3333253\n'   1.8   (0008) 023             next(Any('0123456789')('andrew, 3333253\n'[8:])) -> (['3'], 'andrew, 3333253\n'[9:])
-  INFO:lepl.trace._TraceResults:00373 '3333253\n'   1.8   (0008) 024 (['3'], 'andrew, 3333253\n'[9:]) -> RTable(Any('0123456789')) -> (['3'], 'andrew, 3333253\n'[9:])
-  INFO:lepl.trace._TraceResults:00374 '3333253\n'   1.8   (0008) 023 (['3'], 'andrew, 3333253\n'[9:]) -> RMemo(Any('0123456789')) -> (['3'], 'andrew, 3333253\n'[9:])
-  INFO:lepl.trace._TraceResults:00378 '333253\n'    1.9   (0009) 023             next(Any('0123456789')('andrew, 3333253\n'[9:])) -> (['3'], 'andrew, 3333253\n'[10:])
-  INFO:lepl.trace._TraceResults:00379 '333253\n'    1.9   (0009) 024 (['3'], 'andrew, 3333253\n'[10:]) -> RTable(Any('0123456789')) -> (['3'], 'andrew, 3333253\n'[10:])
-  INFO:lepl.trace._TraceResults:00380 '333253\n'    1.9   (0009) 023 (['3'], 'andrew, 3333253\n'[10:]) -> RMemo(Any('0123456789')) -> (['3'], 'andrew, 3333253\n'[10:])
-  INFO:lepl.trace._TraceResults:00384 '33253\n'     1.10  (0010) 023            next(Any('0123456789')('andrew, 3333253\n'[10:])) -> (['3'], 'andrew, 3333253\n'[11:])
-  INFO:lepl.trace._TraceResults:00385 '33253\n'     1.10  (0010) 024 (['3'], 'andrew, 3333253\n'[11:]) -> RTable(Any('0123456789')) -> (['3'], 'andrew, 3333253\n'[11:])
-  INFO:lepl.trace._TraceResults:00386 '33253\n'     1.10  (0010) 023 (['3'], 'andrew, 3333253\n'[11:]) -> RMemo(Any('0123456789')) -> (['3'], 'andrew, 3333253\n'[11:])
-  INFO:lepl.trace._TraceResults:00390 '3253\n'      1.11  (0011) 023            next(Any('0123456789')('andrew, 3333253\n'[11:])) -> (['3'], 'andrew, 3333253\n'[12:])
-  INFO:lepl.trace._TraceResults:00391 '3253\n'      1.11  (0011) 024 (['3'], 'andrew, 3333253\n'[12:]) -> RTable(Any('0123456789')) -> (['3'], 'andrew, 3333253\n'[12:])
-  INFO:lepl.trace._TraceResults:00392 '3253\n'      1.11  (0011) 023 (['3'], 'andrew, 3333253\n'[12:]) -> RMemo(Any('0123456789')) -> (['3'], 'andrew, 3333253\n'[12:])
-  INFO:lepl.trace._TraceResults:00396 '253\n'       1.12  (0012) 023            next(Any('0123456789')('andrew, 3333253\n'[12:])) -> (['2'], 'andrew, 3333253\n'[13:])
-  INFO:lepl.trace._TraceResults:00397 '253\n'       1.12  (0012) 024 (['2'], 'andrew, 3333253\n'[13:]) -> RTable(Any('0123456789')) -> (['2'], 'andrew, 3333253\n'[13:])
-  INFO:lepl.trace._TraceResults:00398 '253\n'       1.12  (0012) 023 (['2'], 'andrew, 3333253\n'[13:]) -> RMemo(Any('0123456789')) -> (['2'], 'andrew, 3333253\n'[13:])
-  INFO:lepl.trace._TraceResults:00402 '53\n'        1.13  (0013) 023            next(Any('0123456789')('andrew, 3333253\n'[13:])) -> (['5'], 'andrew, 3333253\n'[14:])
-  INFO:lepl.trace._TraceResults:00403 '53\n'        1.13  (0013) 024 (['5'], 'andrew, 3333253\n'[14:]) -> RTable(Any('0123456789')) -> (['5'], 'andrew, 3333253\n'[14:])
-  INFO:lepl.trace._TraceResults:00404 '53\n'        1.13  (0013) 023 (['5'], 'andrew, 3333253\n'[14:]) -> RMemo(Any('0123456789')) -> (['5'], 'andrew, 3333253\n'[14:])
-  INFO:lepl.trace._TraceResults:00408 '3\n'         1.14  (0014) 023            next(Any('0123456789')('andrew, 3333253\n'[14:])) -> (['3'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00409 '3\n'         1.14  (0014) 024 (['3'], 'andrew, 3333253\n'[15:]) -> RTable(Any('0123456789')) -> (['3'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00410 '3\n'         1.14  (0014) 023 (['3'], 'andrew, 3333253\n'[15:]) -> RMemo(Any('0123456789')) -> (['3'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00417 '3333253\n'   1.8   (0008) 022                  stop -> DepthFirst('andrew, 3333253\n'[8:]) -> (['3', '3', '3', '3', '2', '5', '3'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00418 '3333253\n'   1.8   (0008) 021 (['3', '3', '3', '3', '2', '5', '3'], 'andrew, 3333253\n'[15:]) -> RTable(DepthFirst) -> (['3', '3', '3', '3', '2', '5', '3'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00419 '3333253\n'   1.8   (0008) 020 (['3', '3', '3', '3', '2', '5', '3'], 'andrew, 3333253\n'[15:]) -> RMemo(DepthFirst) -> (['3', '3', '3', '3', '2', '5', '3'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00420 '3333253\n'   1.8   (0008) 019 (['3', '3', '3', '3', '2', '5', '3'], 'andrew, 3333253\n'[15:]) -> Transform(Add) -> (['3333253'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00421 '3333253\n'   1.8   (0008) 018 (['3333253'], 'andrew, 3333253\n'[15:]) -> RTable(Transform(Add)) -> (['3333253'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00422 '3333253\n'   1.8   (0008) 017 (['3333253'], 'andrew, 3333253\n'[15:]) -> RMemo(Transform(Add)) -> (['3333253'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00423 '3333253\n'   1.8   (0008) 016               (['3333253'], 'andrew, 3333253\n'[15:]) -> And -> (['3333253'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00424 '3333253\n'   1.8   (0008) 015       (['3333253'], 'andrew, 3333253\n'[15:]) -> RTable(And) -> (['3333253'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00425 '3333253\n'   1.8   (0008) 014        (['3333253'], 'andrew, 3333253\n'[15:]) -> RMemo(And) -> (['3333253'], 'andrew, 3333253\n'[15:])
-  INFO:lepl.trace._TraceResults:00426 '3333253\n'   1.8   (0008) 013             (['3333253'], 'andrew, 3333253\n'[15:]) -> Trace -> (['3333253'], 'andrew, 3333253\n'[15:])
-  [{'phone': '3333253', 'name': 'andrew'}]
+  >>> matcher.config.clear().trace()
+  >>> matcher.parse('andrew, 3333253\n bob, 12345')
+  INFO:lepl.core.trace._TraceResults:00176 '3333253\n'   1.8   (0008) 013 stop  ->  DepthFirst(0, 1, rest=Any, first=Any)('andrew, 3333253\n'[8:])  ->  ([], 'andrew, 3333253\n'[8:])
+  INFO:lepl.core.trace._TraceResults:00177 '3333253\n'   1.8   (0008) 012 ([], 'andrew, 3333253\n'[8:])  ->  DepthFirst(0, 1, rest=Any, first=Any)('andrew, 3333253\n'[8:])  ->  ([], 'andrew, 3333253\n'[8:])
+  INFO:lepl.core.trace._TraceResults:00182 '3333253\n'   1.8   (0008) 013 next(Any('0123456789')('andrew, 3333253\n'[8:]))  ->  (['3'], 'andrew, 3333253\n'[9:])
+  INFO:lepl.core.trace._TraceResults:00184 '333253\n'    1.9   (0009) 013 next(Any('0123456789')('andrew, 3333253\n'[9:]))  ->  (['3'], 'andrew, 3333253\n'[10:])
+  INFO:lepl.core.trace._TraceResults:00186 '33253\n'     1.10  (0010) 013 next(Any('0123456789')('andrew, 3333253\n'[10:]))  ->  (['3'], 'andrew, 3333253\n'[11:])
+  INFO:lepl.core.trace._TraceResults:00188 '3253\n'      1.11  (0011) 013 next(Any('0123456789')('andrew, 3333253\n'[11:]))  ->  (['3'], 'andrew, 3333253\n'[12:])
+  INFO:lepl.core.trace._TraceResults:00190 '253\n'       1.12  (0012) 013 next(Any('0123456789')('andrew, 3333253\n'[12:]))  ->  (['2'], 'andrew, 3333253\n'[13:])
+  INFO:lepl.core.trace._TraceResults:00192 '53\n'        1.13  (0013) 013 next(Any('0123456789')('andrew, 3333253\n'[13:]))  ->  (['5'], 'andrew, 3333253\n'[14:])
+  INFO:lepl.core.trace._TraceResults:00194 '3\n'         1.14  (0014) 013 next(Any('0123456789')('andrew, 3333253\n'[14:]))  ->  (['3'], 'andrew, 3333253\n'[15:])
+  INFO:lepl.core.trace._TraceResults:00197 '3333253\n'   1.8   (0008) 014 stop  ->  DepthFirst(1, None, rest=Any, first=Any)('andrew, 3333253\n'[8:])  ->  (['3', '3', '3', '3', '2', '5', '3'], 'andrew, 3333253\n'[15:])
+  INFO:lepl.core.trace._TraceResults:00198 '3333253\n'   1.8   (0008) 013 (['3', '3', '3', '3', '2', '5', '3'], 'andrew, 3333253\n'[15:])  ->  DepthFirst(1, None, rest=Any, first=Any)('andrew, 3333253\n'[8:])  ->  (['3', '3', '3', '3', '2', '5', '3'], 'andrew, 3333253\n'[15:])
+  INFO:lepl.core.trace._TraceResults:00199 '3333253\n'   1.8   (0008) 012 (['3', '3', '3', '3', '2', '5', '3'], 'andrew, 3333253\n'[15:])  ->  Transform(DepthFirst, TransformationWrapper(<add>))('andrew, 3333253\n'[8:])  ->  (['3333253'], 'andrew, 3333253\n'[15:])
+  INFO:lepl.core.trace._TraceResults:00200 '3333253\n'   1.8   (0008) 011 (['3333253'], 'andrew, 3333253\n'[15:])  ->  And(DepthFirst, Transform)('andrew, 3333253\n'[8:])  ->  (['3333253'], 'andrew, 3333253\n'[15:])
+  INFO:lepl.core.trace._TraceResults:00201 '3333253\n'   1.8   (0008) 010 (['3333253'], 'andrew, 3333253\n'[15:])  ->  And(DepthFirst, Transform)('andrew, 3333253\n'[8:])  ->  (['3333253'], 'andrew, 3333253\n'[15:])
+  INFO:lepl.core.trace._TraceResults:00202 '3333253\n'   1.8   (0008) 009 (['3333253'], 'andrew, 3333253\n'[15:])  ->  Transform(And, TransformationWrapper(<add>))('andrew, 3333253\n'[8:])  ->  (['3333253'], 'andrew, 3333253\n'[15:])
+  INFO:lepl.core.trace._TraceResults:00203 '3333253\n'   1.8   (0008) 008 (['3333253'], 'andrew, 3333253\n'[15:])  ->  Trace(Transform, True)('andrew, 3333253\n'[8:])  ->  (['3333253'], 'andrew, 3333253\n'[15:])
 
 .. note::
 
-  `Trace() <api/redirect.html#lepl.match.Trace>`_ expects the parser to be
+  `Trace() <api/redirect.html#lepl.matchers.monitor.Trace>`_ expects the parser to be
   configured with the `TraceResults
-  <api/redirect.html#lepl.trace.TraceResults>`_ monitor.  This is done by the
-  `default configuration
-  <api/redirect.html#lepl.functions.BaseMatcher.default_config>`_, and can also
-  be specified manually using a `Configuration()
-  <api/redirect.html#lepl.config.Configuration>`_.
+  <api/redirect.html#lepl.trace.TraceResults>`_ monitor.  This is done with
+  `.config.trace() <api/redirect.html#lepl.core.config.ConfigBuilder.trace>`_.
+
+
+.. index:: common errors
+
+Common Errors
+-------------
+
+.. index:: hash, Cannot test for ... in collection, Cannot add ... to collection
+
+Hashable Streams
+~~~~~~~~~~~~~~~~
+
+Lepl will parse a wide variety of data structures.  Unfortunately, not all
+Python's data structures (lists in particular) support hashing.  This means
+that some of Lepl's more advanced features, like memoisation, will not work
+when a list of data is parsed directly.  Instead you will see warnings
+(assusing that logging is enabled - see above) like::
+
+  Cannot add ... to collection
+  Cannot test for ... in collection
+
+Fortunately, there is a simple workround for these issues.  Instead of using
+the ``.parse()`` and ``.match()`` methods, use ``.parse_items()`` and
+``.match_items()``.  These wrap the list in a separate stream that does
+support hashing.
+
+
+.. index:: Lexer rewriter used but no tokens found
+
+Missing Tokens
+~~~~~~~~~~~~~~
+
+The default `Configuration()
+<api/redirect.html#lepl.config.Configuration>`_ includes processing for
+lexers.  If no lexers are present, this message is logged::
+
+  Lexer rewriter used, but no tokens found.
+
+This is not a problem (assuming you didn't intend to use lexing, of course).
+
+
+.. index:: A Token was specified with a matcher but
+
+Rewriter Order
+~~~~~~~~~~~~~~
+
+Before Lepl 4 it was possible to specify the order of rewriters; the new
+configuration interface automatically places them in the correct order.  So
+hopefully this error will no longer occur.
+
+.. index:: longest match, print_longest()
+.. _deepest_match:
+

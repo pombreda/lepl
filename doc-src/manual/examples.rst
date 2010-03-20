@@ -276,7 +276,7 @@ Tabular Data
 ------------
 
 This is a simple example that shows how to parse data in a fixed, tabular
-format using the `Columns() <api/redirect.html#lepl.matchers.Columns>`_ matcher::
+format using the `Columns() <api/redirect.html#lepl.matchers.derived.matchers>`_ matcher::
 
     def columns_example():
 	# http://www.swivel.com/data_sets/spreadsheet/1002196

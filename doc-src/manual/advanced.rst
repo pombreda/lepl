@@ -27,7 +27,7 @@ The rewriters are described below (:ref:`rewriting`).
 
 The monitors are combined and passed to `trampoline()
 <api/redirect.html#lepl.parser.trampoline>`_.  `TraceResults() <api/redirect.html#lepl.trace.TraceResults>`_ enables the
-`Trace() <api/redirect.html#lepl.matchers.Trace>`_ matcher.
+`Trace() <api/redirect.html#lepl.matchers.monitor.Trace>`_ matcher.
 
 
 .. index:: rewriting
@@ -92,7 +92,7 @@ Composing and Merging Transforms
 
   The `Transform() <api/redirect.html#lepl.functions.Transform>`_ matcher is
   the "workhorse" that underlies `Apply()
-  <api/redirect.html#lepl.functions.Apply>`_, ``>``, etc.  It changes the
+  <api/redirect.html#lepl.matchers.derived.Apply>`_, ``>``, etc.  It changes the
   results returned by other functions.
 
   Because transforms are not involved in the work of matching --- they just
@@ -187,7 +187,7 @@ Rewriting as Regular Expressions
   <api/redirect.html#lepl.regexp.rewriters.regexp_rewriter>`_ attempts to
   replace matchers with a regular expression.  This gives a significant
   increase in efficiency if the parser matches complex strings (for example,
-  `Float() <api/redirect.html#lepl.functions.Float>`_).
+  `Float() <api/redirect.html#lepl.matchers.derived.Float>`_).
 
   It makes little sense to replace efficient, simple matchers like `Literal()
   <api/redirect.html#lepl.matchers.core.Literal>`_ with regular expressions so the

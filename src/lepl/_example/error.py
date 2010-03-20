@@ -61,7 +61,7 @@ class ErrorTest(Example):
             expr   += (factor & (addsub & factor)[:])     > Expression
             line    = Empty() & Trace(expr) & Eos()
         
-        return line.parse_string
+        return line.get_parse()
     
     def test_errors(self):
         parser = self.make_parser()

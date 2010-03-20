@@ -127,7 +127,7 @@ from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
 from lepl.matchers.support import function_matcher, function_matcher_factory, \
     sequence_matcher, sequence_matcher_factory, \
     trampoline_matcher, trampoline_matcher_factory
-from lepl.matchers.variables import TrackVariables
+from lepl.matchers.variables import TraceVariables
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.offside.lexer import Indent, Eol, BIndent
 from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
@@ -217,7 +217,7 @@ __all__ = [
         'trampoline_matcher', 
         'trampoline_matcher_factory',
         # lepl.matchers.variables
-        'TrackVariables',
+        'TraceVariables',
         # lepl.stream.stream
         'DEFAULT_STREAM_FACTORY',
         # lepl.matchers.operators

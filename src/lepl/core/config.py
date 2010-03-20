@@ -575,6 +575,13 @@ class ConfigBuilder(object):
         from lepl.core.manager import GeneratorManager
         return self.add_monitor(GeneratorManager(queue_len))
     
+    def record_deepest(self):
+        '''
+        Add a monitor to record deepest match.  See `RecordDeepest()`.
+        '''
+        from lepl.core.trace import RecordDeepest
+        return self.add_monitor(RecordDeepest())
+    
     def no_monitors(self):
         '''
         Remove all monitors.

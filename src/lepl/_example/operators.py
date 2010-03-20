@@ -43,8 +43,8 @@ SyntaxError: The operator > for And('Mr', Transform, Transform) was applied to a
         with Override(or_=And, and_=Or):
             abcd = (Literal('a') & Literal('b')) | ( Literal('c') & Literal('d'))
         
-        self.examples([(lambda: abcd.parse_string('ac'), "['a', 'c']"),
-                       (lambda: abcd.parse_string('ab'), 
+        self.examples([(lambda: abcd.parse('ac'), "['a', 'c']"),
+                       (lambda: abcd.parse('ab'), 
                         "lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'b',\nLine 1, character 1 of str: 'ab'.\n")])
             
         sentence = None

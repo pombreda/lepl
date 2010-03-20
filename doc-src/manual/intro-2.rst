@@ -459,7 +459,7 @@ the "-" case (negative numbers) below::
 
 The important chnages here are:
 
-* ``value`` is changed to an ``UnsignedFloat()``
+* ``value`` is changed to an `UnsignedFloat() <api/redirect.html#lepl.matchers.derived.UnsignedFloat>`_
 
 * number has an `Optional()
   <api/redirect.html#lepl.matchers.derived.Optional>`_ minus (we could also

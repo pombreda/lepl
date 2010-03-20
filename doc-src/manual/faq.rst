@@ -105,7 +105,7 @@ When I change from > to >> my function isn't called
 *is the `invert` function no longer called?*
 
 This is because of operator precedence.  ``>>`` binds more tightly than ``>``,
-so ``>>`` is applied only to the result from ``Drop(']')``, which is an empty 
+so ``>>`` is applied only to the result from `Drop(']') <api/redirect.html#lepl.matchers.derived.Drop>`_, which is an empty 
 list (because `Drop() <api/redirect.html#lepl.matchers.derived.Drop>`_ discards the results).  Since the list is empty,
 the function ``invert`` is not called.
 

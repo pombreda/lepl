@@ -17,7 +17,7 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Functions that construct useful combinations of existing matchers.
+Matchers that are defined in terms of other matchers (ie the majority).
 '''
 
 from string import whitespace, digits, ascii_letters, \

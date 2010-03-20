@@ -25,7 +25,7 @@ from unittest import TestCase
 
 from lepl import Literal, Error
 from lepl.matchers.error import make_error
-from lepl.matchers.variables import TrackVariables
+from lepl.matchers.variables import TraceVariables
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201
@@ -80,7 +80,7 @@ class MessageTest(TestCase):
         Code has an exception for handling lists.
         '''
         #basicConfig(level=DEBUG)
-        with TrackVariables():
+        with TraceVariables():
             parser = (Literal([1, 2, 3]) > 'name') ** make_error('msg {stream_in}')
         parser.config.no_full_first_match()
         node = parser.parse([1, 2, 3])[0]

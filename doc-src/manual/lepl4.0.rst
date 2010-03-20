@@ -12,7 +12,7 @@ Another example: it's easier to add new matchers.  Before, you needed to
 subclass a complex class.  Now, you can add a decorator to a simple function.
 
 Even debugging is simpler.  If you want to understand what the parser is
-doing, add ``with TrackVariables()`` and the progress of the match will be
+doing, add ``with TraceVariables()`` and the progress of the match will be
 printed to your screen.  The display includes the variable names that you used
 in the code, so it's easy to understand.
 
@@ -196,9 +196,9 @@ corners, because it uses parts of Python that were not intended to be used in
 this way, but I think you'll agree that the result is worth the effort.
 
 Here's an example.  The variables that will be displayed must be defined
-inside ``with TrackVariables()``::
+inside ``with TraceVariables()``::
 
-  >>> with TrackVariables():
+  >>> with TraceVariables():
   ...     word = ~Lookahead('OR') & Word()
   ...     phrase = String()
   ...     with DroppedSpace():

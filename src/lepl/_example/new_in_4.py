@@ -16,34 +16,33 @@
 #     You should have received a copy of the GNU Lesser General Public License
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,C0321,C0324,C0103,W0621,W0703
+# pylint: disable-msg=W0401,C0111,W0614,W0622,C0301,C0321,C0324,C0103,R0201,R0903
+#@PydevCodeAnalysisIgnore
 # (the code style is for documentation, not "real")
 
 '''
 Examples from the documentation.
 '''
 
-
-from logging import basicConfig, INFO, DEBUG
+#from logging import basicConfig, DEBUG
 
 from lepl import *
-
-basicConfig(level=INFO)
-
-spaces  = Space()[0:]
-name    = Word()              > 'name'
-phone   = Integer()           > 'phone'
-line    = name / ',' / phone  > make_dict
-matcher = line[0:,~Newline()]
-matcher.config.clear().record_deepest()
-matcher.parse('andrew, 3333253\n bob, 12345')
+from lepl._example.support import Example
 
 
-spaces  = Space()[0:]
-name    = Word()              > 'name'
-phone   = Trace(Integer())    > 'phone'
-line    = name / ',' / phone  > make_dict
-matcher = line[0:,~Newline()]
-matcher.config.clear().trace()
-parsed = matcher.parse('andrew, 3333253\n bob, 12345')
-print(parsed)
+class NewIn4Example(Example):
+    
+    def run_error_msg(self):
+        matcher = Any()[5]
+        try:
+            matcher.parse('1234567')
+        except FullFirstMatchException as e:
+            return str(e)
+    
+    def test_all(self):
+        self.examples([
+(self.run_error_msg,
+"""The match failed at '67',
+Line 1, character 5 of str: '1234567'."""),
+])
+        

@@ -57,7 +57,7 @@ regular expression given as their argument.  For example::
 Here, ``name`` will match a string that starts with a capital letter and then
 has zero or more lower case letters.  The second `Token()
 <api/redirect.html#lepl.lexer.matchers.Token>`_, ``number``, is similar, but
-uses another matcher (`Integer() <api/redirect.html#lepl.functions.Integer>`_)
+uses another matcher (`Integer() <api/redirect.html#lepl.matchers.derived.Integer>`_)
 to define the regular expression that is matched.
 
 .. note::

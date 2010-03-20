@@ -179,7 +179,7 @@ def make_str_parser(alphabet):
 
 class StrAlphabet(Alphabet):
     '''
-    An alphabet for unicode strings.
+    Support for alphabets.
     '''
     
     # pylint: disable-msg=E1002
@@ -312,3 +312,4 @@ class StrAlphabet(Alphabet):
         Generate a Sequence from the given text.
         '''
         return self._parser(regexp)
+

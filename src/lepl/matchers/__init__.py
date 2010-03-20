@@ -22,12 +22,11 @@ and do the work of parsing the input.
 
 A matcher is like a parser combinator - it takes a stream, matches content in
 the stream, and returns a list of tokens and a new stream.  However, matchers
-are also generators, so they can be "recalled" to return alternative matches.
+are also coroutines that can be "recalled" to return alternative matches.
 This gives backtracking.
 
-Matchers are implemented as both classes (these tend to be the basic building
-blocks) and functions (these are typically "syntactic sugar").  I have used
-the same syntax (capitalized names) for both to keep the API uniform.
+Matchers are defined and implemented as both classes and functions.  I have 
+used the same syntax (capitalized names) for both to keep the API uniform.
 
 For more background, please see the `manual <../index.html>`_.
 '''

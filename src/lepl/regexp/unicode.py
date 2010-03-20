@@ -71,3 +71,7 @@ class UnicodeAlphabet(StrAlphabet):
         if cls.__cached_instance is None:
             cls.__cached_instance = UnicodeAlphabet()
         return cls.__cached_instance
+
+    def __repr__(self):
+        return '<Unicode>'
+    
