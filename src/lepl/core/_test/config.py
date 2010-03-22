@@ -82,14 +82,14 @@ Line 1, character 1 of str: 'abc'.""")
                       "[(['abc'], [][0:])]",
                       """The match failed at '['a', 'b', 'c'][1:]',
 Index 1 of items: ['a', 'b', 'c'].""", 
-config=lambda m: m.config.no_compile_regexp(), sub_list=False)
+config=lambda m: m.config.no_compile_to_regexp(), sub_list=False)
         self.run_test('_items', ['a', 'b', 'c'], 
                       "[['a', 'b', 'c']]", 
                       "[([['a', 'b']], ['a', 'b', 'c'][2:])]", 
                       "[([['a', 'b', 'c']], [][0:])]",
                       """The match failed at '['a', 'b', 'c'][1:]',
 Index 1 of items: ['a', 'b', 'c'].""", 
-config=lambda m: m.config.no_compile_regexp(), sub_list=True)
+config=lambda m: m.config.no_compile_to_regexp(), sub_list=True)
         
     def test_int_list(self):
         #basicConfig(level=DEBUG)
@@ -103,7 +103,7 @@ config=lambda m: m.config.no_compile_regexp(), sub_list=True)
                       "[([[1, 2, 3]], [][0:])]",
                       """The match failed at '[1, 2, 3][1:]',
 Index 1 of items: [1, 2, 3].""",
-config=lambda m: m.config.no_compile_regexp(), sub_list=True)
+config=lambda m: m.config.no_compile_to_regexp(), sub_list=True)
 
 
 class BugTest(TestCase):

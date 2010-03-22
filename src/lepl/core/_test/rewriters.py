@@ -137,7 +137,7 @@ class DelayedCloneTest(TestCase):
 
         self.assert_clone(expression)
         self.assert_relative(expression)
-        expression.config.no_full_first_match().no_compile_regexp()
+        expression.config.no_full_first_match().no_compile_to_regexp()
         expression.config.no_compose_transforms().no_direct_eval()
         expression.config.no_flatten()
         copy = expression.get_parse_string().matcher

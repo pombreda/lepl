@@ -92,9 +92,6 @@ class AddLexer(Rewriter):
     discard is a regular expression that is used to match space (typically)
     if no token can be matched (and which is then discarded)
     
-    error is raised if no token or discard can be matched (it is passed the
-    current stream).
-    
     source is the source used to generate the final stream (it is used for
     offside parsing).
     '''

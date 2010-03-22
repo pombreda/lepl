@@ -24,8 +24,8 @@ Tests for the lepl.offside.stream module.
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
-from lepl.matchers.core import Regexp, Literal
-from lepl.offside.matchers import BLine
+from lepl.matchers.core import Regexp, Literal, Any
+from lepl.offside.matchers import BLine, Indent, Eol
 from lepl.offside.support import OffsideError
 from lepl.regexp.matchers import DfaRegexp
 
@@ -73,4 +73,22 @@ class LineTest(TestCase):
         parser = line.get_parse_string()
         assert parser('abc') == ['abc']
         
+    def test_tabs(self):
+        '''
+        Use block_policy here so that the regexp parser that excludes SOL
+        and EOL is used; otherwise Any()[:] matches those and we end up
+        with a single monster token.
+        '''
+        line = Indent() & Token(Any()) & Eol()
+        line.config.default_line_aware(tabsize=8, block_policy=0).trace(True)
+        result = line.parse('a')
+        assert result == ['', 'a', ''], result
+        result = line.parse('\ta')
+        assert result == ['        ', 'a', ''], result
+        line.config.default_line_aware(tabsize=None, block_policy=0)
+        result = line.parse('\ta')
+        assert result == ['\t', 'a', ''], result
+        line.config.default_line_aware(block_policy=0)
+        result = line.parse('\ta')
+        assert result == ['        ', 'a', ''], result
 

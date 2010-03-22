@@ -35,15 +35,16 @@ from lepl.support.lib import lmap, format, LogMixin
 
 class Rewriter(LogMixin):
     
-    SET_ARGUMENTS = 0
-    full_first_match = 5
-    FLATTEN = 10
-    COMPILE_REGEXP = 20
-    OPTIMIZE_OR = 30
-    LEXER = 40
-    COMPOSE_TRANSFORMS = 50
-    DIRECT_EVALUATION = 60
-    MEMOIZE = 100
+    # ordering
+    SET_ARGUMENTS = 10
+    FULL_FIRST_MATCH = 20
+    FLATTEN = 30
+    COMPILE_REGEXP = 40
+    OPTIMIZE_OR = 50
+    LEXER = 60
+    COMPOSE_TRANSFORMS = 70
+    DIRECT_EVALUATION = 80
+    MEMOIZE = 90
        
     def __init__(self, order, name=None, exclusive=True):
         super(Rewriter, self).__init__()
@@ -507,7 +508,7 @@ class FullFirstMatch(Rewriter):
     '''
     
     def __init__(self, eos=False):
-        super(FullFirstMatch, self).__init__(Rewriter.full_first_match,
+        super(FullFirstMatch, self).__init__(Rewriter.FULL_FIRST_MATCH,
                                        format('FullFirstMatch({0})', eos))
         self.eos = eos
         

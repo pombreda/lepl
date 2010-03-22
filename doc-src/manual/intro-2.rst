@@ -1,4 +1,5 @@
 
+
 Part 2 - Handling Spaces, Repetition
 ====================================
 
@@ -212,8 +213,8 @@ everything "inside" the "with" it's usually best to define matchers that
 
    First, there's nothing added before or after any pattern that's defined.
    For that, you still need to explicitly add spaces as described earlier.
-   `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ only adds
-   spaces `between` items joined with ``&``.
+   `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ only
+   adds spaces `between` items joined with ``&``.
 
    Second, if you specify `at least one` space (rather than `zero or more`)
    then `every` ``&`` in the separator's context `must` have a space.  This
@@ -439,6 +440,7 @@ practice their advantages --- in particular, simplifying handling spaces ---
 often make them worthwhile.
 
 .. index:: tokens
+.. _token_example:
 
 Tokens (Second Attempt)
 -----------------------

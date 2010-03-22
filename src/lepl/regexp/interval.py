@@ -331,7 +331,7 @@ class IntervalMap(dict):
                 from lepl.regexp.core import RegexpError
                 raise RegexpError(
 """Input characters are inconsistent with the given alphabet.
-This error is often triggered by using the default configuration with non-text input; disable with matcher.config.no_compile_regexp().
+This error is often triggered by using the default configuration with non-text input; disable with matcher.config.no_compile_to_regexp().
 Alternatively, configure with a suitable alphabet.""")
             if index < len(self.__index):
                 # keep interval for identity on retrieval, just in case

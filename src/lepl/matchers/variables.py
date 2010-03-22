@@ -22,7 +22,7 @@ Display information when matchers that are bound to variables are called.
 This is possible thanks to a neat trick suggested by Carl Banks on c.l.p 
 '''
 
-from __future__ import generators
+from __future__ import generators, print_function
 from contextlib import contextmanager
 from sys import stderr, _getframe
 

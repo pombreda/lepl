@@ -169,5 +169,6 @@ class LineAwareTokenSource(TokenSource):
         '''
         Return a "constructor" that matches `TokenSource`.
         '''
-        return lambda tokens, stream: LineAwareTokenSource(tokens, stream, tabsize)
+        return lambda tokens, stream: \
+            LineAwareTokenSource(tokens, stream, tabsize)
 

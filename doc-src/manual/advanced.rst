@@ -3,7 +3,194 @@ Advanced Use
 ============
 
 
-.. index:: Configuration(), configuration, flatten(), compose_transforms(), auto_memoize(), default configuration
+Configuration
+-------------
+
+Configuration for Lepl 4 has been completely revised.  Instead of using a
+separate configuration object, a ``.config`` attribute on the macther is used.
+This means that you can explore the available options at the Python prompt
+(and perhaps via some IDEs).
+
+For example::
+
+  >>> dir(matcher.config)
+  [... 'add_monitor', 'add_rewriter', 'alphabet', 'auto_memoize', 'blocks', 
+  'changed', 'clear', 'compile_to_dfa', 'compile_to_nfa', ...]
+  >>> help(matcher.config.compile_to_dfa)
+  Help on method compile_to_dfa in module lepl.core.config:
+  compile_to_dfa(self, force=False, alphabet=None) method of lepl.core.config.ConfigBuilder instance
+      Compile simple matchers to DFA regular expressions.  This improves
+      efficiency but may change the parser semantics slightly (DFA regular
+      expressions do not provide backtracking / alternative matches).
+
+Also, note that configuration methods can be chained together, making
+configuration code more compact::
+
+  >>> matcher.config.clear().lexer()
+
+Common, Packaged Actions
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+`.config.default() <api/redirect.html#lepl.core.config.ConfigBuilder.default>`_
+
+  This sets the default configuration.  It is not needed when first using a
+  matcher, but can be useful to "reset" a matcher to the default state.
+
+  The default configuration is now (since Lepl 4) close to optimal; for many
+  parsers no additional configuration is necessary.
+
+`.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_
+
+  This empties the current configuration (for example, removing the default
+  settings).  If this is *not* used then any alterations are *relative* to the
+  default settings.
+
+`.config.default_line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_
+
+  This sets the default configuration when using line aware (block indented;
+  offside rule) parsing.  See :ref:`offside`.
+
+Other Packaged Actions
+~~~~~~~~~~~~~~~~~~~~~~
+
+`.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_ `.config.no_lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.no_lexer>`_
+
+  Detect the use of `Token()` and modify the parser to use the
+  lexer. Typically this is called indirectly via `.config.default() <api/redirect.html#lepl.core.config.ConfigBuilder.default>`_
+  (above).
+
+`.config.line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.line_aware>`_
+
+  Enable line aware parsing.  Typically this is called indirectly by
+  `.config.default_line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_ (above).
+
+`.config.blocks() <api/redirect.html#lepl.core.config.ConfigBuilder.blocks>`_
+
+  Enable offisde rule parsing.  Typically this is called indirectly by setting
+  ``block_policy`` or ``block_start`` on `.config.default_line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_
+  (above).
+
+Debug Actions
+~~~~~~~~~~~~~
+
+`.config.full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.full_first_match>`_ `.config.no_full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_
+
+  Enable or disable the automatic generation of an error if the first match
+  fails.
+
+`.config.trace() <api/redirect.html#lepl.core.config.ConfigBuilder.trace>`_
+
+  Add a monitor to trace results.  See ``TraceResults()``.  Removed by
+  `.config.remove_all_monitors() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
+
+`.config.manage() <api/redirect.html#lepl.core.config.ConfigBuilder.manage>`_
+
+  Add a monitor to manage resources.  See ``GeneratorManager()``. Removed by
+  `.config.remove_all_monitors() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
+
+`.config.record_deepest() <api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_
+
+  Add a monitor to record deepest match.  See ``RecordDeepest()``. Removed by
+  `.config.remove_all_monitors() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
+    
+Optimisation Actions
+~~~~~~~~~~~~~~~~~~~~
+
+`.config.flatten() <api/redirect.html#lepl.core.config.ConfigBuilder.flatten>`_ `.config.no_flatten() <api/redirect.html#lepl.core.config.ConfigBuilder.no_flatten>`_
+
+  Combined nested `And() <api/redirect.html#lepl.matchers.combine.And>`_ and `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ matchers.
+
+`.config.compile_to_dfa() <api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_dfa>`_ `.config.compile_to_nfa() <api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_nfa>`_ `.config.no_compile_to_regexp() <api/redirect.html#lepl.core.config.ConfigBuilder.no_compile_to_regexp>`_
+
+  Compile simple matches to regular expressions.
+
+``config.optimize_or()`` `.config.no_optimize_or() <api/redirect.html#lepl.core.config.ConfigBuilder.no_optimize_or>`_
+
+  Rearrange arguments to `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ so that left-recursive matchers are tested
+  last.  This improves efficiency, but may alter the parser semantics (the
+  ordering of multiple results with ambiguous grammars may change).
+
+``.config.direct_eval() `.config.no_direct_eval() <api/redirect.html#lepl.core.config.ConfigBuilder.no_direct_eval>`_
+
+  Combine simple matchers so that they are evaluated without trampolining.
+
+`.config.compose_transforms() <api/redirect.html#lepl.core.config.ConfigBuilder.compose_transforms>`_ `.config.no_compose_transforms() <api/redirect.html#lepl.core.config.ConfigBuilder.no_compose_transforms>`_
+
+  Combine transforms (functions applied to results) with matchers.
+        
+`.config.auto_memoize() <api/redirect.html#lepl.core.config.ConfigBuilder.auto_memoize>`_ `.config.left_memoize() <api/redirect.html#lepl.core.config.ConfigBuilder.left_memoize>`_ `.config.right_memoize() <api/redirect.html#lepl.core.config.ConfigBuilder.right_memoize>`_ `.config.no_memoize() <api/redirect.html#lepl.core.config.ConfigBuilder.no_memoize>`_
+
+  Remember previous inputs and results for matchers so that work is not
+  repeated.
+
+Low Level Actions
+~~~~~~~~~~~~~~~~~
+
+These methods are used internally.  They may also be useful if you are
+developing a completely new functionality that is not supported by the "higher
+level" actions described above.
+
+`.config.add_rewriter() <api/redirect.html#lepl.core.config.ConfigBuilder.add_rewriter>`_ `.config.remove_rewriter() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_rewriter>`_ `.config.remove_all_rewriters() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_rewriters>`_
+
+  Add or remove a rewriter, or remove all rewriters (possibly of a given
+  type).  Rewriters manipulate the matchers before the parser is used.  This
+  allows Lepl to use some of the techniques that make "compiled" parsers more
+  efficient --- but it can also introduce quite subtle errors.  The addition
+  of user--defined rewriters is not encouraged unless you are *very* familiar
+  with Lepl.
+
+`.config.add_monitor() <api/redirect.html#lepl.core.config.ConfigBuilder.add_monitor>`_ ``config.remove_all_monitors()``
+
+  Add a monitor, or remove all monitors.  Monitors implement a callback
+  interface that receives information about how Lepl is working.  They can be
+  used to share state across matchers, or to generate debugging information,
+  for example.
+
+`.config.stream_factory() <api/redirect.html#lepl.core.config.ConfigBuilder.stream_factory>`_
+
+  Set the stream factory.  This changes the class used to generate the stream
+  for the parser, given some input (for example, `matcher.parse_string() <api/redirect.html#lepl.core.config.ParserMixin.parse_string>`_
+  will call the ``from_string()`` method on this factory, to convert the
+  string into a suitable stream).
+
+``config.alphabet()``
+
+  Set the alphabet, used by rgegular expressions.  The default alphabet is
+  suitable for Unicode data.
+
+Argument Actions
+~~~~~~~~~~~~~~~~
+
+Sometimes the same argument must be set on many matchers.  Rather that setting
+each matcher individually, it is possible to set them all, via the
+configuration.  These are used internally, to implement packaged actions;
+end-users should not need to call these methods in "normal" use.
+
+`.config.set_arguments() <api/redirect.html#lepl.core.config.ConfigBuilder.set_arguments>`_ ``config.no_set_argmuents()``
+
+  Set an argument, or clear all such settings.
+
+`.config.set_alphabet_arg() <api/redirect.html#lepl.core.config.ConfigBuilder.set_alphabet_arg>`_
+
+  Set the ``alphabet=...`` argument.  If no value is given then the value
+  given earlier to `.config.argument() <api/redirect.html#lepl.core.config.ConfigBuilder.argument>`_ (or, if no value was given, the
+  default Unicode alphabet) is used.
+
+`.config.set_block_policy_arg() <api/redirect.html#lepl.core.config.ConfigBuilder.set_block_policy_arg>`_
+
+  Set the block policy on all ``Block()`` instances.
+
+
+
+
+
+
+
+
+
+
+
+.. index:: configuration, flatten(), compose_transforms(), auto_memoize(), default configuration
 .. _configuration:
 
 Configuration

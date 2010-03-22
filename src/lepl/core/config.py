@@ -111,14 +111,17 @@ class ConfigBuilder(object):
                                if r is not rewriter)
         return self
 
-    def remove_rewriters(self, type_):
+    def remove_all_rewriters(self, type_=None):
         '''
         Remove all rewriters of a given type from the current configuration.
         '''
         self.__start()
         self.__changed = True
-        self.__rewriters = set(r for r in self.__rewriters 
-                               if not isinstance(r, type_))
+        if type_:
+            self.__rewriters = set(r for r in self.__rewriters 
+                                   if not isinstance(r, type_))
+        else:
+            self.__rewriters = set()
         return self
 
     def add_monitor(self, monitor):
@@ -130,6 +133,15 @@ class ConfigBuilder(object):
         self.__start()
         self.__changed = True
         self.__monitors.append(monitor)
+        return self
+    
+    def remove_all_monitors(self):
+        '''
+        Remove all monitors from the current configuration.
+        '''
+        self.__start()
+        self.__changed = True
+        self.__monitors = []
         return self
     
     def stream_factory(self, stream_factory=DEFAULT_STREAM_FACTORY):
@@ -165,8 +177,7 @@ class ConfigBuilder(object):
         self.__started = True
         self.__changed = True
     
-    @property
-    def alphabet(self):
+    def __get_alphabet(self):
         '''
         The alphabet used.
         
@@ -178,7 +189,6 @@ class ConfigBuilder(object):
             self.__alphabet = UnicodeAlphabet.instance()
         return self.__alphabet
     
-    @alphabet.setter
     def alphabet(self, alphabet):
         if alphabet:
             if self.__alphabet:
@@ -215,7 +225,7 @@ class ConfigBuilder(object):
         Remove all rewriters that set arguments.
         '''
         from lepl.core.rewriters import SetArguments
-        return self.remove_rewriters(SetArguments)
+        return self.remove_all_rewriters(SetArguments)
         
     def set_alphabet_arg(self, alphabet=None):
         '''
@@ -231,9 +241,9 @@ class ConfigBuilder(object):
         from lepl.regexp.matchers import BaseRegexp
         from lepl.lexer.matchers import BaseToken
         if alphabet:
-            self.alphabet = alphabet
+            self.alphabet(alphabet)
         else:
-            alphabet = self.alphabet
+            alphabet = self.__get_alphabet()
         if not alphabet:
             raise ValueError('An alphabet must be provided or already set')
         self.set_arguments(BaseRegexp, alphabet=alphabet)
@@ -271,7 +281,7 @@ class ConfigBuilder(object):
         Disable the automatic generation of an error if the first match fails.
         '''
         from lepl.core.rewriters import FullFirstMatch
-        return self.remove_rewriters(FullFirstMatch)
+        return self.remove_all_rewriters(FullFirstMatch)
     
     def flatten(self):
         '''
@@ -289,7 +299,7 @@ class ConfigBuilder(object):
         Disable the combination of nested `And()` and `Or()` matchers.
         '''
         from lepl.core.rewriters import Flatten
-        return self.remove_rewriters(Flatten)
+        return self.remove_all_rewriters(Flatten)
         
     def compile_to_dfa(self, force=False, alphabet=None):
         '''
@@ -299,8 +309,9 @@ class ConfigBuilder(object):
         '''
         from lepl.regexp.matchers import DfaRegexp
         from lepl.regexp.rewriters import CompileRegexp
-        self.alphabet = alphabet
-        return self.add_rewriter(CompileRegexp(self.alphabet, force, DfaRegexp))
+        self.alphabet(alphabet)
+        return self.add_rewriter(
+                    CompileRegexp(self.__get_alphabet(), force, DfaRegexp))
     
     def compile_to_nfa(self, force=False, alphabet=None):
         '''
@@ -312,15 +323,16 @@ class ConfigBuilder(object):
         '''
         from lepl.regexp.matchers import NfaRegexp
         from lepl.regexp.rewriters import CompileRegexp
-        self.alphabet = alphabet
-        return self.add_rewriter(CompileRegexp(self.alphabet, force, NfaRegexp))
+        self.alphabet(alphabet)
+        return self.add_rewriter(
+                    CompileRegexp(self.__get_alphabet(), force, NfaRegexp))
 
     def no_compile_regexp(self):
         '''
         Disable compilation of simple matchers to regular expressions.
         '''
         from lepl.regexp.rewriters import CompileRegexp
-        return self.remove_rewriters(CompileRegexp)
+        return self.remove_all_rewriters(CompileRegexp)
     
     def optimize_or(self, conservative=False):
         '''
@@ -343,7 +355,7 @@ class ConfigBuilder(object):
         Disable the re-ordering of some `Or()` arguments.
         '''
         from lepl.core.rewriters import OptimizeOr
-        return self.remove_rewriters(OptimizeOr)
+        return self.remove_all_rewriters(OptimizeOr)
         
     def lexer(self, alphabet=None, discard=None, source=None):
         '''
@@ -354,16 +366,17 @@ class ConfigBuilder(object):
         `no_lexer`.
         '''
         from lepl.lexer.rewriters import AddLexer
-        self.alphabet = alphabet
+        self.alphabet(alphabet)
         return self.add_rewriter(
-            AddLexer(alphabet=self.alphabet, discard=discard, source=source))
+            AddLexer(alphabet=self.__get_alphabet(), discard=discard, 
+                     source=source))
         
     def no_lexer(self):
         '''
         Disable support for the lexer.
         '''
         from lepl.lexer.rewriters import AddLexer
-        self.remove_rewriters(AddLexer)
+        self.remove_all_rewriters(AddLexer)
     
     def direct_eval(self, spec=None):
         '''
@@ -382,7 +395,7 @@ class ConfigBuilder(object):
         Disable direct evaluation.
         '''
         from lepl.core.rewriters import DirectEvaluation
-        return self.remove_rewriters(DirectEvaluation)
+        return self.remove_all_rewriters(DirectEvaluation)
     
     def compose_transforms(self):
         '''
@@ -400,7 +413,7 @@ class ConfigBuilder(object):
         Disable the composition of transforms.
         '''
         from lepl.core.rewriters import ComposeTransforms
-        return self.remove_rewriters(ComposeTransforms)
+        return self.remove_all_rewriters(ComposeTransforms)
         
     def auto_memoize(self, conservative=False, full=False):
         '''
@@ -462,8 +475,8 @@ class ConfigBuilder(object):
         reason explained below).
         '''
         from lepl.core.rewriters import AutoMemoize, Memoize
-        self.remove_rewriters(Memoize)
-        return self.remove_rewriters(AutoMemoize)
+        self.remove_all_rewriters(Memoize)
+        return self.remove_all_rewriters(AutoMemoize)
         
     def blocks(self, block_policy=None, block_start=None):
         '''
@@ -487,7 +500,7 @@ class ConfigBuilder(object):
         return self
     
     def line_aware(self, alphabet=None, parser_factory=None,
-                   discard=None, tabsize=None, 
+                   discard=None, tabsize=-1, 
                    block_policy=None, block_start=None):
         '''
         Configure the parser for line aware behaviour.  This clears the
@@ -539,7 +552,7 @@ class ConfigBuilder(object):
         if use_blocks:
             self.blocks(block_policy, block_start)
             
-        if tabsize is None:
+        if tabsize and tabsize < 0:
             tabsize = DEFAULT_TABSIZE
         if alphabet is None:
             alphabet = UnicodeAlphabet.instance()
@@ -548,14 +561,14 @@ class ConfigBuilder(object):
                 parser_factory = make_hide_sol_eol_parser
             else:
                 parser_factory = make_str_parser
-        self.alphabet = LineAwareAlphabet(alphabet, parser_factory)
+        self.alphabet(LineAwareAlphabet(alphabet, parser_factory))
 
-        self.set_alphabet_arg(self.alphabet)
+        self.set_alphabet_arg()
         if use_blocks:
             self.set_block_policy_arg(block_policy)
-        self.lexer(alphabet=self.alphabet, discard=discard, 
+        self.lexer(alphabet=self.__get_alphabet(), discard=discard, 
                    source=LineAwareTokenSource.factory(tabsize))
-        self.stream_factory(LineAwareStreamFactory(self.alphabet))
+        self.stream_factory(LineAwareStreamFactory(self.__get_alphabet()))
         
         return self
         
@@ -582,19 +595,10 @@ class ConfigBuilder(object):
         from lepl.core.trace import RecordDeepest
         return self.add_monitor(RecordDeepest())
     
-    def no_monitors(self):
-        '''
-        Remove all monitors.
-        '''
-        self.__start()
-        self.__changed = True
-        self.__monitors = []
-        return self
-    
     # packages
     
     def default_line_aware(self, alphabet=None, parser_factory=None,
-                           discard=None, tabsize=None, 
+                           discard=None, tabsize=-1, 
                            block_policy=None, block_start=None):
         '''
         Configure the parser for line aware behaviour.  This sets many 

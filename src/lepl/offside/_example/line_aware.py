@@ -23,7 +23,7 @@ Show how line aware alphabet can be used.
 #@PydevCodeAnalysisIgnore
 
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example
@@ -48,9 +48,8 @@ class LineAwareExamples(Example):
         words = Word()[:,~Space()[:]] > list
         end = EOL()
         line = start & words & end
-        line.config.default_line_aware().no_compile_regexp()
-        parser = line.get_parse()
-        self.examples([(lambda: parser('  abc def'), 
+        line.config.default_line_aware()
+        self.examples([(lambda: line.parse('  abc def'), 
                         "['  ', ['abc', 'def']]")])
 
     def test_indent_token(self):
@@ -82,4 +81,4 @@ class LineAwareExamples(Example):
 ghi'''), 
                         "[['abc', 'def', 'ghi']]")])
     
-   
+       

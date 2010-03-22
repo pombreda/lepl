@@ -57,8 +57,9 @@ regular expression given as their argument.  For example::
 Here, ``name`` will match a string that starts with a capital letter and then
 has zero or more lower case letters.  The second `Token()
 <api/redirect.html#lepl.lexer.matchers.Token>`_, ``number``, is similar, but
-uses another matcher (`Integer() <api/redirect.html#lepl.matchers.derived.Integer>`_)
-to define the regular expression that is matched.
+uses another matcher (`Integer()
+<api/redirect.html#lepl.matchers.derived.Integer>`_) to define the regular
+expression that is matched.
 
 .. note::
 
@@ -85,7 +86,7 @@ The example above used simple strings (which are converted to `Literal()
 constraints, but any matcher expression can be used.
 
 For a more realistic example of multiple specialisations, see the use of
-``symbol`` in :ref:`tutorial`.
+``symbol`` in :ref:`this example <token_example>`.
 
 Note that specialisation is optional.  It's OK to use `Token()
 <api/redirect.html#lepl.lexer.matchers.Token>`_ as a simple matcher without
@@ -116,15 +117,15 @@ or as a subtraction expression (1 minus 2).  An appropriate matcher will give
 both results, through backtracking::
 
   >>> matchers = (Integer() | Literal('-'))[:] & Eos()
-  >>> list(functions.match('1-2'))
-  [(['1', '-2'], ''), (['1', '-', '2'], '')]
+  >>> list(functions.parse_all('1-2'))
+  [['1', '-2'], ['1', '-', '2']]
 
 But when tokens are used, "-2" is preferred to "-", because it is a longer
 match, so we get only the single result::
 
   >>> tokens = (Token(Integer()) | Token(r'\-'))[:] & Eos()
-  >>> list(tokens.match('1-2'))
-  [(['1', '-2'], <SimpleGeneratorStream>)]
+  >>> list(tokens.parse_all('1-2'))
+  [['1', '-2']]
 
 (In the examples above, ``list()`` is used to expand the generator and the
 `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ is given ``r'\-'``
@@ -151,11 +152,9 @@ alongside the following error occurs::
   >>> matcher = Token(Any()) & Any()
   ...
   >>> matcher.parse(...)
-  Lexer Error:
-  The grammar contains a mix of Tokens and non-Token matchers at the top level.
+  lepl.lexer.support.LexerError: The grammar contains a mix of Tokens and non-Token matchers at the top level. 
   If Tokens are used then non-token matchers that consume input must only appear "inside" Tokens.
-  The non-Token matchers include: Any.
-
+  The non-Token matchers include: Any(None).
 
 .. index:: lexer_rewriter(), Configuration()
 
@@ -164,21 +163,21 @@ Advanced Options
 
 Configuration
 
-  The lexer can be configured by providing an explicit :ref:`configuration`
-  that includes the `lexer_rewriter()
-  <api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_.  This can take
-  additional arguments that specify the discard pattern and an exception that
-  is raised when neither the tokens nor the discard pattern match the input.
+  The lexer can be configured using `.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_ (see
+  ref:`configuration`).  This can take an additional argument that specified
+  the discard pattern.
 
 Completeness
 
-  By default Tokens require
-  that any sub--expression consumes the entire contents::
+  By default Tokens require that any sub--expression consumes the entire
+  contents::
 
     >>> abc = Token('abc')
     >>> incomplete = abc(Literal('ab'))
     >>> incomplete.parse('abc')
-    None
+    [...]
+    lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'abc',
+    Line 1, character 0 of str: 'abc'.
 
   However, this constraint can be relaxed, in which case the matched portion is
   returned as a result::
@@ -221,9 +220,9 @@ a Python program uses the Lepl parser, with the lexer, to parse some text.
    A function, or set of statements, that generates the Lepl matchers is
    evaluated.  Matchers like `Token()
    <api/redirect.html#lepl.lexer.matchers.Token>`_, `And()
-   <api/redirect.html#lepl.matchers.combine.And>`_, etc., are objects that link to each
-   other.  The objects and their links form a graph (with a matcher object at
-   each node).
+   <api/redirect.html#lepl.matchers.combine.And>`_, etc., are objects that
+   link to each other.  The objects and their links form a graph (with a
+   matcher object at each node).
 
    * Token numbering
 
@@ -243,11 +242,14 @@ a Python program uses the Lepl parser, with the lexer, to parse some text.
        >>> function = Token('[a-z]*')
        >>> sin = function('sine')
 
-     In the example above, the first line creates a new `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_, with a
-     unique tag and a regular expression, as explained just above.  On the
-     second line the token is specialised.  This creates another `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_,
-     which contains the given sub--matcher (a `Literal() <api/redirect.html#lepl.matchers.core.Literal>`_ in this case), but
-     with the same tag and regular expression as the "parent".
+     In the example above, the first line creates a new `Token()
+     <api/redirect.html#lepl.lexer.matchers.Token>`_, with a unique tag and a
+     regular expression, as explained just above.  On the second line the
+     token is specialised.  This creates another `Token()
+     <api/redirect.html#lepl.lexer.matchers.Token>`_, which contains the given
+     sub--matcher (a `Literal()
+     <api/redirect.html#lepl.matchers.core.Literal>`_ in this case), but with
+     the same tag and regular expression as the "parent".
 
      I call a token like this, which has the same tag and regular expression
      as the parent, but also contains a sub--matcher, a "specialised token" in
@@ -257,8 +259,7 @@ a Python program uses the Lepl parser, with the lexer, to parse some text.
 
    At some point Lepl internally "compiles" the matcher graph to generate a
    parser.  Exactly when this happens depends on how the matchers are used,
-   but in simple terms it occurs when a method that can take a
-   :ref:`configuration` is called.
+   but at the latest it happens just before the first match is calculated.
 
    "Compilation" is perhaps misleading --- the parser is not compiled to
    Python byte codes, for example.  What happens is that the matcher graph is

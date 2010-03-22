@@ -58,3 +58,5 @@ sed -i -r 's/``(Node|make_dict)\(\)``/`\1() <api\/redirect.html#lepl.support.nod
 sed -i -r 's/``(ConstructorGraphNode)\(\)``/`\1() <api\/redirect.html#lepl.support.graph.\1>`_/g' *.rst
 sed -i -r 's/``(.config\.)([^\. ]+)(\([^\)]*\))``/`\1\2\3 <api\/redirect.html#lepl.core.config.ConfigBuilder.\2>`_/g' *.rst
 sed -i -r 's/``(matcher\.)([^\. ]+)\(\)``/`\1\2() <api\/redirect.html#lepl.core.config.ParserMixin.\2>`_/g' *.rst
+sed -i -r 's/``(rightmost)\(\)``/`\1() <api\/redirect.html#lepl.offside.matchers.\1>`_/g' *.rst
+sed -i -r 's/``(make_str_parser)\(\)``/`\1() <api\/redirect.html#lepl.regexp.str.\1>`_/g' *.rst

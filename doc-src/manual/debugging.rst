@@ -234,10 +234,10 @@ when a list of data is parsed directly.  Instead you will see warnings
   Cannot add ... to collection
   Cannot test for ... in collection
 
-Fortunately, there is a simple workround for these issues.  Instead of using
-the ``.parse()`` and ``.match()`` methods, use ``.parse_items()`` and
-``.match_items()``.  These wrap the list in a separate stream that does
-support hashing.
+Fortunately, there is a workround for these issues.  Instead of using the
+`matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ and `matcher.match() <api/redirect.html#lepl.core.config.ParserMixin.match>`_ methods, use
+`matcher.parse_items() <api/redirect.html#lepl.core.config.ParserMixin.parse_items>`_ and `matcher.match_items() <api/redirect.html#lepl.core.config.ParserMixin.match_items>`_.  These wrap the list
+in a separate stream that does support hashing.
 
 
 .. index:: Lexer rewriter used but no tokens found
