@@ -209,5 +209,44 @@ class OrderTest(TestCase):
         ordered = self.order(tree, POSTORDER)
         assert ordered == ['d', 'e', 'c', 'f', 'b', 'g', 'j', 'k', 'i', 'l', 'h', 'a'], ordered
         
+    def test_str(self):
+        text = str(self.tree())
+        assert text == """Node
+ +- 'a'
+ +- Node
+ |   +- 'b'
+ |   +- Node
+ |   |   +- 'c'
+ |   |   +- Node
+ |   |   |   `- 'd'
+ |   |   `- Node
+ |   |       `- 'e'
+ |   `- Node
+ |       `- 'f'
+ +- Node
+ |   `- 'g'
+ `- Node
+     +- 'h'
+     +- Node
+     |   +- 'i'
+     |   +- Node
+     |   |   `- 'j'
+     |   `- Node
+     |       `- 'k'
+     `- Node
+         `- 'l'""", text
         
+
+class NestedNamedTest(TestCase):
+    
+    def tree(self):
+        return Node(('a', Node('A')), ('b', Node('B')))
+    
+    def test_str(self):
+        text = str(self.tree())
+        assert text == """Node
+ +- a
+ |   `- 'A'
+ `- b
+     `- 'B'""", text
     

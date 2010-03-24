@@ -327,7 +327,7 @@ class ConfigBuilder(object):
         return self.add_rewriter(
                     CompileRegexp(self.__get_alphabet(), force, NfaRegexp))
 
-    def no_compile_regexp(self):
+    def no_compile_to_regexp(self):
         '''
         Disable compilation of simple matchers to regular expressions.
         '''

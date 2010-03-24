@@ -24,6 +24,12 @@ from lepl.support.graph import GraphStr, ConstructorGraphNode, ConstructorWalker
 from lepl.support.lib import LogMixin, basestring
 
 
+class NodeException(Exception):
+    '''
+    Exception raised when we have problems dynamically creating nodes.
+    '''
+
+
 def is_named(arg):
     '''
     Is this is "named tuple"?
@@ -31,6 +37,30 @@ def is_named(arg):
     return (isinstance(arg, tuple) or isinstance(arg, list)) \
             and len(arg) == 2 and isinstance(arg[0], basestring)
             
+            
+def new_named_node(name, node):
+    '''
+    Generate a sub-class of Node, with the given name as type, as long as
+    it is not already a subclass.
+    '''
+    if type(node) != Node:
+        raise NodeException(
+            format('Will not coerce a node subclass ({0}) to {1}',
+                   type(node), name))
+    class_ = type(name, (Node,), {})
+    (args, kargs) = node._constructor_args()
+    return class_(*args, **kargs)
+
+
+def coerce(arg):
+    '''
+    Convert named nodes to nodes with that name.
+    '''
+    if is_named(arg) and isinstance(arg[1], Node):
+        return new_named_node(arg[0], arg[1])
+    else:
+        return arg
+    
 
 # pylint: disable-msg=R0903
 # it's not supposed to have public attributes, because it exposes contents
@@ -51,7 +81,7 @@ class Node(LogMixin, ConstructorGraphNode):
         self.__children = []
         self.__paths = []
         self.__names = set()
-        for arg in args:
+        for arg in map(coerce, args):
             if is_named(arg):
                 self.__add_named_child(arg[0], arg[1])
             elif isinstance(arg, Node):

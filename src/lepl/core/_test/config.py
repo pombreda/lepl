@@ -96,7 +96,7 @@ config=lambda m: m.config.no_compile_to_regexp(), sub_list=True)
         try:
             self.run_test('_items', [1, 2, 3], [], [], [], """""")
         except RegexpError as e:
-            assert 'no_compile_regexp' in str(e), str(e)
+            assert 'no_compile_to_regexp' in str(e), str(e)
         self.run_test('_items', [1, 2, 3], 
                       "[[1, 2, 3]]", 
                       "[([[1, 2]], [1, 2, 3][2:])]", 
