@@ -21,7 +21,7 @@ Base classes for AST nodes (and associated functions).
 '''
 
 from lepl.support.graph import GraphStr, ConstructorGraphNode, ConstructorWalker
-from lepl.support.lib import LogMixin, basestring
+from lepl.support.lib import LogMixin, basestring, format
 
 
 class NodeException(Exception):
@@ -129,7 +129,6 @@ class Node(LogMixin, ConstructorGraphNode):
         return self.__children[index]
     
     def __iter__(self):
-        dummy = self.__children
         return iter(self.__children)
     
     def __str__(self):

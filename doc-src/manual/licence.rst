@@ -6,12 +6,12 @@ Licence
 =======
 
 Lepl is licensed under the `Lesser Gnu Public Licence
-<http://www.gnu.org/licenses/lgpl.html>`_.  It is copyright 2009 Andrew Cooke
-(andrew@acooke.org) and contributors (see below).
+<http://www.gnu.org/licenses/lgpl.html>`_.  It is copyright 2009-2010 Andrew
+Cooke (andrew@acooke.org) and contributors (see below).
 
 This documentation is licensed under the `Gnu Free Documentation Licence
-<http://www.gnu.org/licenses/fdl.html>`_.  It is copyright 2009 Andrew Cooke
-(andrew@acooke.org).
+<http://www.gnu.org/licenses/fdl.html>`_.  It is copyright 2009-2010 Andrew
+Cooke (andrew@acooke.org).
 
 ::
   
@@ -27,6 +27,14 @@ This documentation is licensed under the `Gnu Free Documentation Licence
   
     You should have received a copy of the GNU Lesser General Public License
     along with Lepl.  If not, see <http://www.gnu.org/licenses/>.
+
+Note that this is the `Library GPL (LGPL)
+<http://en.wikipedia.org/wiki/GNU_Lesser_General_Public_License>`_, which is
+`much less restrictive` than the GPL.  In simple terms, `you can use Lepl as a
+library in a commercial application`.
+
+If you need a different license, please contact me by email
+(andrew@acooke.org).
 
 
 .. index:: contributions

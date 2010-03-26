@@ -179,3 +179,28 @@ class TreeExample(Example):
 "[('Factor', [Factor(...), Factor(...)]), ('operator', ['+'])]"),
                     (example4, '2')
                     ])
+
+
+class NestedNodeExample(Example):
+    
+    def test_nested(self):
+        
+        class Term(Node): pass
+        class Factor(Node): pass
+        class Expression(Node): pass
+            
+        expr   = Delayed()
+        number = Digit()[1:,...]                         > 'number'
+        
+        with Separator(Drop(Regexp(r'\s*'))):
+            term    = number | '(' & expr & ')'          > Term
+            muldiv  = Any('*/')                          > 'operator'
+            factor  = (term & (muldiv & term)[:] > Node) > 'factors'
+            addsub  = Any('+-')                          > 'operator'
+            expr   += factor & (addsub & factor)[:]      > Expression
+            line    = expr & Eos()
+            
+        ast = line.parse_string('1 + 2 * (3 + 4 - 5)')[0]
+
+        print(ast)
+        
