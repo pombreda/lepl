@@ -69,6 +69,48 @@ class Node(LogMixin, ConstructorGraphNode):
     A base class for AST nodes.
 
     It is designed to be applied to a list of results, via ``>``.
+
+    Nodes support both simple list--like behaviour::
+    
+      >>> abc = Node('a', 'b', 'c')
+      >>> abc[1]
+      'b'
+      >>> abc[1:]
+      ['b', 'c']
+      >>> abc[:-1]
+      ['a', 'b']
+    
+    and dict--like behaviour through attributes::
+    
+      >>> fb = Node(('foo', 23), ('bar', 'baz'))
+      >>> fb.foo
+      [23]
+      >>> fb.bar
+      ['baz']
+    
+    Both mixed together::
+    
+      >>> fb = Node(('foo', 23), ('bar', 'baz'), 43, 'zap', ('foo', 'again'))
+      >>> fb[:]
+      [23, 'baz', 43, 'zap', 'again']
+      >>> fb.foo
+      [23, 'again']
+    
+    Note how ``('name', value)`` pairs have a special meaning in the constructor.
+    This is supported by the creation of "named pairs"::
+    
+      >>> letter = Letter() > 'letter'
+      >>> digit = Digit() > 'digit'
+      >>> example = (letter | digit)[:] > Node
+      >>> n = example.parse('abc123d45e')[0]
+      >>> n.letter
+      ['a', 'b', 'c', 'd', 'e']
+      >>> n.digit
+      ['1', '2', '3', '4', '5']
+    
+    However, a named pair with a Node as a value is coerced into a subclass of
+    Node with the given name (this keeps Nodes connected into a single tree and
+    so simplifies traversal).
     '''
     
     def __init__(self, *args):
@@ -220,6 +262,8 @@ class NodeTreeStr(GraphStr):
         else:
             return super(NodeTreeStr, self).leaf(arg)
 
+
+# Below unrelated to nodes - move?
 
 def make_dict(contents):
     '''

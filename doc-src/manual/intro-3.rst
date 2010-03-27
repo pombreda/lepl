@@ -130,9 +130,9 @@ perfectly::
   >>> expr.parse('1+2-3 +4-5')
   [1.0, '+', 2.0, '-', 3.0, '+', 4.0, '-', 5.0]
 
-.. index:: AST, abstract syntax tree, Node()
+.. index:: AST, abstract syntax tree, List()
 
-Building an AST with Node
+Building an AST with List
 -------------------------
 
 OK, finally we are at the point where it makes sense to build an AST.  The
@@ -140,34 +140,34 @@ motivation for the sections above (apart from the sheer joy of learning, of
 course) is that we needed something complicated enough for this to be
 worthwhile.
 
-The simplest way of building an AST is almost trivial.  We just send the
-results for the addition and subtraction to `Node()
-<api/redirect.html#lepl.support.node.Node>`_::
+The simplest way of building a tree is almost trivial.  We just send the
+results for the addition and subtraction to `List()
+<api/redirect.html#lepl.support.list.List>`_::
 
   >>> value = Token(UnsignedFloat())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> expr = Delayed()
-  >>> add = number & symbol('+') & expr > Node
-  >>> sub = number & symbol('-') & expr > Node
+  >>> add = number & symbol('+') & expr > List
+  >>> sub = number & symbol('-') & expr > List
   >>> expr += add | sub | number
   >>> expr.parse('1+2-3 +4-5')
-  [Node(...)]
+  [List(...)]
 
 OK, not so exciting, but let's look at that first result::
 
   >>> ast = expr.parse('1+2-3 +4-5')[0]
   >>> print(ast)
-  Node
+  List
    +- 1.0
    +- '+'
-   `- Node
+   `- List
        +- 2.0
        +- '-'
-       `- Node
+       `- List
            +- 3.0
            +- '+'
-           `- Node
+           `- List
                +- 4.0
                +- '-'
                `- 5.0
@@ -176,121 +176,41 @@ That's our first AST.  It's a bit of a lop--sided tree, I admit --- we will
 make some more attractive trees later --- but if you have worked through this
 tutorial from zero, this is a major achievement.  Congratulations!
 
-(I hope it's clear that the result above is a "picture" of the tree of nodes.
-At the top is the parent node, which has three children: the value ``1.0``;
-the symbol ``'+'``; a ``Node`` with a first child of ``2.0`` etc.)
+(I hope it's clear that the result above is a "picture" of a tree built with
+nested lists.  The root list has three children: the value ``1.0``; the symbol
+``'+'``; a child ``List`` with a first grandchild of ``2.0`` etc.)
 
-.. index:: nodes, Node()
+.. index:: lists, nodes, List(), Node()
 
-Nodes
------
+Lists, S-Expressions, and Nodes
+-------------------------------
 
-Nodes are so useful that it's worth spending time getting to know them better.
-They combine features from lists and dicts, as you can see from the following
-examples.
+There's a long tradition of using nested lists to represent trees of data ---
+it is fundamental to the Lisp programming language, for example.  Lists used
+in this way are often called "S-Expressions".
 
-First, simple list--like behaviour::
+The `List() <api/redirect.html#lepl.support.list.List>`_ class is a simple
+subclass of Python's ``list``.  That makes it easy to understand and use.
 
-  >>> abc = Node('a', 'b', 'c')
-  >>> abc[1]
-  'b'
-  >>> abc[1:]
-  ['b', 'c']
-  >>> abc[:-1]
-  ['a', 'b']
+Lepl includes tools that simplify working with nested lists, including
+`sexpr_fold() <api/redirect.html#lepl.support.list.sexpr_fold>`_,
+`sexpr_flatten() <api/redirect.html#lepl.support.list.sexpr_flatten>`_ and `sexpr_to_tree() <api/redirect.html#lepl.support.list.sexpr_to_tree>`_.  These all work with any kind of
+nested iterable (except strings, which are treatd as single values rather than
+sequences of characters).  That means that you can also use tuples, plain old
+Python lists, and even sub--classes of `List()
+<api/redirect.html#lepl.support.list.List>`_ to structure your AST (the next
+section will use sub--classes to identify different kinds of values).
 
-Next, dict--like behaviour through attributes::
+For more complex cases, Lepl also includes a `Node()
+<api/redirect.html#lepl.support.node.Node>`_ class (this used to appear in the
+examples; `List() <api/redirect.html#lepl.support.list.List>`_ is new in Lepl
+4).  `Node() <api/redirect.html#lepl.support.node.Node>`_ tries to combine
+Python's ``list`` and ``dict`` classes into one type, which sounds incredibly
+useful, but ends up being confusingly complex.
 
-  >>> fb = Node(('foo', 23), ('bar', 'baz'))
-  >>> fb.foo
-  [23]
-  >>> fb.bar
-  ['baz']
-
-Both mixed together::
-
-  >>> fb = Node(('foo', 23), ('bar', 'baz'), 43, 'zap', ('foo', 'again'))
-  >>> fb[:]
-  [23, 'baz', 43, 'zap', 'again']
-  >>> fb.foo
-  [23, 'again']
-
-Note how ``('name', value)`` pairs have a special meaning in the `Node()
-<api/redirect.html#lepl.support.node.Node>`_ constructor.  Lepl has a feature
-that helps exploit this, which I will explain in the next section.
-
-.. index:: node attributes
-
-Node Attributes
----------------
-
-Node attributes won't play a big part in our arithmetic parser, so here's a
-small illustration of how they can be used::
-
-  >>> letter = Letter() > 'letter'
-  >>> digit = Digit() > 'digit'
-  >>> example = (letter | digit)[:] > Node
-
-This uses `Letter() <api/redirect.html#lepl.matchers.derived.Letter>`_ and
-`Digit() <api/redirect.html#lepl.matchers.derived.Digit>`_ (both standard Lepl
-matchers) to match (single) letters and digits.  Each character is sent to a
-label (eg. ``> 'letter'``).  This is a special case programmed into the ``>``
-operator: when the target is a string (like ``'letter'`` or ``'digit'``) then
-a ``('name', value)`` pair (see above) is created.
-
-Later, when the results are passed to the ``Node``, these ``('name', value)``
-pairs become attributes::
-
-  >>> n = example.parse('abc123d45e')[0]
-  >>> n.letter
-  ['a', 'b', 'c', 'd', 'e']
-  >>> n.digit
-  ['1', '2', '3', '4', '5']
-
-.. index:: *args, ApplyArgs
-
-\*args
-------
-
-You may have been wondering how a `Node()
-<api/redirect.html#lepl.support.node.Node>`_ constructor works.  Earlier I
-said that ``>`` sends a list of results as a single argument, but, as we've
-seen in some of the examples above, `Node()
-<api/redirect.html#lepl.support.node.Node>`_ actually takes a series of
-values.  So in this case it seems as though ``>`` is calling `Node()
-<api/redirect.html#lepl.support.node.Node>`_ with "\*args"
-(ie. ``Node(*results)`` rather than ``Node(results)``, if ``results`` is the
-list of results).
-
-(If this makes no sense, you may need to read the `Python documentation
-<http://docs.python.org/3.0/reference/compound_stmts.html#index-664>`_.)
-
-This is correct.  `Node() <api/redirect.html#lepl.support.node.Node>`_ is
-being treated in a special way because it is registered with the ``ApplyArgs``
-ABC, and any ``ApplyArgs`` subclass is called in this way.
-
-An alternative way to get ``>`` to make a "\*args" style call is to use the
-`args() <api/redirect.html#lepl.matchers.derived.args>`_ wrapper::
-
-  >>> matcher > args(target)
-
-In the code snippet above, ``target`` will be called as ``target(*results)``.
-
-.. index:: visitors, graphs, iterators
-
-Other Node--Related Functions
------------------------------
-
-Matchers are implemented in Lepl using nodes.  As a consequence Lepl contains
-quite a few library functions that you may find useful.  In particular, it has
-methods for iterating over nodes in a tree (or graph) and support for the
-visitor pattern.  One visitor implementation will (if the node subclass
-follows certain conventions) clone a graph; another generates the "ASCII tree
-diagrams" we saw above.
-
-These are all a bit advanced for an introductory tutorial, so I will simply
-point you to the `API Documentation <api>`_; in particular the `graph module
-<api/redirect.html#lepl.support.graph>`_.
+If you use `Node() <api/redirect.html#lepl.support.node.Node>`_, your code
+will continue to work, but I would encourage you to consider switching to
+`List() <api/redirect.html#lepl.support.list.List>`_.
 
 Summary
 -------
@@ -300,9 +220,13 @@ What more have we learnt?
 * Recursive grammars are supported with `Delayed()
   <api/redirect.html#lepl.matchers.core.Delayed>`_.
 
-* `Node() <api/redirect.html#lepl.support.node.Node>`_ can be used to
-  construct ASTs.
+* The results of parsing are stored in trees of data, called Abstract Syntax
+  Trees (ASTs).
 
-* Nodes combine list and dict behaviour.
+* The simples way to build an AST is with nested lists; the `List() <api/redirect.html#lepl.support.list.List>`_ class
+  subclasses Python's list to add the ability to display the tree in a text
+  diagram.
 
-* Lepl has comprehensive support for nodes (and their subclasses).
+* A `Node() <api/redirect.html#lepl.support.node.Node>`_ combines list and
+  dict behaviour.
+

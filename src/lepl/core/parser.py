@@ -165,31 +165,25 @@ def trampoline(main, m_stack=None, m_value=None):
                         # this allows us to restart with a new evaluation
                         # (backtracking) if called again.
                         value = main
-            # pylint: disable-msg=W0703
-            # (we really do want to catch everything)
-            except Exception as exception:
-                # an exception occurred while we were handling an exception
-                # - that's not expected, so we bail to the main caller
-                if exception_being_raised: # raising to caller
+            except StopIteration as exception:
+                # this occurs when we need to exit the main loop
+                if exception_being_raised:
                     raise
-                # an exception was raised by a coroutine.  internally,
-                # LEPL only uses StopIteration, so we warn about anything
-                # else (this might want to change if third party matchers
-                # use exceptions in a more constructive way?)  
-                else:
-                    value = exception
-                    exception_being_raised = True
-                    if m_value:
-                        m_value.exception(value)
-                    if type(value) is not StopIteration and value != last_exc:
-                        last_exc = value
-                        log.error(format('Exception at epoch {0}: {1!s}',
-                                         epoch, value))
-                        if stack:
-                            log.debug(format('Top of stack: {0}', stack[-1]))
-                        log.warn(format_exc())
-                        for generator in stack:
-                            log.debug(format('Stack: {0}', generator))
+                # otherwise, we will propagate this value
+                value = exception
+                exception_being_raised = True
+                if m_value:
+                    m_value.exception(value)
+            except Exception:
+                # do some logging etc before re-raising
+                log.error(format('Exception at epoch {0}: {1!s}',
+                                 epoch, value))
+                if stack:
+                    log.debug(format('Top of stack: {0}', stack[-1]))
+                    log.warn(format_exc())
+                    for generator in stack:
+                        log.debug(format('Stack: {0}', generator))
+                raise
     finally:
         # record the remaining stack
         while m_stack and stack:

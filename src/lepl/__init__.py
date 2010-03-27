@@ -137,6 +137,7 @@ from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.stream.maxdepth import FullFirstMatchException
 from lepl.stream.stream import DEFAULT_STREAM_FACTORY
+from lepl.support.list import List
 from lepl.support.node import Node, make_dict, join_with
 
 __all__ = [
@@ -229,6 +230,8 @@ __all__ = [
         'Node',
         'make_dict',
         'join_with',
+        # lepl.support.list
+        'List',
         # lepl.lexer.matchers
         'Token',
         'LexerError',

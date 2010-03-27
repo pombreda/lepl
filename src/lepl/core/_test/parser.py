@@ -20,10 +20,11 @@
 Tests for the lepl.core.parser module.
 '''
 
+from traceback import format_exc
 from types import MethodType
 from unittest import TestCase
 
-from lepl import Literal, Any
+from lepl import Literal, Any, function_matcher
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, E1101
@@ -80,4 +81,19 @@ class RepeatTest(TestCase):
         matcher = matcher.get_match_string()
         results = [m for (m, _s) in matcher('abc')]
         assert results == [[], ['a'], ['ab'], ['abc']], results
-        
+
+
+class ErrorTest(TestCase):
+    
+    def test_error(self):
+        class TestException(Exception): pass
+        @function_matcher
+        def Error(supprt, stream):
+            raise TestException('here')
+        matcher = Error()
+        try:
+            matcher.parse('a')
+        except TestException:
+            trace = format_exc()
+            assert "TestException('here')" in trace, trace
+            

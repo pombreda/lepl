@@ -37,8 +37,8 @@ class Tutorial3Example(Example):
         symbol = Token('[^0-9a-zA-Z \t\r\n]')
         number = Optional(symbol('-')) + value >> float
         expr = Delayed()
-        add = number & symbol('+') & expr > Node
-        sub = number & symbol('-') & expr > Node
+        add = number & symbol('+') & expr > List
+        sub = number & symbol('-') & expr > List
         expr += add | sub | number
         return expr.parse('1+2-3 +4-5')[0]
 
@@ -50,16 +50,16 @@ class Tutorial3Example(Example):
         
         self.examples([
 (self.run_add_sub_node,
-"""Node
+"""List
  +- 1.0
  +- '+'
- `- Node
+ `- List
      +- 2.0
      +- '-'
-     `- Node
+     `- List
          +- 3.0
          +- '+'
-         `- Node
+         `- List
              +- 4.0
              +- '-'
              `- 5.0"""),

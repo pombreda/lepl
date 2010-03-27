@@ -2,24 +2,32 @@
 Lepl 4 - Simpler, Faster, Easier
 ================================
 
-I've made Lepl simpler to use.  For example, if a parser fails to match the
-input, you get an exception with the location of the problem.  If that's not
-what you want, it can be disabled by calling `.config.no_full_first_match()
+I've made Lepl simpler to use.  For example, if a parser fails then an
+exception shows which part of the input could not be matched --- but if that's
+not what you want, it can be disabled by calling
+`.config.no_full_first_match()
 <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_ on
 the matcher (configuration got simpler too!).
 
-Another example: it's easier to add new matchers.  Before, you needed to
-subclass a complex class.  Now, you can add a decorator to a simple function.
+Another example: it's easier to add new matchers.  Before, you had to subclass
+a complex class.  Now, you can add a decorator to a simple function.
 
 Even debugging is simpler.  If you want to understand what the parser is
 doing, add ``with TraceVariables()`` and the progress of the match will be
-printed to your screen.  The display includes the variable names that you used
-in the code, so it's easy to understand.
+printed to the screen.  That includes the variable names that you used in the
+code, so it's easy to understand.  And if there's a bug in a matcher,
+tracebacks are now clearer (you no longer get something that has been mangled
+by the trampolining).
 
-Often when software is made simpler to use, it becomes slower.  The reverse is
-true for Lepl - the new, simpler, approach supports new optimisations and
-makes fixing bugs easier.  In my tests, parsers using the default
-configuration are up to 10 times faster.
+Generating ASTs is simpler too.  There is extra support for using nested
+lists, with the new `List() <api/redirect.html#lepl.support.list.List>`_ class, which means that the more complex
+`Node() <api/redirect.html#lepl.support.node.Node>`_ classes often aren't needed (the examples in the documentation have
+been updated to reflect this).
+
+Often when software is made simpler, it becomes slower.  The reverse is true
+for Lepl - the new, simpler, approach supports new optimisations and makes
+fixing bugs easier.  In my tests, parsers using the default configuration are
+up to 10 times faster.
 
 Below I'll explain all these new features in much more detail, but if you want
 to get started with Lepl now, installation instructions are on the (new,

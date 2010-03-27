@@ -55,6 +55,7 @@ sed -i -r 's/``(OperatorMatcher)(\([^\)]*\))``/`\1\2 <api\/redirect.html#lepl.ma
 sed -i -r 's/``(Error)(\([^\)]*\))``/`\1\2 <api\/redirect.html#lepl.matchers.error.\1>`_/g' *.rst
 sed -i -r 's/``(Token)(\([^\)]*\))``/`\1\2 <api\/redirect.html#lepl.lexer.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(Node|make_dict)\(\)``/`\1() <api\/redirect.html#lepl.support.node.\1>`_/g' *.rst
+sed -i -r 's/``(List|sexpr_fold|sexpr_flatten|sexpr_to_tree)\(\)``/`\1() <api\/redirect.html#lepl.support.list.\1>`_/g' *.rst
 sed -i -r 's/``(ConstructorGraphNode)\(\)``/`\1() <api\/redirect.html#lepl.support.graph.\1>`_/g' *.rst
 sed -i -r 's/``(.config\.)([^\. ]+)(\([^\)]*\))``/`\1\2\3 <api\/redirect.html#lepl.core.config.ConfigBuilder.\2>`_/g' *.rst
 sed -i -r 's/``(matcher\.)([^\. ]+)\(\)``/`\1\2() <api\/redirect.html#lepl.core.config.ParserMixin.\2>`_/g' *.rst
