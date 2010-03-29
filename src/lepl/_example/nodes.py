@@ -94,6 +94,78 @@ class ListExample(Example):
             ])
         
 
+class ListTreeExample(Example):
+
+    def test_ast(self):
+        
+        class Term(List): pass
+        class Factor(List): pass
+        class Expression(List): pass
+            
+        expr   = Delayed()
+        number = Digit()[1:,...]
+        
+        with DroppedSpace():
+            term    = number | '(' & expr & ')'
+            muldiv  = Any('*/')
+            factor  = term & (muldiv & term)[:]         > Factor
+            addsub  = Any('+-')
+            expr   += factor & (addsub & factor)[:]     > Expression
+            line    = expr & Eos()
+            
+        ast = line.parse_string('1 + 2 * (3 + 4 - 5)')[0]
+        
+        def example1():
+            return ast
+        
+        def example2():
+            return [child for child in ast]
+                
+        def example3():
+            return [ast[i] for i in range(len(ast))]
+                
+        def example4():
+            return ast[2][0][0]
+        
+        def example5():
+            def per_list(type_, list_):
+                return str(eval(''.join(list_)))
+            def calculate(list_):
+                return sexpr_fold(per_list=per_list)(list_)[0]
+            return calculate(ast)
+        
+        def example6():
+            return sexpr_fold(per_list=lambda t_, l: list(l))(ast)
+            
+        self.examples([(example1,
+"""Expression
+ +- Factor
+ |   `- '1'
+ +- '+'
+ `- Factor
+     +- '2'
+     +- '*'
+     +- '('
+     +- Expression
+     |   +- Factor
+     |   |   `- '3'
+     |   +- '+'
+     |   +- Factor
+     |   |   `- '4'
+     |   +- '-'
+     |   `- Factor
+     |       `- '5'
+     `- ')'"""),
+                    (example2, 
+"[Factor(...), '+', Factor(...)]"),
+                    (example3, 
+"[Factor(...), '+', Factor(...)]"),
+                    (example4, '2'),
+                    (example5, '5'),
+                    (example6, """[['1'], '+', ['2', '*', '(', [['3'], '+', ['4'], '-', ['5']], ')']]""")
+                    ])
+                
+
 # pylint: disable-msg=W0612
 class TreeExample(Example):
 
@@ -131,7 +203,6 @@ class TreeExample(Example):
         def example4():
             return ast.Factor[1].Term[0].number[0]
                 
-
         self.examples([(example1,
 """Expression
  +- Factor
@@ -195,12 +266,34 @@ class NestedNodeExample(Example):
         with Separator(Drop(Regexp(r'\s*'))):
             term    = number | '(' & expr & ')'          > Term
             muldiv  = Any('*/')                          > 'operator'
-            factor  = (term & (muldiv & term)[:] > Node) > 'factors'
+            factor  = (term & (muldiv & term)[:] > Node) > 'factor'
             addsub  = Any('+-')                          > 'operator'
             expr   += factor & (addsub & factor)[:]      > Expression
             line    = expr & Eos()
             
         ast = line.parse_string('1 + 2 * (3 + 4 - 5)')[0]
-
-        print(ast)
-        
+        text = str(ast)
+        assert text == """Expression
+ +- factor
+ |   `- Term
+ |       `- number '1'
+ +- operator '+'
+ `- factor
+     +- Term
+     |   `- number '2'
+     +- operator '*'
+     `- Term
+         +- '('
+         +- Expression
+         |   +- factor
+         |   |   `- Term
+         |   |       `- number '3'
+         |   +- operator '+'
+         |   +- factor
+         |   |   `- Term
+         |   |       `- number '4'
+         |   +- operator '-'
+         |   `- factor
+         |       `- Term
+         |           `- number '5'
+         `- ')'""", text

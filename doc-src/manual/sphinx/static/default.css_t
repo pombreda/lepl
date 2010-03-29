@@ -260,7 +260,7 @@ table.docutils td, table.docutils th, columns, col {
 }
 
 .footnote:target  {
-    background-color: #222;
+    background-color: white;
     border: 1px solid #444;
 }
 

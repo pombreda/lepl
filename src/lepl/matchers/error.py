@@ -22,7 +22,6 @@ Error handling (generating an error while parsing).
 This is not that complete or well thought through; it needs to be revised.
 '''
 
-from lepl.support.graph import postorder
 from lepl.support.node import Node
 from lepl.support.lib import format
 
@@ -37,8 +36,7 @@ def make_error(msg):
         '''
         Create the error node when results are available.
         '''
-        return Error(results,
-            *syntax_error_args(msg, stream_in, stream_out, results))
+        return Error(*syntax_error_args(msg, stream_in, stream_out, results))
     return fun
 
 
@@ -100,27 +98,16 @@ def raise_error(msg):
 class Error(Node, SyntaxError):
     '''
     Subclass `Node` and Python's SyntaxError to provide an AST
-    node that can be raised as an error via `throw`.
+    node that can be raised as an error via `node_throw` or `sexpr_throw`.
     
     Create with `make_error()`.
     '''
     
-    def __init__(self, results, msg, location):
+    def __init__(self, msg, location):
         # pylint: disable-msg=W0142
-        Node.__init__(self, *results)
+        Node.__init__(self, msg, location)
         SyntaxError.__init__(self, msg, location)
         
     def __str__(self):
         return SyntaxError.__str__(self)
 
-
-def throw(node):
-    '''
-    Raise an error, if one exists in the results (AST trees are traversed).
-    Otherwise, the results are returned (invoke with ``>>``).
-    '''
-    for child in postorder(node, Node):
-        if isinstance(child, Exception):
-            raise child
-    return node
-        

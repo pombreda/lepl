@@ -20,18 +20,23 @@ tracebacks are now clearer (you no longer get something that has been mangled
 by the trampolining).
 
 Generating ASTs is simpler too.  There is extra support for using nested
-lists, with the new `List() <api/redirect.html#lepl.support.list.List>`_ class, which means that the more complex
-`Node() <api/redirect.html#lepl.support.node.Node>`_ classes often aren't needed (the examples in the documentation have
-been updated to reflect this).
+lists, with the new `List() <api/redirect.html#lepl.support.list.List>`_
+class, which means that the more complex `Node()
+<api/redirect.html#lepl.support.node.Node>`_ classes are often not needed (the
+examples in the documentation have been updated to reflect this).
 
-Often when software is made simpler, it becomes slower.  The reverse is true
-for Lepl - the new, simpler, approach supports new optimisations and makes
-fixing bugs easier.  In my tests, parsers using the default configuration are
-up to 10 times faster.
+Sometimes, when software is made simpler, it becomes slower.  The reverse is
+true for Lepl - the new, simpler, approach supports new optimisations and
+makes fixing bugs easier.  In my tests, parsers using the default
+configuration are up to 10 times faster.
 
-Below I'll explain all these new features in much more detail, but if you want
-to get started with Lepl now, installation instructions are on the (new,
-simpler) front page.
+Finally, licensing: some people were worried about the details of the `LGPL
+<http://www.opensource.org/licenses/lgpl-3.0.html>`_; you can now choose to
+use Lepl under the `MPL <http://www.opensource.org/licenses/mozilla1.1.php>`_.
+
+Below I'll explain these new features in much more detail, but if you want to
+get started with Lepl now, installation instructions are on the (new, simpler)
+`front page <index.html>`_.
 
 
 A Simpler API
@@ -241,7 +246,8 @@ I spent time profiling, experimenting with different configurations, and have
 tweaked the default settings so that, on average, parsers are faster.  In
 particular, memoisation is used only to detect left--recursive loops (if you
 do want full memoisation you can still configure it, of course, with
-`.config.auto_memoize(full=True) <api/redirect.html#lepl.core.config.ConfigBuilder.auto_memoize>`_).
+`.config.auto_memoize(full=True)
+<api/redirect.html#lepl.core.config.ConfigBuilder.auto_memoize>`_).
 
 
 No Trampolining
@@ -263,7 +269,8 @@ possible.
 
 The end result is that trampoling is removed when the grammar is unlikely to
 need it.  If you disagree you add it back through the configuration
-(`.config.no_direct_eval() <api/redirect.html#lepl.core.config.ConfigBuilder.no_direct_eval>`_).
+(`.config.no_direct_eval()
+<api/redirect.html#lepl.core.config.ConfigBuilder.no_direct_eval>`_).
 
 
 Better Memoisation
@@ -273,3 +280,12 @@ Sometimes memoisation is a *big* win.  It's not enabled by default, so you
 still need to experiment to find out when to use it.  But until now it had a
 stupid bug that made it less likely to work.  That bug is now fixed, so when
 you need memoisation, it will be there for you.
+
+
+Further Reading
+---------------
+
+* `Front Page <index.html>`_
+* :ref:`manual`
+* :ref:`tutorial`
+* :ref:`contents`

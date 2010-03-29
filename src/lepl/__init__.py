@@ -120,7 +120,7 @@ from lepl.matchers.derived import Apply, args, KApply, Regexp, Join, \
     Whitespace, Digit, Letter, Upper, Lower, Printable, Punctuation, \
     UnsignedInteger, SignedInteger, Integer, UnsignedFloat, SignedFloat, \
     SignedEFloat, Float, Word, DropEmpty, Literals, String, SkipTo, Columns
-from lepl.matchers.error import Error, make_error, raise_error, throw
+from lepl.matchers.error import Error, make_error, raise_error
 from lepl.matchers.memo import RMemo, LMemo, MemoException
 from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
     GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST, DroppedSpace
@@ -137,8 +137,8 @@ from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.stream.maxdepth import FullFirstMatchException
 from lepl.stream.stream import DEFAULT_STREAM_FACTORY
-from lepl.support.list import List
-from lepl.support.node import Node, make_dict, join_with
+from lepl.support.list import List, sexpr_fold, sexpr_throw
+from lepl.support.node import Node, make_dict, join_with, node_throw
 
 __all__ = [
         # lepl.core.config
@@ -150,7 +150,6 @@ __all__ = [
         'make_error',
         'raise_error',
         'Error',
-        'throw',
         # lepl.matchers.core
         'Empty',
         'Repeat',
@@ -230,8 +229,11 @@ __all__ = [
         'Node',
         'make_dict',
         'join_with',
+        'node_throw',
         # lepl.support.list
         'List',
+        'sexpr_fold',
+        'sexpr_throw',
         # lepl.lexer.matchers
         'Token',
         'LexerError',

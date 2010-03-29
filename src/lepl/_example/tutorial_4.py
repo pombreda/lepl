@@ -43,13 +43,13 @@ def add_sub_node():
     group1 = parens | number
 
     # second layer, next most tightly grouped, is multiplication
-    mul = group1 & symbol('*') & group2 > Node
-    div = group1 & symbol('/') & group2 > Node
+    mul = group1 & symbol('*') & group2 > List
+    div = group1 & symbol('/') & group2 > List
     group2 += mul | div | group1
 
     # third layer, least tightly grouped, is addition
-    add = group2 & symbol('+') & group3 > Node
-    sub = group2 & symbol('-') & group3 > Node
+    add = group2 & symbol('+') & group3 > List
+    sub = group2 & symbol('-') & group3 > List
     group3 += add | sub | group2
     return group3
 
@@ -64,13 +64,13 @@ def error_1():
     group1 = parens | number
 
     # second layer, next most tightly grouped, is multiplication
-    mul = group1 & symbol('*') & group2 > Node
-    div = group1 & symbol('/') & group2 > Node
+    mul = group1 & symbol('*') & group2 > List
+    div = group1 & symbol('/') & group2 > List
     group2 += group1 | mul | div
 
     # third layer, least tightly grouped, is addition
-    add = group2 & symbol('+') & group3 > Node
-    sub = group2 & symbol('-') & group3 > Node
+    add = group2 & symbol('+') & group3 > List
+    sub = group2 & symbol('-') & group3 > List
     group3 += group2 | add | sub
     return group3
 
@@ -85,21 +85,21 @@ def error_2():
     group1 = parens | number
 
     # second layer, next most tightly grouped, is multiplication
-    mul = group2 & symbol('*') & group2 > Node
-    div = group2 & symbol('/') & group2 > Node
+    mul = group2 & symbol('*') & group2 > List
+    div = group2 & symbol('/') & group2 > List
     group2 += group1 | mul | div
 
     # third layer, least tightly grouped, is addition
-    add = group3 & symbol('+') & group3 > Node
-    sub = group3 & symbol('-') & group3 > Node
+    add = group3 & symbol('+') & group3 > List
+    sub = group3 & symbol('-') & group3 > List
     group3 += group2 | add | sub
     return group3
 
 def node_1():
-    class Add(Node): pass
-    class Sub(Node): pass
-    class Mul(Node): pass
-    class Div(Node): pass
+    class Add(List): pass
+    class Sub(List): pass
+    class Mul(List): pass
+    class Div(List): pass
     value = Token(UnsignedFloat())
     symbol = Token('[^0-9a-zA-Z \t\r\n]')
     number = Optional(symbol('-')) + value >> float
@@ -121,7 +121,7 @@ def node_1():
     return group3
 
 def node_2():
-    class Op(Node):
+    class Op(List):
         def __float__(self):
             return self._op(float(self[0]), float(self[1]))
     class Add(Op): _op = add
@@ -171,22 +171,22 @@ class Tutorial4Example(Example):
         
         self.examples([
 (lambda: self.run_add_sub_node().parse('1+2*(3-4)+5/6+7')[0],
-"""Node
+"""List
  +- 1.0
  +- '+'
- `- Node
-     +- Node
+ `- List
+     +- List
      |   +- 2.0
      |   +- '*'
      |   +- '('
-     |   +- Node
+     |   +- List
      |   |   +- 3.0
      |   |   +- '-'
      |   |   `- 4.0
      |   `- ')'
      +- '+'
-     `- Node
-         +- Node
+     `- List
+         +- List
          |   +- 5.0
          |   +- '/'
          |   `- 6.0
@@ -199,22 +199,22 @@ Line 1, character 1 of str: '1+2*(3-4)+5/6+7'.
 (lambda: len(list(self.unlimited_run_error_1().parse_all('1+2*(3-4)+5/6+7'))), 
 """6"""),
 (lambda: (self.run_error_1() & Eos()).parse('1+2*(3-4)+5/6+7')[0], 
-"""Node
+"""List
  +- 1.0
  +- '+'
- `- Node
-     +- Node
+ `- List
+     +- List
      |   +- 2.0
      |   +- '*'
      |   +- '('
-     |   +- Node
+     |   +- List
      |   |   +- 3.0
      |   |   +- '-'
      |   |   `- 4.0
      |   `- ')'
      +- '+'
-     `- Node
-         +- Node
+     `- List
+         +- List
          |   +- 5.0
          |   +- '/'
          |   `- 6.0
@@ -229,22 +229,22 @@ Line 1, character 1 of str: '1+2*(3-4)+5/6+7'.
 (lambda: len(list(self.unlimited_run_error_2().parse_all('1+2*(3-4)+5/6+7'))), 
 """12"""),
 (lambda: (self.run_error_2() & Eos()).parse('1+2*(3-4)+5/6+7')[0], 
-"""Node
+"""List
  +- 1.0
  +- '+'
- `- Node
-     +- Node
+ `- List
+     +- List
      |   +- 2.0
      |   +- '*'
      |   +- '('
-     |   +- Node
+     |   +- List
      |   |   +- 3.0
      |   |   +- '-'
      |   |   `- 4.0
      |   `- ')'
      +- '+'
-     `- Node
-         +- Node
+     `- List
+         +- List
          |   +- 5.0
          |   +- '/'
          |   `- 6.0

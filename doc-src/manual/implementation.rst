@@ -83,7 +83,7 @@ trampolining was introduced), the impact on existing code was fairly small.
 Memoisation
 -----------
 
-The simple memoizer, `RMemo() <api/redirect.html#lepl.memo.RMemo>`_, is
+The simple memoizer, `RMemo() <api/redirect.html#lepl.matchers.memo.RMemo>`_, is
 equivalent to the approach described by `Norvig 1991
 <http://acl.ldc.upenn.edu/J/J91/J91-1004.pdf>`_ (I may be mistaken, because it
 seems odd that something so simple is so famous, but perhaps life was simpler
@@ -105,7 +105,7 @@ to consumer `something` each time round).  They therefore recommended
 extending the simple cache with a counter that blocks recursion past that
 depth.
 
-This approach is implemented in `LMemo() <api/redirect.html#lepl.memo.LMemo>`_
+This approach is implemented in `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_
 which makes Lepl robust to left--recursive grammars.
 
 

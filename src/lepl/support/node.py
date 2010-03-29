@@ -20,7 +20,8 @@
 Base classes for AST nodes (and associated functions).
 '''
 
-from lepl.support.graph import GraphStr, ConstructorGraphNode, ConstructorWalker
+from lepl.support.graph import GraphStr, ConstructorGraphNode, ConstructorWalker,\
+    postorder
 from lepl.support.lib import LogMixin, basestring, format
 
 
@@ -261,6 +262,17 @@ class NodeTreeStr(GraphStr):
                     [first + arg[0] + (' ' if arg[0] else '') + repr(arg[1])]
         else:
             return super(NodeTreeStr, self).leaf(arg)
+    
+
+def node_throw(node):
+    '''
+    Raise an error, if one exists in the results (AST trees are traversed).
+    Otherwise, the results are returned (invoke with ``>>``).
+    '''
+    for child in postorder(node, Node):
+        if isinstance(child, Exception):
+            raise child
+    return node
 
 
 # Below unrelated to nodes - move?
@@ -289,5 +301,3 @@ def join_with(separator=''):
         '''
         return separator.join(results)
     return fun
-    
-

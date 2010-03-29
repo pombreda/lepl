@@ -1,17 +1,17 @@
 
-NOTE - THIS IS NO LONGER INCLUDED IN THE ONLINE DOCS (WAS DROPPED FROM THE
-MAIN MENUS AND SO DOES NOT GET LINKED).  HOWEVER, IT SHOULD STILL ALL WORK AS
-BEFORE (TESTS STILL EXIST IN THE SOURCE).  I DROPPED IT BECAUSE I DON'T THINK
-ANYONE USES IT, IT MAY BE UNRELIABLE, AND IT'S NOT SOMETHING I WANT TO
-SUPPORT, PARTICULARLY.  BUT IF IT IS USEFUL TO SOMEONE I AM WILLING TO REVISE
-THAT...
-
 .. index:: resources
 .. _resources:
 
 Resource Management
 ===================
 
+.. warning::
+
+   This is no longer included in the manual (is linked to only from the
+   features page).  It was dropped because it is not used, may be unreliable,
+   and is not well supported.  However, tests still exist and continue to be
+   maintained, and further support and development may be possible if there is
+   a clear need.
 
 .. index:: GeneratorWrapper, backtracking, generators
 
@@ -22,7 +22,7 @@ Generator Management
 
   To use the techniques described in this section the `GeneratorManager()
   <api/redirect.html#lepl.manager.GeneratorManager>`_ monitor must be added to
-  the :ref:`configuration`.
+  the :ref:`configuration` using `.config.manage() <api/redirect.html#lepl.core.config.ConfigBuilder.manage>`_.
 
 :ref:`backtracking` within Lepl is implemented using generators.  These are
 semi--autonomous *loop--like* blocks of code that can be paused and restarted.
@@ -85,26 +85,26 @@ level.
 
 To configure this limit use the ``queue_len`` parameter::
 
-  >>> matches = (Literal('*')[:,...][2] & Eos()).match('*' * 4)
-  >>> list(matches)
+  >>> matcher = (Literal('*')[:,...][2] & Eos())
+  >>> list(matcher.parse_all('*' * 4))
   [(['****'],     ''), 
    (['***', '*'], ''), 
    (['**', '**'], ''), 
    (['*', '***'], ''), 
    (['****'],     '')]
   
-  >>> config = Configuration(monitors=[GeneratorManager(queue_len=1)])
-  >>> matches = (Literal('*')[:,...][2] & Eos()).match('*' * 4, config)
-  >>> list(matches)
+  >>> matcher.config.mnager(queue_len=1)
+  >>> list(matcher.parse_all('*' * 4))
   [(['****'],     '')]
 
 It may not be clear what the rather compact expressions are doing above.  In
-both cases two matchers, each of which can match 0 or more "*" characters, are
-followed by the end of string test.  They are applied to a string containing
-"\****".  With full backtracking all the different solutions (different ways
-of splitting the "*" characters between the two matchers) are available.  When
-the ``queue_len`` is set to a very low level generators are discarded whenever
-possible, making backtracking impossible and providing just a single match.
+both cases two matchers, each of which can match zero or more "*" characters,
+are followed by the end of string test.  They are applied to a string
+containing "\****".  With full backtracking all the different solutions
+(different ways of splitting the "*" characters between the two matchers) are
+available.  When the ``queue_len`` is set to a very low level generators are
+discarded whenever possible, making backtracking impossible and providing just
+a single match.
 
 
 .. index:: cut, prolog, queue_len, Commit()
@@ -117,8 +117,8 @@ An alternative to the above, automatic management of generators, is to
 explicitly remove non--active generators as part of the search process.  This
 is similar to Prolog's *cut*, I believe.
 
-The `Commit() <api/redirect.html#lepl.matchers.monitor.Commit>`_ matcher does this: it
-discards all non--active generators.
+The `Commit() <api/redirect.html#lepl.matchers.monitor.Commit>`_ matcher does
+this: it discards all non--active generators.
 
 For `Commit() <api/redirect.html#lepl.matchers.monitor.Commit>`_ to work the
 `GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_ must
@@ -128,5 +128,4 @@ is 0, which stores references but does not cause :ref:`limiting`.
 See also `First() <api/redirect.html#lepl.matchers.combine.First>`_.
 
 If this is useful, I'd really appreciate a good, short example to put here.
-
 

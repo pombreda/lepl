@@ -3,12 +3,13 @@ Advanced Use
 ============
 
 .. index:: configuration, .config
+.. _configuration:
 
 Configuration
 -------------
 
 Configuration for Lepl 4 has been completely revised.  Instead of using a
-separate configuration object, a ``.config`` attribute on the macther is used.
+separate configuration object, a ``.config`` attribute on the matcher is used.
 This means that you can explore the available options at the Python prompt
 (and perhaps via some IDEs).
 
@@ -61,18 +62,21 @@ Other Packaged Actions
 `.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_ `.config.no_lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.no_lexer>`_
 
   Detect the use of `Token()` and modify the parser to use the
-  lexer. Typically this is called indirectly via `.config.default() <api/redirect.html#lepl.core.config.ConfigBuilder.default>`_
-  (above).
+  lexer. Typically this is called indirectly via `.config.default()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.default>`_ (above).
 
 `.config.line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.line_aware>`_
 
   Enable line aware parsing.  Typically this is called indirectly by
-  `.config.default_line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_ (above).
+  `.config.default_line_aware()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_
+  (above).
 
 `.config.blocks() <api/redirect.html#lepl.core.config.ConfigBuilder.blocks>`_
 
   Enable offisde rule parsing.  Typically this is called indirectly by setting
-  ``block_policy`` or ``block_start`` on `.config.default_line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_
+  ``block_policy`` or ``block_start`` on `.config.default_line_aware()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_
   (above).
 
 .. index:: full_first_match(), no_full_first_match(), trace(), record_deepest()
@@ -80,7 +84,10 @@ Other Packaged Actions
 Debug Actions
 ~~~~~~~~~~~~~
 
-`.config.full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.full_first_match>`_ `.config.no_full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_
+`.config.full_first_match()
+<api/redirect.html#lepl.core.config.ConfigBuilder.full_first_match>`_
+`.config.no_full_first_match()
+<api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_
 
   Enable or disable the automatic generation of an error if the first match
   fails.
@@ -88,19 +95,27 @@ Debug Actions
 `.config.trace() <api/redirect.html#lepl.core.config.ConfigBuilder.trace>`_
 
   Add a monitor to trace results.  See ``TraceResults()``.  Removed by
-  `.config.remove_all_monitors() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
+  `.config.remove_all_monitors()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or
+  `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
 
-`.config.record_deepest() <api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_
+`.config.record_deepest()
+<api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_
 
   Add a monitor to record deepest match.  See ``RecordDeepest()``. Removed by
-  `.config.remove_all_monitors() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
+  `.config.remove_all_monitors()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or
+  `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
 
 .. index:: flatten(), no_flatten(), compile_to_dfa(), compile_to_nfa(), no_compile_to_regexp(), optimize_or(), no_optimize_or(), direct_eval(), no_direct_eval(), compose_transforms(), no_compose_transforms(), auto_memoize(), left_memoize(), right_memoize(), no_memoize(), manage()
     
 Optimisation Actions
 ~~~~~~~~~~~~~~~~~~~~
 
-`.config.flatten() <api/redirect.html#lepl.core.config.ConfigBuilder.flatten>`_ `.config.no_flatten() <api/redirect.html#lepl.core.config.ConfigBuilder.no_flatten>`_
+`.config.flatten()
+<api/redirect.html#lepl.core.config.ConfigBuilder.flatten>`_
+`.config.no_flatten()
+<api/redirect.html#lepl.core.config.ConfigBuilder.no_flatten>`_
 
   Combined nested `And() <api/redirect.html#lepl.matchers.combine.And>`_ and
   `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ matchers.
@@ -113,7 +128,12 @@ Optimisation Actions
   grammar.  This should not change the "meaning" of the grammar or the results
   returned.
 
-`.config.compile_to_dfa() <api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_dfa>`_ `.config.compile_to_nfa() <api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_nfa>`_ `.config.no_compile_to_regexp() <api/redirect.html#lepl.core.config.ConfigBuilder.no_compile_to_regexp>`_
+`.config.compile_to_dfa()
+<api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_dfa>`_
+`.config.compile_to_nfa()
+<api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_nfa>`_
+`.config.no_compile_to_regexp()
+<api/redirect.html#lepl.core.config.ConfigBuilder.no_compile_to_regexp>`_
 
   Compile simple matches to regular expressions.
 
@@ -123,7 +143,10 @@ Optimisation Actions
   expressions is typically restricted to those parts of the parser that
   recognise individual words.
   
-`.config.optimize_or() <api/redirect.html#lepl.core.config.ConfigBuilder.optimize_or>`_ `.config.no_optimize_or() <api/redirect.html#lepl.core.config.ConfigBuilder.no_optimize_or>`_
+`.config.optimize_or()
+<api/redirect.html#lepl.core.config.ConfigBuilder.optimize_or>`_
+`.config.no_optimize_or()
+<api/redirect.html#lepl.core.config.ConfigBuilder.no_optimize_or>`_
 
   Rearrange arguments to `Or() <api/redirect.html#lepl.matchers.combine.Or>`_
   so that left-recursive matchers are tested last.  This improves efficiency,
@@ -136,11 +159,17 @@ Optimisation Actions
   the left--most position of multiple arguments are used (except for `Or()
   <api/redirect.html#lepl.matchers.combine.Or>`_).
 
-`.config.direct_eval() <api/redirect.html#lepl.core.config.ConfigBuilder.direct_eval>`_ `.config.no_direct_eval() <api/redirect.html#lepl.core.config.ConfigBuilder.no_direct_eval>`_
+`.config.direct_eval()
+<api/redirect.html#lepl.core.config.ConfigBuilder.direct_eval>`_
+`.config.no_direct_eval()
+<api/redirect.html#lepl.core.config.ConfigBuilder.no_direct_eval>`_
 
   Combine simple matchers so that they are evaluated without trampolining.
 
-`.config.compose_transforms() <api/redirect.html#lepl.core.config.ConfigBuilder.compose_transforms>`_ `.config.no_compose_transforms() <api/redirect.html#lepl.core.config.ConfigBuilder.no_compose_transforms>`_
+`.config.compose_transforms()
+<api/redirect.html#lepl.core.config.ConfigBuilder.compose_transforms>`_
+`.config.no_compose_transforms()
+<api/redirect.html#lepl.core.config.ConfigBuilder.no_compose_transforms>`_
 
   Combine transforms (functions applied to results) with matchers.
         
@@ -160,7 +189,14 @@ Optimisation Actions
   results returned, but should improve performance by reducing the amount of
   :ref:`trampolining` made by the parser.
 
-`.config.auto_memoize() <api/redirect.html#lepl.core.config.ConfigBuilder.auto_memoize>`_ `.config.left_memoize() <api/redirect.html#lepl.core.config.ConfigBuilder.left_memoize>`_ `.config.right_memoize() <api/redirect.html#lepl.core.config.ConfigBuilder.right_memoize>`_ `.config.no_memoize() <api/redirect.html#lepl.core.config.ConfigBuilder.no_memoize>`_
+`.config.auto_memoize()
+<api/redirect.html#lepl.core.config.ConfigBuilder.auto_memoize>`_
+`.config.left_memoize()
+<api/redirect.html#lepl.core.config.ConfigBuilder.left_memoize>`_
+`.config.right_memoize()
+<api/redirect.html#lepl.core.config.ConfigBuilder.right_memoize>`_
+`.config.no_memoize()
+<api/redirect.html#lepl.core.config.ConfigBuilder.no_memoize>`_
 
   Remember previous inputs and results for matchers so that work is not
   repeated.  See :ref:`memoisation`.
@@ -168,7 +204,9 @@ Optimisation Actions
 `.config.manage() <api/redirect.html#lepl.core.config.ConfigBuilder.manage>`_
 
   Add a monitor to manage resources.  See ``GeneratorManager()``. Removed by
-  `.config.remove_all_monitors() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
+  `.config.remove_all_monitors()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or
+  `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
 
 .. index:: add_rewriter(), remove_rewriter(), remove_all_rewriters(), add_monitor(), remove_all_monitors(), stream_factory(), alphabet()
 
@@ -179,7 +217,12 @@ These methods are used internally.  They may also be useful if you are
 developing a completely new functionality that is not supported by the "higher
 level" actions described above.
 
-`.config.add_rewriter() <api/redirect.html#lepl.core.config.ConfigBuilder.add_rewriter>`_ `.config.remove_rewriter() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_rewriter>`_ `.config.remove_all_rewriters() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_rewriters>`_
+`.config.add_rewriter()
+<api/redirect.html#lepl.core.config.ConfigBuilder.add_rewriter>`_
+`.config.remove_rewriter()
+<api/redirect.html#lepl.core.config.ConfigBuilder.remove_rewriter>`_
+`.config.remove_all_rewriters()
+<api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_rewriters>`_
 
   Add or remove a rewriter, or remove all rewriters (possibly of a given
   type).  Rewriters manipulate the matchers before the parser is used.  This
@@ -188,14 +231,18 @@ level" actions described above.
   of user--defined rewriters is not encouraged unless you are *very* familiar
   with Lepl.
 
-`.config.add_monitor() <api/redirect.html#lepl.core.config.ConfigBuilder.add_monitor>`_ `.config.remove_all_monitors() <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_
+`.config.add_monitor()
+<api/redirect.html#lepl.core.config.ConfigBuilder.add_monitor>`_
+`.config.remove_all_monitors()
+<api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_
 
   Add a monitor, or remove all monitors.  Monitors implement a callback
   interface that receives information about how Lepl is working.  They can be
   used to share state across matchers, or to generate debugging information,
   for example.
 
-`.config.stream_factory() <api/redirect.html#lepl.core.config.ConfigBuilder.stream_factory>`_
+`.config.stream_factory()
+<api/redirect.html#lepl.core.config.ConfigBuilder.stream_factory>`_
 
   Set the stream factory.  This changes the class used to generate the stream
   for the parser, given some input (for example, `matcher.parse_string()
@@ -203,7 +250,8 @@ level" actions described above.
   the ``from_string()`` method on this factory, to convert the string into a
   suitable stream).
 
-`.config.alphabet() <api/redirect.html#lepl.core.config.ConfigBuilder.alphabet>`_
+`.config.alphabet()
+<api/redirect.html#lepl.core.config.ConfigBuilder.alphabet>`_
 
   Set the alphabet, used by rgegular expressions.  The default alphabet is
   suitable for Unicode data.
@@ -218,18 +266,23 @@ each matcher individually, it is possible to set them all, via the
 configuration.  These are used internally, to implement packaged actions;
 end-users should not need to call these methods in "normal" use.
 
-`.config.set_arguments() <api/redirect.html#lepl.core.config.ConfigBuilder.set_arguments>`_ `.config.no_set_arguments() <api/redirect.html#lepl.core.config.ConfigBuilder.no_set_arguments>`_
+`.config.set_arguments()
+<api/redirect.html#lepl.core.config.ConfigBuilder.set_arguments>`_
+`.config.no_set_arguments()
+<api/redirect.html#lepl.core.config.ConfigBuilder.no_set_arguments>`_
 
   Set an argument, or clear all such settings.
 
-`.config.set_alphabet_arg() <api/redirect.html#lepl.core.config.ConfigBuilder.set_alphabet_arg>`_
+`.config.set_alphabet_arg()
+<api/redirect.html#lepl.core.config.ConfigBuilder.set_alphabet_arg>`_
 
   Set the ``alphabet=...`` argument.  If no value is given then the value
   given earlier to `.config.argument()
   <api/redirect.html#lepl.core.config.ConfigBuilder.argument>`_ (or, if no
   value was given, the default Unicode alphabet) is used.
 
-`.config.set_block_policy_arg() <api/redirect.html#lepl.core.config.ConfigBuilder.set_block_policy_arg>`_
+`.config.set_block_policy_arg()
+<api/redirect.html#lepl.core.config.ConfigBuilder.set_block_policy_arg>`_
 
   Set the block policy on all ``Block()`` instances.
 
@@ -292,25 +345,25 @@ So far so good.  Unfortunately the process is more complicated for `And()
 <api/redirect.html#lepl.matchers.combine.And>`_ and `Or()
 <api/redirect.html#lepl.matchers.combine.Or>`_.
 
-In the case of `And() <api/redirect.html#lepl.matchers.combine.And>`_, the first
-matcher is matched first.  The child nodes correspond to the various (with
-backtracking) results of this match.  At each child node, the second matcher
-is applied, generating new children.  This repeats until the scope of the
-`And() <api/redirect.html#lepl.matchers.combine.And>`_ terminates at a depth in the
-tree corresponding to the children of the last matcher.  Since `And()
-<api/redirect.html#lepl.matchers.combine.And>`_ fails unless all matchers match, only
-the final child nodes are possible results.  As a consequence, both breadth
-and depth first searches would return the same ordering.  The `And()
-<api/redirect.html#lepl.matchers.combine.And>`_ match is therefore unambiguous and the
-implementation has no way to specify the (essentially meaningless) choice
-between the two searches.
+In the case of `And() <api/redirect.html#lepl.matchers.combine.And>`_, the
+first matcher is matched first.  The child nodes correspond to the various
+(with backtracking) results of this match.  At each child node, the second
+matcher is applied, generating new children.  This repeats until the scope of
+the `And() <api/redirect.html#lepl.matchers.combine.And>`_ terminates at a
+depth in the tree corresponding to the children of the last matcher.  Since
+`And() <api/redirect.html#lepl.matchers.combine.And>`_ fails unless all
+matchers match, only the final child nodes are possible results.  As a
+consequence, both breadth and depth first searches would return the same
+ordering.  The `And() <api/redirect.html#lepl.matchers.combine.And>`_ match is
+therefore unambiguous and the implementation has no way to specify the
+(essentially meaningless) choice between the two searches.
 
-In the case of `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ we must select
-both the matcher and the result from the results available for that matcher.
-A natural approach is to assign the first generation of children to the choice
-of matcher, and the second level to the choice of result for the (parent)
-matcher.  Again, this results in no ambiguity between breadth and depth--first
-results.
+In the case of `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ we must
+select both the matcher and the result from the results available for that
+matcher.  A natural approach is to assign the first generation of children to
+the choice of matcher, and the second level to the choice of result for the
+(parent) matcher.  Again, this results in no ambiguity between breadth and
+depth--first results.
 
 However, there is also an intuitively attractive argument that breadth--first
 search would return the first results of the different matches, in series,
@@ -330,16 +383,16 @@ without repeating the work needed to generate it.  This improves the
 efficiency of the parser.
 
 Lepl 2 has two memoizers.  The simplest is `RMemo()
-<api/redirect.html#lepl.memo.RMemo>`_ which is a simple cache based on the
+<api/redirect.html#lepl.matchers.memo.RMemo>`_ which is a simple cache based on the
 stream supplied.
 
 For left--recursive grammars, however, things are more complicated.  The same
 matcher can be called with the same stream at different "levels" of recursion
 (for full details see :ref:`memoisation_impl`).  In this case, `LMemo()
-<api/redirect.html#lepl.memo.LMemo>`_ must be used.
+<api/redirect.html#lepl.matchers.memo.LMemo>`_ must be used.
 
-Memoizers can be specified directly in the grammar or they can be added by
-:ref:`rewriting` the matcher graph.  
+Memoizers can be specified directly in the grammar or they can be added via
+several configuration options, described below.
 
 When added directly to the grammar a memoizer only affects the given
 matcher(s).  For example::
@@ -348,13 +401,15 @@ matcher(s).  For example::
   >>> len(list(matcher.match('aaaabbbb')))
   5
 
-Here the `RMemo() <api/redirect.html#lepl.memo.RMemo>`_ avoids re-matching of
+Here the `RMemo() <api/redirect.html#lepl.matchers.memo.RMemo>`_ avoids re-matching of
 the "bbbb", but has no effect on the matching of the "a"s.
 
 .. _left_recursion:
 
-The simplest way to apply a memoizer to all matchers is with the `memoize()
-<api/redirect.html#lepl.rewriters.memoize>`_ rewriter::
+To explicitly apply a memoizer to all matchers use `.config.left_memoize()
+<api/redirect.html#lepl.core.config.ConfigBuilder.left_memoize>`_ or
+`.config.right_memoize()
+<api/redirect.html#lepl.core.config.ConfigBuilder.right_memoize>`_::
 
   >>> class VerbPhrase(Node): pass
   >>> class DetPhrase(Node): pass
@@ -376,28 +431,26 @@ The simplest way to apply a memoizer to all matchers is with the `memoize()
   >>> termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
   >>> sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
-  >>> p = sentence.null_matcher(
-  >>>         Configuration(rewriters=[memoize(LMemo)], 
-  >>>                       monitors=[lambda: TraceResults(False)]))
+  >>> p = sentence.auto_memoize()
   >>> len(list(p('every boy or some girl and helen and john or pat knows '
   >>>            'and respects or loves every boy or some girl and pat or '
   >>>            'john and helen')))
   392
 
-This example is left--recursive and very ambiguous.  With `LMemo()
-<api/redirect.html#lepl.memo.LMemo>`_ added to all matchers it can be parsed
-with no problems.
+This example is left--recursive and very ambiguous.  With `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_ added to
+all matchers it can be parsed with no problems.
 
-It is also possible to use the `context_memoize()
-<api/redirect.html#lepl.rewriters.context_memoize>`_ or `auto_memoize()
-<api/redirect.html#lepl.rewriters.auto_memoize>`_ rewriters.  Both of these
-attempt to detect left--recursive rules, so that the less efficient `LMemo()
-<api/redirect.html#lepl.memo.LMemo>`_ is only used where necessary.
+Because memoisation add extra overhead it is usually preferable --- and part
+of the default configuration --- to use `.config.auto_memoize()
+<api/redirect.html#lepl.core.config.ConfigBuilder.auto_memoize>`_.  This
+improves efficiency by:
 
-The default :ref:`configuration` uses `auto_memoize(conservative=False)
-<api/redirect.html#lepl.rewriters.auto_memoize>`_, which should provide the
-most efficient parser in most cases.  It is possible that some grammars will
-need to use the more conservative algorithm to detect left--recursive loops,
-via `auto_memoize(conservative=True)
-<api/redirect.html#lepl.rewriters.auto_memoize>`_.
+* Only adding `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_ to
+  left--recursive matchers.
+* Only adding `RMemo() <api/redirect.html#lepl.matchers.memo.RMemo>`_ to the
+  remaining matchers if the ``full=True`` argument is given.
 
+The detection of left--recursive matchers makes some assumptions about how
+matchers work (in simple terms, that each matcher will consume some input); in
+some unusual cases this may be incorrect and can be overriden by specifying
+the argument ``conservative=True``.

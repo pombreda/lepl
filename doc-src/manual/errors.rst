@@ -25,15 +25,17 @@ Lepl provides support for reporting errors in the input in three ways.
    nodes can then be used, later, to raise exceptions.
 
 The first approach is often the best compromise and is used by default (see
-`.config.full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.full_first_match>`_, :ref:`configuration`).  However, it is limited
-to a single match and gives little information about the underlying problem.
+`.config.full_first_match()
+<api/redirect.html#lepl.core.config.ConfigBuilder.full_first_match>`_,
+:ref:`configuration <configuration>`).  However, it is limited to a single
+match and gives little information about the underlying problem.
 
 The second approach is simple, but doesn't play well with backtracking.
 
 The third approach is probably best for more complex situations, but remains
 relatively unexplored.  It may not scale well, for example.
 
-.. index:: ^, make_error(), **, throw(), Error()
+.. index:: ^, make_error(), **, sexpr_throw(), node_throw(), Error()
 
 Example
 -------
@@ -42,15 +44,15 @@ Here is an example of the second and third approaches in use::
 
   >>> from lepl import *
 
-  >>> class Term(Node): pass
-  >>> class Factor(Node): pass
-  >>> class Expression(Node): pass
+  >>> class Term(List): pass
+  >>> class Factor(List): pass
+  >>> class Expression(List): pass
 
   >>> expr    = Delayed()
-  >>> number  = Digit()[1:,...]                          > 'number'
+  >>> number  = Digit()[1:,...]
   >>> badChar = AnyBut(Space() | Digit() | '(')[1:,...]
 
-  >>> with Separator(r'\s*'):
+  >>> with DroppedSpaces():
 
   >>>     unopen   = number ** make_error('no ( before {stream_out}') & ')'
   >>>     unclosed = ('(' & expr & Eos()) ** make_error('no ) for {stream_in}')
@@ -58,14 +60,14 @@ Here is an example of the second and third approaches in use::
   >>>     term    = Or(
   >>>                  (number | '(' & expr & ')')      > Term,
   >>>                  badChar                          ^ 'unexpected text: {results[0]}',
-  >>>                  unopen                           >> throw,
-  >>>                  unclosed                         >> throw
+  >>>                  unopen,
+  >>>                  unclosed
   >>>                  )
-  >>>     muldiv  = Any('*/')                           > 'operator'
+  >>>     muldiv  = Any('*/')
   >>>     factor  = (term & (muldiv & term)[:])         > Factor
-  >>>     addsub  = Any('+-')                           > 'operator'
+  >>>     addsub  = Any('+-')
   >>>     expr   += (factor & (addsub & factor)[:])     > Expression
-  >>>     line    = Empty() & Trace(expr) & Eos()
+  >>>     line    = Empty() & Trace(expr) & Eos()       >> sexpr_throw
 
   >>> parser = line.get_parse()
 
@@ -104,7 +106,9 @@ Here is an example of the second and third approaches in use::
   :ref:`configuration` will *change the order* of some expressions if the
   grammar is left--recursive.  So if you have a left--recursive grammar and
   want to use the approach shown to error handling then you must call
-  `.config.no_optimize_or() <api/redirect.html#lepl.core.config.ConfigBuilder.no_optimize_or>`_.  For more information see :ref:`memoisation`.
+  `.config.no_optimize_or()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.no_optimize_or>`_.  For
+  more information see :ref:`memoisation`.
 
 
 .. index:: ^, Error(), SyntaxError()
@@ -112,16 +116,18 @@ Here is an example of the second and third approaches in use::
 Operators, Functions and Classes
 --------------------------------
 
-===============  ========  ========
-Name             Type      Action
-===============  ========  ========
-``^``            Operator  Raises an exception, given a format string.  Formatting has the same named parameters as the `KApply()  <api/redirect.html#lepl.matchers.derived.KApply>`_ matcher (results, stream_in, stream_out); implemented as KApply(`raise_error <api/redirect.html#lepl.matchers.error.raise_error>`_)
----------------  --------  --------
-``raise_error``  Function  See above.  `API <api/redirect.html#lepl.matchers.raise_error>`_
----------------  --------  --------
-``Error``        Class     Creates a parse tree node that can be used to trigger a later exception (`Error <api/redirect.html#lepl.matchers.error.Error>`_ is a subclass of both `Node <api/redirect.html#lepl.support.node.Node>`_ and ``SyntaxError``).  `API <api/redirect.html#lepl.matchers.error.Error>`_ 
----------------  --------  --------
-``throw``        Function  Walks the parse tree (typically this is a sub--tree associated with a matcher's result and `throw <api/redirect.html#lepl.matchers.error.throw>`_ is invoked by `Apply() <api/redirect.html#lepl.matchers.derived.Apply>`_) and raises the first `Error <api/redirect.html#lepl.matchers.error.Error>`_ found.  `API <api/redirect.html#lepl.matchers.error.throw>`_.
----------------  --------  --------
-``make_error``   Function  Creates an `Error <api/redirect.html#lepl.matchers.error.Error>`_ node, given a format string.  `API <api/redirect.html#lepl.matchers.error.make_error>`_.
-===============  ========  ========
+=============================================================================  ========  ========
+Name                                                                           Type      Action
+=============================================================================  ========  ========
+``^``                                                                          Operator  Raises an exception, given a format string.  Formatting has the same named parameters as the `KApply()  <api/redirect.html#lepl.matchers.derived.KApply>`_ matcher (results, stream_in, stream_out); implemented as KApply(`raise_error <api/redirect.html#lepl.matchers.error.raise_error>`_)
+-----------------------------------------------------------------------------  --------  --------
+`raise_error() <api/redirect.html#lepl.matchers.error.raise_error>`_           Function  See above.
+-----------------------------------------------------------------------------  --------  --------
+`Error() <api/redirect.html#lepl.matchers.error.Error>`_                       Class     Creates a parse tree node that can be used to trigger a later exception (`Error <api/redirect.html#lepl.matchers.error.Error>`_ is a subclass of both `Node <api/redirect.html#lepl.support.node.Node>`_ and ``SyntaxError``).
+-----------------------------------------------------------------------------  --------  --------
+`sexpr_throw() <api/redirect.html#lepl.support.list.sexpr_throw>`_             Function  Walks a `List() <api/redirect.html#lepl.support.list.List>`_--based parse tree and raises the first `Error <api/redirect.html#lepl.matchers.error.Error>`_ found.
+-----------------------------------------------------------------------------  --------  --------
+`node_throw() <api/redirect.html#lepl.support.node.node_throw>`_               Function  Walks a `Node() <api/redirect.html#lepl.support.node.Node>`_--based parse tree and raises the first `Error <api/redirect.html#lepl.matchers.error.Error>`_ found.
+-----------------------------------------------------------------------------  --------  --------
+`make_error() <api/redirect.html#lepl.matchers.error.make_error>`_             Function  Creates an `Error <api/redirect.html#lepl.matchers.error.Error>`_ node, given a format string.
+=============================================================================  ========  ========

@@ -13,11 +13,11 @@ simple AST for repeated addition and subtraction::
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> expr = Delayed()
-  >>> add = number & symbol('+') & expr > Node
-  >>> sub = number & symbol('-') & expr > Node
+  >>> add = number & symbol('+') & expr > List
+  >>> sub = number & symbol('-') & expr > List
   >>> expr += add | sub | number
   >>> expr.parse('1+2-3 +4-5')
-  [Node(...)]
+  [List(...)]
 
 (remember that I will not repeat the import statement in the examples below).
 
@@ -63,32 +63,32 @@ series of layers.  Which is much easier to show than explain in words::
   >>> group1 = parens | number
 
   >>> # second layer, next most tightly grouped, is multiplication
-  ... mul = group1 & symbol('*') & group2 > Node
-  >>> div = group1 & symbol('/') & group2 > Node
+  ... mul = group1 & symbol('*') & group2 > List
+  >>> div = group1 & symbol('/') & group2 > List
   >>> group2 += mul | div | group1
 
   >>> # third layer, least tightly grouped, is addition
-  ... add = group2 & symbol('+') & group3 > Node
-  >>> sub = group2 & symbol('-') & group3 > Node
+  ... add = group2 & symbol('+') & group3 > List
+  >>> sub = group2 & symbol('-') & group3 > List
   >>> group3 += add | sub | group2
   >>> ast = group3.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
-  Node
+  List
    +- 1.0
    +- '+'
-   `- Node
-       +- Node
+   `- List
+       +- List
        |   +- 2.0
        |   +- '*'
        |   +- '('
-       |   +- Node
+       |   +- List
        |   |   +- 3.0
        |   |   +- '-'
        |   |   `- 4.0
        |   `- ')'
        +- '+'
-       `- Node
-           +- Node
+       `- List
+           +- List
            |   +- 5.0
            |   +- '/'
            |   `- 6.0
@@ -125,19 +125,19 @@ different result::
   >>> group2, group3b = Delayed(), Delayed()
 
   >>> # first layer, most tightly grouped, is parens and numbers
-  ... parens = symbol('(') & group3 & symbol(')')
+  ... parens = symbol('(') & group3b & symbol(')')
   >>> group1 = parens | number
 
   >>> # second layer, next most tightly grouped, is multiplication
-  ... mul = group1 & symbol('*') & group2 > Node
-  >>> div = group1 & symbol('/') & group2 > Node
+  ... mul = group1 & symbol('*') & group2 > List
+  >>> div = group1 & symbol('/') & group2 > List
   >>> group2 += group1 | mul | div      # changed!
 
   >>> # third layer, least tightly grouped, is addition
-  ... add = group2 & symbol('+') & group3b > Node
-  >>> sub = group2 & symbol('-') & group3b > Node
+  ... add = group2 & symbol('+') & group3b > List
+  >>> sub = group2 & symbol('-') & group3b > List
   >>> group3b += group2 | add | sub     # changed!
-  >>> ast = group3.parse('1+2*(3-4)+5/6+7')[0]
+  >>> ast = group3b.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
   [...]
   lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+',
@@ -148,7 +148,7 @@ it's just not the first result found, which is what ``parse()`` returns.  We
 can see how many results are found::
 
   >>> group3b.config.no_full_first_match()
-  >>> len(list(group3.parse_all('1+2*(3-4)+5/6+7')))
+  >>> len(list(group3b.parse_all('1+2*(3-4)+5/6+7')))
   6
 
 and it turns out the result we expect is the last one.
@@ -193,35 +193,35 @@ You can understand what has happened by tracing out how the text is matched:
    above.
 
    If the order is critical you can control Lepl's optimisations by giving an
-   explicit :ref:`configuration`.
+   explicit :ref:`configuration <configuration>`.
 
 There's an easy fix for this (but see comments on efficiency below), which is
 to explicitly say that the parser must match the entire output (`Eos()
-<api/redirect.html#lepl.matchers.derived.Eos>`_ matches "end of string" or "end of
-stream").  This works because the sequence described above fails (as some
-input remains), so the next alternative is tried (which in this case would be
-the ``mul`` in ``group2``, since ``group1`` has run out of alternatives).
-Eventually an arrangement of matchers is found that matches the complete
-input::
+<api/redirect.html#lepl.matchers.derived.Eos>`_ matches "end of string" or
+"end of stream").  This works because the sequence described above fails (as
+some input remains), so the next alternative is tried (which in this case
+would be the ``mul`` in ``group2``, since ``group1`` has run out of
+alternatives).  Eventually an arrangement of matchers is found that matches
+the complete input::
 
   >>> expr = group3b & Eos()
   >>> print(expr.parse('1+2*(3-4)+5/6+7')[0])
-  Node
+  List
    +- 1.0
    +- '+'
-   `- Node
-       +- Node
+   `- List
+       +- List
        |   +- 2.0
        |   +- '*'
        |   +- '('
-       |   +- Node
+       |   +- List
        |   |   +- 3.0
        |   |   +- '-'
        |   |   `- 4.0
        |   `- ')'
        +- '+'
-       `- Node
-	   +- Node
+       `- List
+	   +- List
 	   |   +- 5.0
 	   |   +- '/'
 	   |   `- 6.0
@@ -231,8 +231,8 @@ input::
   1
 
 The second mistake is to duplicate the recursive call on both sides of the
-operator.  So below, for example, we have ``add = group3...`` instead of ``add
-= group2...``::
+operator.  So below, for example, we have ``add = group3c...`` instead of
+``add = group2...``::
 
   >>> value = Token(UnsignedFloat())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
@@ -240,17 +240,17 @@ operator.  So below, for example, we have ``add = group3...`` instead of ``add
   >>> group2, group3c = Delayed(), Delayed()
 
   >>> # first layer, most tightly grouped, is parens and numbers
-  ... parens = symbol('(') & group3 & symbol(')')
+  ... parens = symbol('(') & group3c & symbol(')')
   >>> group1 = parens | number
 
   >>> # second layer, next most tightly grouped, is multiplication
-  ... mul = group2 & symbol('*') & group2 > Node     # changed
-  >>> div = group2 & symbol('/') & group2 > Node     # changed
+  ... mul = group2 & symbol('*') & group2 > List     # changed
+  >>> div = group2 & symbol('/') & group2 > List     # changed
   >>> group2 += mul | div | group1
 
   >>> # third layer, least tightly grouped, is addition
-  ... add = group3c & symbol('+') & group3c > Node   # changed
-  >>> sub = group3c & symbol('-') & group3c > Node   # changed
+  ... add = group3c & symbol('+') & group3c > List   # changed
+  >>> sub = group3c & symbol('-') & group3c > List   # changed
   >>> group3c += add | sub | group2
   >>> ast = group3c.parse('1+2*(3-4)+5/6+7')[0]
   >>> print(ast)
@@ -341,23 +341,23 @@ memory and slow the parser down (the third case above, which *is* left
 recursive, should get significantly slower as the amount of text to parse
 increases).
 
-.. index:: Node()
+.. index:: List()
 
-Subclassing Node
+Subclassing List
 ----------------
 
 Back to our arithmetic expression parser.  We can make the AST more useful by
-using subclasses of Node to indicate different operations (I've dropped the
+using subclasses of List to indicate different operations (I've dropped the
 operations because, with this extra information, they are no longer needed;
 the parentheses can go too)::
 
-  >>> class Add(Node): pass
+  >>> class Add(List): pass
   ... 
-  >>> class Sub(Node): pass
+  >>> class Sub(List): pass
   ... 
-  >>> class Mul(Node): pass
+  >>> class Mul(List): pass
   ... 
-  >>> class Div(Node): pass
+  >>> class Div(List): pass
   ... 
 
   >>> # tokens
@@ -401,17 +401,17 @@ Evaluation
 ----------
 
 We can make the AST "evaluate itself" by adding an appropriate action to each
-node.  If we do this via ``__float__`` then ``float()`` provides a uniform
-interface to access the value of both float values and nodes.
+tree node.  If we do this via ``__float__`` then ``float()`` provides a
+uniform interface to access the value of both float values and nodes.
 
 I'll also make use of the `operator package
-<http://docs.python.org/3.0/library/operator.html>`_ to provide the operation
-for each node type::
+<http://docs.python.org/3.0/library/operator.html>`_ to provide the
+operations::
 
   >>> from operator import add, sub, mul, truediv
 
   >>> # ast nodes
-  ... class Op(Node):
+  ... class Op(List):
   ...     def __float__(self):
   ...         return self._op(float(self[0]), float(self[1]))
   ...
@@ -481,6 +481,7 @@ What have we learnt in this section?
 
 * For efficient parsing, we should be aware of ambiguity and left--recursion.
 
-* We can subclass `Node() <api/redirect.html#lepl.support.node.Node>`_ to add functionality to AST nodes.
+* We can subclass `List() <api/redirect.html#lepl.support.list.List>`_ to add
+  functionality to AST nodes.
 
 Thanks for reading!

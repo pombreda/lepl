@@ -35,11 +35,15 @@ tokens (ignoring :ref:`backtracking`).  For example::
   using ``with Separator(Drop(Regexp(r'\s*'))):``
 
 
-.. index:: s-expressions, list, nested lists
 .. _nestedlists:
 
 Nested Lists
 ------------
+
+.. index:: s-expressions, list, nested lists
+
+Simple Lists
+~~~~~~~~~~~~
 
 Nested lists (S-Expressions) are a traditional way of structuring parse
 results.  With Lepl they are easy to construct with ``> list``::
@@ -47,7 +51,7 @@ results.  With Lepl they are easy to construct with ``> list``::
   >>> expr   = Delayed()
   >>> number = Digit()[1:,...]
 
-  >>> with Separator(Drop(Regexp(r'\s*'))):
+  >>> with DroppedSpace():
   >>>     term    = number | (Drop('(') & expr & Drop(')') > list)
   >>>     muldiv  = Any('*/')
   >>>     factor  = (term & (muldiv & term)[:])
@@ -61,21 +65,77 @@ results.  With Lepl they are easy to construct with ``> list``::
 
   ``list`` is just the usual Python constructor.
 
-(Since ``list`` is idempotent (or a fixed point, or *something*) ---
-``list(list(x)) == list(x)`` --- the operator ``>`` (`Apply(raw=false) <api/redirect.html#lepl.matchers.derived.Apply>`_) has
-to wrap the result of any function in a list.  If this comment is confusing,
-please ignore it, but it may help explain an otherwise annoying design
-detail.)
+.. index:: List(), AST, abstract syntax tree, syntax tree, tree
 
-.. index:: Node(), AST, parse tree, trees
+Extended List Support
+~~~~~~~~~~~~~~~~~~~~~
+
+Lepl includes additional classes to smplify working with nested lists.
+
+First, the `List() <api/redirect.html#lepl.support.list.List>`_ class (which subclasses Python's ``list``) and
+sub-classes can be used to identify nodes and display a tree::
+
+  >>> class Factor(List): pass
+  >>> class Expression(List): pass
+            
+  >>> expr   = Delayed()
+  >>> number = Digit()[1:,...]
+        
+  >>> with DroppedSpace():
+  >>>     term    = number | '(' & expr & ')'
+  >>>     muldiv  = Any('*/')
+  >>>     factor  = term & (muldiv & term)[:]         > Factor
+  >>>     addsub  = Any('+-')
+  >>>     expr   += factor & (addsub & factor)[:]     > Expression
+  >>>     line    = expr & Eos()
+
+  >>> ast = line.parse_string('1 + 2 * (3 + 4 - 5)')[0]
+  >>> print(ast)
+  Expression
+   +- Factor
+   |   `- '1'
+   +- '+'
+   `- Factor
+       +- '2'
+       +- '*'
+       +- '('
+       +- Expression
+       |   +- Factor
+       |   |   `- '3'
+       |   +- '+'
+       |   +- Factor
+       |   |   `- '4'
+       |   +- '-'
+       |   `- Factor
+       |       `- '5'
+       `- ')'
+
+  >>> print(ast[2][0][0])
+  2
+
+Second, we can use `sexpr_fold() <api/redirect.html#lepl.support.list.sexpr_fold>`_ to manipulate this structure in various
+ways::
+
+  >>> def per_list(type_, list_):
+  >>>     return str(eval(''.join(list_)))
+  >>> def calculate(list_):
+  >>>     return sexpr_fold(per_list=per_list)(list_)[0]
+  >>> calculate(ast)
+  5
+
+  >>> sexpr_fold(per_list=lambda t_, l: list(l))(ast)
+  [['1'], '+', ['2', '*', '(', [['3'], '+', ['4'], '-', ['5']], ')']]
+
+
+.. index:: Node()
 .. _trees:
 
-Trees
------
+Nodes
+------
 
-Lepl includes a simple base class, `Node()
-<api/redirect.html#lepl.support.node.Node>`_ that can be used to construct
-trees::
+Lepl includes another class, `Node()
+<api/redirect.html#lepl.support.node.Node>`_, that can also be used to
+construct trees::
 
   >>> class Term(Node): pass
   >>> class Factor(Node): pass
@@ -156,7 +216,8 @@ returned as lists, since sub--node types and names need not be unique::
   >>> ast.Factor[1].Term[0].number[0]
   '2'
 
-Finally, Nodes extend `ConstructorGraphNode()
-<api/redirect.html#lepl.support.graph.ConstructorGraphNode>`_, which means
-that some of the routines in the `graph
-<api/redirect.html#lepl.support.graph>`_ package can be used to process ASTs.
+As you can see, `Node() <api/redirect.html#lepl.support.node.Node>`_ combines aspects of ``list`` and ``dict``.  This
+makes it very powerful, but also complicates the API considerably.  For
+example, no single method describes the contents completely, so iteration over
+Nodes is via the constructor arguments exposed by `ConstructorGraphNode()
+<api/redirect.html#lepl.support.graph.ConstructorGraphNode>`_.

@@ -167,6 +167,13 @@ span.code {
   color: #000000;
 }
 
-div#left * ul {
-  padding-top: 5px;
+div#left ul {
+  padding-top: 10px;
+}
+
+div.install {
+  padding-top: 10px;
+  border-top: 1px dotted #c0c0c0;
+  padding-bottom: 15px;
+  border-bottom: 1px dotted #c0c0c0;
 }

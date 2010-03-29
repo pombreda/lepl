@@ -61,13 +61,9 @@ for errors use the ``WARN`` level, and general debug messages use the
 Stack Traces
 ------------
 
-The trampolining used by Lepl to avoid exhausting the stack means that the
-traceback from the Python exception raised on failure is not that useful.  A
-more useful stack trace, generated from within the trampoline, is logged at
-the ``WARN`` level.
-
-If you have enabled logging, but don't see the stack trace, be sure to check
-earlier in the output.  Often it is not the last thing displayed in the log.
+Lepl 4 has improved trampolining which should give exceptions whose traceback
+information identifies the source of any problem (earlier versions printed a
+separate stack trace to the log --- that is no longer necessary).
 
 
 .. index:: variable traces, TraceVariable
@@ -110,13 +106,15 @@ The display above shows, on the left, the current match.  On the right is the
 head of the stream (what is left after being matched).
 
 
+.. index:: longest match, print_longest()
+.. _deepest_match:
+
 Deepest Matches
 ---------------
 
-It is often useful to know what the last successful match was before the
-parser failed.  More exactly, because backtracking will probably find other
-matches before the top-most matcher fails completely, it is useful to know the
-*longest* match --- the match that consumes as much of the input as possible.
+The `.config.full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.full_first_match>`_ option, enabled by default, gives a simple
+error indicating the deepest match within the stream.  A more detailed report
+is also possible via `.config.record_deepest() <api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_.
 
 The following code is similar to that used in :ref:`getting-started`, but
 fails to match the given input.  It has been modified to print information
@@ -157,7 +155,7 @@ Lines are generated *after* of matching, so the innermost of a set of nested
 matchers is shown first.
 
 The number of entries displayed is controlled by optional parameters supplied
-`RecordDeepest <api/redirect.html#lepl.trace.RecordDeepest>`_.
+to `.config.record_deepest() <api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_.
 
 Looking at the output we can see that the first failure after the deepest
 match was a `Lookahead() <api/redirect.html#lepl.match.Lookahead>`_ on the
@@ -176,8 +174,9 @@ Trace Output
 ------------
 
 The same data can also be displayed to the logs with the `Trace()
-<api/redirect.html#lepl.matchers.monitor.Trace>`_ matcher.  This takes a matcher as an
-argument --- tracing is enabled when the selected matcher is called::
+<api/redirect.html#lepl.matchers.monitor.Trace>`_ matcher.  This takes a
+matcher as an argument --- tracing is enabled when the selected matcher is
+called::
 
   >>> from lepl.match import *
   >>> from logging import basicConfig, INFO
@@ -209,8 +208,8 @@ argument --- tracing is enabled when the selected matcher is called::
 
 .. note::
 
-  `Trace() <api/redirect.html#lepl.matchers.monitor.Trace>`_ expects the parser to be
-  configured with the `TraceResults
+  `Trace() <api/redirect.html#lepl.matchers.monitor.Trace>`_ expects the
+  parser to be configured with the `TraceResults
   <api/redirect.html#lepl.trace.TraceResults>`_ monitor.  This is done with
   `.config.trace() <api/redirect.html#lepl.core.config.ConfigBuilder.trace>`_.
 
@@ -262,7 +261,4 @@ Rewriter Order
 Before Lepl 4 it was possible to specify the order of rewriters; the new
 configuration interface automatically places them in the correct order.  So
 hopefully this error will no longer occur.
-
-.. index:: longest match, print_longest()
-.. _deepest_match:
 

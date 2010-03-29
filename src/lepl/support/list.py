@@ -25,6 +25,7 @@ The general support works with any nested iterables (except strings).
 from functools import reduce
 
 from lepl.support.lib import format
+from lepl.support.node import Node
 
 
 class List(list):
@@ -41,6 +42,16 @@ class List(list):
     
     def __str__(self):
         return sexpr_to_tree(self)
+    
+
+def clone_iterable(type_, items):
+    '''
+    Clone a class that wraps data in an AST.
+    '''
+    if issubclass(type_, Node):
+        return type_(*list(items))
+    else:
+        return type_(items)
     
 
 def sexpr_fold(per_list=None, per_item=None, 
@@ -63,7 +74,7 @@ def sexpr_fold(per_list=None, per_item=None,
     dispatching operations.
     '''
     if per_list is None:
-        per_list = lambda type_, items: type_(items)
+        per_list = clone_iterable
     if per_item is None:
         per_item = lambda x: x
     def items(iterable):
@@ -72,7 +83,7 @@ def sexpr_fold(per_list=None, per_item=None,
                 if not exclude(item):
                     yield per_list(type(item), items(iter(item)))
                     continue
-            except Exception:
+            except TypeError:
                 pass
             yield per_item(item)
     return lambda list_: per_list(type(list_), items(list_))
@@ -140,3 +151,16 @@ def sexpr_to_tree(list_):
     fold = sexpr_fold(per_list, per_item)
     return '\n'.join(fold(list_)('', ''))
 
+
+def sexpr_throw(node):
+    '''
+    Raise an error, if one exists in the results (AST trees are traversed).
+    Otherwise, the results are returned (invoke with ``>>``).
+    '''
+    def throw_or_copy(type_, items):
+        clone = clone_iterable(type_, items)
+        if isinstance(clone, Exception):
+            raise clone
+        else:
+            return clone
+    return sexpr_fold(per_list=throw_or_copy)(node)

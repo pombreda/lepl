@@ -30,7 +30,7 @@ from lepl import *
 from lepl._example.support import Example
 
 
-class ErrorTest(Example):
+class NodeErrorTest(Example):
     
     def make_parser(self):
 
@@ -44,7 +44,7 @@ class ErrorTest(Example):
         number  = Digit()[1:,...]                          > 'number'
         badChar = AnyBut(Space() | Digit() | '(')[1:,...]
         
-        with Separator(r'\s*'):
+        with DroppedSpace():
             
             unopen   = number ** make_error("no ( before '{stream_out}'") & ')'
             unclosed = ('(' & expr & Eos()) ** make_error("no ) for '{stream_in}'")
@@ -52,14 +52,14 @@ class ErrorTest(Example):
             term    = Or(
                          (number | '(' & expr & ')')      > Term,
                          badChar                          ^ 'unexpected text: {results[0]}',
-                         unopen                           >> throw,
-                         unclosed                         >> throw
+                         unopen,
+                         unclosed
                          )
             muldiv  = Any('*/')                           > 'operator'
             factor  = (term & (muldiv & term)[:])         > Factor
             addsub  = Any('+-')                           > 'operator'
             expr   += (factor & (addsub & factor)[:])     > Expression
-            line    = Empty() & Trace(expr) & Eos()
+            line    = (Empty() & expr & Eos())            >> node_throw
         
         return line.get_parse()
     
@@ -89,4 +89,65 @@ lepl.matchers.error.Error: unexpected text: four
            ^
 lepl.matchers.error.Error: unexpected text: *
 """)])
+    
+    
+class ListErrorTest(Example):
+    
+    def make_parser(self):
+
+        #basicConfig(level=DEBUG)
         
+        class Term(List): pass
+        class Factor(List): pass
+        class Expression(List): pass
+        
+        expr    = Delayed()
+        number  = Digit()[1:,...]
+        badChar = AnyBut(Space() | Digit() | '(')[1:,...]
+        
+        with DroppedSpace():
+            
+            unopen   = number ** make_error("no ( before '{stream_out}'") & ')'
+            unclosed = ('(' & expr & Eos()) ** make_error("no ) for '{stream_in}'")
+        
+            term    = Or(
+                         (number | '(' & expr & ')')      > Term,
+                         badChar                          ^ 'unexpected text: {results[0]}',
+                         unopen,
+                         unclosed
+                         )
+            muldiv  = Any('*/')
+            factor  = (term & (muldiv & term)[:])         > Factor
+            addsub  = Any('+-')
+            expr   += (factor & (addsub & factor)[:])     > Expression
+            line    = (Empty() & expr & Eos())            >> sexpr_throw
+        
+        return line.get_parse()
+    
+    def test_errors(self):
+        parser = self.make_parser()
+        self.examples([(lambda: parser('1 + 2 * (3 + 4 - 5')[0],
+                       """  File "str: '1 + 2 * (3 + 4 - 5'", line 1
+    1 + 2 * (3 + 4 - 5
+            ^
+lepl.matchers.error.Error: no ) for '(3 + 4 - 5'
+"""),
+                       (lambda: parser('1 + 2 * 3 + 4 - 5)')[0],
+                        """  File "str: '1 + 2 * 3 + 4 - 5)'", line 1
+    1 + 2 * 3 + 4 - 5)
+                    ^
+lepl.matchers.error.Error: no ( before ')'
+"""),
+                       (lambda: parser('1 + 2 * (3 + four - 5)')[0],
+                        """  File "str: '1 + 2 * (3 + four - 5)'", line 1
+    1 + 2 * (3 + four - 5)
+                 ^
+lepl.matchers.error.Error: unexpected text: four
+"""),
+                       (lambda: parser('1 + 2 ** (3 + 4 - 5)')[0],
+                        """  File "str: '1 + 2 ** (3 + 4 - 5)'", line 1
+    1 + 2 ** (3 + 4 - 5)
+           ^
+lepl.matchers.error.Error: unexpected text: *
+""")])
+    

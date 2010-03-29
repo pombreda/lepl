@@ -57,7 +57,7 @@ class MemoExample(Example):
         termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
         sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
-        sentence.config.left_memoize().trace()
+        sentence.config.left_memoize()
         p = sentence.get_parse_string_all()
         self.examples([(lambda: 
             len(list(p('every boy or some girl and helen and john or pat knows '
