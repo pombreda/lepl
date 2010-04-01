@@ -20,12 +20,15 @@ implementation.
 Trampolining
 ------------
 
+Overview
+~~~~~~~~
+
 A typical recursive descent parser uses at least one stack frame for each
 recursive call to a matcher.  Unfortunately, the default Python stack is
 rather small and there is no optimisation of tail--recursive calls.  So the
 degree of recursion is limited.  This problem is exacerbated by a "clean",
 orthogonal design that constructs matchers in a hierarchical manner
-(eg. `Word() <api/redirect.html#lepl.matchers.derived.Word>`_ calls, `Any()
+(eg. `Word() <api/redirect.html#lepl.matchers.derived.Word>`_ calls `Any()
 <api/redirect.html#lepl.Any>`_ to handle character matching; memoisation uses
 nested matchers to manage caches).
 
@@ -40,42 +43,117 @@ a simple loop that repeatedly evaluates co-routines stored in a stack
 allocated on the heap.
 
 The conversion from nested functions to trampolining with generators involves
-little more than replacing evaluation with ``yield`` (which presents the
-target to the trampoline function for evaluation).
+little more than replacing calls to sub-matchers with ``yield`` (which
+presents the target to the trampoline function for evaluation) and then again
+using ``yield`` to return the match (rather than ``return``).
 
-Trampolining is most visible in the source in two areas:
+.. index:: direct_eval(), no_direct_eval()
 
-#. The `trampoline() <api/redirect.html#lepl.parser.trampoline>`_ function is
-   the main evaluation loop.
+Optimisation
+~~~~~~~~~~~~
 
-#. Each matcher in the `matchers <api/redirect.html#lepl.matchers>`_ package
-   is modified to ``yield`` sub-matchers rather than evaluating them directly.
+The overhead of the trampolining is quite small (expensive operations in
+Python appear to involve accessing attributes and calling functions; the time
+spent in the logic of the trampoline loop is relatively unimportant).
 
-The second case above, individual matchers, nearly always follows the same
-pattern.  Code that originally looked like::
+However, in an attempt to improve performance wherever possible, I have
+experimented with using simple function calls instead of trampolining for
+non--recursive matchers.  This is relatively safe (the Python stack is not
+that small!) and slightly quicker.  It is also easy to implement through the
+decorator functions described below, because suitable matchers can be
+identified by the decorator chosen.
 
-  def _match(self, stream1):
-    (result, stream2) = self.matcher._match(stream1)
-    # do something here (eg process results)
-    yield (result, stream2)
+This optimisation is controlled by `.config.direct_eval()
+<api/redirect.html#lepl.core.config.ConfigBuilder.direct_eval>`_ and enabled
+by default.
 
-where the submatcher (``self.matcher``) is invoked and the result modified,
-becomes::
+.. index:: @function_matcher, @function_matcher_factory, function_matcher, function_matcher_factory
+.. _new_matchers:
 
-  def _match(self, stream1):
-    (result, stream2) = yield self.matcher._match(stream1)
-    # do something here (eg process results)
-    yield (result, stream2)
-    
-The first ``yield`` returns the generator (constructed by ``._match(stream)``)
-to the trampoline.  This is then evaluated (which may mean evaluating other
-generators, yielded by the generator we returned), and the final result
-returned to the matcher from the trampoline via ``generator.send(result,
-stream2)``.
+Simple Functional Matchers
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It is clear, then, that during the transition from versions 1 to 2 (when
-trampolining was introduced), the impact on existing code was fairly small.
+The simplest matchers can be defined trivially.  For example, to match a
+single character::
 
+  >>> @function_matcher
+  >>> def char(support, stream):
+  >>>     if stream:
+  >>>         return ([stream[0]], stream[1:])
+  >>> char()[:,...].parse('ab')
+  ['ab']
+
+The `@function_matcher
+<api/redirect.html#lepl.matchers.support.function_matcher>`_ decorator does
+the necessary work to place the given logic within an `OperatorMatcher()
+<api/redirect.html#lepl.matchers.support.OperatorMatcher>`_ instance, so the
+resulting matcher includes all the usual Lepl functionality (configuration,
+operators, etc).
+
+This can extended to include configuration::
+
+  >>> @function_matcher_factory
+  >>> def char_in(chars):
+  >>>     def match(support, stream):
+  >>>         if stream and stream[0] in chars:
+  >>>             return ([stream[0]], stream[1:])
+  >>>     return match
+
+where the `@function_matcher_factory
+<api/redirect.html#lepl.matchers.support.function_matcher_factory>`_ decorator
+uses introspection to ensure that the final matcher takes the correct
+arguments, and is associated with any given documentation.
+
+Matchers of this kind may avoid trampolining when used with
+`.config.direct_eval()
+<api/redirect.html#lepl.core.config.ConfigBuilder.direct_eval>`_.
+
+.. index:: @sequence_matcher, @sequence_matcher_factory, sequence_matcher, sequence_matcher_factory
+
+Sequence Matchers
+~~~~~~~~~~~~~~~~~
+
+The next most complex kind of matchers can return multiple values (ie they
+support backtracking)::
+
+  >>> @sequence_matcher
+  >>> def any_char(support, stream):
+  >>>     while stream:
+  >>>         yield ([stream[0]], stream[1:])
+  >>>         stream = stream[1:]
+
+  >>> @sequence_matcher_factory
+  >>> def any_char_in(chars):
+  >>>     def match(support, stream):
+  >>>         while stream:
+  >>>             if stream[0] in chars:
+  >>>                 yield ([stream[0]], stream[1:])
+  >>>             stream = stream[1:]
+  >>>     return match
+
+(these will discard any characters that do match, and return those that do as
+successive possibilities).
+
+Again, matchers of this kind may avoid trampolining when used with
+`.config.direct_eval()
+<api/redirect.html#lepl.core.config.ConfigBuilder.direct_eval>`_.
+
+.. index:: @trampoline_matcher, @trampoline_matcher_factory, trampoline_matcher, trampoline_matcher_factory
+
+Trampoline Matchers
+~~~~~~~~~~~~~~~~~~~
+
+The most general matchers evaluate other matchers.  It is difficult to think
+of a simple example to add here, but the curious can check the implementation
+of `And() <api/redirect.html#lepl.matchers.combine.And>`_ and `Or()
+<api/redirect.html#lepl.matchers.combine.Or>`_ (the API documentation includes
+source).
+
+These matchers are defined using `@trampoline_matcher
+<api/redirect.html#lepl.matchers.support.trampoline_matcher>`_ and
+`@trampoline_matcher_factory
+<api/redirect.html#lepl.matchers.support.trampoline_matcher_factory>`_ and
+cannot avoid trampolining.
 
 .. index:: memoisation, Norvig, Frost, Hafiz, left-recursion
 .. _memoisation_impl:
@@ -105,8 +183,9 @@ to consumer `something` each time round).  They therefore recommended
 extending the simple cache with a counter that blocks recursion past that
 depth.
 
-This approach is implemented in `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_
-which makes Lepl robust to left--recursive grammars.
+This approach is implemented in `LMemo()
+<api/redirect.html#lepl.matchers.memo.LMemo>`_ which makes Lepl robust to
+left--recursive grammars.
 
 
 .. index:: rewriting, graph, flattening
@@ -131,7 +210,7 @@ for example.
 
 Tree traversal (without rewriting) is also useful; it is used to generate
 various textual representations of the matchers (and the pretty ASCII trees
-for ASTs).
+for `Node() <api/redirect.html#lepl.support.node.Node>`_--based ASTs).
 
 
 .. index:: streams, SimpleStream(), LocationStream(), StreamFactory()
@@ -146,22 +225,9 @@ abstraction, which implements the `LocationStream()
 position of each character within the source (useful for errors and, in the
 future, parsing with the "offside rule").
 
-Streams are created automatically by methods like `parse_string()
-<api/redirect.html#lepl.matchers.OperatorMatcher.parse_string>`_,
-`string_parser()
-<api/redirect.html#lepl.matchers.OperatorMatcher.string_parser>`_,
-`match_string()
-<api/redirect.html#lepl.matchers.OperatorMatcher.match_string>`_,
-`string_matcher()
-<api/redirect.html#lepl.matchers.OperatorMatcher.string_matcher>`_ etc.  But
-the methods `parse()
-<api/redirect.html#lepl.matchers.OperatorMatcher.parse>`_, `null_parser()
-<api/redirect.html#lepl.matchers.OperatorMatcher.null_parser>`_, `match()
-<api/redirect.html#lepl.matchers.OperatorMatcher.match>`_, `null_matcher()
-<api/redirect.html#lepl.matchers.OperatorMatcher.null_matcher>`_ do not do so.
+Streams are created automatically by methods like `matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ and
+`matcher.parse_string() <api/redirect.html#lepl.core.config.ParserMixin.parse_string>`_.  To avoid this use `matcher.parse_null() <api/redirect.html#lepl.core.config.ParserMixin.parse_null>`_.
 
 The streams are created by a `StreamFactory()
-<api/redirect.html#lepl.stream.StreamFactory>`_ which is supplied by the
-`Configuration() <api/redirect.html#lepl.config.Configuration>`_, so it is
-possible for a user (or a package that provides a custom configuration) to
-replace the stream implementation that is used.
+<api/redirect.html#lepl.stream.stream.StreamFactory>`_, which can be set via
+`.config.stream_factory() <api/redirect.html#lepl.core.config.ConfigBuilder.stream_factory>`_.

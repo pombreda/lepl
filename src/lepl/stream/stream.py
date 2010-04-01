@@ -438,6 +438,7 @@ def list_join(lists):
         joined.extend(list_)
     return joined
 
+
 class StreamFactory(_StreamFactory):
     '''
     Support for Stream Factories.

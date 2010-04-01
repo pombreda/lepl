@@ -23,7 +23,8 @@ sphinx-build -b html doc-src/manual doc
 #sed -i -e 's/A Tutorial for LEPL/Tutorial Contents/' intro-1.html
 #popd
 
-epydoc -v -o doc/api --html --graph=all --docformat=restructuredtext -v --exclude="_experiment" --exclude="_performance" --exclude="_example" --debug src/*
+# parse-only necessary or we lose all decorated functions
+epydoc -v -o doc/api --parse-only --html --graph=all --docformat=restructuredtext -v --exclude="_experiment" --exclude="_performance" --exclude="_example" --debug src/*
 
 cp doc-src/example.txt doc
 cp doc-src/index.html doc

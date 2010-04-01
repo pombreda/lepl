@@ -157,7 +157,3 @@ if __name__ == '__main__':
 #    time()
 #    profile()
     natural_language()
-
-    
-    
-    

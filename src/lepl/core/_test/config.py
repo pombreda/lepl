@@ -1,4 +1,3 @@
-from lepl.stream.stream import list_join
 
 # Copyright 2009 Andrew Cooke
 

@@ -29,11 +29,9 @@ To ask questions, report bugs, and generally discuss Lepl, please post to the
 Documentation
 -------------
 
-You are currently reading the `Manual <http://www.acooke.org/lepl>`_.  The `API
-Documentation <http://www.acooke.org/lepl/api>`_ is also available.
-
 The simplest way to view the documentation is via the `web
-<http://www.acooke.org/lepl>`_.  However, you can also install a local copy.
-Simply download and unpack the appropriate files (see :ref:`download`).
+<http://www.acooke.org/lepl>`_ (contents :ref:`here <contents>`).  However,
+you can also install a local copy.  Simply download and unpack the appropriate
+files (see :ref:`download`).
 
 

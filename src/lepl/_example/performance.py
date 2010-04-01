@@ -24,167 +24,192 @@
 Examples from the documentation.
 '''
 
-# needs complete rewrite with new config
+from logging import basicConfig, DEBUG
 
-#from gc import collect
-#from timeit import timeit
-#
-#from lepl import *
-#from lepl._example.support import Example
-#
-#NUMBER = 10
-#REPEAT = 5
-#
-#def build(config):
-#    
-#    #basicConfig(level=INFO)
-#    
-#    class Term(Node): pass
-#    class Factor(Node): pass
-#    class Expression(Node): pass
-#        
-#    expr   = Delayed()
-#    number = Float()                                > 'number'
-#    spaces = Drop(Regexp(r'\s*'))
-#    
-#    with Separator(spaces):
-#        term    = number | '(' & expr & ')'         > Term
-#        muldiv  = Any('*/')                         > 'operator'
-#        factor  = term & (muldiv & term)[:]         > Factor
-#        addsub  = Any('+-')                         > 'operator'
-#        expr   += factor & (addsub & factor)[:]     > Expression
-#        line    = Trace(expr) & Eos()
-#    
-#    line.configuration = config
-#    return line.get_parse_string()
-#
-#def default(): return build(Configuration)
-#def managed(): return build(Configuration.managed())
-#def nfa(): return build(Configuration.nfa())
-#def dfa(): return build(Configuration.dfa())
-#def basic(): return build(Configuration())
-#
-#def trace_only(): 
-#    return build(
-#        Configuration(monitors=[TraceResults(False)]))
-#
-#def manage_only(): 
-#    return build(
-#        Configuration(monitors=[GeneratorManager(queue_len=0)]))
-#
-#def memo_only(): 
-#    return build(
-#        Configuration(rewriters=[AutoMemoize()]))
-#
-#def nfa_only(): 
-#    return build(
-#        Configuration(rewriters=[
-#            regexp_rewriter(UnicodeAlphabet.instance(), False)]))
-#
-#def dfa_only(): 
-#    return build(
-#        Configuration(rewriters=[
-#            regexp_rewriter(UnicodeAlphabet.instance(), False, DfaRegexp)]))
-#
-#def slow(): 
-#    return build(
-#        Configuration(rewriters=[AutoMemoize()],
-#                      monitors=[TraceResults(False),
-#                                GeneratorManager(queue_len=0)]))
-#
-#def parse_multiple(parser):
-#    for _i in range(NUMBER):
-#        parser('1.23e4 + 2.34e5 * (3.45e6 + 4.56e7 - 5.67e8)')[0]
-#
-#def parse_default(): parse_multiple(default())
-#def parse_managed(): parse_multiple(managed())
-#def parse_nfa(): parse_multiple(nfa())
-#def parse_dfa(): parse_multiple(dfa())
-#def parse_basic(): parse_multiple(basic())
-#def parse_trace_only(): parse_multiple(trace_only())
-#def parse_manage_only(): parse_multiple(manage_only())
-#def parse_memo_only(): parse_multiple(memo_only())
-#def parse_nfa_only(): parse_multiple(nfa_only())
-#def parse_dfa_only(): parse_multiple(dfa_only())
-#def parse_slow(): parse_multiple(slow())
-#
-#def time(number, name):
-#    stmt = '{0}()'.format(name)
-#    setup = 'from __main__ import {0}'.format(name)
-#    return timeit(stmt, setup, number=number)
-#
-#def analyse(func, time1_base=None, time2_base=None):
-#    '''
-#    We do our own repeating so we can GC between attempts
-#    '''
-#    name = func.__name__
-#    (time1, time2) = ([], [])
-#    for _i in range(REPEAT):
-#        collect()
-#        time1.append(time(NUMBER, name))
-#        collect()
-#        time2.append(time(1, 'parse_' + name))
-#    (time1, time2) = (min(time1), min(time2))
-#    # remove the time needed to compile
-#    time2 = time2 - (time1 / NUMBER)
-#    print('{0:>20s} {1:5.2f} {2:7s}  {3:5.2f} {4:7s}'.format(name, 
-#            time1, normalize(time1, time1_base), 
-#            time2, normalize(time2, time2_base)))
-#    return (time1, time2)
-#
-#def normalize(time, base):
-#    if base:
-#        return '({0:5.2f})'.format(time / base)
-#    else:
-#        return ''
-#
-#def main():
-#    print('{0:d} iterations; total time in s (best of {1:d})\n'.format(
-#            NUMBER, REPEAT))
-#    (time1, time2) = analyse(basic)
-#    for config in [default, managed, nfa, dfa]:
-#        analyse(config, time1, time2)
-#    print()
-#    for config in [trace_only, manage_only, memo_only, nfa_only, dfa_only, slow]:
-#        analyse(config, time1, time2)
-#
-#if __name__ == '__main__':
-#    main()
-#
-## pylint: disable-msg=E0601
-## (pylint parsing bug?)        
-#class PerformanceExample(Example):
-#    
-#    def test_parse(self):
-#    
-#        # run this to make sure nothing changes
-#        parsers = [default, managed, nfa, dfa,
-#                   basic, trace_only, manage_only,
-#                   memo_only, nfa_only, dfa_only, slow]
-#        examples = [(lambda: parser()('1.23e4 + 2.34e5 * (3.45e6 + 4.56e7 - 5.67e8)')[0],
-#"""Expression
-# +- Factor
-# |   `- Term
-# |       `- number '1.23e4'
-# +- operator '+'
-# `- Factor
-#     +- Term
-#     |   `- number '2.34e5'
-#     +- operator '*'
-#     `- Term
-#         +- '('
-#         +- Expression
-#         |   +- Factor
-#         |   |   `- Term
-#         |   |       `- number '3.45e6'
-#         |   +- operator '+'
-#         |   +- Factor
-#         |   |   `- Term
-#         |   |       `- number '4.56e7'
-#         |   +- operator '-'
-#         |   `- Factor
-#         |       `- Term
-#         |           `- number '5.67e8'
-#         `- ')'""") for parser in parsers]
-#        self.examples(examples)
-#        
+from gc import collect
+from random import random
+from timeit import timeit
+
+from lepl import *
+from lepl._example.support import Example
+from lepl.support.lib import format
+
+NUMBER = 10
+REPEAT = 3
+
+def default():
+    '''A simple parser we'll use as an example.'''
+    
+    class Term(List): pass
+    class Factor(List): pass
+    class Expression(List): pass
+        
+    expr   = Delayed()
+    number = Float()                                >> float
+    
+    with DroppedSpace():
+        term    = number | '(' & expr & ')'         > Term
+        muldiv  = Any('*/')
+        factor  = term & (muldiv & term)[:]         > Factor
+        addsub  = Any('+-')
+        expr   += factor & (addsub & factor)[:]     > Expression
+        line    = expr & Eos()
+    
+    return line
+
+
+# These create a matcher for the parser above with different configurations
+
+def clear():
+    matcher = default()
+    matcher.config.clear()
+    return matcher
+
+def no_memo():
+    matcher = default()
+    matcher.config.no_memoize()
+    return matcher
+
+def full_memo():
+    matcher = default()
+    matcher.config.auto_memoize(full=True)
+    return matcher
+
+def slow(): 
+    matcher = default()
+    matcher.config.clear().trace().manage().auto_memoize(full=True)
+    return matcher
+
+def nfa_regexp(): 
+    matcher = default()
+    matcher.config.clear().compile_to_nfa(force=True)
+    return matcher
+
+def dfa_regexp(): 
+    matcher = default()
+    matcher.config.clear().compile_to_dfa(force=True)
+    return matcher
+
+
+# Next, build all the tests, making sure that we pre-compile parsers where
+# necessary and (important!) we avoid reusing a parser with a cache
+
+data = [format('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
+               random(), random(), random(), random(), random())
+        for i in range(NUMBER)]
+#print('\n'.join(data))
+
+matchers = [default, clear, no_memo, full_memo, slow, nfa_regexp, dfa_regexp]
+
+def build_cached(factory):
+    matcher = factory()
+    matcher.config.clear_cache()
+    parser = matcher.get_parse()
+    def test():
+        for line in data:
+            parser(line)[0]
+    return test
+            
+def build_uncached(factory):
+    matcher = factory()
+    def test():
+        for line in data:
+            matcher.config.clear_cache()
+            matcher.parse(line)[0]
+    return test
+
+tests = {}
+
+for matcher in matchers:
+    tests[matcher] = {True: [], False: []}
+    for i in range(REPEAT):
+         tests[matcher][True].append(build_cached(matcher))
+         tests[matcher][False].append(build_uncached(matcher))
+
+
+def run(matcher, cached, repeat):
+    '''Time the given test.'''
+    stmt = 'tests[{0}][{1}][{2}]()'.format(matcher.__name__, cached, repeat)
+    setup = 'from __main__ import tests, {0}'.format(matcher.__name__)
+    return timeit(stmt, setup, number=1)
+
+def analyse(matcher, t_uncached_base=None, t_cached_base=None):
+    '''We do our own repeating so we can GC between attempts.'''
+    (t_uncached, t_cached) = ([], [])
+    for repeat in range(REPEAT):
+        collect()
+        t_uncached.append(run(matcher, False, repeat))
+        collect()
+        t_cached.append(run(matcher, True, repeat))
+    (t_uncached, t_cached) = (min(t_uncached), min(t_cached))
+    t_uncached = 1000.0 * t_uncached / NUMBER
+    # Correct for the first, uncached, call
+#    t_cached = (1000.0 * t_cached - t_uncached) / (NUMBER - 1)
+    t_cached = 1000.0 * t_cached / NUMBER 
+    print(format('{0:>20s} {1:5.1f} {2:8s}  {3:5.1f} {4:8s}',
+                 matcher.__name__, 
+                 t_uncached, normalize(t_uncached, t_uncached_base), 
+                 t_cached, normalize(t_cached, t_cached_base)))
+    return (t_uncached, t_cached)
+
+def normalize(time, base):
+    if base:
+        return '(x{0:5.2f})'.format(time / base)
+    else:
+        return ''
+
+def main():
+    print('{0:d} iterations; time per iteration in ms (best of {1:d})\n'.format(
+            NUMBER, REPEAT))
+    print(format('{0:>35s}    {1:s}', 're-compiled', 'cached'))
+    (t_uncached, t_cached) = analyse(default)
+    for matcher in matchers:
+        if matcher is not default:
+            analyse(matcher, t_uncached, t_cached)
+
+if __name__ == '__main__':
+    main()
+
+# pylint: disable-msg=E0601
+# (pylint parsing bug?)        
+class PerformanceExample(Example):
+    
+    def test_parse(self):
+    
+        # run this to make sure nothing changes
+        parsers = [default, clear, no_memo, full_memo, slow]
+        examples = [(lambda: parser().parse('1.23e4 + 2.34e5 * (3.45e6 + 4.56e7 - 5.67e8)')[0],
+"""Expression
+ +- Factor
+ |   `- Term
+ |       `- 12300.0
+ +- '+'
+ `- Factor
+     +- Term
+     |   `- 234000.0
+     +- '*'
+     `- Term
+         +- '('
+         +- Expression
+         |   +- Factor
+         |   |   `- Term
+         |   |       `- 3450000.0
+         |   +- '+'
+         |   +- Factor
+         |   |   `- Term
+         |   |       `- 45600000.0
+         |   +- '-'
+         |   `- Factor
+         |       `- Term
+         |           `- 567000000.0
+         `- ')'""") for parser in parsers]
+        self.examples(examples)
+        
+#    def test_cached(self):
+#        matcher = full_memo()
+#        print(matcher._raw_parser().matcher.tree())
+#        matcher = default()
+#        print(matcher._raw_parser().matcher.tree())
+##        for line in data:
+##            print(matcher.parse(line)[0])
+            

@@ -14,10 +14,11 @@ Operators are Matchers
 ----------------------
 
 Remember that operators are just shorthand for matchers (``&`` instead of
-`And() <api/redirect.html#lepl.match.And>`_ etc).  You don't have to use
-operators --- see the discussion on :ref:`caveatsandlimitations`.
+`And() <api/redirect.html#lepl.matchers.combine.And>`_ etc).  You don't have
+to use operators --- see the discussion on :ref:`caveatsandlimitations`.
 
-But remember that ``&`` and `And() <api/redirect.html#lepl.matchers.combine.And>`_ *do differ* when using
+But remember that ``&`` and `And()
+<api/redirect.html#lepl.matchers.combine.And>`_ *do differ* when using
 :ref:`separators`.
 
 
@@ -27,9 +28,9 @@ But remember that ``&`` and `And() <api/redirect.html#lepl.matchers.combine.And>
 Use Or() With Complex Alternatives
 ----------------------------------
 
-Use `Or(..., ..., ...) <api/redirect.html#lepl.match.Or>`_ for alternatives
-with productions.  The ``|`` syntax can lead to errors because it binds more
-tightly than ``>``.
+Use `Or(..., ..., ...) <api/redirect.html#lepl.matchers.combine.Or>`_ for
+alternatives with productions.  The ``|`` syntax can lead to errors because it
+binds more tightly than ``>``.
 
 
 .. index:: Apply()
@@ -52,18 +53,17 @@ of nesting and is usually inappropriate for use with functions.
 .. index:: Separator()
 .. _separator:
 
-Define Words Before Using Separator
------------------------------------
+Define Words Before Using DroppedSpace (or Separator)
+-----------------------------------------------------
 
-`Separator() <api/redirect.html#lepl.match.Separator>`_ simplifies the
-handling of spaces in the grammar.  To avoid confusion, split your grammar
-into two.  The first part, defining words, should come before `Separator()
-<api/redirect.html#lepl.match.Separator>`_.  The second part should come
-after.
+`DroppedSpace() <api/redirect.html#lepl.matchers.operators.DroppedSpace>`_ and `Separator() <api/redirect.html#lepl.match.Separator>`_
+simplify the handling of spaces in the grammar.  To avoid confusion, split
+your grammar into two.  The first part, defining words, should come before
+``with``; the second part should come after.
 
   >>> # words defined here
   >>> word = Letter()[:,...]
-  >>> with Separator(r'\s+'):
+  >>> with DroppedSpace():
   >>>     # sentences defined here
   >>>     sentence = word[1:]
 
@@ -79,8 +79,8 @@ So handling spaces in a grammar takes two steps:
 
 1. Exclude the spaces from matchers that produce results.
 
-2. Use `Separator() <api/redirect.html#lepl.match.Separator>`_ to "mop up"
-   the input that remains.
+2. Use `Separator() <api/redirect.html#lepl.match.Separator>`_ to "mop up" the
+   input that remains.
 
 
 .. index:: Delayed()

@@ -33,10 +33,10 @@ solution::
   >>>     karg   = (ident & Drop('=') & value              > tuple) >> 'karg'
   >>>     expr   = (karg | arg)[:, comma] & Drop(Eos())    > Node
             
-  >>> parser = expr.string_parser()
+  >>> parser = expr.get_parse_string()
 
   >>> ast = parser('True, type=rect, sizes=[3, 4], coords = ([1,2],[3,4])')
-  >>> ast[0]
+  >>> print(ast[0])
   Node
    +- arg True
    +- karg ('type', 'rect')
@@ -48,7 +48,7 @@ solution::
   [('type', 'rect'), ('sizes', [3, 4]), ('coords', ([1, 2], [3, 4]))]
   
   >>> ast = parser('None, str="a string"')
-  >>> ast[0]
+  >>> print(ast[0])
   Node
    +- arg None
    `- karg ('str', 'a string')
@@ -68,205 +68,200 @@ This example shows how different choices of :ref:`configuration` can change
 the compilation and parsing times::
 
   from gc import collect
+  from random import random
   from timeit import timeit
 
   from lepl import *
+  from lepl._example.support import Example
+  from lepl.support.lib import format
 
-  NUMBER = 50
-  REPEAT = 5
+  NUMBER = 10
+  REPEAT = 3
 
-  def build(config):
-      '''
-      Construct a parser for simple arithmetic expressions using floating
-      point values (Float() is defined in terms of simpler matchers and
-      is quite complex; it is a good candidate for speed improvements by
-      compilation to a regular expression).
+  def default():
+      '''A simple parser we'll use as an example.'''
 
-      This is called for each kind of configuration we want to time.
-      '''
-
-      class Term(Node): pass
-      class Factor(Node): pass
-      class Expression(Node): pass
+      class Term(List): pass
+      class Factor(List): pass
+      class Expression(List): pass
 
       expr   = Delayed()
-      number = Float()                                > 'number'
-      spaces = Drop(Regexp(r'\s*'))
+      number = Float()                                >> float
 
-      with Separator(spaces):
-	  term    = number | '(' & expr & ')'         > Term
-	  muldiv  = Any('*/')                         > 'operator'
-	  factor  = term & (muldiv & term)[:]         > Factor
-	  addsub  = Any('+-')                         > 'operator'
-	  expr   += factor & (addsub & factor)[:]     > Expression
-	  line    = Trace(expr) & Eos()
+      with DroppedSpace():
+          term    = number | '(' & expr & ')'         > Term
+          muldiv  = Any('*/')
+          factor  = term & (muldiv & term)[:]         > Factor
+          addsub  = Any('+-')
+          expr   += factor & (addsub & factor)[:]     > Expression
+          line    = expr & Eos()
 
-      parser = line.string_parser(config)
-      return parser
+      return line
 
-  # The timeit package requires simple no-argument functions, so below we
-  # define these for both building the parser with different configurations
-  # and then parsing the example text.
 
-  # These use the standard configuration options
-  def default(): return build(Configuration.default())
-  def managed(): return build(Configuration.managed())
-  def nfa(): return build(Configuration.nfa())
-  def dfa(): return build(Configuration.dfa())
-  def basic(): return build(Configuration())
+  # These create a matcher for the parser above with different configurations
 
-  # These use hand-tweaked configurations that isolate individual features.
-  def trace_only(): 
-      return build(
-	  Configuration(monitors=[lambda: TraceResults(False)]))
-  def manage_only(): 
-      return build(
-	  Configuration(monitors=[lambda: GeneratorManager(queue_len=0)]))
-  def memo_only(): 
-      return build(
-	  Configuration(rewriters=[auto_memoize()]))
-  def nfa_only(): 
-      return build(
-	  Configuration(rewriters=[
-	      regexp_rewriter(UnicodeAlphabet.instance(), False)]))
-  def dfa_only(): 
-      return build(
-	  Configuration(rewriters=[
-	      regexp_rewriter(UnicodeAlphabet.instance(), False, DfaRegexp)]))
+  def clear():
+      matcher = default()
+      matcher.config.clear()
+      return matcher
 
-  # And the functions that timeit will call to do parsing.
-  def parse_default(): parse_multiple(default())
-  def parse_managed(): parse_multiple(managed())
-  def parse_nfa(): parse_multiple(nfa())
-  def parse_dfa(): parse_multiple(dfa())
-  def parse_basic(): parse_multiple(basic())
-  def parse_trace_only(): parse_multiple(trace_only())
-  def parse_manage_only(): parse_multiple(manage_only())
-  def parse_memo_only(): parse_multiple(memo_only())
-  def parse_nfa_only(): parse_multiple(nfa_only())
-  def parse_dfa_only(): parse_multiple(dfa_only())
+  def no_memo():
+      matcher = default()
+      matcher.config.no_memoize()
+      return matcher
 
-  def parse_multiple(parser):
-      '''
-      Parse the expression NUMBER times with the given parser.
-      '''
-      for i in range(NUMBER):
-	  parser('1.23e4 + 2.34e5 * (3.45e6 + 4.56e7 - 5.67e8)')[0]
+  def full_memo():
+      matcher = default()
+      matcher.config.auto_memoize(full=True)
+      return matcher
 
-  def time(number, name):
-      '''
-      Call timeit to time a named function.  The timeit interface is rather
-      odd - it takes a string, which we construct here.
-      '''
-      stmt = '{0}()'.format(name)
-      setup = 'from __main__ import {0}'.format(name)
-      return timeit(stmt, setup, number=number)
+  def slow(): 
+      matcher = default()
+      matcher.config.clear().trace().manage().auto_memoize(full=True)
+      return matcher
 
-  def analyse(func, time1_base=None, time2_base=None):
-      '''
-      Generate and print timing information for a particular function
-      (the function passed generates the configuration; because the parser
-      functions have related names we can time those too).
+  def nfa_regexp(): 
+      matcher = default()
+      matcher.config.clear().compile_to_nfa(force=True)
+      return matcher
 
-      We do our own repeating so we can GC between attempts.
-      '''
-      name = func.__name__
-      (time1, time2) = ([], [])
+  def dfa_regexp(): 
+      matcher = default()
+      matcher.config.clear().compile_to_dfa(force=True)
+      return matcher
+
+
+  # Next, build all the tests, making sure that we pre-compile parsers where
+  # necessary and (important!) we avoid reusing a parser with a cache
+
+  data = [format('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
+                 random(), random(), random(), random(), random())
+          for i in range(NUMBER)]
+
+  matchers = [default, clear, no_memo, full_memo, slow, nfa_regexp, dfa_regexp]
+
+  def build_cached(factory):
+      matcher = factory()
+      matcher.config.clear_cache()
+      parser = matcher.get_parse()
+      def test():
+          for line in data:
+              parser(line)[0]
+      return test
+
+  def build_uncached(factory):
+      matcher = factory()
+      def test():
+          for line in data:
+              matcher.config.clear_cache()
+              matcher.parse(line)[0]
+      return test
+
+  tests = {}
+
+  for matcher in matchers:
+      tests[matcher] = {True: [], False: []}
       for i in range(REPEAT):
-	  collect()
-	  time1.append(time(NUMBER, name))
-	  collect()
-	  time2.append(time(1, 'parse_' + name))
-      # minimum time since there are annoying background processes
-      (time1, time2) = (min(time1), min(time2))
-      print('{0:>20s} {1:5.2f} {2:7s}  {3:5.2f} {4:7s}'.format(name, 
-	      time1, normalize(time1, time1_base), 
-	      time2, normalize(time2, time2_base)))
-      return (time1, time2)
+           tests[matcher][True].append(build_cached(matcher))
+           tests[matcher][False].append(build_uncached(matcher))
+
+
+  def run(matcher, cached, repeat):
+      '''Time the given test.'''
+      stmt = 'tests[{0}][{1}][{2}]()'.format(matcher.__name__, cached, repeat)
+      setup = 'from __main__ import tests, {0}'.format(matcher.__name__)
+      return timeit(stmt, setup, number=1)
+
+  def analyse(matcher, t_uncached_base=None, t_cached_base=None):
+      '''We do our own repeating so we can GC between attempts.'''
+      (t_uncached, t_cached) = ([], [])
+      for repeat in range(REPEAT):
+          collect()
+          t_uncached.append(run(matcher, False, repeat))
+          collect()
+          t_cached.append(run(matcher, True, repeat))
+      (t_uncached, t_cached) = (min(t_uncached), min(t_cached))
+      t_uncached = 1000.0 * t_uncached / NUMBER
+      t_cached = 1000.0 * t_cached / NUMBER 
+      print(format('{0:>20s} {1:5.1f} {2:8s}  {3:5.1f} {4:8s}',
+                   matcher.__name__, 
+                   t_uncached, normalize(t_uncached, t_uncached_base), 
+                   t_cached, normalize(t_cached, t_cached_base)))
+      return (t_uncached, t_cached)
 
   def normalize(time, base):
-      '''
-      Helper function for calculating and formatting relative times.
-      '''
       if base:
-	  return '({0:5.2f})'.format(time / base)
+          return '(x{0:5.2f})'.format(time / base)
       else:
-	  return ''
+          return ''
 
   def main():
-      '''
-      Print timing information for compiling and using a parser with the
-      various configurations.
-      '''
-      print('{0:d} iterations; total time in s (best of {1:d})\n'.format(
-	      NUMBER, REPEAT))
-      (time1, time2) = analyse(basic)
-      for config in [default, managed, nfa, dfa]:
-	  analyse(config, time1, time2)
-      print()
-      for config in [trace_only, manage_only, memo_only, nfa_only, dfa_only]:
-	  analyse(config, time1, time2)
+      print('{0:d} iterations; time per iteration in ms (best of {1:d})\n'.format(
+              NUMBER, REPEAT))
+      print(format('{0:>35s}    {1:s}', 're-compiled', 'cached'))
+      (t_uncached, t_cached) = analyse(default)
+      for matcher in matchers:
+          if matcher is not default:
+              analyse(matcher, t_uncached, t_cached)
+
+  if __name__ == '__main__':
+      main()
 
 Running ``main()`` gives::
 
-  50 iterations; total time in s (best of 5)
+  10 iterations; time per iteration in ms (best of 3)
 
-		 basic  0.21           0.43
-	       default  1.59 ( 7.69)   7.26 (17.01)
-	       managed  1.63 ( 7.87)  10.90 (25.56)
-		   nfa  2.59 (12.48)   3.24 ( 7.58)
-		   dfa  2.69 (12.96)   1.14 ( 2.66)
+                          re-compiled    cached
+               default  78.4             4.2         
+                 clear   6.0 (x 0.08)    5.9 (x 1.39)
+               no_memo  68.6 (x 0.88)    4.1 (x 0.97)
+             full_memo  89.1 (x 1.14)   13.5 (x 3.19)
+                  slow 157.1 (x 2.00)  133.3 (x31.55)
+            nfa_regexp  35.3 (x 0.45)    4.3 (x 1.01)
+            dfa_regexp  38.4 (x 0.49)    5.5 (x 1.30)
 
-	    trace_only  0.21 ( 1.02)   2.97 ( 6.97)
-	   manage_only  0.21 ( 1.01)   2.09 ( 4.89)
-	     memo_only  1.21 ( 5.81)   1.24 ( 2.90)
-	      nfa_only  1.16 ( 5.61)   0.39 ( 0.90)
-	      dfa_only  1.48 ( 7.15)   0.15 ( 0.35)
+The first column describes the configuration --- you can check the code to see
+exactly what was used in the function of the same name.
 
-Where the first column describes the configuration, the second and third
-columns reflect the time needed to compile the parser, and the third and
-fourth columns reflect the time needed to run the parser.  The values in
-parentheses are relative to the basic configuration.
+The second two columns are the time (and the ratio of that time relative to
+the default) for using a parser that is re--compiled for each parse.  The time
+includes the work needed to compile the parser and is appropriate when you're
+only using a matcher once.
 
-The parenthetic values are easiest to read.  Looking at the parser times
-(rightmost column) we can see that ``default`` is the second--slowest of all
-configurations, while only ``nfa_only`` and ``dfa_only`` are faster than
-giving an empty configuration (``basic``).  Of course, when interpreting these
-numbers it is important to remember the trade--offs involved --- the default
-configuration, although slower, can handle a much wider variety of grammars.
+The final two columns are the time (and the ratio of that time relative to the
+default) for re--using a cached parser.  This doesn't include the time needed
+to compile the parser and is appropriate for when you're using the same
+matcher many times (in which case the compilation time is relatively
+unimportant).
 
-I learnt the following from writing and running this test and others like it:
+Note that you don't need to worry about caching parsers yourself --- a matcher
+will automatically cache the parser when it is used.  The test code is much
+more complex because it is trying to *disable* caching in various places.
 
-  * Using the simplest possible configuration --- `Configuration() <api/redirect.html#lepl.config.Configuration>`_ or
-    ``basic`` in the table above --- is a good choice for simple problems.
+What can we learn from these results?
 
-  * The default configuration --- ``Configuration.default()`` --- was chosen
-    to work with a wide variety of problems.  Flexibility took priority over
-    performance (and it shows).
+#. Compilation isn't cheap.  The "re-compiled" times are, except for "clear",
+   much larger than the "cached" times.  So if you are dynamically generating
+   matchers and using each one just once, you might want to use
+   `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
 
-  * If efficiency is important, choosing the correct configuration can be
-    critical.  Parse times here vary by a factor of almost 100.
+#. But compilation isn't hugely expensive either.  If you're using a matcher
+   more than about 20 times, it's worth compiling to get better peformance.
 
-  * Creating a parser is not "free".  If a parser is to be used several times
-    it may be significantly more efficient to create a single instance and
-    re-use it (but note that no attempt has been made to make parsers
-    thread--safe).
+#. It's hard to beat the default configuration.  The compilation time isn't
+   too great and, once cached, it generates one of the fastest parsers around.
 
-  * Much of the advantage of the DFA regular expression appears to come from
-    avoiding alternate parses.
+#. Disabling memoisation makes a cached parser *slightly* faster, but is
+   generally not worth the risk (without the minimal minimisation in the
+   default parser a left recursive gammar can crash your program).
 
-  * :ref:`memoisation` is expensive for simple parsers with a small amount of
-    text (as in this example).
+#. Full memoisation and resource management are slow, but these are very
+   specialised configurations that you won't need in normal use.
 
-  * From ``compiled_default`` and ``compiled_managed``, which effectively have
-    the same compilation, the "noise" in the measurements above is about
-    0.05s.
-
-For anyone interested in absolute speed, the values above are seconds required
-for 50 iterations on a Dual Core desktop, with sufficient memory to avoid
-paging, over--clocked to 2.8GHz.  So for that machine a single parse of the
-expression given in the code takes between 0.003 and 0.2 seconds.
-
+For anyone interested in absolute speed, the values above are milliseconds
+required per iterations on a Dual Core laptop (a Lenovo X60, a couple of years
+old), with sufficient memory to avoid paging.
 
 
 .. index:: tables, columns, tabular data, Columns()

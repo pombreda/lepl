@@ -30,8 +30,9 @@ Thanks to `Guy Cousineau and Michel Mauny
 the original education.
 
 David Eppstein's `DFS code <http://www.ics.uci.edu/~eppstein/PADS/DFS.py>`_
-strongly influenced `dfs_edges() <api/redirect.html#lepl.graph.dfs_edges>`_.
-Thanks for putting that on the web.
+strongly influenced `dfs_edges()
+<api/redirect.html#lepl.support.graph.dfs_edges>`_.  Thanks for putting that
+on the web.
 
 
 .. index:: futile despair
@@ -39,5 +40,5 @@ Thanks for putting that on the web.
 Endnote
 -------
 
-Lepl was written as Israel, with the implicit support of the USA, largely
+Lepl 1.0 was written as Israel, with the implicit support of the USA, largely
 destroyed Gaza.

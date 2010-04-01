@@ -36,6 +36,7 @@ sed -i -r 's/LEPL/Lepl/g' *.rst
 # lepl 4 fixes
 sed -i -r 's/lepl\.(Word|Integer)/lepl.matchers.derived.\1/g' *.rst
 sed -i -r 's/lepl\.(And|Or)/lepl.matchers.combine.\1/g' *.rst
+sed -i -r 's/lepl\.(functions|matchers|match)\.(And|Or)/lepl.matchers.combine.\2/g' *.rst
 sed -i -r 's/lepl\.(functions|matchers)\.(SignedFloat|Drop|Space|Star|Optional|Letter|Digit|args|Eos|Apply|KApply|Add|AnyBut|Columns|Eos|Float|Identity|Integer|Lower|Map|Name|Newline|OneOrMore|Plus|Printable|Punctuation|SignedEFloat|SignedFloat|SignedInteger|SkipTo|String|Substitute|UnsignedFloat|UnsignedInteger|Upper|Whitespace|Word|ZeroOrMore|Repeat)/lepl.matchers.derived.\2/g' *.rst
 sed -i -r 's/lepl\.matchers\.(And|Or|First)/lepl.matchers.combine.\1/g' *.rst
 sed -i -r 's/lepl\.(functions|matchers)\.(Literal|Regexp|Delayed|Lookahead|Empty|Eof)/lepl.matchers.core.\2/g' *.rst
@@ -63,3 +64,4 @@ sed -i -r 's/``(.config\.)([^\. ]+)(\([^\)]*\))``/`\1\2\3 <api\/redirect.html#le
 sed -i -r 's/``(matcher\.)([^\. ]+)\(\)``/`\1\2() <api\/redirect.html#lepl.core.config.ParserMixin.\2>`_/g' *.rst
 sed -i -r 's/``(rightmost)\(\)``/`\1() <api\/redirect.html#lepl.offside.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(make_str_parser)\(\)``/`\1() <api\/redirect.html#lepl.regexp.str.\1>`_/g' *.rst
+sed -i -r 's/``@(function_matcher|sequence_matcher|trampoline_matcher|function_matcher_factory|sequence_matcher_factory|trampoline_matcher_factory)``/`@\1 <api\/redirect.html#lepl.matchers.support.\1>`_/g' *.rst

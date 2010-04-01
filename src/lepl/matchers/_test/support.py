@@ -67,6 +67,7 @@ class DecoratorTest(TestCase):
         matcher.config.no_full_first_match()
         result = list(matcher.match_null('abcd'))
         assert result == [(['abcd'], ''), (['abc'], 'd'), (['ab'], 'cd')], result
+        assert char()[:,...].parse('ab') == ['ab']
         
     def test_char_in(self):
         #basicConfig(level=DEBUG)

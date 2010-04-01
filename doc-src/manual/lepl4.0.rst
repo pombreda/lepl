@@ -62,8 +62,8 @@ everything is right at your fingertips::
        also significantly slower.
 
 Each configuration option has two methods --- one to turn it on, and one to
-turn it off.  These changes are relative to the default configuration [TODO
-reference] unless you first call `.config.clear()
+turn it off.  These changes are relative to the default :ref:`configuration
+<configuration>` unless you first call `.config.clear()
 <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_ (which removes all
 options).
 
@@ -182,7 +182,8 @@ If the matcher supports multiple results then it should ``yield`` them::
 Note how these matchers inherit the full functionality of Lepl!
 
 For more information, including support for matchers that process other
-matchers, or be configured in the grammar, see [TODO].
+matchers, or that can be configured in the grammar, see :ref:`new_matchers`
+and following.
 
 
 General Transformations

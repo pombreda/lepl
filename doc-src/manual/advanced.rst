@@ -30,6 +30,10 @@ configuration code more compact::
 
   >>> matcher.config.clear().lexer()
 
+The various options available are described in the following sections.  In
+addition, :ref:`this example <config_example>` shows the effect of different
+options on parsing times.
+
 .. index:: default(), clear(), default_line_aware()
 
 Common, Packaged Actions
@@ -309,7 +313,7 @@ matcher, indicating that the matching is *greedy*.
 
 *Non-greedy* (generous?) matching is achieved by specifying an array slice
 increment of ``'b'`` (or `BREADTH_FIRST
-<api/redirect.html#lepl.functions.BREADTH_FIRST>`_)::
+<api/redirect.html#lepl.matchers.operators.BREADTH_FIRST>`_)::
 
   >>> any = Any()[::'b',...]
   >>> split = any & any & Eos()
@@ -319,20 +323,22 @@ increment of ``'b'`` (or `BREADTH_FIRST
   [['****'], ['*', '***'], ['**', '**'], ['***', '*'], ['****']]
 
 The greedy and non--greedy repetitions are implemented by depth (default,
-``'d'``, or `DEPTH_FIRST <api/redirect.html#lepl.functions.DEPTH_FIRST>`_),
-and breadth--first searches (``'b'`` or `BREADTH_FIRST
-<api/redirect.html#lepl.functions.BREADTH_FIRST>`_), respectively.
+``'d'``, or `DEPTH_FIRST
+<api/redirect.html#lepl.matchers.operators.DEPTH_FIRST>`_), and breadth--first
+searches (``'b'`` or `BREADTH_FIRST
+<api/redirect.html#lepl.matchers.operators.BREADTH_FIRST>`_), respectively.
 
 In addition, by specifying a slice increment of ``'g'`` (`GREEDY
-<api/redirect.html#lepl.functions.GREEDY>`_), you can request a *guaranteed
-greedy* match.  This evaluates all possibilities, before returning them in
-reverse length order.  Typically this will be identical to depth--first
-search, but it is possible for backtracking to produce a longer match in
-complex cases --- this final option, by evaluating all cases, re--orders the
-results as necessary.
+<api/redirect.html#lepl.matchers.operators.GREEDY>`_), you can request a
+*guaranteed greedy* match.  This evaluates all possibilities, before returning
+them in reverse length order.  Typically this will be identical to
+depth--first search, but it is possible for backtracking to produce a longer
+match in complex cases --- this final option, by evaluating all cases,
+re--orders the results as necessary.
 
 Specifying ``'n'`` (`NON_GREEDY
-<api/redirect.html#lepl.functions.NON_GREEDY>`_) gets the reverse ordering.
+<api/redirect.html#lepl.matchers.operators.NON_GREEDY>`_) gets the reverse
+ordering.
 
 The tree implicit in the descriptions "breadth--first" and "depth--first" is
 not the AST, nor the tree of matchers, but a tree based on matchers and
@@ -431,14 +437,15 @@ To explicitly apply a memoizer to all matchers use `.config.left_memoize()
   >>> termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
   >>> sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
-  >>> p = sentence.auto_memoize()
+  >>> p = sentence.left_memoize()
   >>> len(list(p('every boy or some girl and helen and john or pat knows '
   >>>            'and respects or loves every boy or some girl and pat or '
   >>>            'john and helen')))
   392
 
-This example is left--recursive and very ambiguous.  With `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_ added to
-all matchers it can be parsed with no problems.
+This example is left--recursive and very ambiguous.  With `LMemo()
+<api/redirect.html#lepl.matchers.memo.LMemo>`_ added to all matchers it can be
+parsed with no problems.
 
 Because memoisation add extra overhead it is usually preferable --- and part
 of the default configuration --- to use `.config.auto_memoize()

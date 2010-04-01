@@ -267,10 +267,14 @@ class TrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
         generator = GeneratorWrapper(self._cached_matcher(self, stream), 
                                      self, stream)
         while True:
-            yield(yield generator)
+            yield (yield generator)
     
 
 class TransformableWrapper(BaseFactoryMatcher, Transformable):
+    '''
+    Like `TrampolineWrapper`, but transformable.  Used as a common support
+    class for various wrappers.
+    '''
     
     def compose(self, wrapper):
         (args, kargs) = self._constructor_args()
@@ -317,6 +321,12 @@ class TransformableTrampolineWrapper(TransformableWrapper):
                 
     
 class NoTrampolineTransformableWrapper(TransformableWrapper):
+    '''
+    A wrapper for source of generators that do not evaluate other matchers via
+    the trampoline.
+    
+    Subclasses can be used without trampolining via `_untagged_match`.
+    '''
     
     def __init__(self, *args, **kargs):
         super(NoTrampolineTransformableWrapper, self).__init__(*args, **kargs)
@@ -424,6 +434,10 @@ need this functionality, subclass BaseMatcher.''', func.__name__))
 
 
 def make_wrapper_factory(wrapper, factory):
+    '''
+    A helper function that assembles a matcher from a wrapper class and 
+    a factory function that contains the logic.
+    '''
     check_args(factory)
     def wrapper_factory(*args, **kargs):
         made = wrapper(*args, **kargs)
@@ -435,6 +449,13 @@ def make_wrapper_factory(wrapper, factory):
 
 
 def make_factory(maker, matcher):
+    '''
+    A helper function that assembles a matcher from a wrapper class and 
+    a function that contains the logic.
+    
+    This works by generating a dummy factory and delegating to 
+    `make_wrapper_factory`.
+    '''
     def factory(*args, **kargs):
         if args or kargs:
             raise TypeError(format('{0}() takes no arguments', 
@@ -446,6 +467,15 @@ def make_factory(maker, matcher):
 
 
 def trampoline_matcher_factory(transformable=True):
+    '''
+    Decorator that allows matchers to be defined using a nested pair
+    of functions.  The outer function acts like a constructor; the inner
+    function implements the matcher logic.
+    
+    The matcher code can evaluate sub-matchers by yielding the generator
+    created by `matcher._match()` to the trampoline.  Matches should also
+    be yielded. 
+    '''
     if not isinstance(transformable, bool):
         raise ValueError(
             'trampoline_matcher_factory must be used as a function:'
@@ -460,6 +490,14 @@ def trampoline_matcher_factory(transformable=True):
     return wrapper
 
 def trampoline_matcher(transformable=True):
+    '''
+    Decorator that allows matchers to be defined using a single function 
+    to implement the matcher logic.
+    
+    The matcher code can evaluate sub-matchers by yielding the generator
+    created by `matcher._match()` to the trampoline.  Matches should also
+    be yielded. 
+    '''
     if not isinstance(transformable, bool):
         raise ValueError(
             'trampoline_matcher must be used as a function:'
@@ -472,22 +510,50 @@ def trampoline_matcher(transformable=True):
     return wrapper
 
 def sequence_matcher_factory(factory):
+    '''
+    Decorator that allows matchers to be defined using a nested pair
+    of functions.  The outer function acts like a constructor; the inner
+    function implements the matcher logic.
+    
+    The matcher must yield matches (multiple times if required).  It 
+    *cannot* evaluate sub-matchers.
+    '''
     from lepl.matchers.memo import NoMemo
     wrapper = make_wrapper_factory(SequenceWrapper, factory)
     add_child(NoMemo, wrapper)
     return wrapper
 
 def sequence_matcher(matcher):
+    '''
+    Decorator that allows matchers to be defined using a single function 
+    to implement the matcher logic.
+    
+    The matcher must yield matches (multiple times if required).  It 
+    *cannot* evaluate sub-matchers.
+    '''
     check_matcher(matcher)
     return make_factory(sequence_matcher_factory, matcher)
 
 def function_matcher_factory(factory):
+    '''
+    Decorator that allows matchers to be defined using a nested pair
+    of functions.  The outer function acts like a constructor; the inner
+    function implements the matcher logic.
+    
+    The matcher must return a single match.  It *cannot* evaluate sub-matchers.
+    '''
     from lepl.matchers.memo import NoMemo
     wrapper = make_wrapper_factory(FunctionWrapper, factory)
     add_child(NoMemo, wrapper)
     return wrapper
 
 def function_matcher(matcher):
+    '''
+    Decorator that allows matchers to be defined using a single function 
+    to implement the matcher logic.
+    
+    The matcher must return a single match.  It *cannot* evaluate sub-matchers.
+    '''
     check_matcher(matcher)
     return make_factory(function_matcher_factory, matcher)
 

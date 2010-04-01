@@ -93,7 +93,7 @@ class ConfigBuilder(object):
         parser is generated.
         '''
         self.__start()
-        self.__changed = True
+        self.clear_cache()
         # we need to remove before adding to ensure last added is the one
         # used (exclusive rewriters are equal)
         if rewriter in self.__rewriters:
@@ -106,7 +106,7 @@ class ConfigBuilder(object):
         Remove a rewriter from the current configuration.
         '''
         self.__start()
-        self.__changed = True
+        self.clear_cache()
         self.__rewriters = set(r for r in self.__rewriters 
                                if r is not rewriter)
         return self
@@ -116,7 +116,7 @@ class ConfigBuilder(object):
         Remove all rewriters of a given type from the current configuration.
         '''
         self.__start()
-        self.__changed = True
+        self.clear_cache()
         if type_:
             self.__rewriters = set(r for r in self.__rewriters 
                                    if not isinstance(r, type_))
@@ -131,7 +131,7 @@ class ConfigBuilder(object):
         evaluation, control resource use, etc.
         '''
         self.__start()
-        self.__changed = True
+        self.clear_cache()
         self.__monitors.append(monitor)
         return self
     
@@ -140,7 +140,7 @@ class ConfigBuilder(object):
         Remove all monitors from the current configuration.
         '''
         self.__start()
-        self.__changed = True
+        self.clear_cache()
         self.__monitors = []
         return self
     
@@ -150,7 +150,7 @@ class ConfigBuilder(object):
         for the parser.
         '''
         self.__start()
-        self.__changed = True
+        self.clear_cache()
         self.__stream_factory = stream_factory
         return self
 
@@ -171,15 +171,19 @@ class ConfigBuilder(object):
     
     @configuration.setter
     def configuration(self, configuration):
+        '''
+        Allow the configuration to be specified from a `Configuration`
+        instance.  No longer recommended - use the other methods here instead.
+        '''
         self.__rewriters = list(configuration.raw_rewriters)
         self.__monitors = list(configuration.monitors)
         self.__stream_factory = configuration.stream_factory
         self.__started = True
-        self.__changed = True
+        self.clear_cache()
     
     def __get_alphabet(self):
         '''
-        The alphabet used.
+        Get the alphabet used.
         
         Typically this is Unicode, which is the default.  It is needed for
         the generation of regular expressions. 
@@ -190,6 +194,11 @@ class ConfigBuilder(object):
         return self.__alphabet
     
     def alphabet(self, alphabet):
+        '''
+        Set the alphabet used.  It is needed for the generation of regular 
+        expressions, for example (but the default, for Unicode, is usually
+        sufficient).
+        '''
         if alphabet:
             if self.__alphabet:
                 if self.__alphabet != alphabet:
@@ -199,7 +208,7 @@ class ConfigBuilder(object):
             else:
                 self.__alphabet = alphabet
                 self.__start()
-                self.__changed = True
+                self.clear_cache()
                 
     @property
     def changed(self):
@@ -209,6 +218,12 @@ class ConfigBuilder(object):
         reused.
         '''
         return self.__changed
+    
+    def clear_cache(self):
+        '''
+        Force calculation of a new parser.
+        '''
+        self.__changed = True
     
     # rewriters
     
@@ -470,9 +485,7 @@ class ConfigBuilder(object):
     def no_memoize(self):
         '''
         Remove memoization.  To use the default configuration without
-        memoization, specify `config.no_memoize()` (specifying
-        just `config.no_memoize()` will use the empty configuration for the
-        reason explained below).
+        memoization, specify `config.no_memoize()`.
         '''
         from lepl.core.rewriters import AutoMemoize, Memoize
         self.remove_all_rewriters(Memoize)
@@ -658,7 +671,7 @@ class ConfigBuilder(object):
         rewriters or monitors are used).
         '''
         self.__started = True
-        self.__changed = True
+        self.clear_cache()
         self.__rewriters = set()
         self.__monitors = []
         self.__stream_factory = DEFAULT_STREAM_FACTORY
@@ -668,12 +681,8 @@ class ConfigBuilder(object):
     def default(self):
         '''
         Provide the default configuration (deleting what may have been
-        configured previously).  This is called automatically if no other
-        configuration is specified.  It provides a moderately efficient,
-        stable parser.
-        
-        Additional efficiency can be achieved with `no_memoize()`, but
-        then left-recursive grammars (which are a bad idea anyway) may fail. 
+        configured previously).  This is equivalent to the initial 
+        configuration.  It provides a moderately efficient, stable parser.
         '''
         self.clear()
         self.flatten()
