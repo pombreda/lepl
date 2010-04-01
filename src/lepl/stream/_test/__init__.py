@@ -27,4 +27,5 @@ Tests for the lepl.stream package.
 # pylint: disable-msg=E0611
 #@PydevCodeAnalysisIgnore
 import lepl.stream._test.filters
+import lepl.stream._test.maxdepth
 import lepl.stream._test.stream

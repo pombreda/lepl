@@ -81,7 +81,7 @@ class RewriteTest(TestCase):
         matcher = rx.get_match_null()
         results = list(matcher('abcd'))
         assert results == [(['abce'], 'd')], results
-        print(repr(matcher.matcher))
+        #print(repr(matcher.matcher))
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
         
     def test_dfs(self):

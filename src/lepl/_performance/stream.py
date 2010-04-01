@@ -59,7 +59,7 @@ def matcher():
 
     sentence.config
     p = sentence.get_match_string()
-    print(repr(p.matcher))
+    #print(repr(p.matcher))
     return p
 
 p = matcher()

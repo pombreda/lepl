@@ -97,7 +97,6 @@ def dfa_regexp():
 data = [format('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
                random(), random(), random(), random(), random())
         for i in range(NUMBER)]
-#print('\n'.join(data))
 
 matchers = [default, clear, no_memo, full_memo, slow, nfa_regexp, dfa_regexp]
 
@@ -143,8 +142,6 @@ def analyse(matcher, t_uncached_base=None, t_cached_base=None):
         t_cached.append(run(matcher, True, repeat))
     (t_uncached, t_cached) = (min(t_uncached), min(t_cached))
     t_uncached = 1000.0 * t_uncached / NUMBER
-    # Correct for the first, uncached, call
-#    t_cached = (1000.0 * t_cached - t_uncached) / (NUMBER - 1)
     t_cached = 1000.0 * t_cached / NUMBER 
     print(format('{0:>20s} {1:5.1f} {2:8s}  {3:5.1f} {4:8s}',
                  matcher.__name__, 

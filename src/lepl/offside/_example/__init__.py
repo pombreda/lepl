@@ -27,3 +27,4 @@ Examples for the lepl.offside package.
 #@PydevCodeAnalysisIgnore
 import lepl.offside._example.line_aware
 import lepl.offside._example.offside
+import lepl.offside._example.pithon

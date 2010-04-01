@@ -40,7 +40,7 @@ class LocationTest(TestCase):
         text = '\n   \n   111  xxx 222\n\n'
         fail = Token(Word('x')) ** make_error('{filename} {lineno} {offset}')
         ok = Token(Word('12'))
-        parser = Star(fail | ok) >> throw
+        parser = Star(fail | ok) >> node_throw
         try:
             parser.parse_string(text)
             assert False, 'expected error'
@@ -60,7 +60,7 @@ class LocationTest(TestCase):
             (Empty() ** make_error('{filename} {lineno} {offset}'), 
              complete=False)
         ok = Token(Word('12'))
-        parser = Star(fail | ok) >> throw
+        parser = Star(fail | ok) >> node_throw
         try:
             parser.parse_string(text)
             assert False, 'expected error'

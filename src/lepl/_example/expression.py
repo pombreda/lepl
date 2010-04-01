@@ -37,63 +37,62 @@ class ExpressionExample(Example):
         
         #basicConfig(level=INFO)
         
-        class Term(Node): pass
-        class Factor(Node): pass
-        class Expression(Node): pass
+        class Term(List): pass
+        class Factor(List): pass
+        class Expression(List): pass
             
         expr   = Delayed()
-        number = Digit()[1:,...]                        > 'number'
-        spaces = Drop(Regexp(r'\s*'))
+        number = Digit()[1:,...]                        >> int
         
-        with Separator(spaces):
+        with DroppedSpace():
             term    = number | '(' & expr & ')'         > Term
-            muldiv  = Any('*/')                         > 'operator'
+            muldiv  = Any('*/')
             factor  = term & (muldiv & term)[:]         > Factor
-            addsub  = Any('+-')                         > 'operator'
+            addsub  = Any('+-')
             expr   += factor & (addsub & factor)[:]     > Expression
             line    = Trace(expr) & Eos()
         
-        parser = line.parse_string
+        parser = line.get_parse()
         
         self.examples([(lambda: parser('1 + 2 * (3 + 4 - 5)')[0],
 """Expression
  +- Factor
  |   `- Term
- |       `- number '1'
- +- operator '+'
+ |       `- 1
+ +- '+'
  `- Factor
      +- Term
-     |   `- number '2'
-     +- operator '*'
+     |   `- 2
+     +- '*'
      `- Term
          +- '('
          +- Expression
          |   +- Factor
          |   |   `- Term
-         |   |       `- number '3'
-         |   +- operator '+'
+         |   |       `- 3
+         |   +- '+'
          |   +- Factor
          |   |   `- Term
-         |   |       `- number '4'
-         |   +- operator '-'
+         |   |       `- 4
+         |   +- '-'
          |   `- Factor
          |       `- Term
-         |           `- number '5'
+         |           `- 5
          `- ')'"""),
                        (lambda: parser('12+ 23*45 + 34')[0],
 """Expression
  +- Factor
  |   `- Term
- |       `- number '12'
- +- operator '+'
+ |       `- 12
+ +- '+'
  +- Factor
  |   +- Term
- |   |   `- number '23'
- |   +- operator '*'
+ |   |   `- 23
+ |   +- '*'
  |   `- Term
- |       `- number '45'
- +- operator '+'
+ |       `- 45
+ +- '+'
  `- Factor
      `- Term
-         `- number '34'""")])
+         `- 34""")])
         

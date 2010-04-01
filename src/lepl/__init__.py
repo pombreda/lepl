@@ -21,20 +21,20 @@
 # confused by __init__?
 
 '''
-LEPL is a parser library written in Python.
+Lepl is a parser library written in Python.
   
 This is the API documentation; the module index is at the bottom of this page.  
 There is also a `manual <../index.html>`_ which gives a higher level
 overview. 
 
 The home page for this package is the 
-`LEPL website <http://www.acooke.org/lepl>`_.
+`Lepl website <http://www.acooke.org/lepl>`_.
 
 
 Example
 -------
 
-A simple example of how to use LEPL::
+A simple example of how to use Lepl::
 
     from lepl import *
     
@@ -42,67 +42,60 @@ A simple example of how to use LEPL::
     # an AST as a set of nested lists 
     # (ie replace '> Term' etc with '> list' below).
     
-    class Term(Node): pass
-    class Factor(Node): pass
-    class Expression(Node): pass
-        
-    def parse_expression(text):
+    class Term(List): pass
+    class Factor(List): pass
+    class Expression(List): pass
+       
+    def build():
         
         # Here we define the grammar
         
         # A delayed value is defined later (see penultimate line in block) 
         expr   = Delayed()
-        number = Digit()[1:,...]                        > 'number'
-        spaces = DropEmpty(Regexp(r'\s*'))
+        number = Digit()[1:,...]                        >> int
+
         # Allow spaces between items
-        with Separator(spaces):
+        with DroppedSpace():
             term    = number | '(' & expr & ')'         > Term
-            muldiv  = Any('*/')                         > 'operator'
+            muldiv  = Any('*/')
             factor  = term & (muldiv & term)[:]         > Factor
-            addsub  = Any('+-')                         > 'operator'
+            addsub  = Any('+-')
             expr   += factor & (addsub & factor)[:]     > Expression
             line    = Trace(expr) & Eos()
     
-        # parse_string returns a list of tokens, but expr 
-        # returns a single value, so take the first entry
-        return expression.parse_string(text)[0]
+        return line.get_parse()
     
     if __name__ == '__main__':
-        print(parse_expression('1 + 2 * (3 + 4 - 5)'))
+        parser = build()
+        # parser returns a list of tokens, but line 
+        # returns a single value, so take the first entry
+        print(parser('1 + 2 * (3 + 4 - 5)')[0])
 
 Running this gives the result::
 
     Expression
      +- Factor
-     |   +- Term
-     |   |   `- number '1'
-     |   `- ' '
-     +- operator '+'
-     +- ' '
+     |   `- Term
+     |       `- 1
+     +- '+'
      `- Factor
          +- Term
-         |   `- number '2'
-         +- ' '
-         +- operator '*'
-         +- ' '
+         |   `- 2
+         +- '*'
          `- Term
              +- '('
              +- Expression
              |   +- Factor
-             |   |   +- Term
-             |   |   |   `- number '3'
-             |   |   `- ' '
-             |   +- operator '+'
-             |   +- ' '
+             |   |   `- Term
+             |   |       `- 3
+             |   +- '+'
              |   +- Factor
-             |   |   +- Term
-             |   |   |   `- number '4'
-             |   |   `- ' '
-             |   +- operator '-'
-             |   +- ' '
+             |   |   `- Term
+             |   |       `- 4
+             |   +- '-'
              |   `- Factor
              |       `- Term
-             |           `- number '5'
+             |           `- 5
              `- ')'
 '''
 

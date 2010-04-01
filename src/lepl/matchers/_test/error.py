@@ -45,8 +45,7 @@ class MessageTest(TestCase):
         parser.config.no_full_first_match()
         node = parser.parse('abc')[0]
         assert isinstance(node, Error)
-        assert node[0] == 'abc', node[0]
-        assert node.name == ['abc'], node.name
+        assert node[0] == 'msg', node[0]
         assert str(node).startswith('msg ('), str(node)
         assert isinstance(node, Exception), type(node)
 
@@ -58,8 +57,7 @@ class MessageTest(TestCase):
         parser.config.no_full_first_match()
         node = parser.parse('abc')[0]
         assert isinstance(node, Error)
-        assert node[0] == 'abc', node[0]
-        assert node.name == ['abc'], node.name
+        assert node[0] == 'msg abc', node[0]
         assert str(node).startswith('msg abc ('), str(node)
         assert isinstance(node, Exception), type(node)
         
@@ -85,8 +83,7 @@ class MessageTest(TestCase):
         parser.config.no_full_first_match()
         node = parser.parse([1, 2, 3])[0]
         assert isinstance(node, Error)
-        assert node[0] == [1, 2, 3], node[0]
-        assert node.name == [[1, 2, 3]], node.name
+        assert node[0] == 'msg [1, 2, 3]', node[0]
         assert str(node).startswith('msg [1, 2, 3] ('), str(node)
         assert isinstance(node, Exception), type(node)
         

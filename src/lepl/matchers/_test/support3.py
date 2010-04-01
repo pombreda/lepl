@@ -17,7 +17,8 @@
 #     along with LEPL.  If not, see <http://www.gnu.org/licenses/>.
 
 '''
-Tests for the lepl.matchers.support module
+Tests for the lepl.matchers.support module (duplicate, including Python 3
+only syntax)
 '''
 
 #from logging import basicConfig, DEBUG
@@ -133,12 +134,12 @@ class DecoratorTest(TestCase):
             assert False, 'expected error'
         except TypeError:
             pass
-#        try:
-#            @function_matcher_factory
-#            def foo(a, *, b=None): return
-#            assert False, 'expected error'
-#        except TypeError:
-#            pass
+        try:
+            @function_matcher_factory
+            def foo(a, *, b=None): return
+            assert False, 'expected error'
+        except TypeError:
+            pass
             
 
 class FunctionMatcherBugTest(TestCase):

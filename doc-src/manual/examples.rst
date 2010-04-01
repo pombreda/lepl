@@ -260,7 +260,7 @@ What can we learn from these results?
    specialised configurations that you won't need in normal use.
 
 For anyone interested in absolute speed, the values above are milliseconds
-required per iterations on a Dual Core laptop (a Lenovo X60, a couple of years
+required per iteration on a Dual Core laptop (a Lenovo X60, a couple of years
 old), with sufficient memory to avoid paging.
 
 

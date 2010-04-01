@@ -29,18 +29,26 @@ import lepl._example.args
 import lepl._example.columns
 import lepl._example.error
 import lepl._example.expression
+import lepl._example.full_match
 import lepl._example.hello
 import lepl._example.lexer
 import lepl._example.manager
 import lepl._example.matchers
 import lepl._example.memo
+import lepl._example.new_in_4
 import lepl._example.nodes
 import lepl._example.operators
 import lepl._example.performance
+import lepl._example.phone_words
 import lepl._example.phone
+import lepl._example.search_syntax
 import lepl._example.search
 # no tests and 3.0-specific print syntax
 #import lepl._example.separators
 #import lepl._example.support
 import lepl._example.trace
+import lepl._example.tutorial_1
+import lepl._example.tutorial_2
+import lepl._example.tutorial_3
+import lepl._example.tutorial_4
 

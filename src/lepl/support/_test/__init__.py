@@ -28,4 +28,5 @@ Tests for the lepl.matchers package.
 #@PydevCodeAnalysisIgnore
 import lepl.support._test.graph
 import lepl.support._test.lib
+import lepl.support._test.list
 import lepl.support._test.node

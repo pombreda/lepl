@@ -40,7 +40,7 @@ class LettersTest(Example):
     
     def test_painter(self):
         results = Digit()[13, ...].match('1-800-7246837')
-        print(type(results))
+        #print(type(results))
         words = map(lambda result: result[0][0], results)
         assert '1-800-painter' in words
         

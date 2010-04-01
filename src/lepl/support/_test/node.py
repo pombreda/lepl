@@ -23,7 +23,7 @@ Tests for the lepl.support.node module.
 #from logging import basicConfig, DEBUG, INFO
 from unittest import TestCase
 
-from lepl import Delayed, Digit, Any, Node, make_error, throw, Or, Space, \
+from lepl import Delayed, Digit, Any, Node, make_error, node_throw, Or, Space, \
     AnyBut, Eos
 from lepl.support.graph import order, PREORDER, POSTORDER, LEAF
 
@@ -123,9 +123,9 @@ class ErrorTest(TestCase):
         term        = Or(
             AnyBut(Space() | Digit() | '(')[1:,...]                          ^ 'unexpected text: {results[0]}', 
             number                                                           > Term,
-            number ** make_error("no ( before '{stream_out}'") / ')'           >> throw,
+            number ** make_error("no ( before '{stream_out}'") / ')'           >> node_throw,
             '(' / expression / ')'                                           > Term,
-            ('(' / expression / Eos()) ** make_error("no ) for '{stream_in}'") >> throw)
+            ('(' / expression / Eos()) ** make_error("no ) for '{stream_in}'") >> node_throw)
         muldiv      = Any('*/')                                              > 'operator'
         factor      = (term / (muldiv / term)[0:,r'\s*'])                    >  Factor
         addsub      = Any('+-')                                              > 'operator'

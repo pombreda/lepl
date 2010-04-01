@@ -37,7 +37,7 @@ class FullFirstMatchTest(Example):
         try:
             matcher.parse_null('1234567')
         except FullFirstMatchException as e:
-            print(str(e))
+            #print(str(e))
             return str(e)
         
     def run_string(self):
@@ -45,7 +45,7 @@ class FullFirstMatchTest(Example):
         try:
             matcher.parse_string('1234567')
         except FullFirstMatchException as e:
-            print(str(e))
+            #print(str(e))
             return str(e)
 
     def test_all(self):

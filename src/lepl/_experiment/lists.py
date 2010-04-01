@@ -59,46 +59,46 @@ def make_fold(per_list=None, per_item=None,
             yield per_item(item)
     return lambda list_: per_list(type(list_), items(list_))
 
-# These need to be turned into tests
-
-clone = make_fold()
-
-print(clone([]))
-print(clone([1,2,3]))
-print(clone([[1],2,3]))
-print(clone([[[1]],2,3]))
-print(clone([[[1]],2,[3]]))
-print(clone([[[1]],'2',[3]]))
-
-count = make_fold(per_list=lambda type_, items: sum(items), 
-                  per_item=lambda item: 1)
-
-print(count([]))
-print(count([1,2,3]))
-print(count([[1],2,3]))
-print(count([[[1,2],3],4,5]))
-
-join_list = lambda items: reduce(lambda x, y: x+y, items, [])
-flatten = make_fold(per_list=lambda type_, items: join_list(items),
-                    per_item=lambda item: [item])
-
-print(flatten([]))
-print(flatten([1,2,3]))
-print(flatten([[1],2,3]))
-print(flatten([[[1,2],3],4,5]))
-
-'''
-This need adapting to use higher order functions to all the neat formatting,
-but shows the basic idea.
-'''
-#list_to_tree = \
-#    lambda list_: \
-#        '\n'.join(make_fold(per_list=lambda type_, items: join_list(lmap(lambda item: lmap(lambda x: ' ' + x, item), items)), 
-#                            per_item=lambda item: [str(item)])(list_))
-        
-list_to_str = make_fold(per_list=lambda type_, items: 
-                            format('{0}({1})', type_.__name__, ','.join(items)), 
-                        per_item=lambda item: repr(item))
+## These need to be turned into tests
+#
+#clone = make_fold()
+#
+#print(clone([]))
+#print(clone([1,2,3]))
+#print(clone([[1],2,3]))
+#print(clone([[[1]],2,3]))
+#print(clone([[[1]],2,[3]]))
+#print(clone([[[1]],'2',[3]]))
+#
+#count = make_fold(per_list=lambda type_, items: sum(items), 
+#                  per_item=lambda item: 1)
+#
+#print(count([]))
+#print(count([1,2,3]))
+#print(count([[1],2,3]))
+#print(count([[[1,2],3],4,5]))
+#
+#join_list = lambda items: reduce(lambda x, y: x+y, items, [])
+#flatten = make_fold(per_list=lambda type_, items: join_list(items),
+#                    per_item=lambda item: [item])
+#
+#print(flatten([]))
+#print(flatten([1,2,3]))
+#print(flatten([[1],2,3]))
+#print(flatten([[[1,2],3],4,5]))
+#
+#'''
+#This need adapting to use higher order functions to all the neat formatting,
+#but shows the basic idea.
+#'''
+##list_to_tree = \
+##    lambda list_: \
+##        '\n'.join(make_fold(per_list=lambda type_, items: join_list(lmap(lambda item: lmap(lambda x: ' ' + x, item), items)), 
+##                            per_item=lambda item: [str(item)])(list_))
+#        
+#list_to_str = make_fold(per_list=lambda type_, items: 
+#                            format('{0}({1})', type_.__name__, ','.join(items)), 
+#                        per_item=lambda item: repr(item))
 
 def list_to_tree(list_):
     '''
@@ -122,36 +122,36 @@ def list_to_tree(list_):
     fold = make_fold(per_list, per_item)
     return '\n'.join(fold(list_)('', ''))
 
-class Term(List): pass
-class Factor(List): pass
-class Expression(List): pass
-    
-expr   = Delayed()
-number = Digit()[1:,...]                         >> int
-
-with Separator(Drop(Regexp(r'\s*'))):
-    term    = number | '(' & expr & ')'          > Term
-    muldiv  = Any('*/')
-    factor  = term & (muldiv & term)[:]          > Factor
-    addsub  = Any('+-')
-    expr   += factor & (addsub & factor)[:]      > Expression
-    line    = expr & Eos()
-    
-ast = line.parse_string('1 + 2 * (3 + 4 - 5)')[0]
-
-print(ast)
-# Expression(Factor(Term(1)),'+',Factor(Term(2),'*',Term('(',Expression(Factor(Term(3)),'+',Factor(Term(4)),'-',Factor(Term(5))),')')))
-print(repr(ast))
-#   1
-# +
-#   2
-#  *
-#   (
-#      3
-#    +
-#      4
-#    -
-#      5
-#   )
-print(ast.tree())
+#class Term(List): pass
+#class Factor(List): pass
+#class Expression(List): pass
+#    
+#expr   = Delayed()
+#number = Digit()[1:,...]                         >> int
+#
+#with Separator(Drop(Regexp(r'\s*'))):
+#    term    = number | '(' & expr & ')'          > Term
+#    muldiv  = Any('*/')
+#    factor  = term & (muldiv & term)[:]          > Factor
+#    addsub  = Any('+-')
+#    expr   += factor & (addsub & factor)[:]      > Expression
+#    line    = expr & Eos()
+#    
+#ast = line.parse_string('1 + 2 * (3 + 4 - 5)')[0]
+#
+#print(ast)
+## Expression(Factor(Term(1)),'+',Factor(Term(2),'*',Term('(',Expression(Factor(Term(3)),'+',Factor(Term(4)),'-',Factor(Term(5))),')')))
+#print(repr(ast))
+##   1
+## +
+##   2
+##  *
+##   (
+##      3
+##    +
+##      4
+##    -
+##      5
+##   )
+#print(ast.tree())
 
