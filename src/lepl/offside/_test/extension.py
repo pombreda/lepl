@@ -24,6 +24,7 @@ Tests for the regexp extensions.
 from unittest import TestCase
 
 from lepl import UnicodeAlphabet
+from lepl._test.base import assert_str
 from lepl.offside.regexp import LineAwareAlphabet, make_hide_sol_eol_parser
 from lepl.offside.stream import LineAwareStreamFactory
 from lepl.regexp.core import Compiler
@@ -85,7 +86,7 @@ class CompilerTest(TestCase):
             (p, q, r) = dfa_result
             assert a == p, result
             assert b == q, result
-            assert repr(c) == r, result
+            assert_str(repr(c), r)
         else:
             assert dfa_result == None, dfa_result
 
@@ -95,5 +96,5 @@ class CompilerTest(TestCase):
         for ((a,b,c), (p,q,r)) in zip(result, nfa_result):
             assert a == p, result
             assert b == q, result
-            assert repr(c) == r, result
+            assert_str(repr(c), r)
         

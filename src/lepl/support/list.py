@@ -24,7 +24,7 @@ The general support works with any nested iterables (except strings).
 
 from functools import reduce
 
-from lepl.support.lib import format
+from lepl.support.lib import format, basestring
 from lepl.support.node import Node
 
 
@@ -55,7 +55,7 @@ def clone_iterable(type_, items):
     
 
 def sexpr_fold(per_list=None, per_item=None, 
-               exclude=lambda x: isinstance(x, str)):
+               exclude=lambda x: isinstance(x, basestring)):
     '''
     We need some kind of fold-like procedure for generalising operations on
     arbitrarily nested iterables.  We can't use a normal fold because Python

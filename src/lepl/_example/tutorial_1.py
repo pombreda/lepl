@@ -74,8 +74,9 @@ class Tutorial1Example(Example):
 """lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'cabbage',
 Line 1, character 0 of str: 'cabbage'.
 """),
-(self.run_parse_all,
-"""<map object at 0xdf45d0>"""),
+# fails for python 2 (get a list) so exclude
+#(self.run_parse_all,
+#"""<map object at 0xdf45d0>"""),
 (self.run_parse_all_list,
 """[['123'], ['12'], ['1']]"""),
 (self.run_sum,

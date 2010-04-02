@@ -24,6 +24,7 @@ Tests for the lepl.support.list module.
 from unittest import TestCase
 
 from lepl import *
+from lepl._test.base import assert_str
 from lepl.support.list import clone_sexpr, count_sexpr, join, \
     sexpr_flatten, sexpr_to_str
 
@@ -96,7 +97,7 @@ class AstTest(TestCase):
             
         ast = line.parse_string('1 + 2 * (3 + 4 - 5)')[0]
         text = str(ast)
-        assert text == """Expression
+        assert_str(text, """Expression
  +- Factor
  |   `- Term
  |       `- 1
@@ -119,6 +120,6 @@ class AstTest(TestCase):
          |   `- Factor
          |       `- Term
          |           `- 5
-         `- ')'""", text
+         `- ')'""")
 
         

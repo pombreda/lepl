@@ -21,9 +21,11 @@ Tests for the lepl.core.config module.
 '''
 
 #from logging import basicConfig, DEBUG
+from sys import version
 from unittest import TestCase
 
 from lepl import *
+from lepl._test.base import assert_str
 
 
 class ParseTest(TestCase):
@@ -34,26 +36,26 @@ class ParseTest(TestCase):
         config(matcher)
         parser = getattr(matcher, 'parse' + name)
         result = str(parser(text, **kargs))
-        assert result == parse, result
+        assert_str(result, parse)
         matcher = Any()[2, ...]
         matcher.config.no_full_first_match()
         config(matcher)
         parser = getattr(matcher, 'match' + name)
         result = str(list(parser(text, **kargs)))
-        assert result == match2, result
+        assert_str(result, match2)
         matcher = Any()[3, ...]
         matcher.config.no_full_first_match()
         config(matcher)
         parser = getattr(matcher, 'match' + name)
         result = str(list(parser(text, **kargs)))
-        assert result == match3, result
+        assert_str(result, match3)
         matcher = Any()
         config(matcher)
         parser = getattr(matcher, 'parse' + name)
         try:
             parser(text)
         except FullFirstMatchException as e:
-            assert str(e) == error, str(e)
+            assert_str(e, error)
             
     def test_string(self):
         self.run_test('_string', 'abc', 
@@ -93,6 +95,8 @@ config=lambda m: m.config.no_compile_to_regexp(), sub_list=True)
     def test_int_list(self):
         #basicConfig(level=DEBUG)
         try:
+            # this fails for python2 because it relies on 
+            # comparison between types failing
             self.run_test('_items', [1, 2, 3], [], [], [], """""")
         except RegexpError as e:
             assert 'no_compile_to_regexp' in str(e), str(e)

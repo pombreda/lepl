@@ -26,6 +26,7 @@ Examples from the documentation.
 
 from lepl import *
 from lepl._example.support import Example
+from lepl._test.base import assert_str
 
 
 class NodeExample(Example):
@@ -273,7 +274,7 @@ class NestedNodeExample(Example):
             
         ast = line.parse_string('1 + 2 * (3 + 4 - 5)')[0]
         text = str(ast)
-        assert text == """Expression
+        assert_str(text, """Expression
  +- factor
  |   `- Term
  |       `- number '1'
@@ -296,4 +297,4 @@ class NestedNodeExample(Example):
          |   `- factor
          |       `- Term
          |           `- number '5'
-         `- ')'""", text
+         `- ')'""")

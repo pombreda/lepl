@@ -23,7 +23,7 @@ Tests for the lepl.matchers.core module.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl._test.base import BaseTest
+from lepl._test.base import BaseTest, assert_str
 from lepl.matchers.combine import And, Or
 from lepl.matchers.core import Any, Literal, Eof, Regexp, Delayed, Lookahead, \
     Consumer
@@ -186,7 +186,8 @@ class TransformTest(BaseTest):
 class StrTest(TestCase):
     
     def assert_same(self, text1, text2):
-        assert self.__clean(text1) == self.__clean(text2), text1
+        assert_str(text1, text2)
+#        assert self.__clean(text1) == self.__clean(text2), text1
     
     def __clean(self, text):
         depth = 0

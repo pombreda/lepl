@@ -23,12 +23,11 @@
 Examples from the documentation.
 '''
 
-from re import sub
-
 from logging import getLogger
 from unittest import TestCase
 from traceback import format_exception_only, format_exc
 
+from lepl._test.base import assert_str
 
 class Example(TestCase):
     
@@ -42,8 +41,4 @@ class Example(TestCase):
             except Exception as e:
                 getLogger('lepl._example.support.Example').debug(format_exc())
                 result = ''.join(format_exception_only(type(e), e))
-            # Python 2.6 unicode strings - hack removal
-            result = result.replace("u'", "'")
-            result = sub('<(.+) 0x[0-9a-fA-F]*>', '<\\1 0x...>', result)
-            target = sub('<(.+) 0x[0-9a-fA-F]*>', '<\\1 0x...>', target)
-            assert target == result, '"' + result + '" != "' + target + '"'
+            assert_str(target, result)

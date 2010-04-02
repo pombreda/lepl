@@ -54,17 +54,19 @@ def all():
     print('\n\n\n----------------------------------------------------------'
           '------------\n')
     if version[0] == '2':
-        print('Expect 5-7 failures in Python 2.6: {0:d} '
-              '(error class names, format variation from address size, '
-              'unicode ranges)'
-              .format(len(result.failures)))
-        assert 5 <= len(result.failures) <= 7, len(result.failures)
-        target = 377 - 0 # no bin/cairo tests
+        print('Expect 5 failures + 1 error in Python 2.6: {0:d}, {1:d} '
+              '(lenient comparison, format variation from address size, '
+              'unicode ranges, weird string difference)'
+              .format(len(result.failures), len(result.errors)))
+        assert 5 <= len(result.failures) <= 5, len(result.failures)
+        assert 1 <= len(result.errors) <= 1, len(result.errors)
+        target = 377 - 25 # no bin/cairo tests
     else:
-        print('Expect at most 1 failure in Python 3: {0:d} '
+        print('Expect at most 1 failure + 0 errors in Python 3: {0:d}, {1:d} '
               '(format variations from address size?)'
-              .format(len(result.failures)))
+              .format(len(result.failures), len(result.errors)))
         assert 0 <= len(result.failures) <= 1, len(result.failures)
+        assert 0 <= len(result.errors) <= 0, len(result.errors)
         target = 377-3 # no cairo tests (2), no random (1)
     print('Expect {0:d} tests total: {1:d}'.format(target, result.testsRun))
     assert result.testsRun == target, result.testsRun

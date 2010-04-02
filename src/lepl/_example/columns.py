@@ -59,8 +59,10 @@ Year            Iraq          Israel           Egypt
         # each row in a separate list.
         parser = ~SkipTo(Digit(), include=False) & (cols > list)[:]
         
+        # L included below to check that it's ignored in comparison
+        # (appears in windows?)
         self.examples([(lambda: parser.parse(table),
-                        '[[2005, 6981200000, 2684100000, 1541900000], ' 
+                        '[[2005, 6981200000L, 2684100000, 1541900000], ' 
                         '[2004, 8333400000, 2782400000, 2010600000], ' 
                         '[2003, 4150000000, 3878300000, 1849600000], ' 
                         '[2002, 41600000, 2991200000, 2362800000]]')])

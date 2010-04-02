@@ -21,7 +21,10 @@ Support for matcher tests.
 '''
 
 #from logging import basicConfig, DEBUG
+from re import sub
 from unittest import TestCase
+
+from lepl.support.lib import basestring, str
 
 
 class BaseTest(TestCase):
@@ -37,3 +40,20 @@ class BaseTest(TestCase):
         #print(matcher.matcher)
         result = list(matcher(stream, **kargs))
         assert target == result, result
+        
+def assert_str(a, b):
+    '''
+    Assert two strings are approximately equal, allowing tests to run in
+    Python 3 and 2.
+    '''
+    def clean(x):
+        x = str(x)
+        x = x.replace("u'", "'")
+        x = x.replace("lepl.matchers.error.Error", "Error")
+        x = x.replace("lepl.stream.maxdepth.FullFirstMatchException", "FullFirstMatchException")
+        x = sub('<(.+) 0x[0-9a-fA-F]*>', '<\\1 0x...>', x)
+        x = sub('(\\d+)L', '\\1', x)
+        return x
+    a = clean(a)
+    b = clean(b)
+    assert a == b, '"' + a + '" != "' + b + '"'

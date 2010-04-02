@@ -27,8 +27,7 @@ from contextlib import contextmanager
 from sys import stderr, _getframe
 
 from lepl.matchers.support import trampoline_matcher_factory
-from lepl.core.parser import tagged, GeneratorWrapper
-from lepl.support.lib import format
+from lepl.support.lib import format, str
 
 
 @trampoline_matcher_factory(False)
@@ -43,15 +42,17 @@ def NamedResult(name, matcher, out=stderr):
     def record_success(count, stream_in, result):
         (value, stream_out) = result
         count_desc = format(' ({0})', count) if count > 1 else ''
+        # Python bug #4618
         print(format('{0}{1} = {2}\n    "{3}" -> "{4}"', 
                      name, count_desc, value, 
                      format_stream(stream_in), format_stream(stream_out)), 
-              file=out)
+              file=out, end=str('\n'))
         
     def record_failure(count, stream_in):
+        # Python bug #4618
         print(format('! {0} (after {1} matches)\n    "{2}"', name, count, 
                      format_stream(stream_in)),
-              file=out)
+              file=out, end=str('\n'))
     
     def match(support, stream):
         count = 0
@@ -92,14 +93,16 @@ def name(name, show_failures=True, width=80, out=stderr):
             str_name = _adjust(name, left // 4, True, True)
             match = _adjust(format(' {0} = {1}', str_name, result),
                             left, True)
-            print(match + ' ' + stream, file=out)
+            # Python bug #4618
+            print(match + ' ' + stream, file=out, end=str('\n'))
             return (result, stream_out)
         except StopIteration:
             if show_failures:
                 stream = _adjust(format('stream = \'{0}\'', stream_in), right) 
                 str_name = _adjust(name, left // 4, True, True)
                 match = _adjust(format(' {0} failed', str_name), left, True)
-                print(match + ' ' + stream, file=out)
+                # Python bug #4618
+                print(match + ' ' + stream, file=out, end=str('\n'))
             raise StopIteration
         
     return namer
@@ -118,10 +121,12 @@ def TraceVariables(on=True, show_failures=True, width=80, out=stderr):
                 value.wrapper.append(name(key, show_failures, width, out))
             except:
                 if not warned:
+                    # Python bug #4618
                     print('Unfortunately the following matchers cannot '
-                          'be tracked:')
+                          'be tracked:', end=str('\n'))
                     warned = True
-                print(format('  {0} = {1}', key, value))
+                # Python bug #4618
+                print(format('  {0} = {1}', key, value), end=str('\n'))
                     
 
 

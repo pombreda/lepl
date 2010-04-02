@@ -24,6 +24,7 @@ from io import StringIO
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
+from lepl._test.base import assert_str
 from lepl.matchers.core import Any
 from lepl.matchers.variables import NamedResult, TraceVariables
 
@@ -38,7 +39,7 @@ class ExplicitTest(TestCase):
         parser = matcher.get_match_string()
         list(parser('abc'))
         text = output.getvalue()
-        assert text == '''foo = ['a', 'b', 'c']
+        assert_str(text, '''foo = ['a', 'b', 'c']
     "abc" -> ""
 foo (2) = ['a', 'b']
     "abc" -> "c"
@@ -48,7 +49,7 @@ foo (4) = []
     "abc" -> "abc"
 ! foo (after 4 matches)
     "abc"
-''', '>' + text + '<'
+''')
         
     def test_context(self):
         #basicConfig(level=DEBUG)
@@ -59,8 +60,8 @@ foo (4) = []
         repr(bar)
         list(bar.match('abc'))
         text = output.getvalue()
-        assert text == '''         bar = ['a']                            stream = 'bc'
+        assert_str(text, '''         bar = ['a']                            stream = 'bc'
          bar failed                             stream = 'abc'
-''', '>' + text + '<'
+''')
 
         
