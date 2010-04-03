@@ -414,7 +414,7 @@ or delegate work to other sub--matchers, or modify results.  This consistency
 is a source of great expressive power.)
 
 Lepl includes several function decorators that help simplify the creation of
-new matchers.  See TODO.
+new matchers.  See :ref:`new_matchers` and following sections.
 
 .. [*] I am intentionally omitting details about trampolining here to focus on
        the process of matching.  A more complete description of the entire

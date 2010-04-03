@@ -32,6 +32,7 @@ Tests for the lepl.matchers.memo module.
 '''
 
 #from logging import basicConfig, DEBUG
+from time import time
 from unittest import TestCase
 
 from lepl import Delayed, Any, Optional, Node, Literals, Eos, Token, Or
@@ -318,4 +319,64 @@ class RecursionTest(TestCase):
         matcher.config.clear().auto_memoize(full=True).lexer().trace(True)
         self.do_test(matcher.get_parse())
 
+
+#class PerformanceTest(TestCase):
+#    
+#    def matcher(self):
+#    
+#        class VerbPhrase(Node): pass
+#        class DetPhrase(Node): pass
+#        class SimpleTp(Node): pass
+#        class TermPhrase(Node): pass
+#        class Sentence(Node): pass
+#        
+#        verb        = Literals('knows', 'respects', 'loves')         > 'verb'
+#        join        = Literals('and', 'or')                          > 'join'
+#        proper_noun = Literals('helen', 'john', 'pat')               > 'proper_noun'
+#        determiner  = Literals('every', 'some')                      > 'determiner'
+#        noun        = Literals('boy', 'girl', 'man', 'woman')        > 'noun'
+#        
+#        verbphrase  = Delayed()
+#        verbphrase += verb | (verbphrase // join // verbphrase)      > VerbPhrase
+#        det_phrase  = determiner // noun                             > DetPhrase
+#        simple_tp   = proper_noun | det_phrase                       > SimpleTp
+#        termphrase  = Delayed()
+#        termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
+#        sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
+#    
+#        return sentence
+#    
+#    def time_once(self, factory):
+#        matcher = factory().get_parse_all()
+#        start = time()
+#        assert len(list(matcher(
+#            'every boy or some girl and helen and john or pat knows '
+#            'and respects or loves every boy or some girl and pat or '
+#            'john and helen'))) == 392
+#        return time() - start
+#    
+#    def repeat(self, count, factory):
+#        time = 0
+#        for _i in range(count):
+#            time += self.time_once(factory)
+#        return time
+#            
+#    def best_of(self, n, count, factory):
+#        times = []
+#        for _i in range(n):
+#            times.append(self.repeat(count, factory))
+#        return min(times)
+#    
+#    def test_timing(self):
+#        (n, count) = (3, 2)
+#        matcher = self.matcher()
+#        def default_factory():
+#            matcher.config.clear()
+#            return matcher
+#        default = self.best_of(n, count, default_factory)
+#        def memo_factory():
+#            matcher.config.clear().auto_memoize(full=True)
+#            return matcher
+#        memo = self.best_of(n, count, memo_factory)
+#        assert default > 10 * memo, (default, memo)
         

@@ -259,14 +259,8 @@ Lepl can be extended in several ways:
 * You can define and call functions to process results (using ``>``).  This is
   quite common, too, and there's an example just above.
 
-* TODO - UPDATE You can write your own matchers (see the Lepl source for
-  examples; they should inherit from `BaseMatcher
-  <api/redirect.html#lepl.functions.BaseMatcher>`_ to take full advantage of
-  the operator syntax).  Hopefully this is not often needed.  If you think you
-  do need to write a new matcher, feel free to discuss it on the `mailing list
-  <http://groups.google.com/group/lepl>`_ --- someone might have already
-  written something, or it's possible I will think it worth adding to Lepl
-  myself.
+* You can write your own matchers.  See :ref:`new_matchers` and following
+  sections.
 
 * You can also change the definition of operators (``&``, ``/`` etc; see
   :ref:`replacement`).  Again, this is unusual to do directly, but forms the

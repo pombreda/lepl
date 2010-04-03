@@ -81,7 +81,7 @@ def all():
               .format(len(result.failures), len(result.errors)))
         assert 0 <= len(result.failures) <= 1, len(result.failures)
         assert 0 <= len(result.errors) <= 0, len(result.errors)
-        target = TOTAL - 9 # no cairo tests (2), no random (1), no support (6)
+        target = TOTAL - 9 # no cairo tests (2), no random (1), no support[3] (6)
     print('Expect {0:d} tests total: {1:d}'.format(target, result.testsRun))
     assert result.testsRun == target, result.testsRun
     print('\nLooks OK to me!\n\n')
