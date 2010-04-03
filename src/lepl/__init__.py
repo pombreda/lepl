@@ -123,7 +123,8 @@ from lepl.matchers.derived import Apply, args, KApply, Regexp, Join, \
     OneOrMore, Substitute, Name, Eof, Eos, Identity, Newline, Space, \
     Whitespace, Digit, Letter, Upper, Lower, Printable, Punctuation, \
     UnsignedInteger, SignedInteger, Integer, UnsignedFloat, SignedFloat, \
-    SignedEFloat, Float, Word, DropEmpty, Literals, String, SkipTo, Columns
+    SignedEFloat, Float, Word, DropEmpty, Literals, String, SingleLineString, \
+    SkipString, SkipTo, Columns
 from lepl.matchers.error import Error, make_error, raise_error
 from lepl.matchers.memo import RMemo, LMemo, MemoException
 from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
@@ -208,6 +209,8 @@ __all__ = [
         'DropEmpty',
         'Literals',
         'String',
+        'SingleLineString',
+        'SkipString',
         'SkipTo',
         'GREEDY',
         'NON_GREEDY',

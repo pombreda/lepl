@@ -37,20 +37,13 @@ from unittest import TestCase
 from lepl import Delayed, Digit, Any, Node, make_error, node_throw, Or, Space, \
     AnyBut, Eos
 from lepl.support.graph import order, PREORDER, POSTORDER, LEAF
+from lepl._test.base import assert_str
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, R0201, R0903
 # (dude this is just a test)
 
     
-def str26(value):
-    '''
-    Hack 2.6 string conversion
-    '''
-    string = str(value)
-    return string.replace("u'", "'")
-
-
 class NodeTest(TestCase):
 
     def test_node(self):
@@ -70,7 +63,7 @@ class NodeTest(TestCase):
         
         p = expression.get_parse_string()
         ast = p('1 + 2 * (3 + 4 - 5)')
-        assert str26(ast[0]) == """Expression
+        assert_str(ast[0], """Expression
  +- Factor
  |   +- Term
  |   |   `- number '1'
@@ -101,7 +94,7 @@ class NodeTest(TestCase):
          |   `- Factor
          |       `- Term
          |           `- number '5'
-         `- ')'""", str26(ast[0])
+         `- ')'""")
 
 class ListTest(TestCase):
 
@@ -261,3 +254,17 @@ class NestedNamedTest(TestCase):
  `- b
      `- 'B'""", text
     
+    
+class NodeEqualityTest(TestCase):
+    
+    def test_equals(self):
+        a = Node('abc')
+        b = Node('abc')
+        assert a == a
+        assert not (a != a)
+        assert not (a == b)
+        assert a._recursively_eq(b)
+        assert Node(a) != a
+        assert Node(a)._recursively_eq(Node(a))
+        assert not Node(a)._recursively_eq(a)
+        

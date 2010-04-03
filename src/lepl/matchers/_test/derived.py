@@ -34,11 +34,10 @@ Tests for the lepl.matchers.derived module.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.matchers.derived import Space, Repeat, SkipTo, Newline, String
-from lepl.matchers.core import Any, OperatorMatcher
-from lepl.matchers.monitor import Trace
-from lepl.core.parser import tagged
+from lepl import *
 from lepl._test.base import BaseTest
+from lepl.matchers.support import OperatorMatcher
+from lepl.core.parser import tagged
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201, R0913, R0901, R0904
@@ -175,7 +174,16 @@ class StringTest(BaseTest):
     def test_simple(self):
         self.assert_direct('"abc"', String(), [['abc']])
         self.assert_direct('"abc"d', String(), [['abc']])
+        self.assert_direct('"abc"', SingleLineString(), [['abc']])
+        self.assert_direct('"abc"d', SingleLineString(), [['abc']])
+        self.assert_direct('"abc"', SkipString(), [['abc']])
+        self.assert_direct('"abc"d', SkipString(), [['abc']])
 
     def test_escape(self):
         self.assert_direct('"ab\\"c"', String(), [['ab"c'], ['ab\\']])
+        
+    def test_multiple_lines(self):
+        self.assert_direct('"ab\nc"', String(), [['ab\nc']])
+        self.assert_direct('"ab\nc"', SingleLineString(), [])
+        self.assert_direct('"ab\nc"', SkipString(), [['abc']])
         

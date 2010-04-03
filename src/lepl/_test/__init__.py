@@ -46,6 +46,9 @@ import lepl._test.bug_stalled_parser
 import lepl._test.magus
 
 
+TOTAL = 385 # Number of tests if running in IDE with Python 3
+
+
 def all():
     '''
     This runs all tests and examples.  It is something of a compromise - seems
@@ -71,14 +74,14 @@ def all():
               .format(len(result.failures), len(result.errors)))
         assert 5 <= len(result.failures) <= 5, len(result.failures)
         assert 1 <= len(result.errors) <= 1, len(result.errors)
-        target = 377 - 25 # no bin/cairo tests
+        target = TOTAL - 22 - 9 # no bin/cairo tests (22)
     else:
         print('Expect at most 1 failure + 0 errors in Python 3: {0:d}, {1:d} '
               '(format variations from address size?)'
               .format(len(result.failures), len(result.errors)))
         assert 0 <= len(result.failures) <= 1, len(result.failures)
         assert 0 <= len(result.errors) <= 0, len(result.errors)
-        target = 377-3 # no cairo tests (2), no random (1)
+        target = TOTAL - 9 # no cairo tests (2), no random (1), no support (6)
     print('Expect {0:d} tests total: {1:d}'.format(target, result.testsRun))
     assert result.testsRun == target, result.testsRun
     print('\nLooks OK to me!\n\n')

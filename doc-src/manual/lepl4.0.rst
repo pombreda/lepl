@@ -1,4 +1,6 @@
 
+.. _lepl4:
+
 Lepl 4 - Simpler, Faster, Easier
 ================================
 

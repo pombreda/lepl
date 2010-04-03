@@ -521,13 +521,40 @@ def Literals(*matchers):
 
 def String(quote='"', escape='\\'):
     '''
-    Match a string with quotes that can be escaped.
+    Match a string with quotes that can be escaped.  This will match across
+    newlines (see `SingleLineString` for an alternative).
     '''
     q = Literal(quote)
     content = AnyBut(q)
     if escape:
         content = Or(And(Drop(escape), q), content)
     content = Repeat(content, add_=True) 
+    return And(Drop(q), content, Drop(q))
+
+
+def SingleLineString(quote='"', escape='\\', exclude='\n'):
+    '''
+    Like `String`,  but will not match across multiple lines.
+    '''
+    q = Literal(quote)
+    content = AnyBut(Or(q, Any(exclude)))
+    if escape:
+        content = Or(content, And(Drop(escape), q))
+    content = Repeat(content, add_=True)
+    return And(Drop(q), content, Drop(q))
+
+
+def SkipString(quote='"', escape='\\', ignore='\n'):
+    '''
+    Like `String`, matching across multiple lines, but will silently 
+    drop newlines.
+    '''
+    q = Literal(quote)
+    content = AnyBut(Or(q, Any(ignore)))
+    if escape:
+        content = Or(content, And(Drop(escape), q))
+    content = Or(content, Drop(Any(ignore)))
+    content = Repeat(content, add_=True)
     return And(Drop(q), content, Drop(q))
 
 
