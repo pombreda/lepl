@@ -25,7 +25,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 ... # have a think, just click on the screen (click again to restart).
 ... 
 >>> # It's interesting to see what is happening in a little more detail:
-... with TrackVariables():
+... with TraceVariables():
 ...     word = ~Lookahead('OR') & Word()
 ...     phrase = String()
 ...     with DroppedSpace():
@@ -35,7 +35,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 Unfortunately the following matchers cannot be tracked:
   query = DepthFirst(0, None, rest=And, first=Transform)
 >>> query.config.auto_memoize(full=True)
-<lepl.core.config.ConfigBuilder object at 0xcad650>
+<lepl.core.config.ConfigBuilder object at 0xd23290>
 >>> query.parse('spicy meatballs OR "el bulli restaurant"')
       phrase failed                             stream = 'spicy meatballs OR...
         word = ['spicy']                        stream = ' meatballs OR "el ...
@@ -51,7 +51,7 @@ Unfortunately the following matchers cannot be tracked:
         word failed                             stream = ''
         text = [['el bulli restaurant']]        stream = ''
 [['spicy', 'meatballs'], ['el bulli restaurant']]
->>> # The display above shows how the different variables are bound as
+>>> # The display above shows the results for the different matchers as
 ... # the input stream is consumed.  This can be very useful for debugging.
 ... 
 >>> # Just before calling the parser above we configured full memoization.
@@ -71,22 +71,12 @@ Unfortunately the following matchers cannot be tracked:
 ['1', '2', '3', '4']
 >>> Any()[3:5].parse('123456')
 No handlers could be found for logger "lepl.parser.trampoline"
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-  File "/home/andrew/projects/personal/src/lepl/trace/src/lepl/core/config.py", line 846, in parse
-    return self.get_parse()(stream, **kargs)
-  File "/home/andrew/projects/personal/src/lepl/trace/src/lepl/core/parser.py", line 241, in single
-    return next(raw(arg))[0]
-  File "/home/andrew/projects/personal/src/lepl/trace/src/lepl/core/parser.py", line 160, in trampoline
-    raise value
-  File "/home/andrew/projects/personal/src/lepl/trace/src/lepl/core/parser.py", line 143, in trampoline
-    value = stack[-1].generator.throw(value)
-  File "/home/andrew/projects/personal/src/lepl/trace/src/lepl/matchers/support.py", line 309, in _match
-    value = yield generator
-lepl.stream.maxdepth.FullMatchException: The match failed at '6'.
+[.. traceback ..]
+lepl.stream.maxdepth.FullFirstMatchException: The match failed at '6',
+Line 1, character 5 of str: '123456'.
 >>> # (the error above is expected - our grammar specified 3 to 5
 ... # characters, but the input contained 6.  This can be disabled 
-... # using matcher.config.no_full_match())
+... # using matcher.config.no_full_first_match())
 ... 
 >>> # It's also common to use [:] or [0:] to mean "zero or more":
 ... Any()[:].parse('123456')
@@ -128,19 +118,9 @@ lepl.stream.maxdepth.FullMatchException: The match failed at '6'.
 ... Capital().parse('A')
 ['A']
 >>> Capital().parse('a')
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-  File "/home/andrew/projects/personal/src/lepl/trace/src/lepl/core/config.py", line 846, in parse
-    return self.get_parse()(stream, **kargs)
-  File "/home/andrew/projects/personal/src/lepl/trace/src/lepl/core/parser.py", line 241, in single
-    return next(raw(arg))[0]
-  File "/home/andrew/projects/personal/src/lepl/trace/src/lepl/core/parser.py", line 160, in trampoline
-    raise value
-  File "/home/andrew/projects/personal/src/lepl/trace/src/lepl/core/parser.py", line 143, in trampoline
-    value = stack[-1].generator.throw(value)
-  File "/home/andrew/projects/personal/src/lepl/trace/src/lepl/matchers/support.py", line 309, in _match
-    value = yield generator
-lepl.stream.maxdepth.FullMatchException: The match failed at 'a'.
+[.. traceback ..]
+lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'a',
+Line 1, character 0 of str: 'a'.
 >>> # (again, this error is expected - we defined a matcher for capitals,
 ... # but the input was lower case).
 ... 
@@ -170,14 +150,11 @@ matched ['el bulli restaurant']
 ... # (eg an AST).  To illustrate this, let's extend the original example
 ... # to include labelled parameters, like "site:acooke.org":
 ... 
->>> class Text(Node):
-...     pass
+>>> class Text(Node): pass
 ... 
->>> class Parameter(Node):
-...     pass
+>>> class Parameter(Node): pass
 ... 
->>> class Alternative(Node):
-...     pass
+>>> class Alternative(Node): pass
 ... 
 >>> word = ~Lookahead('OR') & Word()
 >>> phrase = String()

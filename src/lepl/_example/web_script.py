@@ -30,7 +30,7 @@ with TraceVariables():
 
 query.config.auto_memoize(full=True)
 query.parse('spicy meatballs OR "el bulli restaurant"')
-# The display above shows how the different variables are bound as
+# The display above shows the results for the different matchers as
 # the input stream is consumed.  This can be very useful for debugging.
 
 # Just before calling the parser above we configured full memoization.
@@ -110,14 +110,11 @@ query.parse('spicy meatballs OR "el bulli restaurant"')
 # (eg an AST).  To illustrate this, let's extend the original example
 # to include labelled parameters, like "site:acooke.org":
 
-class Text(Node):
-    pass
+class Text(Node): pass
 
-class Parameter(Node):
-    pass
+class Parameter(Node): pass
 
-class Alternative(Node):
-    pass
+class Alternative(Node): pass
 
 word = ~Lookahead('OR') & Word()
 phrase = String()

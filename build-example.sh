@@ -29,4 +29,6 @@ echo -n 'CLEAR' >> example.txt
 
 killall empty
 
+sed -i -e "/^Traceback/, /^    raise.*/c[.. traceback ..]" example.txt
+
 mv example.txt doc-src

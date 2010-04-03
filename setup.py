@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='LEPL',
-      version='4.0',
+      version='4.0b1',
       description='A Parser Library for Python 3 (and 2.6): Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -62,12 +62,16 @@ Features
       author='Andrew Cooke',
       author_email='andrew@acooke.org',
       url='http://www.acooke.org/lepl/',
-      packages=['lepl',        'lepl._test',         'lepl._example',
-                'lepl.bin',    'lepl.bin._test',     'lepl.bin._example',
+      packages=['lepl',          'lepl._test',          'lepl._example',
+                'lepl.bin',      'lepl.bin._test',      'lepl.bin._example',
                 'lepl.contrib',
-                'lepl.lexer',  'lepl.lexer._test',   'lepl.lexer._example',
-                'lepl.regexp', 'lepl.regexp._test',
-                'lepl.offside','lepl.offside._test', 'lepl.offside._example'
+                'lepl.core',     'lepl.core._test',
+                'lepl.lexer',    'lepl.lexer._test',    'lepl.lexer._example',
+                'lepl.matchers', 'lepl.matchers._test',
+                'lepl.offside',  'lepl.offside._test',  'lepl.offside._example',
+                'lepl.regexp',   'lepl.regexp._test',
+                'lepl.stream',   'lepl.stream._test',
+                'lepl.support',  'lepl.support._test',
                 ],
       package_dir = {'':'src'},
       license = "LGPL",

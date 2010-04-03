@@ -13,5 +13,8 @@ cd test
 source bin/activate
 
 easy_install ../dist/LEPL-$RELEASE.tar.gz
+#easy_install-3.1 ../dist/LEPL-$RELEASE.tar.gz
+
 python -c 'from lepl._test import all; all()'
+#python3.1 -c 'from lepl._test import all; all()'
 
