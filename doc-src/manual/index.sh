@@ -30,7 +30,7 @@
 #sed -i -r 's/lepl\.lexer\.matchers\.(Indent|Eol|BIndent)/lepl.offside.lexer.\1/g' *.rst
 
 
-sed -i -r 's/LEPL/Lepl/g' *.rst
+#sed -i -r 's/LEPL/Lepl/g' *.rst
 
 
 # lepl 4 fixes

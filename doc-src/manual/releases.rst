@@ -78,6 +78,10 @@ Date        Version  Description
 2009-11-22  3.3.2    Regexp bugfixes (correct self-test).
 ----------  -------  -----------
 2009-12-10  3.3.3    Various small tweaks based on user feedback.
+----------  -------  -----------
+2009-04-03  4.0b1    Broad revision, simplification.
+----------  -------  -----------
+2009-04-16  4.0      Broad revision, simplification.
 ==========  =======  ===========
 
 

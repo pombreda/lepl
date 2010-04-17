@@ -280,7 +280,7 @@ __all__ = [
         'constant_indent'
        ]
 
-__version__ = '4.0b1'
+__version__ = '4.0'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

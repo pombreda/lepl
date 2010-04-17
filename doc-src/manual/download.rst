@@ -68,7 +68,7 @@ You can download the source and documentation packages from the `Support Site
 <http://code.google.com/p/lepl/downloads>`_.
 
 Source packages are also available from the `Python Package Index
-<http://pypi.python.org/pypi/Lepl/>`_.
+<http://pypi.python.org/pypi/LEPL/>`_.
 
 
 .. index:: Python version
