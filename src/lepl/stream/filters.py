@@ -66,8 +66,8 @@ class BaseDelegateSource(Source):
                 return (-1, -1, -1, None, None)
         else:
             return (-1, -1, -1, None, None)
-        
-        
+
+
 def list_join(old_join):
     '''
     We're taking a stream and splitting it into single "characters", 
@@ -215,6 +215,12 @@ class CachingTransformedSource(BaseDelegateSource):
         else:
             return self.__lookup[stream.character_offset]
         
+    def hash_line(self, line):
+        '''
+        Extract line number from original data.
+        '''
+        return self.location(0, line, line.location_state)[0]
+
 
 class CachingFilteredSource(CachingTransformedSource):
     '''
