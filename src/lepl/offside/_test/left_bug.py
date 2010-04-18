@@ -44,7 +44,7 @@ class LeftBugTest(TestCase):
         expr0 = Token("[A-Za-z_][A-Za-z0-9_]*")
         expr1 = Delayed()
         call = expr1 & expr0 > List # Deliberately not expr0 & expr1
-        expr1 += call | expr0
+        expr1 += call | Empty () | expr0
         program = expr1 & Eos()
         parsed = program.parse("a b c")
         assert_str(parsed[0],
@@ -59,7 +59,7 @@ class LeftBugTest(TestCase):
         expr0 = Token("[A-Za-z_][A-Za-z0-9_]*")
         expr1 = Delayed()
         call = expr1 & expr0 > List # Deliberately not expr0 & expr1
-        expr1 += call | expr0
+        expr1 += call | Empty () | expr0
         program = (CLine(expr1) & Eos())
         program.config.default_line_aware(block_policy=rightmost)
         parsed = program.parse("a b c")

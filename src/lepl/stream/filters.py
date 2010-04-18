@@ -72,6 +72,10 @@ class BaseDelegateSource(Source):
         Extract line number from original data.
         '''
         return self.location(0, line, line.location_state)[0]
+    
+    def eq_line(self, line, other):
+        return line.location_state == other.location_state \
+            and self == other.source
 
 
 def list_join(old_join):
