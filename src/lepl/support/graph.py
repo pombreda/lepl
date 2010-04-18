@@ -649,7 +649,8 @@ class GraphStr(Visitor):
         '''
         Mark loops (what else could we do?)
         '''
-        return lambda first, rest, name: [first + name + ' <loop>']
+        return lambda first, rest, name: \
+            [first + name + (' ' if name else '') + '<loop>']
     
     def node(self, node):
         '''

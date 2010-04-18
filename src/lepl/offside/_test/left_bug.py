@@ -34,6 +34,7 @@ See http://groups.google.com/group/lepl/browse_thread/thread/79e39e03a03718cc?hl
 from unittest import TestCase
 
 from lepl import *
+from lepl._test.base import assert_str
 
 
 class LeftBugTest(TestCase):
@@ -46,12 +47,12 @@ class LeftBugTest(TestCase):
         expr1 += call | expr0
         program = expr1 & Eos()
         parsed = program.parse("a b c")
-        assert str(parsed[0]) == \
+        assert_str(parsed[0],
 """List
  +- List
  |   +- 'a'
  |   `- 'b'
- `- 'c'""", str(parsed[0])
+ `- 'c'""")
 
     def test_left(self):
         CLine = ContinuedBLineFactory(Token(r'\\'))
@@ -62,9 +63,10 @@ class LeftBugTest(TestCase):
         program = (CLine(expr1) & Eos())
         program.config.default_line_aware(block_policy=rightmost)
         parsed = program.parse("a b c")
-        assert str(parsed[0]) == """List
+        assert_str(parsed[0],
+"""List
  +- List
  |   +- 'a'
  |   `- 'b'
- `- 'c'""", str(parsed[0])
+ `- 'c'""")
         

@@ -38,6 +38,7 @@ Tests for the lepl.offside package.
 #@PydevCodeAnalysisIgnore
 import lepl.offside._test.extension
 import lepl.offside._test.indentation
+import lepl.offside._test.left_bug
 import lepl.offside._test.matchers
 import lepl.offside._test.offside
 import lepl.offside._test.pithon

@@ -82,6 +82,8 @@ Date        Version  Description
 2009-04-03  4.0b1    Broad revision, simplification.
 ----------  -------  -----------
 2009-04-16  4.0      Broad revision, simplification.
+----------  -------  -----------
+2009-04-18  4.0.1    Small bugfix for left-recursive, whitespace sensitive grammars.
 ==========  =======  ===========
 
 
