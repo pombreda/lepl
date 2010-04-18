@@ -83,7 +83,9 @@ Date        Version  Description
 ----------  -------  -----------
 2009-04-16  4.0      Broad revision, simplification.
 ----------  -------  -----------
-2009-04-18  4.0.1    Small bugfix for left-recursive, whitespace sensitive grammars.
+2009-04-18  4.0.1    Small bugfix for left-recursive, whitespace sensitive grammars (hash).
+----------  -------  -----------
+2009-04-18  4.0.2    Small bugfix for left-recursive, whitespace sensitive grammars (equality).
 ==========  =======  ===========
 
 
