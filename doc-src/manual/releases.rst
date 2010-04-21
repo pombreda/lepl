@@ -86,6 +86,8 @@ Date        Version  Description
 2009-04-18  4.0.1    Small bugfix for left-recursive, whitespace sensitive grammars (hash).
 ----------  -------  -----------
 2009-04-18  4.0.2    Small bugfix for left-recursive, whitespace sensitive grammars (equality).
+----------  -------  -----------
+2009-04-20  4.0.3    Small bugfix for kargs of user-defined matchers; dropped Python 3 specific test.
 ==========  =======  ===========
 
 

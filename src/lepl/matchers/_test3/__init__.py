@@ -29,20 +29,6 @@
 
 
 '''
-Tests for the lepl.matchers package.
+Tests for the lepl.matchers package
+(Python 3 only - not include in final release)
 '''
-
-from sys import version
-
-# we need to import all files used in the automated self-test
-
-# pylint: disable-msg=E0611
-#@PydevCodeAnalysisIgnore
-import lepl.matchers._test.combine
-import lepl.matchers._test.core
-import lepl.matchers._test.derived
-import lepl.matchers._test.error
-import lepl.matchers._test.memo
-import lepl.matchers._test.operators
-import lepl.matchers._test.separators
-import lepl.matchers._test.support

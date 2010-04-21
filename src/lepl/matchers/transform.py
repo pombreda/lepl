@@ -205,3 +205,6 @@ class Transform(Transformable):
         Create a new Transform that includes the extra processing. 
         '''
         return Transform(self.matcher, self.wrapper.compose(function))
+
+
+            

@@ -98,7 +98,7 @@ Debug Actions
 
 `.config.trace() <api/redirect.html#lepl.core.config.ConfigBuilder.trace>`_
 
-  Add a monitor to trace results.  See ``TraceResults()``.  Removed by
+  Add a monitor to trace results.  See `TraceResults() <api/redirect.html#lepl.core.trace.TraceResults>`_.  Removed by
   `.config.remove_all_monitors()
   <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or
   `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
@@ -106,7 +106,7 @@ Debug Actions
 `.config.record_deepest()
 <api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_
 
-  Add a monitor to record deepest match.  See ``RecordDeepest()``. Removed by
+  Add a monitor to record deepest match.  See `RecordDeepest() <api/redirect.html#lepl.core.trace.RecordDeepest>`_. Removed by
   `.config.remove_all_monitors()
   <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or
   `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.

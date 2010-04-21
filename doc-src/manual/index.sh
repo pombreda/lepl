@@ -65,3 +65,4 @@ sed -i -r 's/``(matcher\.)([^\. ]+)\(\)``/`\1\2() <api\/redirect.html#lepl.core.
 sed -i -r 's/``(rightmost)\(\)``/`\1() <api\/redirect.html#lepl.offside.matchers.\1>`_/g' *.rst
 sed -i -r 's/``(make_str_parser)\(\)``/`\1() <api\/redirect.html#lepl.regexp.str.\1>`_/g' *.rst
 sed -i -r 's/``@(function_matcher|sequence_matcher|trampoline_matcher|function_matcher_factory|sequence_matcher_factory|trampoline_matcher_factory)``/`@\1 <api\/redirect.html#lepl.matchers.support.\1>`_/g' *.rst
+sed -i -r 's/``(TraceResults|RecordDeepest)\(\)``/`\1() <api\/redirect.html#lepl.core.trace.\1>`_/g' *.rst

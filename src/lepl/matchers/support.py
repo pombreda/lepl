@@ -203,7 +203,7 @@ class BaseFactoryMatcher(FactoryMatcher):
         except:
             spec = getargspec(self.factory)
         names = list(spec.args)
-        defaults = dict(zip(names[::-1], spec.defaults if spec.defaults else []))
+        defaults = dict(zip(names[::-1], spec.defaults[::-1] if spec.defaults else []))
         for name in names:
             if name in self.__kargs:
                 self._karg(**{name: self.__kargs[name]})
@@ -213,7 +213,7 @@ class BaseFactoryMatcher(FactoryMatcher):
                 self.__args = self.__args[1:]
             else:
                 if name in defaults:
-                    self._arg(**{name: defaults[name]})
+                    self._karg(**{name: defaults[name]})
                 else:
                     raise TypeError(format("No value for argument '{0}' in "
                                            "{1}(...)", 
