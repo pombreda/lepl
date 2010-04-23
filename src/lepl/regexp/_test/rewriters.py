@@ -35,6 +35,7 @@ Tests for the lepl.regexp.rewriters module.
 from unittest import TestCase
 
 from lepl import Any, NfaRegexp, Literal, Add, And, Integer, Float, Word, Star
+from lepl.regexp.rewriters import CompileRegexp
 
 
 # pylint: disable-msg=C0103, C0111, C0301, C0324
@@ -157,4 +158,40 @@ class RewriteTest(TestCase):
         results = list(matcher('aa'))
         assert results == [(['aa'], ''), (['a'], 'a')], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher
+        
+
+class CompileTest(TestCase):
+    '''
+    Test the rewrite routine directly.
+    '''
+    
+    def assert_regexp(self, matcher, regexp):
+        compiler = CompileRegexp(use=True)
+        matcher = compiler(matcher)
+        assert isinstance(matcher, NfaRegexp), matcher.tree()
+        assert str(matcher.regexp) == regexp, matcher.regexp
+    
+    def test_any(self):
+        self.assert_regexp(Any(), '.')
+        self.assert_regexp(Any('abc'), '[a-c]')
+    
+    def test_literal(self):
+        self.assert_regexp(Literal('foo'), 'foo')
+
+    def test_repeat(self):
+        self.assert_regexp(Any()[1:, ...], '.(.)*')
+        # ugly, but correct
+        self.assert_regexp(Any()[:, ...], '(.(.)*|)')
+        self.assert_regexp(Literal('foo')[:, ...], '(foo(foo)*|)')
+
+    def test_and(self):
+#        self.assert_regexp(Any('ab')[:, ...] + Any('p'), '([a-b]([a-b])*|)p')
+        self.assert_regexp(Literal('a') + 'q', '([a-b]q|z)')
+        
+    def test_or(self):
+        self.assert_regexp(Any('ab')[:, ...] | Any('p'), '(([a-b]([a-b])*|)|p)')
+
+    def test_complex(self):
+        self.assert_regexp((Any('ab') + Literal('q')) | Literal('z'), '([a-b]q|z)')
+        self.assert_regexp((Any('ab') + 'q') | 'z', '([a-b]q|z)')
         

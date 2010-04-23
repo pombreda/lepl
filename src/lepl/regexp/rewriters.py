@@ -1,3 +1,4 @@
+from lepl.regexp.unicode import UnicodeAlphabet
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -386,7 +387,9 @@ class CompileRegexp(Rewriter):
     efficient literal matchers to regular expressions.
     '''
     
-    def __init__(self, alphabet, use=True, matcher=NfaRegexp):
+    def __init__(self, alphabet=None, use=True, matcher=NfaRegexp):
+        if alphabet is None:
+            alphabet = UnicodeAlphabet.instance()
         super(CompileRegexp, self).__init__(Rewriter.COMPILE_REGEXP,
             format('CompileRegexp({0}, {1}, {2})', alphabet, use, matcher))
         self.alphabet = alphabet

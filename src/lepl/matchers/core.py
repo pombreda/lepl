@@ -259,7 +259,7 @@ def Consumer(matcher, consume=True):
 
 
 @trampoline_matcher_factory()
-def PostCondition(matcher, condition, not_=False, equals=True):
+def PostMatch(matcher, condition, not_=False, equals=True):
     '''
     Apply the condition to each result from the matcher.  It should return
     either an exact match (equals=True) or simply not fail (equals=False).

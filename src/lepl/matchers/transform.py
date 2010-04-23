@@ -189,16 +189,23 @@ class Transform(Transformable):
         '''
         Do the matching (return a generator that provides successive
         (result, stream) tuples).
+        
+        The protocol here allows functions to "veto" individual entries and
+        also to "append" more results, but doesn't support insertion of 
+        additional results.
         '''
         function = self.wrapper.function
         generator = self.matcher._match(stream_in)
         while True:
             try:
                 results = yield generator
-                yield function(stream_in, lambda: results)
             except StopIteration:
                 yield function(stream_in, lambda: raise_(StopIteration))
-            
+            else:
+                try:
+                    yield function(stream_in, lambda: results)
+                except StopIteration:
+                    pass
         
     def compose(self, function):
         '''
@@ -207,4 +214,16 @@ class Transform(Transformable):
         return Transform(self.matcher, self.wrapper.compose(function))
 
 
-            
+def PostCondition(matcher, predicate):
+    '''
+    Apply the predicate to each result in turn and return the result only
+    if it is always True.
+    '''
+    
+    def transformation(stream_in, matcher):
+        (result, stream_out) = matcher()
+        if predicate(result):
+            return (result, stream_out)
+        else:
+            raise StopIteration
+    return Transform(matcher, transformation)

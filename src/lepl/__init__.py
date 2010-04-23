@@ -116,7 +116,7 @@ from lepl.core.manager import GeneratorManager
 from lepl.core.trace import RecordDeepest, TraceResults
 from lepl.matchers.combine import And, Or, First
 from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
-    Lookahead
+    Lookahead, PostMatch
 from lepl.matchers.monitor import Trace, Commit
 from lepl.matchers.derived import Apply, args, KApply, Regexp, Join, \
     AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Repeat, Plus, \
@@ -132,6 +132,7 @@ from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
 from lepl.matchers.support import function_matcher, function_matcher_factory, \
     sequence_matcher, sequence_matcher_factory, \
     trampoline_matcher, trampoline_matcher_factory
+from lepl.matchers.transform import PostCondition
 from lepl.matchers.variables import TraceVariables
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.offside.lexer import Indent, Eol, BIndent
@@ -166,6 +167,7 @@ __all__ = [
         'Literal',
         'Empty',
         'Lookahead',
+        'PostMatch',
         'Columns',
         # lepl.matchers.derived
         'Apply',
@@ -223,6 +225,8 @@ __all__ = [
         'sequence_matcher_factory',
         'trampoline_matcher', 
         'trampoline_matcher_factory',
+        # lepl.matchers.transform
+        'PostCondition',
         # lepl.matchers.variables
         'TraceVariables',
         # lepl.stream.stream

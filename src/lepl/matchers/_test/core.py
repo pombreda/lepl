@@ -37,7 +37,7 @@ from unittest import TestCase
 from lepl._test.base import BaseTest, assert_str
 from lepl.matchers.combine import And, Or
 from lepl.matchers.core import Any, Literal, Eof, Regexp, Delayed, Lookahead, \
-    Consumer, PostCondition
+    Consumer, PostMatch
 from lepl.matchers.derived import Word, Digit, Integer, Columns, Drop
 from lepl.matchers.monitor import Commit
 from lepl.support.node import Node
@@ -918,16 +918,16 @@ class ConsumerTest(BaseTest):
         assert ['a', 'b'] == result, result
 
 
-class PostConditionTest(BaseTest):
+class PostMatchTest(BaseTest):
     
     def test_normal(self):
-        matcher = PostCondition(Drop(Any()[:]) & Any(), r'[0-9]')
+        matcher = PostMatch(Drop(Any()[:]) & Any(), r'[0-9]')
         matcher.config.no_full_first_match()
         results = list(matcher.parse_all('12a'))
         assert results == [['2'], ['1']], results
 
     def test_not(self):
-        matcher = PostCondition(Drop(Any()[:]) & Any(), r'[0-9]', not_=True)
+        matcher = PostMatch(Drop(Any()[:]) & Any(), r'[0-9]', not_=True)
         matcher.config.no_full_first_match()
         results = list(matcher.parse_all('12a'))
         assert results == [['a']], results

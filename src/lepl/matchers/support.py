@@ -339,9 +339,6 @@ class NoTrampolineTransformableWrapper(TransformableWrapper):
     Subclasses can be used without trampolining via `_untagged_match`.
     '''
     
-    def __init__(self, *args, **kargs):
-        super(NoTrampolineTransformableWrapper, self).__init__(*args, **kargs)
-
     #@abstractmethod
     def _untagged_match(self, stream):
         '''
