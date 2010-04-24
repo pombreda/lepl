@@ -494,11 +494,20 @@ def apply_modifiers(func, args, kargs, modifiers, margs, mkargs):
                 
 
 def make_wrapper_factory(wrapper, factory, modifiers, 
-                         margs=identity, mkargs=identity):
+                         margs=identity, mkargs=identity, memo=True):
     '''
     A helper function that assembles a matcher from a wrapper class and 
     a factory function that contains the logic.
+    
+    `wrapper` is the class that will be constructed, and which will contain
+    the functionality defined in `factory`.
+    
+    `modifiers` is a map of functions applied to arguments of the given name.
+    Similarly, `margs` and `mkargs` apply to varargs.
+    
+    `memo` should be set to False for matchers that do not want memoisation.
     '''
+    from lepl.matchers.memo import NoMemo
     check_args(factory)
     check_modifiers(factory, modifiers)
     def wrapper_factory(*args, **kargs):
@@ -509,6 +518,8 @@ def make_wrapper_factory(wrapper, factory, modifiers,
         return made
     wrapper_factory.factory = factory
     add_child(Matcher, wrapper_factory)
+    if not memo:
+        add_child(NoMemo, wrapper_factory)
     return wrapper_factory
 
 
@@ -545,9 +556,9 @@ def trampoline_matcher_factory(transformable_=True,
     of `Transformable`.
     
     Other keyword arguments should match factory arguments and identify 
-    functions of one argument that are applies to the arguments when the
+    functions of one argument that are applied to the arguments when the
     matcher is created as part of a grammar (eg coercion).  Similarly,
-   `args_` and `kargs_` coerce varargs.
+   `args_` and `kargs_` are applied to varargs.
     '''
     if not isinstance(transformable_, bool):
         raise ValueError(
@@ -583,7 +594,8 @@ def trampoline_matcher(transformable=True):
         return make_factory(trampoline_matcher_factory(transformable), matcher)
     return wrapper
 
-def sequence_matcher_factory(factory):
+def sequence_matcher_factory(gatekeeper_=None, 
+                               args_=identity, kargs_=identity, **kargs):
     '''
     Decorator that allows matchers to be defined using a nested pair
     of functions.  The outer function acts like a constructor; the inner
@@ -591,10 +603,20 @@ def sequence_matcher_factory(factory):
     
     The matcher must yield matches (multiple times if required).  It 
     *cannot* evaluate sub-matchers.
+    
+    `args_`, `kargs_` and named arguments define modifiers, which are applied
+    to the corresponding arguments when the matcher is first used in a grammar
+    (eg to coerce strings to `Literal` instances).
     '''
-    from lepl.matchers.memo import NoMemo
-    wrapper = make_wrapper_factory(SequenceWrapper, factory, {})
-    add_child(NoMemo, wrapper)
+    if gatekeeper_:
+        raise ValueError(
+            'sequence_matcher_factory must be used as a function:'
+            '\n  @sequence_matcher_factory()'
+            '\n  def MyMatcherFactory(...):'
+            '\n      ....')
+    def wrapper(factory):
+        return make_wrapper_factory(SequenceWrapper, factory, 
+                                    kargs, args_, kargs_, memo=False)
     return wrapper
 
 def sequence_matcher(matcher):
@@ -606,19 +628,30 @@ def sequence_matcher(matcher):
     *cannot* evaluate sub-matchers.
     '''
     check_matcher(matcher)
-    return make_factory(sequence_matcher_factory, matcher)
+    return make_factory(sequence_matcher_factory(), matcher)
 
-def function_matcher_factory(factory):
+def function_matcher_factory(gatekeeper_=None,
+                             args_=identity, kargs_=identity, **kargs):
     '''
     Decorator that allows matchers to be defined using a nested pair
     of functions.  The outer function acts like a constructor; the inner
     function implements the matcher logic.
     
     The matcher must return a single match.  It *cannot* evaluate sub-matchers.
+    
+    `args_`, `kargs_` and named arguments define modifiers, which are applied
+    to the corresponding arguments when the matcher is first used in a grammar
+    (eg to coerce strings to `Literal` instances).
     '''
-    from lepl.matchers.memo import NoMemo
-    wrapper = make_wrapper_factory(FunctionWrapper, factory, {})
-    add_child(NoMemo, wrapper)
+    if gatekeeper_:
+        raise ValueError(
+            'function_matcher_factory must be used as a function:'
+            '\n  @function_matcher_factory()'
+            '\n  def MyMatcherFactory(...):'
+            '\n      ....')
+    def wrapper(factory):
+        return make_wrapper_factory(FunctionWrapper, factory, 
+                                    kargs, args_, kargs_, memo=False)
     return wrapper
 
 def function_matcher(matcher):
@@ -629,7 +662,7 @@ def function_matcher(matcher):
     The matcher must return a single match.  It *cannot* evaluate sub-matchers.
     '''
     check_matcher(matcher)
-    return make_factory(function_matcher_factory, matcher)
+    return make_factory(function_matcher_factory(), matcher)
 
 
 def coerce_(arg, function=None):

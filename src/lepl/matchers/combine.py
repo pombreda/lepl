@@ -170,7 +170,7 @@ def OrderByResultCount(matcher, ascending=True):
     return match
             
 
-@sequence_matcher_factory
+@sequence_matcher_factory()
 @search_factory
 def DepthNoTrampoline(first, start, stop, rest):
     '''
@@ -205,7 +205,7 @@ def DepthNoTrampoline(first, start, stop, rest):
     return matcher
             
             
-@sequence_matcher_factory
+@sequence_matcher_factory()
 @search_factory
 def BreadthNoTrampoline(first, start, stop, rest):
     '''
@@ -291,13 +291,11 @@ def And(*matchers):
     return match
 
 
-@sequence_matcher_factory
+@sequence_matcher_factory(args_=to(Literal))
 def AndNoTrampoline(*matchers):
     '''
     Used as an optimisation when sub-matchers do not require the trampoline.
     '''
-    matchers = lmap(coerce_, matchers)
-    
     def matcher(support, stream_in):
         if matchers:
             stack = deque([([], matchers[0]._untagged_match(stream_in), matchers[1:])])
@@ -354,13 +352,11 @@ def Or(*matchers):
     return match
 
 
-@sequence_matcher_factory
+@sequence_matcher_factory(args_=to(Literal))
 def OrNoTrampoline(*matchers):
     '''
     Used as an optimisation when sub-matchers do not require the trampoline.
     '''
-    matchers = lmap(coerce_, matchers)
-   
     def match(support, stream_in):
         '''
         Do the matching (return a generator that provides successive 
@@ -384,7 +380,6 @@ def First(*matchers):
     will try more from the same matcher (only).  String arguments will be 
     coerced to literal matches.
     '''
-    
     def match(self, stream):
         matched = False
         for matcher in self.matchers:

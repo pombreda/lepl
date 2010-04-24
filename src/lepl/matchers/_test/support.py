@@ -43,7 +43,7 @@ def char(support, stream):
     if stream:
         return ([stream[0]], stream[1:])
 
-@function_matcher_factory
+@function_matcher_factory()
 def char_in(chars):
     def match(support, stream):
         if stream and stream[0] in chars:
@@ -56,7 +56,7 @@ def any_char(support, stream):
         yield ([stream[0]], stream[1:])
         stream = stream[1:]
 
-@sequence_matcher_factory
+@sequence_matcher_factory()
 def any_char_in(chars):
     def match(support, stream):
         while stream:

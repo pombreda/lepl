@@ -47,7 +47,7 @@ from lepl.matchers.support import OperatorMatcher, coerce_, \
 from lepl.support.lib import format
 
 
-@function_matcher_factory
+@function_matcher_factory()
 def Any(restrict=None):
     '''
     Create a matcher for a single character.
@@ -84,7 +84,7 @@ def Any(restrict=None):
     return match
             
             
-@function_matcher_factory
+@function_matcher_factory()
 def Literal(text):
     '''
     Match a series of tokens in the stream (**''**).
@@ -163,7 +163,7 @@ class Lookahead(OperatorMatcher):
         return Lookahead(self.matcher, negated=not self.negated)
             
 
-@function_matcher_factory
+@function_matcher_factory()
 def Regexp(pattern):
     '''
     Match a regular expression.  If groups are defined, they are returned

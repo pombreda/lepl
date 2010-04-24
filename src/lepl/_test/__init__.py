@@ -46,8 +46,7 @@ import lepl._test.bug_stalled_parser
 import lepl._test.magus
 
 # Number of tests if running in IDE with Python 3,
-# corrected for no _test3 in final deploy
-TOTAL = 389 - 2 
+TOTAL = 394
 
 def all():
     '''

@@ -92,7 +92,7 @@ operators, etc).
 
 This can extended to include configuration::
 
-  >>> @function_matcher_factory
+  >>> @function_matcher_factory()
   >>> def char_in(chars):
   >>>     def match(support, stream):
   >>>         if stream and stream[0] in chars:
@@ -122,7 +122,7 @@ support backtracking)::
   >>>         yield ([stream[0]], stream[1:])
   >>>         stream = stream[1:]
 
-  >>> @sequence_matcher_factory
+  >>> @sequence_matcher_factory()
   >>> def any_char_in(chars):
   >>>     def match(support, stream):
   >>>         while stream:
