@@ -44,7 +44,7 @@ from collections import deque
 from lepl.matchers.core import Literal
 from lepl.matchers.matcher import add_children
 from lepl.matchers.support import coerce_, sequence_matcher_factory, \
-    trampoline_matcher_factory
+    trampoline_matcher_factory, to
 from lepl.matchers.transform import Transformable
 from lepl.support.lib import lmap, format, document
 
@@ -76,8 +76,7 @@ def search_factory(factory):
     Add the arg processing common to all searching.
     '''
     def new_factory(first, start, stop, rest=None):
-        first = coerce_(first)
-        rest = first if rest is None else coerce_(rest)
+        rest = first if rest is None else rest
         return factory(first, start, stop, rest)
     return document(new_factory, factory)
 
@@ -145,12 +144,11 @@ def BreadthFirst(first, start, stop, rest):
     return match
 
 
-@trampoline_matcher_factory(False)
+@trampoline_matcher_factory(False, matcher=to(Literal))
 def OrderByResultCount(matcher, ascending=True):
     '''
     Modify a matcher to return results in length order.
     '''
-    matcher = coerce_(matcher, Literal)
 
     def match(support, stream):
         '''
@@ -257,13 +255,13 @@ class _BaseCombiner(Transformable):
         return copy
     
 
-@trampoline_matcher_factory(True)
+@trampoline_matcher_factory(True, args_=to(Literal))
 def And(*matchers):
     '''
     Match one or more matchers in sequence (**&**).
     It can be used indirectly by placing ``&`` between matchers.
     '''
-    matchers = lmap(coerce_, matchers)
+#    matchers = lmap(coerce_, matchers)
     
     def match(support, stream_in):
         if matchers:
@@ -326,7 +324,7 @@ def AndNoTrampoline(*matchers):
     return matcher
         
         
-@trampoline_matcher_factory(True)
+@trampoline_matcher_factory(True, args_=to(Literal))
 def Or(*matchers):
     '''
     Match one of the given matchers (**|**).
@@ -337,7 +335,7 @@ def Or(*matchers):
     continue to the right.  String arguments will be coerced to 
     literal matches.
     '''
-    matchers = lmap(coerce_, matchers)
+#    matchers = lmap(coerce_, matchers)
    
     def match(support, stream_in):
         '''

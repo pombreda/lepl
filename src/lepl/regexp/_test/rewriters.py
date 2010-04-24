@@ -185,8 +185,7 @@ class CompileTest(TestCase):
         self.assert_regexp(Literal('foo')[:, ...], '(foo(foo)*|)')
 
     def test_and(self):
-#        self.assert_regexp(Any('ab')[:, ...] + Any('p'), '([a-b]([a-b])*|)p')
-        self.assert_regexp(Literal('a') + 'q', '([a-b]q|z)')
+        self.assert_regexp(Any('ab')[:, ...] + Any('p'), '([a-b]([a-b])*|)p')
         
     def test_or(self):
         self.assert_regexp(Any('ab')[:, ...] | Any('p'), '(([a-b]([a-b])*|)|p)')

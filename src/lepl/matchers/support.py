@@ -40,7 +40,7 @@ from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
 from lepl.matchers.matcher import Matcher, FactoryMatcher, add_child, is_child
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
     OperatorNamespace
-from lepl.support.lib import LogMixin, basestring, format, document
+from lepl.support.lib import LogMixin, basestring, format, document, identity
 
 # pylint: disable-msg=C0103,W0212
 # (consistent interfaces)
@@ -211,13 +211,12 @@ class BaseFactoryMatcher(FactoryMatcher):
             elif self.__args:
                 self._arg(**{name: self.__args[0]})
                 self.__args = self.__args[1:]
+            elif name in defaults:
+                self._karg(**{name: defaults[name]})
             else:
-                if name in defaults:
-                    self._karg(**{name: defaults[name]})
-                else:
-                    raise TypeError(format("No value for argument '{0}' in "
-                                           "{1}(...)", 
-                                           name, self._small_str))
+                raise TypeError(format("No value for argument '{0}' in "
+                                       "{1}(...)", 
+                                       name, self._small_str))
         if self.__args:
             if spec.varargs:
                 self._args(**{spec.varargs: self.__args})
@@ -430,24 +429,81 @@ def check_args(func):
     '''
     try:
         getargspec(func)
-        ok = True
     except Exception as e:
-        ok = False
-    if not ok:
         raise TypeError(format(
 '''The function {0} uses Python 3 style parameters (keyword only, etc).
 These are not supported by LEPL factory wrappers currently.  If you really
 need this functionality, subclass BaseMatcher.''', func.__name__))
  
 
+def check_modifiers(func, modifiers):
+    '''
+    Check that any modifiers match the function declaration.
+    '''
+    argspec = getargspec(func)
+    for name in modifiers:
+        if name not in argspec.args:
+            raise TypeError(
+                format("A modifier was specified for argument {'0}' "
+                       "in {1}(), but is not declared.", name, func.__name__))
+            
+            
+def apply_modifiers(func, args, kargs, modifiers, margs, mkargs):
+    '''
+    Modify values in args and kargs.
+    '''
+    spec = getargspec(func)
+    names = list(spec.args)
+    defaults = dict(zip(names[::-1], spec.defaults[::-1] if spec.defaults else []))
+    newargs = []
+    newkargs = {}
+    for name in names:
+        if name in kargs:
+            value = kargs[name]
+            if name in modifiers:
+                value = modifiers[name](value)
+            newkargs[name] = value
+            del kargs[name]
+        elif args:
+            (value, args) = (args[0], args[1:])
+            if name in modifiers:
+                value = modifiers[name](value)
+            newargs.append(value)
+        elif name in defaults:
+            value = defaults[name]
+            if name in modifiers:
+                value = modifiers[name](value)
+            newkargs[name] = value
+        else:
+            raise TypeError(format("No value for argument '{0}' in "
+                                   "{1}(...)", name, func.__name__))
+    # copy across varags
+    if spec.varargs:
+        newargs.extend(map(margs, args))
+    elif args:
+        raise TypeError(format("Unexpected argument {0!r} for {1}(...)", 
+                               args[0], func.__name__))
+    if spec.keywords:
+        for name in kargs:
+            newkargs[name] = mkargs(kargs[name])
+    elif kargs:
+        for name in kargs:
+            raise TypeError(format("Unexpected argument {0}={1!r} for {2}(...)", 
+                                   name, kargs[name], func.__name__))
+    return (newargs, newkargs)
+                
 
-def make_wrapper_factory(wrapper, factory):
+def make_wrapper_factory(wrapper, factory, modifiers, 
+                         margs=identity, mkargs=identity):
     '''
     A helper function that assembles a matcher from a wrapper class and 
     a factory function that contains the logic.
     '''
     check_args(factory)
+    check_modifiers(factory, modifiers)
     def wrapper_factory(*args, **kargs):
+        (args, kargs) = \
+            apply_modifiers(factory, args, kargs, modifiers, margs, mkargs)
         made = wrapper(*args, **kargs)
         made.factory = factory
         return made
@@ -474,7 +530,8 @@ def make_factory(maker, matcher):
     return maker(factory)
 
 
-def trampoline_matcher_factory(transformable=True):
+def trampoline_matcher_factory(transformable_=True, 
+                               args_=identity, kargs_=identity, **kargs):
     '''
     Decorator that allows matchers to be defined using a nested pair
     of functions.  The outer function acts like a constructor; the inner
@@ -483,18 +540,27 @@ def trampoline_matcher_factory(transformable=True):
     The matcher code can evaluate sub-matchers by yielding the generator
     created by `matcher._match()` to the trampoline.  Matches should also
     be yielded. 
+    
+    `transformable_` indicates whether the final matcher should be a subclass
+    of `Transformable`.
+    
+    Other keyword arguments should match factory arguments and identify 
+    functions of one argument that are applies to the arguments when the
+    matcher is created as part of a grammar (eg coercion).  Similarly,
+   `args_` and `kargs_` coerce varargs.
     '''
-    if not isinstance(transformable, bool):
+    if not isinstance(transformable_, bool):
         raise ValueError(
             'trampoline_matcher_factory must be used as a function:'
             '\n  @trampoline_matcher_factory(transformable=True)'
             '\n  def MyMatcherFactory(...):'
             '\n      ....')
     def wrapper(factory):
-        if transformable:
-            return make_wrapper_factory(TransformableTrampolineWrapper, factory)
+        if transformable_:
+            return make_wrapper_factory(TransformableTrampolineWrapper, 
+                                        factory, kargs, args_, kargs_)
         else:
-            return make_wrapper_factory(TrampolineWrapper, factory)
+            return make_wrapper_factory(TrampolineWrapper, factory, kargs)
     return wrapper
 
 def trampoline_matcher(transformable=True):
@@ -527,7 +593,7 @@ def sequence_matcher_factory(factory):
     *cannot* evaluate sub-matchers.
     '''
     from lepl.matchers.memo import NoMemo
-    wrapper = make_wrapper_factory(SequenceWrapper, factory)
+    wrapper = make_wrapper_factory(SequenceWrapper, factory, {})
     add_child(NoMemo, wrapper)
     return wrapper
 
@@ -551,7 +617,7 @@ def function_matcher_factory(factory):
     The matcher must return a single match.  It *cannot* evaluate sub-matchers.
     '''
     from lepl.matchers.memo import NoMemo
-    wrapper = make_wrapper_factory(FunctionWrapper, factory)
+    wrapper = make_wrapper_factory(FunctionWrapper, factory, {})
     add_child(NoMemo, wrapper)
     return wrapper
 
@@ -575,3 +641,10 @@ def coerce_(arg, function=None):
         from lepl.matchers.core import Literal
         function = Literal
     return function(arg) if isinstance(arg, basestring) else arg
+
+
+def to(function):
+    '''
+    Generate a coercion for later application.
+    '''
+    return lambda matcher: coerce_(matcher, function)

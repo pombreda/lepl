@@ -242,7 +242,7 @@ class StrTest(TestCase):
        TransformationWrapper(<apply>)),
       TransformableTrampolineWrapper<And:<>>(
        TransformableTrampolineWrapper<And:<>>(
-        '(',
+        FunctionWrapper<Literal:<>>('('),
         Transform:<add>(
          TrampolineWrapper<DepthFirst>(
           start=0,
@@ -258,7 +258,7 @@ class StrTest(TestCase):
          rest=FunctionWrapper<Any:<>>(' \t'),
          first=FunctionWrapper<Any:<>>(' \t')),
         TransformationWrapper(<add>)),
-       ')')),
+       FunctionWrapper<Literal:<>>(')'))),
      TransformationWrapper(<apply>)),
     Transform:<add>(
      TrampolineWrapper<DepthFirst>(
@@ -294,7 +294,7 @@ class StrTest(TestCase):
          TransformationWrapper(<apply>)),
         TransformableTrampolineWrapper<And:<>>(
          TransformableTrampolineWrapper<And:<>>(
-          '(',
+          FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
            TrampolineWrapper<DepthFirst>(
             start=0,
@@ -310,7 +310,7 @@ class StrTest(TestCase):
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
           TransformationWrapper(<add>)),
-         ')')),
+         FunctionWrapper<Literal:<>>(')'))),
        TransformationWrapper(<apply>))),
      first=TransformableTrampolineWrapper<And:<>>(
       Transform:<apply>(
@@ -336,7 +336,7 @@ class StrTest(TestCase):
          TransformationWrapper(<apply>)),
         TransformableTrampolineWrapper<And:<>>(
          TransformableTrampolineWrapper<And:<>>(
-          '(',
+          FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
            TrampolineWrapper<DepthFirst>(
             start=0,
@@ -352,7 +352,7 @@ class StrTest(TestCase):
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
           TransformationWrapper(<add>)),
-         ')')),
+         FunctionWrapper<Literal:<>>(')'))),
        TransformationWrapper(<apply>))))),
    TransformationWrapper(<apply>)),
   Transform:<add>(
@@ -391,7 +391,7 @@ class StrTest(TestCase):
          TransformationWrapper(<apply>)),
         TransformableTrampolineWrapper<And:<>>(
          TransformableTrampolineWrapper<And:<>>(
-          '(',
+          FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
            TrampolineWrapper<DepthFirst>(
             start=0,
@@ -407,7 +407,7 @@ class StrTest(TestCase):
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
           TransformationWrapper(<add>)),
-         ')')),
+         FunctionWrapper<Literal:<>>(')'))),
        TransformationWrapper(<apply>)),
       Transform:<add>(
        TrampolineWrapper<DepthFirst>(
@@ -443,7 +443,7 @@ class StrTest(TestCase):
            TransformationWrapper(<apply>)),
           TransformableTrampolineWrapper<And:<>>(
            TransformableTrampolineWrapper<And:<>>(
-            '(',
+            FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
              TrampolineWrapper<DepthFirst>(
               start=0,
@@ -459,7 +459,7 @@ class StrTest(TestCase):
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
             TransformationWrapper(<add>)),
-           ')')),
+           FunctionWrapper<Literal:<>>(')'))),
          TransformationWrapper(<apply>))),
        first=TransformableTrampolineWrapper<And:<>>(
         Transform:<apply>(
@@ -485,7 +485,7 @@ class StrTest(TestCase):
            TransformationWrapper(<apply>)),
           TransformableTrampolineWrapper<And:<>>(
            TransformableTrampolineWrapper<And:<>>(
-            '(',
+            FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
              TrampolineWrapper<DepthFirst>(
               start=0,
@@ -501,7 +501,7 @@ class StrTest(TestCase):
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
             TransformationWrapper(<add>)),
-           ')')),
+           FunctionWrapper<Literal:<>>(')'))),
          TransformationWrapper(<apply>))))),
      TransformationWrapper(<apply>))),
    first=TransformableTrampolineWrapper<And:<>>(
@@ -530,7 +530,7 @@ class StrTest(TestCase):
          TransformationWrapper(<apply>)),
         TransformableTrampolineWrapper<And:<>>(
          TransformableTrampolineWrapper<And:<>>(
-          '(',
+          FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
            TrampolineWrapper<DepthFirst>(
             start=0,
@@ -546,7 +546,7 @@ class StrTest(TestCase):
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
           TransformationWrapper(<add>)),
-         ')')),
+         FunctionWrapper<Literal:<>>(')'))),
        TransformationWrapper(<apply>)),
       Transform:<add>(
        TrampolineWrapper<DepthFirst>(
@@ -582,7 +582,7 @@ class StrTest(TestCase):
            TransformationWrapper(<apply>)),
           TransformableTrampolineWrapper<And:<>>(
            TransformableTrampolineWrapper<And:<>>(
-            '(',
+            FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
              TrampolineWrapper<DepthFirst>(
               start=0,
@@ -598,7 +598,7 @@ class StrTest(TestCase):
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
             TransformationWrapper(<add>)),
-           ')')),
+           FunctionWrapper<Literal:<>>(')'))),
          TransformationWrapper(<apply>))),
        first=TransformableTrampolineWrapper<And:<>>(
         Transform:<apply>(
@@ -624,7 +624,7 @@ class StrTest(TestCase):
            TransformationWrapper(<apply>)),
           TransformableTrampolineWrapper<And:<>>(
            TransformableTrampolineWrapper<And:<>>(
-            '(',
+            FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
              TrampolineWrapper<DepthFirst>(
               start=0,
@@ -640,7 +640,7 @@ class StrTest(TestCase):
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
             TransformationWrapper(<add>)),
-           ')')),
+           FunctionWrapper<Literal:<>>(')'))),
          TransformationWrapper(<apply>))))),
      TransformationWrapper(<apply>))))),
  TransformationWrapper(<apply>)))''')
@@ -656,7 +656,8 @@ class StrTest(TestCase):
  |   |       |   |   |   +- Sequence(...)
  |   |       |   |   |   `- alphabet <Unicode>
  |   |       |   |   `- TransformableTrampolineWrapper
- |   |       |   |       +- '('
+ |   |       |   |       +- FunctionWrapper
+ |   |       |   |       |   `- '('
  |   |       |   |       +- NfaRegexp
  |   |       |   |       |   +- Sequence(...)
  |   |       |   |       |   `- alphabet <Unicode>
@@ -666,7 +667,8 @@ class StrTest(TestCase):
  |   |       |   |       +- NfaRegexp
  |   |       |   |       |   +- Sequence(...)
  |   |       |   |       |   `- alphabet <Unicode>
- |   |       |   |       `- ')'
+ |   |       |   |       `- FunctionWrapper
+ |   |       |   |           `- ')'
  |   |       |   +- NfaRegexp
  |   |       |   |   +- Sequence(...)
  |   |       |   |   `- alphabet <Unicode>
@@ -684,7 +686,8 @@ class StrTest(TestCase):
  |   |       |       |       |   +- Sequence(...)
  |   |       |       |       |   `- alphabet <Unicode>
  |   |       |       |       `- TransformableTrampolineWrapper
- |   |       |       |           +- '('
+ |   |       |       |           +- FunctionWrapper
+ |   |       |       |           |   `- '('
  |   |       |       |           +- NfaRegexp
  |   |       |       |           |   +- Sequence(...)
  |   |       |       |           |   `- alphabet <Unicode>
@@ -694,7 +697,8 @@ class StrTest(TestCase):
  |   |       |       |           +- NfaRegexp
  |   |       |       |           |   +- Sequence(...)
  |   |       |       |           |   `- alphabet <Unicode>
- |   |       |       |           `- ')'
+ |   |       |       |           `- FunctionWrapper
+ |   |       |       |               `- ')'
  |   |       |       `- first TransformableTrampolineWrapper
  |   |       |           +- FunctionWrapper
  |   |       |           |   `- '*/'
@@ -706,7 +710,8 @@ class StrTest(TestCase):
  |   |       |               |   +- Sequence(...)
  |   |       |               |   `- alphabet <Unicode>
  |   |       |               `- TransformableTrampolineWrapper
- |   |       |                   +- '('
+ |   |       |                   +- FunctionWrapper
+ |   |       |                   |   `- '('
  |   |       |                   +- NfaRegexp
  |   |       |                   |   +- Sequence(...)
  |   |       |                   |   `- alphabet <Unicode>
@@ -716,7 +721,8 @@ class StrTest(TestCase):
  |   |       |                   +- NfaRegexp
  |   |       |                   |   +- Sequence(...)
  |   |       |                   |   `- alphabet <Unicode>
- |   |       |                   `- ')'
+ |   |       |                   `- FunctionWrapper
+ |   |       |                       `- ')'
  |   |       +- NfaRegexp
  |   |       |   +- Sequence(...)
  |   |       |   `- alphabet <Unicode>
@@ -735,7 +741,8 @@ class StrTest(TestCase):
  |   |           |       |   |   +- Sequence(...)
  |   |           |       |   |   `- alphabet <Unicode>
  |   |           |       |   `- TransformableTrampolineWrapper
- |   |           |       |       +- '('
+ |   |           |       |       +- FunctionWrapper
+ |   |           |       |       |   `- '('
  |   |           |       |       +- NfaRegexp
  |   |           |       |       |   +- Sequence(...)
  |   |           |       |       |   `- alphabet <Unicode>
@@ -745,7 +752,8 @@ class StrTest(TestCase):
  |   |           |       |       +- NfaRegexp
  |   |           |       |       |   +- Sequence(...)
  |   |           |       |       |   `- alphabet <Unicode>
- |   |           |       |       `- ')'
+ |   |           |       |       `- FunctionWrapper
+ |   |           |       |           `- ')'
  |   |           |       +- NfaRegexp
  |   |           |       |   +- Sequence(...)
  |   |           |       |   `- alphabet <Unicode>
@@ -763,7 +771,8 @@ class StrTest(TestCase):
  |   |           |           |       |   +- Sequence(...)
  |   |           |           |       |   `- alphabet <Unicode>
  |   |           |           |       `- TransformableTrampolineWrapper
- |   |           |           |           +- '('
+ |   |           |           |           +- FunctionWrapper
+ |   |           |           |           |   `- '('
  |   |           |           |           +- NfaRegexp
  |   |           |           |           |   +- Sequence(...)
  |   |           |           |           |   `- alphabet <Unicode>
@@ -773,7 +782,8 @@ class StrTest(TestCase):
  |   |           |           |           +- NfaRegexp
  |   |           |           |           |   +- Sequence(...)
  |   |           |           |           |   `- alphabet <Unicode>
- |   |           |           |           `- ')'
+ |   |           |           |           `- FunctionWrapper
+ |   |           |           |               `- ')'
  |   |           |           `- first TransformableTrampolineWrapper
  |   |           |               +- FunctionWrapper
  |   |           |               |   `- '*/'
@@ -785,7 +795,8 @@ class StrTest(TestCase):
  |   |           |                   |   +- Sequence(...)
  |   |           |                   |   `- alphabet <Unicode>
  |   |           |                   `- TransformableTrampolineWrapper
- |   |           |                       +- '('
+ |   |           |                       +- FunctionWrapper
+ |   |           |                       |   `- '('
  |   |           |                       +- NfaRegexp
  |   |           |                       |   +- Sequence(...)
  |   |           |                       |   `- alphabet <Unicode>
@@ -795,7 +806,8 @@ class StrTest(TestCase):
  |   |           |                       +- NfaRegexp
  |   |           |                       |   +- Sequence(...)
  |   |           |                       |   `- alphabet <Unicode>
- |   |           |                       `- ')'
+ |   |           |                       `- FunctionWrapper
+ |   |           |                           `- ')'
  |   |           `- first TransformableTrampolineWrapper
  |   |               +- FunctionWrapper
  |   |               |   `- '+-'
@@ -808,7 +820,8 @@ class StrTest(TestCase):
  |   |                   |   |   +- Sequence(...)
  |   |                   |   |   `- alphabet <Unicode>
  |   |                   |   `- TransformableTrampolineWrapper
- |   |                   |       +- '('
+ |   |                   |       +- FunctionWrapper
+ |   |                   |       |   `- '('
  |   |                   |       +- NfaRegexp
  |   |                   |       |   +- Sequence(...)
  |   |                   |       |   `- alphabet <Unicode>
@@ -818,7 +831,8 @@ class StrTest(TestCase):
  |   |                   |       +- NfaRegexp
  |   |                   |       |   +- Sequence(...)
  |   |                   |       |   `- alphabet <Unicode>
- |   |                   |       `- ')'
+ |   |                   |       `- FunctionWrapper
+ |   |                   |           `- ')'
  |   |                   +- NfaRegexp
  |   |                   |   +- Sequence(...)
  |   |                   |   `- alphabet <Unicode>
@@ -836,7 +850,8 @@ class StrTest(TestCase):
  |   |                       |       |   +- Sequence(...)
  |   |                       |       |   `- alphabet <Unicode>
  |   |                       |       `- TransformableTrampolineWrapper
- |   |                       |           +- '('
+ |   |                       |           +- FunctionWrapper
+ |   |                       |           |   `- '('
  |   |                       |           +- NfaRegexp
  |   |                       |           |   +- Sequence(...)
  |   |                       |           |   `- alphabet <Unicode>
@@ -846,7 +861,8 @@ class StrTest(TestCase):
  |   |                       |           +- NfaRegexp
  |   |                       |           |   +- Sequence(...)
  |   |                       |           |   `- alphabet <Unicode>
- |   |                       |           `- ')'
+ |   |                       |           `- FunctionWrapper
+ |   |                       |               `- ')'
  |   |                       `- first TransformableTrampolineWrapper
  |   |                           +- FunctionWrapper
  |   |                           |   `- '*/'
@@ -858,7 +874,8 @@ class StrTest(TestCase):
  |   |                               |   +- Sequence(...)
  |   |                               |   `- alphabet <Unicode>
  |   |                               `- TransformableTrampolineWrapper
- |   |                                   +- '('
+ |   |                                   +- FunctionWrapper
+ |   |                                   |   `- '('
  |   |                                   +- NfaRegexp
  |   |                                   |   +- Sequence(...)
  |   |                                   |   `- alphabet <Unicode>
@@ -868,7 +885,8 @@ class StrTest(TestCase):
  |   |                                   +- NfaRegexp
  |   |                                   |   +- Sequence(...)
  |   |                                   |   `- alphabet <Unicode>
- |   |                                   `- ')'
+ |   |                                   `- FunctionWrapper
+ |   |                                       `- ')'
  |   `- TransformationWrapper(<apply>)
  `- True""")
 

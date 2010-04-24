@@ -248,8 +248,7 @@ class AndNoTrampolineTest(TestCase):
         matcher.config.clear().direct_eval()
         parser = matcher.get_parse()
         text = str(parser.matcher)
-        assert "AndNoTrampoline('a', 'b')" == text, text
-        #assert "AndNoTrampoline(Literal, Literal)" == text, text
+        assert "AndNoTrampoline(Literal, Literal)" == text, text
         result = parser('ab')
         assert result == ['a', 'b'], result
          
@@ -261,7 +260,7 @@ class FlattenTest(TestCase):
         matcher.config.clear().flatten()
         parser = matcher.get_parse()
         text = str(parser.matcher)
-        assert text == "And('a', 'b', 'c')", text
+        assert text == "And(Literal, Literal, Literal)", text
         result = parser('abcd')
         assert result == ['a', 'b', 'c'], result
         
@@ -270,7 +269,7 @@ class FlattenTest(TestCase):
         matcher.config.clear().flatten()
         parser = matcher.get_parse()
         text = str(parser.matcher)
-        assert text == "And('a', Transform)", text
+        assert text == "And(Literal, Transform)", text
         result = parser('abcd')
         assert result == ['a', 'bc'], result
         
@@ -288,7 +287,7 @@ class FlattenTest(TestCase):
         matcher.config.clear().flatten()
         parser = matcher.get_parse()
         text = str(parser.matcher)
-        assert text == "Or('a', 'b', 'c')", text
+        assert text == "Or(Literal, Literal, Literal)", text
         result = parser('abcd')
         assert result == ['a'], result
         
@@ -297,7 +296,7 @@ class FlattenTest(TestCase):
         matcher.config.clear().flatten()
         parser = matcher.get_parse()
         text = str(parser.matcher)
-        assert text == "Or('a', Transform)", text
+        assert text == "Or(Literal, Transform)", text
         result = parser('abcd')
         assert result == ['a'], result
         

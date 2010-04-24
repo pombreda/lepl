@@ -41,8 +41,9 @@ Matchers that embody fundamental, common actions.
 from re import compile as compile_
 
 from lepl.core.parser import tagged
+from lepl.regexp.matchers import DfaRegexp
 from lepl.matchers.support import OperatorMatcher, coerce_, \
-    function_matcher, function_matcher_factory, trampoline_matcher_factory
+    function_matcher, function_matcher_factory, trampoline_matcher_factory, to
 from lepl.support.lib import format
 
 
@@ -236,13 +237,11 @@ def Eof(support, stream):
         return ([], stream)
 
 
-@trampoline_matcher_factory()
+@trampoline_matcher_factory(matcher=to(Literal))
 def Consumer(matcher, consume=True):
     '''
     Only accept the match if it consumes data from the input
     '''
-    matcher = coerce_(matcher)
-    
     def match(support, stream_in):
         '''
         Do the match and test whether the stream has progressed.
@@ -258,7 +257,7 @@ def Consumer(matcher, consume=True):
     return match
 
 
-@trampoline_matcher_factory()
+@trampoline_matcher_factory(matcher=to(Literal), condition=to(DfaRegexp))
 def PostMatch(matcher, condition, not_=False, equals=True):
     '''
     Apply the condition to each result from the matcher.  It should return
@@ -268,8 +267,8 @@ def PostMatch(matcher, condition, not_=False, equals=True):
     `matcher` is coerced to `Literal()`, condition to `DfaRegexp()`
     '''
     from lepl.regexp.matchers import DfaRegexp
-    matcher = coerce_(matcher)
-    condition = coerce_(condition, DfaRegexp)
+#    matcher = coerce_(matcher)
+#    condition = coerce_(condition, DfaRegexp)
     
     def match(support, stream_in):
         '''
