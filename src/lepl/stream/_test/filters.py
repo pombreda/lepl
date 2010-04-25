@@ -92,7 +92,7 @@ class ExcludeTest(TestCase):
             matcher.config.no_full_first_match()
             return matcher.get_match_string()
         stream1 = 'abcdef\nghijklm\n'
-        (match, _stream) = next(parser(Exclude(vowel)(Any()[:]))('abcdef\nghijklm\n'))
+        (match, _stream) = next(parser(Exclude(vowel)(Any()[:]))(stream1))
         assert match[0:2] == ['b', 'c'], match[0:2]
         (_result, stream) = next(parser(Exclude(vowel)(Any()[0]))(stream1))
         assert stream[0] == 'a', stream[0]

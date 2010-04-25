@@ -81,7 +81,7 @@ def search_factory(factory):
     return document(new_factory, factory)
 
 
-@trampoline_matcher_factory(False)
+@trampoline_matcher_factory(False, first=to(Literal), rest=to(Literal))
 @search_factory
 def DepthFirst(first, start, stop, rest):
     '''
@@ -114,7 +114,7 @@ def DepthFirst(first, start, stop, rest):
     return match
 
 
-@trampoline_matcher_factory(False)
+@trampoline_matcher_factory(False, first=to(Literal), rest=to(Literal))
 @search_factory
 def BreadthFirst(first, start, stop, rest):
     '''
@@ -170,7 +170,7 @@ def OrderByResultCount(matcher, ascending=True):
     return match
             
 
-@sequence_matcher_factory()
+@sequence_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
 def DepthNoTrampoline(first, start, stop, rest):
     '''
@@ -205,7 +205,7 @@ def DepthNoTrampoline(first, start, stop, rest):
     return matcher
             
             
-@sequence_matcher_factory()
+@sequence_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
 def BreadthNoTrampoline(first, start, stop, rest):
     '''

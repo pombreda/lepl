@@ -84,7 +84,7 @@ def binary_single_parser(label, text):
     Parse a binary regular expression, returning the associated Regexp.
     '''
     return Compiler.single(BINARY,
-                Labelled(label, __compiled_binary_parser(text), BINARY))
+                Labelled(BINARY, label, *__compiled_binary_parser(text)))
 
 
 def binary_parser(*regexps):
@@ -92,7 +92,7 @@ def binary_parser(*regexps):
     Parse a set of binary regular expressions, returning the associated Regexp.
     '''
     return Compiler.multiple(BINARY,
-                [Labelled(label, __compiled_binary_parser(text), BINARY)
+                [Labelled(BINARY, label, *__compiled_binary_parser(text))
                  for (label, text) in regexps])
 
 

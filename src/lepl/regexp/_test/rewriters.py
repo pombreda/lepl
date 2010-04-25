@@ -31,7 +31,7 @@
 Tests for the lepl.regexp.rewriters module.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import Any, NfaRegexp, Literal, Add, And, Integer, Float, Word, Star
@@ -179,18 +179,46 @@ class CompileTest(TestCase):
         self.assert_regexp(Literal('foo'), 'foo')
 
     def test_repeat(self):
+        self.assert_regexp(Any()[:, ...], '(.)*')
         self.assert_regexp(Any()[1:, ...], '.(.)*')
-        # ugly, but correct
-        self.assert_regexp(Any()[:, ...], '(.(.)*|)')
-        self.assert_regexp(Literal('foo')[:, ...], '(foo(foo)*|)')
+        self.assert_regexp(Any()[1, ...], '.')
+        self.assert_regexp(Any()[1:2, ...], '.(.)?')
+        self.assert_regexp(Any()[2, ...], '..')
+        self.assert_regexp(Any()[:, 'x', ...], '(.(x.)*|)')
+        self.assert_regexp(Any()[1:, 'x', ...], '.(x.)*')
+        self.assert_regexp(Any()[1, 'x', ...], '.')
+        self.assert_regexp(Any()[1:2, 'x', ...], '.(x.)?')
+        self.assert_regexp(Any()[2, 'x', ...], '.x.')
+        self.assert_regexp(Literal('foo')[:, ...], '(foo)*')
 
     def test_and(self):
-        self.assert_regexp(Any('ab')[:, ...] + Any('p'), '([a-b]([a-b])*|)p')
+        self.assert_regexp(Any('ab')[:, ...] + Any('p'), '([a-b])*p')
         
     def test_or(self):
-        self.assert_regexp(Any('ab')[:, ...] | Any('p'), '(([a-b]([a-b])*|)|p)')
+        self.assert_regexp(Any('ab')[:, ...] | Any('p'), '(([a-b])*|p)')
 
     def test_complex(self):
         self.assert_regexp((Any('ab') + Literal('q')) | Literal('z'), '([a-b]q|z)')
         self.assert_regexp((Any('ab') + 'q') | 'z', '([a-b]q|z)')
         
+        
+class RepeatBugTest(TestCase):
+    
+    def test_bug(self):
+#        basicConfig(level=DEBUG)
+        matcher = Any()[2, ...]
+        matcher.config.no_full_first_match().compile_to_nfa()
+        parser = matcher.get_parse_all()
+        print(parser.matcher.tree())
+        print(parser.matcher.regexp)
+        results = list(parser('abc'))
+        print(results)
+        
+    def test_bug2(self):
+        matcher = NfaRegexp('..')
+        matcher.config.no_full_first_match()
+        parser = matcher.get_parse_all()
+        print(parser.matcher.tree())
+        print(parser.matcher.regexp)
+        results = list(parser('abc'))
+        print(results)

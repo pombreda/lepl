@@ -165,6 +165,8 @@ else:
             # node or a subclass
             expr += spaces & (node | other) & spaces
         
+        # this changes order, making 0800x0 parser as binary
+        expr.config.no_compile_to_regexp()
         return expr.get_parse_string()
     
     

@@ -267,8 +267,6 @@ def PostMatch(matcher, condition, not_=False, equals=True):
     `matcher` is coerced to `Literal()`, condition to `DfaRegexp()`
     '''
     from lepl.regexp.matchers import DfaRegexp
-#    matcher = coerce_(matcher)
-#    condition = coerce_(condition, DfaRegexp)
     
     def match(support, stream_in):
         '''

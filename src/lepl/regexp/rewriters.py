@@ -1,4 +1,5 @@
 from lepl.regexp.unicode import UnicodeAlphabet
+from lepl.matchers.core import Regexp
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -56,7 +57,7 @@ from logging import getLogger
 from lepl.matchers.matcher import Matcher, matcher_map
 from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
     TrampolineWrapper, TransformableTrampolineWrapper
-from lepl.regexp.core import Choice, Sequence, Repeat, Empty
+from lepl.regexp.core import Choice, Sequence, Repeat, Empty, Option
 from lepl.regexp.matchers import NfaRegexp
 from lepl.regexp.interval import Character
 from lepl.core.rewriters import copy_standard_attributes, clone, \
@@ -192,7 +193,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
         else:
             char = Character(((char, char) for char in restrict), alphabet)
         log.debug(format('Any: cloned {0}', char))
-        regexp = Sequence([char], alphabet)
+        regexp = Sequence(alphabet, char)
         return RegexpContainer.build(original, regexp, alphabet, 
                                      matcher_type, use)
         
@@ -204,7 +205,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
         assert isinstance(original, Transformable)
         try:
             (use, regexps) = RegexpContainer.to_regexps(use, matchers)
-            regexp = Choice(regexps, alphabet)
+            regexp = Choice(alphabet, *regexps)
             log.debug(format('Or: cloned {0}', regexp))
             return RegexpContainer.build(original, regexp, alphabet, 
                                          matcher_type, use)
@@ -225,7 +226,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
             (use, regexps) = \
                 RegexpContainer.to_regexps(use, matchers, add_reqd=None)
             # if we have regexp sub-expressions, join them
-            regexp = Sequence(regexps, alphabet)
+            regexp = Sequence(alphabet, *regexps)
             log.debug(format('And: cloning {0}', regexp))
             if use and len(original.wrapper.functions) > 1 \
                     and original.wrapper.functions[0] is add:
@@ -302,41 +303,88 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
         Literal values are easy to transform.
         '''
         chars = [Character([(c, c)], alphabet) for c in text]
-        regexp = Sequence(chars, alphabet)
+        regexp = Sequence(alphabet, *chars)
         log.debug(format('Literal: cloned {0}', regexp))
         return RegexpContainer.build(original, regexp, alphabet, 
                                      matcher_type, use)
     
+    def clone_regexp(use, original, pattern):
+        '''
+        Regexps values are also easy.
+        '''
+        try:
+            regexp = Sequence(alphabet, *alphabet.parse(pattern))
+            return RegexpContainer.build(original, regexp, alphabet, 
+                                         matcher_type, use)
+        except:
+            # parse error from regexp
+            log.debug(format('Regexp: not rewritten: {0}', original))
+            return original
+    
     def clone_dfs(use, original, first, start, stop, rest=None):
         '''
-        We only convert DFS if start=0 or 1, stop=1 or None and first and 
-        rest are both regexps.
-        
         This forces use=True as it is likely that a regexp is a gain.
         '''
         assert not isinstance(original, Transformable)
+        assert stop is None or start <= stop
+        rest = first if rest is None else rest
         try:
-            if start not in (0, 1) or stop not in (1, None):
-                raise Unsuitable()
+#            if start not in (0, 1) or stop not in (1, None):
+#                raise Unsuitable()
             (use, [first, rest]) = \
-                    RegexpContainer.to_regexps(True, [first, rest])
-            # we need to be careful here to get the depth first bit right
-            if stop is None:
-                regexp = Sequence([first, Repeat([rest], alphabet)], alphabet)
-                if start == 0:
-                    regexp = Choice([regexp, Empty(alphabet)], alphabet)
+                    RegexpContainer.to_regexps(True, [first, rest], None)
+            seq = []
+            if first != rest:
+                seq.append(first.clone())
+            while len(seq) < start:
+                seq.append(rest.clone())
+            addzero = len(seq) > start # first was exceptional and start=0
+            if stop:
+                for _i in range(stop - start):
+                    seq.append(Option(alphabet, rest.clone()))
             else:
-                regexp = first
-                if start == 0:
-                    regexp = Choice([regexp, Empty(alphabet)], alphabet)
+                seq.append(Repeat(alphabet, rest.clone()))
+            regexp = Sequence(alphabet, *seq)
+            if addzero:
+                regexp = Choice(alphabet, regexp, Empty(alphabet))
             log.debug(format('DFS: cloned {0}', regexp))
             return RegexpContainer.build(original, regexp, alphabet, 
                                          matcher_type, use, 
-                                         add_reqd=stop is None)
+                                         add_reqd=stop is None or stop > 1)
         except Unsuitable:
             log.debug(format('DFS: not rewritten: {0}', original))
             return original
         
+#    def clone_dfs(use, original, first, start, stop, rest=None):
+#        '''
+#        We only convert DFS if start=0 or 1, stop=1 or None and first and 
+#        rest are both regexps.
+#        
+#        This forces use=True as it is likely that a regexp is a gain.
+#        '''
+#        assert not isinstance(original, Transformable)
+#        try:
+#            if start not in (0, 1) or stop not in (1, None):
+#                raise Unsuitable()
+#            (use, [first, rest]) = \
+#                    RegexpContainer.to_regexps(True, [first, rest])
+#            # we need to be careful here to get the depth first bit right
+#            if stop is None:
+#                regexp = Sequence([first, Repeat([rest], alphabet)], alphabet)
+#                if start == 0:
+#                    regexp = Choice([regexp, Empty(alphabet)], alphabet)
+#            else:
+#                regexp = first
+#                if start == 0:
+#                    regexp = Choice([regexp, Empty(alphabet)], alphabet)
+#            log.debug(format('DFS: cloned {0}', regexp))
+#            return RegexpContainer.build(original, regexp, alphabet, 
+#                                         matcher_type, use, 
+#                                         add_reqd=stop is None)
+#        except Unsuitable:
+#            log.debug(format('DFS: not rewritten: {0}', original))
+#            return original
+
     def clone_wrapper(use, original, *args, **kargs):
         factory = original.factory
         if factory in map_:
@@ -351,6 +399,7 @@ def make_clone(alphabet, old_clone, matcher_type, use_from_start):
                         And: clone_and,
                         Transform: clone_transform,
                         Literal: clone_literal,
+                        Regexp: clone_regexp,
                         DepthFirst: clone_dfs,
                         FunctionWrapper: clone_wrapper,
                         SequenceWrapper: clone_wrapper,

@@ -33,7 +33,7 @@ converted to strings using str().
 '''
 
 from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
-    Option, _Choice
+    Option, _Choice, _Character
 from lepl.support.lib import format, str, LogMixin
 
 
@@ -97,13 +97,13 @@ class StrParser(LogMixin):
         '''
         Create a sequence.
         '''
-        return Sequence(x, self.alphabet)
+        return Sequence(self.alphabet, *x)
     
     def star(self, x):
         '''
         Repeat a sub-expression.
         '''
-        return Repeat(x, self.alphabet)
+        return Repeat(self.alphabet, *x)
     
     def plus(self, x):
         '''
@@ -115,13 +115,13 @@ class StrParser(LogMixin):
         '''
         Make a sub-expression optional.
         '''
-        return Option(x, self.alphabet)
+        return Option(self.alphabet, *x)
     
     def choice(self, x):
         '''
         Construct a choice from a list of sub-expressions.
         '''
-        return Choice(x, self.alphabet)
+        return Choice(self.alphabet, *x)
     
     def char(self, x):
         '''
@@ -224,7 +224,7 @@ class StrAlphabet(Alphabet):
         Returns True of no parens are needed around this when formatting.
         '''
         return len(children) == 1 and \
-            (isinstance(children[0], Character) or
+            (isinstance(children[0], _Character) or
              len(children[0]) == 1 and isinstance(children[0][0], _Choice))
     
     def fmt_intervals(self, intervals):

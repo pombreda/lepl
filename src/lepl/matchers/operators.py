@@ -564,6 +564,9 @@ class OperatorMixin(NamespaceMixin):
                 separator = index
             else:
                 raise TypeError(index)
+        # important for rewriting
+        if stop == 1:
+            add = False
         return self._lookup(REPEAT)(self, start, stop, step, separator, add)
         
     def __gt__(self, function):

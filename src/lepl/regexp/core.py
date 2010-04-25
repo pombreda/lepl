@@ -65,8 +65,10 @@ from abc import ABCMeta, abstractmethod
 from collections import deque
 from itertools import chain
 
+from lepl.support.graph import ConstructorWalker, clone, Clone
 from lepl.support.node import Node
-from lepl.regexp.interval import Character, TaggedFragments, IntervalMap
+from lepl.regexp.interval import Character, TaggedFragments, IntervalMap,\
+    _Character
 from lepl.support.lib import format, basestring, str, LogMixin
 
 
@@ -221,8 +223,11 @@ class Sequence(Node):
     A sequence of Characters, etc.
     '''
     
-    def __init__(self, children, alphabet):
+    def __init__(self, alphabet, *children):
+        assert isinstance(alphabet, Alphabet)
         # pylint: disable-msg=W0142
+        for child in children:
+            assert isinstance(child, RegexpGraphNode), type(child)
         super(Sequence, self).__init__(*children)
         self.alphabet = alphabet
         self.state = None
@@ -253,7 +258,25 @@ class Sequence(Node):
                 src = dest
         else:
             graph.connect(before, after)
+    
+    @staticmethod
+    def __clone(node, args, kargs):
+        try:
+            args = list(args)
+            args.insert(0, node.alphabet)
+        except AttributeError:
+            pass
+        return clone(node, args, kargs)
+            
+    def clone(self):
+        return ConstructorWalker(self, RegexpGraphNode)(Clone(self.__clone))
 
+
+#class RegexpGraphNode(metaclass=ABCMeta):
+RegexpGraphNode = ABCMeta('RegexpGraphNode', (object, ), {})
+RegexpGraphNode.register(_Character)
+RegexpGraphNode.register(Sequence)
+        
 
 class Option(Sequence):
     '''
@@ -278,9 +301,6 @@ class Empty(Sequence):
     '''
     Matches an empty sequence.
     '''
-    
-    def __init__(self, alphabet):
-        super(Empty, self).__init__([], alphabet)
     
     def _build_str(self):
         '''
@@ -317,13 +337,13 @@ class Repeat(Sequence):
         graph.connect(node, after) 
     
     
-def Choice(children, alphabet):
+def Choice(alphabet, *children):
     '''
     Encase a choice in a sequence so that it can be treated in the same
     way as other components (if we don't do this, then passing it to another
-    sequence will split it into constituents and the sequence them).
+    sequence will split it into constituents and then sequence them).
     '''
-    return Sequence([_Choice(children, alphabet)], alphabet)
+    return Sequence(alphabet, _Choice(alphabet, *children))
 
     
 class _Choice(Sequence):
@@ -371,9 +391,9 @@ class Labelled(Sequence):
     by any other sequence.  Their termination defines terminal nodes.
     '''
     
-    def __init__(self, label, children, alphabet):
+    def __init__(self, alphabet, label, *children):
         self.label = label
-        super(Labelled, self).__init__(children, alphabet)
+        super(Labelled, self).__init__(alphabet, *children)
         
     def _build_str(self):
         '''
@@ -458,8 +478,8 @@ class Compiler(LogMixin):
         '''
         Generate an instance for a single expression or sequence.
         '''
-        return Compiler(Labelled(label, Compiler._coerce(regexp, alphabet), 
-                                 alphabet), alphabet)
+        return Compiler(Labelled(alphabet, label, 
+                                 *Compiler._coerce(regexp, alphabet)), alphabet)
     
     @staticmethod
     def multiple(alphabet, regexps):
@@ -467,9 +487,10 @@ class Compiler(LogMixin):
         Generate an instance for several expressions.
         '''
         return Compiler(
-                    Choice([Labelled(label, Compiler._coerce(regexp, alphabet), 
-                                     alphabet) for (label, regexp) in regexps], 
-                                     alphabet), alphabet)
+                    Choice(alphabet, 
+                           *[Labelled(alphabet, label, 
+                                      *Compiler._coerce(regexp, alphabet)) 
+                           for (label, regexp) in regexps]), alphabet)
 
 
         
@@ -928,4 +949,3 @@ class DfaPattern(LogMixin):
             if terminals:
                 longest = (terminals, size, stream)
         return longest
-    

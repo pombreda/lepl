@@ -116,9 +116,9 @@ from lepl.core.manager import GeneratorManager
 from lepl.core.trace import RecordDeepest, TraceResults
 from lepl.matchers.combine import And, Or, First
 from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
-    Lookahead, PostMatch
+    Lookahead, PostMatch, Regexp
 from lepl.matchers.monitor import Trace, Commit
-from lepl.matchers.derived import Apply, args, KApply, Regexp, Join, \
+from lepl.matchers.derived import Apply, args, KApply, Join, \
     AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Repeat, Plus, \
     OneOrMore, Substitute, Name, Eof, Eos, Identity, Newline, Space, \
     Whitespace, Digit, Letter, Upper, Lower, Printable, Punctuation, \
@@ -169,11 +169,11 @@ __all__ = [
         'Lookahead',
         'PostMatch',
         'Columns',
+        'Regexp', 
         # lepl.matchers.derived
         'Apply',
         'args',
         'KApply',
-        'Regexp', 
         'Delayed', 
         'Commit', 
         'Trace', 
@@ -284,7 +284,7 @@ __all__ = [
         'constant_indent'
        ]
 
-__version__ = '4.0.3'
+__version__ = '4.1'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

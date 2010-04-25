@@ -1,3 +1,4 @@
+from lepl.support.node import Node
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -37,7 +38,7 @@ from bisect import bisect_left
 from collections import deque
 
 
-class Character(object):
+class Intervals(object):
     '''
     A set of possible values for a character, described as a collection of 
     intervals.  Each interval is [a, b] (ie a <= x <= b, where x is a character 
@@ -164,14 +165,61 @@ class Character(object):
     def __eq__(self, other):
         # pylint: disable-msg=W0212
         # (test for same class)
-        return isinstance(other, Character) and self.__str == other.__str
+        return isinstance(other, Intervals) and self.__str == other.__str
         
+
+class _Character(Node):
+    '''
+    A set of intervals that is part of a DFA/NFA graph.  This is separate
+    from the `Intervals` instance since we need to clone the node, but can
+    keep the intervals (necessary so that node equality works correctly when
+    the same character is used more than once).
+    '''
+    
+    def __init__(self, intervals):
+        super(_Character, self).__init__(intervals)
+        self.__intervals = intervals
+        
+    def append(self, interval):
+        '''
+        Add an interval to the range.
+        '''
+        self.__intervals.append(interval)
+        
+    def __str__(self):
+        return str(self.__intervals)
+    
+    def __repr__(self):
+        return repr(self.__intervals)
+    
+    def len(self):
+        '''
+        The number of intervals in the range.
+        '''
+        return len(self.__intervals)
+    
+    def __getitem__(self, index):
+        return self.__intervals[index]
+    
+    def __iter__(self):
+        return iter(self.__intervals)
+    
+    def __contains__(self, c):
+        return c in self.__intervals
+    
     def build(self, graph, src, dest):
         '''
         Insert within an NFA graph (although at this level, it's not clear it's
         NFA).
         '''
         graph.connect(src, dest, self)
+        
+        
+def Character(intervals, alphabet):
+    '''
+    Allow simple construction of Character instances.
+    '''
+    return _Character(Intervals(intervals, alphabet))
     
 
 #class Fragments(object):
@@ -377,7 +425,7 @@ class TaggedFragments(object):
         '''
         Add a range and tag.
         '''
-        assert type(character) is Character
+        assert type(character) is _Character
         for interval in character:
             self.__append(interval, [value])
         

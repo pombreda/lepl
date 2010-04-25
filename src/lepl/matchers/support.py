@@ -125,9 +125,27 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         '''
         An ASCII tree for display.
         '''
-        visitor = GraphStr()
+        visitor = TreeStr()
         return self.postorder(visitor, Matcher)
     
+    def tree_repr(self):
+        '''
+        The text to display via `tree()`
+        '''
+        return self.__class__.__name__
+    
+
+class TreeStr(GraphStr):
+    
+    def node(self, node):
+        '''
+        Store the class name.
+        '''
+        try:
+            self._type = node.tree_repr()
+        except:
+            super(TreeStr, self).node(node)
+            
 
 class OperatorMatcher(OperatorMixin, ParserMixin, BaseMatcher):
     '''
@@ -163,13 +181,17 @@ class Transformable(OperatorMatcher):
         raise NotImplementedError()
 
     def _format_repr(self, indent, key, contents):
-        return format('{0}{1}{2}:{3}({4}{5})', 
+        return format('{0}{1}{2}({3}{4})', 
                       ' ' * indent,
                       key + '=' if key else '',
-                      self._small_str,
-                      self.wrapper,
+                      self.tree_repr(),
                       '' if self._fmt_compact else '\n',
                       ',\n'.join(contents))
+        
+    def tree_repr(self):
+        return format('{0}:{1}',
+                      self._small_str,
+                      self.wrapper)
         
 
 class BaseFactoryMatcher(FactoryMatcher):
@@ -247,14 +269,10 @@ class BaseFactoryMatcher(FactoryMatcher):
                                                else factory.__name__
             self.__args_as_attributes()
 
-    def _format_repr(self, indent, key, contents):
-        return format('{0}{1}{2}<{3}>({4}{5})', 
-                      ' ' * indent, 
-                      key + '=' if key else '',
+    def tree_repr(self):
+        return format('{0}<{1}>',
                       self.__class__.__name__,
-                      self._small_str,
-                      '' if self._fmt_compact else '\n',
-                      ',\n'.join(contents))
+                      self._small_str)
         
     @property
     def _cached_matcher(self):
@@ -293,15 +311,11 @@ class TransformableWrapper(BaseFactoryMatcher, Transformable):
         copy.wrapper = self.wrapper.compose(wrapper)
         return copy
     
-    def _format_repr(self, indent, key, contents):
-        return format('{0}{1}{2}<{3}:{4}>({5}{6})', 
-                      ' ' * indent, 
-                      key + '=' if key else '',
+    def tree_repr(self):
+        return format('{0}<{1}:{2}>',
                       self.__class__.__name__,
                       self._small_str,
-                      self.wrapper,
-                      '' if self._fmt_compact else '\n',
-                      ',\n'.join(contents))
+                      self.wrapper)
         
 
 class TransformableTrampolineWrapper(TransformableWrapper):

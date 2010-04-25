@@ -643,7 +643,7 @@ class GraphStr(Visitor):
     
     def __init__(self):
         super(GraphStr, self).__init__()
-        self.__type = None
+        self._type = None
     
     def loop(self, value):
         '''
@@ -656,14 +656,14 @@ class GraphStr(Visitor):
         '''
         Store the class name.
         '''
-        self.__type = node.__class__.__name__
+        self._type = node.__class__.__name__
     
     def constructor(self, *args, **kargs):
         '''
         Generate a function that can construct the local section of the
         graph when given the appropriate prefixes.
         '''
-        def fun(first, rest, name, type_=self.__type):
+        def fun(first, rest, name, type_=self._type):
             '''
             Build the ASCII picture; this is rather terse...  First is the
             prefix to the first line; rest is the prefix to the rest.  Args

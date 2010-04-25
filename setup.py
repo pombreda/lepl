@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='LEPL',
-      version='4.0.3',
+      version='4.1',
       description='A Parser Library for Python 2.6+/3+: Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -16,9 +16,9 @@ The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
 `Release 4.0 <http://www.acooke.org/lepl/lepl4.0.html>`_ is a major revision,
-giving a library that's simpler, faster, and easier to use.  Release 4.0.3
-adds a small bugfix for matcher kargs and removes a Python 3 only file that
-triggers an annoying error on install.
+giving a library that's simpler, faster, and easier to use.  Release 4.1
+fixes an issue with coercing strings to Literal matchers (a serious, but
+apparently rare bug).
 
 Features
 --------

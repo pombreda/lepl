@@ -1,3 +1,4 @@
+from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -37,7 +38,7 @@ from string import whitespace, digits, ascii_letters, \
 from lepl.core.parser import tagged
 from lepl.matchers.combine import And, DepthFirst, BreadthFirst, \
     OrderByResultCount, Or, First
-from lepl.matchers.core import Regexp, Lookahead, Any, Eof, Literal, Empty
+from lepl.matchers.core import Lookahead, Any, Eof, Literal, Empty, Regexp
 from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
     NON_GREEDY
 from lepl.matchers.support import OperatorMatcher, coerce_

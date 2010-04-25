@@ -88,15 +88,20 @@ Date        Version  Description
 2009-04-18  4.0.2    Small bugfix for left-recursive, whitespace sensitive grammars (equality).
 ----------  -------  -----------
 2009-04-20  4.0.3    Small bugfix for kargs of user-defined matchers; dropped Python 3 specific test.
+----------  -------  -----------
+2009-04-24  4.1      Major bugfix related to coercion of matcher arguments.
 ==========  =======  ===========
 
 
 .. release_4_0:
 
-4.0
----
+4.0, 4.1
+--------
 
 See :ref:`Lepl 4 - Simpler, Faster, Easier <lepl4>`.
+
+4.1 addresses a significant error which could cause problems during
+optimisation of the parser (even with the default configuration).
 
 
 .. release_3_3:

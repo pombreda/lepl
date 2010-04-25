@@ -44,14 +44,19 @@ from lepl._example.support import Example
 class ResourceExample(Example):
     
     def test_no_limit(self):
-        matcher = (Literal('*')[:,...][2] & Eos()).match_null('*' * 4)
-        self.examples([(lambda: list(matcher), 
-                        "[(['****'], ''), (['***', '*'], ''), (['**', '**'], ''), (['*', '***'], ''), (['****'], '')]")])
+        expr = (Literal('*')[:,...][2] & Eos())
+        matcher = expr.get_parse_null_all()
+#        print(matcher.matcher.tree())
+        results = matcher('*' * 4)
+        self.examples([(lambda: list(results), 
+                        "[['****'], ['***', '*'], ['**', '**'], ['*', '***'], ['****']]")])
 
     def test_limit(self):
         expr = Literal('*')[:,...][2] & Eos()
         # clear is here because the original test didn't have such a complex config
         expr.config.clear().manage(3)
-        matcher = expr.match_null('*' * 4)
-        self.examples([(lambda: list(matcher), 
-                        "[(['****'], ''), (['***', '*'], '')]")])
+        matcher = expr.get_parse_null_all()
+#        print(matcher.matcher.tree())
+        results = matcher('*' * 4)
+        self.examples([(lambda: list(results), 
+                        "[['****'], ['***', '*']]")])
