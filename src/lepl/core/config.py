@@ -353,6 +353,21 @@ class ConfigBuilder(object):
         return self.add_rewriter(
                     CompileRegexp(self.__get_alphabet(), force, NfaRegexp))
 
+    def compile_to_re(self, force=False, alphabet=None):
+        '''
+        Compile simple matchers to re (C library) regular expressions.  
+        This improves efficiency but may change the parser semantics slightly 
+        (DFA regular expressions do not provide backtracking / alternative 
+        matches).
+        '''
+        from lepl.matchers.core import Regexp
+        from lepl.regexp.rewriters import CompileRegexp
+        def regexp_wrapper(regexp, alphabet):
+            return Regexp(str(regexp))
+        self.alphabet(alphabet)
+        return self.add_rewriter(
+                    CompileRegexp(self.__get_alphabet(), force, regexp_wrapper))
+
     def no_compile_to_regexp(self):
         '''
         Disable compilation of simple matchers to regular expressions.

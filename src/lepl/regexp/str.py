@@ -141,7 +141,7 @@ class StrParser(LogMixin):
         '''
         
         # Avoid dependency loops
-        from lepl.matchers.derived import Drop, Eos, AnyBut, Upper
+        from lepl.matchers.derived import Drop, Eos, AnyBut, Upper, Optional
         from lepl.matchers.core import Any, Lookahead, Literal, Delayed
     
         # these two definitions enforce the conditions above, providing only
@@ -164,9 +164,10 @@ class StrParser(LogMixin):
     
         item     = Delayed()
         
+        open     = Drop('(' & Optional('?:'))
         seq      = (char | item)[0:]                             > self.sequence
-        group    = Drop('(') & seq & Drop(')')
-        alts     = Drop('(') & seq[2:, Drop('|')] & Drop(')')    > self.choice
+        group    = open & seq & Drop(')')
+        alts     = open & seq[2:, Drop('|')] & Drop(')')    > self.choice
         star     = (alts | group | char) & Drop('*')             > self.star
         plus     = (alts | group | char) & Drop('+')             > self.plus
         opt      = (alts | group | char) & Drop('?')             > self.option
@@ -273,7 +274,7 @@ class StrAlphabet(Alphabet):
         if self._no_parens(children):
             return string + '*'
         else:
-            return format('({0})*', string)
+            return format('(?:{0})*', string)
 
     def fmt_choice(self, children):
         '''
@@ -282,7 +283,7 @@ class StrAlphabet(Alphabet):
         This must fully describe the data in the children (it is used to
         hash the data).
         '''
-        return format('({0})', '|'.join(str(child) for child in children))
+        return format('(?:{0})', '|'.join(str(child) for child in children))
 
     def fmt_option(self, children):
         '''
@@ -295,7 +296,7 @@ class StrAlphabet(Alphabet):
         if self._no_parens(children):
             return string + '?'
         else:
-            return format('({0})?', string)
+            return format('(?:{0})?', string)
         
     def fmt_label(self, label, child):
         '''

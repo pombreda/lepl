@@ -63,15 +63,6 @@ class BaseRegexp(Transformable):
         copy.wrapper = self.wrapper.compose(wrapper)
         return copy
     
-    def precompose(self, wrapper):
-        '''
-        Like compose, but does the given transformation first.
-        '''
-        copy = type(self)(self.regexp, self.alphabet)
-        copy.wrapper = self.wrapper.precompose(wrapper)
-        return copy
-    
-
 class NfaRegexp(BaseRegexp):
     '''
     A matcher for NFA-based regular expressions.  This will yield alternative

@@ -184,11 +184,13 @@ class CompileTest(TestCase):
         self.assert_regexp(Any()[1, ...], '.')
         self.assert_regexp(Any()[1:2, ...], '.(.)?')
         self.assert_regexp(Any()[2, ...], '..')
+        self.assert_regexp(Any()[2:4, ...], '..(.(.)?)?')
         self.assert_regexp(Any()[:, 'x', ...], '(.(x.)*|)')
         self.assert_regexp(Any()[1:, 'x', ...], '.(x.)*')
         self.assert_regexp(Any()[1, 'x', ...], '.')
         self.assert_regexp(Any()[1:2, 'x', ...], '.(x.)?')
         self.assert_regexp(Any()[2, 'x', ...], '.x.')
+        self.assert_regexp(Any()[2:4, 'x', ...], '.x.(x.(x.)?)?')
         self.assert_regexp(Literal('foo')[:, ...], '(foo)*')
 
     def test_and(self):
@@ -209,16 +211,12 @@ class RepeatBugTest(TestCase):
         matcher = Any()[2, ...]
         matcher.config.no_full_first_match().compile_to_nfa()
         parser = matcher.get_parse_all()
-        print(parser.matcher.tree())
-        print(parser.matcher.regexp)
         results = list(parser('abc'))
-        print(results)
+        assert results == [['ab']], results
         
     def test_bug2(self):
         matcher = NfaRegexp('..')
         matcher.config.no_full_first_match()
         parser = matcher.get_parse_all()
-        print(parser.matcher.tree())
-        print(parser.matcher.regexp)
         results = list(parser('abc'))
-        print(results)
+        assert results == [['ab']], results

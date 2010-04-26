@@ -110,8 +110,9 @@ class HttpUrl(BaseTest):
     
     def test_http(self):
         
-        print(HtmlUrl().get_parse().matcher.tree())
         http = HtmlUrl() & Eos()
+        http.config.compile_to_re()
+        print(http.get_parse().matcher.tree())
         
         self.assert_literal(r'http://www.acooke.org', http)
         self.assert_literal(r'http://www.acooke.org/', http)
