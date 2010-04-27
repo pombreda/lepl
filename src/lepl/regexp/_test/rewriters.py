@@ -179,29 +179,29 @@ class CompileTest(TestCase):
         self.assert_regexp(Literal('foo'), 'foo')
 
     def test_repeat(self):
-        self.assert_regexp(Any()[:, ...], '(.)*')
-        self.assert_regexp(Any()[1:, ...], '.(.)*')
+        self.assert_regexp(Any()[:, ...], '(?:.)*')
+        self.assert_regexp(Any()[1:, ...], '.(?:.)*')
         self.assert_regexp(Any()[1, ...], '.')
-        self.assert_regexp(Any()[1:2, ...], '.(.)?')
+        self.assert_regexp(Any()[1:2, ...], '.(?:.)?')
         self.assert_regexp(Any()[2, ...], '..')
-        self.assert_regexp(Any()[2:4, ...], '..(.(.)?)?')
-        self.assert_regexp(Any()[:, 'x', ...], '(.(x.)*|)')
-        self.assert_regexp(Any()[1:, 'x', ...], '.(x.)*')
+        self.assert_regexp(Any()[2:4, ...], '..(?:.(?:.)?)?')
+        self.assert_regexp(Any()[:, 'x', ...], '(?:.(?:x.)*|)')
+        self.assert_regexp(Any()[1:, 'x', ...], '.(?:x.)*')
         self.assert_regexp(Any()[1, 'x', ...], '.')
-        self.assert_regexp(Any()[1:2, 'x', ...], '.(x.)?')
+        self.assert_regexp(Any()[1:2, 'x', ...], '.(?:x.)?')
         self.assert_regexp(Any()[2, 'x', ...], '.x.')
-        self.assert_regexp(Any()[2:4, 'x', ...], '.x.(x.(x.)?)?')
-        self.assert_regexp(Literal('foo')[:, ...], '(foo)*')
+        self.assert_regexp(Any()[2:4, 'x', ...], '.x.(?:x.(?:x.)?)?')
+        self.assert_regexp(Literal('foo')[:, ...], '(?:foo)*')
 
     def test_and(self):
-        self.assert_regexp(Any('ab')[:, ...] + Any('p'), '([a-b])*p')
+        self.assert_regexp(Any('ab')[:, ...] + Any('p'), '(?:[a-b])*p')
         
     def test_or(self):
-        self.assert_regexp(Any('ab')[:, ...] | Any('p'), '(([a-b])*|p)')
+        self.assert_regexp(Any('ab')[:, ...] | Any('p'), '(?:(?:[a-b])*|p)')
 
     def test_complex(self):
-        self.assert_regexp((Any('ab') + Literal('q')) | Literal('z'), '([a-b]q|z)')
-        self.assert_regexp((Any('ab') + 'q') | 'z', '([a-b]q|z)')
+        self.assert_regexp((Any('ab') + Literal('q')) | Literal('z'), '(?:[a-b]q|z)')
+        self.assert_regexp((Any('ab') + 'q') | 'z', '(?:[a-b]q|z)')
         
         
 class RepeatBugTest(TestCase):

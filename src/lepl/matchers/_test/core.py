@@ -233,7 +233,7 @@ class StrTest(TestCase):
      TransformableTrampolineWrapper<Or:<>>(
       Transform:<apply>(
        Transform:<add>(
-        TrampolineWrapper<DepthFirst>(
+        DepthFirst(
          start=1,
          stop=None,
          rest=FunctionWrapper<Any:<>>('0123456789'),
@@ -244,7 +244,7 @@ class StrTest(TestCase):
        TransformableTrampolineWrapper<And:<>>(
         FunctionWrapper<Literal:<>>('('),
         Transform:<add>(
-         TrampolineWrapper<DepthFirst>(
+         DepthFirst(
           start=0,
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
@@ -252,7 +252,7 @@ class StrTest(TestCase):
          TransformationWrapper(<add>)),
         [Delayed]),
        Transform:<add>(
-        TrampolineWrapper<DepthFirst>(
+        DepthFirst(
          start=0,
          stop=None,
          rest=FunctionWrapper<Any:<>>(' \t'),
@@ -261,13 +261,13 @@ class StrTest(TestCase):
        FunctionWrapper<Literal:<>>(')'))),
      TransformationWrapper(<apply>)),
     Transform:<add>(
-     TrampolineWrapper<DepthFirst>(
+     DepthFirst(
       start=0,
       stop=None,
       rest=FunctionWrapper<Any:<>>(' \t'),
       first=FunctionWrapper<Any:<>>(' \t')),
      TransformationWrapper(<add>)),
-    TrampolineWrapper<DepthFirst>(
+    DepthFirst(
      start=0,
      stop=None,
      rest=TransformableTrampolineWrapper<And:<>>(
@@ -275,7 +275,7 @@ class StrTest(TestCase):
        FunctionWrapper<Any:<>>('*/'),
        TransformationWrapper(<apply>)),
       Transform:<add>(
-       TrampolineWrapper<DepthFirst>(
+       DepthFirst(
         start=0,
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
@@ -285,7 +285,7 @@ class StrTest(TestCase):
        TransformableTrampolineWrapper<Or:<>>(
         Transform:<apply>(
          Transform:<add>(
-          TrampolineWrapper<DepthFirst>(
+          DepthFirst(
            start=1,
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
@@ -296,7 +296,7 @@ class StrTest(TestCase):
          TransformableTrampolineWrapper<And:<>>(
           FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
-           TrampolineWrapper<DepthFirst>(
+           DepthFirst(
             start=0,
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
@@ -304,7 +304,7 @@ class StrTest(TestCase):
            TransformationWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
-          TrampolineWrapper<DepthFirst>(
+          DepthFirst(
            start=0,
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
@@ -317,7 +317,7 @@ class StrTest(TestCase):
        FunctionWrapper<Any:<>>('*/'),
        TransformationWrapper(<apply>)),
       Transform:<add>(
-       TrampolineWrapper<DepthFirst>(
+       DepthFirst(
         start=0,
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
@@ -327,7 +327,7 @@ class StrTest(TestCase):
        TransformableTrampolineWrapper<Or:<>>(
         Transform:<apply>(
          Transform:<add>(
-          TrampolineWrapper<DepthFirst>(
+          DepthFirst(
            start=1,
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
@@ -338,7 +338,7 @@ class StrTest(TestCase):
          TransformableTrampolineWrapper<And:<>>(
           FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
-           TrampolineWrapper<DepthFirst>(
+           DepthFirst(
             start=0,
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
@@ -346,7 +346,7 @@ class StrTest(TestCase):
            TransformationWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
-          TrampolineWrapper<DepthFirst>(
+          DepthFirst(
            start=0,
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
@@ -356,13 +356,13 @@ class StrTest(TestCase):
        TransformationWrapper(<apply>))))),
    TransformationWrapper(<apply>)),
   Transform:<add>(
-   TrampolineWrapper<DepthFirst>(
+   DepthFirst(
     start=0,
     stop=None,
     rest=FunctionWrapper<Any:<>>(' \t'),
     first=FunctionWrapper<Any:<>>(' \t')),
    TransformationWrapper(<add>)),
-  TrampolineWrapper<DepthFirst>(
+  DepthFirst(
    start=0,
    stop=None,
    rest=TransformableTrampolineWrapper<And:<>>(
@@ -370,7 +370,7 @@ class StrTest(TestCase):
      FunctionWrapper<Any:<>>('+-'),
      TransformationWrapper(<apply>)),
     Transform:<add>(
-     TrampolineWrapper<DepthFirst>(
+     DepthFirst(
       start=0,
       stop=None,
       rest=FunctionWrapper<Any:<>>(' \t'),
@@ -382,7 +382,7 @@ class StrTest(TestCase):
        TransformableTrampolineWrapper<Or:<>>(
         Transform:<apply>(
          Transform:<add>(
-          TrampolineWrapper<DepthFirst>(
+          DepthFirst(
            start=1,
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
@@ -393,7 +393,7 @@ class StrTest(TestCase):
          TransformableTrampolineWrapper<And:<>>(
           FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
-           TrampolineWrapper<DepthFirst>(
+           DepthFirst(
             start=0,
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
@@ -401,7 +401,7 @@ class StrTest(TestCase):
            TransformationWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
-          TrampolineWrapper<DepthFirst>(
+          DepthFirst(
            start=0,
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
@@ -410,13 +410,13 @@ class StrTest(TestCase):
          FunctionWrapper<Literal:<>>(')'))),
        TransformationWrapper(<apply>)),
       Transform:<add>(
-       TrampolineWrapper<DepthFirst>(
+       DepthFirst(
         start=0,
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
         first=FunctionWrapper<Any:<>>(' \t')),
        TransformationWrapper(<add>)),
-      TrampolineWrapper<DepthFirst>(
+      DepthFirst(
        start=0,
        stop=None,
        rest=TransformableTrampolineWrapper<And:<>>(
@@ -424,7 +424,7 @@ class StrTest(TestCase):
          FunctionWrapper<Any:<>>('*/'),
          TransformationWrapper(<apply>)),
         Transform:<add>(
-         TrampolineWrapper<DepthFirst>(
+         DepthFirst(
           start=0,
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
@@ -434,7 +434,7 @@ class StrTest(TestCase):
          TransformableTrampolineWrapper<Or:<>>(
           Transform:<apply>(
            Transform:<add>(
-            TrampolineWrapper<DepthFirst>(
+            DepthFirst(
              start=1,
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
@@ -445,7 +445,7 @@ class StrTest(TestCase):
            TransformableTrampolineWrapper<And:<>>(
             FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
-             TrampolineWrapper<DepthFirst>(
+             DepthFirst(
               start=0,
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
@@ -453,7 +453,7 @@ class StrTest(TestCase):
              TransformationWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
-            TrampolineWrapper<DepthFirst>(
+            DepthFirst(
              start=0,
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
@@ -466,7 +466,7 @@ class StrTest(TestCase):
          FunctionWrapper<Any:<>>('*/'),
          TransformationWrapper(<apply>)),
         Transform:<add>(
-         TrampolineWrapper<DepthFirst>(
+         DepthFirst(
           start=0,
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
@@ -476,7 +476,7 @@ class StrTest(TestCase):
          TransformableTrampolineWrapper<Or:<>>(
           Transform:<apply>(
            Transform:<add>(
-            TrampolineWrapper<DepthFirst>(
+            DepthFirst(
              start=1,
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
@@ -487,7 +487,7 @@ class StrTest(TestCase):
            TransformableTrampolineWrapper<And:<>>(
             FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
-             TrampolineWrapper<DepthFirst>(
+             DepthFirst(
               start=0,
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
@@ -495,7 +495,7 @@ class StrTest(TestCase):
              TransformationWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
-            TrampolineWrapper<DepthFirst>(
+            DepthFirst(
              start=0,
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
@@ -509,7 +509,7 @@ class StrTest(TestCase):
      FunctionWrapper<Any:<>>('+-'),
      TransformationWrapper(<apply>)),
     Transform:<add>(
-     TrampolineWrapper<DepthFirst>(
+     DepthFirst(
       start=0,
       stop=None,
       rest=FunctionWrapper<Any:<>>(' \t'),
@@ -521,7 +521,7 @@ class StrTest(TestCase):
        TransformableTrampolineWrapper<Or:<>>(
         Transform:<apply>(
          Transform:<add>(
-          TrampolineWrapper<DepthFirst>(
+          DepthFirst(
            start=1,
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
@@ -532,7 +532,7 @@ class StrTest(TestCase):
          TransformableTrampolineWrapper<And:<>>(
           FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
-           TrampolineWrapper<DepthFirst>(
+           DepthFirst(
             start=0,
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
@@ -540,7 +540,7 @@ class StrTest(TestCase):
            TransformationWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
-          TrampolineWrapper<DepthFirst>(
+          DepthFirst(
            start=0,
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
@@ -549,13 +549,13 @@ class StrTest(TestCase):
          FunctionWrapper<Literal:<>>(')'))),
        TransformationWrapper(<apply>)),
       Transform:<add>(
-       TrampolineWrapper<DepthFirst>(
+       DepthFirst(
         start=0,
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
         first=FunctionWrapper<Any:<>>(' \t')),
        TransformationWrapper(<add>)),
-      TrampolineWrapper<DepthFirst>(
+      DepthFirst(
        start=0,
        stop=None,
        rest=TransformableTrampolineWrapper<And:<>>(
@@ -563,7 +563,7 @@ class StrTest(TestCase):
          FunctionWrapper<Any:<>>('*/'),
          TransformationWrapper(<apply>)),
         Transform:<add>(
-         TrampolineWrapper<DepthFirst>(
+         DepthFirst(
           start=0,
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
@@ -573,7 +573,7 @@ class StrTest(TestCase):
          TransformableTrampolineWrapper<Or:<>>(
           Transform:<apply>(
            Transform:<add>(
-            TrampolineWrapper<DepthFirst>(
+            DepthFirst(
              start=1,
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
@@ -584,7 +584,7 @@ class StrTest(TestCase):
            TransformableTrampolineWrapper<And:<>>(
             FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
-             TrampolineWrapper<DepthFirst>(
+             DepthFirst(
               start=0,
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
@@ -592,7 +592,7 @@ class StrTest(TestCase):
              TransformationWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
-            TrampolineWrapper<DepthFirst>(
+            DepthFirst(
              start=0,
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
@@ -605,7 +605,7 @@ class StrTest(TestCase):
          FunctionWrapper<Any:<>>('*/'),
          TransformationWrapper(<apply>)),
         Transform:<add>(
-         TrampolineWrapper<DepthFirst>(
+         DepthFirst(
           start=0,
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
@@ -615,7 +615,7 @@ class StrTest(TestCase):
          TransformableTrampolineWrapper<Or:<>>(
           Transform:<apply>(
            Transform:<add>(
-            TrampolineWrapper<DepthFirst>(
+            DepthFirst(
              start=1,
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
@@ -626,7 +626,7 @@ class StrTest(TestCase):
            TransformableTrampolineWrapper<And:<>>(
             FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
-             TrampolineWrapper<DepthFirst>(
+             DepthFirst(
               start=0,
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
@@ -634,7 +634,7 @@ class StrTest(TestCase):
              TransformationWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
-            TrampolineWrapper<DepthFirst>(
+            DepthFirst(
              start=0,
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
@@ -646,246 +646,246 @@ class StrTest(TestCase):
  TransformationWrapper(<apply>)))''')
         parser = expression.get_parse()
         description = parser.matcher.tree()
-        self.assert_same(description, r"""TransformableTrampolineWrapper
- +- Transform
+        self.assert_same(description, r"""TransformableTrampolineWrapper<FullFirstMatch:<>>
+ +- Transform:<apply>
  |   +- Delayed
- |   |   `- matcher TransformableTrampolineWrapper
- |   |       +- TransformableTrampolineWrapper
- |   |       |   +- TransformableTrampolineWrapper
- |   |       |   |   +- NfaRegexp
+ |   |   `- matcher TransformableTrampolineWrapper<And:<>>
+ |   |       +- TransformableTrampolineWrapper<And:<apply>>
+ |   |       |   +- TransformableTrampolineWrapper<Or:<apply>>
+ |   |       |   |   +- NfaRegexp:<empty_adapter,apply>
  |   |       |   |   |   +- Sequence(...)
  |   |       |   |   |   `- alphabet <Unicode>
- |   |       |   |   `- TransformableTrampolineWrapper
- |   |       |   |       +- FunctionWrapper
+ |   |       |   |   `- TransformableTrampolineWrapper<And:<>>
+ |   |       |   |       +- FunctionWrapper<Literal:<>>
  |   |       |   |       |   `- '('
- |   |       |   |       +- NfaRegexp
+ |   |       |   |       +- NfaRegexp:<empty_adapter>
  |   |       |   |       |   +- Sequence(...)
  |   |       |   |       |   `- alphabet <Unicode>
- |   |       |   |       +- Transform
+ |   |       |   |       +- Transform:<apply>
  |   |       |   |       |   +- <loop>
  |   |       |   |       |   `- TransformationWrapper(<apply>)
- |   |       |   |       +- NfaRegexp
+ |   |       |   |       +- NfaRegexp:<empty_adapter>
  |   |       |   |       |   +- Sequence(...)
  |   |       |   |       |   `- alphabet <Unicode>
- |   |       |   |       `- FunctionWrapper
+ |   |       |   |       `- FunctionWrapper<Literal:<>>
  |   |       |   |           `- ')'
- |   |       |   +- NfaRegexp
+ |   |       |   +- NfaRegexp:<empty_adapter>
  |   |       |   |   +- Sequence(...)
  |   |       |   |   `- alphabet <Unicode>
- |   |       |   `- TrampolineWrapper
+ |   |       |   `- TrampolineWrapper<DepthFirst>
  |   |       |       +- start 0
  |   |       |       +- stop None
- |   |       |       +- rest TransformableTrampolineWrapper
- |   |       |       |   +- FunctionWrapper
+ |   |       |       +- rest TransformableTrampolineWrapper<And:<>>
+ |   |       |       |   +- FunctionWrapper<Any:<apply>>
  |   |       |       |   |   `- '*/'
- |   |       |       |   +- NfaRegexp
+ |   |       |       |   +- NfaRegexp:<empty_adapter>
  |   |       |       |   |   +- Sequence(...)
  |   |       |       |   |   `- alphabet <Unicode>
- |   |       |       |   `- TransformableTrampolineWrapper
- |   |       |       |       +- NfaRegexp
+ |   |       |       |   `- TransformableTrampolineWrapper<Or:<apply>>
+ |   |       |       |       +- NfaRegexp:<empty_adapter,apply>
  |   |       |       |       |   +- Sequence(...)
  |   |       |       |       |   `- alphabet <Unicode>
- |   |       |       |       `- TransformableTrampolineWrapper
- |   |       |       |           +- FunctionWrapper
+ |   |       |       |       `- TransformableTrampolineWrapper<And:<>>
+ |   |       |       |           +- FunctionWrapper<Literal:<>>
  |   |       |       |           |   `- '('
- |   |       |       |           +- NfaRegexp
+ |   |       |       |           +- NfaRegexp:<empty_adapter>
  |   |       |       |           |   +- Sequence(...)
  |   |       |       |           |   `- alphabet <Unicode>
- |   |       |       |           +- Transform
+ |   |       |       |           +- Transform:<apply>
  |   |       |       |           |   +- <loop>
  |   |       |       |           |   `- TransformationWrapper(<apply>)
- |   |       |       |           +- NfaRegexp
+ |   |       |       |           +- NfaRegexp:<empty_adapter>
  |   |       |       |           |   +- Sequence(...)
  |   |       |       |           |   `- alphabet <Unicode>
- |   |       |       |           `- FunctionWrapper
+ |   |       |       |           `- FunctionWrapper<Literal:<>>
  |   |       |       |               `- ')'
- |   |       |       `- first TransformableTrampolineWrapper
- |   |       |           +- FunctionWrapper
+ |   |       |       `- first TransformableTrampolineWrapper<And:<>>
+ |   |       |           +- FunctionWrapper<Any:<apply>>
  |   |       |           |   `- '*/'
- |   |       |           +- NfaRegexp
+ |   |       |           +- NfaRegexp:<empty_adapter>
  |   |       |           |   +- Sequence(...)
  |   |       |           |   `- alphabet <Unicode>
- |   |       |           `- TransformableTrampolineWrapper
- |   |       |               +- NfaRegexp
+ |   |       |           `- TransformableTrampolineWrapper<Or:<apply>>
+ |   |       |               +- NfaRegexp:<empty_adapter,apply>
  |   |       |               |   +- Sequence(...)
  |   |       |               |   `- alphabet <Unicode>
- |   |       |               `- TransformableTrampolineWrapper
- |   |       |                   +- FunctionWrapper
+ |   |       |               `- TransformableTrampolineWrapper<And:<>>
+ |   |       |                   +- FunctionWrapper<Literal:<>>
  |   |       |                   |   `- '('
- |   |       |                   +- NfaRegexp
+ |   |       |                   +- NfaRegexp:<empty_adapter>
  |   |       |                   |   +- Sequence(...)
  |   |       |                   |   `- alphabet <Unicode>
- |   |       |                   +- Transform
+ |   |       |                   +- Transform:<apply>
  |   |       |                   |   +- <loop>
  |   |       |                   |   `- TransformationWrapper(<apply>)
- |   |       |                   +- NfaRegexp
+ |   |       |                   +- NfaRegexp:<empty_adapter>
  |   |       |                   |   +- Sequence(...)
  |   |       |                   |   `- alphabet <Unicode>
- |   |       |                   `- FunctionWrapper
+ |   |       |                   `- FunctionWrapper<Literal:<>>
  |   |       |                       `- ')'
- |   |       +- NfaRegexp
+ |   |       +- NfaRegexp:<empty_adapter>
  |   |       |   +- Sequence(...)
  |   |       |   `- alphabet <Unicode>
- |   |       `- TrampolineWrapper
+ |   |       `- TrampolineWrapper<DepthFirst>
  |   |           +- start 0
  |   |           +- stop None
- |   |           +- rest TransformableTrampolineWrapper
- |   |           |   +- FunctionWrapper
+ |   |           +- rest TransformableTrampolineWrapper<And:<>>
+ |   |           |   +- FunctionWrapper<Any:<apply>>
  |   |           |   |   `- '+-'
- |   |           |   +- NfaRegexp
+ |   |           |   +- NfaRegexp:<empty_adapter>
  |   |           |   |   +- Sequence(...)
  |   |           |   |   `- alphabet <Unicode>
- |   |           |   `- TransformableTrampolineWrapper
- |   |           |       +- TransformableTrampolineWrapper
- |   |           |       |   +- NfaRegexp
+ |   |           |   `- TransformableTrampolineWrapper<And:<apply>>
+ |   |           |       +- TransformableTrampolineWrapper<Or:<apply>>
+ |   |           |       |   +- NfaRegexp:<empty_adapter,apply>
  |   |           |       |   |   +- Sequence(...)
  |   |           |       |   |   `- alphabet <Unicode>
- |   |           |       |   `- TransformableTrampolineWrapper
- |   |           |       |       +- FunctionWrapper
+ |   |           |       |   `- TransformableTrampolineWrapper<And:<>>
+ |   |           |       |       +- FunctionWrapper<Literal:<>>
  |   |           |       |       |   `- '('
- |   |           |       |       +- NfaRegexp
+ |   |           |       |       +- NfaRegexp:<empty_adapter>
  |   |           |       |       |   +- Sequence(...)
  |   |           |       |       |   `- alphabet <Unicode>
- |   |           |       |       +- Transform
+ |   |           |       |       +- Transform:<apply>
  |   |           |       |       |   +- <loop>
  |   |           |       |       |   `- TransformationWrapper(<apply>)
- |   |           |       |       +- NfaRegexp
+ |   |           |       |       +- NfaRegexp:<empty_adapter>
  |   |           |       |       |   +- Sequence(...)
  |   |           |       |       |   `- alphabet <Unicode>
- |   |           |       |       `- FunctionWrapper
+ |   |           |       |       `- FunctionWrapper<Literal:<>>
  |   |           |       |           `- ')'
- |   |           |       +- NfaRegexp
+ |   |           |       +- NfaRegexp:<empty_adapter>
  |   |           |       |   +- Sequence(...)
  |   |           |       |   `- alphabet <Unicode>
- |   |           |       `- TrampolineWrapper
+ |   |           |       `- TrampolineWrapper<DepthFirst>
  |   |           |           +- start 0
  |   |           |           +- stop None
- |   |           |           +- rest TransformableTrampolineWrapper
- |   |           |           |   +- FunctionWrapper
+ |   |           |           +- rest TransformableTrampolineWrapper<And:<>>
+ |   |           |           |   +- FunctionWrapper<Any:<apply>>
  |   |           |           |   |   `- '*/'
- |   |           |           |   +- NfaRegexp
+ |   |           |           |   +- NfaRegexp:<empty_adapter>
  |   |           |           |   |   +- Sequence(...)
  |   |           |           |   |   `- alphabet <Unicode>
- |   |           |           |   `- TransformableTrampolineWrapper
- |   |           |           |       +- NfaRegexp
+ |   |           |           |   `- TransformableTrampolineWrapper<Or:<apply>>
+ |   |           |           |       +- NfaRegexp:<empty_adapter,apply>
  |   |           |           |       |   +- Sequence(...)
  |   |           |           |       |   `- alphabet <Unicode>
- |   |           |           |       `- TransformableTrampolineWrapper
- |   |           |           |           +- FunctionWrapper
+ |   |           |           |       `- TransformableTrampolineWrapper<And:<>>
+ |   |           |           |           +- FunctionWrapper<Literal:<>>
  |   |           |           |           |   `- '('
- |   |           |           |           +- NfaRegexp
+ |   |           |           |           +- NfaRegexp:<empty_adapter>
  |   |           |           |           |   +- Sequence(...)
  |   |           |           |           |   `- alphabet <Unicode>
- |   |           |           |           +- Transform
+ |   |           |           |           +- Transform:<apply>
  |   |           |           |           |   +- <loop>
  |   |           |           |           |   `- TransformationWrapper(<apply>)
- |   |           |           |           +- NfaRegexp
+ |   |           |           |           +- NfaRegexp:<empty_adapter>
  |   |           |           |           |   +- Sequence(...)
  |   |           |           |           |   `- alphabet <Unicode>
- |   |           |           |           `- FunctionWrapper
+ |   |           |           |           `- FunctionWrapper<Literal:<>>
  |   |           |           |               `- ')'
- |   |           |           `- first TransformableTrampolineWrapper
- |   |           |               +- FunctionWrapper
+ |   |           |           `- first TransformableTrampolineWrapper<And:<>>
+ |   |           |               +- FunctionWrapper<Any:<apply>>
  |   |           |               |   `- '*/'
- |   |           |               +- NfaRegexp
+ |   |           |               +- NfaRegexp:<empty_adapter>
  |   |           |               |   +- Sequence(...)
  |   |           |               |   `- alphabet <Unicode>
- |   |           |               `- TransformableTrampolineWrapper
- |   |           |                   +- NfaRegexp
+ |   |           |               `- TransformableTrampolineWrapper<Or:<apply>>
+ |   |           |                   +- NfaRegexp:<empty_adapter,apply>
  |   |           |                   |   +- Sequence(...)
  |   |           |                   |   `- alphabet <Unicode>
- |   |           |                   `- TransformableTrampolineWrapper
- |   |           |                       +- FunctionWrapper
+ |   |           |                   `- TransformableTrampolineWrapper<And:<>>
+ |   |           |                       +- FunctionWrapper<Literal:<>>
  |   |           |                       |   `- '('
- |   |           |                       +- NfaRegexp
+ |   |           |                       +- NfaRegexp:<empty_adapter>
  |   |           |                       |   +- Sequence(...)
  |   |           |                       |   `- alphabet <Unicode>
- |   |           |                       +- Transform
+ |   |           |                       +- Transform:<apply>
  |   |           |                       |   +- <loop>
  |   |           |                       |   `- TransformationWrapper(<apply>)
- |   |           |                       +- NfaRegexp
+ |   |           |                       +- NfaRegexp:<empty_adapter>
  |   |           |                       |   +- Sequence(...)
  |   |           |                       |   `- alphabet <Unicode>
- |   |           |                       `- FunctionWrapper
+ |   |           |                       `- FunctionWrapper<Literal:<>>
  |   |           |                           `- ')'
- |   |           `- first TransformableTrampolineWrapper
- |   |               +- FunctionWrapper
+ |   |           `- first TransformableTrampolineWrapper<And:<>>
+ |   |               +- FunctionWrapper<Any:<apply>>
  |   |               |   `- '+-'
- |   |               +- NfaRegexp
+ |   |               +- NfaRegexp:<empty_adapter>
  |   |               |   +- Sequence(...)
  |   |               |   `- alphabet <Unicode>
- |   |               `- TransformableTrampolineWrapper
- |   |                   +- TransformableTrampolineWrapper
- |   |                   |   +- NfaRegexp
+ |   |               `- TransformableTrampolineWrapper<And:<apply>>
+ |   |                   +- TransformableTrampolineWrapper<Or:<apply>>
+ |   |                   |   +- NfaRegexp:<empty_adapter,apply>
  |   |                   |   |   +- Sequence(...)
  |   |                   |   |   `- alphabet <Unicode>
- |   |                   |   `- TransformableTrampolineWrapper
- |   |                   |       +- FunctionWrapper
+ |   |                   |   `- TransformableTrampolineWrapper<And:<>>
+ |   |                   |       +- FunctionWrapper<Literal:<>>
  |   |                   |       |   `- '('
- |   |                   |       +- NfaRegexp
+ |   |                   |       +- NfaRegexp:<empty_adapter>
  |   |                   |       |   +- Sequence(...)
  |   |                   |       |   `- alphabet <Unicode>
- |   |                   |       +- Transform
+ |   |                   |       +- Transform:<apply>
  |   |                   |       |   +- <loop>
  |   |                   |       |   `- TransformationWrapper(<apply>)
- |   |                   |       +- NfaRegexp
+ |   |                   |       +- NfaRegexp:<empty_adapter>
  |   |                   |       |   +- Sequence(...)
  |   |                   |       |   `- alphabet <Unicode>
- |   |                   |       `- FunctionWrapper
+ |   |                   |       `- FunctionWrapper<Literal:<>>
  |   |                   |           `- ')'
- |   |                   +- NfaRegexp
+ |   |                   +- NfaRegexp:<empty_adapter>
  |   |                   |   +- Sequence(...)
  |   |                   |   `- alphabet <Unicode>
- |   |                   `- TrampolineWrapper
+ |   |                   `- TrampolineWrapper<DepthFirst>
  |   |                       +- start 0
  |   |                       +- stop None
- |   |                       +- rest TransformableTrampolineWrapper
- |   |                       |   +- FunctionWrapper
+ |   |                       +- rest TransformableTrampolineWrapper<And:<>>
+ |   |                       |   +- FunctionWrapper<Any:<apply>>
  |   |                       |   |   `- '*/'
- |   |                       |   +- NfaRegexp
+ |   |                       |   +- NfaRegexp:<empty_adapter>
  |   |                       |   |   +- Sequence(...)
  |   |                       |   |   `- alphabet <Unicode>
- |   |                       |   `- TransformableTrampolineWrapper
- |   |                       |       +- NfaRegexp
+ |   |                       |   `- TransformableTrampolineWrapper<Or:<apply>>
+ |   |                       |       +- NfaRegexp:<empty_adapter,apply>
  |   |                       |       |   +- Sequence(...)
  |   |                       |       |   `- alphabet <Unicode>
- |   |                       |       `- TransformableTrampolineWrapper
- |   |                       |           +- FunctionWrapper
+ |   |                       |       `- TransformableTrampolineWrapper<And:<>>
+ |   |                       |           +- FunctionWrapper<Literal:<>>
  |   |                       |           |   `- '('
- |   |                       |           +- NfaRegexp
+ |   |                       |           +- NfaRegexp:<empty_adapter>
  |   |                       |           |   +- Sequence(...)
  |   |                       |           |   `- alphabet <Unicode>
- |   |                       |           +- Transform
+ |   |                       |           +- Transform:<apply>
  |   |                       |           |   +- <loop>
  |   |                       |           |   `- TransformationWrapper(<apply>)
- |   |                       |           +- NfaRegexp
+ |   |                       |           +- NfaRegexp:<empty_adapter>
  |   |                       |           |   +- Sequence(...)
  |   |                       |           |   `- alphabet <Unicode>
- |   |                       |           `- FunctionWrapper
+ |   |                       |           `- FunctionWrapper<Literal:<>>
  |   |                       |               `- ')'
- |   |                       `- first TransformableTrampolineWrapper
- |   |                           +- FunctionWrapper
+ |   |                       `- first TransformableTrampolineWrapper<And:<>>
+ |   |                           +- FunctionWrapper<Any:<apply>>
  |   |                           |   `- '*/'
- |   |                           +- NfaRegexp
+ |   |                           +- NfaRegexp:<empty_adapter>
  |   |                           |   +- Sequence(...)
  |   |                           |   `- alphabet <Unicode>
- |   |                           `- TransformableTrampolineWrapper
- |   |                               +- NfaRegexp
+ |   |                           `- TransformableTrampolineWrapper<Or:<apply>>
+ |   |                               +- NfaRegexp:<empty_adapter,apply>
  |   |                               |   +- Sequence(...)
  |   |                               |   `- alphabet <Unicode>
- |   |                               `- TransformableTrampolineWrapper
- |   |                                   +- FunctionWrapper
+ |   |                               `- TransformableTrampolineWrapper<And:<>>
+ |   |                                   +- FunctionWrapper<Literal:<>>
  |   |                                   |   `- '('
- |   |                                   +- NfaRegexp
+ |   |                                   +- NfaRegexp:<empty_adapter>
  |   |                                   |   +- Sequence(...)
  |   |                                   |   `- alphabet <Unicode>
- |   |                                   +- Transform
+ |   |                                   +- Transform:<apply>
  |   |                                   |   +- <loop>
  |   |                                   |   `- TransformationWrapper(<apply>)
- |   |                                   +- NfaRegexp
+ |   |                                   +- NfaRegexp:<empty_adapter>
  |   |                                   |   +- Sequence(...)
  |   |                                   |   `- alphabet <Unicode>
- |   |                                   `- FunctionWrapper
+ |   |                                   `- FunctionWrapper<Literal:<>>
  |   |                                       `- ')'
  |   `- TransformationWrapper(<apply>)
  `- True""")

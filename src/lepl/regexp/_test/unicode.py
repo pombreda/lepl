@@ -119,31 +119,31 @@ class CharactersTest(TestCase):
     def test_star(self):
         c = _test_parser('a*')
         assert label('a*') == str(c), str(c)
-        c = _test_parser('a(bc)*d')
-        assert label('a(bc)*d') == str(c), str(c)
+        c = _test_parser('a(?:bc)*d')
+        assert label('a(?:bc)*d') == str(c), str(c)
         c = _test_parser('a(bc)*d[e-g]*')
-        assert label('a(bc)*d[e-g]*') == str(c), str(c)
+        assert label('a(?:bc)*d[e-g]*') == str(c), str(c)
         c = _test_parser('a[a-cx]*')
         assert label('a[a-cx]*') == str(c), str(c)
         
     def test_option(self):
         c = _test_parser('a?')
         assert label('a?') == str(c), str(c)
-        c = _test_parser('a(bc)?d')
-        assert label('a(bc)?d') == str(c), str(c)
+        c = _test_parser('a(?:bc)?d')
+        assert label('a(?:bc)?d') == str(c), str(c)
         c = _test_parser('a(bc)?d[e-g]?')
-        assert label('a(bc)?d[e-g]?') == str(c), str(c)
+        assert label('a(?:bc)?d[e-g]?') == str(c), str(c)
         c = _test_parser('ab?c')
         assert label('ab?c') == str(c), str(c)
         
     def test_choice(self):
         #basicConfig(level=DEBUG)
         c = _test_parser('(a*|b|[c-d])')
-        assert label('(a*|b|[c-d])') == str(c), str(c)
-        c = _test_parser('a(a|b)*')
-        assert label('a(a|b)*') == str(c), str(c)
+        assert label('(?:a*|b|[c-d])') == str(c), str(c)
+        c = _test_parser('a(?:a|b)*')
+        assert label('a(?:a|b)*') == str(c), str(c)
         c = _test_parser('a([a-c]x|axb)*')
-        assert label('a([a-c]x|axb)*') == str(c), str(c)
+        assert label('a(?:[a-c]x|axb)*') == str(c), str(c)
         
     def test_bad_escape(self):
         #basicConfig(level=DEBUG)

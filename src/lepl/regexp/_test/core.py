@@ -53,8 +53,8 @@ class CompilerTest(TestCase):
         self.do_test('a*', 'aab', (['label'], 'aa', 'b'), 
                      [('label', 'aa', 'b'), ('label', 'a', 'ab'), 
                       ('label', '', 'aab')])
-        self.do_test('(a|b)', 'a', (['label'], 'a', ''), [('label', 'a', '')])
-        self.do_test('(a|b)', 'b', (['label'], 'b', ''), [('label', 'b', '')])
+        self.do_test('(?:a|b)', 'a', (['label'], 'a', ''), [('label', 'a', '')])
+        self.do_test('(?:a|b)', 'b', (['label'], 'b', ''), [('label', 'b', '')])
         
     def do_test(self, pattern, target, dfa_result, nfa_result):
         alphabet = UnicodeAlphabet.instance()
