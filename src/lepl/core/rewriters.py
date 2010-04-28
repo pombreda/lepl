@@ -38,8 +38,9 @@ from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
     BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
     Or, OrNoTrampoline
 from lepl.matchers.core import Delayed
+from lepl.matchers.derived import add
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
-    matcher_type, MatcherTypeException, matcher_map
+    matcher_type, MatcherTypeException, canonical_matcher_type
 from lepl.matchers.support import NoTrampolineTransformableWrapper
 from lepl.support.lib import lmap, format, LogMixin
 
@@ -49,11 +50,11 @@ class Rewriter(LogMixin):
     # ordering
     SET_ARGUMENTS = 10
     FULL_FIRST_MATCH = 20
-    FLATTEN = 30
-    COMPILE_REGEXP = 40
-    OPTIMIZE_OR = 50
-    LEXER = 60
-    COMPOSE_TRANSFORMS = 70
+    COMPOSE_TRANSFORMS = 30
+    FLATTEN = 40
+    COMPILE_REGEXP = 50
+    OPTIMIZE_OR = 60
+    LEXER = 70
     DIRECT_EVALUATION = 80
     MEMOIZE = 90
        
@@ -240,25 +241,47 @@ class Flatten(Rewriter):
             '''
             The flattening cloner.
             '''
-            table = matcher_map({And: '*matchers', Or: '*matchers'})
             new_args = []
             type_ = matcher_type(node, fail=False)
-            if type_ in table:
-                attribute_name = table[type_]
+            if type_ in map(canonical_matcher_type, [And, Or]):
                 for arg in old_args:
-                    if matcher_type(arg, fail=False) is type_ \
-                            and not arg.wrapper \
-                            and not node.wrapper:
-                        if attribute_name.startswith('*'):
-                            new_args.extend(getattr(arg, attribute_name[1:]))
-                        else:
-                            new_args.append(getattr(arg, attribute_name))
+                    if matcher_type(arg, fail=False) is type_ and \
+                            ((not arg.wrapper and not node.wrapper) or \
+                             (arg.wrapper.functions == node.wrapper.functions 
+                              and node.wrapper.functions == [add])):
+                        new_args.extend(arg.matchers)
                     else:
                         new_args.append(arg)
             if not new_args:
                 new_args = old_args
             return clone(node, new_args, kargs)
         return graph.postorder(DelayedClone(new_clone), Matcher)
+    
+#    def __call__(self, graph):
+#        from lepl.matchers.combine import And, Or
+#        def new_clone(node, old_args, kargs):
+#            '''
+#            The flattening cloner.
+#            '''
+#            table = matcher_map({And: '*matchers', Or: '*matchers'})
+#            new_args = []
+#            type_ = matcher_type(node, fail=False)
+#            if type_ in table:
+#                attribute_name = table[type_]
+#                for arg in old_args:
+#                    if matcher_type(arg, fail=False) is type_ \
+#                            and not arg.wrapper \
+#                            and not node.wrapper:
+#                        if attribute_name.startswith('*'):
+#                            new_args.extend(getattr(arg, attribute_name[1:]))
+#                        else:
+#                            new_args.append(getattr(arg, attribute_name))
+#                    else:
+#                        new_args.append(arg)
+#            if not new_args:
+#                new_args = old_args
+#            return clone(node, new_args, kargs)
+#        return graph.postorder(DelayedClone(new_clone), Matcher)
     
 
 class ComposeTransforms(Rewriter):

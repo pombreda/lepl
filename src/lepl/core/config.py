@@ -41,7 +41,6 @@ class ConfigurationError(Exception):
     pass
 
 
-
 class Configuration(object):
     '''
     Encapsulate various parameters that describe how the matchers are

@@ -57,7 +57,7 @@ def any_char(support, stream):
         yield ([stream[0]], stream[1:])
         stream = stream[1:]
 
-@sequence_matcher_factory
+@sequence_matcher_factory()
 def any_char_in(chars):
     def match(support, stream):
         while stream:
@@ -146,7 +146,7 @@ class DecoratorTest(TestCase):
         except TypeError:
             pass
         try:
-            @function_matcher_factory
+            @function_matcher_factory()
             def foo(a, *, b=None): return
             assert False, 'expected error'
         except TypeError:

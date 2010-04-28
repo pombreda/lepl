@@ -1,5 +1,3 @@
-from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.matchers.core import Regexp
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -54,12 +52,14 @@ None).
 
 from logging import getLogger
 
+from lepl.matchers.core import Regexp
 from lepl.matchers.matcher import Matcher, matcher_map
 from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
     TrampolineWrapper, TransformableTrampolineWrapper
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty, Option
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.interval import Character
+from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.core.rewriters import copy_standard_attributes, clone, \
     DelayedClone, Rewriter
 from lepl.support.lib import format, str, document
@@ -140,9 +140,13 @@ def single(alphabet, node, regexp, matcher_type, transform=True):
     # avoid dependency loops
     from lepl.matchers.transform import TransformationWrapper
     matcher = matcher_type(regexp, alphabet)
-    copy_standard_attributes(node, matcher, describe=False, transform=transform)
-    return matcher.compose(TransformationWrapper(empty_adapter))
-
+    matcher = matcher.compose(TransformationWrapper(empty_adapter))
+    if transform:
+        try:
+            matcher = matcher.compose(node.wrapper)
+        except AttributeError:
+            pass
+    return matcher
 
 def empty_adapter(_stream, matcher):
     '''
@@ -276,10 +280,8 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
                 # we have additional functions, so cannot take regexp higher,
                 # but use is True, so return a new matcher.
                 # hack to copy across other functions
-                original.wrapper = \
-                    TransformationWrapper().extend(wrapper.functions[1:])
+                original.wrapper = TransformationWrapper(wrapper.functions[1:])
                 log.debug('Transform: OK (final)')
-                # NEED TEST FOR THIS
                 return single(alphabet_, original, regexp, matcher_type) 
             elif len(wrapper.functions) == 1 and wrapper.functions[0] is add:
                 # exactly what we wanted!  combine and continue

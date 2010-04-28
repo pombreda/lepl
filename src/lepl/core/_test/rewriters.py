@@ -1,3 +1,4 @@
+from lepl.support.lib import identity
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -299,4 +300,10 @@ class FlattenTest(TestCase):
         assert text == "Or(Literal, Transform)", text
         result = parser('abcd')
         assert result == ['a'], result
+        
+    def test_bug(self):
+        matcher = Any()[:,...] > 'bar'
+        parser = matcher.get_parse_string()
+        result = parser('foo')
+        assert result == [('bar', 'foo')], result
         
