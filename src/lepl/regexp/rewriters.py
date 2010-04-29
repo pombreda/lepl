@@ -117,12 +117,12 @@ class RegexpContainer(object):
         
     @classmethod
     def build(cls, node, regexp, alphabet, matcher_type, use, 
-               add_reqd=False, transform=True):
+               add_reqd=False, wrapper=None):
         '''
         Construct a container or matcher.
         '''
         if use and not add_reqd:
-            matcher = single(alphabet, node, regexp, matcher_type, transform)
+            matcher = single(alphabet, node, regexp, matcher_type, wrapper)
             # if matcher is a Transformable with a Transformation other than
             # the standard empty_adapter then we must stop
             if len(matcher.wrapper.functions) > 1:
@@ -133,7 +133,7 @@ class RegexpContainer(object):
         return RegexpContainer(matcher, regexp, use, add_reqd)
         
 
-def single(alphabet, node, regexp, matcher_type, transform=True):
+def single(alphabet, node, regexp, matcher_type, wrapper=None):
     '''
     Create a matcher for the given regular expression.
     '''
@@ -141,10 +141,15 @@ def single(alphabet, node, regexp, matcher_type, transform=True):
     from lepl.matchers.transform import TransformationWrapper
     matcher = matcher_type(regexp, alphabet)
     matcher = matcher.compose(TransformationWrapper(empty_adapter))
-    if transform:
+    if wrapper is None:
+        wrapper = node.wrapper
+    elif wrapper and not isinstance(wrapper, TransformationWrapper):
+        wrapper = TransformationWrapper(wrapper) 
+    if wrapper:
         try:
-            matcher = matcher.compose(node.wrapper)
+            matcher = matcher.compose(wrapper)
         except AttributeError:
+            # TODO - shouldn't this be an error?
             pass
     return matcher
 
@@ -206,7 +211,6 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
         We can convert an Or only if all the sub-matchers have possible
         regular expressions.
         '''
-        assert isinstance(original, Transformable)
         try:
             (use, regexps) = RegexpContainer.to_regexps(use, matchers)
             regexp = Choice(alphabet_, *regexps)
@@ -223,7 +227,6 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
         regular expressions, and even then we must tag the result unless
         an add transform is present.
         '''
-        assert isinstance(original, Transformable)
         try:
             # since we're going to require add anyway, we're happy to take
             # other inputs, whether add is required or not.
@@ -236,19 +239,16 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
                     and original.wrapper.functions[0] is add:
                 # we have additional functions, so cannot take regexp higher,
                 # but use is True, so return a new matcher.
-                # hack to copy across other functions
-                original.wrapper = \
-                        TransformationWrapper(original.wrapper.functions[1:])
                 log.debug('And: OK (final)')
-                # NEED TEST FOR THIS
-                return single(alphabet_, original, regexp, matcher_type) 
+                return single(alphabet_, original, regexp, matcher_type,
+                              wrapper=original.wrapper.functions[1:]) 
             elif len(original.wrapper.functions) == 1 \
                     and original.wrapper.functions[0] is add:
                 # OR JUST ONE?
                 # lucky!  we just combine and continue
                 log.debug('And: OK')
                 return RegexpContainer.build(original, regexp, alphabet_, 
-                                             matcher_type, use, transform=False)
+                                             matcher_type, use, wrapper=False)
             elif not original.wrapper:
                 # regexp can't return multiple values, so hope that we have
                 # an add
@@ -279,15 +279,14 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
                     and wrapper.functions[0] is add:
                 # we have additional functions, so cannot take regexp higher,
                 # but use is True, so return a new matcher.
-                # hack to copy across other functions
-                original.wrapper = TransformationWrapper(wrapper.functions[1:])
                 log.debug('Transform: OK (final)')
-                return single(alphabet_, original, regexp, matcher_type) 
+                return single(alphabet_, original, regexp, matcher_type,
+                              wrapper=wrapper.functions[1:]) 
             elif len(wrapper.functions) == 1 and wrapper.functions[0] is add:
                 # exactly what we wanted!  combine and continue
                 log.debug('Transform: OK')
                 return RegexpContainer.build(original, regexp, alphabet_, 
-                                             matcher_type, use, transform=False)
+                                             matcher_type, use, wrapper=False)
             elif not wrapper:
                 # we're just forwarding the add_reqd from before here
                 log.debug('Transform: empty, add required')
@@ -327,12 +326,24 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
         '''
         This forces use=True as it is likely that a regexp is a gain.
         '''
-        assert not isinstance(original, Transformable)
-        assert stop is None or start <= stop
-        rest = first if rest is None else rest
         try:
-#            if start not in (0, 1) or stop not in (1, None):
-#                raise Unsuitable()
+            if stop is not None and start > stop:
+                raise Unsuitable
+            stop_here = False
+            add_reqd = stop is None or stop > 1
+            wrapper = False
+            try:
+                if not original.wrapper:
+                    pass
+                elif original.wrapper.functions[0] is add:
+                    add_reqd = False
+                    stop_here = len(original.wrapper.functions) > 1
+                    wrapper = original.wrapper.functions[1:]
+                else:
+                    raise Unsuitable
+            except AttributeError:
+                pass
+            rest = first if rest is None else rest
             (use, [first, rest]) = \
                     RegexpContainer.to_regexps(True, [first, rest], None)
             seq = []
@@ -355,9 +366,14 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
             if addzero:
                 regexp = Choice(alphabet_, regexp, Empty(alphabet_))
             log.debug(format('DFS: cloned {0}', regexp))
-            return RegexpContainer.build(original, regexp, alphabet_, 
-                                         matcher_type, use, 
-                                         add_reqd=stop is None or stop > 1)
+            if stop_here:
+                return single(alphabet_, original, regexp, matcher_type,
+                              wrapper=wrapper)
+            else:
+                return RegexpContainer.build(original, regexp, alphabet_, 
+                                             matcher_type, use, 
+                                             add_reqd=add_reqd,
+                                             wrapper=wrapper)
         except Unsuitable:
             log.debug(format('DFS: not rewritten: {0}', original))
             return original

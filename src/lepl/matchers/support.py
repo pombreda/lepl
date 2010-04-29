@@ -580,6 +580,7 @@ def trampoline_matcher_factory(transformable_=True,
             '\n  @trampoline_matcher_factory(transformable=True)'
             '\n  def MyMatcherFactory(...):'
             '\n      ....')
+    transformable_ = True
     def wrapper(factory):
         if transformable_:
             return make_wrapper_factory(TransformableTrampolineWrapper, 
@@ -603,6 +604,7 @@ def trampoline_matcher(transformable=True):
             '\n  @trampoline_matcher()'
             '\n  def MyMatcherFactory(...):'
             '\n      ....')
+    transformable = True
     def wrapper(matcher):
         check_matcher(matcher)
         return make_factory(trampoline_matcher_factory(transformable), matcher)
