@@ -235,30 +235,17 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
             # if we have regexp sub-expressions, join them
             regexp = Sequence(alphabet_, *regexps)
             log.debug(format('And: cloning {0}', regexp))
-            if use and len(original.wrapper.functions) > 1 \
-                    and original.wrapper.functions[0] is add:
-                # we have additional functions, so cannot take regexp higher,
-                # but use is True, so return a new matcher.
-                log.debug('And: OK (final)')
-                return single(alphabet_, original, regexp, matcher_type,
-                              wrapper=original.wrapper.functions[1:]) 
-            elif len(original.wrapper.functions) == 1 \
-                    and original.wrapper.functions[0] is add:
-                # OR JUST ONE?
-                # lucky!  we just combine and continue
-                log.debug('And: OK')
-                return RegexpContainer.build(original, regexp, alphabet_, 
-                                             matcher_type, use, wrapper=False)
-            elif not original.wrapper:
-                # regexp can't return multiple values, so hope that we have
-                # an add
-                log.debug('And: add required')
-                return RegexpContainer.build(original, regexp, alphabet_, 
-                                             matcher_type, use, add_reqd=True)
-            else:
-                log.debug(format('And: wrong transformation: {0!r}',
-                                 original.wrapper))
-                return original
+            wrapper = original.wrapper.functions
+            add_reqd = True
+            if wrapper:
+                if wrapper[0] is add:
+                    wrapper = wrapper[1:]
+                    add_reqd = False
+                else:
+                    raise Unsuitable
+            return RegexpContainer.build(original, regexp, alphabet_, 
+                                         matcher_type, use, add_reqd=add_reqd,
+                                         wrapper=wrapper)
         except Unsuitable:
             log.debug(format('And: not rewritten: {0}', original))
             return original
@@ -329,20 +316,14 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
         try:
             if stop is not None and start > stop:
                 raise Unsuitable
-            stop_here = False
             add_reqd = stop is None or stop > 1
             wrapper = False
-            try:
-                if not original.wrapper:
-                    pass
-                elif original.wrapper.functions[0] is add:
+            if original.wrapper:
+                if original.wrapper.functions[0] is add:
                     add_reqd = False
-                    stop_here = len(original.wrapper.functions) > 1
                     wrapper = original.wrapper.functions[1:]
                 else:
                     raise Unsuitable
-            except AttributeError:
-                pass
             rest = first if rest is None else rest
             (use, [first, rest]) = \
                     RegexpContainer.to_regexps(True, [first, rest], None)
@@ -366,14 +347,9 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
             if addzero:
                 regexp = Choice(alphabet_, regexp, Empty(alphabet_))
             log.debug(format('DFS: cloned {0}', regexp))
-            if stop_here:
-                return single(alphabet_, original, regexp, matcher_type,
-                              wrapper=wrapper)
-            else:
-                return RegexpContainer.build(original, regexp, alphabet_, 
-                                             matcher_type, use, 
-                                             add_reqd=add_reqd,
-                                             wrapper=wrapper)
+            return RegexpContainer.build(original, regexp, alphabet_, 
+                                         matcher_type, use, add_reqd=add_reqd,
+                                         wrapper=wrapper)
         except Unsuitable:
             log.debug(format('DFS: not rewritten: {0}', original))
             return original
