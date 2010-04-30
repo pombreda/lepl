@@ -282,26 +282,9 @@ class BaseFactoryMatcher(FactoryMatcher):
         return self.__cached_matcher
         
         
-class TrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
-    '''
-    A wrapper for sources of generators that evaluate other matchers via
-    the trampoline (ie for generators that evaluate matchers via yield).
-    
-    Typically only used for advanced matchers.
-    '''
-    
-    @tagged
-    def _match(self, stream):
-        generator = GeneratorWrapper(self._cached_matcher(self, stream), 
-                                     self, stream)
-        while True:
-            yield (yield generator)
-    
-
 class TransformableWrapper(BaseFactoryMatcher, Transformable):
     '''
-    Like `TrampolineWrapper`, but transformable.  Used as a common support
-    class for various wrappers.
+    A common support class for various wrappers.
     '''
     
     def compose(self, wrapper):
@@ -318,7 +301,7 @@ class TransformableWrapper(BaseFactoryMatcher, Transformable):
                       self.wrapper)
         
 
-class TransformableTrampolineWrapper(TransformableWrapper):
+class TrampolineWrapper(TransformableWrapper):
     '''
     A wrapper for source of generators that evaluate other matchers via
     the trampoline (ie for generators that evaluate matchers via yield).
@@ -344,7 +327,7 @@ class TransformableTrampolineWrapper(TransformableWrapper):
                     raise e
                 
     
-class NoTrampolineTransformableWrapper(TransformableWrapper):
+class NoTrampolineWrapper(TransformableWrapper):
     '''
     A wrapper for source of generators that do not evaluate other matchers via
     the trampoline.
@@ -362,7 +345,7 @@ class NoTrampolineTransformableWrapper(TransformableWrapper):
         '''
 
 
-class SequenceWrapper(NoTrampolineTransformableWrapper):
+class SequenceWrapper(NoTrampolineWrapper):
     '''
     A wrapper for simple generator factories, where the final matcher is a
     function that yields a series of matches without evaluating other matchers
@@ -387,7 +370,7 @@ class SequenceWrapper(NoTrampolineTransformableWrapper):
             yield function(stream_in, lambda: raise_(StopIteration))
  
 
-class FunctionWrapper(NoTrampolineTransformableWrapper):
+class FunctionWrapper(NoTrampolineWrapper):
     '''
     A wrapper for simple function factories, where the final matcher is a
     function that returns a single match or None.
@@ -555,7 +538,16 @@ def make_factory(maker, matcher):
     return maker(factory)
 
 
-def trampoline_matcher_factory(transformable_=True, 
+def keep_gate(gatekeeper, name):
+    if gatekeeper:
+        raise ValueError(
+            '%s must be used as a function:'
+            '\n  @%s()'
+            '\n  def MyMatcherFactory(...):'
+            '\n      ....' % (name, name))
+
+
+def trampoline_matcher_factory(gatekeeper_=None, 
                                args_=identity, kargs_=identity, **kargs):
     '''
     Decorator that allows matchers to be defined using a nested pair
@@ -574,22 +566,13 @@ def trampoline_matcher_factory(transformable_=True,
     matcher is created as part of a grammar (eg coercion).  Similarly,
    `args_` and `kargs_` are applied to varargs.
     '''
-    if not isinstance(transformable_, bool):
-        raise ValueError(
-            'trampoline_matcher_factory must be used as a function:'
-            '\n  @trampoline_matcher_factory(transformable=True)'
-            '\n  def MyMatcherFactory(...):'
-            '\n      ....')
-    transformable_ = True
+    keep_gate(gatekeeper_, 'trampoline_matcher_factory')
     def wrapper(factory):
-        if transformable_:
-            return make_wrapper_factory(TransformableTrampolineWrapper, 
-                                        factory, kargs, args_, kargs_)
-        else:
-            return make_wrapper_factory(TrampolineWrapper, factory, kargs)
+        return make_wrapper_factory(TrampolineWrapper, 
+                                    factory, kargs, args_, kargs_)
     return wrapper
 
-def trampoline_matcher(transformable=True):
+def trampoline_matcher(matcher):
     '''
     Decorator that allows matchers to be defined using a single function 
     to implement the matcher logic.
@@ -598,17 +581,8 @@ def trampoline_matcher(transformable=True):
     created by `matcher._match()` to the trampoline.  Matches should also
     be yielded. 
     '''
-    if not isinstance(transformable, bool):
-        raise ValueError(
-            'trampoline_matcher must be used as a function:'
-            '\n  @trampoline_matcher()'
-            '\n  def MyMatcherFactory(...):'
-            '\n      ....')
-    transformable = True
-    def wrapper(matcher):
-        check_matcher(matcher)
-        return make_factory(trampoline_matcher_factory(transformable), matcher)
-    return wrapper
+    check_matcher(matcher)
+    return make_factory(trampoline_matcher_factory(), matcher)
 
 def sequence_matcher_factory(gatekeeper_=None, 
                                args_=identity, kargs_=identity, **kargs):
@@ -624,12 +598,7 @@ def sequence_matcher_factory(gatekeeper_=None,
     to the corresponding arguments when the matcher is first used in a grammar
     (eg to coerce strings to `Literal` instances).
     '''
-    if gatekeeper_:
-        raise ValueError(
-            'sequence_matcher_factory must be used as a function:'
-            '\n  @sequence_matcher_factory()'
-            '\n  def MyMatcherFactory(...):'
-            '\n      ....')
+    keep_gate(gatekeeper_, 'sequence_matcher_factory')
     def wrapper(factory):
         return make_wrapper_factory(SequenceWrapper, factory, 
                                     kargs, args_, kargs_, memo=False)
@@ -659,12 +628,7 @@ def function_matcher_factory(gatekeeper_=None,
     to the corresponding arguments when the matcher is first used in a grammar
     (eg to coerce strings to `Literal` instances).
     '''
-    if gatekeeper_:
-        raise ValueError(
-            'function_matcher_factory must be used as a function:'
-            '\n  @function_matcher_factory()'
-            '\n  def MyMatcherFactory(...):'
-            '\n      ....')
+    keep_gate(gatekeeper_, 'function_matcher_factory')
     def wrapper(factory):
         return make_wrapper_factory(FunctionWrapper, factory, 
                                     kargs, args_, kargs_, memo=False)

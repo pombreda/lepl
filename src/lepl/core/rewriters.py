@@ -41,7 +41,7 @@ from lepl.matchers.core import Delayed
 from lepl.matchers.derived import add
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
     matcher_type, MatcherTypeException, canonical_matcher_type
-from lepl.matchers.support import NoTrampolineTransformableWrapper
+from lepl.matchers.support import NoTrampolineWrapper
 from lepl.support.lib import lmap, format, LogMixin
 
 
@@ -489,7 +489,7 @@ class SetArguments(Rewriter):
 class DirectEvaluation(Rewriter):
     '''
     Replace given matchers if all Matcher arguments are subclasses of
-    `NoTrampolineTransformableWrapper`
+    `NoTrampolineWrapper`
     
     `spec` is a map from original matcher type to the replacement.
     '''
@@ -514,12 +514,12 @@ class DirectEvaluation(Rewriter):
                 ok = True
                 for arg in args:
                     if isinstance(arg, Matcher) and not \
-                            isinstance(arg, NoTrampolineTransformableWrapper):
+                            isinstance(arg, NoTrampolineWrapper):
                         ok = False
                 for name in kargs:
                     arg = kargs[name]
                     if isinstance(arg, Matcher) and not \
-                            isinstance(arg, NoTrampolineTransformableWrapper):
+                            isinstance(arg, NoTrampolineWrapper):
                         ok = False
             if not ok:
                 type_ = type(node)

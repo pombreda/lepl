@@ -183,7 +183,9 @@ class BaseToken(OperatorMatcher, NoMemo):
         if isinstance(regexp, Matcher):
             rewriter = CompileRegexp(alphabet)
             rewrite = rewriter(regexp)
-            if isinstance(rewrite, BaseRegexp):
+            # one transformation is empty_adapter
+            if isinstance(rewrite, BaseRegexp) and \
+                    len(rewrite.wrapper.functions) <= 1:
                 regexp = str(rewrite.regexp)
             else:
                 raise LexerError(

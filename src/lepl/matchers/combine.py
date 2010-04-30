@@ -255,7 +255,7 @@ class _BaseCombiner(Transformable):
         return copy
     
 
-@trampoline_matcher_factory(True, args_=to(Literal))
+@trampoline_matcher_factory(args_=to(Literal))
 def And(*matchers):
     '''
     Match one or more matchers in sequence (**&**).
@@ -322,7 +322,7 @@ def AndNoTrampoline(*matchers):
     return matcher
         
         
-@trampoline_matcher_factory(True, args_=to(Literal))
+@trampoline_matcher_factory(args_=to(Literal))
 def Or(*matchers):
     '''
     Match one of the given matchers (**|**).
@@ -369,7 +369,7 @@ def OrNoTrampoline(*matchers):
     return match
 
        
-@trampoline_matcher_factory(True)
+@trampoline_matcher_factory()
 def First(*matchers):
     '''
     Match the first successful matcher only (**%**).

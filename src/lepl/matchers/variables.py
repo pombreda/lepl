@@ -41,7 +41,7 @@ from lepl.matchers.support import trampoline_matcher_factory
 from lepl.support.lib import format, str
 
 
-@trampoline_matcher_factory(False)
+@trampoline_matcher_factory()
 def NamedResult(name, matcher, out=stderr):
     
     def format_stream(stream):
