@@ -31,6 +31,8 @@
 Tests for the lepl.apps.rfc3696 module.
 '''
 
+from logging import basicConfig, DEBUG
+
 from lepl import *
 from lepl._test.base import assert_str, BaseTest
 from lepl.apps.rfc3696 import PreferredFullyQualifiedDnsName, EmailLocalPart,\
@@ -109,33 +111,35 @@ class EmailTest(BaseTest):
 class HttpUrl(BaseTest):
     
     def test_http(self):
+        #basicConfig(level=DEBUG)
         
         http = HtmlUrl() & Eos()
-        http.config.compile_to_re().no_direct_eval()
+        http.config.compile_to_re()
         print(http.get_parse().matcher.tree())
         
-        self.assert_literal(r'http://www.acooke.org', http)
-        self.assert_literal(r'http://www.acooke.org/', http)
-        self.assert_literal(r'http://www.acooke.org:80', http)
-        self.assert_literal(r'http://www.acooke.org:80/', http)
-        self.assert_literal(r'http://www.acooke.org/andrew', http)
-        self.assert_literal(r'http://www.acooke.org:80/andrew', http)
-        self.assert_literal(r'http://www.acooke.org/andrew/', http)
-        self.assert_literal(r'http://www.acooke.org:80/andrew/', http)
-        self.assert_literal(r'http://www.acooke.org/?foo', http)
-        self.assert_literal(r'http://www.acooke.org:80/?foo', http)
-        self.assert_literal(r'http://www.acooke.org/#bar', http)
-        self.assert_literal(r'http://www.acooke.org:80/#bar', http)
-        self.assert_literal(r'http://www.acooke.org/andrew?foo', http)
-        self.assert_literal(r'http://www.acooke.org:80/andrew?foo', http)
-        self.assert_literal(r'http://www.acooke.org/andrew/?foo', http)
-        self.assert_literal(r'http://www.acooke.org:80/andrew/?foo', http)
-        self.assert_literal(r'http://www.acooke.org/andrew#bar', http)
-        self.assert_literal(r'http://www.acooke.org:80/andrew#bar', http)
-        self.assert_literal(r'http://www.acooke.org/andrew/#bar', http)
-        self.assert_literal(r'http://www.acooke.org:80/andrew/#bar', http)
-        self.assert_literal(r'http://www.acooke.org/andrew?foo#bar', http)
-        self.assert_literal(r'http://www.acooke.org:80/andrew?foo#bar', http)
-        self.assert_literal(r'http://www.acooke.org/andrew/?foo#bar', http)
-        self.assert_literal(r'http://www.acooke.org:80/andrew/?foo#bar', http)
-        
+        for _i in range(10):
+            self.assert_literal(r'http://www.acooke.org', http)
+            self.assert_literal(r'http://www.acooke.org/', http)
+            self.assert_literal(r'http://www.acooke.org:80', http)
+            self.assert_literal(r'http://www.acooke.org:80/', http)
+            self.assert_literal(r'http://www.acooke.org/andrew', http)
+            self.assert_literal(r'http://www.acooke.org:80/andrew', http)
+            self.assert_literal(r'http://www.acooke.org/andrew/', http)
+            self.assert_literal(r'http://www.acooke.org:80/andrew/', http)
+            self.assert_literal(r'http://www.acooke.org/?foo', http)
+            self.assert_literal(r'http://www.acooke.org:80/?foo', http)
+            self.assert_literal(r'http://www.acooke.org/#bar', http)
+            self.assert_literal(r'http://www.acooke.org:80/#bar', http)
+            self.assert_literal(r'http://www.acooke.org/andrew?foo', http)
+            self.assert_literal(r'http://www.acooke.org:80/andrew?foo', http)
+            self.assert_literal(r'http://www.acooke.org/andrew/?foo', http)
+            self.assert_literal(r'http://www.acooke.org:80/andrew/?foo', http)
+            self.assert_literal(r'http://www.acooke.org/andrew#bar', http)
+            self.assert_literal(r'http://www.acooke.org:80/andrew#bar', http)
+            self.assert_literal(r'http://www.acooke.org/andrew/#bar', http)
+            self.assert_literal(r'http://www.acooke.org:80/andrew/#bar', http)
+            self.assert_literal(r'http://www.acooke.org/andrew?foo#bar', http)
+            self.assert_literal(r'http://www.acooke.org:80/andrew?foo#bar', http)
+            self.assert_literal(r'http://www.acooke.org/andrew/?foo#bar', http)
+            self.assert_literal(r'http://www.acooke.org:80/andrew/?foo#bar', http)
+            

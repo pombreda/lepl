@@ -50,6 +50,8 @@ class SearchExample(Example):
         
         any = Any()[:,...]
         split = any & any & Eos()
+        # TODO - can we fix the regexp to handle this?
+        split.config.no_compile_to_regexp()
         match = split.get_parse_string_all()
 
         self.examples([(lambda: list(match('****')), 

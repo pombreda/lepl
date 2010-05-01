@@ -165,6 +165,6 @@ p.print_stats(35)
     cProfile.run('natural_language()', 'nat_lang.prof')
 
 if __name__ == '__main__':
-#    time()
+    time()
 #    profile()
-    natural_language()
+#    natural_language()

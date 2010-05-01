@@ -43,7 +43,7 @@ class BaseTest(TestCase):
     
     def assert_direct(self, stream, match, target):
         match.config.no_full_first_match()
-        result = [x for (x, _s) in match.match_string(stream)]
+        result = list(match.parse_all(stream))
         assert target == result, result
     
     def assert_fail(self, stream, match):
@@ -62,7 +62,6 @@ class BaseTest(TestCase):
         
     def assert_literal(self, stream, matcher):
         self.assert_direct(stream, matcher, [[stream]])
-
         
 def assert_str(a, b):
     '''

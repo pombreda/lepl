@@ -57,10 +57,10 @@ def floats():
         line    = Trace(expr) & Eos()
     
     #basicConfig(level=DEBUG)
-    line.config.auto_memoize()
+    #line.config.compile_to_re()
     parser = line.get_parse_string()
     
-    print(repr(parser.matcher))
+    print(parser.matcher.tree())
     for _i in range(3000): # increased from 30 to 3000 for new code
         results = parser('1.2e3 + 2.3e4 * (3.4e5 + 4.5e6 - 5.6e7)')
         assert isinstance(results[0], Expression)

@@ -726,10 +726,11 @@ class NfaPattern(LogMixin):
                 stack.append((None, None, empties, match, stream))
                 # and try matching a character
                 if stream:
-                    matched = map_[stream[0]]
+                    char = stream[0]
+                    matched = map_[char]
                     if matched:
                         stack.append((None, matched, None,
-                                      match + [stream[0]], stream[1:]))
+                                      match + [char], stream[1:]))
             elif matched:
                 (dest, terminal) = matched[-1]
                 # add back reduced matched

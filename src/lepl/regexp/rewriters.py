@@ -50,12 +50,13 @@ we use a simple state machine approach using a tag (which is almost always
 None).  
 '''
 
+from functools import reduce
 from logging import getLogger
 
 from lepl.matchers.core import Regexp
 from lepl.matchers.matcher import Matcher, matcher_map
 from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
-    TrampolineWrapper
+    TrampolineWrapper, TransformableWrapper
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty, Option
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.interval import Character
@@ -227,13 +228,6 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
         regular expressions, and even then we must tag the result unless
         an add transform is present.
         '''
-        # since we're going to require add anyway, we're happy to take
-        # other inputs, whether add is required or not.
-        (use, regexps) = \
-            RegexpContainer.to_regexps(use, matchers, have_add=None)
-        # if we have regexp sub-expressions, join them
-        regexp = Sequence(alphabet_, *regexps)
-        log.debug(format('And: cloning {0}', regexp))
         wrapper = original.wrapper.functions
         add_reqd = True
         if wrapper:
@@ -242,10 +236,50 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
                 add_reqd = False
             else:
                 raise Unsuitable
-        return RegexpContainer.build(original, regexp, alphabet_, 
-                                     matcher_type, use, add_reqd=add_reqd,
-                                     wrapper=wrapper)
-    
+        try:
+            (use, regexps) = \
+                RegexpContainer.to_regexps(use, matchers, have_add=None)
+            # if we have regexp sub-expressions, join them
+            regexp = Sequence(alphabet_, *regexps)
+            log.debug(format('And: cloning {0}', regexp))
+            return RegexpContainer.build(original, regexp, alphabet_, 
+                                         matcher_type, use, add_reqd=add_reqd,
+                                         wrapper=wrapper)
+        except Unsuitable:
+            if add_reqd:
+                raise
+            def unpack(matcher):
+                original = RegexpContainer.to_matcher(matcher)
+                try:
+                    return (original, 
+                            RegexpContainer.to_regexps(use, [matcher], 
+                                                       have_add=None)[1][0])
+                except Unsuitable:
+                    return (original, None)
+            output = []
+            (regexps, originals) = ([], [])
+            for (matcher, regexp) in [unpack(matcher) for matcher in matchers]:
+                if regexp:
+                    regexps.append(regexp)
+                    originals.append(matcher)
+                else:
+                    if len(regexps) > 1:
+                        # combine regexps
+                        output.append(
+                            matcher_type(Sequence(alphabet_, *regexps), 
+                                         alphabet_))
+                    else:
+                        output.extend(originals)
+                    output.append(matcher)
+                    (regexps, originals) = ([], [])
+            if len(regexps) > 1:
+                output.append(
+                    matcher_type(Sequence(alphabet_, *regexps), alphabet_))
+            else:
+                output.extend(originals)
+            merged = And(*output)
+            return merged.compose(original.wrapper)
+        
     def clone_transform(use, original, matcher, wrapper):
         '''
         We can assume that wrapper is a transformation.  add joins into
