@@ -115,6 +115,21 @@ class _RMemo(OperatorMatcher):
             self._warn(format('Cannot memoize (cannot hash {0!r}: {1})', 
                               stream, e))
             return self.matcher._match(stream)
+        
+    def _untagged_match(self, stream):
+        '''
+        Match the stream without trampolining (we don't need to worry about
+        recursion).
+        '''
+        key = (stream, self.__state.hash)
+        if key not in self.__table:
+            self.__table[key] = ([], self.matcher._untagged_match(stream))
+        (known, generator) = self.__table[key]
+        for result in known:
+            yield result
+        for result in generator:
+            known.append(result)
+            yield result
 
 
 class RTable(LogMixin):
@@ -221,6 +236,15 @@ class _LMemo(OperatorMatcher):
         if key not in self.__caches:
             self.__caches[key] = PerStreamCache(self.matcher)
         return self.__caches[key]._match(stream)
+    
+    def _untagged_match(self, stream):
+        '''
+        Match the stream without trampolining.
+        '''
+        raise MemoException(
+                'A LMemo memoizer has been used without trampolinging.\n'
+                'This makes no sense - LMemo should only be used with '
+                'recursive loops, which require a trampoline.')
         
 
 class PerStreamCache(LogMixin):

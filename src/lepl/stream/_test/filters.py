@@ -94,8 +94,6 @@ class ExcludeTest(TestCase):
         stream1 = 'abcdef\nghijklm\n'
         (match, _stream) = next(parser(Exclude(vowel)(Any()[:]))(stream1))
         assert match[0:2] == ['b', 'c'], match[0:2]
-        (_result, stream) = next(parser(Exclude(vowel)(Any()[0]))(stream1))
-        assert stream[0] == 'a', stream[0]
         (_result, stream) = next(parser(Exclude(vowel)(Any()))(stream1))
         assert stream[0] == 'c', stream[0]
         (_result, stream) = next(parser(Exclude(vowel)(Any()[5]))(stream1))

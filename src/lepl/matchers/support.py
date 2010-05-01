@@ -327,7 +327,22 @@ class TrampolineWrapper(TransformableWrapper):
                     raise e
                 
     
-class NoTrampolineWrapper(TransformableWrapper):
+class NoTrampoline(object):
+    '''
+    A matcher that does not require the trampoline. 
+    '''
+    
+    #@abstractmethod
+    def _untagged_match(self, stream):
+        '''
+        This should work like `_match()`, but without any tagged wrapper.
+        
+        It would be nice if both could be generated dynamically, but
+        cut + paste appears to be faster, and this is an optimisation. 
+        '''
+
+
+class NoTrampolineWrapper(NoTrampoline, TransformableWrapper):
     '''
     A wrapper for source of generators that do not evaluate other matchers via
     the trampoline.
@@ -585,7 +600,7 @@ def trampoline_matcher(matcher):
     return make_factory(trampoline_matcher_factory(), matcher)
 
 def sequence_matcher_factory(gatekeeper_=None, 
-                               args_=identity, kargs_=identity, **kargs):
+                             args_=identity, kargs_=identity, **kargs):
     '''
     Decorator that allows matchers to be defined using a nested pair
     of functions.  The outer function acts like a constructor; the inner
@@ -601,7 +616,7 @@ def sequence_matcher_factory(gatekeeper_=None,
     keep_gate(gatekeeper_, 'sequence_matcher_factory')
     def wrapper(factory):
         return make_wrapper_factory(SequenceWrapper, factory, 
-                                    kargs, args_, kargs_, memo=False)
+                                    kargs, args_, kargs_)
     return wrapper
 
 def sequence_matcher(matcher):
@@ -631,7 +646,7 @@ def function_matcher_factory(gatekeeper_=None,
     keep_gate(gatekeeper_, 'function_matcher_factory')
     def wrapper(factory):
         return make_wrapper_factory(FunctionWrapper, factory, 
-                                    kargs, args_, kargs_, memo=False)
+                                    kargs, args_, kargs_)
     return wrapper
 
 def function_matcher(matcher):

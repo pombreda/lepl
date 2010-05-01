@@ -34,7 +34,7 @@ These are used internally for rewriting; users typically use `Regexp` which
 calls the standard Python regular expression library (and so is faster).
 '''
 
-from lepl.matchers.support import Transformable
+from lepl.matchers.support import Transformable, NoTrampoline
 from lepl.matchers.transform import raise_
 from lepl.core.parser import tagged
 from lepl.regexp.core import Compiler
@@ -43,7 +43,7 @@ from lepl.regexp.unicode import UnicodeAlphabet
 
 # pylint: disable-msg=R0904, R0901, E1101
 # lepl convention
-class BaseRegexp(Transformable):
+class BaseRegexp(NoTrampoline, Transformable):
     '''
     Common code for all matchers.
     '''
@@ -63,6 +63,15 @@ class BaseRegexp(Transformable):
         copy.wrapper = self.wrapper.compose(wrapper)
         return copy
     
+    @tagged
+    def _match(self, stream_in):
+        '''
+        Delegate to the implementation.
+        '''
+        for result in self._untagged_match(stream_in):
+            yield result
+            
+
 class NfaRegexp(BaseRegexp):
     '''
     A matcher for NFA-based regular expressions.  This will yield alternative
@@ -88,8 +97,7 @@ class NfaRegexp(BaseRegexp):
                     Compiler.single(self.alphabet, self.regexp).nfa().match
         return self.__cached_matcher
 
-    @tagged
-    def _match(self, stream_in):
+    def _untagged_match(self, stream_in):
         '''
         Actually do the work of matching.
         '''
@@ -100,7 +108,6 @@ class NfaRegexp(BaseRegexp):
                 if function else ([match], stream_out)
         while True:
             yield function(stream_in, lambda: raise_(StopIteration))
-
         
 
 class DfaRegexp(BaseRegexp):
@@ -125,8 +132,7 @@ class DfaRegexp(BaseRegexp):
                     Compiler.single(self.alphabet, self.regexp).dfa().match
         return self.__cached_matcher
 
-    @tagged
-    def _match(self, stream_in):
+    def _untagged_match(self, stream_in):
         '''
         Actually do the work of matching.
         '''

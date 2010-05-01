@@ -49,17 +49,16 @@ http = HtmlUrl() & Eos()
 #http.config.clear().compile_to_dfa()
 # (3352) 0.23
 #http.config.clear().compile_to_re()
-# (1233) 0.56 
+# (1288) 0.50 
 #http.config
 
 # (1640) 0.26
 #http.config.compile_to_re().no_direct_eval()
 # (1695) 0.21
-http.config.compile_to_re()
+#http.config.compile_to_re()
 
-tree = http.get_parse().matcher.tree()
-print(tree)
-print(len(tree))
+# (2775) 0.05
+http.config.compile_to_re().auto_memoize(full=True)
 
 
 def assert_literal(text):
@@ -96,24 +95,28 @@ def time():
     from timeit import Timer
     t = Timer("task()", "from __main__ import task")
     print(min(t.repeat(repeat=10, number=10)))
-    
 
 def profile():
     '''
-import pstats
-p=pstats.Stats('task.prof')
-p.strip_dirs()
-p.sort_stats('cumulative')
-p.sort_stats('time')
-p.print_stats(35)
+    import pstats
+    p=pstats.Stats('task.prof')
+    p.strip_dirs()
+    p.sort_stats('cumulative')
+    p.sort_stats('time')
+    p.print_stats(35)
     '''
     import cProfile
     cProfile.run('task()', 'task.prof')
 
 if __name__ == '__main__':
+
+    tree = http.get_parse().matcher.tree()
+    print(tree)
+    print(len(tree))
+    
     time()
 #    profile()
 #    floats()
 
-    
+
     
