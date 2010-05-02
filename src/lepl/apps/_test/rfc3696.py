@@ -34,16 +34,16 @@ Tests for the lepl.apps.rfc3696 module.
 from logging import basicConfig, DEBUG
 
 from lepl import *
-from lepl._test.base import assert_str, BaseTest
-from lepl.apps.rfc3696 import PreferredFullyQualifiedDnsName, EmailLocalPart,\
-    Email, HtmlUrl
+from lepl._test.base import BaseTest
+from lepl.apps.rfc3696 import _PreferredFullyQualifiedDnsName, _EmailLocalPart,\
+    _Email, _HttpUrl, MailToUrl, HttpUrl, Email
 
 
 class DnsNameTest(BaseTest):
     
-    def test_dns_name(self):
+    def test_dns_name_matcher(self):
         
-        name = PreferredFullyQualifiedDnsName() & Eos()
+        name = _PreferredFullyQualifiedDnsName() & Eos()
         
         self.assert_fail('', name)
         self.assert_fail('a', name)
@@ -63,11 +63,11 @@ class DnsNameTest(BaseTest):
         self.assert_literal('EXAMPLE.COM', name)
 
 
-class EmailLocalPartTest(BaseTest):
+class _EmailLocalPartTest(BaseTest):
     
-    def test_email_local_part(self):
+    def test_email_local_part_matcher(self):
         
-        local = EmailLocalPart() & Eos()
+        local = _EmailLocalPart() & Eos()
         
         self.assert_fail('', local)
         self.assert_fail('""', local)
@@ -89,11 +89,11 @@ class EmailLocalPartTest(BaseTest):
         self.assert_literal(r'_somename', local)
 
 
-class EmailTest(BaseTest):
+class _EmailTest(BaseTest):
     
-    def test_email(self):
+    def test_email_matcher(self):
         
-        email = Email() & Eos()
+        email = _Email() & Eos()
         
         self.assert_literal(r'andrew@acooke.org', email)
         self.assert_literal(r'Abc\@def@example.com', email)
@@ -106,16 +106,40 @@ class EmailTest(BaseTest):
         self.assert_literal(r'$A12345@example.com', email)
         self.assert_literal(r'!def!xyz%abc@example.com', email)
         self.assert_literal(r'_somename@example.com', email)
+                
+    def test_email(self):
         
+        email = Email()
+        
+        assert email(r'andrew@acooke.org',)
+        assert email(r'Abc\@def@example.com',)
+        assert email(r'Fred\ Bloggs@example.com',)
+        assert email(r'Joe.\\Blow@example.com',)
+        assert email(r'"Abc@def"@example.com',)
+        assert email(r'"Fred Bloggs"@example.com',)
+        assert email(r'user+mailbox@example.com',)
+        assert email(r'customer/department=shipping@example.com',)
+        assert email(r'$A12345@example.com',)
+        assert email(r'!def!xyz%abc@example.com',)
+        assert email(r'_somename@example.com',)
+        
+        addresses = ['', 'a', '12.34', 'a.b.', ' a.b', 'a.b ', 'a._.', 
+                     'a.-b.c', 'a.b-.c', 'a.b.c.123']
+        names = ['', '""', '"unmatched', 'unmatched"', ' ', 'a b']
+        for name in names:
+            for address in addresses:
+                bad = name + '@' + address
+                assert not email(bad), bad
+                
 
-class HttpUrl(BaseTest):
+class HttpUrlTest(BaseTest):
     
-    def test_http(self):
+    def test_http_matcher(self):
         #basicConfig(level=DEBUG)
         
-        http = HtmlUrl() & Eos()
+        http = _HttpUrl() & Eos()
         http.config.compile_to_re()
-        print(http.get_parse().matcher.tree())
+        #print(http.get_parse().matcher.tree())
         
         self.assert_literal(r'http://www.acooke.org', http)
         self.assert_literal(r'http://www.acooke.org/', http)
@@ -141,4 +165,54 @@ class HttpUrl(BaseTest):
         self.assert_literal(r'http://www.acooke.org:80/andrew?foo#bar', http)
         self.assert_literal(r'http://www.acooke.org/andrew/?foo#bar', http)
         self.assert_literal(r'http://www.acooke.org:80/andrew/?foo#bar', http)
-            
+        
+    def test_http(self):
+        
+        httpUrl = HttpUrl()
+        
+        assert httpUrl(r'http://www.acooke.org')
+        assert httpUrl(r'http://www.acooke.org/')
+        assert httpUrl(r'http://www.acooke.org:80')
+        assert httpUrl(r'http://www.acooke.org:80/')
+        assert httpUrl(r'http://www.acooke.org/andrew')
+        assert httpUrl(r'http://www.acooke.org:80/andrew')
+        assert httpUrl(r'http://www.acooke.org/andrew/')
+        assert httpUrl(r'http://www.acooke.org:80/andrew/')
+        assert httpUrl(r'http://www.acooke.org/?foo')
+        assert httpUrl(r'http://www.acooke.org:80/?foo')
+        assert httpUrl(r'http://www.acooke.org/#bar')
+        assert httpUrl(r'http://www.acooke.org:80/#bar')
+        assert httpUrl(r'http://www.acooke.org/andrew?foo')
+        assert httpUrl(r'http://www.acooke.org:80/andrew?foo')
+        assert httpUrl(r'http://www.acooke.org/andrew/?foo')
+        assert httpUrl(r'http://www.acooke.org:80/andrew/?foo')
+        assert httpUrl(r'http://www.acooke.org/andrew#bar')
+        assert httpUrl(r'http://www.acooke.org:80/andrew#bar')
+        assert httpUrl(r'http://www.acooke.org/andrew/#bar')
+        assert httpUrl(r'http://www.acooke.org:80/andrew/#bar')
+        assert httpUrl(r'http://www.acooke.org/andrew?foo#bar')
+        assert httpUrl(r'http://www.acooke.org:80/andrew?foo#bar')
+        assert httpUrl(r'http://www.acooke.org/andrew/?foo#bar')
+        assert httpUrl(r'http://www.acooke.org:80/andrew/?foo#bar')
+        
+        # http://base.google.com/support/bin/answer.py?hl=en&answer=25230
+        
+        assert not httpUrl(r'http://www.example.com/space here.html')
+        assert not httpUrl(r'http://www.example.com\main.html')
+        assert not httpUrl(r'/main.html')
+        assert not httpUrl(r'www.example.com/main.html')
+        assert not httpUrl(r'http:www.example.com/main.html')
+
+
+class MailToUrlTest(BaseTest):
+    
+    def test_mail_to_url(self):
+        
+        mailToUrl = MailToUrl()
+        
+        assert mailToUrl('mailto:joe@example.com')
+        assert mailToUrl('mailto:user%2Bmailbox@example.com')
+        assert mailToUrl('mailto:customer%2Fdepartment=shipping@example.com')
+        assert mailToUrl('mailto:$A12345@example.com')
+        assert mailToUrl('mailto:!def!xyz%25abc@example.com')
+        assert mailToUrl('mailto:_somename@example.com')

@@ -1,4 +1,3 @@
-from lepl.matchers.transform import PostCondition
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -43,15 +42,43 @@ from string import ascii_letters, digits, printable, whitespace
 from lepl import *
 
 
-def LimitLength(matcher, length):
+def _guarantee_bool(function):
+    '''
+    A decorator that guarantees a true/false response.
+    '''
+    def wrapper(*args, **kargs):
+        try:
+            return bool(function(*args, **kargs))
+        except:
+            return False
+    return wrapper
+
+
+def _matcher_to_validator(factory):
+    '''
+    Generate a validator based on the given matcher factory.
+    '''
+    matcher = factory()
+    matcher.config.compile_to_re()
+    
+    @_guarantee_bool
+    def validator(value):
+        for char in '\n\r':
+            assert char not in value
+        return matcher.parse(value)
+    
+    return validator
+        
+
+def _LimitLength(matcher, length):
     return PostCondition(matcher, lambda results: len(results[0]) <= length)
 
-def RejectRegexp(matcher, pattern):
+def _RejectRegexp(matcher, pattern):
     regexp = compile_(pattern)
     return PostCondition(matcher, lambda results: not regexp.match(results[0]))
 
 
-def PreferredFullyQualifiedDnsName():
+def _PreferredFullyQualifiedDnsName():
     '''
     Any characters, or combination of bits (as octets), are permitted in
     DNS names.  However, there is a preferred form that is required by
@@ -97,15 +124,15 @@ def PreferredFullyQualifiedDnsName():
     ld = Any(ascii_letters + digits)
     ldh = ld | '-'
     label = ld + Optional(ldh[:] + ld)
-    short_label = LimitLength(label, 63)
-    tld = RejectRegexp(short_label, r'[0-9]+')
+    short_label = _LimitLength(label, 63)
+    tld = _RejectRegexp(short_label, r'[0-9]+')
     any_name = short_label[1:, r'\.', ...] + '.' + tld
-    non_numeric = RejectRegexp(any_name, r'[0-9\.]+')
-    short_name = LimitLength(non_numeric, 255)
+    non_numeric = _RejectRegexp(any_name, r'[0-9\.]+')
+    short_name = _LimitLength(non_numeric, 255)
     return short_name
 
 
-def EmailLocalPart():
+def _EmailLocalPart():
     '''
     Contemporary email addresses consist of a "local part" separated from
     a "domain part" (a fully-qualified domain name) by an at-sign ("@").
@@ -157,17 +184,25 @@ def EmailLocalPart():
                        | Any(unescaped_chars))[1:, ...]
     quoted_string = '"' + Any(quotable_chars)[1:, ...] + '"'
     local_part = quoted_string | unquoted_string
-    no_extreme_dot = RejectRegexp(local_part, r'"?\..*\."?')
-    no_double_dot = RejectRegexp(no_extreme_dot, r'.*\."*\..*')
-    short_local_part = LimitLength(no_double_dot, 64)
+    no_extreme_dot = _RejectRegexp(local_part, r'"?\..*\."?')
+    no_double_dot = _RejectRegexp(no_extreme_dot, r'.*\."*\..*')
+    short_local_part = _LimitLength(no_double_dot, 64)
     return short_local_part
 
 
+def _Email():
+    return _EmailLocalPart() + '@' + _PreferredFullyQualifiedDnsName()
+
+
 def Email():
-    return EmailLocalPart() + '@' + PreferredFullyQualifiedDnsName()
+    '''
+    Returns a validator for emails, according to RFC3696, which returns True
+    if the email is valid, and False otherwise.
+    '''
+    return _matcher_to_validator(_Email)
+    
 
-
-def HtmlUrl():
+def _HttpUrl():
     '''
     The following characters are reserved in many URIs -- they must be
     used for either their URI-intended purpose or must be encoded.  Some
@@ -231,7 +266,7 @@ def HtmlUrl():
     path_string = ('%' + Any(hex)[2, ...] | Any(path_chars))[1:, ...]
     other_string = ('%' + Any(hex)[2, ...] | Any(other_chars))[1:, ...]
     
-    url = 'http://' + PreferredFullyQualifiedDnsName() + \
+    url = 'http://' + _PreferredFullyQualifiedDnsName() + \
             Optional(':' + Any(digits)[1:, ...]) + \
             Optional('/' + 
                      Optional(path_string[1:, '/', ...] + Optional('/')) +
@@ -239,3 +274,61 @@ def HtmlUrl():
                      Optional('#' + other_string))
 
     return url
+
+
+def HttpUrl():
+    '''
+    Returns a validator for HTTP URLs, according to RFC3696, which returns True
+    if the email is valid, and False otherwise.
+    '''
+    return _matcher_to_validator(_HttpUrl)
+
+
+def MailToUrl():
+    '''
+    The following characters may appear in MAILTO URLs only with the
+    specific defined meanings given.  If they appear in an email address
+    (i.e., for some other purpose), they must be encoded:
+    
+       :       The colon in "mailto:"
+    
+       < > # " % { } | \ ^ ~ `
+    
+       These characters are "unsafe" in any URL, and must always be
+       encoded.
+    
+    The following characters must also be encoded if they appear in a
+    MAILTO URL
+    
+       ? & =
+          Used to delimit headers and their values when these are encoded
+          into URLs.
+    ----------
+    The RFC isn't that great a guide here.  The best approach, I think, is
+    to check the URL for "forbidden" characters, then decode it, and finally
+    validate the decoded email.  So we implement the validator directly (ie
+    this is not a matcher).
+    '''
+    
+    MAIL_TO = 'mailto:'
+    encoded_token = compile_('(%.{0,2})')
+    email = _Email()
+    email.config.compile_to_re()
+    
+    @_guarantee_bool
+    def validator(url):
+        assert url.startswith(MAIL_TO)
+        url = url[len(MAIL_TO):]
+        for char in r':<>#"{}|\^~`':
+            assert char not in url
+        def unpack(chunk):
+            if chunk.startswith('%'):
+                assert len(chunk) == 3
+                return chr(int(chunk[1:], 16))
+            else:
+                return chunk
+        url = ''.join(unpack(chunk) for chunk in encoded_token.split(url))
+        assert url
+        return email.parse(url)
+
+    return validator

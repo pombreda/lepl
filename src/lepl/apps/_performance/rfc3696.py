@@ -32,10 +32,10 @@ Performance related tests.
 '''
 
 from lepl import Eos
-from lepl.apps.rfc3696 import HtmlUrl
+from lepl.apps.rfc3696 import _HttpUrl
 
 
-http = HtmlUrl() & Eos()
+http = _HttpUrl() & Eos()
 
 # (89041) 1.17
 #http.config.clear()
