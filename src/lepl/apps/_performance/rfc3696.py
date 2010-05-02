@@ -37,28 +37,31 @@ from lepl.apps.rfc3696 import _HttpUrl
 
 http = _HttpUrl() & Eos()
 
-# (89041) 1.17
+# values are before/after adding IP addresses
+# value in pares is char count; other values are timing in secs
+
+# (89041/115471) 1.17/1.20
 #http.config.clear()
 
-# (89441) 1.02
+# (89441/115951) 1.02/1.08
 #http.config.clear().direct_eval()
 
-# (3089) 0.48
+# (3089/7835) 0.48/0.53
 #http.config.clear().compile_to_nfa()
-# (3089) 0.45
+# (3089/7835) 0.45/0.51
 #http.config.clear().compile_to_dfa()
-# (3352) 0.23
+# (3352/10148) 0.23/0.29
 #http.config.clear().compile_to_re()
-# (1288) 0.50 
+# (1288/3693) 0.50/0.53 
 #http.config
 
-# (1640) 0.26
+# (1640/6287) 0.26/0.29
 #http.config.compile_to_re().no_direct_eval()
-# (1695) 0.21
-#http.config.compile_to_re()
+# (1695/6422) 0.21/0.24
+http.config.compile_to_re()
 
-# (2775) 0.05
-http.config.compile_to_re().auto_memoize(full=True)
+# (2775/9906) 0.05/0.05
+#http.config.compile_to_re().auto_memoize(full=True)
 
 
 def assert_literal(text):

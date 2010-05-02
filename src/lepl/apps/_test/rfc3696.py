@@ -196,7 +196,6 @@ class HttpUrlTest(BaseTest):
         assert httpUrl(r'http://www.acooke.org:80/andrew/?foo#bar')
         
         # http://base.google.com/support/bin/answer.py?hl=en&answer=25230
-        
         assert not httpUrl(r'http://www.example.com/space here.html')
         assert not httpUrl(r'http://www.example.com\main.html')
         assert not httpUrl(r'/main.html')

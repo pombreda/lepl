@@ -41,6 +41,9 @@ from string import ascii_letters, digits, printable, whitespace
 
 from lepl import *
 
+    
+_HEX = digits + 'abcdef' + 'ABCDEF'
+
 
 def _guarantee_bool(function):
     '''
@@ -76,6 +79,12 @@ def _LimitLength(matcher, length):
 def _RejectRegexp(matcher, pattern):
     regexp = compile_(pattern)
     return PostCondition(matcher, lambda results: not regexp.match(results[0]))
+
+def _LimitIntValue(matcher, max):
+    return PostCondition(matcher, lambda results: int(results[0]) <= max)
+
+def _LimitCount(matcher, char, max):
+    return PostCondition(matcher, lambda results: results[0].count(char) <= max) 
 
 
 def _PreferredFullyQualifiedDnsName():
@@ -130,6 +139,84 @@ def _PreferredFullyQualifiedDnsName():
     non_numeric = _RejectRegexp(any_name, r'[0-9\.]+')
     short_name = _LimitLength(non_numeric, 255)
     return short_name
+
+
+def _IpV4Address():
+    '''
+    RFC 3696 doesn't say much about these; RFC 2396 doesn't mention limits
+    on numerical values, but it must be 255.
+    '''
+    octet = _LimitIntValue(Any(digits)[1:, ...], 255)
+    address = octet[4, '.', ...]
+    return address
+
+
+def _Ipv6Address():
+    '''
+    Again, RFC 3696 says little; RFC 2373 (addresses) and 2732 (URLs) have 
+    much more information.
+    
+    1. The preferred form is x:x:x:x:x:x:x:x, where the 'x's are the
+    hexadecimal values of the eight 16-bit pieces of the address.
+    Examples:
+    
+       FEDC:BA98:7654:3210:FEDC:BA98:7654:3210
+    
+       1080:0:0:0:8:800:200C:417A
+    
+    Note that it is not necessary to write the leading zeros in an
+    individual field, but there must be at least one numeral in every
+    field (except for the case described in 2.).
+
+    2. Due to some methods of allocating certain styles of IPv6
+    addresses, it will be common for addresses to contain long strings
+    of zero bits.  In order to make writing addresses containing zero
+    bits easier a special syntax is available to compress the zeros.
+    The use of "::" indicates multiple groups of 16-bits of zeros.
+    The "::" can only appear once in an address.  The "::" can also be
+    used to compress the leading and/or trailing zeros in an address.
+    
+    For example the following addresses:
+    
+       1080:0:0:0:8:800:200C:417A  a unicast address
+       FF01:0:0:0:0:0:0:101        a multicast address
+       0:0:0:0:0:0:0:1             the loopback address
+       0:0:0:0:0:0:0:0             the unspecified addresses
+    
+    may be represented as:
+    
+       1080::8:800:200C:417A       a unicast address
+       FF01::101                   a multicast address
+       ::1                         the loopback address
+       ::                          the unspecified addresses
+
+    3. An alternative form that is sometimes more convenient when dealing
+    with a mixed environment of IPv4 and IPv6 nodes is
+    x:x:x:x:x:x:d.d.d.d, where the 'x's are the hexadecimal values of
+    the six high-order 16-bit pieces of the address, and the 'd's are
+    the decimal values of the four low-order 8-bit pieces of the
+    address (standard IPv4 representation).  Examples:
+    
+       0:0:0:0:0:0:13.1.68.3
+    
+       0:0:0:0:0:FFFF:129.144.52.38
+    
+    or in compressed form:
+    
+       ::13.1.68.3
+    
+       ::FFFF:129.144.52.38
+    '''
+    piece = Any(_HEX)[1:4, ...]
+    preferred = piece[8, ':', ...]
+    # the maximum number of ':' would be for 7 pieces plus '::', which is
+    # 1:2:3:4:5:6:7:: (ie 8).
+    compact = _LimitCount(piece[:7, ':', ...] + '::' + piece[:7, ':', ...],
+                          ':', 8)
+    alternate = (piece[6, ':', ...] | 
+                 _LimitCount(piece[:5, ':', ...] + '::' + piece[:5, ':', ...],
+                             ':', 6)) + _IpV4Address()
+    return (preferred | compact | alternate)
 
 
 def _EmailLocalPart():
@@ -262,11 +349,13 @@ def _HttpUrl():
     path_chars = ''.join(set(printable).difference(set(whitespace))
                                        .difference('/;?<>#%'))
     other_chars = path_chars + '/'
-    hex = digits + 'abcdef' + 'ABCDEF'
-    path_string = ('%' + Any(hex)[2, ...] | Any(path_chars))[1:, ...]
-    other_string = ('%' + Any(hex)[2, ...] | Any(other_chars))[1:, ...]
+    path_string = ('%' + Any(_HEX)[2, ...] | Any(path_chars))[1:, ...]
+    other_string = ('%' + Any(_HEX)[2, ...] | Any(other_chars))[1:, ...]
     
-    url = 'http://' + _PreferredFullyQualifiedDnsName() + \
+    host = _IpV4Address() | ('[' + _Ipv6Address() + ']') | \
+            _PreferredFullyQualifiedDnsName()
+    
+    url = 'http://' + host + \
             Optional(':' + Any(digits)[1:, ...]) + \
             Optional('/' + 
                      Optional(path_string[1:, '/', ...] + Optional('/')) +
