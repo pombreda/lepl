@@ -47,3 +47,4 @@ import lepl.matchers._test.operators
 import lepl.matchers._test.separators
 import lepl.matchers._test.support
 import lepl.matchers._test.transform
+import lepl.matchers._test.variables

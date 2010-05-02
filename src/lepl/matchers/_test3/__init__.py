@@ -32,3 +32,5 @@
 Tests for the lepl.matchers package
 (Python 3 only - not include in final release)
 '''
+
+import lepl.matchers._test3.support

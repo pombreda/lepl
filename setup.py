@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='LEPL',
-      version='4.1',
+      version='4.2',
       description='A Parser Library for Python 2.6+/3+: Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -16,9 +16,10 @@ The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
 `Release 4.0 <http://www.acooke.org/lepl/lepl4.0.html>`_ is a major revision,
-giving a library that's simpler, faster, and easier to use.  Release 4.1
-fixes an issue with coercing strings to Literal matchers (a serious, but
-apparently rare bug).
+giving a library that's simpler, faster, and easier to use.  Release 4.2 adds
+`validation of email and HTTP URLs (RFC 3696)
+<http://www.acooke.org/lepl/rfc3696.html>`_, as well as improved compilation
+to regexps (used internally to improve speed).
 
 Features
 --------
@@ -65,6 +66,7 @@ Features
       author_email='andrew@acooke.org',
       url='http://www.acooke.org/lepl/',
       packages=['lepl',          'lepl._test',          'lepl._example',
+                'lepl.apps',     'lepl.apps._test',
                 'lepl.bin',      'lepl.bin._test',      'lepl.bin._example',
                 'lepl.contrib',
                 'lepl.core',     'lepl.core._test',

@@ -46,7 +46,7 @@ import lepl._test.bug_stalled_parser
 import lepl._test.magus
 
 # Number of tests if running in IDE with Python 3,
-TOTAL = 394
+TOTAL = 408
 
 def all():
     '''
@@ -91,8 +91,9 @@ def ls_all_tests():
     All test modules.
     '''
     for root in ls_module(lepl, 
-                          ['bin', 'contrib', 'core', 'lexer', 'matchers', 
-                           'offside', 'regexp', 'stream', 'support'], 
+                          ['apps', 'bin', 'contrib', 'core', 'lexer', 
+                           'matchers', 'offside', 'regexp', 'stream', 
+                           'support'], 
                           True):
         for child in ls_module(root, ['_test', '_example']):
             for module in ls_module(child):

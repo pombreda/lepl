@@ -111,7 +111,7 @@ Debug Actions
   <api/redirect.html#lepl.core.config.ConfigBuilder.remove_all_monitors>`_ or
   `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
 
-.. index:: flatten(), no_flatten(), compile_to_dfa(), compile_to_nfa(), no_compile_to_regexp(), optimize_or(), no_optimize_or(), direct_eval(), no_direct_eval(), compose_transforms(), no_compose_transforms(), auto_memoize(), left_memoize(), right_memoize(), no_memoize(), manage()
+.. index:: flatten(), no_flatten(), compile_to_dfa(), compile_to_nfa(), compile_to_re(), no_compile_to_regexp(), optimize_or(), no_optimize_or(), direct_eval(), no_direct_eval(), compose_transforms(), no_compose_transforms(), auto_memoize(), left_memoize(), right_memoize(), no_memoize(), manage()
     
 Optimisation Actions
 ~~~~~~~~~~~~~~~~~~~~
@@ -136,6 +136,8 @@ Optimisation Actions
 <api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_dfa>`_
 `.config.compile_to_nfa()
 <api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_nfa>`_
+`.config.compile_to_re()
+<api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_re>`_
 `.config.no_compile_to_regexp()
 <api/redirect.html#lepl.core.config.ConfigBuilder.no_compile_to_regexp>`_
 
@@ -146,7 +148,17 @@ Optimisation Actions
   include recursive loops or transformations.  So rewriting of regular
   expressions is typically restricted to those parts of the parser that
   recognise individual words.
-  
+
+  .. warning::
+
+     `.config.compile_to_re()
+     <api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_re>`_ uses
+     the Python `re` library, which cannot handle streams of data in the same
+     way as Lepl.  This means that matching using that library is restricted
+     to single lines of text, and this option should only be used in very
+     special circumstances (typically when the input is guaranteed to be only
+     a single line of text).
+
 `.config.optimize_or()
 <api/redirect.html#lepl.core.config.ConfigBuilder.optimize_or>`_
 `.config.no_optimize_or()

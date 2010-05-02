@@ -30,7 +30,8 @@ Introduction
 
 The offside rule support (indentation sensitive) is built on top of the
 line--aware features, so I will describe those first.  To enable line--aware
-features, use `.config.default_line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_.
+features, use `.config.default_line_aware()
+<api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_.
 
 
 .. index:: SOL(), EOL(), LineAwareConfiguration()
@@ -43,9 +44,10 @@ characters, or tokens.  A stream in Lepl is very simple; there's (almost) no
 concept of `lines`.
 
 For line--aware parsing, however, we need this information, so we must add
-extra markers to the stream.  Using `.config.default_line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_ modifies
-the parser so that additional markers are added to the streams to indicate the
-start and end of lines.
+extra markers to the stream.  Using `.config.default_line_aware()
+<api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_
+modifies the parser so that additional markers are added to the streams to
+indicate the start and end of lines.
 
 The markers can be matched with `SOL()
 <api/redirect.html#lepl.offside.matchers.SOL>`_ and `EOL()

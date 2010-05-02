@@ -19,6 +19,7 @@ Contents
    features
    intro
    manual
+   applications
    support
    faq
    

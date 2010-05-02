@@ -62,7 +62,7 @@ from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.interval import Character
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.core.rewriters import clone, DelayedClone, Rewriter
-from lepl.support.lib import format, str
+from lepl.support.lib import format, str, basestring
 
 
 class RegexpContainer(object):
@@ -149,13 +149,11 @@ def single(alphabet, node, regexp, matcher_type, wrapper=None):
     if wrapper is None:
         wrapper = node.wrapper
     elif wrapper and not isinstance(wrapper, TransformationWrapper):
-        wrapper = TransformationWrapper(wrapper) 
+        wrapper = TransformationWrapper(wrapper)
     if wrapper:
-        try:
-            matcher = matcher.compose(wrapper)
-        except AttributeError:
-            # TODO - shouldn't this be an error?
-            pass
+        wrapper.functions = \
+                list(filter(lambda x: x != empty_adapter, wrapper.functions))
+        matcher = matcher.compose(wrapper)
     return matcher
 
 def empty_adapter(_stream, matcher):
@@ -317,10 +315,11 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
         Regexps values are also easy.
         '''
         try:
-            regexp = Sequence(alphabet_, *alphabet_.parse(pattern))
+            if isinstance(pattern, basestring):
+                pattern = Sequence(alphabet_, *alphabet_.parse(pattern))
         except TypeError:
             raise Unsuitable
-        return RegexpContainer.build(original, regexp, alphabet_, 
+        return RegexpContainer.build(original, pattern, alphabet_, 
                                      matcher_type, use)
     
     def clone_dfs(use, original, first, start, stop, rest=None):

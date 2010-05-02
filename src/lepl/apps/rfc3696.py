@@ -74,21 +74,38 @@ def _matcher_to_validator(factory):
         
 
 def _LimitLength(matcher, length):
+    '''
+    Reject a match if it exceeds a certain length.
+    '''
     return PostCondition(matcher, lambda results: len(results[0]) <= length)
 
 def _RejectRegexp(matcher, pattern):
+    '''
+    Reject a match if it matches a (ie some other) regular expression 
+    '''
     regexp = compile_(pattern)
     return PostCondition(matcher, lambda results: not regexp.match(results[0]))
 
 def _LimitIntValue(matcher, max):
+    '''
+    Reject a match if the value exceeds some value.
+    '''
     return PostCondition(matcher, lambda results: int(results[0]) <= max)
 
 def _LimitCount(matcher, char, max):
+    '''
+    Reject a match if the number of times a particular character occurs exceeds
+    some value.
+    '''
     return PostCondition(matcher, lambda results: results[0].count(char) <= max) 
 
 
 def _PreferredFullyQualifiedDnsName():
     '''
+    A matcher for DNS names.
+    
+    RFC 3696:
+    
     Any characters, or combination of bits (as octets), are permitted in
     DNS names.  However, there is a preferred form that is required by
     most applications.  This preferred form has been the only one
@@ -107,6 +124,7 @@ def _PreferredFullyQualifiedDnsName():
     that essentially requires that top-level domain names not be all-
     numeric.
     [...]
+    
     Most internet applications that reference other hosts or systems
     assume they will be supplied with "fully-qualified" domain names,
     i.e., ones that include all of the labels leading to the root,
@@ -116,6 +134,7 @@ def _PreferredFullyQualifiedDnsName():
     applications and to locate resources generally must contain at least
     one period (".") character.
     [...]
+    
     [...]It is
     likely that the better strategy has now become to make the "at least
     one period" test, to verify LDH conformance (including verification
@@ -123,6 +142,7 @@ def _PreferredFullyQualifiedDnsName():
     DNS to determine domain name validity, rather than trying to maintain
     a local list of valid TLD names.
     [...]
+    
     A DNS label may be no more than 63 octets long.  This is in the form
     actually stored; if a non-ASCII label is converted to encoded
     "punycode" form (see Section 5), the length of that form may restrict
@@ -143,6 +163,8 @@ def _PreferredFullyQualifiedDnsName():
 
 def _IpV4Address():
     '''
+    A matcher for IPv4 addresses.
+    
     RFC 3696 doesn't say much about these; RFC 2396 doesn't mention limits
     on numerical values, but it must be 255.
     '''
@@ -153,8 +175,10 @@ def _IpV4Address():
 
 def _Ipv6Address():
     '''
+    A matcher for IPv6 addresses.
+    
     Again, RFC 3696 says little; RFC 2373 (addresses) and 2732 (URLs) have 
-    much more information.
+    much more information:
     
     1. The preferred form is x:x:x:x:x:x:x:x, where the 'x's are the
     hexadecimal values of the eight 16-bit pieces of the address.
@@ -209,18 +233,38 @@ def _Ipv6Address():
     '''
     piece = Any(_HEX)[1:4, ...]
     preferred = piece[8, ':', ...]
-    # the maximum number of ':' would be for 7 pieces plus '::', which is
-    # 1:2:3:4:5:6:7:: (ie 8).
-    compact = _LimitCount(piece[:7, ':', ...] + '::' + piece[:7, ':', ...],
-                          ':', 8)
-    alternate = (piece[6, ':', ...] | 
-                 _LimitCount(piece[:5, ':', ...] + '::' + piece[:5, ':', ...],
-                             ':', 6)) + _IpV4Address()
+    
+    # we need to be careful about how we match the compressed form, since we
+    # have a limit on the total number of pieces.  the simplest approach seems
+    # to be to limit the final number of ':' characters, but we must take
+    # care to treat the cases where '::' is at one end separately:
+    #  1::2:3:4:5:6:7 has 7 ':' characters
+    #  1:2:3:4:5:6:7:: has 8 ':' characters
+    compact = Or(_LimitCount(piece[1:6, ':', ...] + '::' + piece[1:6, ':', ...],
+                             ':', 7),
+                 '::' + piece[1:7, ':', ...],
+                 piece[1:7, ':', ...] + '::',
+                 '::')
+    
+    # similar to above, but we need to also be careful about the separator
+    # between the v6 and v4 parts
+    alternate = \
+        Or(piece[6, ':', ...] + ':',
+           _LimitCount(piece[1:4, ':', ...] + '::' + piece[1:4, ':', ...],
+                       ':', 5),
+           '::' + piece[1:5, ':', ...] + ':',
+           piece[1:5, ':', ...] + '::',
+           '::') + _IpV4Address()
+           
     return (preferred | compact | alternate)
 
 
 def _EmailLocalPart():
     '''
+    A matcher for the local part ("username") of an email address.
+    
+    RFC 3696:
+    
     Contemporary email addresses consist of a "local part" separated from
     a "domain part" (a fully-qualified domain name) by an at-sign ("@").
     The syntax of the domain part corresponds to that in the previous
@@ -278,12 +322,15 @@ def _EmailLocalPart():
 
 
 def _Email():
+    '''
+    A matcher for email addresses.
+    '''
     return _EmailLocalPart() + '@' + _PreferredFullyQualifiedDnsName()
 
 
 def Email():
     '''
-    Returns a validator for emails, according to RFC3696, which returns True
+    Generate a validator for emails, according to RFC3696, which returns True
     if the email is valid, and False otherwise.
     '''
     return _matcher_to_validator(_Email)
@@ -291,6 +338,10 @@ def Email():
 
 def _HttpUrl():
     '''
+    A matcher for HTTP URLs.
+    
+    RFC 3696:
+    
     The following characters are reserved in many URIs -- they must be
     used for either their URI-intended purpose or must be encoded.  Some
     particular schemes may either broaden or relax these restrictions
@@ -367,14 +418,19 @@ def _HttpUrl():
 
 def HttpUrl():
     '''
-    Returns a validator for HTTP URLs, according to RFC3696, which returns True
-    if the email is valid, and False otherwise.
+    Generate a validator for HTTP URLs, according to RFC3696, which returns 
+    True if the email is valid, and False otherwise.
     '''
     return _matcher_to_validator(_HttpUrl)
 
 
 def MailToUrl():
     '''
+    Generate a validator for email addresses, according to RFC3696, which 
+    returns True if the URL is valid, and False otherwise.
+    
+    RFC 3696:
+    
     The following characters may appear in MAILTO URLs only with the
     specific defined meanings given.  If they appear in an email address
     (i.e., for some other purpose), they must be encoded:

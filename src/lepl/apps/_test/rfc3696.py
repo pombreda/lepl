@@ -36,7 +36,7 @@ from logging import basicConfig, DEBUG
 from lepl import *
 from lepl._test.base import BaseTest
 from lepl.apps.rfc3696 import _PreferredFullyQualifiedDnsName, _EmailLocalPart,\
-    _Email, _HttpUrl, MailToUrl, HttpUrl, Email
+    _Email, _HttpUrl, MailToUrl, HttpUrl, Email, _IpV4Address, _Ipv6Address
 
 
 class DnsNameTest(BaseTest):
@@ -61,6 +61,55 @@ class DnsNameTest(BaseTest):
         self.assert_literal('a.b--c.d', name)
         self.assert_literal('acooke.org', name)
         self.assert_literal('EXAMPLE.COM', name)
+        
+        
+class IpV4AddressTest(BaseTest):
+    
+    def test_ipv4_address(self):
+        
+        address = _IpV4Address() & Eos()
+        
+        self.assert_literal('1.2.3.4', address)
+        self.assert_literal('255.255.255.255', address)
+        self.assert_literal('0.0.0.0', address)
+        
+        self.assert_fail('1.2.3', address)
+        self.assert_fail('1.2.3.', address)
+        self.assert_fail('1.256.3.4', address)
+        self.assert_fail('1.a.3.4', address)
+        self.assert_fail('1.-1.3.4', address)
+        
+        
+class IpV6AddressTest(BaseTest):
+    
+    def test_ipv6_address(self):
+        
+        address = _Ipv6Address() & Eos()
+        
+        self.assert_literal('FEDC:BA98:7654:3210:FEDC:BA98:7654:3210', address)
+        self.assert_literal('1080:0:0:0:8:800:200C:417A', address)
+        self.assert_literal('FF01:0:0:0:0:0:0:101', address)
+        self.assert_literal('0:0:0:0:0:0:0:1', address)
+        self.assert_literal('0:0:0:0:0:0:0:0', address)
+        self.assert_literal('1080::8:800:200C:417A', address)
+        self.assert_literal('FF01::101', address)
+        self.assert_literal('::1', address)
+        self.assert_literal('::', address)
+        self.assert_literal('0:0:0:0:0:0:13.1.68.3', address)
+        self.assert_literal('0:0:0:0:0:FFFF:129.144.52.38', address)
+        self.assert_literal('::13.1.68.3', address)
+        self.assert_literal('::FFFF:129.144.52.38', address)
+        
+        self.assert_fail('1:2:3:4:5:6:7', address)
+        self.assert_fail('1:2:3:4:5:6:7:8:9', address)
+        self.assert_fail('::1:2:3:4:5:6:7:8', address)
+        self.assert_fail(':1::2:3:4:5:6:7:8', address)
+        self.assert_fail(':1:2:3:4:5:6:7:8::', address)
+        self.assert_fail('1:2:3:4:5:1.2.3.4', address)
+        self.assert_fail('1:2:3:4:5.6.7:1.2.3.4', address)
+        self.assert_fail('::1:2:3:4:5:6:1.2.3.4', address)
+        self.assert_fail('1::2:3:4:5:6:1.2.3.4', address)
+        self.assert_fail('1:2:3:4:5:6::1.2.3.4', address)
 
 
 class _EmailLocalPartTest(BaseTest):
@@ -166,6 +215,9 @@ class HttpUrlTest(BaseTest):
         self.assert_literal(r'http://www.acooke.org/andrew/?foo#bar', http)
         self.assert_literal(r'http://www.acooke.org:80/andrew/?foo#bar', http)
         
+        self.assert_fail(r'http://www.acooke.org:80/andrew/?foo#bar ', http)
+        self.assert_fail(r'http://www.acooke.org:80/andrew/?foo#bar baz', http)
+        
     def test_http(self):
         
         httpUrl = HttpUrl()
@@ -194,6 +246,8 @@ class HttpUrlTest(BaseTest):
         assert httpUrl(r'http://www.acooke.org:80/andrew?foo#bar')
         assert httpUrl(r'http://www.acooke.org/andrew/?foo#bar')
         assert httpUrl(r'http://www.acooke.org:80/andrew/?foo#bar')
+        assert httpUrl(r'http://1.2.3.4:80/andrew/?foo#bar')
+        assert httpUrl(r'http://[1:2:3:4:5:6:7:8]:80/andrew/?foo#bar')
         
         # http://base.google.com/support/bin/answer.py?hl=en&answer=25230
         assert not httpUrl(r'http://www.example.com/space here.html')

@@ -90,8 +90,18 @@ Date        Version  Description
 2009-04-20  4.0.3    Small bugfix for kargs of user-defined matchers; dropped Python 3 specific test.
 ----------  -------  -----------
 2009-04-24  4.1      Major bugfix related to coercion of matcher arguments.
+----------  -------  -----------
+2009-05-02  4.2      RFC 3696 validation; better regexp rewriting.
 ==========  =======  ===========
 
+
+.. release_4_2:
+
+4.2
+---
+
+Includes a new module for validating email addresses and URLs according to
+:ref:`rfc3696`.  Rewriting to regular expressions has also been improved.
 
 .. release_4_0:
 
