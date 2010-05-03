@@ -154,9 +154,9 @@ def _PreferredFullyQualifiedDnsName():
     ldh = ld | '-'
     label = ld + Optional(ldh[:] + ld)
     short_label = _LimitLength(label, 63)
-    tld = _RejectRegexp(short_label, r'[0-9]+')
+    tld = _RejectRegexp(short_label, r'^[0-9]+$')
     any_name = short_label[1:, r'\.', ...] + '.' + tld
-    non_numeric = _RejectRegexp(any_name, r'[0-9\.]+')
+    non_numeric = _RejectRegexp(any_name, r'^[0-9\.]+$')
     short_name = _LimitLength(non_numeric, 255)
     return short_name
 

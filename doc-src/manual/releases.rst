@@ -92,13 +92,15 @@ Date        Version  Description
 2009-04-24  4.1      Major bugfix related to coercion of matcher arguments.
 ----------  -------  -----------
 2009-05-02  4.2      RFC 3696 validation; better regexp rewriting.
+----------  -------  -----------
+2009-05-02  4.2.1    Small bugfix for top level DNS names that start with a digit.
 ==========  =======  ===========
 
 
 .. release_4_2:
 
-4.2
----
+4.2, 4.2.1
+----------
 
 Includes a new module for validating email addresses and URLs according to
 :ref:`rfc3696`.  Rewriting to regular expressions has also been improved.

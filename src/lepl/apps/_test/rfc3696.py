@@ -61,6 +61,8 @@ class DnsNameTest(BaseTest):
         self.assert_literal('a.b--c.d', name)
         self.assert_literal('acooke.org', name)
         self.assert_literal('EXAMPLE.COM', name)
+        self.assert_literal('example.a23', name)
+        self.assert_literal('example.12c', name)
         
         
 class IpV4AddressTest(BaseTest):
