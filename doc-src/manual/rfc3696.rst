@@ -6,7 +6,7 @@ RFC 3696 - Email and URL Validation
 ===================================
 
 `RFC 3696 <http://www.faqs.org/rfcs/rfc3696.html>`_ contains advice on how
-best to validate email addresses, HHTP URLs, and "mailto" URLs.  I strongly
+best to validate email addresses, HTTP URLs, and "mailto" URLs.  I strongly
 recommend that you read that document before using this library --- it will
 help you better understand the motivation for these functions.  In particular,
 they do not test whether arguments are *exactly compliant* with the
@@ -23,9 +23,8 @@ factories that return a ``validator`` for each of the three types.
 .. function:: validator(value : string) -> bool
    :noindex:
 
-   The public functions listed below all return a validator.  This is a
-   function which, when given a string, returns either True (in which case the
-   value is consistent wth RFC 3696) or False (inconsistent).
+   A function which, given a string, returns either ``True`` (in which case
+   the value is consistent wth RFC 3696) or ``False`` (inconsistent).
 
 The package *implementation* also contains various matchers for IP addresses,
 etc.  The names of these functions are prefixed by an underscore, and there is
