@@ -32,9 +32,16 @@ Some intermediate classes that support parsers for objects that can be
 converted to strings using str().
 '''
 
+from lepl.matchers.support import coerce_
 from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
     Option, _Choice, _Character
 from lepl.support.lib import format, str, LogMixin
+
+
+ILLEGAL = '{}[]*()-?.+\\^$|'
+'''
+Characters that must be escaped.
+'''
 
 
 class StrParser(LogMixin):
@@ -141,16 +148,16 @@ class StrParser(LogMixin):
         '''
         
         # Avoid dependency loops
-        from lepl.matchers.derived import Drop, Eos, AnyBut, Upper, Optional
+        from lepl.matchers.derived import Drop, Eos, AnyBut, Upper
         from lepl.matchers.core import Any, Lookahead, Literal, Delayed
-        from lepl.matchers.error import make_error, raise_error
+        from lepl.matchers.error import make_error
         from lepl.support.node import node_throw
     
         # these two definitions enforce the conditions above, providing only
         # special characters appear as literals in the grammar
-        escaped  = Drop(self.alphabet.escape) + Any(self.alphabet.escaped)
+        escaped  = Drop(self.alphabet.escape) + self.alphabet.escaped
         raw      = ~Lookahead(self.alphabet.escape) + \
-                        AnyBut(self.alphabet.escaped)
+                        AnyBut(self.alphabet.illegal)
         
         single   = escaped | raw
         
@@ -205,11 +212,13 @@ class StrAlphabet(Alphabet):
     
     # pylint: disable-msg=E1002
     # (pylint bug?  this chains back to a new style abc)
-    def __init__(self, min_, max_, escape='\\', escaped='{}[]*()-?.+\\^$|',
-                 parser_factory=make_str_parser):
+    def __init__(self, min_, max_, escape='\\', escaped=ILLEGAL,
+                 illegal=ILLEGAL, parser_factory=make_str_parser):
+        from lepl.matchers.core import Any
         super(StrAlphabet, self).__init__(min_, max_)
         self.__escape = escape
-        self.__escaped = escaped
+        self.__escaped = coerce_(escaped, Any)
+        self.__illegal = illegal
         self._parser = parser_factory(self)
     
     @property
@@ -220,11 +229,15 @@ class StrAlphabet(Alphabet):
     def escaped(self):
         return self.__escaped
     
+    @property
+    def illegal(self):
+        return self.__illegal
+    
     def _escape_char(self, char):
         '''
         Escape a character if necessary.
         '''
-        if self.escape is not None and str(char) in self.escaped:
+        if self.escape is not None and str(char) in self.illegal:
             return self.escape + str(char)
         else:
             return str(char)

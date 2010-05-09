@@ -35,9 +35,11 @@ from logging import getLogger
 
 # this is an attempt to make 2.6 and 3 function equally with strings
 try:
+    chr = unichr
     str = unicode
     basestring = basestring
 except NameError:
+    chr = chr
     str = str
     basestring = str
 

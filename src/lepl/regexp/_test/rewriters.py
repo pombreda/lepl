@@ -350,3 +350,18 @@ class RepeatBugTest(TestCase):
         parser = matcher.get_parse_all()
         results = list(parser('abc'))
         assert results == [['ab']], results
+
+
+class WordBugTest(TestCase):
+    '''
+    Used to not be possible to compile a raw Word() 
+    '''
+    
+    def test_word(self):
+        rx = Word()
+        
+        rx.config.compile_to_nfa().no_full_first_match()
+        matcher = rx.get_match_null()
+        results = list(matcher('aa'))
+        assert results == [(['aa'], ''), (['a'], 'a')], results
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()

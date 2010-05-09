@@ -33,8 +33,8 @@ A regexp implementation for unicode strings.
 
 from sys import maxunicode
 
-from lepl.regexp.str import StrAlphabet
-
+from lepl.regexp.str import StrAlphabet, ILLEGAL
+from lepl.support.lib import chr
 
 class UnicodeAlphabet(StrAlphabet):
     '''
@@ -46,33 +46,29 @@ class UnicodeAlphabet(StrAlphabet):
     # pylint: disable-msg=E1002
     # (pylint bug?  this chains back to a new style abc)
     def __init__(self):
-        max_ = self.chr(maxunicode)
-        super(UnicodeAlphabet, self).__init__(self.chr(0), max_)
+        from lepl.matchers.core import Any
+        from lepl.matchers.derived import Drop
+        max_ = chr(maxunicode)
+        def n_hex(char, n):
+            return Drop(Any(char)) + Any('0123456789abcdefABCDEF')[n,...] >> \
+                        (lambda x: chr(int(x, 16)))
+        simple = Any(ILLEGAL)
+        escaped = simple | n_hex('x', 2) | n_hex('u', 4) | n_hex('U', 8)
+        super(UnicodeAlphabet, self).__init__(chr(0), max_, escaped=escaped)
         
-    @staticmethod
-    def chr(code):
-        '''
-        Convert to a character.
-        '''
-        try:
-            # Python 2.6
-            return unichr(code)
-        except NameError:
-            return chr(code)
-    
     def before(self, char):
         '''
         Must return the character before char in the alphabet.  Never called 
         with min (assuming input data are in range).
         ''' 
-        return self.chr(ord(char)-1)
+        return chr(ord(char)-1)
     
     def after(self, char): 
         '''
         Must return the character after c in the alphabet.  Never called with
         max (assuming input data are in range).
         ''' 
-        return self.chr(ord(char)+1)
+        return chr(ord(char)+1)
     
     @classmethod
     def instance(cls):

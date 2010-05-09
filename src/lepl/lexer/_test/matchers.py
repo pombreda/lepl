@@ -40,7 +40,7 @@ from operator import add, sub, truediv, mul
 from unittest import TestCase
 
 from lepl import Token, Literal, Float, LexerError, Node, Delayed, Any, Eos, \
-    UnsignedFloat, Or, RuntimeLexerError
+    UnsignedFloat, Or, RuntimeLexerError, Word
 from lepl.support.lib import str
 
 
@@ -64,6 +64,12 @@ class RegexpCompilationTest(TestCase):
         token = Token(Literal('abc'))
         token.compile()
         assert token.regexp == 'abc', repr(token.regexp)
+        
+    def test_words(self):
+        '''
+        This used to be impossible.
+        '''
+        assert Token(Word())[:].parse('foo bar') == ['foo', 'bar']
         
     def test_float(self):
         '''
@@ -341,4 +347,3 @@ class ErrorTest(TestCase):
             parser(' a')
         except RuntimeLexerError as error:
             assert str26(error) == "No discard for ' a'.", str26(error)
-            
