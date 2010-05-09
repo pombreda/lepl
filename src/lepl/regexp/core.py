@@ -226,8 +226,9 @@ class Sequence(Node):
     def __init__(self, alphabet, *children):
         assert isinstance(alphabet, Alphabet)
         # pylint: disable-msg=W0142
-        for child in children:
-            assert isinstance(child, RegexpGraphNode), type(child)
+        # have to disable this assertion to embed error nodes
+#        for child in children:
+#            assert isinstance(child, RegexpGraphNode), type(child)
         super(Sequence, self).__init__(*children)
         self.alphabet = alphabet
         self.state = None

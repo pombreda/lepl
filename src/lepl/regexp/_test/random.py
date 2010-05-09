@@ -67,20 +67,20 @@ def random_sequence(depth_left, alphabet):
 def random_option(depth_left, alphabet):
     subexpr = random_expression(depth_left, alphabet)
     if len(subexpr) > 1:
-        return format('({0})?', subexpr)
+        return format('(?:{0})?', subexpr)
     else:
         return subexpr + '?'
 
 def random_repeat(depth_left, alphabet):
     subexpr = random_expression(depth_left, alphabet)
     if len(subexpr) > 1:
-        return format('({0})*', subexpr)
+        return format('(?:{0})*', subexpr)
     else:
         return subexpr + '*'
 
 def random_choice(depth_left, alphabet):
-    return format('({0})', '|'.join(random_expression(depth_left, alphabet)
-                                    for _ in range(randint(1, 3))))
+    return format('(?:{0})', '|'.join(random_expression(depth_left, alphabet)
+                                      for _ in range(randint(1, 3))))
 
 def random_range(_depth_left, alphabet):
     def random_chars():

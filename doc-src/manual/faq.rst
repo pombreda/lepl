@@ -8,6 +8,8 @@ Frequently Asked Questions
  * :ref:`Why isn't my parser matching the full expression? <faq_lefttoright>`
  * :ref:`How do I parse an entire file? <faq_file>`
  * :ref:`When I change from > to >> my function isn't called <faq_precedence>`
+ * :ref:`Why does using Or() stop a full match from happening? <faq_or_bug>`
+ * :ref:`How do I choose between > and >> ? <faq_apply>`
 
 
 .. _faq_regexp:
@@ -17,15 +19,16 @@ Why do I get "Cannot parse regexp..."?
 
 *Why do I get "Cannot parse regexp '(' using ..." for Token('(')?*
 
-String arguments to `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ are treated as regular expressions.  Because
-``(`` has a special meaning in a regular expression you must escape it,
-like this: ``Token('\\(')``, or like this: ``Token(r'\(')``
+String arguments to `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_
+are treated as regular expressions.  Because ``(`` has a special meaning in a
+regular expression you must escape it, like this: ``Token('\\(')``, or like
+this: ``Token(r'\(')``
 
 
-.. _faq_lefttoright1:
+.. _faq_lefttoright:
 
-Why isn't my parser matching the full expression? (1)
------------------------------------------------------
+Why isn't my parser matching the full expression?
+-------------------------------------------------
 
 *In the code below*::
 
@@ -48,8 +51,6 @@ with `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_::
     expression = word | (word & lpar & word & rpar)
     complete = expression & Eos()   
 
-
-.. _faq_lefttoright2:
 
 .. _faq_file:
 
@@ -90,3 +91,197 @@ results).  Since the list is empty, the function ``invert`` is not called.
 To fix this place the entire expression in parentheses::
 
     inverted = (Drop('[^') & interval[1:] & Drop(']')) >> invert      
+
+
+.. _faq_or_bug:
+
+Why does using Or() stop a full match from happening?
+-----------------------------------------------------
+
+*Why does this code*::
+
+    >>> matcher = Letter() | "ab"
+    >>> matcher.parse("a")
+    ['a']
+    >>> matcher.parse("ab")
+    lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'b'
+
+*fail?*
+
+OK, so this behaviour does seem odd, I agree.  But it's a logical consequence
+of some other design decisions, all of which seem individually reasonable.  So
+I'll explain those and, hopefully, that will shed some light on this.
+
+#. `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ is not greedy
+
+   Repetition in Lepl is greedy by default, but Or() isn't.  If it can match
+   the first option, it will do so.  But it will try other possibilities if
+   that fails, or if all possible parses are requested.
+
+   This is because there is no way to predict which option will return "most".
+   So if `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ were greedy it
+   would need to evaluate every possible option, measure them, and return the
+   "largest".  This could require a lot of memory and time.  Instead, it
+   returns the first match it finds, but then supports backtracking.
+
+   (Note that this is similar to regular expressions, except that Perl regexps
+   are even worse - they don't backtrack).
+
+   If that's not what you want there is, fortunately, a solution.  Please read
+   on...
+
+#. Lepl doesn't force you to match the entire input
+
+   The "fundamental" parsing operation in Lepl is `matcher.match()
+   <api/redirect.html#lepl.core.config.ParserMixin.match>`_.  This returns a
+   list of pairs.  Each pair combines a result list with `the remaining
+   input`.  There's nothing in that that says you need to match the entire
+   input, because that's not the most general behaviour.
+
+   For example::
+
+    >>> matcher = Letter() | "ab"
+    >>> matcher.config.no_full_first_match()
+    >>> matcher.match("ab")
+    <generator object trampoline at 0x916640>
+    >>> list(matcher.match("ab"))
+    [([u'a'], u'ab'[1:]), (['ab'], ''[0:])]
+
+   Here you can see, in detail, what Lepl is doing.  And, given the non-greedy
+   behaviour of `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ described
+   above, it `does` make sense.
+
+   If you `want` to match the whole input you can add `Eos()
+   <api/redirect.html#lepl.matchers.derived.Eos>`_ to the matcher::
+
+    >>> matcher = (Letter() | "ab") & Eos()
+    >>> list(matcher.match("ab"))
+    [(['ab'], ''[0:])]
+
+   (`matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_
+   and `matcher.parse_all()
+   <api/redirect.html#lepl.core.config.ParserMixin.parse_all>`_ are just
+   wrappers around that, which return less of the information).
+
+#. The "full first match" implementation is very simple
+
+   The code for the "full first match" error checks the remaining stream (see
+   above) for the first match.  If it is not empty, then the error is raised.
+
+   Why didn't I make this also add `Eos()
+   <api/redirect.html#lepl.matchers.derived.Eos>`_?  I could have done so, and
+   then I wouldn't have had to write this explanation, and you wouldn't have
+   had to read it, but it would have meant adding more "magic" to the
+   configuration system.  I did start to do this, but then I realised that
+   `disabling the error could change the parse results`.  And I think that's a
+   worse problem than the current (imperfect) compromise.
+
+In summary then, this is a consequence of the way `Or()
+<api/redirect.html#lepl.matchers.combine.Or>`_ works (for efficiency), and
+the way that Lepl does backtracking (for generality) and a desire to keep the
+"full first match" code separate from "what the parser matches".  I know it's
+a little confusing at first, but I don't see a better solution.  Sorry!
+
+
+.. _faq_apply:
+
+How do I choose between > and >> ?
+----------------------------------
+
+To understand > and >> it's important that you first see that Lepl is designed
+to work with lists of results.  For example, ``Any()``, the most basic
+matcher, places the matched character in a list::
+
+  >>> Any().parse('a')
+  ['a']
+
+Similarly, repetition returns a list of results::
+
+  >>> Any()[:].parse('ab')
+  ['a', 'b']
+
+as does `And() <api/redirect.html#lepl.matchers.combine.And>`_::
+
+  >>> (Any() & Any()).parse('ab')
+  ['a', 'b']
+
+Even when the strings are joined, they are still in a list::
+
+  >>> Any()[:, ...].parse('ab')
+  ['ab']
+  >>> (Any() + Any()).parse('ab')
+  ['ab']
+
+You may not want this -- you may want a parser that returns a single object
+rather than a list.  The best way to return a single value is to wrap the
+*final* parser in an extra function that returns the first value from the
+list::
+
+  >>> def my_letter_parser(text):
+  ...   return Any().parse(text)[0]
+  ...
+  >>> my_letter_parser('a')
+  'a'
+
+What does all this have to do with > and >>?  It's important because *you want
+the result of applying a function to return a list*.
+
+Given that, there are two obvious ways to apply functions to results.
+
+The first way is to take a a list of results (which might contain just one
+value -- that's completely normal and OK) and **apply the function to each
+result in the list**.  This is what ``>>`` does::
+
+  >>> def add_x(text):
+  ...   return text + 'x'
+  ...
+  >>> ( Any() >> add_x ).parse('a')
+  ['ax']
+  >>> ( (Any() & Any()) >> add_x ).parse('ab')
+  ['ax', 'bx']
+
+This (``>>``) is useful when:
+
+* You want to modify each result, one at a time, all in the same way.
+
+* You know that your matcher gives a *single* result, and you want to change
+  it.  For example,
+
+  * Translating escaped characters.
+
+  * Converting a number in a string to a float value.
+
+Usually, if you are calling a *function* (``float()``, ``lambda`` etc) you
+want to use ``>>``.
+
+The second way that you can process a list of results is by **passing the
+entire list to a function**.  Because we still want a list afterwards, Lepl
+*adds an extra list around the result*.  This is what ``>`` does::
+
+  >>> def first(my_list):
+  ...   return my_list[0]
+  ...
+  >>> ( Any() > first ).parse('a')
+  ['a']
+  >>> ( (Any() & Any()) > first ).parse('ab')
+  ['a']
+
+This is also useful for structuring results::
+
+  >>> ( (Any() & Any()) > tuple ).parse('ab')
+  [('a', 'b')]
+  >>> ( (Any() & Any()) > list ).parse('ab')
+  [['a', 'b']]
+  >>> (( (Any() & Any()) > list ) & Any()).parse('abc')
+  [['a', 'b'], 'c']
+
+So ``>`` is useful when:
+
+* You want to select some results.
+
+* You want to build data structures around the results.
+
+Usually, if you are calling a *constructor* (`Node()
+<api/redirect.html#lepl.support.node.Node>`_, ``tuple()`` etc.) you want to
+use ``>``.
+

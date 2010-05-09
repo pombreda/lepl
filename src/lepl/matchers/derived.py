@@ -475,7 +475,7 @@ The default float is signed with exponents.
 '''
 
 
-def Word(chars=AnyBut(Whitespace()), body=None):
+def Word(chars=NfaRegexp('[^%s]' % whitespace), body=None):
     '''
     Match a sequence of non-space characters, joining them together. 
      

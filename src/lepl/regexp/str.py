@@ -143,6 +143,8 @@ class StrParser(LogMixin):
         # Avoid dependency loops
         from lepl.matchers.derived import Drop, Eos, AnyBut, Upper, Optional
         from lepl.matchers.core import Any, Lookahead, Literal, Delayed
+        from lepl.matchers.error import make_error, raise_error
+        from lepl.support.node import node_throw
     
         # these two definitions enforce the conditions above, providing only
         # special characters appear as literals in the grammar
@@ -152,10 +154,11 @@ class StrParser(LogMixin):
         
         single   = escaped | raw
         
+        close    = Drop(')')
         any_     = Literal('.')                                  >> self.dot
         letter   = single                                        >> self.dup
         pair     = single & Drop('-') & single                   > self.tup
-        extend   = (Drop('(*') & Upper()[1:,...] & Drop(')'))    >> self.extend
+        extend   = (Drop('(*') & Upper()[1:,...] & close)        >> self.extend
         
         interval = pair | letter | extend
         brackets = Drop('[') & interval[1:] & Drop(']')
@@ -164,17 +167,23 @@ class StrParser(LogMixin):
     
         item     = Delayed()
         
-        open     = Drop('(' & Optional('?:'))
+        open     = Drop('(?:')
         seq      = (char | item)[0:]                             > self.sequence
-        group    = open & seq & Drop(')')
-        alts     = open & seq[2:, Drop('|')] & Drop(')')    > self.choice
+        group    = open & seq & close
+        alts     = open & seq[2:, Drop('|')] & close             > self.choice
         star     = (alts | group | char) & Drop('*')             > self.star
         plus     = (alts | group | char) & Drop('+')             > self.plus
         opt      = (alts | group | char) & Drop('?')             > self.option
+        bad_grp  = (Drop('(') & ~Lookahead('?:') & Any()[:]) \
+                        ** make_error(
+                            "Lepl's own regular expressions do not currently "
+                            "support matched groups.\n"
+                            "Use '(?:...)' to group expressions without "
+                            "matching.") 
         
-        item    += alts | group | star | plus | opt
+        item    += alts | group | star | plus | opt | bad_grp
         
-        expr     = (char | item)[:] & Drop(Eos())
+        expr     = ((char | item)[:] & Drop(Eos())) >> node_throw
     
         # Empty config here avoids loops if the default config includes
         # references to alphabets

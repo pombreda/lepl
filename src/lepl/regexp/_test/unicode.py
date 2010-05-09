@@ -121,7 +121,7 @@ class CharactersTest(TestCase):
         assert label('a*') == str(c), str(c)
         c = _test_parser('a(?:bc)*d')
         assert label('a(?:bc)*d') == str(c), str(c)
-        c = _test_parser('a(bc)*d[e-g]*')
+        c = _test_parser('a(?:bc)*d[e-g]*')
         assert label('a(?:bc)*d[e-g]*') == str(c), str(c)
         c = _test_parser('a[a-cx]*')
         assert label('a[a-cx]*') == str(c), str(c)
@@ -131,18 +131,18 @@ class CharactersTest(TestCase):
         assert label('a?') == str(c), str(c)
         c = _test_parser('a(?:bc)?d')
         assert label('a(?:bc)?d') == str(c), str(c)
-        c = _test_parser('a(bc)?d[e-g]?')
+        c = _test_parser('a(?:bc)?d[e-g]?')
         assert label('a(?:bc)?d[e-g]?') == str(c), str(c)
         c = _test_parser('ab?c')
         assert label('ab?c') == str(c), str(c)
         
     def test_choice(self):
         #basicConfig(level=DEBUG)
-        c = _test_parser('(a*|b|[c-d])')
+        c = _test_parser('(?:a*|b|[c-d])')
         assert label('(?:a*|b|[c-d])') == str(c), str(c)
         c = _test_parser('a(?:a|b)*')
         assert label('a(?:a|b)*') == str(c), str(c)
-        c = _test_parser('a([a-c]x|axb)*')
+        c = _test_parser('a(?:[a-c]x|axb)*')
         assert label('a(?:[a-c]x|axb)*') == str(c), str(c)
         
     def test_bad_escape(self):
@@ -155,6 +155,14 @@ class CharactersTest(TestCase):
         except RegexpError:
             pass
 
+    def test_bad_group(self):
+        #basicConfig(level=DEBUG)
+        try:
+            _test_parser('(a)')
+            assert False, 'Expected error'
+        except SyntaxError as e:
+            assert 'do not currently support matched groups' in str(e), e 
+            
 
 class NfaTest(TestCase):
     
@@ -177,15 +185,15 @@ class NfaTest(TestCase):
         self.assert_matches('[a-z]+', 'abc', ['abc', 'ab', 'a'])
 
     def test_choice(self):
-        self.assert_matches('(a|b)', 'ac', ['a'])
+        self.assert_matches('(?:a|b)', 'ac', ['a'])
     
     def test_star_choice(self):
-        self.assert_matches('(a|b)*', 'aababbac', 
+        self.assert_matches('(?:a|b)*', 'aababbac', 
                             ['aababba', 'aababb', 'aabab', 'aaba', 'aab', 'aa', 'a', ''])
     
     def test_multiple_choice(self):
         #basicConfig(level=DEBUG)
-        self.assert_matches('(a|ab)b', 'abb', ['ab', 'abb'])
+        self.assert_matches('(?:a|ab)b', 'abb', ['ab', 'abb'])
 
     def test_range(self):
         self.assert_matches('[abc]*', 'bbcx', ['bbc', 'bb', 'b', ''])
@@ -195,12 +203,12 @@ class NfaTest(TestCase):
         '''
         Matches with 'b' are duplicated, since it appears in both ranges.
         '''
-        self.assert_matches('([ab]|[bc])*', 'abc', 
+        self.assert_matches('(?:[ab]|[bc])*', 'abc', 
                             ['abc', 'ab', 'abc', 'ab', 'a', ''])
 
     def test_complex(self):
         #basicConfig(level=DEBUG)
-        self.assert_matches('a([x-z]|a(g|b))*(u|v)p',
+        self.assert_matches('a(?:[x-z]|a(?:g|b))*(?:u|v)p',
                             'ayagxabvp', ['ayagxabvp'])
 
 
@@ -222,23 +230,23 @@ class DfaGraphTest(TestCase):
             '0: [0] a->1; 1: [3, 4, 5] c->2,b->3; 2(label): [1, 2]; 3: [4, 5] c->2,b->3')
         
     def test_dfa_simple_choice(self):
-        self.assert_dfa_graph('a(b|c)', 
+        self.assert_dfa_graph('a(?:b|c)', 
             '0: [0] a->1; 1: [3, 4] [b-c]->2; 2(label): [1, 2]')
         
     def test_dfa_repeated_choice(self):
-        self.assert_dfa_graph('a(b|cd)*e', 
+        self.assert_dfa_graph('a(?:b|cd)*e', 
             '0: [0] a->1; 1: [3, 4, 5, 6] e->2,c->3,b->4; 2(label): [1, 2]; 3: [7] d->4; 4: [4, 5, 6] e->2,c->3,b->4')
         
     def test_dfa_overlapping_choice(self):
-        self.assert_dfa_graph('a(bcd|bce)', 
+        self.assert_dfa_graph('a(?:bcd|bce)', 
             '0: [0] a->1; 1: [3, 6] b->2; 2: [4, 7] c->3; 3: [8, 5] [d-e]->4; 4(label): [1, 2]')
 
     def test_dfa_conflicting_choice(self):
-        self.assert_dfa_graph('a(bc|b*d)', 
+        self.assert_dfa_graph('a(?:bc|b*d)', 
             '0: [0] a->1; 1: [3, 5, 6, 7] d->2,b->3; 2(label): [1, 2]; 3: [4, 6, 7] [c-d]->2,b->4; 4: [6, 7] d->2,b->4')
         
     def test_dfa_conflicting_choice_2(self):
-        self.assert_dfa_graph('a(bb|b*c)', 
+        self.assert_dfa_graph('a(?:bb|b*c)', 
             '0: [0] a->1; 1: [3, 5, 6, 7] c->2,b->3; 2(label): [1, 2]; 3: [4, 6, 7] c->2,b->4; 4(label): [1, 2, 6, 7] c->2,b->5; 5: [6, 7] c->2,b->5')
 
     def test_dfa_dot_option(self):
@@ -266,8 +274,8 @@ class DfaTest(TestCase):
         self.assert_dfa('a*', '', '')
         
     def test_conflicting_choice(self):
-        self.assert_dfa('a(bc|b*d)', 'abde', 'abd') 
-        self.assert_dfa('a(bc|b*d)', 'abce', 'abc') 
+        self.assert_dfa('a(?:bc|b*d)', 'abde', 'abd') 
+        self.assert_dfa('a(?:bc|b*d)', 'abce', 'abc') 
     
     def test_space_star(self):
         self.assert_dfa(' *', '  a', '  ')

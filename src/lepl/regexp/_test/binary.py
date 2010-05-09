@@ -72,19 +72,17 @@ class CharactersTest(TestCase):
     def test_star(self):
         c = _test_parser('0*')
         assert label('0*') == str(c), str(c)
-        c = _test_parser('0(01)*1')
+        c = _test_parser('0(?:01)*1')
         assert label('0(?:01)*1') == str(c), str(c)
         
     def test_option(self):
         c = _test_parser('1?')
         assert label('1?') == str(c), str(c)
-        c = _test_parser('0(01)?1')
+        c = _test_parser('0(?:01)?1')
         assert label('0(?:01)?1') == str(c), str(c)
         
     def test_choice(self):
         c = _test_parser('(?:0*|1)')
-        assert label('(?:0*|1)') == str(c), str(c)
-        c = _test_parser('(0*|1)')
         assert label('(?:0*|1)') == str(c), str(c)
 
 
