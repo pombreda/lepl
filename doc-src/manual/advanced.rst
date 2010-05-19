@@ -401,8 +401,8 @@ without repeating the work needed to generate it.  This improves the
 efficiency of the parser.
 
 Lepl 2 has two memoizers.  The simplest is `RMemo()
-<api/redirect.html#lepl.matchers.memo.RMemo>`_ which is a simple cache based on the
-stream supplied.
+<api/redirect.html#lepl.matchers.memo.RMemo>`_ which is a simple cache based
+on the stream supplied.
 
 For left--recursive grammars, however, things are more complicated.  The same
 matcher can be called with the same stream at different "levels" of recursion

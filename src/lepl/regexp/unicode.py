@@ -34,7 +34,13 @@ A regexp implementation for unicode strings.
 from sys import maxunicode
 
 from lepl.regexp.str import StrAlphabet, ILLEGAL
-from lepl.support.lib import chr
+from lepl.support.lib import chr, lmap, format
+
+_WHITESPACE = '\u0009\u000A\u000B\u000C\u000D\u0020\u0085\u00A0\u1680' \
+                '\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007' \
+                '\u2008\u2009\u200a\u2028\u2029\u202F\u205F\u3000'
+'''http://en.wikipedia.org/wiki/Whitespace_character'''
+
 
 class UnicodeAlphabet(StrAlphabet):
     '''
@@ -47,14 +53,28 @@ class UnicodeAlphabet(StrAlphabet):
     # (pylint bug?  this chains back to a new style abc)
     def __init__(self):
         from lepl.matchers.core import Any
-        from lepl.matchers.derived import Drop
+        from lepl.matchers.combine import Or
         max_ = chr(maxunicode)
-        def n_hex(char, n):
+        def mkhex(char, n):
+            from lepl.matchers.derived import Drop
             return Drop(Any(char)) + Any('0123456789abcdefABCDEF')[n,...] >> \
                         (lambda x: chr(int(x, 16)))
-        simple = Any(ILLEGAL)
-        escaped = simple | n_hex('x', 2) | n_hex('u', 4) | n_hex('U', 8)
-        super(UnicodeAlphabet, self).__init__(chr(0), max_, escaped=escaped)
+        def mkchr(char, range, invert=False):
+            from lepl.matchers.core import Literal
+            from lepl.matchers.derived import Map
+            from lepl.regexp.core import Character
+            intervals = lmap(lambda x: (x, x), range)
+            if invert:
+                # this delays call to invert until after creation of self
+                func = lambda _: Character(self.invert(intervals), self)
+            else:
+                func = lambda _: Character(intervals, self)
+            return Map(Literal(char), func)
+        range = Or(mkchr('s', _WHITESPACE),
+                   mkchr('S', _WHITESPACE, invert=True))
+        escaped = Any(ILLEGAL) | mkhex('x', 2) | mkhex('u', 4) | mkhex('U', 8)
+        super(UnicodeAlphabet, self).__init__(chr(0), max_, escaped=escaped,
+                                              range=range)
         
     def before(self, char):
         '''
@@ -81,4 +101,33 @@ class UnicodeAlphabet(StrAlphabet):
 
     def __repr__(self):
         return '<Unicode>'
-    
+
+    def fmt_intervals(self, intervals):
+        '''
+        Hide unicode chars because of some strange error that occurs with
+        Python2.6 on the command line.
+        '''
+        def pretty(c):
+            x = self._escape_char(c)
+            if len(x) > 1 or 31 <= ord(x) <= 128:
+                return str(x)
+            elif ord(c) < 0x100:
+                return format('\\x{0:02x}', ord(c)) 
+            elif ord(c) < 0x10000:
+                return format('\\u{0:04x}', ord(c)) 
+            else:
+                return format('\\U{0:08x}', ord(c)) 
+        ranges = []
+        if len(intervals) == 1:
+            if intervals[0][0] == intervals[0][1]:
+                return self._escape_char(intervals[0][0])
+            elif intervals[0][0] == self.min and intervals[0][1] == self.max:
+                return '.'
+        # pylint: disable-msg=C0103
+        # (sorry. but i use this (a, b) convention throughout the regexp lib) 
+        for (a, b) in intervals:
+            if a == b:
+                ranges.append(self._escape_char(a))
+            else:
+                ranges.append(format('{0!s}-{1!s}', pretty(a), pretty(b)))
+        return format('[{0}]', self.join(ranges))

@@ -184,7 +184,7 @@ class Separator(_BaseSeparator):
         
 class DroppedSpace(Separator):
     '''
-    Skip spaces (by default, one or more Space()).  Any argument is dropped.
+    Skip spaces (by default, zero or more Space()).  Any argument is dropped.
     '''
     
     def __init__(self, space=None):
@@ -547,17 +547,26 @@ class OperatorMixin(NamespaceMixin):
         step = DEPTH_FIRST
         separator = None
         add = False
+        have_index = False
         if not isinstance(indices, tuple):
             indices = [indices]
         for index in indices:
             if isinstance(index, int):
+                if have_index:
+                    raise TypeError(
+                        format('Multiple slices not supported: {0!r}', index))
                 start = index
                 stop = index
                 step = DEPTH_FIRST
+                have_index = True
             elif isinstance(index, slice):
+                if have_index:
+                    raise TypeError(
+                        format('Multiple slices not supported: {0!r}', index))
                 start = index.start if index.start != None else 0
                 stop = index.stop if not open_stop(index) else None
                 step = index.step if index.step != None else DEPTH_FIRST
+                have_index = True
             elif index == Ellipsis:
                 add = True
             elif separator is None:

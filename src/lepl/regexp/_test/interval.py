@@ -31,8 +31,12 @@
 Tests for the lepl.regexp.interval module.
 '''
 
-from unittest import TestCase
+from logging import basicConfig, DEBUG
+from unittest import TestCase, TestLoader, TextTestRunner
 
+from lepl.lexer.matchers import Token
+from lepl.matchers.core import Any
+from lepl.matchers.derived import Eos, Word
 from lepl.regexp.interval import IntervalMap, TaggedFragments, Character
 from lepl.regexp.unicode import UnicodeAlphabet
 
@@ -92,4 +96,18 @@ class TaggedFragmentsTest(TestCase):
         assert l == [(('b', 'b'), ['bd']), 
                      (('c', 'd'), ['bd', 'ce']), 
                      (('e', 'e'), ['ce'])], l
-        
+
+
+class UnicodeBugTest(TestCase):
+
+    def test_bug(self):
+        #basicConfig(level=DEBUG)
+        t = Token(Word())(Any()[2] & Eos())                               
+        t.match("ab cd")
+
+
+if __name__ == '__main__':
+    suite = TestLoader().loadTestsFromTestCase(UnicodeBugTest)
+    TextTestRunner(verbosity=2).run(suite)
+
+    

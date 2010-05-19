@@ -271,6 +271,10 @@ and so this example will fail::
 Apply (>, >=, args)
 -------------------
 
+.. note::
+
+   See also :ref:`faq_apply`
+
 `[API] <api/redirect.html#lepl.matchers.derived.Apply>`_ This matcher passes
 the results of another matcher to a function, then returns the value from the
 function as a new result::

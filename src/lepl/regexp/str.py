@@ -155,8 +155,8 @@ class StrParser(LogMixin):
     
         # these two definitions enforce the conditions above, providing only
         # special characters appear as literals in the grammar
-        escaped  = Drop(self.alphabet.escape) + self.alphabet.escaped
-        raw      = ~Lookahead(self.alphabet.escape) + \
+        escaped  = Drop(self.alphabet.escape) & self.alphabet.escaped
+        raw      = ~Lookahead(self.alphabet.escape) & \
                         AnyBut(self.alphabet.illegal)
         
         single   = escaped | raw
@@ -166,7 +166,7 @@ class StrParser(LogMixin):
         letter   = single                                        >> self.dup
         pair     = single & Drop('-') & single                   > self.tup
         extend   = (Drop('(*') & Upper()[1:,...] & close)        >> self.extend
-        
+         
         interval = pair | letter | extend
         brackets = Drop('[') & interval[1:] & Drop(']')
         inverted = Drop('[^') & interval[1:] & Drop(']')         >= self.invert      
@@ -175,13 +175,14 @@ class StrParser(LogMixin):
         item     = Delayed()
         
         open     = Drop('(?:')
-        seq      = (char | item)[0:]                             > self.sequence
+        range    = Drop(self.alphabet.escape) & self.alphabet.range
+        seq      = (char | item | range)[0:]                     > self.sequence
         group    = open & seq & close
         alts     = open & seq[2:, Drop('|')] & close             > self.choice
         star     = (alts | group | char) & Drop('*')             > self.star
         plus     = (alts | group | char) & Drop('+')             > self.plus
         opt      = (alts | group | char) & Drop('?')             > self.option
-        bad_grp  = (Drop('(') & ~Lookahead('?:') & Any()[:]) \
+        bad_grp  = (Drop('(') & ~Lookahead('?:') & seq & close) \
                         ** make_error(
                             "Lepl's own regular expressions do not currently "
                             "support matched groups.\n"
@@ -213,12 +214,14 @@ class StrAlphabet(Alphabet):
     # pylint: disable-msg=E1002
     # (pylint bug?  this chains back to a new style abc)
     def __init__(self, min_, max_, escape='\\', escaped=ILLEGAL,
-                 illegal=ILLEGAL, parser_factory=make_str_parser):
-        from lepl.matchers.core import Any
+                 illegal=ILLEGAL, range=None,
+                 parser_factory=make_str_parser):
+        from lepl.matchers.core import Any, Never
         super(StrAlphabet, self).__init__(min_, max_)
         self.__escape = escape
         self.__escaped = coerce_(escaped, Any)
         self.__illegal = illegal
+        self.__range = range if range else Never()
         self._parser = parser_factory(self)
     
     @property
@@ -232,6 +235,10 @@ class StrAlphabet(Alphabet):
     @property
     def illegal(self):
         return self.__illegal
+    
+    @property
+    def range(self):
+        return self.__range
     
     def _escape_char(self, char):
         '''

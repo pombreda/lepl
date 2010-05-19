@@ -107,3 +107,14 @@ class SmartSpace1Test(TestCase):
         assert not parser.parse('abc')
         assert not parser.parse('ac')
         assert not parser.parse('a  c')
+        
+        
+class IndexTest(TestCase):
+    
+    def test_bad_indices(self):
+        try:
+            Any()[1:2,3:4]
+            assert False, 'expected error'
+        except TypeError as e:
+            assert 'slice' in str(e), e
+            

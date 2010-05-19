@@ -43,8 +43,18 @@ from re import compile as compile_
 from lepl.core.parser import tagged
 from lepl.regexp.matchers import DfaRegexp
 from lepl.matchers.support import OperatorMatcher, coerce_, \
-    function_matcher, function_matcher_factory, trampoline_matcher_factory, to
+    function_matcher, function_matcher_factory, trampoline_matcher_factory, \
+    to, sequence_matcher
 from lepl.support.lib import format
+
+
+@sequence_matcher
+def Never(support, stream):
+    '''
+    Always fails to match.
+    '''
+    if False:
+        yield
 
 
 @function_matcher_factory()

@@ -52,7 +52,7 @@ Here is an example of the second and third approaches in use::
   >>> number  = Digit()[1:,...]
   >>> badChar = AnyBut(Space() | Digit() | '(')[1:,...]
 
-  >>> with DroppedSpaces():
+  >>> with DroppedSpace():
 
   >>>     unopen   = number ** make_error('no ( before {stream_out}') & ')'
   >>>     unclosed = ('(' & expr & Eos()) ** make_error('no ) for {stream_in}')

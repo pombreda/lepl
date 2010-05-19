@@ -52,6 +52,7 @@ def Simple():
         return escapes[text]
     
     def unescape_unicode(text):
+        # Python 3 only
         return bytes(str(text), 'utf8').decode('unicode_escape')
     
     value          = Delayed()

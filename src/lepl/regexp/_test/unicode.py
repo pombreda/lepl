@@ -163,6 +163,14 @@ class CharactersTest(TestCase):
         except SyntaxError as e:
             assert 'do not currently support matched groups' in str(e), e 
             
+    def test_escape(self):
+        c = _test_parser('\\x40')
+        assert label('@') == str(c), str(c)
+        c = _test_parser('\\u0040')
+        assert label('@') == str(c), str(c)
+        c = _test_parser('\\U00000040')
+        assert label('@') == str(c), str(c)
+
 
 class NfaTest(TestCase):
     

@@ -347,3 +347,10 @@ class ErrorTest(TestCase):
             parser(' a')
         except RuntimeLexerError as error:
             assert str26(error) == "No discard for ' a'.", str26(error)
+
+    def test_paren(self):
+        try:
+            Token('(').match('foo')
+            assert False, 'expected error'
+        except Exception as e:
+            assert "Cannot parse regexp '('" in str(e), e

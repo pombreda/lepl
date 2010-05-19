@@ -179,7 +179,7 @@ string being coerced to something other than a `Literal()
 The use of separators to handle spaces is discussed in more detail below.
 
 
-.. index:: Separator(), SmartSeparator1(), SmartSeparator2()
+.. index:: Separator(), SmartSeparator1(), SmartSeparator2(), DroppedSpace()
 .. _spaces:
 
 Spaces
@@ -194,7 +194,13 @@ The main conclusion of the :ref:`Tutorial <tutorial>` is that the :ref:`lexer`
 best approach in most circumstances.  It usually hits the sweet spot between
 flexibility and simplicity.
 
-But sometimes tokens are not the right solution.  One case is
+Alternatively, to handle optional spaces (zero or more), without tokens, use
+`DroppedSpace() <api/redirect.html#lepl.matchers.operators.DroppedSpace>`_::
+
+  with DroppedSpace():
+      addition = value & "+" & value
+
+But sometimes these are not the right solution.  One case is
 :ref:`table_example`, when the `Columns()
 <api/redirect.html#lepl.matchers.derived.matchers>`_ matcher is a good fit.
 Another is when spaces are *required*.
@@ -205,14 +211,17 @@ grammar --- it makes the parsing more complex (and more fragile, even to
 is sometimes necessary.
 
 In such cases, the only real solution is to specify all the spaces.  One
-option is to use the ``\`` and ``\\`` operators (which match zero-- and
-one--or--more spaces respectively).  Alternatively, to give more control, Lepl
-includes various *separators*.  The :ref:`Tutorial <separators>` introduced
-the basic `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_
-(as described in the previous section, above), which requires a
-user--specified space wherever `&` is used (and also in `[]` repetition).  But
-even this is often not sufficent when optional matchers are used, because the
-spaces remain even when the optional matcher is ignored.
+option is to use the ``/`` and ``//`` operators (which match zero-- and
+one--or--more spaces respectively).  Alternatively, to save typing, Lepl
+includes various *separators* (`DroppedSpace()
+<api/redirect.html#lepl.matchers.operators.DroppedSpace>`_, above, is a
+separator).  The :ref:`Tutorial <separators>` introduced the basic
+`Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ (as
+described in the previous section, above), which requires a user--specified
+space wherever `&` is used (and also in `[]` repetition).
+
+But even this is often not sufficent when optional matchers are used, because
+the spaces remain even when the optional matcher is ignored.
 
 So, to help automate the (rare) case of *required* spaces, *automatic*
 addition of spaces for each `&`, and *optional* matchers, two "smart"
@@ -317,3 +326,7 @@ parser::
 |' c'      |              |yes           |              |yes           |              |              |              |              |              |              |              |              |
 +----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
 
+
+Finally, note that offside (significant whitespace) parsing is only supported
+with tokens.  If you want to do it without, you need to somehow work out how
+to track the level and match the spaces yourself.

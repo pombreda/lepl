@@ -254,6 +254,8 @@ this in a different, but equivalent way::
 But as a general rule it is better to process results as soon as possible.
 This usually keeps the parser simpler.
 
+For more on ``>>`` you may find it useful to read :ref:`faq_apply`
+
 Adding Values
 -------------
 

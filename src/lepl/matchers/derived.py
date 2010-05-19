@@ -1,4 +1,3 @@
-from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -44,6 +43,7 @@ from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
 from lepl.matchers.support import OperatorMatcher, coerce_
 from lepl.matchers.transform import TransformationWrapper, Transform, \
     ApplyArgs, ApplyRaw
+from lepl.regexp.matchers import NfaRegexp
 from lepl.support.lib import assert_type, lmap, format, basestring
 
  
