@@ -121,30 +121,35 @@ class RegexpContainer(object):
             return possible
         
     @classmethod
-    def build(cls, node, regexp, alphabet, matcher_type, use, 
+    def build(cls, node, regexp, alphabet, regexp_type, use, 
                add_reqd=False, wrapper=None):
         '''
         Construct a container or matcher.
         '''
         if use and not add_reqd:
-            matcher = single(alphabet, node, regexp, matcher_type, wrapper)
+            matcher = single(alphabet, node, regexp, regexp_type, wrapper)
             # if matcher is a Transformable with a Transformation other than
             # the standard empty_adapter then we must stop
             if len(matcher.wrapper.functions) > 1:
                 cls.log.debug(format('Force matcher: {0}', matcher.wrapper))
                 return matcher
         else:
+            # not good enough to have a regexp as default, so either force
+            # the original matcher if it has transforms, or keep going in the
+            # hope we can get more complex later
             matcher = node
+            if matcher.wrapper:
+                return matcher
         return RegexpContainer(matcher, regexp, use, add_reqd)
         
 
-def single(alphabet, node, regexp, matcher_type, wrapper=None):
+def single(alphabet, node, regexp, regexp_type, wrapper=None):
     '''
     Create a matcher for the given regular expression.
     '''
     # avoid dependency loops
     from lepl.matchers.transform import TransformationWrapper
-    matcher = matcher_type(regexp, alphabet)
+    matcher = regexp_type(regexp, alphabet)
     matcher = matcher.compose(TransformationWrapper(empty_adapter))
     if wrapper is None:
         wrapper = node.wrapper
@@ -176,7 +181,7 @@ class Unsuitable(Exception):
     pass
 
 
-def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
+def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
     '''
     Factory that generates a clone suitable for rewriting recursive descent
     to regular expressions.
@@ -206,7 +211,7 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
         log.debug(format('Any: cloned {0}', char))
         regexp = Sequence(alphabet_, char)
         return RegexpContainer.build(original, regexp, alphabet_, 
-                                     matcher_type, use)
+                                     regexp_type, use)
         
     def clone_or(use, original, *matchers):
         '''
@@ -218,7 +223,7 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
         regexp = Choice(alphabet_, *regexps)
         log.debug(format('Or: cloned {0}', regexp))
         return RegexpContainer.build(original, regexp, alphabet_, 
-                                     matcher_type, use)
+                                     regexp_type, use)
 
     def clone_and(use, original, *matchers):
         '''
@@ -235,15 +240,17 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
             else:
                 raise Unsuitable
         try:
+            # combine all
             (use, regexps) = \
                 RegexpContainer.to_regexps(use, matchers, have_add=None)
             # if we have regexp sub-expressions, join them
             regexp = Sequence(alphabet_, *regexps)
             log.debug(format('And: cloning {0}', regexp))
             return RegexpContainer.build(original, regexp, alphabet_, 
-                                         matcher_type, use, add_reqd=add_reqd,
+                                         regexp_type, use, add_reqd=add_reqd,
                                          wrapper=wrapper)
         except Unsuitable:
+            # combine contiguous matchers where possible
             if add_reqd:
                 raise
             def unpack(matcher):
@@ -264,7 +271,7 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
                     if len(regexps) > 1:
                         # combine regexps
                         output.append(
-                            matcher_type(Sequence(alphabet_, *regexps), 
+                            regexp_type(Sequence(alphabet_, *regexps), 
                                          alphabet_))
                     else:
                         output.extend(originals)
@@ -272,7 +279,7 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
                     (regexps, originals) = ([], [])
             if len(regexps) > 1:
                 output.append(
-                    matcher_type(Sequence(alphabet_, *regexps), alphabet_))
+                    regexp_type(Sequence(alphabet_, *regexps), alphabet_))
             else:
                 output.extend(originals)
             merged = And(*output)
@@ -297,7 +304,7 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
             RegexpContainer.to_regexps(use, [matcher], have_add=have_add)
         log.debug(format('Transform: cloning {0}', regexp))
         return RegexpContainer.build(original, regexp, alphabet_, 
-                                     matcher_type, use,
+                                     regexp_type, use,
                                      add_reqd=False, wrapper=wrapper)
         
     def clone_literal(use, original, text):
@@ -308,7 +315,7 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
         regexp = Sequence(alphabet_, *chars)
         log.debug(format('Literal: cloned {0}', regexp))
         return RegexpContainer.build(original, regexp, alphabet_, 
-                                     matcher_type, use)
+                                     regexp_type, use)
     
     def clone_regexp(use, original, pattern, alphabet=None):
         '''
@@ -320,7 +327,7 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
         except TypeError:
             raise Unsuitable
         return RegexpContainer.build(original, pattern, alphabet_, 
-                                     matcher_type, use)
+                                     regexp_type, use)
     
     def clone_dfs(use, original, first, start, stop, rest=None):
         '''
@@ -360,7 +367,7 @@ def make_clone(alphabet_, old_clone, matcher_type, use_from_start):
             regexp = Choice(alphabet_, regexp, Empty(alphabet_))
         log.debug(format('DFS: cloned {0}', regexp))
         return RegexpContainer.build(original, regexp, alphabet_, 
-                                     matcher_type, use, add_reqd=add_reqd,
+                                     regexp_type, use, add_reqd=add_reqd,
                                      wrapper=wrapper)
         
     def clone_wrapper(use, original, *args, **kargs):

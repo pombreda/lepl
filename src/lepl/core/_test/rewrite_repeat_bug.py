@@ -28,8 +28,25 @@
 # MPL or the LGPL License.
 
 '''
-Punt to the contrib package (this is just to keep copyright clear).
+Tests for bug reprted on the mailing list.
 '''
 
-from lepl.contrib.json import Simple
+from lepl._test.base import BaseTest
 
+from lepl import *
+
+
+class RepeatTest(BaseTest):
+    
+    def test_no_regexp(self):
+        xy = ('x' & Drop('y'))[1]
+        xy.config.no_compile_to_regexp()
+        assert xy.parse('xy') == ['x']
+        
+    def test_error(self):
+        xy = ('x' & Drop('y'))[1]
+        m = xy.get_parse().matcher
+        #print(m.tree())
+        result = xy.parse('xy')
+        assert result == ['x'], result
+        
