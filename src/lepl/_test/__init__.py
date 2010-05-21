@@ -46,7 +46,7 @@ import lepl._test.bug_stalled_parser
 import lepl._test.magus
 
 # Number of tests if running in IDE with Python 3,
-TOTAL = 408
+TOTAL = 424
 
 def all():
     '''
@@ -67,12 +67,12 @@ def all():
     print('\n\n\n----------------------------------------------------------'
           '------------\n')
     if version[0] == '2':
-        print('Expect 4-5 failures + 1 error in Python 2.6: {0:d}, {1:d} '
+        print('Expect 4-5 failures + 2 errors in Python 2.6: {0:d}, {1:d} '
               '(lenient comparison, format variation from address size, '
-              'unicode ranges, weird string difference)'
+              'unicode ranges, weird string difference; json unicode)'
               .format(len(result.failures), len(result.errors)))
         assert 4 <= len(result.failures) <= 5, len(result.failures)
-        assert 1 <= len(result.errors) <= 1, len(result.errors)
+        assert 2 <= len(result.errors) <= 2, len(result.errors)
         target = TOTAL - 22 - 9 # no bin/cairo tests (22)
     else:
         print('Expect at most 1 failure + 0 errors in Python 3: {0:d}, {1:d} '

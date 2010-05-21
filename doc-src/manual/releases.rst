@@ -94,6 +94,8 @@ Date        Version  Description
 2009-05-02  4.2      RFC 3696 validation; better regexp rewriting.
 ----------  -------  -----------
 2009-05-02  4.2.1    Small bugfix for top level DNS names that start with a digit.
+----------  -------  -----------
+2009-05-20  4.2.2    Small bugfix in regexp rewriting.
 ==========  =======  ===========
 
 

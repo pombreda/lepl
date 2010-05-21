@@ -41,3 +41,5 @@ import lepl.core._test.config
 import lepl.core._test.manager
 import lepl.core._test.parser
 import lepl.core._test.rewriters
+import lepl.core._test.rewrite_delayed_bug
+import lepl.core._test.rewrite_repeat_bug
