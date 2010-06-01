@@ -259,15 +259,23 @@ class StrAlphabet(Alphabet):
     
     def fmt_intervals(self, intervals):
         '''
-        This must fully describe the data in the intervals (it is used to
-        hash the data).
+        Hide unicode chars because of some strange error that occurs with
+        Python2.6 on the command line.
+        
+        This is in StrAlphabet, but for ASCII makes no difference.  Having it
+        here helps LineAwareAlphabet work (the whole idea of subclassing
+        alphabets etc is not so great).
         '''
         def pretty(c):
             x = self._escape_char(c)
-            if len(x) > 1 or str(' ') <= str(x) <= str('~'):
+            if len(x) > 1 or 31 <= ord(x) <= 128:
                 return str(x)
+            elif ord(c) < 0x100:
+                return format('\\x{0:02x}', ord(c)) 
+            elif ord(c) < 0x10000:
+                return format('\\u{0:04x}', ord(c)) 
             else:
-                return repr(c)[1:-1]
+                return format('\\U{0:08x}', ord(c)) 
         ranges = []
         if len(intervals) == 1:
             if intervals[0][0] == intervals[0][1]:

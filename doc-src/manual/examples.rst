@@ -271,32 +271,33 @@ Tabular Data
 ------------
 
 This is a simple example that shows how to parse data in a fixed, tabular
-format using the `Columns() <api/redirect.html#lepl.matchers.derived.matchers>`_ matcher::
+format using the `Columns()
+<api/redirect.html#lepl.matchers.derived.matchers>`_ matcher::
 
     def columns_example():
-	# http://www.swivel.com/data_sets/spreadsheet/1002196
-	table = '''
-    US Foreign Aid, top recipients, constant dollars
-    Year            Iraq          Israel           Egypt
-    2005   6,981,200,000   2,684,100,000   1,541,900,000
-    2004   8,333,400,000   2,782,400,000   2,010,600,000
-    2003   4,150,000,000   3,878,300,000   1,849,600,000
-    2002      41,600,000   2,991,200,000   2,362,800,000
-    '''
-	spaces = ~Space()[:]
-	integer = (spaces & Digit()[1:, ~Optional(','), ...] & spaces) >> int
-	cols = Columns((4,  integer),
-		       # if we give widths, they follow on from each other
-		       (16, integer),
-		       # we can also specify column indices
-		       ((23, 36), integer),
-		       # and then start with widths again
-		       (16, integer))
-	# by default, Columns consumes a whole line (see skip argument), so
-	# for the whole table we only need to (1) drop the text and (2) put
-	# each row in a separate list.
-	parser = ~SkipTo(Digit(), include=False) & (cols > list)[:]
-	parser.parse(table)
+        # http://www.swivel.com/data_sets/spreadsheet/1002196
+        table = '''
+        US Foreign Aid, top recipients, constant dollars
+        Year            Iraq          Israel           Egypt
+        2005   6,981,200,000   2,684,100,000   1,541,900,000
+        2004   8,333,400,000   2,782,400,000   2,010,600,000
+        2003   4,150,000,000   3,878,300,000   1,849,600,000
+        2002      41,600,000   2,991,200,000   2,362,800,000
+        '''
+        spaces = ~Space()[:]
+        integer = (spaces & Digit()[1:, ~Optional(','), ...] & spaces) >> int
+        cols = Columns((4,  integer),
+                   # if we give widths, they follow on from each other
+                   (16, integer),
+                   # we can also specify column indices
+                   ((23, 36), integer),
+                   # and then start with widths again
+                   (16, integer))
+        # by default, Columns consumes a whole line (see skip argument), so
+        # for the whole table we only need to (1) drop the text and (2) put
+        # each row in a separate list.
+        parser = ~SkipTo(Digit(), include=False) & (cols > list)[:]
+        parser.parse(table)
 
     columns_example()
 
@@ -307,3 +308,46 @@ Which prints::
      [2003, 4150000000, 3878300000, 1849600000],
      [2002, 41600000, 2991200000, 2362800000]]
  
+
+.. index::  Block(), BLine(), offside rule, whitespace sensitive parsing
+
+Simpler Offside Example
+-----------------------
+
+Here's a simpler example of how to use offside parsing, as described in
+:ref:`offside`.  The idea is that we have a configuration file format with
+named sections and subsections; in the subsections are name/value pairs::
+
+    from string import ascii_letters
+    from lepl import *
+
+    def config_parser():
+        word        = Token(Any(ascii_letters)[1:, ...])
+        key_value   = (word & ~Token(':') & word) > tuple
+        subsection  = BLine(word) & (Block(BLine(key_value)[1:] > dict)) > list
+        section     = BLine(word) & Block(subsection[1:]) > list
+        config_file = (section | ~Line(Empty()))[:] > list
+
+        config_file.config.default_line_aware(block_policy=rightmost)
+        return config_file.get_parse()
+
+    parser = config_parser()
+    parser('''
+    one
+       a
+          foo: bar
+          baz: poop
+       b
+          snozzle: berry
+
+    two
+       c
+          apple: orange
+    ''')[0]
+
+Which prints::
+
+    [['one', ['a', {'foo': 'bar', 'baz': 'poop'}], ['b', {'snozzle': 'berry'}]], ['two', ['c', {'apple': 'orange'}]]]
+
+Note that the name/value pairs are in dictionaries; this is because we passed
+a list of tuples to ``dict()``.

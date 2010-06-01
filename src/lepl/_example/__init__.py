@@ -38,6 +38,7 @@ when the documentation needs to be updated.
 #@PydevCodeAnalysisIgnore
 import lepl._example.args
 import lepl._example.columns
+import lepl._example.config
 import lepl._example.error
 import lepl._example.expression
 import lepl._example.full_match

@@ -129,7 +129,11 @@ class LineAwareAlphabet(StrAlphabet):
                 format('Only StrAlphabet subclasses supported: {0}/{1}',
                        alphabet, type(alphabet).__name__))
         super(LineAwareAlphabet, self).__init__(SOL, EOL,
-                                                parser_factory=parser_factory)
+                                                parser_factory=parser_factory,
+                                                escape=alphabet.escape,
+                                                escaped=alphabet.escaped,
+                                                illegal=alphabet.illegal,
+                                                range=alphabet.range)
         self.base = alphabet
         self.extensions = {START: SOL, END: EOL}
         

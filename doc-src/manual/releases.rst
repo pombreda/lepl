@@ -96,12 +96,14 @@ Date        Version  Description
 2009-05-02  4.2.1    Small bugfix for top level DNS names that start with a digit.
 ----------  -------  -----------
 2009-05-20  4.2.2    Small bugfix in regexp rewriting.
+----------  -------  -----------
+2009-05-31  4.2.3    Extra offside example; improved handling of regexps in tokens.
 ==========  =======  ===========
 
 
 .. release_4_2:
 
-4.2, 4.2.1
+4.2, 4.2.3
 ----------
 
 Includes a new module for validating email addresses and URLs according to

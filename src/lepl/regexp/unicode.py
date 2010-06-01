@@ -102,32 +102,3 @@ class UnicodeAlphabet(StrAlphabet):
     def __repr__(self):
         return '<Unicode>'
 
-    def fmt_intervals(self, intervals):
-        '''
-        Hide unicode chars because of some strange error that occurs with
-        Python2.6 on the command line.
-        '''
-        def pretty(c):
-            x = self._escape_char(c)
-            if len(x) > 1 or 31 <= ord(x) <= 128:
-                return str(x)
-            elif ord(c) < 0x100:
-                return format('\\x{0:02x}', ord(c)) 
-            elif ord(c) < 0x10000:
-                return format('\\u{0:04x}', ord(c)) 
-            else:
-                return format('\\U{0:08x}', ord(c)) 
-        ranges = []
-        if len(intervals) == 1:
-            if intervals[0][0] == intervals[0][1]:
-                return self._escape_char(intervals[0][0])
-            elif intervals[0][0] == self.min and intervals[0][1] == self.max:
-                return '.'
-        # pylint: disable-msg=C0103
-        # (sorry. but i use this (a, b) convention throughout the regexp lib) 
-        for (a, b) in intervals:
-            if a == b:
-                ranges.append(self._escape_char(a))
-            else:
-                ranges.append(format('{0!s}-{1!s}', pretty(a), pretty(b)))
-        return format('[{0}]', self.join(ranges))

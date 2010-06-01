@@ -223,7 +223,9 @@ example::
 
   >>> statement += (simple | empty | block) > list
 
-  >>> parser = statement[:].string_parser(LineAwareConfiguration(block_policy=2))
+  >>> program.config.default_line_aware(block_policy=2)
+  >>> parser = program.get_parse_string()
+
   >>> parser('''
   ... abc def
   ... ghijk:
@@ -268,8 +270,10 @@ default).
   expressions to match or exclude the line markers.
   
   However, if you do need to explicitly match markers, this behaviour can be
-  disabled by providing `make_str_parser() <api/redirect.html#lepl.regexp.str.make_str_parser>`_ as the ``parser_factory`` option
-  in `.config.default_line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_.
+  disabled by providing `make_str_parser()
+  <api/redirect.html#lepl.regexp.str.make_str_parser>`_ as the
+  ``parser_factory`` option in `.config.default_line_aware()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_.
 
 
 .. index:: ContinuedBLineFactory()

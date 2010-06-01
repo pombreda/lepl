@@ -32,11 +32,11 @@ Tests for the lepl.regexp.rewriters module.
 '''
 
 from logging import basicConfig, DEBUG
+from string import ascii_letters
 from unittest import TestCase
 
-from lepl import Any, NfaRegexp, Literal, Add, And, Integer, Float, Word, Star
+from lepl import *
 from lepl.regexp.rewriters import CompileRegexp
-
 
 # pylint: disable-msg=C0103, C0111, C0301, C0324
 # (dude this is just a test)
@@ -365,3 +365,31 @@ class WordBugTest(TestCase):
         results = list(matcher('aa'))
         assert results == [(['aa'], ''), (['a'], 'a')], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
+
+
+class TokenBugTest(TestCase):
+    '''
+    Token(Word()) and Token(Any(ascii_letters)[1:]) gave errors.
+    '''
+    
+    def test_token_word(self):
+        tk = Token(Word())
+        tk.config.default_line_aware(block_policy=rightmost)
+        tk.get_parse()
+        
+    def test_token_any(self):
+        tk = Token(Any(ascii_letters)[1:,...])
+        tk.config.default_line_aware(block_policy=rightmost)
+        tk.get_parse()
+    
+    def test_simple_word(self):
+        rx = Word()
+        matcher = rx.get_parse().matcher
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
+        
+    def test_simple_any(self):
+        rx = Any(ascii_letters)[1:,...]
+        rx.config.compile_to_nfa()
+        matcher = rx.get_parse().matcher
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
+        
