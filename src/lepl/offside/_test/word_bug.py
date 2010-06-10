@@ -27,6 +27,11 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
+'''
+Tests related to a bug when Word() is specified inside Token() with
+line-aware parsing.
+'''
+
 from unittest import TestCase
 
 from lepl import *

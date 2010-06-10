@@ -1,4 +1,3 @@
-from lepl.offside.regexp import _INDENT
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -35,7 +34,7 @@ A stream that adds tokens at the start and end of lines.
 from io import StringIO
 
 from lepl.lexer.stream import TokenSource
-from lepl.offside.lexer import START
+from lepl.offside.regexp import _INDENT
 from lepl.offside.support import LineAwareError, OffsideError
 from lepl.stream.stream import DefaultStreamFactory, LineSource, sample
 from lepl.support.lib import str

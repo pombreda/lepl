@@ -79,26 +79,39 @@ Date        Version  Description
 ----------  -------  -----------
 2009-12-10  3.3.3    Various small tweaks based on user feedback.
 ----------  -------  -----------
-2009-04-03  4.0b1    Broad revision, simplification.
+2010-04-03  4.0b1    Broad revision, simplification.
 ----------  -------  -----------
-2009-04-16  4.0      Broad revision, simplification.
+2010-04-16  4.0      Broad revision, simplification.
 ----------  -------  -----------
-2009-04-18  4.0.1    Small bugfix for left-recursive, whitespace sensitive grammars (hash).
+2010-04-18  4.0.1    Small bugfix for left-recursive, whitespace sensitive grammars (hash).
 ----------  -------  -----------
-2009-04-18  4.0.2    Small bugfix for left-recursive, whitespace sensitive grammars (equality).
+2010-04-18  4.0.2    Small bugfix for left-recursive, whitespace sensitive grammars (equality).
 ----------  -------  -----------
-2009-04-20  4.0.3    Small bugfix for kargs of user-defined matchers; dropped Python 3 specific test.
+2010-04-20  4.0.3    Small bugfix for kargs of user-defined matchers; dropped Python 3 specific test.
 ----------  -------  -----------
-2009-04-24  4.1      Major bugfix related to coercion of matcher arguments.
+2010-04-24  4.1      Major bugfix related to coercion of matcher arguments.
 ----------  -------  -----------
-2009-05-02  4.2      RFC 3696 validation; better regexp rewriting.
+2010-05-02  4.2      RFC 3696 validation; better regexp rewriting.
 ----------  -------  -----------
-2009-05-02  4.2.1    Small bugfix for top level DNS names that start with a digit.
+2010-05-02  4.2.1    Small bugfix for top level DNS names that start with a digit.
 ----------  -------  -----------
-2009-05-20  4.2.2    Small bugfix in regexp rewriting.
+2010-05-20  4.2.2    Small bugfix in regexp rewriting.
 ----------  -------  -----------
-2009-05-31  4.2.3    Extra offside example; improved handling of regexps in tokens.
+2010-05-31  4.2.3    Extra offside example; improved handling of regexps in tokens.
+----------  -------  -----------
+2010-06-10  4.3      Simplified line aware parsing.
 ==========  =======  ===========
+
+
+.. release_4_3:
+
+4.3
+---
+
+After user feedback the line-aware (but not offside) parsing was simplified
+slightly.  ``Eol()`` was changed to ``LineAwareEol()``, a similar matcher for
+start of line was added, and rewriting of matchers inside tokens was improved
+(including a bugfix).
 
 
 .. release_4_2:

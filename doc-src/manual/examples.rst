@@ -381,7 +381,7 @@ Next, we use tokens (and spaces are handled automatically)::
 Finally, we use line-aware parsing to handle the newline::
 
   >>> word = Token(Word())
-  >>> line = (~LineAwareSol() & word[:] & LineAwareEol()) > list
+  >>> line = (~LineAwareSol() & word[:] & ~LineAwareEol()) > list
   >>> lines = line[:]
   >>> lines.config.default_line_aware()
   >>> lines.parse('abc de f\n pqr\n')
