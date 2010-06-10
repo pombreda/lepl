@@ -35,7 +35,7 @@ from lepl.matchers.core import Any
 from lepl.matchers.combine import And
 from lepl.matchers.support import coerce_, OperatorMatcher
 from lepl.core.parser import tagged
-from lepl.offside.lexer import Indent, Eol, BIndent
+from lepl.offside.lexer import Indent, LineAwareEol, BIndent
 from lepl.offside.monitor import BlockMonitor
 from lepl.offside.regexp import SOL as _SOL, EOL as _EOL
 from lepl.stream.filters import ExcludeSequence
@@ -187,14 +187,14 @@ def Line(matcher):
     '''
     Match the matcher within a line.
     '''
-    return ~Indent(compiled=True) & matcher & ~Eol(compiled=True)
+    return ~Indent() & matcher & ~LineAwareEol()
 
 
 def BLine(matcher):
     '''
     Match the matcher within a line with block indent.
     '''
-    return ~BIndent(compiled=True) & matcher & ~Eol(compiled=True)
+    return ~BIndent() & matcher & ~LineAwareEol()
 
 
 def only_token(token, item):
@@ -227,7 +227,8 @@ def _ContinuedLineFactory(continuation, base):
         Like `base`, but continues over multiple lines if the continuation 
         token is found at the end of each line.
         '''
-        multiple = ExcludeSequence(any_token, [continuation, Eol(), Indent()])
+        multiple = ExcludeSequence(any_token, 
+                                   [continuation, LineAwareEol(), Indent()])
         return base(multiple(matcher))
     return ContinuedLine
 
@@ -248,8 +249,7 @@ def ContinuedBLineFactory(continuation):
     return _ContinuedLineFactory(continuation, BLine)
     
 
-Extend = ExcludeSequence(only_token, 
-                         [Eol(compiled=True), Indent(compiled=True)])
+Extend = ExcludeSequence(only_token, [LineAwareEol(), Indent()])
 '''
 Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 
 filtered out.  On matching, return the "outer" stream at the appropriate

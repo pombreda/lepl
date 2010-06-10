@@ -1,3 +1,4 @@
+from lepl.offside.regexp import _INDENT
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -165,7 +166,7 @@ class LineAwareTokenSource(TokenSource):
         try:
             ([(terminals, text)], stream) = \
                     super(LineAwareTokenSource, self).__next__()
-            if terminals and START in terminals:
+            if terminals and _INDENT in terminals:
                 if not len(terminals) == 1:
                     raise OffsideError('More than one token matching ^')
                 elif '\t' in text and self.__tab:

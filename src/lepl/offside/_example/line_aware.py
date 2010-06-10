@@ -66,7 +66,7 @@ class LineAwareExamples(Example):
     def test_indent_token(self):
         #basicConfig(level=DEBUG)
         words = Token(Word(Lower()))[:] > list
-        line = Indent() & words & Eol()
+        line = Indent() & words & LineAwareEol()
         line.config.default_line_aware(tabsize=4)
         parser = line.get_parse_string()
         self.examples([(lambda: parser('\tabc def'), 

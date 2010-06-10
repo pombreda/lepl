@@ -46,3 +46,4 @@ import lepl.offside._test.regexp
 import lepl.offside._test.stream
 import lepl.offside._test.text
 import lepl.offside._test.unicode
+import lepl.offside._test.word_bug

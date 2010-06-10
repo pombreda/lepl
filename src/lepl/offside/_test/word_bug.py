@@ -74,6 +74,14 @@ class WordBugTest(TestCase):
         result = lines.parse('abc de f\n pqr\n')
         assert result == [['abc', 'de', 'f'], ['pqr']], result
         
+    def test_line_word_explicit(self):
+        word = Token(Word())
+        line = (~LineAwareSol() & word[:] & ~LineAwareEol()) > list
+        lines = line[:]
+        lines.config.default_line_aware()
+        result = lines.parse('abc de f\n pqr\n')
+        assert result == [['abc', 'de', 'f'], ['pqr']], result
+
     def test_parse(self):
         unicode = UnicodeAlphabet()
         assert unicode.parse(r'[\\x00-\\x08\\x0e-\\x1f!-\\uffff](?:[\\x00-\\x08\\x0e-\\x1f!-\\uffff])*')

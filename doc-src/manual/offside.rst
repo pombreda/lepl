@@ -92,16 +92,18 @@ spaces.  By default, 8 characters are used.  To leave tabs as they are, set to
 ``None``.
 
 
-.. index:: Indent(), Eol()
+.. index:: Indent(), LineAwareEol(), LineAwareSol()
 
-Indent and Eol Tokens
----------------------
+Indent, Start and End-Of-Line Tokens
+------------------------------------
 
 We can use tokens with line--aware alphabets.  Lepl includes two tokens that
 do the basic work: `Indent() <api/redirect.html#lepl.offside.lexer.Indent>`_
-and `Eol() <api/redirect.html#lepl.offside.lexer.Eol>`_.  As you might expect,
-the first of these matches the start of line marker plus any additional
-spaces, while the second matches the end of line marker.
+and `LineAwareEol() <api/redirect.html#lepl.offside.lexer.LineAwareEol>`_.  As
+you might expect, the first of these matches the start of line marker plus any
+additional spaces, while the second matches the end of line marker (there's
+also a `LineAwareSol() <api/redirect.html#lepl.offside.lexer.LineAwareSol>`_,
+but it's not usually as useful).
 
 Like any other token, `Indent()
 <api/redirect.html#lepl.offside.lexer.Indent>`_ can be used to create a
@@ -111,7 +113,7 @@ spaces).
 Here is an example using line--aware tokens::
 
   >>> words = Token(Word(Lower()))[:] > list
-  >>> line = Indent() & words & Eol()
+  >>> line = Indent() & words & LineAwareEol()
   >>> line.config.default_line_aware(tabsize=4)
   >>> parser('\tabc def')
   ['    ', ['abc', 'def'], '']
@@ -135,9 +137,9 @@ Lines and Continuations
   for example).
 
 The `Line() <api/redirect.html#lepl.offside.matchers.Line>`_ matcher hides
-`Indent() <api/redirect.html#lepl.offside.lexer.Indent>`_ and `Eol()
-<api/redirect.html#lepl.offside.lexer.Eol>`_ behind a slightly simpler
-interface::
+`Indent() <api/redirect.html#lepl.offside.lexer.Indent>`_ and `LineAwareEol()
+<api/redirect.html#lepl.offside.lexer.LineAwareEol>`_ behind a slightly
+simpler interface::
 
   >>> words = Token(Word(Lower()))[:] > list
   >>> line = Line(words)

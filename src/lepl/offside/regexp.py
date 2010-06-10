@@ -50,6 +50,11 @@ END = 'EOL'
 Extension to represent end of line.
 '''
 
+_INDENT = 'INDENT'
+'''
+Name for special indent token.
+'''
+
 
 # pylint: disable-msg=R0903
 # using __ methods

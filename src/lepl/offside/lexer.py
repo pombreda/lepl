@@ -34,7 +34,7 @@ Tokens for indents.
 
 from lepl.lexer.matchers import BaseToken
 from lepl.offside.monitor import BlockMonitor
-from lepl.offside.regexp import START, END
+from lepl.offside.regexp import START, END, _INDENT
 from lepl.offside.support import OffsideError
 from lepl.core.parser import tagged
 from lepl.support.lib import format
@@ -42,34 +42,62 @@ from lepl.support.lib import format
 
 # pylint: disable-msg=R0901, R0904, R0913, E1101
 # lepl conventions
-class Indent(BaseToken):
+
+class _LineAwareToken(BaseToken):
+    '''
+    Helper class for simplifying token definitions.
+    '''
+    
+    def __init__(self, regexp, default_id, content=None, id_=None, 
+                 alphabet=None, complete=True, compiled=False):
+        if id_ is None:
+            id_ = default_id
+        super(_LineAwareToken, self).__init__(content=content, id_=id_, 
+                                             alphabet=alphabet, complete=complete, 
+                                             compiled=compiled)
+        self.regexp = regexp
+
+
+class Indent(_LineAwareToken):
     '''
     Match an indent (start of line marker plus spaces and tabs).
+    
+    Note that this is tied to the stream code, which detects the ID and
+    replaces tabs with spaces.
     '''
     
     def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
                  compiled=False):
-        if id_ is None:
-            id_ = START
-        super(Indent, self).__init__(content=content, id_=id_, 
+        super(Indent, self).__init__('(*SOL)[ \t]*', _INDENT, 
+                                     content=content, id_=id_, 
                                      alphabet=alphabet, complete=complete, 
                                      compiled=compiled)
-        self.regexp = '(*SOL)[ \t]*'
                 
         
-class Eol(BaseToken):
+class LineAwareEol(_LineAwareToken):
     '''
     Match the end of line marker.
     '''
     
     def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
                  compiled=False):
-        if id_ is None:
-            id_ = END
-        super(Eol, self).__init__(content=content, id_=id_, 
-                                  alphabet=alphabet, complete=complete, 
-                                  compiled=compiled)
-        self.regexp = '(*EOL)'
+        super(LineAwareEol, self).__init__('(*EOL)', END, 
+                                           content=content, id_=id_, 
+                                           alphabet=alphabet, complete=complete, 
+                                           compiled=compiled)
+
+
+class LineAwareSol(_LineAwareToken):
+    '''
+    Match the start of line marker.
+    '''
+    
+    def __init__(self, content=None, id_=None, alphabet=None, complete=True, 
+                 compiled=False):
+        super(LineAwareSol, self).__init__('(*SOL)', START, 
+                                           content=content, id_=id_, 
+                                           alphabet=alphabet, complete=complete, 
+                                           compiled=compiled)
 
 
 class BIndent(Indent):

@@ -36,7 +36,7 @@ from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.matchers.core import Regexp, Literal, Any
-from lepl.offside.matchers import BLine, Indent, Eol
+from lepl.offside.matchers import BLine, Indent, LineAwareEol
 from lepl.offside.support import OffsideError
 from lepl.regexp.matchers import DfaRegexp
 
@@ -90,7 +90,7 @@ class LineTest(TestCase):
         and EOL is used; otherwise Any()[:] matches those and we end up
         with a single monster token.
         '''
-        line = Indent() & Token(Any()) & Eol()
+        line = Indent() & Token(Any()) & LineAwareEol()
         line.config.default_line_aware(tabsize=8, block_policy=0).trace(True)
         result = line.parse('a')
         assert result == ['', 'a', ''], result
