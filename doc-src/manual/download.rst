@@ -70,6 +70,13 @@ You can download the source and documentation packages from the `Support Site
 Source packages are also available from the `Python Package Index
 <http://pypi.python.org/pypi/LEPL/>`_.
 
+.. note::
+
+  The Google Code site doesn't allow free access to all people (in particular,
+  Cubans are blocked).  However, the Python Package Index site (second link
+  above) is hosted in the Netherlands and, I believe, does work.
+
+  I do not live in the USA, and acooke.org is not hosted in the USA.
 
 .. index:: Python version
 .. _versions:

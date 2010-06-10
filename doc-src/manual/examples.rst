@@ -351,3 +351,42 @@ Which prints::
 
 Note that the name/value pairs are in dictionaries; this is because we passed
 a list of tuples to ``dict()``.
+
+
+.. index:: Line(), Word(), SOL, EOL
+
+Parsing Lines of Words
+----------------------
+
+Here are a set of progressively more complex parsers that split each line into
+a list of words.
+
+We start with a simple parser that explicitly manages spaces::
+
+  >>> with DroppedSpace():
+  >>>     line = (Word()[:] & Drop('\n')) > list
+  >>>     lines = line[:]
+  >>> lines.parse('abc de f\n pqr\n')
+  [['abc', 'de', 'f'], ['pqr']]
+
+Next, we use tokens (and spaces are handled automatically)::
+
+  >>> word = Token(Word())
+  >>> newline = ~Token('\n')
+  >>> line = (word[:] & newline) > list
+  >>> lines = line[:]
+  >>> lines.parse('abc de f\n pqr\n')
+  [['abc', 'de', 'f'], ['pqr']]
+
+Finally, we use line-aware parsing to handle the newline::
+
+  >>> word = Token(Word())
+  >>> line = Line(word[:]) > list
+  >>> lines = line[:]
+  >>> lines.config.default_line_aware()
+  >>> lines.parse('abc de f\n pqr\n')
+  [['abc', 'de', 'f'], ['pqr']]
+
+Although the final case appears simplest, it is doing so much "magic" that it
+can be difficult to understand errors during development (and it is more
+likely to find bugs in the implementation).

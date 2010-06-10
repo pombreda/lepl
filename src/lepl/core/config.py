@@ -552,14 +552,13 @@ class ConfigBuilder(object):
         and it will be extended to include start and end of line markers.
         
         `parser_factory` is used to generate a regexp parser.  If this is unset
-        then the parser used depends on whether blocks are being used.  If so,
-        then the HideSolEolParser is used (so that you can specify tokens 
-        without worrying about SOL and EOL); otherwise a normal parser is
-        used.
+        then HideSolEolParser is used (so that you can specify tokens 
+        without worrying about SOL and EOL).  If you want to explicitly
+        manage SOL and EOL yourself, provide `make_str_parser` here.
         
         `discard` is a regular expression which is matched against the stream
         if lexing otherwise fails.  A successful match is discarded.  If None
-        then the usual token defaut is used (whitespace).  To disable, use
+        then the usual token default is used (whitespace).  To disable, use
         an empty string.
         
         `tabsize`, if not None, should be the number of spaces used to replace
@@ -595,10 +594,7 @@ class ConfigBuilder(object):
         if alphabet is None:
             alphabet = UnicodeAlphabet.instance()
         if not parser_factory:
-            if use_blocks:
-                parser_factory = make_hide_sol_eol_parser
-            else:
-                parser_factory = make_str_parser
+            parser_factory = make_hide_sol_eol_parser
         self.alphabet(LineAwareAlphabet(alphabet, parser_factory))
 
         self.set_alphabet_arg()

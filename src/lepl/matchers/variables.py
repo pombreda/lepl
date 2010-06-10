@@ -121,23 +121,25 @@ def name(name, show_failures=True, width=80, out=stderr):
 
 @contextmanager
 def TraceVariables(on=True, show_failures=True, width=80, out=stderr):
-    before = _getframe(2).f_locals.copy()
+    if on:
+        before = _getframe(2).f_locals.copy()
     yield None
-    after = _getframe(2).f_locals
-    warned = False
-    for key in after:
-        value = after[key]
-        if on and key not in before or value != before[key]:
-            try:
-                value.wrapper.append(name(key, show_failures, width, out))
-            except:
-                if not warned:
+    if on:
+        after = _getframe(2).f_locals
+        warned = False
+        for key in after:
+            value = after[key]
+            if key not in before or value != before[key]:
+                try:
+                    value.wrapper.append(name(key, show_failures, width, out))
+                except:
+                    if not warned:
+                        # Python bug #4618
+                        print('Unfortunately the following matchers cannot '
+                              'be tracked:', end=str('\n'))
+                        warned = True
                     # Python bug #4618
-                    print('Unfortunately the following matchers cannot '
-                          'be tracked:', end=str('\n'))
-                    warned = True
-                # Python bug #4618
-                print(format('  {0} = {1}', key, value), end=str('\n'))
+                    print(format('  {0} = {1}', key, value), end=str('\n'))
                     
 
 

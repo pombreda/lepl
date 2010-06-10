@@ -165,7 +165,7 @@ class LineAwareAlphabet(StrAlphabet):
         '''
         if text in self.extensions:
             extn = self.extensions[text]
-            return (extn, extn)
+            return extn
         else:
             return super(LineAwareAlphabet, self).extension(text)
         
@@ -175,6 +175,10 @@ class LineAwareAlphabet(StrAlphabet):
         '''
         return super(LineAwareAlphabet, self).join(
                     filter(lambda x: x not in (SOL, EOL), chars))
+        
+    def __str__(self):
+        return format('<{0}<{1}>>', self.__class__.__name__,
+                      self.base.__class__.__name__) 
             
             
 class HideSolEolParser(StrParser):

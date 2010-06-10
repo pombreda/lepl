@@ -151,47 +151,50 @@ class StrParser(LogMixin):
         from lepl.matchers.derived import Drop, Eos, AnyBut, Upper
         from lepl.matchers.core import Any, Lookahead, Literal, Delayed
         from lepl.matchers.error import make_error
+        from lepl.matchers.variables import TraceVariables
         from lepl.support.node import node_throw
     
-        # these two definitions enforce the conditions above, providing only
-        # special characters appear as literals in the grammar
-        escaped  = Drop(self.alphabet.escape) & self.alphabet.escaped
-        raw      = ~Lookahead(self.alphabet.escape) & \
-                        AnyBut(self.alphabet.illegal)
-        
-        single   = escaped | raw
-        
-        close    = Drop(')')
-        any_     = Literal('.')                                  >> self.dot
-        letter   = single                                        >> self.dup
-        pair     = single & Drop('-') & single                   > self.tup
-        extend   = (Drop('(*') & Upper()[1:,...] & close)        >> self.extend
-         
-        interval = pair | letter | extend
-        brackets = Drop('[') & interval[1:] & Drop(']')
-        inverted = Drop('[^') & interval[1:] & Drop(']')         >= self.invert      
-        char     = inverted | brackets | letter | any_ | extend  > self.char
+        with TraceVariables(False):
     
-        item     = Delayed()
+            # these two definitions enforce the conditions above, providing only
+            # special characters appear as literals in the grammar
+            escaped  = Drop(self.alphabet.escape) & self.alphabet.escaped
+            raw      = ~Lookahead(self.alphabet.escape) & \
+                            AnyBut(self.alphabet.illegal)
+            close    = Drop(')')
+            extend   = (Drop('(*') & Upper()[1:,...] & close)        >> self.extend
+            
+            single   = escaped | raw | extend
+            
+            any_     = Literal('.')                                  >> self.dot
+            letter   = single                                        >> self.dup
+            pair     = single & Drop('-') & single                   > self.tup
+             
+            interval = pair | letter
+            brackets = Drop('[') & interval[1:] & Drop(']')
+            inverted = Drop('[^') & interval[1:] & Drop(']')         >= self.invert      
+            char     = inverted | brackets | letter | any_ | extend  > self.char
         
-        open     = Drop('(?:')
-        range    = Drop(self.alphabet.escape) & self.alphabet.range
-        seq      = (char | item | range)[0:]                     > self.sequence
-        group    = open & seq & close
-        alts     = open & seq[2:, Drop('|')] & close             > self.choice
-        star     = (alts | group | char) & Drop('*')             > self.star
-        plus     = (alts | group | char) & Drop('+')             > self.plus
-        opt      = (alts | group | char) & Drop('?')             > self.option
-        bad_grp  = (Drop('(') & ~Lookahead('?:') & seq & close) \
-                        ** make_error(
-                            "Lepl's own regular expressions do not currently "
-                            "support matched groups.\n"
-                            "Use '(?:...)' to group expressions without "
-                            "matching.") 
-        
-        item    += alts | group | star | plus | opt | bad_grp
-        
-        expr     = ((char | item)[:] & Drop(Eos())) >> node_throw
+            item     = Delayed()
+            
+            open     = Drop('(?:')
+            range    = Drop(self.alphabet.escape) & self.alphabet.range
+            seq      = (char | item | range)[0:]                     > self.sequence
+            group    = open & seq & close
+            alts     = open & seq[2:, Drop('|')] & close             > self.choice
+            star     = (alts | group | char) & Drop('*')             > self.star
+            plus     = (alts | group | char) & Drop('+')             > self.plus
+            opt      = (alts | group | char) & Drop('?')             > self.option
+            bad_grp  = (Drop('(') & ~Lookahead('?:') & seq & close) \
+                            ** make_error(
+                                "Lepl's own regular expressions do not currently "
+                                "support matched groups.\n"
+                                "Use '(?:...)' to group expressions without "
+                                "matching.") 
+            
+            item    += alts | group | star | plus | opt | bad_grp
+            
+            expr     = ((char | item)[:] & Drop(Eos())) >> node_throw
     
         # Empty config here avoids loops if the default config includes
         # references to alphabets
@@ -268,7 +271,7 @@ class StrAlphabet(Alphabet):
         '''
         def pretty(c):
             x = self._escape_char(c)
-            if len(x) > 1 or 31 <= ord(x) <= 128:
+            if len(x) > 1 or 32 <= ord(x) <= 127:
                 return str(x)
             elif ord(c) < 0x100:
                 return format('\\x{0:02x}', ord(c)) 
@@ -286,7 +289,7 @@ class StrAlphabet(Alphabet):
         # (sorry. but i use this (a, b) convention throughout the regexp lib) 
         for (a, b) in intervals:
             if a == b:
-                ranges.append(self._escape_char(a))
+                ranges.append(pretty(a))
             else:
                 ranges.append(format('{0!s}-{1!s}', pretty(a), pretty(b)))
         return format('[{0}]', self.join(ranges))

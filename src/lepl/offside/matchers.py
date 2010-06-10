@@ -31,8 +31,6 @@
 Matchers that are indent aware.
 '''
 
-from weakref import WeakKeyDictionary
-
 from lepl.matchers.core import Any
 from lepl.matchers.combine import And
 from lepl.matchers.support import coerce_, OperatorMatcher

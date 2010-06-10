@@ -152,7 +152,7 @@ The parser above also used `Literal()
 this matches whatever value it is given::
 
   >>> matcher = Literal('hello')
-  >>> matcher.no_full_first_match()
+  >>> matcher.config.no_full_first_match()
   >>> matcher.parse('hello world')
   ['hello']
 
