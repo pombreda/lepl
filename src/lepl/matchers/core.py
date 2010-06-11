@@ -74,7 +74,7 @@ def Any(restrict=None):
 
     def match(support, stream):
         '''
-        Do the matching.  The result will be a single matchingcharacter.
+        Do the matching.  The result will be a single matching character.
         '''
         ok = bool(stream)
         if ok and restrict:

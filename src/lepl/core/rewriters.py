@@ -399,9 +399,13 @@ def left_loops(node):
                 if child is node:
                     yield family
                 else:
-                    if child not in known:
-                        stack.append(family)
-                        known.add(child)
+                    try:
+                        if child not in known:
+                            stack.append(family)
+                            known.add(child)
+                    # random attribute that is list, etc
+                    except TypeError:
+                        pass
                 if not is_child(parent, Or, fail=False) and \
                         not is_child(child, Lookahead, fail=False):
                     break

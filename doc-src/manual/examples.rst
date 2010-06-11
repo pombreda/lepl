@@ -378,7 +378,18 @@ Next, we use tokens (and spaces are handled automatically)::
   >>> lines.parse('abc de f\n pqr\n')
   [['abc', 'de', 'f'], ['pqr']]
 
-Finally, we use line-aware parsing to handle the newline::
+.. warning::
+
+  The next matchers use line-aware parsing.  This is not necessary to solve
+  this problem (this feature is intended for "offside rule" or "significant
+  whitespace" parsing) and I recommend using the matchers above.  I am
+  including these examples only because they help clarify how the line-aware
+  parsing works.
+
+  The final matcher (with ``SOL`` etc) requires version 4.3.1; all the other
+  line-aware matchers require version 4.3 (or greater).
+
+We can also use line-aware parsing with tokens to handle the newline::
 
   >>> word = Token(Word())
   >>> line = (~LineAwareSol() & word[:] & ~LineAwareEol()) > list
@@ -396,6 +407,14 @@ or, (almost) equivalently::
   >>> lines.parse('abc de f\n pqr\n')
   [['abc', 'de', 'f'], ['pqr']]
 
-Although the final case appears simplest, it is doing so much "magic" that it
-can be difficult to understand errors during development (and it is more
-likely to find bugs in the implementation).
+And we can also match the line-aware symbols directly (without using tokens)::
+
+  >>> with DroppedSpace():
+  >>>     words = Word()[:]
+  >>>     newline = ~Any('\n')
+  >>>     line = (~SOL() & words & newline & ~EOL()) > list
+  >>>     lines = line[:]
+  >>> lines.config.default_line_aware()
+  >>> lines.parse('abc de f\n pqr\n')
+  [['abc', 'de', 'f'], ['pqr']]
+

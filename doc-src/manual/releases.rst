@@ -100,6 +100,8 @@ Date        Version  Description
 2010-05-31  4.2.3    Extra offside example; improved handling of regexps in tokens.
 ----------  -------  -----------
 2010-06-10  4.3      Simplified line aware parsing.
+----------  -------  -----------
+2010-06-11  4.3.1    Small bugfix to support SOL and EOL.
 ==========  =======  ===========
 
 
