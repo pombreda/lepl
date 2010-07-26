@@ -1,11 +1,11 @@
 
-.. index:: licence, LGPL
+.. index:: licence, LGPL, MPL
 .. _licence:
 
 Licence
 =======
 
-Lepl is licensed under a dual lience --- you can choose between the `Mozilla
+Lepl is licensed under a dual licence --- you can choose between the `Mozilla
 Public Licence <http://www.mozilla.org/MPL/MPL-1.1.html>`_ and the `Lesser Gnu
 Public Licence <http://www.gnu.org/licenses/lgpl.html>`_.  It is copyright
 2009-2010 Andrew Cooke (andrew@acooke.org) and contributors (see below).
@@ -61,8 +61,8 @@ Contributions
 
 For small bugs, please just explain the issue and I'll fix the code.
 
-For larger contributions, please use the `mailing list
-<http://groups.google.com/group/lepl>`_.  Any code / patches that are
+For larger contributions, please use the Lepl `mailing list
+<http://groups.google.com/group/lepl>`_ for now.  Any code / patches that are
 submitted must include a "signing off" indicating that the author agrees with
 the `Developer's Certificate of Origin
 <http://elinux.org/Developer_Certificate_Of_Origin>`_ (as used by Linux) where

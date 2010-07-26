@@ -1,19 +1,17 @@
 
-html {
- background: white;
-}
-
 body {
   font-family: georgia;
+  margin: 30px;
 }
 
 h1 {
   font-size: 300%;
   font-weight: bold;
+  text-align: center;
 }
 
 h2 {
-  font-size: 161.6%;
+  font-size: 153.9%;
   font-weight: bold;
 }
 
@@ -44,105 +42,19 @@ li {
   list-style-type: disc;
   margin-top: 2px;
   margin-left: 20px;
-  font-size: 123.1%;
-}
-
-li.contents {
- list-style-type: circle;
-}
-
-ul > li:first-child {
-  margin-top: 0px;
-}
-
-p.quote {
-  font-size: 100%;
-  font-style: italic;
-  text-align: justify;
-}
-
-span.attribution {
-  font-style: normal;
-}
-
-div#hd {
-  margin-top: 30px;
-  margin-bottom: 30px;
+  font-size: 116%;
 }
 
 div#hd-right {
   color: #306000;
 }
 
-div#hd-left h1 {
-  text-align: center;
+div#hd {
+  padding-bottom: 20px;
 }
 
-div#col1 p, div#q1 p {
-  margin-right: 10px;
-}
-
-div#left p, div#archive p {
-  margin-right: 20px;
-}
-
-div.item h2 {
-  margin-right: 20px;
-  margin-bottom: 5px;
-  float: left;
-}
-
-div#col2 p, div#col2 h2, div#q2 p, div#q2 h2 {
-  margin-left: 10px;
-}
-
-div#col2 li, div#q2 li {
-  margin-left: 30px;
-}
-
-div.item {
-  margin-top: 25px;
-}
-
-div#left > div.item:first-child, div#col1 > div.item:first-child, div#col2 > div.item:first-child {
-  margin-top: 0px;
-}
-
-div.item p {
-  margin-top: 3px;
-}
-
-div.item p:first-child {
-  margin-top: 0px;
-}
-
-div.item p.quote {
-  margin-top: 10px;
-}
-
-div#ft {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  text-align: center;
-  font-size: 108%;
-}
-
-div#ft p, div#archive p, div#archive li, div#left p, div#left li {
-  font-size: 108%;
-}
-
-div#links p {
-  margin-top: 10px;
-  font-size: 85%;
-  text-align: justify;
-}
-
-div#links {
-  color: #f8f8f8;
-}
-
-div#links a {
-  border-bottom: none;
+div#body-left ul {
+  padding-top: 10px;
 }
 
 div#tt {
@@ -155,10 +67,6 @@ div#tt {
   color: #808080;
 }
 
-div#pause {
-  color: #808080;
-}
-
 span.comment {
   color: #008000;
 }
@@ -167,13 +75,20 @@ span.code {
   color: #000000;
 }
 
-div#left ul {
-  padding-top: 10px;
+div#pause {
+  color: #808080;
 }
 
-div.install {
+div#ft {
+  margin-top: 20px;
   padding-top: 10px;
   border-top: 1px dotted #c0c0c0;
+  margin-bottom: 10px;
   padding-bottom: 15px;
   border-bottom: 1px dotted #c0c0c0;
+}
+
+div#copyright p {
+  font-size: 116%;
+  padding-top: 10px;
 }

@@ -6,7 +6,6 @@
     <meta name="description" 
           content="Andrew Cooke's LEPL Python parser." >
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.0.0/build/cssreset/reset-min.css&3.0.0/build/cssfonts/fonts-min.css&3.0.0/build/cssgrids/grids-min.css"> 
-    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.0r4/build/grids/grids-min.css">
     <script src="http://yui.yahooapis.com/3.0.0/build/yui/yui-min.js"></script>
     <title>LEPL</title>
     <link rel="stylesheet" type="text/css" href="index.css" title="default">
@@ -16,12 +15,12 @@
 var stopStart;
     </script>
 
-  <div id="doc4">
-    <div id="hd"><div class="yui-b"><div class="yui-gd">
-      <div id="hd-left" class="yui-u first">
+    <div id="hd" class="yui-t3">
+      <div id="hd-left" class="yui-b">
 <h1>Lepl 4.3</h1>
       </div>
-      <div id="hd-right" class="yui-u">
+      <div id="hd-right" class="yui-main">
+        <div class="yui-b">
 
 <p>A recursive descent parser for Python 2.6+ (including 3!).  
 Lepl is powerful, simple to use, and easy to extend: grammars are written 
@@ -31,8 +30,12 @@ simple functions.</p>
       </div>
     </div></div></div>
 
-    <div id="hd"><div class="yui-b"><div class="yui-gd">
-      <div id="left" class="yui-u first">
+        </div>
+      </div>
+    </div>
+
+    <div id="body" class="yui-t3">
+      <div id="body-left" class="yui-b">
 
 <h2>Resources</h2>
 
@@ -59,17 +62,28 @@ simple functions.</p>
 </ul>
 
       </div>
-      <div class="yui-u">
+      <div id="body-right" class="yui-main">
+        <div class="yui-b">
+
 <div id="tt" onClick='stopStart();'></div>
 <div id="pause" onClick='stopStart();'></div>
+
+
+        </div>
       </div>
-    </div></div></div>
+    </div>
 
+    <div id="ft" class="yui-t3">
+      <div id="ft-left" class="yui-b">
 
-    <div id="yui-main""><div class="yui-b">
-      <div class="yui-gd install">
-        <div id="bd" class="yui-g">
-          <div id="col1" class="yui-u first">
+<h2>Installation</h2>
+<pre>
+&gt; easy_install lepl
+</pre>
+
+      </div>
+      <div id="ft-right" class="yui-main">
+        <div class="yui-b"><div class="yui-g"><div class="yui-u first">
 
 <p>The <code>easy_install</code> command is provided by the
 <a href="http://pypi.python.org/pypi/distribute">distribute</a>  package.
@@ -77,30 +91,22 @@ Please see distribute's
 <a href="http://pypi.python.org/pypi/distribute#installation-instructions">installation
 instructions</a>.</p>
 
-          </div>
-          <div id="col2" class="yui-u">
+        </div>
+        <div class="yui-u">
 
 <p class="warn">Be careful with Python 3: setuptools and distribute both
 provide a command called easy_install, but only distribute works correctly.</p>
 
-          </div>
-        </div>
-        <div id="left" class="yui-u first">
-
-<h2>Installation</h2>
-<pre>
-&gt; easy_install lepl
-</pre>
-
-        </div>
+        </div></div></div>
       </div>
-    </div></div>
-    <div id="ft">
+    </div>
+
+    <div id="copyright">
 <p>Everything here my own work, unless attributed otherwise, 
 (c) 2009-2010 <a href="..">Andrew Cooke</a>.</p>
     </div>
-  </div>
-  <script>
+
+    <script>
 /*
   as far as i can tell, we need to have a state machine here, controlled
   by global variables - this seems to be the only / simplest way to get
@@ -230,6 +236,6 @@ Y.io('./example.txt');
 Y.on('io:complete', loadAndRun);
 
 });
-  </script>
+    </script>
   </body>
 </html>

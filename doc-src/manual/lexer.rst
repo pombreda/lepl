@@ -117,7 +117,7 @@ or as a subtraction expression (1 minus 2).  An appropriate matcher will give
 both results, through backtracking::
 
   >>> matchers = (Integer() | Literal('-'))[:] & Eos()
-  >>> list(functions.parse_all('1-2'))
+  >>> list(matchers.parse_all('1-2'))
   [['1', '-2'], ['1', '-', '2']]
 
 But when tokens are used, "-2" is preferred to "-", because it is a longer
@@ -163,9 +163,11 @@ Advanced Options
 
 Configuration
 
-  The lexer can be configured using `.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_ (see
+  The lexer can be configured using `.config.lexer()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_ (see
   ref:`configuration`).  This can take an additional argument that specified
-  the discard pattern.
+  the discard pattern.  Note that this is included in the default
+  configuration (it does no harm if tokens are not used).
 
 Completeness
 

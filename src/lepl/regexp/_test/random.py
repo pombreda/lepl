@@ -1,3 +1,4 @@
+from logging import getLogger, DEBUG, basicConfig
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -38,7 +39,7 @@ from re import compile as compile_
 from sys import exc_info
 from unittest import TestCase
 
-from lepl.regexp.matchers import DfaRegexp
+from lepl.regexp.matchers import DfaRegexp, NfaRegexp
 from lepl.support.lib import format
 
 def randbool(weight=1):
@@ -121,19 +122,20 @@ class RandomTest(TestCase):
         but I cannot fathom why it should be - it seems *harder* to make them
         wwork that way... 
         '''
-        #basicConfig(level=DEBUG)
-        #log = getLogger('lepl.reexgp._test.random')
+        basicConfig(level=DEBUG)
+        log = getLogger('lepl.reexgp._test.random')
         match_alphabet = '012'
         string_alphabet = '013'
         for _ in range(100):
             expression = random_expression(3, match_alphabet) 
             string = random_string(3, string_alphabet)
-            matcher = DfaRegexp(expression)
+#            matcher = DfaRegexp(expression)
+            matcher = NfaRegexp(expression)
             matcher.config.no_full_first_match()
             lepl_result = matcher.parse(string)
             if lepl_result:
                 lepl_result = lepl_result[0]
-            #log.debug(format('{0} {1} {2}', expression, string, lepl_result))
+            log.debug(format('{0} {1} {2}', expression, string, lepl_result))
             try:
                 python_result = compile_(expression).match(string) 
                 if python_result:

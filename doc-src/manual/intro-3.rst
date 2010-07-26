@@ -195,7 +195,7 @@ subclass of Python's ``list``.  That makes it easy to understand and use.
 Lepl includes tools that simplify working with nested lists, including
 `sexpr_fold() <api/redirect.html#lepl.support.list.sexpr_fold>`_,
 `sexpr_flatten() <api/redirect.html#lepl.support.list.sexpr_flatten>`_ and `sexpr_to_tree() <api/redirect.html#lepl.support.list.sexpr_to_tree>`_.  These all work with any kind of
-nested iterable (except strings, which are treatd as single values rather than
+nested iterable (except strings, which are treated as single values rather than
 sequences of characters).  That means that you can also use tuples, plain old
 Python lists, and even sub--classes of `List()
 <api/redirect.html#lepl.support.list.List>`_ to structure your AST (the next
