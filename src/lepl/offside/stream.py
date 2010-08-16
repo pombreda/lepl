@@ -60,7 +60,7 @@ class LineAwareStreamFactory(DefaultStreamFactory):
         '''
         Generate a stream from a string.
         '''
-        return self(LineAwareSource(self.alphabet, StringIO(text), 
+        return self(LineAwareSource(self.alphabet, StringIO(str(text)), 
                                     sample('str: ', repr(text))))
     
     def from_lines(self, lines, source=None, join_=''.join):

@@ -102,6 +102,8 @@ Date        Version  Description
 2010-06-10  4.3      Simplified line aware parsing.
 ----------  -------  -----------
 2010-06-11  4.3.1    Small bugfix to support SOL and EOL.
+----------  -------  -----------
+2010-06-11  4.3.2    Small bugfix to support Python 2.7.
 ==========  =======  ===========
 
 

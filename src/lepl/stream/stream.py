@@ -122,7 +122,7 @@ be delegated to the source (and similarly for equality).
 from abc import ABCMeta, abstractmethod, abstractproperty
 from io import StringIO, IOBase
 
-from lepl.support.lib import open_stop, sample, format, basestring, str,\
+from lepl.support.lib import open_stop, sample, format, basestring, str, \
     LogMixin
 
 
@@ -585,7 +585,7 @@ class DefaultStreamFactory(StreamFactory, LogMixin):
             source = sample('str: ', repr(text))
         if base is None:
             base = text
-        return self(LineSource(StringIO(text), source, join, base=base))
+        return self(LineSource(StringIO(str(text)), source, join, base=base))
     
     def from_lines(self, lines, source=None, join=''.join):
         '''
