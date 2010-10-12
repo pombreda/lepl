@@ -1,4 +1,3 @@
-from logging import getLogger, DEBUG, basicConfig
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -33,7 +32,7 @@ Tests for the lepl.regexp package.  We generate random expressions and
 test the results against the python regexp matcher.
 '''
 
-#from logging import basicConfig, DEBUG, getLogger
+from logging import basicConfig, DEBUG, getLogger
 from random import randint, choice
 from re import compile as compile_
 from sys import exc_info
@@ -117,20 +116,20 @@ class RandomTest(TestCase):
     def test_random(self):
         '''
         Compares lepl + python expressions.  This runs 'til it fails, and it
-        always does fail, because lepl's expressions are guarenteed greedy
+        always does fail, because lepl's expressions are guaranteed greedy
         while python's aren't.  This is "normal" (Perl is the same as Python)
         but I cannot fathom why it should be - it seems *harder* to make them
-        wwork that way... 
+        work that way... 
         '''
         basicConfig(level=DEBUG)
-        log = getLogger('lepl.reexgp._test.random')
+        log = getLogger('lepl.regexp._test.random')
         match_alphabet = '012'
         string_alphabet = '013'
         for _ in range(100):
             expression = random_expression(3, match_alphabet) 
             string = random_string(3, string_alphabet)
-#            matcher = DfaRegexp(expression)
-            matcher = NfaRegexp(expression)
+            matcher = DfaRegexp(expression)
+#            matcher = NfaRegexp(expression)
             matcher.config.no_full_first_match()
             lepl_result = matcher.parse(string)
             if lepl_result:

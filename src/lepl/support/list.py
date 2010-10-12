@@ -61,6 +61,8 @@ def clone_iterable(type_, items):
     '''
     if issubclass(type_, Node):
         return type_(*list(items))
+    elif issubclass(type_, basestring):
+        return type_('').join(items)
     else:
         return type_(items)
     
@@ -97,7 +99,7 @@ def sexpr_fold(per_list=None, per_item=None,
             except TypeError:
                 pass
             yield per_item(item)
-    return lambda list_: per_list(type(list_), items(list_))
+    return lambda list_: per_list(type(list_), items(iter(list_)))
 
 
 clone_sexpr = sexpr_fold()
