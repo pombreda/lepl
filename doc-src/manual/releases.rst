@@ -104,6 +104,8 @@ Date        Version  Description
 2010-06-11  4.3.1    Small bugfix to support SOL and EOL.
 ----------  -------  -----------
 2010-06-11  4.3.2    Small bugfix to support Python 2.7.
+----------  -------  -----------
+2010-10-12  4.3.3    Bugfixes for offside handling of errors.
 ==========  =======  ===========
 
 

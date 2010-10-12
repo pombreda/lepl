@@ -103,7 +103,7 @@ jiojio
             assert False, 'expected exception'
         except LexerError as error:
             assert str(error) == 'No lexer for \'123\' at ' \
-                'line 1 character 0 of str: \'123\'.', str(error)
+                'line 1 character 1 of str: \'123\'.', str(error)
                 
     def test_extend(self):
         #basicConfig(level=DEBUG)
