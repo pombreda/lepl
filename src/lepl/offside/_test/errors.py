@@ -32,6 +32,7 @@ A test related to error handling, based on a bug report.
 '''
 
 from logging import basicConfig, DEBUG
+from sys import exc_info
 from unittest import TestCase
 
 from lepl import *
@@ -79,7 +80,12 @@ class ErrorTest(TestCase):
         result = p('foo:\n  int i' )
         assert result == ['foo', [('int', 'i')]], result
         
-#    def test_error(self):
-#        p = self.make_parser()
-#        result = p('foo\n  int i')
-        
+    def test_error(self):
+        p = self.make_parser()
+        try:
+            result = p('foo\n  int i')
+            assert False, 'no error'
+        except Error:
+            error = exc_info()[1]
+            assert str(error) == "BlockStart-OnlyName (str: 'foo\\n  int i', line 1)", str(error)
+            

@@ -125,11 +125,11 @@ class LineAwareSource(LineSource):
     
     def location(self, offset, line, location_state):
         '''
-        Correct the location for the initial SOL character.
+        Remove the SOL/EOL characters.
         '''
         (character_count, line_count) = location_state
-        return (line_count, offset - 1, character_count + offset - 1, 
-                line, str(self))
+        return (line_count, offset, character_count + offset, 
+                self.join([line]), str(self))
         
     def text(self, offset, line):
         '''

@@ -191,7 +191,10 @@ def trampoline(main, m_stack=None, m_value=None):
                                  epoch, value))
                 if stack:
                     log.debug(format('Top of stack: {0}', stack[-1]))
-                    log.warn(format_exc())
+                    try:
+                        log.warn(format_exc())
+                    except:
+                        log.warn('Exception cannot be formatted!')
                     for generator in stack:
                         log.debug(format('Stack: {0}', generator))
                 raise
