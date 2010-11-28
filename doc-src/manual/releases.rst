@@ -106,13 +106,15 @@ Date        Version  Description
 2010-06-11  4.3.2    Small bugfix to support Python 2.7.
 ----------  -------  -----------
 2010-10-12  4.3.3    Bugfixes for offside handling of errors.
+----------  -------  -----------
+2010-11-28  4.3.4    Small bugfix for printing empty List.
 ==========  =======  ===========
 
 
 .. release_4_3:
 
-4.3
----
+4.3, 4.3.4
+----------
 
 After user feedback the line-aware (but not offside) parsing was simplified
 slightly.  ``Eol()`` was changed to ``LineAwareEol()``, a similar matcher for

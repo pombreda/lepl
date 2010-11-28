@@ -133,4 +133,11 @@ class AstTest(TestCase):
          |           `- 5
          `- ')'""")
 
+    
+class EmptyListBugTest(TestCase):
+    
+    def test_empty(self):
+        s = str(List())
+        assert s == 'List', s
+        
         

@@ -670,6 +670,9 @@ class GraphStr(Visitor):
             and Kargs are the equivalent functions for the constructor
             arguments; we evaluate them here as we "expend" the ASCII
             picture.
+            
+            Does this need to be so complex - see my answer at 
+            https://www.quora.com/Is-there-an-easy-way-to-print-trees-with-nodes-and-lines-maybe
             '''
             spec = []
             for arg in args:

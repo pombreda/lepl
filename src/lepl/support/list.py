@@ -157,9 +157,10 @@ def sexpr_to_tree(list_):
         def fun(first, rest):
             yield [first + str(type_.__name__)]
             force = list(list_) # need to access last item explicitly
-            for item in force[:-1]:
-                yield item(rest + ' +- ', rest + ' |  ')
-            yield force[-1](rest + ' `- ', rest + '    ')
+            if force:
+                for item in force[:-1]:
+                    yield item(rest + ' +- ', rest + ' |  ')
+                yield force[-1](rest + ' `- ', rest + '    ')
         return lambda first, rest: join(list(fun(first, rest)))
     fold = sexpr_fold(per_list, per_item)
     return '\n'.join(fold(list_)('', ''))
