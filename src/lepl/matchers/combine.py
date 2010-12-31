@@ -81,7 +81,7 @@ def search_factory(factory):
     return document(new_factory, factory)
 
 
-@trampoline_matcher_factory(False, first=to(Literal), rest=to(Literal))
+@trampoline_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
 def DepthFirst(first, start, stop, rest):
     '''
@@ -114,7 +114,7 @@ def DepthFirst(first, start, stop, rest):
     return match
 
 
-@trampoline_matcher_factory(False, first=to(Literal), rest=to(Literal))
+@trampoline_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
 def BreadthFirst(first, start, stop, rest):
     '''
@@ -144,7 +144,7 @@ def BreadthFirst(first, start, stop, rest):
     return match
 
 
-@trampoline_matcher_factory(False, matcher=to(Literal))
+@trampoline_matcher_factory(matcher=to(Literal))
 def OrderByResultCount(matcher, ascending=True):
     '''
     Modify a matcher to return results in length order.
