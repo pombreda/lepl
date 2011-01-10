@@ -68,10 +68,12 @@ class DynamicExample(Example):
                     # can we end?
                     try:
                         (match, stream2) = yield end._match(stream1)
-                        if match and match[0] == label:
-                            yield ([(label, result)], stream2)
-                        else:
-                            support._info('end matched, but %s != %s' % (match[0], label))
+                        if match:
+                            if match[0] == label:
+                                yield ([(label, result)], stream2)
+                                return
+                            else:
+                                support._info('end matched, but %s != %s' % (match[0], label))
                     except StopIteration:
                         support._info('failed to match end')
                         pass
@@ -124,6 +126,16 @@ ab c
  *end*bar
 *end*foo
 '''), [('foo', ['ab', 'c', ('bar', ['p', 'q', 'rs', 'tu'])])]),
+    
+(lambda: parse(
+'''*foo
+ab c
+ *bar
+ p q rs tu
+ *end*bar
+ pap
+*end*foo
+'''), [('foo', ['ab', 'c', ('bar', ['p', 'q', 'rs', 'tu']), 'pap'])]),
     
 # this is consistent, but perhaps not expected.  if you don't want this, then
 # you need to define contents more carefully - perhaps exclude '*' from the
