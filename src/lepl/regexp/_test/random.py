@@ -121,7 +121,7 @@ class RandomTest(TestCase):
         but I cannot fathom why it should be - it seems *harder* to make them
         work that way... 
         '''
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         log = getLogger('lepl.regexp._test.random')
         match_alphabet = '012'
         string_alphabet = '013'

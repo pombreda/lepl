@@ -39,7 +39,7 @@ from lepl.matchers.combine import Or
 from lepl.matchers.core import Delayed
 from lepl.matchers.derived import Letter, Digit
 from lepl.matchers.monitor import Trace
-from lepl.offside.matchers import Block, BLine
+from lepl.offside.matchers import Block, BLine, rightmost, ContinuedBLineFactory
 
 
 # pylint: disable-msg=R0201
@@ -79,6 +79,67 @@ a
  6
 '''
         program.config.default_line_aware(block_policy=1)
+        parser = program.get_parse_string()
+        result = parser(text)
+        assert result == [['1'], 
+                          ['2'], 
+                          ['a', ['3'], 
+                                ['b', ['4'], 
+                                      ['5']], 
+                                ['6']]], result
+                                
+    def test_rightmost(self):
+        number = Token(Digit())
+        letter = Token(Letter())
+        
+        block = Delayed()
+        line = Or(BLine(number), 
+                  BLine(letter) & block) > list
+        block += Block(line[1:])
+        
+        program = Trace(line[1:])
+        
+        text = '''1
+2
+a
+ 3
+ b
+  4
+  5
+ 6
+'''
+        program.config.default_line_aware(block_policy=rightmost)
+        parser = program.get_parse_string()
+        result = parser(text)
+        assert result == [['1'], 
+                          ['2'], 
+                          ['a', ['3'], 
+                                ['b', ['4'], 
+                                      ['5']], 
+                                ['6']]], result
+                                
+    def test_continued_rightmost(self):
+        number = Token(Digit())
+        letter = Token(Letter())
+        
+        block = Delayed()
+        bline = ContinuedBLineFactory(r'x')
+        line = Or(bline(number), 
+                  bline(letter) & block) > list
+        block += Block(line[1:])
+        
+        program = Trace(line[1:])
+        
+        text = '''1
+2
+a
+ 3
+ b
+  4
+  5
+ 6
+'''
+        program.config.default_line_aware(block_policy=rightmost)
         parser = program.get_parse_string()
         result = parser(text)
         assert result == [['1'], 

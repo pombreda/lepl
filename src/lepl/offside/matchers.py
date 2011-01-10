@@ -77,6 +77,17 @@ def rightmost(_current, indent):
     return len(indent[0])
 
 
+def to_right(current, indent):
+    '''
+    This allows new blocks to be used without any introduction (eg no colon
+    on the preceding line).  See the "closed_bug" test for more details.
+    '''
+    new = len(indent[0])
+    if new <= current:
+        raise StopIteration
+    return new
+
+
 # pylint: disable-msg=W0105
 # epydoc convention
 DEFAULT_TABSIZE = 8
@@ -152,7 +163,9 @@ class Block(OperatorMatcher):
         Remove the indent we added.
         '''
         # only if we pushed a value to monitor (see below)
-        if not self.__monitor:
+        if self.__monitor:
+            self.__monitor = None
+        else:
             monitor.pop_level()
         
     @tagged

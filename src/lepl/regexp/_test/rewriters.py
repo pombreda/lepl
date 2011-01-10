@@ -337,7 +337,7 @@ class CompileTest(TestCase):
 class RepeatBugTest(TestCase):
     
     def test_bug(self):
-#        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         matcher = Any()[2, ...]
         matcher.config.no_full_first_match().compile_to_nfa()
         parser = matcher.get_parse_all()

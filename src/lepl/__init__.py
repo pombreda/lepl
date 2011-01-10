@@ -137,7 +137,8 @@ from lepl.matchers.variables import TraceVariables
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.offside.lexer import Indent, LineAwareEol, LineAwareSol, BIndent
 from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
-    ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent
+    ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent, \
+    to_right
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
@@ -282,7 +283,8 @@ __all__ = [
         'SOL',
         'EOL',
         'rightmost',
-        'constant_indent'
+        'constant_indent',
+        'to_right'
        ]
 
 __version__ = '4.3.4'
