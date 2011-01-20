@@ -45,7 +45,7 @@ from lepl._test.base import assert_str
 class HirenExample(Example):
     
     def test_parser(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         with TraceVariables():
             symbol = Token(r'(?:[\(\)\-&\|]|\->)')
