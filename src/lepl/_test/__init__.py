@@ -46,7 +46,7 @@ import lepl._test.bug_stalled_parser
 import lepl._test.magus
 
 # Number of tests if running in IDE with Python 3,
-TOTAL = 448
+TOTAL = 449
 
 
 def all():
