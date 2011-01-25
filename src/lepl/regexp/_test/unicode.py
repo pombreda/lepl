@@ -247,15 +247,15 @@ class DfaGraphTest(TestCase):
         
     def test_dfa_overlapping_choice(self):
         self.assert_dfa_graph('a(?:bcd|bce)', 
-            '0: [0] a->1; 1: [3, 6] b->2; 2: [4, 7] c->3; 3: [8, 5] [d-e]->4; 4(label): [1, 2]')
+            '0: [0] a->1; 1: [3, 4] b->2; 2: [5, 7] c->3; 3: [8, 6] [d-e]->4; 4(label): [1, 2]')
 
     def test_dfa_conflicting_choice(self):
         self.assert_dfa_graph('a(?:bc|b*d)', 
-            '0: [0] a->1; 1: [3, 5, 6, 7] d->2,b->3; 2(label): [1, 2]; 3: [4, 6, 7] [c-d]->2,b->4; 4: [6, 7] d->2,b->4')
+            '0: [0] a->1; 1: [3, 4, 6, 7] b->2,d->3; 2: [5, 6, 7] [c-d]->3,b->4; 3(label): [1, 2]; 4: [6, 7] d->3,b->4')
         
     def test_dfa_conflicting_choice_2(self):
         self.assert_dfa_graph('a(?:bb|b*c)', 
-            '0: [0] a->1; 1: [3, 5, 6, 7] c->2,b->3; 2(label): [1, 2]; 3: [4, 6, 7] c->2,b->4; 4(label): [1, 2, 6, 7] c->2,b->5; 5: [6, 7] c->2,b->5')
+            '0: [0] a->1; 1: [3, 4, 6, 7] b->2,c->3; 2: [5, 6, 7] c->3,b->4; 3(label): [1, 2]; 4(label): [1, 2, 6, 7] c->3,b->5; 5: [6, 7] c->3,b->5')
 
     def test_dfa_dot_option(self):
         '''

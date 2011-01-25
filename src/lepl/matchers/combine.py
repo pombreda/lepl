@@ -333,7 +333,6 @@ def Or(*matchers):
     continue to the right.  String arguments will be coerced to 
     literal matches.
     '''
-#    matchers = lmap(coerce_, matchers)
    
     def match(support, stream_in):
         '''

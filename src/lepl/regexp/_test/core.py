@@ -55,6 +55,11 @@ class CompilerTest(TestCase):
                       ('label', '', 'aab')])
         self.do_test('(?:a|b)', 'a', (['label'], 'a', ''), [('label', 'a', '')])
         self.do_test('(?:a|b)', 'b', (['label'], 'b', ''), [('label', 'b', '')])
+        # note how the DFA gives the longest match (only) here 
+        self.do_test('(?:a|ab)', 'ab', (['label'], 'ab', ''), 
+                     [('label', 'a', 'b'), ('label', 'ab', '')])
+        self.do_test('(?:ab|a)', 'ab', (['label'], 'ab', ''),
+                     [('label', 'ab', ''), ('label', 'a', 'b')])
         
     def do_test(self, pattern, target, dfa_result, nfa_result):
         alphabet = UnicodeAlphabet.instance()

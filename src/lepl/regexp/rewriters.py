@@ -50,13 +50,12 @@ we use a simple state machine approach using a tag (which is almost always
 None).  
 '''
 
-from functools import reduce
 from logging import getLogger
 
 from lepl.matchers.core import Regexp
 from lepl.matchers.matcher import Matcher, matcher_map
 from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
-    TrampolineWrapper, TransformableWrapper
+    TrampolineWrapper
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty, Option
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.interval import Character

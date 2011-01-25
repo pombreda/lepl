@@ -256,6 +256,7 @@ def Optional(matcher):
     Match zero or one instances of a matcher (**[0:1]**).
     '''
     return Repeat(coerce_(matcher), stop=1)
+    #return Or(coerce_(matcher), Empty())
 
 
 def Star(matcher):
@@ -470,6 +471,41 @@ def SignedEFloat(decimal='.', exponent='eE'):
 
     
 Float = SignedEFloat
+'''
+The default float is signed with exponents.
+'''
+
+
+def UnsignedRational(decimal='.'):
+    '''Match a sequence of digits that must include a decimal point.'''
+    return Or(Join(Optional(UnsignedInteger()), 
+                   Any(decimal), UnsignedInteger()),
+              Join(UnsignedInteger(), Any(decimal)))
+              
+
+    
+def SignedRational(decimal='.'):
+    '''Match a signed sequence of digits that must include a decimal point.'''
+    return Join(Optional(Any('+-')), UnsignedRational(decimal))
+    
+    
+def UnsignedERational(decimal='.', exponent='eE'):
+    '''
+    As `UnsignedEFloat`, but must contain a decimal or exponent.
+    '''
+    return Or(Join(UnsignedFloat(decimal), Any(exponent), SignedInteger()),
+              UnsignedRational(decimal))
+
+    
+def SignedERational(decimal='.', exponent='eE'):
+    '''
+    As `SignedEFloat`, but must containt a decimal or exponent.
+    '''
+    return Or(Join(SignedFloat(decimal), Any(exponent), SignedInteger()),
+              SignedRational(decimal))
+
+    
+Rational = SignedERational
 '''
 The default float is signed with exponents.
 '''

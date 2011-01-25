@@ -367,9 +367,11 @@ class _Choice(Sequence):
         if self:
             last = self[-1]
         for child in self:
-            child.build(graph, before, after)
+            # this places numbering first, so empty transition chosen in order
             if child is not last:
                 node = graph.new_node()
+            child.build(graph, before, after)
+            if child is not last:
                 graph.connect(before, node)
                 before = node
 
@@ -717,7 +719,7 @@ class NfaPattern(LogMixin):
         (map_, empties) = self.__table[0]
         stack.append((map_, None, empties, [], stream))
         while stack:
-            #self._debug(str(stack))
+            self._debug(str(stack))
             (map_, matched, empties, match, stream) = stack.pop()
             if not map_ and not matched and not empties:
                 # if we have no more transitions, drop
@@ -944,7 +946,7 @@ class DfaPattern(LogMixin):
             (state, terminals) = future
             size += 1
             # it might be faster to use size as an index here  - it's a
-            # trade-odd depending on line length.  probably worth measuring.
+            # trade-off depending on line length.  probably worth measuring.
             stream = stream[1:]
             # match is strictly increasing, so storing the length is enough
             # (no need to make an expensive copy)

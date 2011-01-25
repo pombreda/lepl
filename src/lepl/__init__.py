@@ -123,8 +123,9 @@ from lepl.matchers.derived import Apply, args, KApply, Join, \
     OneOrMore, Substitute, Name, Eof, Eos, Identity, Newline, Space, \
     Whitespace, Digit, Letter, Upper, Lower, Printable, Punctuation, \
     UnsignedInteger, SignedInteger, Integer, UnsignedFloat, SignedFloat, \
-    SignedEFloat, Float, Word, DropEmpty, Literals, String, SingleLineString, \
-    SkipString, SkipTo, Columns
+    UnsignedEFloat, SignedEFloat, Float, UnsignedRational, SignedRational, \
+    UnsignedERational, SignedERational, Rational, Word, DropEmpty, Literals, \
+    String, SingleLineString, SkipString, SkipTo, Columns
 from lepl.matchers.error import Error, make_error, raise_error
 from lepl.matchers.memo import RMemo, LMemo, MemoException
 from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
@@ -206,8 +207,14 @@ __all__ = [
         'Integer', 
         'UnsignedFloat', 
         'SignedFloat', 
+        'UnsignedEFloat',
         'SignedEFloat', 
         'Float', 
+        'UnsignedRational', 
+        'SignedRational', 
+        'UnsignedERational',
+        'SignedERational', 
+        'Rational',
         'Word',
         'DropEmpty',
         'Literals',

@@ -123,6 +123,7 @@ class RepeatTest(TestCase):
         result = [''.join(map(str, l)) for (l, _s) in matcher.match_string(stream)]
         assert target == result, result
     
+    
 class RangeMatch(OperatorMatcher):
     '''
     We test repetition by looking at "strings" of integers, where the 
@@ -186,4 +187,96 @@ class StringTest(BaseTest):
         self.assert_direct('"ab\nc"', String(), [['ab\nc']])
         self.assert_direct('"ab\nc"', SingleLineString(), [])
         self.assert_direct('"ab\nc"', SkipString(), [['abc']])
+        
+
+class OptionalTest(BaseTest):
+    
+    def test_optional(self):
+        self.assert_direct('a', Optional('a'), [['a'], []])
+
+
+class NumberTest(BaseTest):
+    
+    def do_test(self, matcher, good, bad):
+        def test(value, ok):
+            try:
+                matcher.parse(value)
+                assert ok, value
+            except FullFirstMatchException:
+                assert not ok, value
+        for value in good: test(value, True)
+        for value in bad: test(value, False)
+        
+    def test_numbers(self):
+        self.do_test(UnsignedInteger(),
+                     ['1'], 
+                     ['-1', 
+                      '1.', '-1.', 
+                      '1.2', '-1.2', 
+                      '1e3', '-1e3', '1e-3', '-1e-3',
+                      '1.e3', '-1.e3', '1.e-3', '-1.e-3',
+                      '1.2e3', '-1.2e3', '1.2e-3', '-1.2e-3'])
+        self.do_test(SignedInteger(),
+                     ['1', '-1'], 
+                     ['1.', '-1.', 
+                      '1.2', '-1.2', 
+                      '1e3', '-1e3', '1e-3', '-1e-3',
+                      '1.e3', '-1.e3', '1.e-3', '-1.e-3',
+                      '1.2e3', '-1.2e3', '1.2e-3', '-1.2e-3'])
+        self.do_test(UnsignedFloat(),
+                     ['1', '1.', '1.2'],
+                     ['-1', '-1.', '-1.2', 
+                      '1e3', '-1e3', '1e-3', '-1e-3',
+                      '1.e3', '-1.e3', '1.e-3', '-1.e-3',
+                      '1.2e3', '-1.2e3', '1.2e-3', '-1.2e-3'])
+        self.do_test(SignedFloat(),
+                     ['1', '-1', 
+                      '1.', '-1.', 
+                      '1.2', '-1.2'], 
+                     ['1e3', '-1e3', '1e-3', '-1e-3',
+                      '1.e3', '-1.e3', '1.e-3', '-1.e-3',
+                      '1.2e3', '-1.2e3', '1.2e-3', '-1.2e-3'])
+        self.do_test(UnsignedEFloat(),
+                     ['1', '1.', '1.2', 
+                      '1e3', '1e-3', '1.e3', '1.e-3', 
+                      '1.2e3', '1.2e-3'],
+                     ['-1', '-1.', '-1.2', 
+                      '-1e3', '-1e-3', '-1.e3', '-1.e-3', 
+                      '-1.2e3', '-1.2e-3'])
+        self.do_test(SignedEFloat(),
+                     ['1', '1.', '1.2', 
+                      '1e3', '1e-3', '1.e3', '1.e-3', 
+                      '1.2e3', '1.2e-3',
+                      '-1', '-1.', '-1.2', 
+                      '-1e3', '-1e-3', '-1.e3', '-1.e-3', 
+                      '-1.2e3', '-1.2e-3'],
+                      [])
+        self.do_test(UnsignedRational(),
+                     ['1.', '1.2'],
+                     ['1', '-1', '-1.', '-1.2', 
+                      '1e3', '-1e3', '1e-3', '-1e-3',
+                      '1.e3', '-1.e3', '1.e-3', '-1.e-3',
+                      '1.2e3', '-1.2e3', '1.2e-3', '-1.2e-3'])
+        self.do_test(SignedRational(),
+                     ['1.', '-1.', 
+                      '1.2', '-1.2'], 
+                     ['1', '-1', 
+                      '1e3', '-1e3', '1e-3', '-1e-3',
+                      '1.e3', '-1.e3', '1.e-3', '-1.e-3',
+                      '1.2e3', '-1.2e3', '1.2e-3', '-1.2e-3'])
+        self.do_test(UnsignedERational(),
+                     ['1.', '1.2', 
+                      '1e3', '1e-3', '1.e3', '1.e-3', 
+                      '1.2e3', '1.2e-3'],
+                     ['1', '-1', '-1.', '-1.2', 
+                      '-1e3', '-1e-3', '-1.e3', '-1.e-3', 
+                      '-1.2e3', '-1.2e-3'])
+        self.do_test(SignedERational(),
+                     ['1.', '1.2',
+                      '1e3', '1e-3', '1.e3', '1.e-3', 
+                      '1.2e3', '1.2e-3',
+                      '-1.', '-1.2', 
+                      '-1e3', '-1e-3', '-1.e3', '-1.e-3', 
+                      '-1.2e3', '-1.2e-3'],
+                      ['1', '-1'])
         
