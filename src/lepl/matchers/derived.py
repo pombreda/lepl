@@ -482,7 +482,6 @@ def UnsignedRational(decimal='.'):
                    Any(decimal), UnsignedInteger()),
               Join(UnsignedInteger(), Any(decimal)))
               
-
     
 def SignedRational(decimal='.'):
     '''Match a signed sequence of digits that must include a decimal point.'''
@@ -507,7 +506,8 @@ def SignedERational(decimal='.', exponent='eE'):
     
 Rational = SignedERational
 '''
-The default float is signed with exponents.
+The default rational is signed with exponents (this will not match integers -
+see `Float` for that).
 '''
 
 

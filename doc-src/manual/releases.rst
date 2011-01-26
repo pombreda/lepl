@@ -108,12 +108,18 @@ Date        Version  Description
 2010-10-12  4.3.3    Bugfixes for offside handling of errors.
 ----------  -------  -----------
 2010-11-28  4.3.4    Small bugfix for printing empty List.
+----------  -------  -----------
+2011-01-25  4.3.5    Bugfix for NFA regexps with multiple choices.  This may
+                     have affected some complex character-set matches (like
+		     floating point numbers).  It would not have changed all
+		     possible matches, but may have changed the order from
+		     what was expected.  Also added ``Rational()`` matchers.
 ==========  =======  ===========
 
 
 .. release_4_3:
 
-4.3, 4.3.4
+4.3, 4.3.5
 ----------
 
 After user feedback the line-aware (but not offside) parsing was simplified

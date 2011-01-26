@@ -45,9 +45,10 @@ import lepl
 import lepl._test.bug_stalled_parser
 import lepl._test.magus
 
-# Number of tests if running in IDE with Python 3,
+# Number of tests if running in IDE with Python 3
 TOTAL = 455
-
+NOT_DISTRIBUTED = 18
+NOT_3 = 22
 
 def all():
     '''
@@ -74,14 +75,14 @@ def all():
               .format(len(result.failures), len(result.errors)))
         assert 3 <= len(result.failures) <= 5, len(result.failures)
         assert 2 <= len(result.errors) <= 2, len(result.errors)
-        target = TOTAL - 22 - 9 # no bin/cairo tests (22)
+        target = TOTAL - NOT_DISTRIBUTED - NOT_3
     else:
         print('Expect at most 1 failure + 0 errors in Python 3: {0:d}, {1:d} '
               '(format variations from address size?)'
               .format(len(result.failures), len(result.errors)))
         assert 0 <= len(result.failures) <= 1, len(result.failures)
         assert 0 <= len(result.errors) <= 0, len(result.errors)
-        target = TOTAL - 9 # no cairo tests (2), no random (1), no support[3] (6)
+        target = TOTAL - NOT_DISTRIBUTED
     print('Expect {0:d} tests total: {1:d}'.format(target, result.testsRun))
     assert result.testsRun == target, result.testsRun
     print('\nLooks OK to me!\n\n')
