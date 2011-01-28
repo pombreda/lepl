@@ -1,3 +1,4 @@
+from lepl.matchers.derived import UnsignedReal
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -35,7 +36,7 @@ in docs because something similar is developed in the tutorial).
 from math import sin, cos
 from operator import add, sub, truediv, mul
 
-from lepl import Node, Token, UnsignedFloat, Delayed, Or, Eos
+from lepl import Node, Token, UnsignedReal, Delayed, Or, Eos
 from lepl._example.support import Example
 
 
@@ -73,22 +74,22 @@ class Calculator(Example):
         # this lets us handle the ambiguity between subtraction and
         # negation which requires context (not available to the the lexer)
         # to resolve correctly.
-        number  = Token(UnsignedFloat())
+        number  = Token(UnsignedReal())
         name    = Token('[a-z]+')
         symbol  = Token('[^a-zA-Z0-9\\. ]')
         
         expr    = Delayed()
         factor  = Delayed()
         
-        float_  = Or(number                       >> float,
-                     ~symbol('-') & number        >> (lambda x: -float(x)))
+        real_  = Or(number                        >> float,
+                    ~symbol('-') & number         >> (lambda x: -float(x)))
         
         open_   = ~symbol('(')
         close   = ~symbol(')')
         trig    = name(Or('sin', 'cos'))
         call    = trig & open_ & expr & close     > Call
         parens  = open_ & expr & close
-        value   = parens | call | float_
+        value   = parens | call | real_
         
         ratio   = value & ~symbol('/') & factor   > Ratio
         prod    = value & ~symbol('*') & factor   > Product

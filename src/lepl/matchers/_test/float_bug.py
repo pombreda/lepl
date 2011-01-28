@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-Tests for a weird bug when writing the rational matcher.
+Tests for a weird bug when writing the float (rational at the time) matcher.
 
 This came down to optional entries being mapped in NFA as empty transitions 
 from a single node.  If multiple choices were from the same node the empty
@@ -53,18 +53,18 @@ from lepl._test.base import BaseTest
 #basicConfig(level=DEBUG)
 
 
-class RationalTest(BaseTest):
+class FloatTest(BaseTest):
     
     def test_first(self):
         self.assert_direct('1.e3', Join(UnsignedFloat(), Any('eE'), SignedInteger()),
                            [['1.e3']])
     
     def test_second(self):
-        self.assert_direct('1.e3', UnsignedRational(), [['1.']])
+        self.assert_direct('1.e3', UnsignedFloat(), [['1.']])
         
     def test_all(self):
         first = Join(UnsignedFloat(), Any('eE'), SignedInteger())
-        second = UnsignedRational()
+        second = UnsignedFloat()
         all = Or(first, second)
         all.config.default() # wrong order
         #all.config.compile_to_dfa() # gives 1.e3 only
@@ -75,7 +75,7 @@ class RationalTest(BaseTest):
     
     def test_nfa(self):
         first = Join(UnsignedFloat(), Any('eE'), SignedInteger())
-        second = UnsignedRational()
+        second = UnsignedFloat()
         all = Or(first, second)
         all.config.clear().compile_to_nfa()
         m = all.get_parse()

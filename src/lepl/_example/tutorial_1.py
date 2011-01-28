@@ -44,36 +44,36 @@ from lepl._example.support import Example
 class Tutorial1Example(Example):
     
     def run_parse(self):
-        return SignedFloat().parse('123')
+        return SignedReal().parse('123')
     
     def run_match_error(self):
-        return SignedFloat().parse('cabbage')
+        return SignedReal().parse('cabbage')
     
     def run_parse_all(self):
-        return SignedFloat().parse_all('123')
+        return SignedReal().parse_all('123')
     
     def run_parse_all_list(self):
-        return list(SignedFloat().parse_all('123'))
+        return list(SignedReal().parse_all('123'))
     
     def run_sum(self):
-        add = SignedFloat() & Literal('+') & SignedFloat()
+        add = SignedReal() & Literal('+') & SignedReal()
         return add.parse('12+30')
     
-    def run_float(self):
-      number = SignedFloat() >> float
-      return number.parse('12')
+    def run_real(self):
+        number = SignedReal() >> float
+        return number.parse('12')
   
-    def run_float_2(self):
-        number = SignedFloat() >> float
+    def run_real_2(self):
+        number = SignedReal() >> float
         add = number & ~Literal('+') & number
         return add.parse('12+30')
 
-    def run_float_3(self):
-        add = (SignedFloat() & Drop(Literal('+')) & SignedFloat()) >> float
+    def run_real_3(self):
+        add = (SignedReal() & Drop(Literal('+')) & SignedReal()) >> float
         return add.parse('12+30')
     
     def run_sum2(self):
-        number = SignedFloat() >> float
+        number = SignedReal() >> float
         add = number & ~Literal('+') & number > sum
         return add.parse('12+30')
 
@@ -90,13 +90,29 @@ Line 1, character 0 of str: 'cabbage'.
 #"""<map object at 0xdf45d0>"""),
 (self.run_parse_all_list,
 """[['123'], ['12'], ['1']]"""),
+(lambda: Integer().parse('1'),
+"""['1']"""),
+(lambda: Integer().parse('1.2'),
+"""FullFirstMatchException: The match failed at '.2',
+Line 1, character 1 of str: '1.2'.
+"""),
+(lambda: Float().parse('1'),
+"""FullFirstMatchException: The match failed at '',
+Line -1, character 0 of str: '1'.
+"""),
+(lambda: Float().parse('1.2'),
+"""['1.2']"""),
+(lambda: Real().parse('1'),
+"""['1']"""),
+(lambda: Real().parse('1.2'),
+"""['1.2']"""),
 (self.run_sum,
 """['12', '+', '30']"""),
-(self.run_float,
+(self.run_real,
 """[12.0]"""),
-(self.run_float_2,
+(self.run_real_2,
 """[12.0, 30.0]"""),
-(self.run_float_3,
+(self.run_real_3,
 """[12.0, 30.0]"""),
 (self.run_sum2,
 """[42.0]"""),

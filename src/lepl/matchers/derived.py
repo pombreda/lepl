@@ -439,75 +439,89 @@ The default integer is a signed one.
 '''
 
 
-def UnsignedFloat(decimal='.'):
-    '''Match a sequence of digits that may include a decimal point.'''
+def UnsignedReal(decimal='.'):
+    '''
+    Match a sequence of digits that may include a decimal point.  This
+    will match both integer and float values.
+    '''
     return Or(Join(Optional(UnsignedInteger()), 
                    Any(decimal), UnsignedInteger()),
               Join(UnsignedInteger(), Optional(Any(decimal))))
               
 
     
-def SignedFloat(decimal='.'):
-    '''Match a signed sequence of digits that may include a decimal point.'''
-    return Join(Optional(Any('+-')), UnsignedFloat(decimal))
+def SignedReal(decimal='.'):
+    '''
+    Match a signed sequence of digits that may include a decimal point.  
+    This will match both integer and float values.
+    '''
+    return Join(Optional(Any('+-')), UnsignedReal(decimal))
     
     
-def UnsignedEFloat(decimal='.', exponent='eE'):
+def UnsignedEReal(decimal='.', exponent='eE'):
     '''
-    Match an `UnsignedFloat` followed by an optional exponent 
-    (e+02 etc).
+    Match an `UnsignedReal` followed by an optional exponent 
+    (e+02 etc).  This will match both integer and float values.
     '''
-    return Join(UnsignedFloat(decimal), 
+    return Join(UnsignedReal(decimal), 
                 Optional(And(Any(exponent), SignedInteger())))
 
     
-def SignedEFloat(decimal='.', exponent='eE'):
+def SignedEReal(decimal='.', exponent='eE'):
     '''
-    Match a `SignedFloat` followed by an optional exponent 
-    (e+02 etc).
+    Match a `SignedReal` followed by an optional exponent 
+    (e+02 etc).  This will match both integer and float values.
     '''
-    return Join(SignedFloat(decimal), 
+    return Join(SignedReal(decimal), 
                 Optional(Join(Any(exponent), SignedInteger())))
 
     
-Float = SignedEFloat
+Real = SignedEReal
 '''
 The default float is signed with exponents.
 '''
 
 
-def UnsignedRational(decimal='.'):
-    '''Match a sequence of digits that must include a decimal point.'''
+def UnsignedFloat(decimal='.'):
+    '''
+    Match a sequence of digits that must include a decimal point.  This
+    will match real values that are not integers.
+    '''
     return Or(Join(Optional(UnsignedInteger()), 
                    Any(decimal), UnsignedInteger()),
               Join(UnsignedInteger(), Any(decimal)))
               
     
-def SignedRational(decimal='.'):
-    '''Match a signed sequence of digits that must include a decimal point.'''
-    return Join(Optional(Any('+-')), UnsignedRational(decimal))
+def SignedFloat(decimal='.'):
+    '''
+    Match a signed sequence of digits that must include a decimal point.  This
+    will match real values that are not integers.
+    '''
+    return Join(Optional(Any('+-')), UnsignedFloat(decimal))
     
     
-def UnsignedERational(decimal='.', exponent='eE'):
+def UnsignedEFloat(decimal='.', exponent='eE'):
     '''
-    As `UnsignedEFloat`, but must contain a decimal or exponent.
+    As `UnsignedEReal`, but must contain a decimal or exponent.  This
+    will match real values that are not integers.
     '''
-    return Or(Join(UnsignedFloat(decimal), Any(exponent), SignedInteger()),
-              UnsignedRational(decimal))
+    return Or(Join(UnsignedReal(decimal), Any(exponent), SignedInteger()),
+              UnsignedFloat(decimal))
 
     
-def SignedERational(decimal='.', exponent='eE'):
+def SignedEFloat(decimal='.', exponent='eE'):
     '''
-    As `SignedEFloat`, but must containt a decimal or exponent.
+    As `SignedEReal`, but must containt a decimal or exponent.  This
+    will match real values that are not integers.
     '''
-    return Or(Join(SignedFloat(decimal), Any(exponent), SignedInteger()),
-              SignedRational(decimal))
+    return Or(Join(SignedReal(decimal), Any(exponent), SignedInteger()),
+              SignedFloat(decimal))
 
     
-Rational = SignedERational
+Float = SignedEFloat
 '''
-The default rational is signed with exponents (this will not match integers -
-see `Float` for that).
+The default float matcher accepts signed values with optional exponents.
+This will not match integers - see `Real` for that.
 '''
 
 

@@ -573,9 +573,6 @@ def trampoline_matcher_factory(gatekeeper_=None,
     created by `matcher._match()` to the trampoline.  Matches should also
     be yielded. 
     
-    `transformable_` indicates whether the final matcher should be a subclass
-    of `Transformable`.
-    
     Other keyword arguments should match factory arguments and identify 
     functions of one argument that are applied to the arguments when the
     matcher is created as part of a grammar (eg coercion).  Similarly,

@@ -44,7 +44,7 @@ from lepl._example.support import Example
 class Tutorial3Example(Example):
     
     def run_add_sub_node(self):
-        value = Token(UnsignedFloat())
+        value = Token(UnsignedReal())
         symbol = Token('[^0-9a-zA-Z \t\r\n]')
         number = Optional(symbol('-')) + value >> float
         expr = Delayed()

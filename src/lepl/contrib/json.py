@@ -62,7 +62,7 @@ def Simple():
     escape         = (unicode_escape | regular_escape)
     string         = (Drop('"') & (AnyBut('"\\') | escape)[...] & Drop('"'))
     
-    number         = Float() >> float
+    number         = Real() >> float
     
     comma          = Drop(',')
     

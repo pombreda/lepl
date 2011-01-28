@@ -379,9 +379,9 @@ def First(*matchers):
     will try more from the same matcher (only).  String arguments will be 
     coerced to literal matches.
     '''
-    def match(self, stream):
+    def match(support, stream):
         matched = False
-        for matcher in self.matchers:
+        for matcher in support.matchers:
             generator = matcher._match(stream)
             try:
                 while True:
@@ -395,3 +395,47 @@ def First(*matchers):
     return match
 
 
+@trampoline_matcher_factory()
+def Difference(match, exclude, count=0):
+    '''
+    Match with `match`, but exclude any matches that would be made by
+    `exclude`.  This is implemented by comparing the remaining stream after 
+    matching, so will not be affected by any transform associated with
+    `exclude`.  The `count` parameter gives the number of different matches
+    from `exclude`.  By default (zero) all matches are used.  A positive
+    value restricts that to the number given.
+    '''
+    def match(support, stream):
+        
+        # by default use a set; fall back to a list for unhashable streams
+        bad = None
+        grow_bad = None
+        def append_bad(value):
+            if bad is None:
+                bad = set()
+            bad.append(value)
+        def add_bad(value):
+            try:
+                bad.add(value)
+            except TypeError:
+                assert not bad
+                bad = []
+                grow_bad = append_bad
+                grow_bad(value)
+        grow_bad = add_bad
+        
+        a_matcher = match._match(stream)
+        while True:
+            (value, stream1) = yield a_matcher
+            if bad is None:
+                b_matcher = exclude._match(stream)
+                try:
+                    while True:
+                        (value, stream2) = yield b_matcher
+                        grow_bad(stream2)
+                except StopIteration:
+                    pass
+            if stream1 not in bad:
+                yield (value, stream1)
+                
+    return match

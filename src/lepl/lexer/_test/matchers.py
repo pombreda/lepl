@@ -39,8 +39,8 @@ from math import sin, cos
 from operator import add, sub, truediv, mul
 from unittest import TestCase
 
-from lepl import Token, Literal, Float, LexerError, Node, Delayed, Any, Eos, \
-    UnsignedFloat, Or, RuntimeLexerError, Word
+from lepl import Token, Literal, Real, LexerError, Node, Delayed, Any, Eos, \
+    UnsignedReal, Or, RuntimeLexerError, Word
 from lepl.support.lib import str
 
 
@@ -71,11 +71,11 @@ class RegexpCompilationTest(TestCase):
         '''
         assert Token(Word())[:].parse('foo bar') == ['foo', 'bar']
         
-    def test_float(self):
+    def test_real(self):
         '''
-        A float is more complex, but still compiles.
+        A real is more complex, but still compiles.
         '''
-        token = Token(Float())
+        token = Token(Real())
         token.compile()
         assert token.regexp == \
             '(?:[\\+\\-])?(?:(?:[0-9](?:[0-9])*)?\\.[0-9](?:[0-9])*|[0-9](?:[0-9])*(?:\\.)?)(?:[Ee](?:[\\+\\-])?[0-9](?:[0-9])*)?', \
@@ -86,7 +86,7 @@ class RegexpCompilationTest(TestCase):
         Cannot compile arbitrary functions.
         '''
         try:
-            token = Token(Float() > (lambda x: x))
+            token = Token(Real() > (lambda x: x))
             token.compile()
             assert False, 'Expected error'
         except LexerError:
@@ -102,7 +102,7 @@ class TokenRewriteTest(TestCase):
         '''
         Basic configuration.
         '''
-        reals = (Token(Float()) >> float)[:]
+        reals = (Token(Real()) >> float)[:]
         reals.config.lexer()
         parser = reals.get_parse()
         results = parser('1 2.3')
@@ -161,7 +161,7 @@ class TokenRewriteTest(TestCase):
         class Factor(Node): pass
         class Expression(Node): pass
             
-        value  = Token(Float())                         > 'value'
+        value  = Token(Real())                         > 'value'
         name   = Token('[a-z]+')
         symbol = Token('[^a-zA-Z0-9\\. ]')
         
@@ -238,22 +238,22 @@ class TokenRewriteTest(TestCase):
         # this lets us handle the ambiguity between subtraction and
         # negation which requires context (not available to the the lexer)
         # to resolve correctly.
-        number  = Token(UnsignedFloat())
+        number  = Token(UnsignedReal())
         name    = Token('[a-z]+')
         symbol  = Token('[^a-zA-Z0-9\\. ]')
         
         expr    = Delayed()
         factor  = Delayed()
         
-        float_  = Or(number                            >> float,
-                     ~symbol('-') & number             >> (lambda x: -float(x)))
+        real_  = Or(number                             >> float,
+                    ~symbol('-') & number              >> (lambda x: -float(x)))
         
         open_   = ~symbol('(')
         close   = ~symbol(')')
         trig    = name(Or('sin', 'cos'))
         call    = trig & open_ & expr & close          > Call
         parens  = open_ & expr & close
-        value   = parens | call | float_
+        value   = parens | call | real_
         
         ratio   = value & ~symbol('/') & factor        > Ratio
         prod    = value & ~symbol('*') & factor        > Product

@@ -225,8 +225,8 @@ class RewriteTest(TestCase):
         assert results == [(['12'], 'x'), (['1'], '2x')], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
-    def test_float(self):
-        rx = Float()
+    def test_real(self):
+        rx = Real()
         
         rx.config.compile_to_nfa().no_full_first_match()
         matcher = rx.get_match_null()
@@ -244,6 +244,27 @@ class RewriteTest(TestCase):
         matcher = rx.get_match_null()
         results = list(matcher('1.2x'))
         assert results == [(['1.2'], 'x'), (['1.'], '2x'), (['1'], '.2x')], results
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
+        
+    def test_float(self):
+        rx = Float()
+        
+        rx.config.compile_to_nfa().no_full_first_match()
+        matcher = rx.get_match_null()
+        results = list(matcher('1.2x'))
+        assert results == [(['1.2'], 'x'), (['1.'], '2x')], results
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
+
+        rx.config.clear().compile_to_nfa().no_full_first_match()
+        matcher = rx.get_match_null()
+        results = list(matcher('1.2x'))
+        assert results == [(['1.2'], 'x'), (['1.'], '2x')], results
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
+
+        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
+        matcher = rx.get_match_null()
+        results = list(matcher('1.2x'))
+        assert results == [(['1.2'], 'x'), (['1.'], '2x')], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
     def test_star(self):

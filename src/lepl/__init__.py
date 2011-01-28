@@ -123,8 +123,8 @@ from lepl.matchers.derived import Apply, args, KApply, Join, \
     OneOrMore, Substitute, Name, Eof, Eos, Identity, Newline, Space, \
     Whitespace, Digit, Letter, Upper, Lower, Printable, Punctuation, \
     UnsignedInteger, SignedInteger, Integer, UnsignedFloat, SignedFloat, \
-    UnsignedEFloat, SignedEFloat, Float, UnsignedRational, SignedRational, \
-    UnsignedERational, SignedERational, Rational, Word, DropEmpty, Literals, \
+    UnsignedEFloat, SignedEFloat, Float, UnsignedReal, SignedReal, \
+    UnsignedEReal, SignedEReal, Real, Word, DropEmpty, Literals, \
     String, SingleLineString, SkipString, SkipTo, Columns
 from lepl.matchers.error import Error, make_error, raise_error
 from lepl.matchers.memo import RMemo, LMemo, MemoException
@@ -152,12 +152,15 @@ __all__ = [
         # lepl.core.config
         'Configuration',
         'ConfigBuilder',
+        
         # lepl.contrib.matchers
         'SmartSeparator2',
+        
         # lepl.matchers.error
         'make_error',
         'raise_error',
         'Error',
+        
         # lepl.matchers.core
         'Empty',
         'Repeat',
@@ -172,6 +175,7 @@ __all__ = [
         'PostMatch',
         'Columns',
         'Regexp', 
+        
         # lepl.matchers.derived
         'Apply',
         'args',
@@ -201,20 +205,26 @@ __all__ = [
         'Upper', 
         'Lower', 
         'Printable', 
-        'Punctuation', 
+        'Punctuation',
+         
         'UnsignedInteger', 
         'SignedInteger', 
-        'Integer', 
+        'Integer',
+         
+        # float matchers exclude integers
         'UnsignedFloat', 
         'SignedFloat', 
         'UnsignedEFloat',
         'SignedEFloat', 
-        'Float', 
-        'UnsignedRational', 
-        'SignedRational', 
-        'UnsignedERational',
-        'SignedERational', 
-        'Rational',
+        'Float',
+         
+        # real matchers match both floats and integers
+        'UnsignedReal', 
+        'SignedReal', 
+        'UnsignedEReal',
+        'SignedEReal', 
+        'Real',
+        
         'Word',
         'DropEmpty',
         'Literals',
@@ -226,6 +236,7 @@ __all__ = [
         'NON_GREEDY',
         'DEPTH_FIRST',
         'BREADTH_FIRST',
+        
         # lepl.matchers.support
         'function_matcher', 
         'function_matcher_factory',
@@ -233,53 +244,69 @@ __all__ = [
         'sequence_matcher_factory',
         'trampoline_matcher', 
         'trampoline_matcher_factory',
+        
         # lepl.matchers.transform
         'PostCondition',
+        
         # lepl.matchers.variables
         'TraceVariables',
+        
         # lepl.stream.stream
         'DEFAULT_STREAM_FACTORY',
+        
         # lepl.matchers.operators
         'Override',
         'Separator',
         'SmartSeparator1',
         'DroppedSpace',
+        
         # lepl.support.node
         'Node',
         'make_dict',
         'join_with',
         'node_throw',
+        
         # lepl.support.list
         'List',
         'sexpr_fold',
         'sexpr_throw',
+        
         # lepl.lexer.matchers
         'Token',
         'LexerError',
         'RuntimeLexerError',
+        
         # lepl.core.manager
         'GeneratorManager',
+        
         # lepl.core.trace
         'RecordDeepest',
         'TraceResults',
+        
         # lepl.core.memo,
         'RMemo',
         'LMemo',
         'MemoException',
+        
         # lepl.regexp.core
         'RegexpError',
+        
         # lepl.regexp.matchers
         'NfaRegexp',
         'DfaRegexp',
+        
         # lepl.regexp.unicode
         'UnicodeAlphabet',
+        
         # lepl.stream.maxdepth
         'FullFirstMatchException',
+        
         # lepl.offside.lexer
         'Indent',
         'LineAwareEol',
         'LineAwareSol',
         'BIndent',
+        
         # lepl.offside.matchers
         'Line',
         'Block',

@@ -29,7 +29,7 @@ the answer.  For example, when given "2+2" we want the result "4" (so we not
 only break the input into pieces, but do something useul with it to get a
 final result).
 
-.. index:: SignedFloat(), import
+.. index:: Real(), import
 
 Recognising a Number
 --------------------
@@ -38,7 +38,7 @@ Lepl has built--in support for parsing a number.  We can see this by typing
 the following at a Python prompt::
 
   >>> from lepl import *
-  >>> SignedFloat().parse('123')
+  >>> Real().parse('123')
   ['123']
 
 What is happening here?
@@ -51,18 +51,18 @@ is all you will need.
 In the rest of the examples below I will assume that you have already imported
 this module.
 
-The second line creates a matcher --- `SignedFloat()
-<api/redirect.html#lepl.matchers.derived.SignedFloat>`_ (clicking on that link
+The second line creates a matcher --- `Real()
+<api/redirect.html#lepl.matchers.derived.Real>`_ (clicking on that link
 will take you to the `API documentation <api>`_ that describes all Lepl's
 modules, including the source code) --- and uses it to match the text "123".
 The result is a list that contains the text "123".
 
-In other words, `SignedFloat()
-<api/redirect.html#lepl.matchers.derived.SignedFloat>`_ looked at "123" and
+In other words, `Real()
+<api/redirect.html#lepl.matchers.derived.Real>`_ looked at "123" and
 recognised that it was a number.
 
-What would happen if we gave `SignedFloat()
-<api/redirect.html#lepl.matchers.derived.SignedFloat>`_ something that wasn't
+What would happen if we gave `Real()
+<api/redirect.html#lepl.matchers.derived.Real>`_ something that wasn't
 a number?  We can try it and see::
 
   >>> SignedFloat().parse('cabbage')
@@ -80,12 +80,12 @@ Ambiguity
 ---------
 
 In fact, Lepl doesn't know that "123" is a single number.  Because of the way
-`SignedFloat() <api/redirect.html#lepl.matchers.derived.SignedFloat>`_ is
+`Real() <api/redirect.html#lepl.matchers.derived.Real>`_ is
 defined internally, it gives the `longest` number it can find.  But that
 doesn't mean it is the only possibility.  We can see all the different
 possibilities by calling ``parse_all()`` instead of ``parse()``:
 
-  >>> SignedFloat().parse_all('123')
+  >>> Real().parse_all('123')
   <map object at 0xdec950>
 
 That will not seem very useful unless you already understand Python's
@@ -93,7 +93,7 @@ That will not seem very useful unless you already understand Python's
 generator is something like a list that hasn't been built yet.  We can use it
 in a ``for`` loop just like a list, for example::
 
-  >>> for result in SignedFloat().parse_all('123'):
+  >>> for result in Real().parse_all('123'):
   ...   print(result)
   ...
   ['123']
@@ -102,11 +102,11 @@ in a ``for`` loop just like a list, for example::
 
 Or we can create a list directly:
 
-  >>> list(SignedFloat().parse_all('123'))
+  >>> list(Real().parse_all('123'))
   [['123'], ['12'], ['1']]
 
-Either way we can see that `SignedFloat()
-<api/redirect.html#lepl.matchers.derived.SignedFloat>`_ is giving us a choice
+Either way we can see that `Real()
+<api/redirect.html#lepl.matchers.derived.Real>`_ is giving us a choice
 of different results.  It can match the number "123", or the number "12", or
 the number "1".  Those are all the different numbers possible if you start
 with the first character.
@@ -119,6 +119,31 @@ with the first character.
    (this is both for technical reasons and also because it's usually what you
    want).
 
+.. index:: Float(), Real(), Integer()
+
+More Ambiguity - Integers and Floats
+------------------------------------
+
+Sometimes we want a little less ambiguity when we are parsing numbers.  We may
+want to match only Integers, or exclude integral values from reals.  We can do
+both of these using `Integer()` and `Float()`.
+
+  >>> Integer().parse('1')
+  ['1']
+  >>> Integer().parse('1.2')
+  FullFirstMatchException: The match failed at '.2',
+  Line 1, character 1 of str: '1.2'.
+  >>> Float().parse('1')
+  FullFirstMatchException: The match failed at '',
+  Line -1, character 0 of str: '1'.
+  >>> Float().parse('1.2')
+  ['1.2']
+  >>> Real().parse('1')
+  ['1']
+  >>> Real().parse('1.2')
+  ['1.2']
+
+
 .. index:: &, And(), Literal()
 
 Matching a Sum
@@ -128,14 +153,14 @@ So how do we extend matching a number to match a sum?
 
 Here's the answer::
 
-  >>> add = SignedFloat() & Literal('+') & SignedFloat()
+  >>> add = Real() & Literal('+') & Real()
   >>> add.parse('12+30')
   ['12', '+', '30']
 
 In Lepl all that is necessary to join matchers together is ``&``.  This is
 shorthand for::
 
-  >>> add = And(SignedFloat(), Literal('+'), SignedFloat())
+  >>> add = And(Real(), Literal('+'), Real())
   >>> add.parse('12+30')
   ['12', '+', '30']
 
@@ -163,7 +188,7 @@ Often we can just use an ordinary string, instead of `Literal()
 <api/redirect.html#lepl.matchers.core.Literal>`_, and Lepl will still understand
 what we mean::
 
-  >>> add = SignedFloat() & '+' & SignedFloat()
+  >>> add = Real() & '+' & Real()
   >>> add.parse('12+30')
   ['12', '+', '30']
 

@@ -44,7 +44,7 @@ from lepl._example.support import Example
 
 
 def add_sub_node():
-    value = Token(UnsignedFloat())
+    value = Token(UnsignedReal())
     symbol = Token('[^0-9a-zA-Z \t\r\n]')
     number = Optional(symbol('-')) + value >> float
     group2, group3 = Delayed(), Delayed()
@@ -65,7 +65,7 @@ def add_sub_node():
     return group3
 
 def error_1():
-    value = Token(UnsignedFloat())
+    value = Token(UnsignedReal())
     symbol = Token('[^0-9a-zA-Z \t\r\n]')
     number = Optional(symbol('-')) + value >> float
     group2, group3 = Delayed(), Delayed()
@@ -86,7 +86,7 @@ def error_1():
     return group3
 
 def error_2():
-    value = Token(UnsignedFloat())
+    value = Token(UnsignedReal())
     symbol = Token('[^0-9a-zA-Z \t\r\n]')
     number = Optional(symbol('-')) + value >> float
     group2, group3 = Delayed(), Delayed()
@@ -111,7 +111,7 @@ def node_1():
     class Sub(List): pass
     class Mul(List): pass
     class Div(List): pass
-    value = Token(UnsignedFloat())
+    value = Token(UnsignedReal())
     symbol = Token('[^0-9a-zA-Z \t\r\n]')
     number = Optional(symbol('-')) + value >> float
     group2, group3 = Delayed(), Delayed()
@@ -139,7 +139,7 @@ def node_2():
     class Sub(Op): _op = sub
     class Mul(Op): _op = mul
     class Div(Op): _op = truediv
-    value = Token(UnsignedFloat())
+    value = Token(UnsignedReal())
     symbol = Token('[^0-9a-zA-Z \t\r\n]')
     number = Optional(symbol('-')) + value >> float
     group2, group3 = Delayed(), Delayed()

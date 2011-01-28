@@ -49,7 +49,7 @@ class LexerExample(Example):
         #basicConfig(level=INFO)
         #getLogger('lepl.lexer.stream.lexed_simple_stream').setLevel(DEBUG)
         
-        value = Token(UnsignedFloat())
+        value = Token(UnsignedReal())
         symbol = Token('[^0-9a-zA-Z \t\r\n]')
         number = value >> float
         add = number & ~symbol('+') & number > sum
@@ -62,7 +62,7 @@ class LexerExample(Example):
         #basicConfig(level=INFO)
         #getLogger('lepl.lexer.stream.lexed_simple_stream').setLevel(DEBUG)
         
-        value = Token(SignedFloat())
+        value = Token(SignedReal())
         symbol = Token('[^0-9a-zA-Z \t\r\n]')
         number = value >> float
         add = number & ~symbol('+') & number > sum

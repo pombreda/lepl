@@ -42,9 +42,9 @@ import lepl.matchers._test.combine
 import lepl.matchers._test.core
 import lepl.matchers._test.derived
 import lepl.matchers._test.error
+import lepl.matchers._test.float_bug
 import lepl.matchers._test.memo
 import lepl.matchers._test.operators
-import lepl.matchers._test.rational_bug
 import lepl.matchers._test.separators
 import lepl.matchers._test.support
 import lepl.matchers._test.transform
