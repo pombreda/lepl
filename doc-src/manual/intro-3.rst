@@ -9,7 +9,7 @@ In the previous section we defined a parser that could add two numbers, even
 if the expression contained spaces.  Our final version used tokens::
 
   >>> from lepl import *
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> add = number & ~symbol('+') & number > sum
@@ -31,7 +31,7 @@ I'll keep the addition symbol.
 
 So here's what we're starting with::
 
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> add = number & symbol('+') & number
@@ -47,7 +47,7 @@ parser.  We could do this in various ways.  One way would be to change
 AST harder (it's better to have one line per AST node), so instead I'm going
 to go with::
 
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> add = number & symbol('+') & number
@@ -79,7 +79,7 @@ to be general enough to match a single value).
 What I've just described above is easy to implement, but unfortunately won't
 work::
 
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> add = number & symbol('+') & expr
@@ -116,7 +116,7 @@ The solution to our problem is to use the `Delayed()
 introduce something, so that we can use it, and then add a definition later.
 That might sound odd, but it's really simple to use::
 
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> expr = Delayed()
@@ -144,7 +144,7 @@ The simplest way of building a tree is almost trivial.  We just send the
 results for the addition and subtraction to `List()
 <api/redirect.html#lepl.support.list.List>`_::
 
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> expr = Delayed()

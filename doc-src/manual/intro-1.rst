@@ -220,14 +220,14 @@ result.
 We can indicate that a match should be ignored by preceding the matcher with
 ``~``::
 
-  >>> add = SignedFloat() & ~Literal('+') & SignedFloat()
+  >>> add = Real() & ~Literal('+') & Real()
   >>> add.parse('12+30')
   ['12', '30']
 
 Just like ``&``, this is shorthand for another matcher, in this case
 `Drop() <api/redirect.html#lepl.matchers.derived.Drop>`_::
 
-  >>> add = SignedFloat() & Drop(Literal('+')) & SignedFloat()
+  >>> add = Real() & Drop(Literal('+')) & Real()
   >>> add.parse('12+30')
   ['12', '30']
 
@@ -248,20 +248,20 @@ see what I mean, consider the two examples below::
 We want the first case, not the second.
 
 To do this we can define a new matcher, which takes the output from
-``SignedFloat`` (a list of strings) and passes each value in the list to the
+``Real`` (a list of strings) and passes each value in the list to the
 Python built--in function, ``float()``::
 
-  >>> number = SignedFloat() >> float
+  >>> number = Real() >> float
 
 We can test this by calling ``parse()``::
 
-  >>> number = SignedFloat() >> float
+  >>> number = Real() >> float
   >>> number.parse('12')
   [12.0]
 
 So now we can re-define ``add`` to use this matcher instead::
 
-  >>> number = SignedFloat() >> float
+  >>> number = Real() >> float
   >>> add = number & ~Literal('+') & number
   >>> add.parse('12+30')
   [12.0, 30.0]
@@ -272,7 +272,7 @@ that each is complete by itself).
 Note that, because ``>>`` works on each result in turn, we could have written
 this in a different, but equivalent way::
 
-  >>> add = (SignedFloat() & Drop(Literal('+')) & SignedFloat()) >> float
+  >>> add = (Real() & Drop(Literal('+')) & Real()) >> float
   >>> add.parse('12+30')
   [12.0, 30.0]
 
@@ -293,7 +293,7 @@ exactly this, called ``sum()``::
 
 So we can send our results to that function::
 
-  >>> number = SignedFloat() >> float
+  >>> number = Real() >> float
   >>> add = number & ~Literal('+') & number > sum
   >>> add.parse('12+30')
   [42.0]

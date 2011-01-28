@@ -9,7 +9,7 @@ In the previous sections we have developed a parser that could generate a
 simple AST for repeated addition and subtraction::
 
   >>> from lepl import *
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> expr = Delayed()
@@ -53,7 +53,7 @@ With Lepl this priority is implicit in the parser.  Priority is determined by
 structuring the recursive calls necessary for repeated handling of groups as a
 series of layers.  Which is much easier to show than explain in words::
 
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> group2, group3 = Delayed(), Delayed()
@@ -119,7 +119,7 @@ The first mistake is the ordering of the definitions for ``group2`` and
 ``group3``.  The following code is almost identical, but gives a very
 different result::
 
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> group2, group3b = Delayed(), Delayed()
@@ -234,7 +234,7 @@ The second mistake is to duplicate the recursive call on both sides of the
 operator.  So below, for example, we have ``add = group3c...`` instead of
 ``add = group2...``::
 
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> group2, group3c = Delayed(), Delayed()
@@ -361,7 +361,7 @@ the parentheses can go too)::
   ... 
 
   >>> # tokens
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
 
   >>> number = Optional(symbol('-')) + value >> float
@@ -425,7 +425,7 @@ operations::
   ...
 
   >>> # tokens
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
 
   >>> number = Optional(symbol('-')) + value >> float

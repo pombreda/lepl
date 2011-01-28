@@ -395,7 +395,7 @@ def First(*matchers):
     return match
 
 
-@trampoline_matcher_factory()
+@trampoline_matcher_factory(args_=to(Literal))
 def Difference(match, exclude, count=0):
     '''
     Match with `match`, but exclude any matches that would be made by
@@ -405,21 +405,21 @@ def Difference(match, exclude, count=0):
     from `exclude`.  By default (zero) all matches are used.  A positive
     value restricts that to the number given.
     '''
-    def match(support, stream):
+    def matcher(support, stream, count=count):
         
         # by default use a set; fall back to a list for unhashable streams
-        bad = None
+        bad = [None]
         grow_bad = None
-        def append_bad(value):
-            if bad is None:
-                bad = set()
-            bad.append(value)
-        def add_bad(value):
+        def append_bad(value, bad=bad):
+            bad[0].append(value)
+        def add_bad(value, bad=bad):
+            if bad[0] is None:
+                bad[0] = set()
             try:
-                bad.add(value)
+                bad[0].add(value)
             except TypeError:
-                assert not bad
-                bad = []
+                assert not bad[0]
+                bad[0] = []
                 grow_bad = append_bad
                 grow_bad(value)
         grow_bad = add_bad
@@ -427,15 +427,20 @@ def Difference(match, exclude, count=0):
         a_matcher = match._match(stream)
         while True:
             (value, stream1) = yield a_matcher
-            if bad is None:
+            if bad[0] is None:
                 b_matcher = exclude._match(stream)
                 try:
                     while True:
-                        (value, stream2) = yield b_matcher
+                        (excluded, stream2) = yield b_matcher
+                        support._debug(format('Exclude: {}r', excluded))
                         grow_bad(stream2)
+                        count -= 1
+                        if count == 0: break
                 except StopIteration:
                     pass
-            if stream1 not in bad:
+            if stream1 not in bad[0]:
                 yield (value, stream1)
+            else:
+                support._debug(format('Excluding: {}r', value))
                 
-    return match
+    return matcher

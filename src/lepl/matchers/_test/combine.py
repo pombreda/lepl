@@ -33,8 +33,10 @@ Tests for the combining matchers.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.matchers.combine import DepthFirst, BreadthFirst
+from lepl.matchers.combine import DepthFirst, BreadthFirst, Difference
 from lepl.matchers.core import Any
+from lepl.matchers.derived import Integer, Real
+from lepl._test.base import BaseTest
 
 
 class DirectionTest1(TestCase):
@@ -56,6 +58,7 @@ class DirectionTest1(TestCase):
         matcher = matcher.get_match()
         results = list(map(''.join, map(lambda x: x[0], matcher('123'))))
         assert results == ['1', '12'], results
+    
         
 class DirectionTest2(TestCase):
     
@@ -75,3 +78,17 @@ class DirectionTest2(TestCase):
         matcher = matcher.get_match()
         results = list(map(''.join, map(lambda x: x[0], matcher('123'))))
         assert results == ['3', '2', '1', '23', '13', '12'], results
+
+
+class DifferenceTest(BaseTest):
+    
+    def test_difference(self):
+        #basicConfig(level=DEBUG)
+        matcher = Difference(Real(), Integer())
+        self.assert_direct('12.3', matcher, [['12.3'], ['12.']])
+        
+    def test_count(self):
+        #basicConfig(level=DEBUG)
+        matcher = Difference(Real(), Integer(), count=1)
+        self.assert_direct('12.3', matcher, [['12.3'], ['12.'], ['1']])
+        

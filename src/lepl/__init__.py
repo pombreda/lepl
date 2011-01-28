@@ -114,7 +114,7 @@ from lepl.contrib.matchers import SmartSeparator2
 from lepl.core.config import Configuration, ConfigBuilder
 from lepl.core.manager import GeneratorManager
 from lepl.core.trace import RecordDeepest, TraceResults
-from lepl.matchers.combine import And, Or, First
+from lepl.matchers.combine import And, Or, First, Difference
 from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
     Lookahead, PostMatch, Regexp
 from lepl.matchers.monitor import Trace, Commit
@@ -164,10 +164,7 @@ __all__ = [
         # lepl.matchers.core
         'Empty',
         'Repeat',
-        'And',
-        'Or',
         'Join',
-        'First',
         'Any',
         'Literal',
         'Empty',
@@ -175,6 +172,12 @@ __all__ = [
         'PostMatch',
         'Columns',
         'Regexp', 
+        
+        # lepl.matchers.combine
+        'And',
+        'Or',
+        'First',
+        'Difference',
         
         # lepl.matchers.derived
         'Apply',

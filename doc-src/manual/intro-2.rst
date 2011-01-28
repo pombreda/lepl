@@ -10,7 +10,7 @@ In the previous chapter we defined a parser that could identify the different
 parts of an addition, separate out the numbers, and return their sum::
 
   >>> from lepl import *
-  >>> number = SignedFloat() >> float
+  >>> number = Real() >> float
   >>> add = number & ~Literal('+') & number > sum
   >>> add.parse('12+30')
   [42.0]
@@ -35,7 +35,7 @@ The simplest way to handle spaces is to add them to the parser.  Lepl includes
 the `Space() <api/redirect.html#lepl.matchers.derived.Space>`_ matcher which
 recognises a single space::
 
-  >>> number = SignedFloat() >> float
+  >>> number = Real() >> float
   >>> add = number & ~Space() & ~Literal('+') & ~Space() & number > sum
   >>> add.parse('12 + 30')
   [42.0]
@@ -61,7 +61,7 @@ The `Star() <api/redirect.html#lepl.matchers.derived.Star>`_ matcher repeats its
 argument as many times as necessary (including none at all).  This is what we
 need for our spaces::
 
-  >>> number = SignedFloat() >> float
+  >>> number = Real() >> float
   >>> spaces = ~Star(Space())
   >>> add = number & spaces & ~Literal('+') & spaces & number > sum
   >>> add.parse('12 + 30')
@@ -136,7 +136,7 @@ first).
 
 So we can write our parser like this::
 
-  >>> number = SignedFloat() >> float
+  >>> number = Real() >> float
   >>> spaces = ~Space()[:]
   >>> add = number & spaces & ~Literal('+') & spaces & number > sum
   >>> add.parse('12 + 30')
@@ -185,7 +185,7 @@ The solution above works fine, but it gets a bit tedious adding ``spaces``
 everywhere.  It would be much easier if we could just say that they should be
 added wherever there is a ``&``.  Luckily, we can do that in Lepl::
 
-  >>> number = SignedFloat() >> float
+  >>> number = Real() >> float
   >>> spaces = ~Space()[:]
   >>> with Separator(spaces):
   ...   add = number & ~Literal('+') & number > sum
@@ -228,7 +228,7 @@ everything "inside" the "with" it's usually best to define matchers that
 
 Finally, because this is so common, `DroppedSpace() <api/redirect.html#lepl.matchers.operators.DroppedSpace>`_, is pre--defined::
 
-  >>> number = SignedFloat() >> float
+  >>> number = Real() >> float
   >>> spaces = ~Space()[:]
   >>> with DroppedSpace():
   ...   add = number & ~Literal('+') & number > sum
@@ -367,12 +367,12 @@ precise here because we can add more conditions later --- it's enough to
 identify the basic types of input.  For our parser these will be values and
 symbols::
 
-  >>> value = Token(SignedFloat())
+  >>> value = Token(Real())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
 
 I said that we defined tokens with regular expressions, but the definition of
-``value`` above seems to use the matcher `SignedFloat()
-<api/redirect.html#lepl.matchers.derived.SignedFloat>`_.  This is because Lepl
+``value`` above seems to use the matcher `Real()
+<api/redirect.html#lepl.matchers.derived.Real>`_.  This is because Lepl
 can automatically convert some matchers into regular expressions, saving us
 the work (it really does convert them, piece by piece, so it is not limited to
 the built--in matchers, but it is limited by how the matcher is constructed --
@@ -422,8 +422,8 @@ were expecting.  We expected that the tokens would be "12", "+", and "30".
 Instead, it seems that the tokens generated are "12" and "+30".
 
 So we can see that the lexer (the part of Lepl that generates the tokens) is
-identifying two `SignedFloat()
-<api/redirect.html#lepl.matchers.derived.SignedFloat>`_ matches.  Matching "+"
+identifying two `Real()
+<api/redirect.html#lepl.matchers.derived.Real>`_ matches.  Matching "+"
 as a ``symbol`` is ignored because `the lexer chooses the token with the
 longest match` and "+30" is longer than "+".
 
@@ -450,7 +450,7 @@ we need to worry about signs that are "part of the number" in the parser
 itself.  Since people don't really care about a leading "+" I've only included
 the "-" case (negative numbers) below::
 
-  >>> value = Token(UnsignedFloat())
+  >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
   >>> number = Optional(symbol('-')) + value >> float
   >>> add = number & ~symbol('+') & number > sum
@@ -459,9 +459,9 @@ the "-" case (negative numbers) below::
   >>> add.parse('12 + -30')
   [-18.0]
 
-The important chnages here are:
+The important changes here are:
 
-* ``value`` is changed to an `UnsignedFloat() <api/redirect.html#lepl.matchers.derived.UnsignedFloat>`_
+* ``value`` is changed to an `UnsignedReal() <api/redirect.html#lepl.matchers.derived.UnsignedReal>`_
 
 * number has an `Optional()
   <api/redirect.html#lepl.matchers.derived.Optional>`_ minus (we could also

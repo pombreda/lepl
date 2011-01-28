@@ -44,22 +44,22 @@ from lepl._example.support import Example
 class Tutorial2Example(Example):
     
     def run_error(self):
-        number = SignedReal() >> float
+        number = Real() >> float
         add = number & ~Literal('+') & number > sum
         return add.parse('12 + 30')
     
     def run_explicit_space(self):
-        number = SignedReal() >> float
+        number = Real() >> float
         add = number & ~Space() & ~Literal('+') & ~Space() & number > sum
         return add.parse('12 + 30')
     
     def run_space_error(self):
-        number = SignedReal() >> float
+        number = Real() >> float
         add = number & ~Space() & ~Literal('+') & ~Space() & number > sum
         return add.parse('12+30')
 
     def run_star(self, text):
-        number = SignedReal() >> float
+        number = Real() >> float
         spaces = ~Star(Space())
         add = number & spaces & ~Literal('+') & spaces & number > sum
         return add.parse(text)
@@ -90,7 +90,7 @@ class Tutorial2Example(Example):
         return list(a.parse_all('aaaa'))
     
     def run_brackets(self, text):
-        number = SignedReal() >> float
+        number = Real() >> float
         spaces = ~Space()[:]
         add = number & spaces & ~Literal('+') & spaces & number > sum
         return add.parse(text)
@@ -105,7 +105,7 @@ class Tutorial2Example(Example):
         return list(Regexp('a*').parse_all('aaa'))
     
     def run_token_1(self):
-        value = Token(SignedReal())
+        value = Token(Real())
         symbol = Token('[^0-9a-zA-Z \t\r\n]')
         number = value >> float
         add = number & ~symbol('+') & number > sum

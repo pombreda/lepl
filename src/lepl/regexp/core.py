@@ -719,7 +719,7 @@ class NfaPattern(LogMixin):
         (map_, empties) = self.__table[0]
         stack.append((map_, None, empties, [], stream))
         while stack:
-            self._debug(str(stack))
+            #self._debug(str(stack))
             (map_, matched, empties, match, stream) = stack.pop()
             if not map_ and not matched and not empties:
                 # if we have no more transitions, drop
@@ -938,8 +938,8 @@ class DfaPattern(LogMixin):
                     if self.__empty_labels else None
         while stream:
             future = self.__table[state][stream[0]]
-            self._debug(format('stream {0!s}: {1} -> {2}',
-                               stream[0], state, future))
+            #self._debug(format('stream {0!s}: {1} -> {2}',
+            #                   stream[0], state, future))
             if future is None:
                 break
             # update state

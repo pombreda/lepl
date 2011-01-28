@@ -44,36 +44,36 @@ from lepl._example.support import Example
 class Tutorial1Example(Example):
     
     def run_parse(self):
-        return SignedReal().parse('123')
+        return Real().parse('123')
     
     def run_match_error(self):
-        return SignedReal().parse('cabbage')
+        return Real().parse('cabbage')
     
     def run_parse_all(self):
-        return SignedReal().parse_all('123')
+        return Real().parse_all('123')
     
     def run_parse_all_list(self):
-        return list(SignedReal().parse_all('123'))
+        return list(Real().parse_all('123'))
     
     def run_sum(self):
-        add = SignedReal() & Literal('+') & SignedReal()
+        add = Real() & Literal('+') & Real()
         return add.parse('12+30')
     
     def run_real(self):
-        number = SignedReal() >> float
+        number = Real() >> float
         return number.parse('12')
   
     def run_real_2(self):
-        number = SignedReal() >> float
+        number = Real() >> float
         add = number & ~Literal('+') & number
         return add.parse('12+30')
 
     def run_real_3(self):
-        add = (SignedReal() & Drop(Literal('+')) & SignedReal()) >> float
+        add = (Real() & Drop(Literal('+')) & Real()) >> float
         return add.parse('12+30')
     
     def run_sum2(self):
-        number = SignedReal() >> float
+        number = Real() >> float
         add = number & ~Literal('+') & number > sum
         return add.parse('12+30')
 
