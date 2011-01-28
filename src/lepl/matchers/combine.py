@@ -427,17 +427,20 @@ def Difference(match, exclude, count=0):
         a_matcher = match._match(stream)
         while True:
             (value, stream1) = yield a_matcher
-            if bad[0] is None:
+            
+            if bad[0] is None: # build bad on demand, once
                 b_matcher = exclude._match(stream)
                 try:
                     while True:
                         (excluded, stream2) = yield b_matcher
                         support._debug(format('Exclude: {}r', excluded))
                         grow_bad(stream2)
+                        # limit number of matchers, if requested 
                         count -= 1
                         if count == 0: break
                 except StopIteration:
-                    pass
+                    pass # all matches for exclude
+                
             if stream1 not in bad[0]:
                 yield (value, stream1)
             else:
