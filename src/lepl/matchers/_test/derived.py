@@ -8,7 +8,7 @@
 # basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
 # the License for the specific language governing rights and
 # limitations under the License.
-#
+#LogMixin
 # The Original Code is LEPL (http://www.acooke.org/lepl)
 # The Initial Developer of the Original Code is Andrew Cooke.
 # Portions created by the Initial Developer are Copyright (C) 2009-2010
@@ -38,7 +38,12 @@ from lepl import *
 from lepl._test.base import BaseTest
 from lepl.matchers.support import OperatorMatcher
 from lepl.core.parser import tagged
+from lepl.support.warn import silence
 
+silence('UnsignedFloat')
+silence('SignedFloat')
+silence('UnsignedEFloat')
+silence('SignedEFloat')
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321, W0141, R0201, R0913, R0901, R0904
 # (dude this is just a test)

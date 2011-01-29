@@ -45,6 +45,7 @@ from lepl.matchers.transform import TransformationWrapper, Transform, \
     ApplyArgs, ApplyRaw
 from lepl.regexp.matchers import NfaRegexp
 from lepl.support.lib import assert_type, lmap, format, basestring
+from lepl.support.warn import warn_on_use
 
  
 # pylint: disable-msg=C0103
@@ -485,7 +486,10 @@ Real = SignedEReal
 The default float is signed with exponents.
 '''
 
+_FLOAT_WARN = '''WARNING: The definition of the Float matchers changed in Lepl 4.4
+(you may want to use Real instead).'''
 
+@warn_on_use(_FLOAT_WARN)
 def UnsignedFloat(decimal='.'):
     '''
     Match a sequence of digits that must include a decimal point.  This
@@ -496,6 +500,7 @@ def UnsignedFloat(decimal='.'):
               Join(UnsignedInteger(), Any(decimal)))
               
     
+@warn_on_use(_FLOAT_WARN)
 def SignedFloat(decimal='.'):
     '''
     Match a signed sequence of digits that must include a decimal point.  This
@@ -504,6 +509,7 @@ def SignedFloat(decimal='.'):
     return Join(Optional(Any('+-')), UnsignedFloat(decimal))
     
     
+@warn_on_use(_FLOAT_WARN)
 def UnsignedEFloat(decimal='.', exponent='eE'):
     '''
     As `UnsignedEReal`, but must contain a decimal or exponent.  This
@@ -513,6 +519,7 @@ def UnsignedEFloat(decimal='.', exponent='eE'):
               UnsignedFloat(decimal))
 
     
+@warn_on_use(_FLOAT_WARN)
 def SignedEFloat(decimal='.', exponent='eE'):
     '''
     As `SignedEReal`, but must containt a decimal or exponent.  This
