@@ -37,7 +37,7 @@ expressions.
 from abc import ABCMeta
 
 from lepl.support.context import Namespace, NamespaceMixin
-from lepl.matchers.derived import Add, Apply, Drop, KApply, Repeat, Map
+from lepl.matchers.derived import Add, Apply, Drop, KApply, Map
 from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream, \
     ContentSource, TokenSource
 from lepl.matchers.error import raise_error
@@ -47,9 +47,9 @@ from lepl.matchers.combine import And, Or, First
 from lepl.matchers.matcher import Matcher, add_children
 from lepl.matchers.memo import NoMemo
 from lepl.matchers.operators import ADD, AND, OR, APPLY, APPLY_RAW, \
-    NOT, KARGS, RAISE, REPEAT, FIRST, MAP
+    NOT, KARGS, RAISE, REPEAT, FIRST, MAP, RepeatWrapper
 from lepl.matchers.support import BaseMatcher, coerce_
-from lepl.core.parser import tagged, GeneratorWrapper
+from lepl.core.parser import tagged
 from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import CompileRegexp
@@ -104,7 +104,7 @@ class TokenNamespace(Namespace):
             NOT:       Drop,
             KARGS:     KApply,
             RAISE:     lambda a, b: KApply(a, raise_error(b)),
-            REPEAT:    Repeat,
+            REPEAT:    RepeatWrapper,
             FIRST:     First,
             MAP:       Map,
         })

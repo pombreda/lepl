@@ -35,7 +35,8 @@ from threading import Thread
 from unittest import TestCase
 
 from lepl import Delayed, Any, Eos, Drop, Separator, Literal, Space, \
-    SmartSeparator1, Optional
+    SmartSeparator1, Optional, Real
+from lepl._test.base import BaseTest
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102
@@ -117,4 +118,16 @@ class IndexTest(TestCase):
             assert False, 'expected error'
         except TypeError as e:
             assert 'slice' in str(e), e
-            
+
+
+class RepeatParseTest(BaseTest):
+    
+    def test_limit(self):
+        self.assert_direct('1.2', Real()[1:1], [['1.2'], ['1.'], ['1']])
+        self.assert_direct('1.2', Real()[1:1:0], [])
+        self.assert_direct('1.2', Real()[1:1:1], [['1.2']])
+        self.assert_direct('1.2', Real()[1:1:-1], [['1.2'], ['1.'], ['1']])
+        self.assert_direct('1.2', Real()[1:1:'d'], [['1.2'], ['1.'], ['1']])
+        self.assert_direct('1.2', Real()[1:1:'d1'], [['1.2']])
+        self.assert_direct('1.2', Real()[1:1:'1d'], [['1.2']])
+        

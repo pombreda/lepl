@@ -31,10 +31,44 @@
 Support for operator syntactic sugar (and operator redefinition).
 '''
 
+from re import compile as compile_
+
 from lepl.matchers.matcher import Matcher
 from lepl.support.context import Namespace, NamespaceMixin, Scope
 from lepl.support.lib import open_stop, format, basestring
 
+
+DIGITS = compile_('^(-?\d+)(.*)')
+
+def RepeatWrapper(matcher, start, stop, step, separator, add):
+    '''Parse `step` if it is a string.'''
+    # Handle circular dependencies
+    from lepl.matchers.derived import Repeat
+    if (isinstance(step, int)):
+        limit = step
+        algorithm = DEPTH_FIRST
+    elif (isinstance(step, basestring)):
+        save = step
+        limit = None
+        algorithm = None
+        while step:
+            match = DIGITS.match(step)
+            if match:
+                if limit is None:
+                    limit = int(match.group(1))
+                    step = match.group(2)
+                else:
+                    raise TypeError(format('Cannot parse limit/algorithm for []: {}',
+                                           step))
+            else:
+                if algorithm is None:
+                    algorithm = step[0]
+                    step = step[1:]
+    else:
+        raise TypeError('The step of [...] must be an integer limit, or a '
+                        'string to select the algorithm, or both as a string '
+                        'like "d1" for a single value, depth first')
+    return Repeat(matcher, start, stop, limit, algorithm, separator, add)
 
 class OperatorNamespace(Namespace):
     '''
@@ -58,7 +92,7 @@ class OperatorNamespace(Namespace):
             NOT:       Drop,
             KARGS:     KApply,
             RAISE:     lambda a, b: KApply(a, raise_error(b)),
-            REPEAT:    Repeat,
+            REPEAT:    RepeatWrapper,
             FIRST:     First,
             MAP:       Map
         })
@@ -129,11 +163,10 @@ class _BaseSeparator(Override):
         # Handle circular dependencies
         from lepl.matchers.core import Regexp
         from lepl.matchers.combine import And
-        from lepl.matchers.derived import Repeat
         from lepl.matchers.support import coerce_
         if separator is None:
             and_ = And
-            repeat = Repeat
+            repeat = RepeatWrapper
         else:
             separator = coerce_(separator, Regexp)
             (and_, repeat) = self._replacements(separator)
@@ -150,7 +183,6 @@ class _BaseSeparator(Override):
         A simple Repeat with separator.
         '''
         from lepl.matchers.combine import And
-        from lepl.matchers.derived import Repeat
         def repeat(m, st=0, sp=None, d=0, s=None, a=False):
             '''
             Wrap `Repeat` to adapt the separator.
@@ -159,7 +191,7 @@ class _BaseSeparator(Override):
                 s = separator
             elif not a:
                 s = And(separator, s, separator)
-            return Repeat(m, st, sp, d, s, a)
+            return RepeatWrapper(m, st, sp, d, s, a)
         return repeat
     
 

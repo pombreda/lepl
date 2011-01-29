@@ -36,7 +36,7 @@ from string import whitespace, digits, ascii_letters, \
 
 from lepl.core.parser import tagged
 from lepl.matchers.combine import And, DepthFirst, BreadthFirst, \
-    OrderByResultCount, Or, First
+    OrderByResultCount, Or, First, Limit
 from lepl.matchers.core import Lookahead, Any, Eof, Literal, Empty, Regexp
 from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
     NON_GREEDY
@@ -56,7 +56,7 @@ from lepl.support.lib import assert_type, lmap, format, basestring
 # pylint: disable-msg=W0141
 # (map)
 
-def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST, 
+def Repeat(matcher, start=0, stop=None, limit=None, algorithm=DEPTH_FIRST, 
             separator=None, add_=False):
     '''
     This is called by the [] operator.  It repeats the given matcher between
@@ -73,7 +73,8 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
         start = 0
     assert_type('The start index for Repeat or [...]', start, int)
     assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
-    assert_type('The algorithm/increment for Repeat or [...]', algorithm, str)
+    assert_type('The limit value (step index) for Repeat or [...]', limit, int, none_ok=True)
+    assert_type('The algorithm (step index) for Repeat or [...]', algorithm, str)
     if start < 0:
         raise ValueError('Repeat or [...] cannot have a negative start.')
     if stop is not None and stop < start:
@@ -83,21 +84,24 @@ def Repeat(matcher, start=0, stop=None, algorithm=DEPTH_FIRST,
         raise ValueError('Repeat or [...] must have a step (algorithm) '
                          'of d, b, g or n.')
     add_ = Add if add_ else Identity
-    return {DEPTH_FIRST:
+    matcher = {DEPTH_FIRST:
                 add_(DepthFirst(first=first, start=start, 
                                 stop=stop, rest=rest)),
-            BREADTH_FIRST: 
+               BREADTH_FIRST: 
                 add_(BreadthFirst(first=first, start=start, 
                                   stop=stop, rest=rest)),
-            GREEDY:        
+               GREEDY:        
                 add_(OrderByResultCount(BreadthFirst(first=first, start=start, 
                                                      stop=stop, rest=rest))),
-            NON_GREEDY:
+               NON_GREEDY:
                 add_(OrderByResultCount(BreadthFirst(first=first, start=start, 
                                                      stop=stop, rest=rest),
                                        False))
             }[algorithm]
-            
+    if limit is not None:
+        matcher = Limit(matcher, count=limit)
+    return matcher
+
             
 def Apply(matcher, function, raw=False, args=False):
     '''

@@ -396,16 +396,16 @@ def First(*matchers):
 
 
 @trampoline_matcher_factory(args_=to(Literal))
-def Difference(match, exclude, count=0):
+def Difference(matcher, exclude, count=-1):
     '''
-    Match with `match`, but exclude any matches that would be made by
+    Match with `matcher`, but exclude any matches that would be made by
     `exclude`.  This is implemented by comparing the remaining stream after 
     matching, so will not be affected by any transform associated with
     `exclude`.  The `count` parameter gives the number of different matches
-    from `exclude`.  By default (zero) all matches are used.  A positive
+    from `exclude`.  By default (-1) all matches are used.  A positive
     value restricts that to the number given.
     '''
-    def matcher(support, stream, count=count):
+    def match(support, stream, count=count):
         
         # by default use a set; fall back to a list for unhashable streams
         bad = [None]
@@ -424,20 +424,19 @@ def Difference(match, exclude, count=0):
                 grow_bad(value)
         grow_bad = add_bad
         
-        a_matcher = match._match(stream)
+        generator = matcher._match(stream)
         while True:
-            (value, stream1) = yield a_matcher
+            (value, stream1) = yield generator
             
             if bad[0] is None: # build bad on demand, once
-                b_matcher = exclude._match(stream)
+                bad_generator = exclude._match(stream)
                 try:
-                    while True:
-                        (excluded, stream2) = yield b_matcher
+                    while count:
+                        (excluded, stream2) = yield bad_generator
                         support._debug(format('Exclude: {}r', excluded))
                         grow_bad(stream2)
                         # limit number of matchers, if requested 
                         count -= 1
-                        if count == 0: break
                 except StopIteration:
                     pass # all matches for exclude
                 
@@ -446,4 +445,21 @@ def Difference(match, exclude, count=0):
             else:
                 support._debug(format('Excluding: {}r', value))
                 
+    return match
+
+
+@trampoline_matcher_factory(args_=to(Literal))
+def Limit(match, count=1):
+    '''
+    Limit the backtracking for a given matcher.  A negative `count` means no
+    limit.
+    '''
+    def matcher(support, stream, count=count):
+        generator = match._match(stream)
+        try:
+            while count:
+                yield (yield generator)
+                count -= 1
+        except StopIteration:
+            pass
     return matcher

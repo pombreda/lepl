@@ -33,7 +33,7 @@ Tests for the combining matchers.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl.matchers.combine import DepthFirst, BreadthFirst, Difference
+from lepl.matchers.combine import DepthFirst, BreadthFirst, Difference, Limit
 from lepl.matchers.core import Any
 from lepl.matchers.derived import Integer, Real
 from lepl._test.base import BaseTest
@@ -91,4 +91,14 @@ class DifferenceTest(BaseTest):
         #basicConfig(level=DEBUG)
         matcher = Difference(Real(), Integer(), count=1)
         self.assert_direct('12.3', matcher, [['12.3'], ['12.'], ['1']])
+        
+        
+class LimitTest(BaseTest):
+    
+    def test_limit(self):
+        self.assert_direct('1.2', Real(), [['1.2'], ['1.'], ['1']])
+        self.assert_direct('1.2', Limit(Real(), 1), [['1.2']])
+        self.assert_direct('1.2', Limit(Real(), 2), [['1.2'], ['1.']])
+        self.assert_direct('1.2', Limit(Real(), 0), [])
+        
         
