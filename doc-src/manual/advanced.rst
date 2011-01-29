@@ -388,6 +388,56 @@ search would return the first results of the different matches, in series,
 before considering backtracking.  At the moment I do not see a "natural" way
 to form such a tree, and so this is not implemented.  Feedback is appreciated.
 
+.. index:: First(), Limit()
+
+Restricting Search
+~~~~~~~~~~~~~~~~~~
+
+Lepl's ability to backtrack is powerful, but sometimes it is inefficient.
+To improve efficiency you can restrict backtracking in two ways.
+
+First, by using `First() <api/redirect.html#lepl.matchers.combine.First>`_, you can stop search with the first matcher in a
+list.  This gives results similar to `Or() <api/redirect.html#lepl.matchers.combine.Or>`_, but stops at the first
+successful matcher.  It can be used in--line with the operator ``%``.
+
+Second, by using `Limit() <api/redirect.html#lepl.matchers.combine.Limit>`_, you can restrict search within a single
+matcher.  In the simplest form ``Limit(matcher)`` will take only the first match
+from a matcher.  A different maximum number of matches can be specified with
+the optional `count` argument.
+
+`Limit() <api/redirect.html#lepl.matchers.combine.Limit>`_ can also be applied to repetition by specifying the count
+(normally 1) as a "slice" value.  So, ``Limit(matcher)`` is equivalent to
+``matcher[1:1:1]``:
+
+  >>> list(Real().parse_all('1.2'))
+  >>> list(Limit(Real()).parse_all('1.2'))
+  >>> list(Real()[1:1:1].parse_all('1.2'))
+  >>> list(Limit(Real(), count=2).parse_all('1.2'))
+  >>> list(Real()[1:1:2].parse_all('1.2'))
+
+.. index:: Difference()
+
+Excluding Matches
+~~~~~~~~~~~~~~~~~
+
+Closely related to restricting search, it is possible to exclude certain
+matches.  This typically does not improve efficiency (the excluded matches
+have to be made anyway), but can simply the logic of a complex parser.
+
+The `Difference() <api/redirect.html#lepl.matchers.combine.Difference>`_ matcher takes two matchers as arguments.  The first is
+matched as normal, but any matches that would also have been matched by the
+second matcher are excluded.
+
+A good example, is the emulation of `Float() <api/redirect.html#lepl.matchers.derived.Float>`_ using `Real() <api/redirect.html#lepl.matchers.derived.Real>`_ and
+`Integer() <api/redirect.html#lepl.matchers.derived.Integer>`_ (remember that `Real() <api/redirect.html#lepl.matchers.derived.Real>`_ matches both float and integer
+values):
+
+  >>> myFloat = Difference(Real(), Integer())
+  >>> list(myFloat.parse_all('1.2'))
+  [['1.2'], ['1.']]
+  >>> list(Real().parse_all('1.2))
+  [['1.2'], ['1.'], ['1']]
+
 
 .. index:: memoisation, RMemo(), LMemo(), memoize(), ambiguous grammars, left-recursion, context_memoize(), auto_memoize()
 .. _memoisation:

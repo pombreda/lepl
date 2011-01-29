@@ -109,7 +109,7 @@ class MatcherExample(Example):
         assert str(next(matcher)) == "(['1', '2', '3', '4'], '5')"
         assert str(next(matcher)) == "(['1', '2', '3'], '45')"
         
-        matcher = Repeat(Any(), 3, None, 'b')
+        matcher = Repeat(Any(), 3, None, algorithm='b')
         matcher.config.no_full_first_match()
         matcher = matcher.match_null('12345')
         assert str(next(matcher)) == "(['1', '2', '3'], '45')"

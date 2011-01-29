@@ -65,7 +65,7 @@ What would happen if we gave `Real()
 <api/redirect.html#lepl.matchers.derived.Real>`_ something that wasn't
 a number?  We can try it and see::
 
-  >>> SignedFloat().parse('cabbage')
+  >>> Real().parse('cabbage')
   [...]
   lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'cabbage'.
 
@@ -142,6 +142,12 @@ both of these using `Integer()` and `Float()`.
   ['1']
   >>> Real().parse('1.2')
   ['1.2']
+
+.. warning::
+
+   The behaviour described above changed in version 4.4.  Before that,
+   `Float() <api/redirect.html#lepl.matchers.derived.Float>`_ also matched integers.  To convert code from before version 4.4
+   replace `Float() <api/redirect.html#lepl.matchers.derived.Float>`_ with `Real() <api/redirect.html#lepl.matchers.derived.Real>`_.
 
 
 .. index:: &, And(), Literal()

@@ -114,7 +114,7 @@ from lepl.contrib.matchers import SmartSeparator2
 from lepl.core.config import Configuration, ConfigBuilder
 from lepl.core.manager import GeneratorManager
 from lepl.core.trace import RecordDeepest, TraceResults
-from lepl.matchers.combine import And, Or, First, Difference
+from lepl.matchers.combine import And, Or, First, Difference, Limit
 from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
     Lookahead, PostMatch, Regexp
 from lepl.matchers.monitor import Trace, Commit
@@ -178,6 +178,7 @@ __all__ = [
         'Or',
         'First',
         'Difference',
+        'Limit',
         
         # lepl.matchers.derived
         'Apply',
@@ -324,7 +325,7 @@ __all__ = [
         'to_right'
        ]
 
-__version__ = '4.3.5'
+__version__ = '4.4.0'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

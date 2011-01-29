@@ -1,8 +1,3 @@
-'''
-Created on 3 Mar 2010
-
-@author: andrew
-'''
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -66,3 +61,10 @@ class SearchExample(Example):
         self.examples([(lambda: list(match('****')), 
 "[['****'], ['*', '***'], ['**', '**'], ['***', '*'], ['****']]")])
         
+    def test_limit(self):
+        self.examples([
+(lambda: list(Real().parse_all('1.2')), [['1.2'], ['1.'], ['1']]),
+(lambda: list(Limit(Real()).parse_all('1.2')), [['1.2']]),
+(lambda: list(Real()[1:1:1].parse_all('1.2')), [['1.2']]),
+(lambda: list(Limit(Real(), count=2).parse_all('1.2')), [['1.2'], ['1.']]),
+(lambda: list(Real()[1:1:2].parse_all('1.2')), [['1.2'], ['1.']])])

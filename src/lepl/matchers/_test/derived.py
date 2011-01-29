@@ -58,8 +58,8 @@ class RepeatTest(TestCase):
         self.assert_simple([1,2], 1, 2, 'b', ['0', '00','01'])
         self.assert_simple([1,2], 1, 2, 'g', ['00', '01','0'])
         
-    def assert_simple(self, stream, start, stop, step, target):
-        matcher = Repeat(RangeMatch(), start, stop, step)
+    def assert_simple(self, stream, start, stop, algorithm, target):
+        matcher = Repeat(RangeMatch(), start, stop, algorithm=algorithm)
         matcher.config.no_full_first_match()
         result = [''.join(map(str, l)) 
                   for (l, _s) in matcher.match_items(stream, sub_list=False)]
@@ -101,8 +101,9 @@ class RepeatTest(TestCase):
         self.assert_separator('a,a,a,a', 2, 3, 'd', ['a,a,a', 'a,a'])
         self.assert_separator('a,a,a,a', 2, 3, 'b', ['a,a', 'a,a,a'])
         
-    def assert_separator(self, stream, start, stop, step, target):
-        matcher = Repeat(Any('abc'), start, stop, step, Any(','))
+    def assert_separator(self, stream, start, stop, algorithm, target):
+        matcher = Repeat(Any('abc'), start, stop, 
+                         algorithm=algorithm, separator=Any(','))
         matcher.config.no_full_first_match()
         result = [''.join(l) 
                   for (l, _s) in matcher.match_string(stream)]
