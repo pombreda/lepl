@@ -2,8 +2,7 @@
 Closing Remarks
 ===============
 
-This chapter is for, comments, etc, that didn't fit elsewhere in the
-documentation.
+This chapter is for comments that didn't fit elsewhere in the documentation.
 
 
 .. index:: Tim Peters, Sam Wilmott, Pattern Matching in Python, Guy Cousineau,

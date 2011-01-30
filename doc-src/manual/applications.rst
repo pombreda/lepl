@@ -13,3 +13,4 @@ document them here.
    :maxdepth: 3
 
    rfc3696.rst
+   json.rst

@@ -486,7 +486,7 @@ Real = SignedEReal
 The default float is signed with exponents.
 '''
 
-_FLOAT_WARN = '''WARNING: The definition of the Float matchers changed in Lepl 4.4
+_FLOAT_WARN = '''WARNING: The definition of the Float matchers changed in Lepl 4.4.0
 (you may want to use Real instead).'''
 
 @warn_on_use(_FLOAT_WARN)

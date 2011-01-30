@@ -193,6 +193,10 @@ class SimpleStream(_SimpleStream):
     
     @abstractmethod
     def __hash__(self):
+        '''
+        If a stream instance does not support hashing, some functionality may
+        fail (particularly memoization), but basic parsing should still work.
+        '''
         pass
     
     @abstractmethod

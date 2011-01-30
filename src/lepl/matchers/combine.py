@@ -433,7 +433,7 @@ def Difference(matcher, exclude, count=-1):
                 try:
                     while count:
                         (excluded, stream2) = yield bad_generator
-                        support._debug(format('Exclude: {}r', excluded))
+                        support._debug(format('Exclude: {0!r}', excluded))
                         grow_bad(stream2)
                         # limit number of matchers, if requested 
                         count -= 1
@@ -443,7 +443,7 @@ def Difference(matcher, exclude, count=-1):
             if stream1 not in bad[0]:
                 yield (value, stream1)
             else:
-                support._debug(format('Excluding: {}r', value))
+                support._debug(format('Excluding: {0!r}', value))
                 
     return match
 

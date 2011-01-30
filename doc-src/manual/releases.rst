@@ -109,12 +109,21 @@ Date        Version  Description
 ----------  -------  -----------
 2010-11-28  4.3.4    Small bugfix for printing empty List.
 ----------  -------  -----------
-2011-01-25  4.3.5    Bugfix for NFA regexps with multiple choices.  This may
-                     have affected some complex character-set matches (like
-		     floating point numbers).  It would not have changed all
-		     possible matches, but may have changed the order from
-		     what was expected.  Also added ``Rational()`` matchers.
+2011-01-25  4.3.5    Bugfix for NFA regexps with multiple choices;
+                     add ``Rational()`` matchers.
+----------  -------  -----------
+2011-01-30  4.4      Rename `Float() <api/redirect.html#lepl.matchers.derived.Float>`_, `Real() <api/redirect.html#lepl.matchers.derived.Real>`_; add `Limit() <api/redirect.html#lepl.matchers.combine.Limit>`_.
 ==========  =======  ===========
+
+
+.. release_4_4:
+
+4.4
+---
+
+The `Float() <api/redirect.html#lepl.matchers.derived.Float>`_ matcher now excludes integers.  For the old behaviour, which
+included them, use `Real() <api/redirect.html#lepl.matchers.derived.Real>`_.  More control over search has been added with
+`Limit() <api/redirect.html#lepl.matchers.combine.Limit>`_.
 
 
 .. release_4_3:
@@ -124,8 +133,12 @@ Date        Version  Description
 
 After user feedback the line-aware (but not offside) parsing was simplified
 slightly.  ``Eol()`` was changed to ``LineAwareEol()``, a similar matcher for
-start of line was added, and rewriting of matchers inside tokens was improved
-(including a bugfix).
+start of line was added, and rewriting of matchers inside tokens was improved.
+
+The bug fixed in 4.3.5 may have affected some complex character-set matches
+(like floating point numbers).  It is unlikely to have been common, since
+regular expression compilation is restricted to "leaf" matchers, which are not
+normally so complex.
 
 
 .. release_4_2:

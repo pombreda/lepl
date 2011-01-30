@@ -1,4 +1,3 @@
-from logging import getLogger
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -32,6 +31,8 @@ from logging import getLogger
 A mechanism to associate warnings with certain classes (eg for deprecation)
 and to disable those warnings.
 '''
+
+from logging import getLogger
 
 from lepl.support.lib import format
 
@@ -67,7 +68,7 @@ def silence(name):
     if name in _WARNINGS:
         _WARNINGS[name].silent = True
     else:
-        LOG.warn(format('No warning registered for {}', name))
+        LOG.warn(format('No warning registered for {0}', name))
 
 
 def warn_on_use(message, name=None):

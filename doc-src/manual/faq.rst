@@ -6,9 +6,9 @@ Frequently Asked Questions
 
  * :ref:`Why do I get "Cannot parse regexp..."? <faq_regexp>`
  * :ref:`Why isn't my parser matching the full expression? <faq_lefttoright>`
+ * :ref:`Why does using Or() stop a full match from happening? <faq_or_bug>`
  * :ref:`How do I parse an entire file? <faq_file>`
  * :ref:`When I change from > to >> my function isn't called <faq_precedence>`
- * :ref:`Why does using Or() stop a full match from happening? <faq_or_bug>`
  * :ref:`How do I choose between > and >> ? <faq_apply>`
 
 
@@ -51,46 +51,7 @@ with `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_::
     expression = word | (word & lpar & word & rpar)
     complete = expression & Eos()   
 
-
-.. _faq_file:
-
-How do I parse an entire file?
-------------------------------
-
-*I understand how to parse a string, but how do I parse an entire file?*
-
-Instead of `matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ or `matcher.parse_string() <api/redirect.html#lepl.core.config.ParserMixin.parse_string>`_ use
-`matcher.parse_file() <api/redirect.html#lepl.core.config.ParserMixin.parse_file>`_ or `matcher.parse_path() <api/redirect.html#lepl.core.config.ParserMixin.parse_path>`_.
-
-Matchers extend `ParserMixin()
-<api/redirect.html#lepl.core.config.ParserMixin>`_, which provides these
-methods.
-
-
-.. _faq_precedence:
-
-When I change from > to >> my function isn't called
----------------------------------------------------
-
-*Why, when I change my code from*::
-
-    inverted = Drop('[^') & interval[1:] & Drop(']') > invert
-    
-*to*::
-          
-    inverted = Drop('[^') & interval[1:] & Drop(']') >> invert      
-
-*is the `invert` function no longer called?*
-
-This is because of operator precedence.  ``>>`` binds more tightly than ``>``,
-so ``>>`` is applied only to the result from `Drop(']')
-<api/redirect.html#lepl.matchers.derived.Drop>`_, which is an empty list
-(because `Drop() <api/redirect.html#lepl.matchers.derived.Drop>`_ discards the
-results).  Since the list is empty, the function ``invert`` is not called.
-
-To fix this place the entire expression in parentheses::
-
-    inverted = (Drop('[^') & interval[1:] & Drop(']')) >> invert      
+See also the next answer.
 
 
 .. _faq_or_bug:
@@ -163,10 +124,9 @@ I'll explain those and, hopefully, that will shed some light on this.
    <api/redirect.html#lepl.core.config.ParserMixin.parse_all>`_ are just
    wrappers around that, which return less of the information).
 
-#. The "full first match" implementation is very simple
-
-   The code for the "full first match" error checks the remaining stream (see
-   above) for the first match.  If it is not empty, then the error is raised.
+#. The "full first match" implementation is very simple.  It checks the
+   remaining stream (see above) for the first match.  If it is not empty, then
+   the error is raised.
 
    Why didn't I make this also add `Eos()
    <api/redirect.html#lepl.matchers.derived.Eos>`_?  I could have done so, and
@@ -181,6 +141,49 @@ In summary then, this is a consequence of the way `Or()
 the way that Lepl does backtracking (for generality) and a desire to keep the
 "full first match" code separate from "what the parser matches".  I know it's
 a little confusing at first, but I don't see a better solution.  Sorry!
+
+See also the previous answer.
+
+
+.. _faq_file:
+
+How do I parse an entire file?
+------------------------------
+
+*I understand how to parse a string, but how do I parse an entire file?*
+
+Instead of `matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ or `matcher.parse_string() <api/redirect.html#lepl.core.config.ParserMixin.parse_string>`_ use
+`matcher.parse_file() <api/redirect.html#lepl.core.config.ParserMixin.parse_file>`_ or `matcher.parse_path() <api/redirect.html#lepl.core.config.ParserMixin.parse_path>`_.
+
+Matchers extend `ParserMixin()
+<api/redirect.html#lepl.core.config.ParserMixin>`_, which provides these
+methods.
+
+
+.. _faq_precedence:
+
+When I change from > to >> my function isn't called
+---------------------------------------------------
+
+*Why, when I change my code from*::
+
+    inverted = Drop('[^') & interval[1:] & Drop(']') > invert
+    
+*to*::
+          
+    inverted = Drop('[^') & interval[1:] & Drop(']') >> invert      
+
+*is the `invert` function no longer called?*
+
+This is because of operator precedence.  ``>>`` binds more tightly than ``>``,
+so ``>>`` is applied only to the result from `Drop(']')
+<api/redirect.html#lepl.matchers.derived.Drop>`_, which is an empty list
+(because `Drop() <api/redirect.html#lepl.matchers.derived.Drop>`_ discards the
+results).  Since the list is empty, the function ``invert`` is not called.
+
+To fix this place the entire expression in parentheses::
+
+    inverted = (Drop('[^') & interval[1:] & Drop(']')) >> invert      
 
 
 .. _faq_apply:

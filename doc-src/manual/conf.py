@@ -42,7 +42,7 @@ master_doc = 'contents'
 
 # General information about the project.
 project = u'LEPL'
-copyright = u'2009, Andrew Cooke'
+copyright = u'2009-2011, Andrew Cooke'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

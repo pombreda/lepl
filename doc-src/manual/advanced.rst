@@ -151,6 +151,13 @@ Optimisation Actions
 
   .. warning::
 
+     `.config.compile_to_dfa()
+     <api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_dfa>`_ may
+     affect the parser semantics because the DFA engine does not support
+     backtracking.
+
+  .. warning::
+
      `.config.compile_to_re()
      <api/redirect.html#lepl.core.config.ConfigBuilder.compile_to_re>`_ uses
      the Python `re` library, which cannot handle streams of data in the same
@@ -398,31 +405,36 @@ To improve efficiency you can restrict backtracking in two ways.
 
 First, by using `First() <api/redirect.html#lepl.matchers.combine.First>`_, you can stop search with the first matcher in a
 list.  This gives results similar to `Or() <api/redirect.html#lepl.matchers.combine.Or>`_, but stops at the first
-successful matcher.  It can be used in--line with the operator ``%``.
+successful matcher.  It can be used inline with the operator ``%``.
 
 Second, by using `Limit() <api/redirect.html#lepl.matchers.combine.Limit>`_, you can restrict search within a single
-matcher.  In the simplest form ``Limit(matcher)`` will take only the first match
+matcher.  In the simplest form `Limit(matcher) <api/redirect.html#lepl.matchers.combine.Limit>`_ will take only the first match
 from a matcher.  A different maximum number of matches can be specified with
 the optional `count` argument.
 
 `Limit() <api/redirect.html#lepl.matchers.combine.Limit>`_ can also be applied to repetition by specifying the count
-(normally 1) as a "slice" value.  So, ``Limit(matcher)`` is equivalent to
+(normally 1) as a "slice" value.  So, `Limit(matcher) <api/redirect.html#lepl.matchers.combine.Limit>`_ is equivalent to
 ``matcher[1:1:1]``:
 
   >>> list(Real().parse_all('1.2'))
+  [['1.2'], ['1.'], ['1']]
   >>> list(Limit(Real()).parse_all('1.2'))
+  [['1.2']]
   >>> list(Real()[1:1:1].parse_all('1.2'))
+  [['1.2']]
   >>> list(Limit(Real(), count=2).parse_all('1.2'))
+  [['1.2'], ['1.']]
   >>> list(Real()[1:1:2].parse_all('1.2'))
+  [['1.2'], ['1.']]
 
 .. index:: Difference()
 
 Excluding Matches
 ~~~~~~~~~~~~~~~~~
 
-Closely related to restricting search, it is possible to exclude certain
-matches.  This typically does not improve efficiency (the excluded matches
-have to be made anyway), but can simply the logic of a complex parser.
+It is also possible to exclude certain matches.  This does not improve
+efficiency (the excluded matches have to be made anyway), but can simplify the
+logic of a complex parser.
 
 The `Difference() <api/redirect.html#lepl.matchers.combine.Difference>`_ matcher takes two matchers as arguments.  The first is
 matched as normal, but any matches that would also have been matched by the
