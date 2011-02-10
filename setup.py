@@ -16,11 +16,11 @@ The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
 `Release 4.0 <http://www.acooke.org/lepl/lepl4.0.html>`_ is a major revision,
-giving a library that's simpler, faster, and easier to use.  Release 4.2 adds
-`validation of email and HTTP URLs (RFC 3696)
-<http://www.acooke.org/lepl/rfc3696.html>`_, as well as improved compilation
-to regexps (used internally to improve speed); 4.3 simplifies line-aware
-parsing, 4.3.2 supports Python 2.7 and 4.3.3+4 contain small fixes.
+giving a library that's simpler, faster, and easier to use.  Release 4.4
+`changes the meaning of Float() slightly
+<http://www.acooke.org/lepl/intro-1.html#more-ambiguity-integers-and-floats>`_, 
+and `adds more control over search
+<http://www.acooke.org/lepl/advanced.html#restricting-search>`_.
 
 Features
 --------
@@ -90,6 +90,7 @@ Features
                    'Programming Language :: Python :: 3.0',
                    'Programming Language :: Python :: 3.1',
                    'Programming Language :: Python :: 2.6',
+                   'Programming Language :: Python :: 2.7',
                    'Topic :: Software Development',
                    'Topic :: Software Development :: Libraries',
                    'Topic :: Software Development :: Libraries :: Python Modules',

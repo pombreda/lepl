@@ -388,8 +388,11 @@ class ConstructorWalker(object):
         '''
         Apply the visitor to each node in turn.
         '''
+        from lepl.matchers.support import TreeStr
         results = {}
         for node in postorder(self.__root, self.__type, exclude=LEAF):
+            if isinstance(visitor, TreeStr):
+                print('node', node)
             visitor.node(node)
             (args, kargs) = self.__arguments(node, visitor, results)
             # pylint: disable-msg=W0142

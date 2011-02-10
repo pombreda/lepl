@@ -256,33 +256,7 @@ class Flatten(Rewriter):
                 new_args = old_args
             return clone(node, new_args, kargs)
         return graph.postorder(DelayedClone(new_clone), Matcher)
-    
-#    def __call__(self, graph):
-#        from lepl.matchers.combine import And, Or
-#        def new_clone(node, old_args, kargs):
-#            '''
-#            The flattening cloner.
-#            '''
-#            table = matcher_map({And: '*matchers', Or: '*matchers'})
-#            new_args = []
-#            type_ = matcher_type(node, fail=False)
-#            if type_ in table:
-#                attribute_name = table[type_]
-#                for arg in old_args:
-#                    if matcher_type(arg, fail=False) is type_ \
-#                            and not arg.wrapper \
-#                            and not node.wrapper:
-#                        if attribute_name.startswith('*'):
-#                            new_args.extend(getattr(arg, attribute_name[1:]))
-#                        else:
-#                            new_args.append(getattr(arg, attribute_name))
-#                    else:
-#                        new_args.append(arg)
-#            if not new_args:
-#                new_args = old_args
-#            return clone(node, new_args, kargs)
-#        return graph.postorder(DelayedClone(new_clone), Matcher)
-    
+   
 
 class ComposeTransforms(Rewriter):
     '''
