@@ -580,7 +580,6 @@ class ConfigBuilder(object):
             make_hide_sol_eol_parser
         from lepl.offside.stream import LineAwareStreamFactory, \
             LineAwareTokenSource
-        from lepl.regexp.str import make_str_parser
         from lepl.regexp.unicode import UnicodeAlphabet
         
         self.clear()
