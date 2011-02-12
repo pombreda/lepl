@@ -27,19 +27,8 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
-
 '''
-Tests for the lepl.core package.
+Streams are an abstraction over input data.
+
+This has been rewritten for Lepl 5.
 '''
-
-
-# we need to import all files used in the automated self-test
-
-# pylint: disable-msg=E0611
-#@PydevCodeAnalysisIgnore
-#import lepl.core._test.config
-#import lepl.core._test.manager
-#import lepl.core._test.parser
-#import lepl.core._test.rewriters
-#import lepl.core._test.rewrite_delayed_bug
-#import lepl.core._test.rewrite_repeat_bug

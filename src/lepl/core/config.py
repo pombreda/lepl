@@ -32,7 +32,7 @@ The main configuration object and various standard configurations.
 '''
 
 from lepl.core.parser import make_raw_parser, make_single, make_multiple
-from lepl.stream.stream import DEFAULT_STREAM_FACTORY
+from lepl.stream.core import DEFAULT_STREAM_FACTORY
 
 # A major driver for this being separate is that it decouples dependency loops
 

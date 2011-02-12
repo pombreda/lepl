@@ -32,10 +32,9 @@ Tests for the lepl.core.config module.
 '''
 
 #from logging import basicConfig, DEBUG
-from sys import version
 from unittest import TestCase
 
-from lepl import *
+from lepl.matchers.core import Any
 from lepl._test.base import assert_str
 
 

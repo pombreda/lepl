@@ -35,7 +35,8 @@ from traceback import format_exc
 from types import MethodType
 from unittest import TestCase
 
-from lepl import Literal, Any, function_matcher
+from lepl.matchers.core import Any, Literal
+from lepl.matchers.support import function_matcher
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, E1101
@@ -80,7 +81,7 @@ class RepeatTest(TestCase):
     
     def test_depth(self):
         matcher = Any()[:,...]
-        matcher.config.full_first_match(False)
+        matcher.config.clear()
         matcher = matcher.get_match_string()
         #print(repr(matcher.matcher))
         results = [m for (m, _s) in matcher('abc')]
@@ -88,7 +89,7 @@ class RepeatTest(TestCase):
 
     def test_breadth(self):
         matcher = Any()[::'b',...]
-        matcher.config.full_first_match(False)
+        matcher.config.clear()
         matcher = matcher.get_match_string()
         results = [m for (m, _s) in matcher('abc')]
         assert results == [[], ['a'], ['ab'], ['abc']], results
@@ -102,6 +103,7 @@ class ErrorTest(TestCase):
         def Error(supprt, stream):
             raise TestException('here')
         matcher = Error()
+        matcher.config.clear()
         try:
             matcher.parse('a')
         except TestException:

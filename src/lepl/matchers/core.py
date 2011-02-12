@@ -76,20 +76,21 @@ def Any(restrict=None):
         '''
         Do the matching.  The result will be a single matching character.
         '''
-        ok = bool(stream)
+        (head, offset, helper) = stream
+        ok = offset < len(head)
         if ok and restrict:
             try:
-                ok = stream[0] in restrict
+                ok = head[offset] in restrict
             except TypeError:
                 # it would be nice to make this an error, but for line aware
                 # parsing (and any other heterogenous input) it's legal
                 if not warned[0]:
                     support._warn(format('Cannot restrict {0} with {1!r}',
-                                          stream[0], restrict))
+                                          head[offset], restrict))
                     warned[0] = True
                     ok = False
         if ok:
-            return ([stream[0]], stream[1:])
+            return ([head[offset]], (head, offset+1, helper))
             
     return match
             
@@ -276,8 +277,6 @@ def PostMatch(matcher, condition, not_=False, equals=True):
     
     `matcher` is coerced to `Literal()`, condition to `DfaRegexp()`
     '''
-    from lepl.regexp.matchers import DfaRegexp
-    
     def match(support, stream_in):
         '''
         Do the match and test the result.

@@ -212,7 +212,6 @@ def make_raw_parser(matcher, stream_factory, config):
     '''
     for rewriter in config.rewriters:
         matcher = rewriter(matcher)
-        #print(rewriter, matcher.tree())
     (m_stack, m_value) = prepare_monitors(config.monitors)
     # pylint bug here? (E0601)
     # pylint: disable-msg=W0212, E0601
