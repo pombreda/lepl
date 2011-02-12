@@ -1,4 +1,3 @@
-from lepl.support.lib import identity
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -36,7 +35,10 @@ Tests for the lepl.core.rewriters module.
 from re import sub
 from unittest import TestCase
 
-from lepl import Any, Or, Delayed, Optional, Node, Drop, And, Join, Digit
+from lepl.support.node import Node
+from lepl.matchers.core import Any, Delayed
+from lepl.matchers.derived import Optional, Drop, And, Join, Digit
+from lepl.matchers.combine import Or
 from lepl.support.graph import preorder
 from lepl.matchers.matcher import Matcher, is_child
 from lepl.matchers.support import TransformableWrapper
@@ -58,7 +60,7 @@ def str26(value):
 class DelayedCloneTest(TestCase):
     
     def assert_clone(self, matcher):
-        copy = matcher.postorder(DelayedClone(), Matcher)
+        _copy = matcher.postorder(DelayedClone(), Matcher)
     
     def _assert_clone(self, matcher, copy):
         original = preorder(matcher, Matcher)

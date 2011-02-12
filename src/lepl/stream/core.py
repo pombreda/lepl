@@ -31,7 +31,7 @@
 Default implementations of the stream classes. 
 
 A stream is a tuple (head, offset, helper) with the following requirements:
-- head must support basic __slice__ operations
+- head must support __getitem__ operations (including -ve indices!)
 - head must support len()
 - offset is an integer
 - helper is an instance of StreamHelper, defined below
@@ -40,41 +40,55 @@ A stream is a tuple (head, offset, helper) with the following requirements:
 
 from io import IOBase
 
-from lepl.support.lib import basestring
+from lepl.support.lib import basestring, str, format
 
 
-class HashedThunk(object):
+class HashedStream(object):
     '''
     Used to store a reference to the stream.  This assumes that the helper
     and offset together uniquely identify the stream and location.
     '''
     
-    __slots__ = ['_head', '_offset', '_helper']
+    __slots__ = ['stream']
     
-    def __init__(self, head, offset, helper):
-        self._head = head
-        self._offset = offset
-        self._helper = helper
+    def __init__(self, stream):
+        self.stream = stream
         
     def __hash__(self):
-        return self._offset ^ hash(self._helper)
+        (_, offset, helper) = self.stream
+        return offset ^ hash(helper)
     
     def __eq__(self, other):
-        return other._head == self._head and other._helper == self._helper
-    
-    def __call__(self):
-        return (self._head, self._offset, self._helper)
+        (_, offset1, helper1) = self.stream
+        (_, offset2, helper2) = other.stream
+        return offset1 == offset2 and helper1 == helper2
     
 
 class StreamHelper(object):
     
-    def hashed_thunk(self, head, offset):
+    def to_hash(self, stream):
         '''
         Generate an object that can be hashed (implements __hash__ and __eq__),
+        (_, offset, helper) = self.stream
         that reflects the current state of the stream, and that evaluates
         to give the stream.
         '''
-        return HashedThunk(self, head, offset)
+        return HashedStream(stream)
+    
+    def to_str(self, head, offset):
+        if offset < 3:
+            base = (str(head[0:2]) + '...') if len(head) > 3 else str(head)
+            return format('{0}[{1:d}:]', base, offset)
+        elif offset > len(head)-2:
+            return format('{0!r}...{1!r}[{2:d}:]', head[0:1], head[-3:], offset)
+        else:
+            return format('{0!r}...{1!r}...[{2:d}:]', head[0:1], head[offset:offset+2], offset)
+    
+    def to_location(self, head, offset):
+        return format('index {0:d}, {1!r}', offset, head[offset])
+    
+    def __repr__(self):
+        return '<helper>'
     
 
 class StreamFactory(object):
@@ -114,11 +128,24 @@ class StreamFactory(object):
         '''
         return self.auto(join(lines))
     
-    def from_items(self, items):
+    def from_items(self, items, sub_list=True):
         '''
-        Provide a stream for the contents of an iterator over items
-        (ie characters).
+        Provide a stream for the contents of an iterator over items.
+        
+        The `sub_list` causes each each item to be wrapped in a list.  This 
+        may seem unusual but is typically what is needed, because it makes the
+        items resemble strings.  In particular, it allows single values to
+        be joined with `+`.
+        
+        To understand further, compare "123" and [1,2,3].  The components of
+        the former are "1", "2" and "3', which can be joined with `+` as
+        expected.  However, the components of the latter are 1, 2, and 3 which
+        will "join" to give "6" instead of "123".  This is avoided if we
+        wrap in lists: [[1],[2],[3]] has components [1], [2], [3] which join
+        to give [1,2,3] as likely expected.  
         '''
+        if sub_list:
+            items = ([item] for item in items)
         return self.auto(list(items))
     
     def from_null(self, head):

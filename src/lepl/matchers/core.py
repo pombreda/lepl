@@ -103,6 +103,7 @@ def Literal(text):
     Typically the argument is a string but a list might be appropriate 
     with some streams.
     '''
+    delta = len(text)
     def match(support, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -112,9 +113,9 @@ def Literal(text):
         provided by the stream interface.
         '''
         try:
-            data = stream[0:len(text)]
-            if text == data:
-                return ([text], stream[len(text):])
+            (head, offset, helper) = stream
+            if text == head[offset:offset+delta]:
+                return ([text], (head, offset+delta, helper))
         except IndexError:
             pass
     return match
@@ -244,7 +245,8 @@ def Eof(support, stream):
 
     This is also aliased to Eos in lepl.derived.
     '''
-    if not stream:
+    (head, offset, _) = stream
+    if offset >= len(head):
         return ([], stream)
 
 

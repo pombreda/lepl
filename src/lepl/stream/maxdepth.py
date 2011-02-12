@@ -30,99 +30,25 @@
 Track the maximum depth of a stream.
 '''
 
-from lepl.stream.stream import LocationStream, SimpleStream
 from lepl.matchers.support import trampoline_matcher_factory
-from lepl.support.lib import open_stop, format
+from lepl.support.lib import format
 
 
-class Memory(object):
+class Facade(object):
     
-    def __init__(self, deepest):
+    def __init__(self, head, deepest):
+        self.head = head
         self.deepest = deepest
 
-
-def facade_factory(stream):
-    '''
-    Generate a facade class (we need a class so that we can register as
-    a subclass of the correct stream interface).
-    '''
+    def __len__(self):
+        return len(self.head)
     
-    class Facade(object):
-        
-        __slots__ = ['_Facade__stream', '_Facade__memory', '__weakref__']
-        
-        def __init__(self, stream, memory):
-            self.__stream = stream
-            self.__memory = memory
-            memory.deepest = stream
-                
-        def __getitem__(self, spec):
-            if isinstance(spec, slice) and open_stop(spec):
-                return Facade(self.__stream.__getitem__(spec), self.__memory)
-            else:
-                return self.__stream.__getitem__(spec)
-
-        def __bool__(self):
-            return bool(self.__stream)
-    
-        def __nonzero__(self):
-            return self.__bool__() 
-    
-        def __len__(self):
-            return len(self.__stream)
-
-        def __repr__(self):
-            return repr(self.__stream)
-    
-        def __str__(self):
-            return str(self.__stream)
-    
-        def __hash__(self):
-            return hash(self.__stream)
-        
-        def __eq__(self, other):
-            return isinstance(other, Facade) and self.__stream == other.__stream
-        
-        @property
-        def location(self):
-            return self.__stream.location
-
-        @property
-        def line_number(self):
-            return self.__stream.line_number
-        
-        @property
-        def line_offset(self):
-            return self.__stream.line_offset
-        
-        @property
-        def character_offset(self):
-            return self.__stream.character_offset
-   
-        @property
-        def text(self):
-            # this is a hack needed for inter-op with python regexps, which
-            # only accept strings.  it's identical to the hack in Regexp().
-            try:
-                return self.__stream.text
-            except AttributeError:
-                return self.__stream
-    
-        @property
-        def source(self):
-            return self.__stream.source
-        
-        @property
-        def stream(self):
-            return self.__stream
-
-    if isinstance(stream, LocationStream):
-        LocationStream.register(Facade)
-    else:
-        SimpleStream.register(Facade)
-    memory = Memory(stream)
-    facade = Facade(stream, memory)
-    return (facade, memory)
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            self.deepest = max(self.deepest, index.start if index.start != None else 0)
+        else:
+            self.deepest = max(self.deepest, index)
+        return self.head.__getitem__(index)
 
 
 @trampoline_matcher_factory()
@@ -139,24 +65,27 @@ def FullFirstMatch(matcher, eos=True):
     
     def _matcher(support, stream1):
         # add facade to stream
-        (stream2, memory) = facade_factory(stream1)
+        (head1, offset1, helper) = stream1
+        facade = Facade(head1, offset1)
+        stream2 = (facade, offset1, helper)
         
         # first match
         generator = matcher._match(stream2)
         try:
             (result2, stream3) = yield generator
-            if eos and stream3.stream:
-                raise FullFirstMatchException(memory.deepest)
+            (head2, offset2, _) = stream3
+            if eos and offset2 < len(head2):
+                raise FullFirstMatchException(head1, facade.deepest, helper)
             else:
-                yield (result2, stream3.stream)
+                yield (result2, (head1, offset2, helper))
         except StopIteration:
-            raise FullFirstMatchException(memory.deepest)
+            raise FullFirstMatchException(head1, facade.deepest, helper)
         
         # subsequent matches:
         while True:
             (result2, stream3) = yield generator
-            # drop stream wrapper
-            yield (result2, stream3.stream)
+            (head2, offset2, _) = stream3
+            yield (result2, (head1, offset2, helper))
 
     return _matcher
 
@@ -167,19 +96,9 @@ class FullFirstMatchException(Exception):
     about the deepest point read in the stream. 
     '''
     
-    def __init__(self, stream):
-        try:
-            if stream.line_number is None:
-                msg = format("The match failed at '{0}',"
-                             "\nIndex {1} of {2}.",
-                             stream, stream.line_offset, stream.source)
-            else:
-                msg = format("The match failed at '{0}',"
-                             "\nLine {1}, character {2} of {3}.",
-                             stream, stream.line_number, stream.line_offset,
-                             stream.source)
-        except AttributeError:
-            msg = format("The match failed at '{0}'.", stream)
+    def __init__(self, head, deepest, helper):
+        description = helper.to_str(head, deepest)
+        location = helper.to_location(head, deepest)
+        msg = format("The match failed at {0} ({1}).", description, location)
         super(FullFirstMatchException, self).__init__(msg)
-        self.stream = stream
 

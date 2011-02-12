@@ -35,7 +35,7 @@ Support for matcher tests.
 from re import sub
 from unittest import TestCase
 
-from lepl.support.lib import basestring, str
+from lepl.support.lib import str
 from lepl.stream.maxdepth import FullFirstMatchException
 
 

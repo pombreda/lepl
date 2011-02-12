@@ -32,7 +32,7 @@ Base class for matchers.
 '''
 
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from types import FunctionType
 
 from lepl.support.lib import format, singleton, identity

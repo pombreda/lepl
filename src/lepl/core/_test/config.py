@@ -36,6 +36,8 @@ from unittest import TestCase
 
 from lepl.matchers.core import Any
 from lepl._test.base import assert_str
+from lepl.stream.maxdepth import FullFirstMatchException
+from lepl.regexp.core import RegexpError
 
 
 class ParseTest(TestCase):
@@ -63,7 +65,7 @@ class ParseTest(TestCase):
         config(matcher)
         parser = getattr(matcher, 'parse' + name)
         try:
-            parser(text)
+            parser(text, **kargs)
         except FullFirstMatchException as e:
             assert_str(e, error)
             
@@ -89,18 +91,16 @@ Line 1, character 1 of str: 'abc'.""")
     def test_string_list(self):
         self.run_test('_items', ['a', 'b', 'c'], 
                       "['abc']", 
-                      "[(['ab'], ['a', 'b', 'c'][2:])]", 
-                      "[(['abc'], [][0:])]",
-                      """The match failed at '['a', 'b', 'c'][1:]',
-Index 1 of items: ['a', 'b', 'c'].""", 
-config=lambda m: m.config.no_compile_to_regexp(), sub_list=False)
+                      "[(['ab'], (['a', 'b', 'c'], 2, <helper>))]", 
+                      "[(['abc'], (['a', 'b', 'c'], 3, <helper>))]",
+                      "The match failed at ['a', 'b', 'c'][0:] (index 0, 'a').", 
+                      config=lambda m: m.config.no_compile_to_regexp(), sub_list=False)
         self.run_test('_items', ['a', 'b', 'c'], 
                       "[['a', 'b', 'c']]", 
-                      "[([['a', 'b']], ['a', 'b', 'c'][2:])]", 
-                      "[([['a', 'b', 'c']], [][0:])]",
-                      """The match failed at '['a', 'b', 'c'][1:]',
-Index 1 of items: ['a', 'b', 'c'].""", 
-config=lambda m: m.config.no_compile_to_regexp(), sub_list=True)
+                      "[([['a', 'b']], ([['a'], ['b'], ['c']], 2, <helper>))]", 
+                      "[([['a', 'b', 'c']], ([['a'], ['b'], ['c']], 3, <helper>))]",
+                      "The match failed at [['a'], ['b'], ['c']][0:] (index 0, ['a']).", 
+                      config=lambda m: m.config.no_compile_to_regexp())
         
     def test_int_list(self):
         #basicConfig(level=DEBUG)
@@ -112,11 +112,10 @@ config=lambda m: m.config.no_compile_to_regexp(), sub_list=True)
             assert 'no_compile_to_regexp' in str(e), str(e)
         self.run_test('_items', [1, 2, 3], 
                       "[[1, 2, 3]]", 
-                      "[([[1, 2]], [1, 2, 3][2:])]", 
-                      "[([[1, 2, 3]], [][0:])]",
-                      """The match failed at '[1, 2, 3][1:]',
-Index 1 of items: [1, 2, 3].""",
-config=lambda m: m.config.no_compile_to_regexp(), sub_list=True)
+                      "[([[1, 2]], ([[1], [2], [3]], 2, <helper>))]", 
+                      "[([[1, 2, 3]], ([[1], [2], [3]], 3, <helper>))]",
+                      "The match failed at [[1], [2], [3]][0:] (index 0, [1]).",
+config=lambda m: m.config.no_compile_to_regexp())
 
 
 class BugTest(TestCase):

@@ -42,8 +42,8 @@ import lepl
 
 # pylint: disable-msg=E0611, W0401
 #@PydevCodeAnalysisIgnore
-import lepl._test.bug_stalled_parser
-import lepl._test.magus
+#import lepl._test.bug_stalled_parser
+#import lepl._test.magus
 
 # Number of tests if running in IDE with Python 3
 TOTAL = 461

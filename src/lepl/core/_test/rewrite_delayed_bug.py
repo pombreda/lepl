@@ -32,8 +32,7 @@ Tests for bug reprted on the mailing list.
 '''
 
 from lepl._test.base import BaseTest
-
-from lepl import *
+from lepl.matchers.core import Delayed, Literal
 
 
 class LiteralTest(BaseTest):
