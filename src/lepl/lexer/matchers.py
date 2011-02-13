@@ -38,8 +38,7 @@ from abc import ABCMeta
 
 from lepl.support.context import Namespace, NamespaceMixin
 from lepl.matchers.derived import Add, Apply, Drop, KApply, Map
-from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream, \
-    ContentSource, TokenSource
+from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream
 from lepl.matchers.error import raise_error
 from lepl.lexer.support import LexerError, RuntimeLexerError
 from lepl.matchers.core import OperatorMatcher, Any, Literal, Lookahead, Regexp
@@ -54,7 +53,7 @@ from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import CompileRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.stream.stream import LocationStream, DEFAULT_STREAM_FACTORY
+from lepl.stream.core import DEFAULT_STREAM_FACTORY
 from lepl.support.lib import format, str
 
 

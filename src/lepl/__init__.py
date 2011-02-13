@@ -110,43 +110,43 @@ Running this gives the result::
              `- ')'
 '''
 
-#from lepl.contrib.matchers import SmartSeparator2
-#from lepl.core.config import Configuration, ConfigBuilder
-#from lepl.core.manager import GeneratorManager
-#from lepl.core.trace import RecordDeepest, TraceResults
-#from lepl.matchers.combine import And, Or, First, Difference, Limit
-#from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
-#    Lookahead, PostMatch, Regexp
-#from lepl.matchers.monitor import Trace, Commit
-#from lepl.matchers.derived import Apply, args, KApply, Join, \
-#    AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Repeat, Plus, \
-#    OneOrMore, Substitute, Name, Eof, Eos, Identity, Newline, Space, \
-#    Whitespace, Digit, Letter, Upper, Lower, Printable, Punctuation, \
-#    UnsignedInteger, SignedInteger, Integer, UnsignedFloat, SignedFloat, \
-#    UnsignedEFloat, SignedEFloat, Float, UnsignedReal, SignedReal, \
-#    UnsignedEReal, SignedEReal, Real, Word, DropEmpty, Literals, \
-#    String, SingleLineString, SkipString, SkipTo, Columns
-#from lepl.matchers.error import Error, make_error, raise_error
-#from lepl.matchers.memo import RMemo, LMemo, MemoException
-#from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
-#    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST, DroppedSpace
-#from lepl.matchers.support import function_matcher, function_matcher_factory, \
-#    sequence_matcher, sequence_matcher_factory, \
-#    trampoline_matcher, trampoline_matcher_factory
-#from lepl.matchers.transform import PostCondition
-#from lepl.matchers.variables import TraceVariables
-#from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
-#from lepl.offside.lexer import Indent, LineAwareEol, LineAwareSol, BIndent
+from lepl.contrib.matchers import SmartSeparator2
+from lepl.core.config import Configuration, ConfigBuilder
+from lepl.core.manager import GeneratorManager
+from lepl.core.trace import RecordDeepest, TraceResults
+from lepl.matchers.combine import And, Or, First, Difference, Limit
+from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
+    Lookahead, PostMatch, Regexp
+from lepl.matchers.monitor import Trace, Commit
+from lepl.matchers.derived import Apply, args, KApply, Join, \
+    AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Repeat, Plus, \
+    OneOrMore, Substitute, Name, Eof, Eos, Identity, Newline, Space, \
+    Whitespace, Digit, Letter, Upper, Lower, Printable, Punctuation, \
+    UnsignedInteger, SignedInteger, Integer, UnsignedFloat, SignedFloat, \
+    UnsignedEFloat, SignedEFloat, Float, UnsignedReal, SignedReal, \
+    UnsignedEReal, SignedEReal, Real, Word, DropEmpty, Literals, \
+    String, SingleLineString, SkipString, SkipTo, Columns
+from lepl.matchers.error import Error, make_error, raise_error
+from lepl.matchers.memo import RMemo, LMemo, MemoException
+from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
+    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST, DroppedSpace
+from lepl.matchers.support import function_matcher, function_matcher_factory, \
+    sequence_matcher, sequence_matcher_factory, \
+    trampoline_matcher, trampoline_matcher_factory
+from lepl.matchers.transform import PostCondition
+from lepl.matchers.variables import TraceVariables
+from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
+from lepl.offside.lexer import Indent, LineAwareEol, LineAwareSol, BIndent
 #from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
 #    ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent, \
 #    to_right
-#from lepl.regexp.core import RegexpError
-#from lepl.regexp.matchers import NfaRegexp, DfaRegexp
-#from lepl.regexp.unicode import UnicodeAlphabet
-#from lepl.stream.maxdepth import FullFirstMatchException
-#from lepl.stream.stream import DEFAULT_STREAM_FACTORY
-#from lepl.support.list import List, sexpr_fold, sexpr_throw
-#from lepl.support.node import Node, make_dict, join_with, node_throw
+from lepl.regexp.core import RegexpError
+from lepl.regexp.matchers import NfaRegexp, DfaRegexp
+from lepl.regexp.unicode import UnicodeAlphabet
+from lepl.stream.maxdepth import FullFirstMatchException
+from lepl.stream.core import DEFAULT_STREAM_FACTORY
+from lepl.support.list import List, sexpr_fold, sexpr_throw
+from lepl.support.node import Node, make_dict, join_with, node_throw
 
 __all__ = [
         # lepl.core.config
@@ -312,17 +312,17 @@ __all__ = [
         'BIndent',
         
         # lepl.offside.matchers
-        'Line',
-        'Block',
-        'BLine',
-        'ContinuedLineFactory',
-        'ContinuedBLineFactory',
-        'Extend',
-        'SOL',
-        'EOL',
-        'rightmost',
-        'constant_indent',
-        'to_right'
+#        'Line',
+#        'Block',
+#        'BLine',
+#        'ContinuedLineFactory',
+#        'ContinuedBLineFactory',
+#        'Extend',
+#        'SOL',
+#        'EOL',
+#        'rightmost',
+#        'constant_indent',
+#        'to_right'
        ]
 
 __version__ = '4.4.0'

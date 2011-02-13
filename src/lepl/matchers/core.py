@@ -192,16 +192,14 @@ def Regexp(pattern):
     pattern = compile_(pattern)
     
     def match(support, stream):
-        try:
-            match = pattern.match(stream.text)
-        except AttributeError: # no text method
-            match = pattern.match(stream)
+        (head, offset, helper) = stream
+        match = pattern.match(head[offset:])
         if match:
             eaten = len(match.group())
             if match.groups():
-                return (list(match.groups()), stream[eaten:])
+                return (list(match.groups()), (head, offset + eaten, helper))
             else:
-                return ([match.group()], stream[eaten:])
+                return ([match.group()], (head, offset + eaten, helper))
     return match
         
 

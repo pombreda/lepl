@@ -47,50 +47,20 @@ def make_error(msg):
         '''
         Create the error node when results are available.
         '''
-        return Error(*syntax_error_args(msg, stream_in, stream_out, results))
+        kargs = syntax_error_kargs(stream_in, stream_out, results)
+        return Error(format(msg, **kargs), kargs)
     return fun
-
-
-STREAM_IN = 'stream_in'
-STREAM_OUT = 'stream_out'
-RESULTS = 'results'
-FILENAME = 'filename'
-LINENO = 'lineno'
-OFFSET = 'offset'
-LINE = 'line'
-
-
-def syntax_error_args(msg, stream_in, stream_out, results):
-    '''
-    Helper function for constructing format dictionary.
-    '''
-    kargs = syntax_error_kargs(stream_in, stream_out, results)
-    filename = kargs[FILENAME]
-    lineno = kargs[LINENO]
-    offset = kargs[OFFSET]
-    line = kargs[LINE]
-    # pylint: disable-msg=W0142
-    return (format(msg, **kargs), (filename, lineno, offset, line))
 
 
 def syntax_error_kargs(stream_in, stream_out, results):
     '''
     Helper function for constructing format dictionary.
     '''
-    try:
-        (lineno, offset, _depth, line, filename) = stream_in.location
-        offset += 1 # appears to be 1-based?
-    except AttributeError:
-        filename = '<unknown> - use stream for better error reporting'
-        lineno = -1
-        offset = -1
-        try:
-            line = '...' + stream_in
-        except TypeError:
-            line = ['...'] + stream_in
-    kargs = {STREAM_IN: stream_in, STREAM_OUT: stream_out, 
-             RESULTS: results, FILENAME: filename, 
-             LINENO: lineno, OFFSET:offset, LINE:line}
+    (head_in, offset_in, helper_in) = stream_in
+    kargs = helper_in.to_kargs(head_in, offset_in, prefix='in_')
+    (head_out, offset_out, helper_out) = stream_out
+    kargs.update(helper_out.to_kargs(head_out, offset_out, prefix='out_'))
+    kargs['results'] = results
     return kargs
 
 
@@ -114,10 +84,14 @@ class Error(Node, SyntaxError):
     Create with `make_error()`.
     '''
     
-    def __init__(self, msg, location):
+    def __init__(self, msg, kargs):
         # pylint: disable-msg=W0142
-        Node.__init__(self, msg, location)
-        SyntaxError.__init__(self, msg, location)
+        Node.__init__(self, msg, kargs)
+        SyntaxError.__init__(self, msg, 
+                             (kargs.get('in_filename', ''),
+                              kargs.get('in_lineno', ''),
+                              kargs.get('in_offset', ''),
+                              kargs.get('in_text', '')))
         
     def __str__(self):
         return SyntaxError.__str__(self)

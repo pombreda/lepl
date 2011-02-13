@@ -185,10 +185,10 @@ def trampoline(main, m_stack=None, m_value=None):
                 exception_being_raised = True
                 if m_value:
                     m_value.exception(value)
-            except Exception:
+            except Exception as exception:
                 # do some logging etc before re-raising
-                log.error(format('Exception at epoch {0}: {1!s}',
-                                 epoch, value))
+                log.error(format('Exception at epoch {0}, {1!s}: {2!s}',
+                                 epoch, value, exception))
                 if stack:
                     log.debug(format('Top of stack: {0}', stack[-1]))
                     try:

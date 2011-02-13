@@ -62,6 +62,10 @@ class HashedStream(object):
         (_, offset1, helper1) = self.stream
         (_, offset2, helper2) = other.stream
         return offset1 == offset2 and helper1 == helper2
+
+
+DUMMY_HELPER = object()
+'''Allows tests to specify an arbotrary helper in results.'''
     
 
 class StreamHelper(object):
@@ -75,20 +79,39 @@ class StreamHelper(object):
         '''
         return HashedStream(stream)
     
-    def to_str(self, head, offset):
+    def to_kargs(self, head, offset, prefix=''):
+        '''
+        Generate a dictionary of values that describe the stream.  These
+        may be extended by subclasses.  They are provided to 
+        `syntax_error_kargs`, for example.
+        '''
         if offset < 3:
             base = (str(head[0:2]) + '...') if len(head) > 3 else str(head)
-            return format('{0}[{1:d}:]', base, offset)
+            line = format('{0}[{1:d}:]', base, offset)
         elif offset > len(head)-2:
-            return format('{0!r}...{1!r}[{2:d}:]', head[0:1], head[-3:], offset)
+            line = format('{0!r}...{1!r}[{2:d}:]', head[0:1], head[-3:], offset)
         else:
-            return format('{0!r}...{1!r}...[{2:d}:]', head[0:1], head[offset:offset+2], offset)
+            line = format('{0!r}...{1!r}...[{2:d}:]', head[0:1], head[offset:offset+2], offset)
+        return {prefix + 'line': line, 
+                prefix + 'offset': str(offset),
+                prefix + 'location': str(offset),
+                prefix + 'repr': repr(head[offset]) if offset < len(head) else '<EOS>',
+                prefix + 'str': repr(head[offset]) if offset < len(head) else 'EOS'}
+        
     
-    def to_location(self, head, offset):
-        return format('index {0:d}, {1!r}', offset, head[offset])
+    def to_str(self, head, offset, template='{line}', prefix=''):
+        return format(template, **self.to_kargs(head, offset, prefix))
+    
+    def to_location(self, head, offset, 
+                    template='index {offset}, {repr}', prefix=''):
+        return format(template, **self.to_kargs(head, offset, prefix))
     
     def __repr__(self):
         return '<helper>'
+    
+    def __eq__(self, other):
+        return other is DUMMY_HELPER or super(StreamHelper, self).__eq__(other)
+    
     
 
 class StreamFactory(object):

@@ -729,11 +729,15 @@ class NfaPattern(LogMixin):
                 stack.append((None, None, empties, match, stream))
                 # and try matching a character
                 if stream:
-                    char = stream[0]
-                    matched = map_[char]
-                    if matched:
-                        stack.append((None, matched, None,
-                                      match + [char], stream[1:]))
+                    (head, offset, helper) = stream
+                    try:
+                        char = head[offset]
+                        matched = map_[char]
+                        if matched:
+                            stack.append((None, matched, None,
+                                          match + [char], (head, offset+1, helper)))
+                    except IndexError:
+                        pass
             elif matched:
                 (dest, terminal) = matched[-1]
                 # add back reduced matched
@@ -742,7 +746,6 @@ class NfaPattern(LogMixin):
                 # and expand this destination
                 (map_, empties) = self.__table[dest]
                 stack.append((map_, None, empties, match, stream))
-                # this doesn't happen with current nfa
                 if terminal:
                     yield (terminal, self.__alphabet.join(match), stream)
             else:
@@ -923,7 +926,8 @@ class DfaPattern(LogMixin):
         '''
         try:
             (terminals, size, stream_out) = self.size_match(stream_in)
-            return (terminals, stream_in[0:size], stream_out)
+            (head, offset, _) = stream_in
+            return (terminals, head[offset:offset+size], stream_out)
         except TypeError:
             # the matcher returned None
             return None
@@ -936,20 +940,16 @@ class DfaPattern(LogMixin):
         size = 0
         longest = (self.__empty_labels, 0, stream) \
                     if self.__empty_labels else None
-        while stream:
-            future = self.__table[state][stream[0]]
-            #self._debug(format('stream {0!s}: {1} -> {2}',
-            #                   stream[0], state, future))
+        (head, offset, helper) = stream
+        while offset + size < len(head):
+            future = self.__table[state][head[offset + size]]
             if future is None:
                 break
             # update state
             (state, terminals) = future
             size += 1
-            # it might be faster to use size as an index here  - it's a
-            # trade-off depending on line length.  probably worth measuring.
-            stream = stream[1:]
             # match is strictly increasing, so storing the length is enough
             # (no need to make an expensive copy)
             if terminals:
-                longest = (terminals, size, stream)
+                longest = (terminals, size, (head, offset + size, helper))
         return longest

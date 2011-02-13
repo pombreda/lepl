@@ -47,19 +47,35 @@ class CompilerTest(TestCase):
     
     def test_compiler(self):
         #basicConfig(level=DEBUG)
-        self.do_test('a', 'a', (['label'], 'a', ''), [('label', 'a', '')])
-        self.do_test('ab', 'ab', (['label'], 'ab', ''), [('label', 'ab', '')])
-        self.do_test('a', 'ab', (['label'], 'a', 'b'), [('label', 'a', 'b')])
-        self.do_test('a*', 'aab', (['label'], 'aa', 'b'), 
-                     [('label', 'aa', 'b'), ('label', 'a', 'ab'), 
-                      ('label', '', 'aab')])
-        self.do_test('(?:a|b)', 'a', (['label'], 'a', ''), [('label', 'a', '')])
-        self.do_test('(?:a|b)', 'b', (['label'], 'b', ''), [('label', 'b', '')])
+        self.do_test('a', 'a', 
+                     (['label'], 'a', ('a', 1, None)), 
+                     [('label', 'a', ('a', 1, None))])
+        self.do_test('ab', 'ab', 
+                     (['label'], 'ab', ('ab', 2, None)), 
+                     [('label', 'ab', ('ab', 2, None))])
+        self.do_test('a', 'ab', 
+                     (['label'], 'a', ('ab', 1, None)), 
+                     [('label', 'a', ('ab', 1, None))])
+        self.do_test('a*', 'aab', 
+                     (['label'], 'aa', ('aab', 2, None)), 
+                     [('label', 'aa', ('aab', 2, None)), 
+                      ('label', 'a', ('aab', 1, None)), 
+                      ('label', '', ('aab', 0, None))])
+        self.do_test('(?:a|b)', 'a', 
+                     (['label'], 'a', ('a', 1, None)), 
+                     [('label', 'a', ('a', 1, None))])
+        self.do_test('(?:a|b)', 'b', 
+                     (['label'], 'b', ('b', 1, None)), 
+                     [('label', 'b', ('b', 1, None))])
         # note how the DFA gives the longest match (only) here 
-        self.do_test('(?:a|ab)', 'ab', (['label'], 'ab', ''), 
-                     [('label', 'a', 'b'), ('label', 'ab', '')])
-        self.do_test('(?:ab|a)', 'ab', (['label'], 'ab', ''),
-                     [('label', 'ab', ''), ('label', 'a', 'b')])
+        self.do_test('(?:a|ab)', 'ab', 
+                     (['label'], 'ab', ('ab', 2 None)), 
+                     [('label', 'a', ('ab', 1, None)), 
+                      ('label', 'ab', ('ab', 2, None))])
+        self.do_test('(?:ab|a)', 'ab', 
+                     (['label'], 'ab', ('ab', 2, None)),
+                     [('label', 'ab', ('ab', 2, None)), 
+                      ('label', 'a', ('ab', 1, None))])
         
     def do_test(self, pattern, target, dfa_result, nfa_result):
         alphabet = UnicodeAlphabet.instance()
@@ -67,8 +83,8 @@ class CompilerTest(TestCase):
         text = str(compiler.expression)
         assert text == format('(?P<label>{0!s})', pattern), text
         nfa = compiler.nfa()
-        result = list(nfa.match(target))
+        result = list(nfa.match((target, 0, None)))
         assert result == nfa_result, result
         dfa = compiler.dfa()
-        result = dfa.match(target)
+        result = dfa.match((target, 0, None))
         assert result == dfa_result, result

@@ -268,7 +268,7 @@ class DfaGraphTest(TestCase):
 class DfaTest(TestCase):
     
     def assert_dfa(self, regexp, text, results):
-        r = _test_parser(regexp).dfa().match(text)
+        r = _test_parser(regexp).dfa().match((text, 0, None))
         assert r[1] == results, r
         
     def test_simple(self):

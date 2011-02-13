@@ -33,9 +33,8 @@ The token streams.
 
 from logging import getLogger
 
-from lepl.stream.filters import BaseDelegateSource
 from lepl.lexer.support import RuntimeLexerError
-from lepl.stream.stream import LocationStream, DEFAULT_STREAM_FACTORY
+from lepl.stream.core import DEFAULT_STREAM_FACTORY
 from lepl.support.lib import format, str
 
 
@@ -73,66 +72,66 @@ def lexed_simple_stream(tokens, discard, stream):
 
 # pylint: disable-msg=E1002
 # (pylint bug?  this chains back to a new style abc)
-class TokenSource(BaseDelegateSource):
-    '''
-    The source of tokens sent to Token matchers.
-    
-    Wrap a sequence of (terminals, size, stream_before) tuples.
-    '''
-    
-    def __init__(self, tokens, stream):
-        '''
-        tokens is an iterator over the (terminals, size, stream_before) tuples.
-        '''
-        assert isinstance(stream, LocationStream)
-        # join is unused(?) but passed on to ContentStream
-        super(TokenSource, self).__init__(str(stream.source),
-                                          stream.source.join, stream.source)
-        self.__tokens = iter(tokens)
-        self.__token_count = 0
-    
-    def __next__(self):
-        '''
-        Provide (terminals, text) values (used by matchers) along with
-        the original stream as location_state.
-        
-        Note that this is infinite - it is the StreamView that detects when
-        the Line is empty and terminates any processing by the user.
-        '''
-        try:
-            (terminals, size, stream) = next(self.__tokens)
-            self.__token_count += 1
-            # there's an extra list here because this is a "line" containing
-            # a single token
-            return ([(terminals, stream[0:size])], stream)
-        except StopIteration:
-            self.total_length = self.__token_count
-            return (None, None)
-        
-    def hash_line(self, line):
-        '''
-        Use hash of base + location.
-        '''
-        if line is None:
-            return 0
-        else:
-            return hash(line.location_state) ^ hash(self)
-        
-    def eq_line(self, line, other):
-        '''
-        A line.line looks like [(['Tk0'], '1')], we extract the text.
-        '''
-        return line.location_state == other.location_state \
-            and self == other.source
-            
-    def text(self, _offset, line):
-        '''
-        For tokens, this is used only for str() / debug.
-        '''
-        if line is None:
-            return ''
-        else:
-            return line[0][1]
+#class TokenSource(BaseDelegateSource):
+#    '''
+#    The source of tokens sent to Token matchers.
+#    
+#    Wrap a sequence of (terminals, size, stream_before) tuples.
+#    '''
+#    
+#    def __init__(self, tokens, stream):
+#        '''
+#        tokens is an iterator over the (terminals, size, stream_before) tuples.
+#        '''
+#        assert isinstance(stream, LocationStream)
+#        # join is unused(?) but passed on to ContentStream
+#        super(TokenSource, self).__init__(str(stream.source),
+#                                          stream.source.join, stream.source)
+#        self.__tokens = iter(tokens)
+#        self.__token_count = 0
+#    
+#    def __next__(self):
+#        '''
+#        Provide (terminals, text) values (used by matchers) along with
+#        the original stream as location_state.
+#        
+#        Note that this is infinite - it is the StreamView that detects when
+#        the Line is empty and terminates any processing by the user.
+#        '''
+#        try:
+#            (terminals, size, stream) = next(self.__tokens)
+#            self.__token_count += 1
+#            # there's an extra list here because this is a "line" containing
+#            # a single token
+#            return ([(terminals, stream[0:size])], stream)
+#        except StopIteration:
+#            self.total_length = self.__token_count
+#            return (None, None)
+#        
+#    def hash_line(self, line):
+#        '''
+#        Use hash of base + location.
+#        '''
+#        if line is None:
+#            return 0
+#        else:
+#            return hash(line.location_state) ^ hash(self)
+#        
+#    def eq_line(self, line, other):
+#        '''
+#        A line.line looks like [(['Tk0'], '1')], we extract the text.
+#        '''
+#        return line.location_state == other.location_state \
+#            and self == other.source
+#            
+#    def text(self, _offset, line):
+#        '''
+#        For tokens, this is used only for str() / debug.
+#        '''
+#        if line is None:
+#            return ''
+#        else:
+#            return line[0][1]
 
 def lexed_location_stream(tokens, discard, stream, source=None):
     '''
@@ -172,45 +171,45 @@ def lexed_location_stream(tokens, discard, stream, source=None):
     return DEFAULT_STREAM_FACTORY(source(token_stream, stream))
 
 
-class ContentSource(BaseDelegateSource):
-    '''
-    The source of text sent to embedded content in a Token matcher.
-    '''
-    
-    def __init__(self, text, stream):
-        '''
-        There's just a single line from the token contents.
-        '''
-        super(ContentSource, self).__init__(str(stream.source),
-                                            stream.source.join,
-                                            base=text)
-        self.__line = text
-        self.__stream = stream
-        self.__used = False
-        self.total_length = len(text)
-    
-    def __next__(self):
-        '''
-        Return a single line.
-        '''
-        try:
-            return (None if self.__used else self.__line, self.__stream)
-        finally:
-            self.__used = True
-
-    def text(self, offset, line):
-        '''
-        Provide the remaining part of the line.
-        '''
-        if line:
-            return line[offset:]
-        else:
-            return self.join([])
-
-    def hash_line(self, line):
-        return hash(line.line) ^ hash(line.location_state)
-
-    def eq_line(self, line, other):
-        return line.line == other.line \
-            and self == other.source
+#class ContentSource(BaseDelegateSource):
+#    '''
+#    The source of text sent to embedded content in a Token matcher.
+#    '''
+#    
+#    def __init__(self, text, stream):
+#        '''
+#        There's just a single line from the token contents.
+#        '''
+#        super(ContentSource, self).__init__(str(stream.source),
+#                                            stream.source.join,
+#                                            base=text)
+#        self.__line = text
+#        self.__stream = stream
+#        self.__used = False
+#        self.total_length = len(text)
+#    
+#    def __next__(self):
+#        '''
+#        Return a single line.
+#        '''
+#        try:
+#            return (None if self.__used else self.__line, self.__stream)
+#        finally:
+#            self.__used = True
+#
+#    def text(self, offset, line):
+#        '''
+#        Provide the remaining part of the line.
+#        '''
+#        if line:
+#            return line[offset:]
+#        else:
+#            return self.join([])
+#
+#    def hash_line(self, line):
+#        return hash(line.line) ^ hash(line.location_state)
+#
+#    def eq_line(self, line, other):
+#        return line.line == other.line \
+#            and self == other.source
     
