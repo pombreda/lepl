@@ -100,28 +100,25 @@ class _RMemo(OperatorMatcher):
         '''
         # pylint: disable-msg=W0212
         # (_match is an internal interface)
-        try:
-            key = (stream, self.__state.hash)
-            if key not in self.__table:
-                # we have no cache for this stream, so we need to generate the
-                # entry.  we do not care about nested calls with the same stream
-                # because this memoization is not for left recursion.  that 
-                # means that we can return a table around this generator 
-                # immediately.
-                self.__table[key] = RTable(self.matcher._match(stream))
-            return GeneratorWrapper(self.__table[key].generator(self.matcher, stream),
-                                    self, stream)
-        except TypeError as e: # unhashable type; cannot cache
-            self._warn(format('Cannot memoize (cannot hash {0!r}: {1})', 
-                              stream, e))
-            return self.matcher._match(stream)
+        (_, _, helper) = stream
+        key = helper.to_hash(stream, self.__state)
+        if key not in self.__table:
+            # we have no cache for this stream, so we need to generate the
+            # entry.  we do not care about nested calls with the same stream
+            # because this memoization is not for left recursion.  that 
+            # means that we can return a table around this generator 
+            # immediately.
+            self.__table[key] = RTable(self.matcher._match(stream))
+        return GeneratorWrapper(self.__table[key].generator(self.matcher, stream),
+                                self, stream)
         
     def _untagged_match(self, stream):
         '''
         Match the stream without trampolining (we don't need to worry about
         recursion).
         '''
-        key = (stream, self.__state.hash)
+        (_, _, helper) = stream
+        key = helper.to_hash(stream, self.__state)
         if key not in self.__table:
             self.__table[key] = ([], self.matcher._untagged_match(stream))
         (known, generator) = self.__table[key]
@@ -152,12 +149,19 @@ class RTable(LogMixin):
         embedded generator to get the next value (and then store it).
         '''
         if self.__active:
+            (head, offset, helper) = stream
+            kargs = helper.to_kargs(head, offset)
+            (head, offset, helper) = self.__cached_stream
+            kargs.update(helper.to_kargs(head, offset, prefix='initial_'))
+            kargs.update({'i': i, 
+                          'table': self.__table, 
+                          'matcher': matcher})
             raise MemoException(format('''Left recursion with RMemo?
-i: {0}
-table: {1!r}
-stream: {2}/{3} (initially {4})
-matcher: {5!s}''', 
-i, self.__table, stream, type(stream), self.__cached_stream, matcher))
+i: {i}
+table: {table!r}
+stream: {repr}/{type} (initially {initial_repr})
+matcher: {matcher!s}''', **kargs))
+            
         try:
             while i >= len(self.__table) and not self.__stopped:
                 try:
@@ -180,8 +184,7 @@ i, self.__table, stream, type(stream), self.__cached_stream, matcher))
         '''
         for i in count():
             yield (yield GeneratorWrapper(self.__read(i, matcher, stream), 
-                            _DummyMatcher(self.__class__.__name__, 
-                                          matcher), 
+                            _DummyMatcher(self.__class__.__name__, matcher), 
                             stream))
 
 
@@ -232,7 +235,8 @@ class _LMemo(OperatorMatcher):
         '''
         Attempt to match the stream.
         '''
-        key = (stream, self.__state.hash)
+        (_, _, helper) = stream
+        key = helper.to_hash(stream, self.__state)
         if key not in self.__caches:
             self.__caches[key] = PerStreamCache(self.matcher)
         return self.__caches[key]._match(stream)

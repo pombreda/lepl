@@ -49,19 +49,20 @@ class HashedStream(object):
     and offset together uniquely identify the stream and location.
     '''
     
-    __slots__ = ['stream']
+    __slots__ = ['stream', 'state']
     
-    def __init__(self, stream):
+    def __init__(self, stream, state):
         self.stream = stream
+        self.state = state
         
     def __hash__(self):
         (_, offset, helper) = self.stream
-        return offset ^ hash(helper)
+        return offset ^ hash(helper) ^ hash(self.state)
     
     def __eq__(self, other):
         (_, offset1, helper1) = self.stream
         (_, offset2, helper2) = other.stream
-        return offset1 == offset2 and helper1 == helper2
+        return offset1 == offset2 and helper1 == helper2 and other.state == self.state
 
 
 DUMMY_HELPER = object()
@@ -70,14 +71,14 @@ DUMMY_HELPER = object()
 
 class StreamHelper(object):
     
-    def to_hash(self, stream):
+    def to_hash(self, stream, state=None):
         '''
         Generate an object that can be hashed (implements __hash__ and __eq__),
         (_, offset, helper) = self.stream
         that reflects the current state of the stream, and that evaluates
         to give the stream.
         '''
-        return HashedStream(stream)
+        return HashedStream(stream, state)
     
     def to_kargs(self, head, offset, prefix=''):
         '''
@@ -96,7 +97,8 @@ class StreamHelper(object):
                 prefix + 'offset': str(offset),
                 prefix + 'location': str(offset),
                 prefix + 'repr': repr(head[offset]) if offset < len(head) else '<EOS>',
-                prefix + 'str': repr(head[offset]) if offset < len(head) else 'EOS'}
+                prefix + 'str': repr(head[offset]) if offset < len(head) else 'EOS',
+                prefix + 'type': str(type(head))}
         
     
     def to_str(self, head, offset, template='{line}', prefix=''):
@@ -112,6 +114,8 @@ class StreamHelper(object):
     def __eq__(self, other):
         return other is DUMMY_HELPER or super(StreamHelper, self).__eq__(other)
     
+    def __hash__(self):
+        return super(StreamHelper, self).__hash__()
     
 
 class StreamFactory(object):
