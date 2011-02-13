@@ -49,13 +49,13 @@ class PhoneExample(Example):
         matcher.config.no_full_first_match()
         self.examples([
 (lambda: next(matcher.match('hello world')),
-"""(['hello'], 'hello world'[5:])"""),
+"""(['hello'], ('hello world', 5, <helper>))"""),
 (lambda: next( And(Word(), Space(), Integer()).match('hello 123') ),
-"""(['hello', ' ', '123'], ''[0:])"""),
+"""(['hello', ' ', '123'], ('hello 123', 9, <helper>))"""),
 (lambda: next( (Word() & Space() & Integer()).match('hello 123') ),
-"""(['hello', ' ', '123'], ''[0:])"""),
+"""(['hello', ' ', '123'], ('hello 123', 9, <helper>))"""),
 (lambda: next( (Word() / Integer()).match('hello 123') ),
-"""(['hello', ' ', '123'], ''[0:])"""),
+"""(['hello', ' ', '123'], ('hello 123', 9, <helper>))"""),
 ])
     
     def test_fragment2(self):
@@ -114,16 +114,16 @@ class PhoneExample(Example):
                        (lambda: matcher.parse('andrew, 3333253')[0],
                         "{'phone': '3333253', 'name': 'andrew'}"),
 (lambda: next( (name / ',' / phone).match('andrew, 3333253') ),
-"""([('name', 'andrew'), ',', ' ', ('phone', '3333253')], ''[0:])"""),
+"""([('name', 'andrew'), ',', ' ', ('phone', '3333253')], ('andrew, 3333253', 15, <helper>))"""),
 ])
 
 
     def test_components(self):
         
         self.examples([(lambda: next( (Word() > 'name').match('andrew') ),
-                        "([('name', 'andrew')], ''[0:])"),
+                        "([('name', 'andrew')], ('andrew', 6, <helper>))"),
                        (lambda: next( (Integer() > 'phone').match('3333253') ),
-                        "([('phone', '3333253')], ''[0:])"),
+                        "([('phone', '3333253')], ('3333253', 7, <helper>))"),
                        (lambda: dict([('name', 'andrew'), ('phone', '3333253')]),
                         "{'phone': '3333253', 'name': 'andrew'}")])
 

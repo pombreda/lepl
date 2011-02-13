@@ -121,14 +121,12 @@ class Tutorial2Example(Example):
     def test_all(self):
         self.examples([
 (self.run_error,
-"""lepl.stream.maxdepth.FullFirstMatchException: The match failed at ' + 30',
-Line 1, character 2 of str: '12 + 30'.
+"""FullFirstMatchException: The match failed in <string> at ' + 30' (line 1, character 3).
 """),
 (self.run_explicit_space,
 """[42.0]"""),
 (self.run_space_error,
-"""lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+30',
-Line 1, character 2 of str: '12+30'.
+"""FullFirstMatchException: The match failed in <string> at '+30' (line 1, character 3).
 """),
 (lambda: self.run_star('12 + 30'),
 """[42.0]"""),

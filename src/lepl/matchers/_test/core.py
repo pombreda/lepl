@@ -79,11 +79,11 @@ class AndTest(BaseTest):
     def test_add(self):
         #basicConfig(level=DEBUG)
         self.assert_list(['1','2'], Any() + Any(), [['12']], 
-                         sub_list=False, join=''.join)
+                         sub_list=False)
         self.assert_list(['1','2','3'], Any() + Any(), [['12']], 
-                         sub_list=False, join=''.join)
+                         sub_list=False)
         self.assert_list(['1','2','3'], Any() + Any() + Any(), [['123']], 
-                         sub_list=False, join=''.join)
+                         sub_list=False)
         self.assert_list(['1'], Any() + Any(), [])
     
     

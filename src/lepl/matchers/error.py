@@ -89,9 +89,9 @@ class Error(Node, SyntaxError):
         Node.__init__(self, msg, kargs)
         SyntaxError.__init__(self, msg, 
                              (kargs.get('in_filename', ''),
-                              kargs.get('in_lineno', ''),
-                              kargs.get('in_offset', ''),
-                              kargs.get('in_text', '')))
+                              int(kargs.get('in_lineno', 0)),
+                              int(kargs.get('in_char', 0)),
+                              kargs.get('in_line', '')))
         
     def __str__(self):
         return SyntaxError.__str__(self)

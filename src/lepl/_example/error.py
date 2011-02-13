@@ -35,7 +35,7 @@
 Examples from the documentation.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example
@@ -57,8 +57,8 @@ class NodeErrorTest(Example):
         
         with DroppedSpace():
             
-            unopen   = number ** make_error("no ( before '{stream_out}'") & ')'
-            unclosed = ('(' & expr & Eos()) ** make_error("no ) for '{stream_in}'")
+            unopen   = number ** make_error("no ( before {out_rest!s}") & ')'
+            unclosed = ('(' & expr & Eos()) ** make_error("no ) for {in_rest!s}")
         
             term    = Or(
                          (number | '(' & expr & ')')      > Term,
@@ -77,28 +77,28 @@ class NodeErrorTest(Example):
     def test_errors(self):
         parser = self.make_parser()
         self.examples([(lambda: parser('1 + 2 * (3 + 4 - 5')[0],
-                       """  File "str: '1 + 2 * (3 + 4 - 5'", line 1
+                       """  File "<string>", line 1
     1 + 2 * (3 + 4 - 5
             ^
-lepl.matchers.error.Error: no ) for '(3 + 4 - 5'
+Error: no ) for '(3 + 4 - 5'
 """),
                        (lambda: parser('1 + 2 * 3 + 4 - 5)')[0],
-                        """  File "str: '1 + 2 * 3 + 4 - 5)'", line 1
+                        """  File "<string>", line 1
     1 + 2 * 3 + 4 - 5)
                     ^
-lepl.matchers.error.Error: no ( before ')'
+Error: no ( before ')'
 """),
                        (lambda: parser('1 + 2 * (3 + four - 5)')[0],
-                        """  File "str: '1 + 2 * (3 + four - 5)'", line 1
+                        """  File "<string>", line 1
     1 + 2 * (3 + four - 5)
                  ^
-lepl.matchers.error.Error: unexpected text: four
+Error: unexpected text: four
 """),
                        (lambda: parser('1 + 2 ** (3 + 4 - 5)')[0],
-                        """  File "str: '1 + 2 ** (3 + 4 - 5)'", line 1
+                        """  File "<string>", line 1
     1 + 2 ** (3 + 4 - 5)
            ^
-lepl.matchers.error.Error: unexpected text: *
+Error: unexpected text: *
 """)])
     
     
@@ -118,8 +118,8 @@ class ListErrorTest(Example):
         
         with DroppedSpace():
             
-            unopen   = number ** make_error("no ( before '{stream_out}'") & ')'
-            unclosed = ('(' & expr & Eos()) ** make_error("no ) for '{stream_in}'")
+            unopen   = number ** make_error("no ( before {out_rest!s}") & ')'
+            unclosed = ('(' & expr & Eos()) ** make_error("no ) for {in_rest!s}")
         
             term    = Or(
                          (number | '(' & expr & ')')      > Term,
@@ -138,27 +138,27 @@ class ListErrorTest(Example):
     def test_errors(self):
         parser = self.make_parser()
         self.examples([(lambda: parser('1 + 2 * (3 + 4 - 5')[0],
-                       """  File "str: '1 + 2 * (3 + 4 - 5'", line 1
+                       """  File "<string>", line 1
     1 + 2 * (3 + 4 - 5
             ^
-lepl.matchers.error.Error: no ) for '(3 + 4 - 5'
+Error: no ) for '(3 + 4 - 5'
 """),
                        (lambda: parser('1 + 2 * 3 + 4 - 5)')[0],
-                        """  File "str: '1 + 2 * 3 + 4 - 5)'", line 1
+                        """  File "<string>", line 1
     1 + 2 * 3 + 4 - 5)
                     ^
-lepl.matchers.error.Error: no ( before ')'
+Error: no ( before ')'
 """),
                        (lambda: parser('1 + 2 * (3 + four - 5)')[0],
-                        """  File "str: '1 + 2 * (3 + four - 5)'", line 1
+                        """  File "<string>", line 1
     1 + 2 * (3 + four - 5)
                  ^
-lepl.matchers.error.Error: unexpected text: four
+Error: unexpected text: four
 """),
                        (lambda: parser('1 + 2 ** (3 + 4 - 5)')[0],
-                        """  File "str: '1 + 2 ** (3 + 4 - 5)'", line 1
+                        """  File "<string>", line 1
     1 + 2 ** (3 + 4 - 5)
            ^
-lepl.matchers.error.Error: unexpected text: *
+Error: unexpected text: *
 """)])
     

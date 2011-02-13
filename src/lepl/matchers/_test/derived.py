@@ -66,8 +66,9 @@ class RepeatTest(TestCase):
     def assert_simple(self, stream, start, stop, algorithm, target):
         matcher = Repeat(RangeMatch(), start, stop, algorithm=algorithm)
         matcher.config.no_full_first_match()
-        result = [''.join(map(str, l)) 
-                  for (l, _s) in matcher.match_items(stream, sub_list=False)]
+        result = list(matcher.match_items(stream, sub_list=False))
+        #print(result)
+        result = [''.join(map(str, l)) for (l, _s) in result]
         assert target == result, result
         
     def test_mixin(self):
@@ -141,10 +142,11 @@ class RangeMatch(OperatorMatcher):
         super(RangeMatch, self).__init__()
     
     @tagged
-    def _match(self, values):
-        if values:
-            for i in range(values[0]):
-                yield ([i], values[1:])
+    def _match(self, stream):
+        (head, offset, helper) = stream
+        if offset < len(head):
+            for i in range(head[offset]):
+                yield ([i], (head, offset+1, helper))
 
 
 class SpaceTest(BaseTest):

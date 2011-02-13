@@ -39,8 +39,10 @@ def Digit(support, stream):
               '4': 'ghi',  '5': 'jkl',  '6': 'mno',
               '7': 'pqrs', '8': 'tuv',  '9': 'wxyz',
               '0': ''}
-    if stream:
-        digit, tail = stream[0], stream[1:]
+    (head, offset, helper) = stream
+    if offset < len(head):
+        digit = head[offset]
+        tail = (head, offset+1, helper)
         yield ([digit], tail)
         if digit in digits:
             for letter in digits[digit]:

@@ -52,8 +52,7 @@ class NewIn4Example(Example):
     
     def test_all(self):
         self.examples([
-(self.run_error_msg,
-"""The match failed at '67',
-Line 1, character 5 of str: '1234567'."""),
+(self.run_error_msg, 
+"The match failed in <string> at '567' (line 1, character 5)."),
 ])
         

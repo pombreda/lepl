@@ -48,7 +48,7 @@ class FullFirstMatchTest(Example):
         try:
             matcher.parse_null('1234567')
         except FullFirstMatchException as e:
-            #print(str(e))
+            #print(str(e))[1, 2, 3]
             return str(e)
         
     def run_string(self):
@@ -60,8 +60,6 @@ class FullFirstMatchTest(Example):
             return str(e)
 
     def test_all(self):
-        self.examples([(self.run_null, "The match failed at '67'."),
-                       (self.run_string,
-"""The match failed at '67',
-Line 1, character 5 of str: '1234567'.""")])
+        self.examples([(self.run_null, "The match failed in <str> at '567' (offset 4, value '5')."),
+                       (self.run_string, "The match failed in <string> at '567' (line 1, character 5).")])
     

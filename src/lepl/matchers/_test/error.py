@@ -64,12 +64,12 @@ class MessageTest(TestCase):
         '''
         Test a message with formatting.
         '''
-        parser = (Literal('abc') > 'name') ** make_error('msg {stream_in}')
+        parser = (Literal('abc') > 'name') ** make_error('msg {in_rest}')
         parser.config.no_full_first_match()
         node = parser.parse('abc')[0]
         assert isinstance(node, Error)
-        assert node[0] == 'msg abc', node[0]
-        assert str(node).startswith('msg abc ('), str(node)
+        assert node[0] == "msg 'abc'", node[0]
+        assert str(node).startswith("msg 'abc' ("), str(node)
         assert isinstance(node, Exception), type(node)
         
     def test_bad_format(self):
@@ -90,11 +90,11 @@ class MessageTest(TestCase):
         '''
         #basicConfig(level=DEBUG)
         with TraceVariables():
-            parser = (Literal([1, 2, 3]) > 'name') ** make_error('msg {stream_in}')
+            parser = (Literal([1, 2, 3]) > 'name') ** make_error('msg {in_str}')
         parser.config.no_full_first_match()
         node = parser.parse([1, 2, 3])[0]
         assert isinstance(node, Error)
-        assert node[0] == 'msg [1, 2, 3]', node[0]
-        assert str(node).startswith('msg [1, 2, 3] ('), str(node)
+        assert node[0] == 'msg 1', node[0]
+        assert str(node).startswith('msg 1 ('), str(node)
         assert isinstance(node, Exception), type(node)
         

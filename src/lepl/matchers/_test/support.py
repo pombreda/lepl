@@ -1,3 +1,4 @@
+from lepl.stream.core import DUMMY_HELPER
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -40,30 +41,38 @@ from lepl.matchers.support import function_matcher_factory, function_matcher, \
 
 @function_matcher
 def char(support, stream):
-    if stream:
-        return ([stream[0]], stream[1:])
+    (head, offset, helper) = stream
+    if offset < len(head): 
+        return ([head[offset]], (head, offset+1, helper))
 
 @function_matcher_factory()
 def char_in(chars):
     def match(support, stream):
-        if stream and stream[0] in chars:
-            return ([stream[0]], stream[1:])
+        (head, offset, helper) = stream
+        if offset < len(head) and head[offset] in chars:
+            return ([head[offset]], (head, offset+1, helper))
     return match
 
 @sequence_matcher
 def any_char(support, stream):
-    while stream:
-        yield ([stream[0]], stream[1:])
-        stream = stream[1:]
+    (head, offset, helper) = stream
+    while offset < len(head):
+        yield ([head[offset]], (head, offset+1, helper))
+        offset += 1
 
 @sequence_matcher_factory()
 def any_char_in(chars):
     def match(support, stream):
-        while stream:
-            if stream[0] in chars:
-                yield ([stream[0]], stream[1:])
-            stream = stream[1:]
+        (head, offset, helper) = stream
+        while offset < len(head):
+            if head[offset] in chars:
+                yield ([head[offset]], (head, offset+1, helper))
+            offset += 1
     return match
+
+
+def mks(head, offset):
+    return (head, offset, DUMMY_HELPER)
 
 
 class DecoratorTest(TestCase):
@@ -73,11 +82,13 @@ class DecoratorTest(TestCase):
         matcher = char()
         matcher.config.no_full_first_match()
         result = list(matcher.match_null('ab'))
-        assert result == [(['a'], 'b')], result
+        assert result == [(['a'], mks('ab', 1))], result
         matcher = char()[2:,...]
         matcher.config.no_full_first_match()
         result = list(matcher.match_null('abcd'))
-        assert result == [(['abcd'], ''), (['abc'], 'd'), (['ab'], 'cd')], result
+        assert result == [(['abcd'], mks('abcd', 4)), 
+                          (['abc'], mks('abcd', 3)), 
+                          (['ab'], mks('abcd', 2))], result
         assert char()[:,...].parse('ab') == ['ab']
         
     def test_char_in(self):
@@ -85,13 +96,14 @@ class DecoratorTest(TestCase):
         matcher = char_in('abc')
         matcher.config.no_full_first_match()
         result = list(matcher.match_null('ab'))
-        assert result == [(['a'], 'b')], result
+        assert result == [(['a'], mks('ab', 1))], result
         result = list(matcher.match_null('pqr'))
         assert result == [], result
         matcher = char_in('abc')[2:,...]
         matcher.config.no_full_first_match()
         result = list(matcher.match_null('abcd'))
-        assert result == [(['abc'], 'd'), (['ab'], 'cd')], result
+        assert result == [(['abc'], mks('abcd', 3)), 
+                          (['ab'], mks('abcd', 2))], result
         
     def test_any_char(self):
         #basicConfig(level=DEBUG)
@@ -99,27 +111,38 @@ class DecoratorTest(TestCase):
         # with this set we have an extra eos that messes things up
         matcher.config.no_full_first_match()
         result = list(matcher.match_null('ab'))
-        assert result == [(['a'], 'b'), (['b'], '')], result
+        assert result == [(['a'], mks('ab', 1)), 
+                          (['b'], mks('ab', 2))], result
         matcher = any_char()[2:,...]
         matcher.config.no_full_first_match()
         result = list(matcher.match_null('abcd'))
-        assert result == [(['abcd'], ''), (['abc'], 'd'), (['abd'], ''), 
-                          (['ab'], 'cd'), (['acd'], ''), (['ac'], 'd'), 
-                          (['ad'], ''), (['bcd'], ''), (['bc'], 'd'), 
-                          (['bd'], ''), (['cd'], '')], result
+        assert result == [(['abcd'], mks('abcd', 4)), 
+                          (['abc'], mks('abcd', 3)), 
+                          (['abd'], mks('abcd', 4)), 
+                          (['ab'], mks('abcd', 2)), 
+                          (['acd'], mks('abcd', 4)), 
+                          (['ac'], mks('abcd', 3)), 
+                          (['ad'], mks('abcd', 4)), 
+                          (['bcd'], mks('abcd', 4)), 
+                          (['bc'], mks('abcd', 3)), 
+                          (['bd'], mks('abcd', 4)), 
+                          (['cd'], mks('abcd', 4))], result
         
     def test_any_char_in(self):
         matcher = any_char_in('abc')
         matcher.config.no_full_first_match()
         result = list(matcher.match_null('ab'))
-        assert result == [(['a'], 'b'), (['b'], '')], result
+        assert result == [(['a'], mks('ab', 1)), 
+                          (['b'], mks('ab', 2))], result
         result = list(matcher.match_null('pqr'))
         assert result == [], result
         matcher = any_char_in('abc')[2:,...]
         matcher.config.no_full_first_match()
         result = list(matcher.match_null('abcd'))
-        assert result == [(['abc'], 'd'), (['ab'], 'cd'), 
-                          (['ac'], 'd'), (['bc'], 'd')], result
+        assert result == [(['abc'], mks('abcd', 3)), 
+                          (['ab'], mks('abcd', 2)), 
+                          (['ac'], mks('abcd', 3)), 
+                          (['bc'], mks('abcd', 3))], result
     
     def test_bad_args(self):
         #basicConfig(level=DEBUG)
@@ -144,12 +167,6 @@ class DecoratorTest(TestCase):
             assert False, 'expected error'
         except TypeError:
             pass
-#        try:
-#            @function_matcher_factory
-#            def foo(a, *, b=None): return
-#            assert False, 'expected error'
-#        except TypeError:
-#            pass
             
 
 class FunctionMatcherBugTest(TestCase):
@@ -159,8 +176,9 @@ class FunctionMatcherBugTest(TestCase):
         from string import ascii_uppercase
         @function_matcher
         def capital(support, stream):
-            if stream[0] in ascii_uppercase:
-                return ([stream[0]], stream[1:])
+            (head, offset, helper) = stream
+            if head[offset] in ascii_uppercase:
+                return ([head[offset]], (head, offset+1, helper))
         parser = capital()[3]
         assert parser.parse_string('ABC')
         

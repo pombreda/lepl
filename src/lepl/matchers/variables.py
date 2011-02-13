@@ -45,7 +45,8 @@ from lepl.support.lib import format, str
 def NamedResult(name, matcher, out=stderr):
     
     def format_stream(stream):
-        text = str(stream)
+        (head, offset, _) = stream
+        text = str(head[offset:])
         if len(text) > 20:
             text = text[:17] + '...'
         return text
@@ -100,7 +101,8 @@ def name(name, show_failures=True, width=80, out=stderr):
     def namer(stream_in, matcher):
         try:
             (result, stream_out) = matcher()
-            stream = _adjust(format('stream = \'{0}\'', stream_out), right) 
+            (head, offset, _) = stream_out
+            stream = _adjust(format('stream = \'{0}\'', head[offset:]), right) 
             str_name = _adjust(name, left // 4, True, True)
             match = _adjust(format(' {0} = {1}', str_name, result),
                             left, True)
@@ -109,7 +111,8 @@ def name(name, show_failures=True, width=80, out=stderr):
             return (result, stream_out)
         except StopIteration:
             if show_failures:
-                stream = _adjust(format('stream = \'{0}\'', stream_in), right) 
+                (head, offset, _) = stream_in
+                stream = _adjust(format('stream = \'{0}\'', head[offset:]), right) 
                 str_name = _adjust(name, left // 4, True, True)
                 match = _adjust(format(' {0} failed', str_name), left, True)
                 # Python bug #4618

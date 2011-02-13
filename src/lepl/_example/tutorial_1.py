@@ -82,8 +82,7 @@ class Tutorial1Example(Example):
 (self.run_parse,
 """['123']"""),
 (self.run_match_error,
-"""lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'cabbage',
-Line 1, character 0 of str: 'cabbage'.
+"""FullFirstMatchException: The match failed in <string> at 'cabbage' (line 1, character 1).
 """),
 # fails for python 2 (get a list) so exclude
 #(self.run_parse_all,

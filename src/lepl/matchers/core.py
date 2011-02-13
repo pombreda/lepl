@@ -269,25 +269,30 @@ def Consumer(matcher, consume=True):
 
 
 @trampoline_matcher_factory(matcher=to(Literal), condition=to(DfaRegexp))
-def PostMatch(matcher, condition, not_=False, equals=True):
+def PostMatch(matcher, condition, not_=False, equals=True, helper=None):
     '''
     Apply the condition to each result from the matcher.  It should return
     either an exact match (equals=True) or simply not fail (equals=False).
     If `not_` is set, the test is inverted.
     
     `matcher` is coerced to `Literal()`, condition to `DfaRegexp()`
+    
+    `helper` is used to generate a stream from the result.  If not set it
+    is taken from the input stream.
     '''
-    def match(support, stream_in):
+    def match(support, stream_in, helper=helper):
         '''
         Do the match and test the result.
         '''
+        if helper is None:
+            (_, _, helper) = stream_in
         generator = matcher._match(stream_in)
         while True:
             (results, stream_out) = yield generator
             success = True
             for result in results:
                 if not success: break
-                generator2 = condition._match(result)
+                generator2 = condition._match((result, 0, helper))
                 try:
                     (results2, _ignored) = yield generator2
                     if not_:

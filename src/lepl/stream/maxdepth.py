@@ -49,7 +49,7 @@ class Facade(object):
         else:
             self.deepest = max(self.deepest, index)
         return self.head.__getitem__(index)
-
+    
 
 @trampoline_matcher_factory()
 def FullFirstMatch(matcher, eos=True):
@@ -97,8 +97,7 @@ class FullFirstMatchException(Exception):
     '''
     
     def __init__(self, head, deepest, helper):
-        description = helper.to_str(head, deepest)
-        location = helper.to_location(head, deepest)
-        msg = format("The match failed at {0} ({1}).", description, location)
-        super(FullFirstMatchException, self).__init__(msg)
+        super(FullFirstMatchException, self).__init__(
+            helper.format('The match failed in {filename} at {rest} ({location}).',
+                          head, deepest))
 

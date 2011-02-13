@@ -686,13 +686,19 @@ class _Columns(OperatorMatcher):
         matcher results for the columns.  We base this on `And`, but need
         to force the correct streams.
         '''
-        def force_out(replacement):
+        def force_out(stream, left, right):
             '''
             Generate a transformer function that replaces the stream_out.
             '''
+            (head, offset, helper) = stream
+            left += offset
+            if right is None:
+                right = len(head)
+            else:
+                right += offset
             def replace_out(_stream, matcher):
                 (results, _stream_out) = matcher()
-                return (results, replacement)
+                return (results, (head[left:right], 0, helper))
             return replace_out
         # left and right are the indices for the column
         # matchers is the list of matchers that will be joined by And
@@ -713,7 +719,7 @@ class _Columns(OperatorMatcher):
                 left = right
                 right = None if col is None else right + col
             matchers.append(Transform(previous, 
-                                      force_out(stream_in[left:right])))
+                                      force_out(stream_in, left, right)))
             previous = matcher
         matchers.append(previous)
         return And(*matchers)

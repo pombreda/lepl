@@ -94,7 +94,10 @@ def sexpr_fold(per_list=None, per_item=None,
         for item in iterable:
             try:
                 if not exclude(item):
-                    yield per_list(type(item), items(iter(item)))
+                    if isinstance(item, dict):
+                        yield per_list(type(item), items(item.items()))
+                    else:
+                        yield per_list(type(item), items(iter(item)))
                     continue
             except TypeError:
                 pass
