@@ -78,7 +78,7 @@ functionality.
 '''
 
 add_children(NonToken, Lookahead, Any, Literal, Regexp)
-# don't register Empty() here because it's actually useful as a token(!)
+# don't register Empty() here because it's useful as a token(!)
 
 
 class TokenNamespace(Namespace):
@@ -89,7 +89,7 @@ class TokenNamespace(Namespace):
     types).
     
     At one point this also defined alphabet and discard, used by the rewriter,
-    but because those are global values it makes mosre sense to supply them
+    but because those are global values it makes more sense to supply them
     directly to the rewriter.
     '''
     
@@ -216,7 +216,8 @@ class BaseToken(OperatorMatcher, NoMemo):
                        'You must use the lexer rewriter with Tokens. '
                        'This can be done by using matcher.config.lexer().',
                        self.__class__.__name__))
-        if stream:
+        (head, offset, helper) = stream
+        if offset < len(head):
             (tokens, contents) = stream[0]
             if self.id_ in tokens:
                 if self.content is None:
