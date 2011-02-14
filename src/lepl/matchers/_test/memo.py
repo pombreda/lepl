@@ -35,7 +35,7 @@ Tests for the lepl.matchers.memo module.
 from time import time
 from unittest import TestCase
 
-from lepl import Delayed, Any, Optional, Node, Literals, Eos, Token, Or
+from lepl import Delayed, Any, Optional, Node, Literals, Eos, Or, Token
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0102, C0321

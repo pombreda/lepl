@@ -707,7 +707,7 @@ class ConfigBuilder(object):
         self.clear()
         self.flatten()
         self.compose_transforms()
-#        self.lexer()
+        self.lexer()
         self.auto_memoize()
         self.direct_eval()
         self.compile_to_nfa()

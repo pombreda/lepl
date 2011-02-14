@@ -48,15 +48,15 @@ from lepl.support.lib import lmap, format, LogMixin
 class Rewriter(LogMixin):
     
     # ordering
-    SET_ARGUMENTS = 10
-    FULL_FIRST_MATCH = 20
-    COMPOSE_TRANSFORMS = 30
-    FLATTEN = 40
-    COMPILE_REGEXP = 50
-    OPTIMIZE_OR = 60
-    LEXER = 70
-    DIRECT_EVALUATION = 80
-    MEMOIZE = 90
+    (SET_ARGUMENTS,
+     COMPOSE_TRANSFORMS,
+     FLATTEN,
+     COMPILE_REGEXP,
+     OPTIMIZE_OR,
+     LEXER,
+     DIRECT_EVALUATION,
+     MEMOIZE,
+     FULL_FIRST_MATCH) = range(10, 100, 10)
        
     def __init__(self, order, name=None, exclusive=True):
         super(Rewriter, self).__init__()

@@ -136,7 +136,7 @@ from lepl.matchers.support import function_matcher, function_matcher_factory, \
 from lepl.matchers.transform import PostCondition
 from lepl.matchers.variables import TraceVariables
 from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
-from lepl.offside.lexer import Indent, LineAwareEol, LineAwareSol, BIndent
+#from lepl.offside.lexer import Indent, LineAwareEol, LineAwareSol, BIndent
 #from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
 #    ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent, \
 #    to_right
@@ -306,10 +306,10 @@ __all__ = [
         'FullFirstMatchException',
         
         # lepl.offside.lexer
-        'Indent',
-        'LineAwareEol',
-        'LineAwareSol',
-        'BIndent',
+#        'Indent',_helper.
+#        'LineAwareEol',
+#        'LineAwareSol',
+#        'BIndent',
         
         # lepl.offside.matchers
 #        'Line',

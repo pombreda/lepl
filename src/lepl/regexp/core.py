@@ -938,9 +938,9 @@ class DfaPattern(LogMixin):
         '''
         state = 0
         size = 0
-        longest = (self.__empty_labels, 0, stream) \
-                    if self.__empty_labels else None
         (head, offset, helper) = stream
+        longest = (self.__empty_labels, offset, stream) \
+                    if self.__empty_labels else None
         while offset + size < len(head):
             future = self.__table[state][head[offset + size]]
             if future is None:

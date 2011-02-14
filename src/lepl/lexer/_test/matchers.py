@@ -34,14 +34,20 @@ Wide range of tests for lexer.
 # pylint: disable-msg=R0201, R0904, R0903, R0914
 # tests
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from math import sin, cos
 from operator import add, sub, truediv, mul
 from unittest import TestCase
 
-from lepl import Token, Literal, Real, LexerError, Node, Delayed, Any, Eos, \
-    UnsignedReal, Or, RuntimeLexerError, Word
+from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
+from lepl.matchers.core import Literal, Delayed
+from lepl.matchers.derived import Real,  Any, Eos, UnsignedReal, Word
+from lepl.matchers.combine import Or
 from lepl.support.lib import str
+from lepl.support.node import Node
+
+
+#basicConfig(level=DEBUG)
 
 
 def str26(value):
@@ -69,7 +75,8 @@ class RegexpCompilationTest(TestCase):
         '''
         This used to be impossible.
         '''
-        assert Token(Word())[:].parse('foo bar') == ['foo', 'bar']
+        results = Token(Word())[:].parse('foo bar') 
+        assert results == ['foo', 'bar'], results
         
     def test_real(self):
         '''
@@ -102,6 +109,7 @@ class TokenRewriteTest(TestCase):
         '''
         Basic configuration.
         '''
+        #basicConfig(level=DEBUG)
         reals = (Token(Real()) >> float)[:]
         reals.config.lexer()
         parser = reals.get_parse()
@@ -120,18 +128,17 @@ class TokenRewriteTest(TestCase):
         
     def test_bad_error_msg(self):
         '''
-        An ugly error message (can't we improve this?)
+        An ugly error message.
         '''
         #basicConfig(level=DEBUG)
         words = Token('[a-z]+')[:]
         words.config.lexer()
-        parser = words.get_parse()
+        parser = words.get_parse_null()
         try:
             parser('abc defXghi')
             assert False, 'expected error'
         except RuntimeLexerError as err:
-            assert str(err) == "No lexer for 'Xghi' at line 1 " \
-                "character 7 of str: 'abc defXghi'.", str(err)
+            assert str(err) == "No lexer for 'Xghi' at offset 7, value 'X' of 'abc defXghi'.", str(err)
         
     def test_good_error_msg(self):
         '''
@@ -145,8 +152,7 @@ class TokenRewriteTest(TestCase):
             parser('abc defXghi')
             assert False, 'expected error'
         except RuntimeLexerError as err:
-            assert str(err) == 'No lexer for \'Xghi\' at line 1 character 7 ' \
-                'of str: \'abc defXghi\'.', str(err)
+            assert str(err) == "No lexer for 'Xghi' at line 1, character 8 of 'abc defXghi'.", str(err)
         
     def test_expr_with_functions(self):
         '''
@@ -312,8 +318,7 @@ class ErrorTest(TestCase):
             parser('c')
             assert False, 'expected failure'
         except RuntimeLexerError as err:
-            assert str(err) == "No lexer for 'c' at line 1 " \
-                "character 0 of str: 'c'.", str(err)
+            assert str(err) == "No lexer for 'c' at line 1, character 1 of 'c'.", str(err)
 
     def test_incomplete(self):
         '''

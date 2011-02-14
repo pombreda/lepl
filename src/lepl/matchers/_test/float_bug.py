@@ -41,9 +41,11 @@ suspect, to use an ordered dict or similar to store the empty transitions
 so that the numbering is not needed for order.
 '''
 
-from logging import basicConfig, DEBUG
+#from logging import basicConfig, DEBUG
 
-from lepl import *
+from lepl.matchers.derived import UnsignedFloat, SignedInteger, Join
+from lepl.matchers.combine import Or
+from lepl.matchers.core import Any
 from lepl._test.base import BaseTest
 
 

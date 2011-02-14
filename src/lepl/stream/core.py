@@ -38,6 +38,7 @@ A stream is a tuple (head, offset, helper) with the following requirements:
 - head[offset] is the current "character" to be parsed
 '''
 
+from abc import ABCMeta
 from io import IOBase
 
 from lepl.support.lib import basestring, str, format
@@ -65,11 +66,79 @@ class HashedStream(object):
         return offset1 == offset2 and helper1 == helper2 and other.state == self.state
 
 
+#class _SimpleStream(metaclass=ABCMeta):
+# Python 2.6
+# pylint: disable-msg=W0105, C0103
+_StreamHelper = ABCMeta('_StreamHelper', (object, ), {})
+'''ABC used to identify streams.'''
+
 DUMMY_HELPER = object()
 '''Allows tests to specify an arbotrary helper in results.'''
     
 
-class StreamHelper(object):
+class StreamHelper(_StreamHelper):
+    '''
+    The interface that all helpers should implement.
+    
+    A helper contains state related to the source and provides stream-related
+    services that use that information (eg. formatting).  Is it part of a
+    stream tuple (head, offset, helper).
+    
+    This "ugly" design was chosen for Lepl 5; previously the stream was a 
+    complex object that "wrapped" the underlying stream.  The advantages of the
+    new approach are that:
+    - In simple cases, a single helper and head instance are used, only the
+      offset changes.  This is more efficient.
+    - In simple cases we avoid the complex wrapper object, which was hard to
+      extend and bug-prone.
+    - There is a cleaner separation of responsibilities between the stream
+      and the source.
+    - In-memory streams are more efficient.
+    The disadvantages are:
+    - Very large streams will require extra, complex code.
+    - Matchers need to "unpack" streams
+    '''
+    
+    def to_hash(self, stream, state=None):
+        '''
+        Generate an object that can be hashed (implements __hash__ and __eq__),
+        (_, offset, helper) = self.stream
+        that reflects the current state of the stream, and that evaluates
+        to give the stream.
+        '''
+        return HashedStream(stream, state)
+    
+    def to_kargs(self, head, offset, prefix='', kargs=None):
+        '''
+        Generate a dictionary of values that describe the stream.  These
+        may be extended by subclasses.  They are provided to 
+        `syntax_error_kargs`, for example.
+        
+        `prefix` modifies the property names
+        
+        `kargs` allows values to be provided.  These are *not* overwritten,
+        so if there is a name clash the provided value remains.
+        
+        Note: Calculating this can be expensive; use only for error messages,
+        not debug messages (that may be discarded).
+        '''
+        raise NotImplementedError()
+
+    def format(self, template, head, offset, prefix=''):
+        return format(template, **self.to_kargs(head, offset, prefix))
+    
+    def __repr__(self):
+        '''Simplify for comparison in tests'''
+        return '<helper>'
+    
+    def __eq__(self, other):
+        return other is DUMMY_HELPER or super(StreamHelper, self).__eq__(other)
+    
+    def __hash__(self):
+        return super(StreamHelper, self).__hash__()
+
+
+class SimpleHelper(StreamHelper):
     
     def to_hash(self, stream, state=None):
         '''
@@ -81,6 +150,7 @@ class StreamHelper(object):
         return HashedStream(stream, state)
     
     def _fmt(self, head, offset, maxlen=60, left='', right='', index=True):
+        '''Format a possibly long subsection of data.'''
         if not head:
             if index:
                 return format('{0!r}[{1:d}]', head, offset)
@@ -122,15 +192,30 @@ class StreamHelper(object):
             begin = max(begin, 0)
             end = min(end, len(head))
                 
-        
-    def _location(self, head, offset, kargs):
-        return format('offset {offset}, value {repr}', **kargs)
+    def _location(self, head, offset, kargs, prefix):
+        '''Location (separate method so subclasses can replace).'''
+        return format('offset {' + prefix + 'offset}, value {' + prefix + 'repr}',
+                      **kargs)
     
-    def unwrap(self, head):
+    def _unwrap(self, head):
         from lepl.stream.maxdepth import Facade
         if isinstance(head, Facade):
             head = head.head
         return head
+    
+    def _update(self, kargs, defaults):
+        for (name, value) in defaults.items():
+            if name not in kargs:
+                kargs[name] = value
+                
+    def _typename(self, instance):
+        if isinstance(instance, list) and instance:
+            return format('<list{0}>', self._typename(instance[0]))
+        else:
+            try:
+                return format('<{0}>', instance.__class__.__name__)
+            except:
+                return '<unknown>'
     
     def to_kargs(self, head, offset, prefix='', kargs=None):
         '''
@@ -140,62 +225,40 @@ class StreamHelper(object):
         
         Note: Calculating this can be expensive; use only for error messages,
         not debug messages (that may be discarded).
+        
+        Implementation note: Because some values are 
         '''
-        if kargs is None:
-            kargs = {}
-        head = self.unwrap(head)
-        def typename(instance):
-            if isinstance(instance, list) and instance:
-                return format('<list{0}>', typename(instance[0]))
-            else:
-                try:
-                    return format('<{0}>', instance.__class__.__name__)
-                except:
-                    return '<unknown>'
-        type_ = typename(head)
+        if kargs is None: kargs = {}
+        head = self._unwrap(head)
+        type_ = self._typename(head)
         within = offset > -1 and offset < len(head)
         defaults = {# the entire dataset, highlighting the data at the offset
-                    'data': self._fmt(head, offset),
+                    prefix + 'data': self._fmt(head, offset),
+                    # as `data` but without the indexing
+                    prefix + 'text': self._fmt(head, offset, index=False),
                     # data from the offset onwards
-                    'rest': self._fmt(head[offset:], 0, index=False),
+                    prefix + 'rest': self._fmt(head[offset:], 0, index=False),
                     # a filename (set by the filename specific subclass) or type
-                    'filename': type_,
+                    prefix + 'filename': type_,
                     # current line number (1-based)
-                    'lineno': 1,
+                    prefix + 'lineno': 1,
                     # character offset in line (1-based)
-                    'char': offset+1,
+                    prefix + 'char': offset+1,
                     # offset from start (0-based)
-                    'offset': offset,
+                    prefix + 'offset': offset,
                     # repr of current value
-                    'repr': repr(head[offset]) if within else '<EOS>',
+                    prefix + 'repr': repr(head[offset]) if within else '<EOS>',
                     # str of current value
-                    'str': str(head[offset]) if within else '',
+                    prefix + 'str': str(head[offset]) if within else '',
                     # type of stream
-                    'type': type_}
-        for (name, value) in defaults.items():
-            if name not in kargs:
-                kargs[name] = value
-        if 'location' not in kargs:
-            kargs['location'] = self._location(head, offset, kargs)
-        if prefix:
-            kargs = dict((prefix + name, value) for (name, value) in kargs.items())
+                    prefix + 'type': type_}
+        self._update(kargs, defaults)
+        self._update(kargs, {prefix + 'location': 
+                             self._location(head, offset, kargs, prefix)})
         return kargs
         
-    def format(self, template, head, offset, prefix=''):
-        return format(template, **self.to_kargs(head, offset, prefix))
     
-    def __repr__(self):
-        '''Simplify for comparison in tests'''
-        return '<helper>'
-    
-    def __eq__(self, other):
-        return other is DUMMY_HELPER or super(StreamHelper, self).__eq__(other)
-    
-    def __hash__(self):
-        return super(StreamHelper, self).__hash__()
-    
-    
-class StringHelper(StreamHelper):
+class StringHelper(SimpleHelper):
     '''
     String-specific formatting
     '''
@@ -203,11 +266,12 @@ class StringHelper(StreamHelper):
     def _data(self, head, offset):
         return super(StringHelper, self)._fmt(head, offset, left="'", right="'")
         
-    def _location(self, head, offset, kargs):
-        return format('line {lineno:d}, character {char:d}', **kargs)
+    def _location(self, head, offset, kargs, prefix):
+        return format('line {' + prefix + 'lineno:d}, character {' + prefix + 'char:d}', **kargs)
         
-    def to_kargs(self, head, offset, prefix=''):
-        head = self.unwrap(head)
+    def to_kargs(self, head, offset, prefix='', kargs=None):
+        if kargs is None: kargs = {}
+        head = self._unwrap(head)
         lineno = 1
         for line in head.split('\n'):
             delta = len(line) + 1
@@ -216,13 +280,13 @@ class StringHelper(StreamHelper):
                 lineno += 1
             else:
                 break
+        self._update(kargs, {prefix + 'filename': '<string>',
+                             prefix + 'line': line,
+                             prefix + 'rest': repr(line[offset:]),
+                             prefix + 'lineno': lineno,
+                             prefix + 'char': offset+1})
         return super(StringHelper, self).to_kargs(
-                        head, offset, prefix=prefix, 
-                        kargs={'filename': '<string>',
-                               'line': line,
-                               'rest': repr(line[offset:]),
-                               'lineno': lineno,
-                               'char': offset+1});
+                    head, offset, prefix=prefix, kargs=kargs)
             
 
 class StreamFactory(object):
@@ -235,7 +299,7 @@ class StreamFactory(object):
         The kargs are passed from the "parse" method.
         '''
         if helper is None:
-            helper = StreamHelper()
+            helper = SimpleHelper()
         return (head, 0, helper)
     
     def from_file(self, file_):

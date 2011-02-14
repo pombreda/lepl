@@ -38,9 +38,10 @@ from abc import ABCMeta
 
 from lepl.support.context import Namespace, NamespaceMixin
 from lepl.matchers.derived import Add, Apply, Drop, KApply, Map
-from lepl.lexer.stream import lexed_simple_stream, lexed_location_stream
 from lepl.matchers.error import raise_error
 from lepl.lexer.support import LexerError, RuntimeLexerError
+from lepl.lexer.stream import TokenLevelWrapper, SourceLevelWrapper
+from lepl.stream.maxdepth import Facade, TokenFacade
 from lepl.matchers.core import OperatorMatcher, Any, Literal, Lookahead, Regexp
 from lepl.matchers.combine import And, Or, First
 from lepl.matchers.matcher import Matcher, add_children
@@ -53,7 +54,6 @@ from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import CompileRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.stream.core import DEFAULT_STREAM_FACTORY
 from lepl.support.lib import format, str
 
 
@@ -218,35 +218,28 @@ class BaseToken(OperatorMatcher, NoMemo):
                        self.__class__.__name__))
         (head, offset, helper) = stream
         if offset < len(head):
-            (tokens, contents) = stream[0]
+            (tokens, contents, delta) = head[offset]
             if self.id_ in tokens:
                 if self.content is None:
-                    # result contains all data
-                    yield ([contents], stream[1:])
+                    # result contains all data (drop facade)
+                    try:
+                        yield ([contents.head], (head, offset+1, helper))
+                    except AttributeError:
+                        yield ([contents], (head, offset+1, helper))
                 else:
-                    new_stream = self.__new_stream(contents, stream)
+                    new_stream = (contents, 0, TokenLevelWrapper(delta, helper))
                     generator = self.content._match(new_stream)
                     while True:
                         (result, stream_out) = yield generator
-                        if not stream_out or not self.complete:
-                            yield (result, stream[1:])
+                        (_, consumed, _) = stream_out
+                        if consumed == len(contents) or not self.complete:
+                            yield (result, (head, offset+1, helper))
         
     def __str__(self):
         return format('{0}: {1!r}', self.id_, self.regexp)
     
     def __repr__(self):
         return format('<Token({0!s})>', self)
-    
-    @staticmethod
-    def __new_stream(contents, stream):
-        '''
-        Create a new stream to pass to the content matcher.
-        '''
-        if isinstance(stream.source, TokenSource):
-            return DEFAULT_STREAM_FACTORY(ContentSource(contents, stream))
-        else:
-            # this branch when the original stream is not a location stream 
-            return contents
     
     @classmethod
     def reset_ids(cls):
@@ -361,19 +354,37 @@ class Lexer(NamespaceMixin, BaseMatcher):
         '''
         Implement matching - pass token stream to tokens.
         '''
-        if isinstance(stream, LocationStream):
-            tokens = lexed_location_stream(self.t_regexp, self.s_regexp,
-                                           stream, self.source)
+        (head, offset, helper) = stream
+        if isinstance(head, Facade):
+            facade = head
+            head = head.head
         else:
-            # might assert simple stream here?
-            if self.source:
-                raise RuntimeLexerError('Source specified for simple stream')
-            tokens = lexed_simple_stream(self.t_regexp, self.s_regexp, stream)
+            facade = None
+        tokens = []
+        while offset < len(head):
+            try:
+                stream = (head, offset, helper)
+                (terminals, match, (_, new_offset, _)) = self.t_regexp.match(stream)
+                if offset == new_offset:
+                    raise RuntimeLexerError('Tokens matched an empty '
+                        'string.\nChange your token definitions so that '
+                        'they cannot be empty.')
+                self._debug(format('Token: {0!r} {1!r} {2!r}',
+                                   terminals, match, offset))
+                if facade:
+                    match = TokenFacade(match, facade, offset)
+                tokens.append((terminals, match, offset))
+                offset = new_offset
+            except TypeError:
+                try:
+                    (terminals, _size, (_, offset, _)) = self.s_regexp.size_match(stream)
+                    self._debug(format('Space: {0!r} {1!r}', terminals, offset))
+                except TypeError:
+                    raise RuntimeLexerError(helper.format('No lexer for {rest} at {location} of {text}.', head, offset))
         # pylint: disable-msg=W0212
         # implementation, not public, method
-        generator = self.matcher._match(tokens)
+        generator = self.matcher._match(
+                        (tokens, 0, SourceLevelWrapper(head, helper)))
         while True:
             (result, stream_out) = yield generator
             yield (result, stream_out)
-
-        

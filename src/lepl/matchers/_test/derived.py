@@ -34,7 +34,13 @@ Tests for the lepl.matchers.derived module.
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
 
-from lepl import *
+from lepl.matchers.monitor import Trace
+from lepl.matchers.derived import Repeat, Space, SkipTo, Newline, String, \
+    SkipString, SingleLineString, UnsignedInteger, SignedInteger, \
+    UnsignedReal, SignedReal, UnsignedEReal, SignedEReal, UnsignedFloat, \
+    SignedFloat, UnsignedEFloat, SignedEFloat, Optional
+from lepl.stream.maxdepth import FullFirstMatchException
+from lepl.matchers.core import Any
 from lepl._test.base import BaseTest
 from lepl.matchers.support import OperatorMatcher
 from lepl.core.parser import tagged

@@ -28,10 +28,12 @@
 
 '''
 Track the maximum depth of a stream.
+
+The head attribute is used to access the underlying stream in, for example,
+formatting and token creation.
 '''
 
 from lepl.matchers.support import trampoline_matcher_factory
-from lepl.support.lib import format
 
 
 class Facade(object):
@@ -48,6 +50,26 @@ class Facade(object):
             self.deepest = max(self.deepest, index.start if index.start != None else 0)
         else:
             self.deepest = max(self.deepest, index)
+        return self.head.__getitem__(index)
+    
+    
+class TokenFacade(object):
+    
+    def __init__(self, head, facade, offset):
+        self.head = head
+        self.facade = facade
+        self.offset = offset
+        
+    def __len__(self):
+        return len(self.head)
+    
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            self.facade.deepest = \
+                max(self.facade.deepest, 
+                    self.offset + (index.start if index.start != None else 0))
+        else:
+            self.facade.deepest = max(self.facade.deepest, self.offset + index)
         return self.head.__getitem__(index)
     
 
