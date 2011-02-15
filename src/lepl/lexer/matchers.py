@@ -172,7 +172,7 @@ class BaseToken(OperatorMatcher, NoMemo):
             self.alphabet = alphabet
         self.regexp = self.__to_regexp(self.regexp, self.alphabet)
         self.compiled = True
-    
+        
     @staticmethod
     def  __to_regexp(regexp, alphabet):
         '''
@@ -222,10 +222,7 @@ class BaseToken(OperatorMatcher, NoMemo):
             if self.id_ in tokens:
                 if self.content is None:
                     # result contains all data (drop facade)
-                    try:
-                        yield ([contents.head], (head, offset+1, helper))
-                    except AttributeError:
-                        yield ([contents], (head, offset+1, helper))
+                    yield ([contents[0:]], (head, offset+1, helper))
                 else:
                     new_stream = (contents, 0, TokenLevelWrapper(delta, helper))
                     generator = self.content._match(new_stream)
@@ -236,7 +233,7 @@ class BaseToken(OperatorMatcher, NoMemo):
                             yield (result, (head, offset+1, helper))
         
     def __str__(self):
-        return format('{0}: {1!r}', self.id_, self.regexp)
+        return format('{0}: {1!s}', self.id_, self.regexp)
     
     def __repr__(self):
         return format('<Token({0!s})>', self)

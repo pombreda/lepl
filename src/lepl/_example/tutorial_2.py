@@ -35,7 +35,7 @@
 Examples from the documentation.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example
@@ -117,7 +117,7 @@ class Tutorial2Example(Example):
         number = Optional(symbol('-')) + value >> float
         add = number & ~symbol('+') & number > sum
         return add.parse(text)
-
+    
     def test_all(self):
         self.examples([
 (self.run_error,
@@ -161,8 +161,7 @@ class Tutorial2Example(Example):
 (self.run_regexp,
 """[['aaa']]"""),
 (self.run_token_1,
-"""lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+30',
-Line 1, character 2 of str: '12+30'.
+"""FullFirstMatchException: The match failed in <string> at '+30' (line 1, character 3).
 """),
 (lambda: self.run_token_2('12+30'),
 """[42.0]"""),

@@ -204,8 +204,7 @@ class Tutorial4Example(Example):
          +- '+'
          `- 7.0"""),
 (lambda: self.run_error_1().parse('1+2*(3-4)+5/6+7')[0], 
-"""lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+',
-Line 1, character 1 of str: '1+2*(3-4)+5/6+7'.
+"""FullFirstMatchException: The match failed in <string> at '+2*(3-4)+5/6+7' (line 1, character 2).
 """),
 (lambda: len(list(self.unlimited_run_error_1().parse_all('1+2*(3-4)+5/6+7'))), 
 """6"""),
@@ -234,8 +233,7 @@ Line 1, character 1 of str: '1+2*(3-4)+5/6+7'.
 (lambda: len(list((self.unlimited_run_error_1() & Eos()).parse_all('1+2*(3-4)+5/6+7'))), 
 """1"""),
 (lambda: self.run_error_2().parse('1+2*(3-4)+5/6+7')[0], 
-"""lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+',
-Line 1, character 1 of str: '1+2*(3-4)+5/6+7'.
+"""FullFirstMatchException: The match failed in <string> at '+2*(3-4)+5/6+7' (line 1, character 2).
 """),
 (lambda: len(list(self.unlimited_run_error_2().parse_all('1+2*(3-4)+5/6+7'))), 
 """12"""),

@@ -92,12 +92,10 @@ class Tutorial1Example(Example):
 (lambda: Integer().parse('1'),
 """['1']"""),
 (lambda: Integer().parse('1.2'),
-"""FullFirstMatchException: The match failed at '.2',
-Line 1, character 1 of str: '1.2'.
+"""FullFirstMatchException: The match failed in <string> at '.2' (line 1, character 2).
 """),
 (lambda: Float().parse('1'),
-"""FullFirstMatchException: The match failed at '',
-Line -1, character 0 of str: '1'.
+"""FullFirstMatchException: The match failed in <string> at '' (line 1, character 2).
 """),
 (lambda: Float().parse('1.2'),
 """['1.2']"""),

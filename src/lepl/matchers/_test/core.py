@@ -647,90 +647,82 @@ class StrTest(TestCase):
         parser = expression.get_parse()
         description = parser.matcher.tree()
         self.assert_same(description, r"""TrampolineWrapper<FullFirstMatch:<>>
- +- TrampolineWrapper<And:<apply>>
- |   +- Delayed
- |   |   `- matcher TrampolineWrapper<And:<apply>>
- |   |       +- TrampolineWrapper<Or:<apply>>
- |   |       |   +- NfaRegexp:<empty_adapter,apply>
- |   |       |   |   +- Sequence(...)
- |   |       |   |   `- alphabet <Unicode>
- |   |       |   `- TrampolineWrapper<And:<>>
- |   |       |       +- FunctionWrapper<Literal:<>>
- |   |       |       |   `- '('
- |   |       |       +- NfaRegexp:<empty_adapter>
- |   |       |       |   +- Sequence(...)
- |   |       |       |   `- alphabet <Unicode>
- |   |       |       +- TrampolineWrapper<And:<apply>>
- |   |       |       |   +- <loop>
- |   |       |       |   +- <loop>
- |   |       |       |   `- <loop>
- |   |       |       +- NfaRegexp:<empty_adapter>
- |   |       |       |   +- Sequence(...)
- |   |       |       |   `- alphabet <Unicode>
- |   |       |       `- FunctionWrapper<Literal:<>>
- |   |       |           `- ')'
- |   |       +- NfaRegexp:<empty_adapter>
- |   |       |   +- Sequence(...)
- |   |       |   `- alphabet <Unicode>
- |   |       `- TrampolineWrapper<DepthFirst:<>>
- |   |           +- start 0
- |   |           +- stop None
- |   |           +- rest TrampolineWrapper<And:<>>
- |   |           |   +- FunctionWrapper<Any:<apply>>
- |   |           |   |   `- '*/'
- |   |           |   +- NfaRegexp:<empty_adapter>
- |   |           |   |   +- Sequence(...)
- |   |           |   |   `- alphabet <Unicode>
- |   |           |   `- TrampolineWrapper<Or:<apply>>
- |   |           |       +- NfaRegexp:<empty_adapter,apply>
- |   |           |       |   +- Sequence(...)
- |   |           |       |   `- alphabet <Unicode>
- |   |           |       `- TrampolineWrapper<And:<>>
- |   |           |           +- FunctionWrapper<Literal:<>>
- |   |           |           |   `- '('
- |   |           |           +- NfaRegexp:<empty_adapter>
- |   |           |           |   +- Sequence(...)
- |   |           |           |   `- alphabet <Unicode>
- |   |           |           +- TrampolineWrapper<And:<apply>>
- |   |           |           |   +- <loop>
- |   |           |           |   +- <loop>
- |   |           |           |   `- <loop>
- |   |           |           +- NfaRegexp:<empty_adapter>
- |   |           |           |   +- Sequence(...)
- |   |           |           |   `- alphabet <Unicode>
- |   |           |           `- FunctionWrapper<Literal:<>>
- |   |           |               `- ')'
- |   |           `- first TrampolineWrapper<And:<>>
- |   |               +- FunctionWrapper<Any:<apply>>
- |   |               |   `- '*/'
- |   |               +- NfaRegexp:<empty_adapter>
- |   |               |   +- Sequence(...)
- |   |               |   `- alphabet <Unicode>
- |   |               `- TrampolineWrapper<Or:<apply>>
- |   |                   +- NfaRegexp:<empty_adapter,apply>
- |   |                   |   +- Sequence(...)
- |   |                   |   `- alphabet <Unicode>
- |   |                   `- TrampolineWrapper<And:<>>
- |   |                       +- FunctionWrapper<Literal:<>>
- |   |                       |   `- '('
- |   |                       +- NfaRegexp:<empty_adapter>
- |   |                       |   +- Sequence(...)
- |   |                       |   `- alphabet <Unicode>
- |   |                       +- TrampolineWrapper<And:<apply>>
- |   |                       |   +- <loop>
- |   |                       |   +- <loop>
- |   |                       |   `- <loop>
- |   |                       +- NfaRegexp:<empty_adapter>
- |   |                       |   +- Sequence(...)
- |   |                       |   `- alphabet <Unicode>
- |   |                       `- FunctionWrapper<Literal:<>>
- |   |                           `- ')'
- |   +- Delayed
- |   |   `- matcher NfaRegexp:<empty_adapter>
- |   |       +- Sequence(...)
- |   |       `- alphabet <Unicode>
- |   `- Delayed
- |       `- matcher TrampolineWrapper<DepthFirst:<>>
+ +- Delayed
+ |   `- matcher TrampolineWrapper<And:<apply>>
+ |       +- TrampolineWrapper<And:<apply>>
+ |       |   +- TrampolineWrapper<Or:<apply>>
+ |       |   |   +- NfaRegexp:<empty_adapter,apply>
+ |       |   |   |   +- Sequence(...)
+ |       |   |   |   `- alphabet <Unicode>
+ |       |   |   `- TrampolineWrapper<And:<>>
+ |       |   |       +- FunctionWrapper<Literal:<>>
+ |       |   |       |   `- '('
+ |       |   |       +- NfaRegexp:<empty_adapter>
+ |       |   |       |   +- Sequence(...)
+ |       |   |       |   `- alphabet <Unicode>
+ |       |   |       +- Delayed
+ |       |   |       |   `- matcher <loop>
+ |       |   |       +- NfaRegexp:<empty_adapter>
+ |       |   |       |   +- Sequence(...)
+ |       |   |       |   `- alphabet <Unicode>
+ |       |   |       `- FunctionWrapper<Literal:<>>
+ |       |   |           `- ')'
+ |       |   +- NfaRegexp:<empty_adapter>
+ |       |   |   +- Sequence(...)
+ |       |   |   `- alphabet <Unicode>
+ |       |   `- TrampolineWrapper<DepthFirst:<>>
+ |       |       +- start 0
+ |       |       +- stop None
+ |       |       +- rest TrampolineWrapper<And:<>>
+ |       |       |   +- FunctionWrapper<Any:<apply>>
+ |       |       |   |   `- '*/'
+ |       |       |   +- NfaRegexp:<empty_adapter>
+ |       |       |   |   +- Sequence(...)
+ |       |       |   |   `- alphabet <Unicode>
+ |       |       |   `- TrampolineWrapper<Or:<apply>>
+ |       |       |       +- NfaRegexp:<empty_adapter,apply>
+ |       |       |       |   +- Sequence(...)
+ |       |       |       |   `- alphabet <Unicode>
+ |       |       |       `- TrampolineWrapper<And:<>>
+ |       |       |           +- FunctionWrapper<Literal:<>>
+ |       |       |           |   `- '('
+ |       |       |           +- NfaRegexp:<empty_adapter>
+ |       |       |           |   +- Sequence(...)
+ |       |       |           |   `- alphabet <Unicode>
+ |       |       |           +- Delayed
+ |       |       |           |   `- matcher <loop>
+ |       |       |           +- NfaRegexp:<empty_adapter>
+ |       |       |           |   +- Sequence(...)
+ |       |       |           |   `- alphabet <Unicode>
+ |       |       |           `- FunctionWrapper<Literal:<>>
+ |       |       |               `- ')'
+ |       |       `- first TrampolineWrapper<And:<>>
+ |       |           +- FunctionWrapper<Any:<apply>>
+ |       |           |   `- '*/'
+ |       |           +- NfaRegexp:<empty_adapter>
+ |       |           |   +- Sequence(...)
+ |       |           |   `- alphabet <Unicode>
+ |       |           `- TrampolineWrapper<Or:<apply>>
+ |       |               +- NfaRegexp:<empty_adapter,apply>
+ |       |               |   +- Sequence(...)
+ |       |               |   `- alphabet <Unicode>
+ |       |               `- TrampolineWrapper<And:<>>
+ |       |                   +- FunctionWrapper<Literal:<>>
+ |       |                   |   `- '('
+ |       |                   +- NfaRegexp:<empty_adapter>
+ |       |                   |   +- Sequence(...)
+ |       |                   |   `- alphabet <Unicode>
+ |       |                   +- Delayed
+ |       |                   |   `- matcher <loop>
+ |       |                   +- NfaRegexp:<empty_adapter>
+ |       |                   |   +- Sequence(...)
+ |       |                   |   `- alphabet <Unicode>
+ |       |                   `- FunctionWrapper<Literal:<>>
+ |       |                       `- ')'
+ |       +- NfaRegexp:<empty_adapter>
+ |       |   +- Sequence(...)
+ |       |   `- alphabet <Unicode>
+ |       `- TrampolineWrapper<DepthFirst:<>>
  |           +- start 0
  |           +- stop None
  |           +- rest TrampolineWrapper<And:<>>
@@ -750,10 +742,8 @@ class StrTest(TestCase):
  |           |       |       +- NfaRegexp:<empty_adapter>
  |           |       |       |   +- Sequence(...)
  |           |       |       |   `- alphabet <Unicode>
- |           |       |       +- TrampolineWrapper<And:<apply>>
- |           |       |       |   +- <loop>
- |           |       |       |   +- <loop>
- |           |       |       |   `- <loop>
+ |           |       |       +- Delayed
+ |           |       |       |   `- matcher <loop>
  |           |       |       +- NfaRegexp:<empty_adapter>
  |           |       |       |   +- Sequence(...)
  |           |       |       |   `- alphabet <Unicode>
@@ -781,10 +771,8 @@ class StrTest(TestCase):
  |           |           |           +- NfaRegexp:<empty_adapter>
  |           |           |           |   +- Sequence(...)
  |           |           |           |   `- alphabet <Unicode>
- |           |           |           +- TrampolineWrapper<And:<apply>>
- |           |           |           |   +- <loop>
- |           |           |           |   +- <loop>
- |           |           |           |   `- <loop>
+ |           |           |           +- Delayed
+ |           |           |           |   `- matcher <loop>
  |           |           |           +- NfaRegexp:<empty_adapter>
  |           |           |           |   +- Sequence(...)
  |           |           |           |   `- alphabet <Unicode>
@@ -806,10 +794,8 @@ class StrTest(TestCase):
  |           |                       +- NfaRegexp:<empty_adapter>
  |           |                       |   +- Sequence(...)
  |           |                       |   `- alphabet <Unicode>
- |           |                       +- TrampolineWrapper<And:<apply>>
- |           |                       |   +- <loop>
- |           |                       |   +- <loop>
- |           |                       |   `- <loop>
+ |           |                       +- Delayed
+ |           |                       |   `- matcher <loop>
  |           |                       +- NfaRegexp:<empty_adapter>
  |           |                       |   +- Sequence(...)
  |           |                       |   `- alphabet <Unicode>
@@ -832,10 +818,8 @@ class StrTest(TestCase):
  |                   |       +- NfaRegexp:<empty_adapter>
  |                   |       |   +- Sequence(...)
  |                   |       |   `- alphabet <Unicode>
- |                   |       +- TrampolineWrapper<And:<apply>>
- |                   |       |   +- <loop>
- |                   |       |   +- <loop>
- |                   |       |   `- <loop>
+ |                   |       +- Delayed
+ |                   |       |   `- matcher <loop>
  |                   |       +- NfaRegexp:<empty_adapter>
  |                   |       |   +- Sequence(...)
  |                   |       |   `- alphabet <Unicode>
@@ -863,10 +847,8 @@ class StrTest(TestCase):
  |                       |           +- NfaRegexp:<empty_adapter>
  |                       |           |   +- Sequence(...)
  |                       |           |   `- alphabet <Unicode>
- |                       |           +- TrampolineWrapper<And:<apply>>
- |                       |           |   +- <loop>
- |                       |           |   +- <loop>
- |                       |           |   `- <loop>
+ |                       |           +- Delayed
+ |                       |           |   `- matcher <loop>
  |                       |           +- NfaRegexp:<empty_adapter>
  |                       |           |   +- Sequence(...)
  |                       |           |   `- alphabet <Unicode>
@@ -888,10 +870,8 @@ class StrTest(TestCase):
  |                                   +- NfaRegexp:<empty_adapter>
  |                                   |   +- Sequence(...)
  |                                   |   `- alphabet <Unicode>
- |                                   +- TrampolineWrapper<And:<apply>>
- |                                   |   +- <loop>
- |                                   |   +- <loop>
- |                                   |   `- <loop>
+ |                                   +- Delayed
+ |                                   |   `- matcher <loop>
  |                                   +- NfaRegexp:<empty_adapter>
  |                                   |   +- Sequence(...)
  |                                   |   `- alphabet <Unicode>

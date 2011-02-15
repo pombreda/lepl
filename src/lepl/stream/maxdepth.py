@@ -47,7 +47,11 @@ class Facade(object):
     
     def __getitem__(self, index):
         if isinstance(index, slice):
-            self.deepest = max(self.deepest, index.start if index.start != None else 0)
+            if index.stop is None:
+                offset = len(self.head)
+            else:
+                offset = min(index.stop, len(self.head))
+            self.deepest = max(self.deepest, offset-1)
         else:
             self.deepest = max(self.deepest, index)
         return self.head.__getitem__(index)
@@ -65,9 +69,11 @@ class TokenFacade(object):
     
     def __getitem__(self, index):
         if isinstance(index, slice):
-            self.facade.deepest = \
-                max(self.facade.deepest, 
-                    self.offset + (index.start if index.start != None else 0))
+            if index.stop is None:
+                delta = len(self.head)
+            else:
+                delta = min(index.stop, len(self.head))
+            self.facade.deepest = max(self.facade.deepest, self.offset + delta)
         else:
             self.facade.deepest = max(self.facade.deepest, self.offset + index)
         return self.head.__getitem__(index)
