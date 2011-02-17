@@ -231,6 +231,20 @@ class BaseToken(OperatorMatcher, NoMemo):
                         (_, consumed, _) = stream_out
                         if consumed == len(contents) or not self.complete:
                             yield (result, (head, offset+1, helper))
+                            
+        ((tokens, contents, delta), stream) = s_next(stream)
+        if self.id_ in tokens:
+            if self.content is None:
+                # result contains all data (drop facade)
+                yield ([contents[0:]], stream)
+            else:
+                new_stream = (contents, 0, TokenLevelWrapper(delta, helper)) # TODO
+                generator = self.content._match(new_stream)
+                while True:
+                    (result, stream_out) = yield generator
+                    if s_empty(stream_out) or not self.complete:
+                        yield (result, stream)
+    
         
     def __str__(self):
         return format('{0}: {1!s}', self.id_, self.regexp)
@@ -351,6 +365,10 @@ class Lexer(NamespaceMixin, BaseMatcher):
         '''
         Implement matching - pass token stream to tokens.
         '''
+#        s_next_line
+#        s_join_lines
+#        iterator support
+#        someway to connect helpers
         (head, offset, helper) = stream
         if isinstance(head, Facade):
             facade = head

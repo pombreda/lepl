@@ -655,6 +655,9 @@ class _Columns(OperatorMatcher):
     
     Note that with backtracking this matcher can be quite expensive, because
     each different combination of results is returned.
+    
+    TODO - this needs to use a similar approach to lexers.  Currently it will
+    break (and needs a test for) deepest match.
     '''
  
     def __init__(self, skip, indices, *matchers):

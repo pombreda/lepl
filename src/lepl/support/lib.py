@@ -266,3 +266,34 @@ def document(destn, source, text=None):
         destn.__name__ = source.__name__
     destn.__doc__ = source.__doc__
     return destn
+
+
+class HashedValue(object):
+    '''
+    Used to store a value with a given hash.
+    '''
+    
+    __slots__ = ['hash', 'value', 'eq']
+    
+    def __init__(self, hash, value, eq=None):
+        self.hash = hash
+        self.value = value
+        self.eq = eq
+        
+    def __hash__(self):
+        return self.hash
+    
+    def __eq__(self, other):
+        try:
+            return other.hash == self.hash and other.eq == self.eq
+        except AttributeError:
+            return False
+        
+        
+def add_defaults(original, defaults, prefix=''):
+    '''Add defaults to original dict if not already present.'''
+    for (name, value) in defaults.items():
+        if prefix + name not in original:
+            original[prefix + name] = value
+    return original
+

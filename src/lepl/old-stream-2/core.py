@@ -73,7 +73,7 @@ _StreamHelper = ABCMeta('_StreamHelper', (object, ), {})
 '''ABC used to identify streams.'''
 
 DUMMY_HELPER = object()
-'''Allows tests to specify an arbotrary helper in results.'''
+'''Allows tests to specify an arbitrary helper in results.'''
     
 
 class StreamHelper(_StreamHelper):

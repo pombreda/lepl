@@ -27,39 +27,21 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
+'''
+A stream for iterable sources.  Each value is considered as a line (which makes
+sense for files, for example, which iterate over lines).
 
-from lepl._example.support import Example
+The stream is converted into a lined list of lines as it is needed.  The state
+is the list node for the current line.  The line data also include cumulative
+offsets etc.
 
-from lepl import *
+The helper contains the source.
 
-
-@sequence_matcher
-def Digit(support, stream):
-    digits = {'1': '',     '2': 'abc',  '3': 'def',
-              '4': 'ghi',  '5': 'jkl',  '6': 'mno',
-              '7': 'pqrs', '8': 'tuv',  '9': 'wxyz',
-              '0': ''}
-    (head, offset, helper) = stream
-    if offset < len(head):
-        digit = head[offset]
-        tail = (head, offset+1, helper)
-        yield ([digit], tail)
-        if digit in digits:
-            for letter in digits[digit]:
-                yield ([letter], tail)
-    
-    (digit, stream) = s_next(stream)
-    yield ([digit], stream)
-    for letter in digits.get(digit, ''):
-        yield ([letter], stream)
-    
+The stream for a fragment is created via the stream factory, using 
+TODO - add kargs consistently to the factory; add the factory to the kargs and
+store it in the helpers; separate out update_dict; use the factory to handle
+children consistently with delta and max; document.  Change lineno for strings
+in some way, so that global location continues to work.
+'''
 
 
-class LettersTest(Example):
-    
-    def test_painter(self):
-        results = Digit()[13, ...].match('1-800-7246837')
-        #print(type(results))
-        words = map(lambda result: result[0][0], results)
-        assert '1-800-painter' in words
-        
