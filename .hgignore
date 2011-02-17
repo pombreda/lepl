@@ -1,12 +1,11 @@
 
 syntax: regexp
 ^\.project$
-syntax: regexp
 ^\.pydevproject$
-syntax: regexp
 ^doc$
+
 syntax: glob
 *~
-syntax: glob
 dist
+*.pyc
 
