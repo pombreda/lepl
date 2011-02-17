@@ -163,7 +163,7 @@ class StreamHelper(_StreamHelper):
         '''
         Return a new stream that encapsulates the value given, starting at
         `state`.  IMPORTANT: the stream used is the one that corresponds to
-        the start of the line.
+        the start of the value.
           
         For example:
             (line, next_stream) = s_line(stream)
@@ -179,6 +179,13 @@ class StreamHelper(_StreamHelper):
         Return a stream that represents the deepest match.  The stream may be
         incomplete in some sense (it may not be possible to use it for
         parsing more data), but it will have usable format and kargs methods.
+        '''
+        raise NotImplementedError
+    
+    def offset(self, state):
+        '''
+        Return the 0-based offset of the current point, relative to the 
+        entire stream. 
         '''
         raise NotImplementedError
 
@@ -212,3 +219,6 @@ s_stream = lambda stream, value: stream[1].stream(stream[0], value)
 
 s_debug = lambda stream: stream[1].debug()
 '''Invoke helper.debug()'''
+
+s_offset = lambda stream: stream[1].offset(stream[0])
+'''Invoke helper.offset(state)'''

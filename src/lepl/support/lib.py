@@ -200,7 +200,7 @@ def safe_in(value, container, default=False):
     
 def safe_add(container, value):
     '''
-    Ass items to a container, if they are hashable.
+    Add items to a container, if they are hashable.
     '''
     try:
         container.add(value)
@@ -291,7 +291,9 @@ class HashedValue(object):
         
         
 def add_defaults(original, defaults, prefix=''):
-    '''Add defaults to original dict if not already present.'''
+    '''
+    Add defaults to original dict if not already present.
+    '''
     for (name, value) in defaults.items():
         if prefix + name not in original:
             original[prefix + name] = value

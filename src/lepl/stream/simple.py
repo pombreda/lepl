@@ -70,7 +70,8 @@ class SequenceHelper(StreamHelper):
 
     def hash(self, state):
         offset = state + self._delta[OFFSET]
-        return HashedValue(offset ^ hash(self), (state, self), offset)
+        # hash on offset, but use sequence for full equality
+        return HashedValue(offset, (state, self), self._sequence)
     
     def _fmt(self, sequence, offset, maxlen=60, left='', right='', index=True):
         '''Format a possibly long subsection of data.'''
@@ -202,6 +203,9 @@ class SequenceHelper(StreamHelper):
             return format('{0:d}:{1:r}', state, self._sequence[state])
         except IndexError:
             return format('{0:d}:<EOS>', state)
+        
+    def offset(self, state):
+        return state + self._delta[OFFSET]
     
     
 class StringHelper(SequenceHelper):
