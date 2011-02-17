@@ -31,6 +31,7 @@
 from collections import Iterable
 
 from lepl.stream.simple import SequenceHelper, StringHelper, ListHelper
+from lepl.stream.iter import IterableHelper, Cons
 from lepl.support.lib import basestring, format, add_defaults
 
 
@@ -60,10 +61,10 @@ class StreamFactory(object):
         add_defaults(kargs, {'factory': self})
         return (0, SequenceHelper(sequence, **kargs))
 
-    def from_iterable(self, iterable, helper=None):
-        pass
-        # TODO
-        
+    def from_iterable(self, iterable, **kargs):
+        add_defaults(kargs, {'factory': self})
+        cons = Cons(iterable)
+        return ((cons, self(cons.head, **kargs)), IterableHelper(**kargs))
         
     
     def from_file(self, file_):

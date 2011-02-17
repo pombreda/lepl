@@ -34,8 +34,10 @@ The state is an integer offset.  Sequence and a possible delta for the
 offset are stored in the helper.
 '''
 
-from lepl.support.lib import HashedValue, format, add_defaults
-from lepl.stream.core import StreamHelper
+from itertools import chain
+
+from lepl.support.lib import HashedValue, format, add_defaults, str
+from lepl.stream.core import StreamHelper, OFFSET, LINENO, CHAR
 
 
 class MutableMax(object):
@@ -50,17 +52,22 @@ class MutableMax(object):
         return self.value
 
 
-OFFSET, LINENO, CHAR = range(3)
-
-class SequenceHelper(StreamHelper):
+class BaseHelper(StreamHelper):
     
-    def __init__(self, sequence, factory, 
-                 delta=None, max=None, global_kargs=None):
-        self._sequence = sequence
+    def __init__(self, factory, delta=None, max=None, global_kargs=None):
         self._factory = factory
         self._delta = delta if delta else (0,1,1)
         self._max = max if max else MutableMax()
         self._global_kargs = global_kargs if global_kargs else {}
+
+
+class SequenceHelper(BaseHelper):
+    
+    def __init__(self, sequence, factory, 
+                 delta=None, max=None, global_kargs=None):
+        super(SequenceHelper, self).__init__(factory, delta=delta, max=max,
+                                             global_kargs=global_kargs)
+        self._sequence = sequence
         type_ = self._typename(sequence)
         add_defaults(self._global_kargs, {
             'global_type': type_,
@@ -171,7 +178,7 @@ class SequenceHelper(StreamHelper):
         else:
             raise StopIteration
     
-    def join(self, *values):
+    def join(self, state, *values):
         assert values, 'Cannot join zero general sequences'
         result = values[0]
         for value in values[1:]:
@@ -192,7 +199,7 @@ class SequenceHelper(StreamHelper):
     
     def stream(self, state, value):
         return self._factory(value, factory=self._factory,
-                             delta=(state+self._delta[0],) + self._delta[1:],
+                             delta=self.delta(state),
                              max=self._max, global_kargs=self._global_kargs)
         
     def deepest(self):
@@ -200,12 +207,13 @@ class SequenceHelper(StreamHelper):
     
     def debug(self, state):
         try:
-            return format('{0:d}:{1:r}', state, self._sequence[state])
+            return format('{0:d}:{1!r}', state, self._sequence[state])
         except IndexError:
             return format('{0:d}:<EOS>', state)
         
-    def offset(self, state):
-        return state + self._delta[OFFSET]
+    def delta(self, state):
+        offset = state + self._delta[OFFSET]
+        return (offset, 1, offset+1)
     
     
 class StringHelper(SequenceHelper):
@@ -220,7 +228,7 @@ class StringHelper(SequenceHelper):
     def _location(self, kargs, prefix):
         return format('line {' + prefix + 'lineno:d}, character {' + prefix + 'char:d}', **kargs)
     
-    def _delta_for_state(self, state):
+    def delta(self, state):
         offset = self._delta[OFFSET] + state
         lineno = self._delta[LINENO] + self._sequence.count('\n', 0, state)
         start = self._sequence.rfind('\n', 0, state)
@@ -232,7 +240,7 @@ class StringHelper(SequenceHelper):
         
     def kargs(self, state, prefix='', kargs=None):
         if kargs is None: kargs = {}
-        (_, lineno, char) = self._delta_for_state(state)
+        (_, lineno, char) = self.delta(state)
         end = self._sequence.find('\n', state) # omit \n
         if end < 0:
             rest = repr(self._sequence[state:])
@@ -243,6 +251,9 @@ class StringHelper(SequenceHelper):
             prefix + 'lineno': lineno,
             prefix + 'char': char})
         return super(StringHelper, self).kargs(state, prefix=prefix, kargs=kargs)
+    
+    def join(self, state, *values):
+        return str().join(*values)
     
     def line(self, state):
         '''Returns up to, and including then next \n'''
@@ -255,7 +266,7 @@ class StringHelper(SequenceHelper):
 
     def stream(self, state, value):
         return self._factory(value,  factory=self._factory,
-                             delta=self._delta_for_state(state), max=self._max,
+                             delta=self.delta(state), max=self._max,
                              global_kargs=self._global_kargs)
         
     
@@ -268,3 +279,6 @@ class ListHelper(SequenceHelper):
         return super(StringHelper, self)._fmt(sequence, offset, maxlen=maxlen, 
                                               left=left, right=right, index=index)
 
+    def join(self, state, *values):
+        return list(chain(*values))
+    

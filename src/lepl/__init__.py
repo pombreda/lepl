@@ -143,7 +143,7 @@ from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.stream.maxdepth import FullFirstMatchException
+#from lepl.stream.maxdepth import FullFirstMatchException
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 from lepl.support.list import List, sexpr_fold, sexpr_throw
 from lepl.support.node import Node, make_dict, join_with, node_throw

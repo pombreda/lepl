@@ -53,6 +53,9 @@ _StreamHelper = ABCMeta('_StreamHelper', (object, ), {})
 DUMMY_HELPER = object()
 '''Allows tests to specify an arbitrary helper in results.'''
     
+OFFSET, LINENO, CHAR = range(3)
+'''Indices into delta.'''
+
 
 class StreamHelper(_StreamHelper):
     '''
@@ -139,7 +142,7 @@ class StreamHelper(_StreamHelper):
         '''
         raise StopIteration
     
-    def join(self, *values):
+    def join(self, state, *values):
         '''
         Join sequences of values into a single sequence.
         '''
@@ -182,10 +185,10 @@ class StreamHelper(_StreamHelper):
         '''
         raise NotImplementedError
     
-    def offset(self, state):
+    def delta(self, state):
         '''
-        Return the 0-based offset of the current point, relative to the 
-        entire stream. 
+        Return the offset, lineno and char of the current point, relative to 
+        the entire stream, as a tuple. 
         '''
         raise NotImplementedError
 
@@ -202,10 +205,13 @@ s_kargs = lambda stream, prefix='', kargs=None: stream[1].kargs(stream[0], prefi
 s_format = lambda stream, template, prefix='', kargs=None: stream[1].format(stream[0], template, prefix=prefix, kargs=kargs)
 '''Invoke helper.format(state, template, prefix, kargs)'''
 
+s_debug = lambda stream: stream[1].debug(stream[0])
+'''Invoke helper.debug()'''
+
 s_next = lambda stream, count=1: stream[1].next(stream[0], count=count)
 '''Invoke helper.next(state, count)'''
 
-s_join = lambda stream, *values: stream[1].join(*values)
+s_join = lambda stream, *values: stream[1].join(stream[0], *values)
 '''Invoke helper.join(*values)'''
 
 s_empty = lambda stream: stream[1].empty(stream[0])
@@ -217,8 +223,8 @@ s_line = lambda stream: stream[1].line(stream[0])
 s_stream = lambda stream, value: stream[1].stream(stream[0], value)
 '''Invoke helper.stream(state, value)'''
 
-s_debug = lambda stream: stream[1].debug()
-'''Invoke helper.debug()'''
+s_deepest = lambda stream: stream[1].deepest()
+'''Invoke helper.deepest()'''
 
-s_offset = lambda stream: stream[1].offset(stream[0])
-'''Invoke helper.offset(state)'''
+s_delta = lambda stream: stream[1].delta(stream[0])
+'''Invoke helper.delta(state)'''

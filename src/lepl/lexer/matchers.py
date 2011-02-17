@@ -41,7 +41,7 @@ from lepl.matchers.derived import Add, Apply, Drop, KApply, Map
 from lepl.matchers.error import raise_error
 from lepl.lexer.support import LexerError, RuntimeLexerError
 from lepl.lexer.stream import TokenLevelWrapper, SourceLevelWrapper
-from lepl.stream.maxdepth import Facade, TokenFacade
+#from lepl.stream.maxdepth import Facade, TokenFacade
 from lepl.matchers.core import OperatorMatcher, Any, Literal, Lookahead, Regexp
 from lepl.matchers.combine import And, Or, First
 from lepl.matchers.matcher import Matcher, add_children

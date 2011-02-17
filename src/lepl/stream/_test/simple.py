@@ -30,15 +30,14 @@
 
 from lepl.support.lib import format
 from lepl._test.base import BaseTest
-from lepl.stream.core import s_empty, s_format, s_hash, s_join, s_kargs, \
-    s_line, s_next, s_stream, s_debug
-from lepl.stream.factory import StreamFactory
+from lepl.stream.core import s_empty, s_format, s_line, s_next, s_stream
+from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 
 
 class GenericTest(BaseTest):
     
     def test_empty(self):
-        f = StreamFactory()
+        f = DEFAULT_STREAM_FACTORY
         for (constructor, data) in ((f.from_sequence, ''), 
                                     (f.from_sequence, []),
                                     (f.from_sequence, ()),
@@ -58,7 +57,7 @@ class GenericTest(BaseTest):
                 pass
         
     def test_single_value(self):
-        f = StreamFactory()
+        f = DEFAULT_STREAM_FACTORY
         for (constructor, data) in ((f.from_sequence, 'a'), 
                                     (f.from_sequence, [1]),
                                     (f.from_sequence, (2,)),
@@ -74,7 +73,7 @@ class GenericTest(BaseTest):
             assert s_empty(n)
             
     def test_two_values(self):
-        f = StreamFactory()
+        f = DEFAULT_STREAM_FACTORY
         for (constructor, data) in ((f.from_sequence, 'ab'), 
                                     (f.from_sequence, [1, 2]),
                                     (f.from_sequence, (2,3)),
@@ -92,7 +91,7 @@ class GenericTest(BaseTest):
             assert s_empty(n)
 
     def test_string_lines(self):
-        f = StreamFactory()
+        f = DEFAULT_STREAM_FACTORY
         s = f.from_string('line 1\nline 2\nline 3\n')
         (l, s) = s_line(s)
         assert l == 'line 1\n', l

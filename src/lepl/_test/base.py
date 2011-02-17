@@ -36,7 +36,7 @@ from re import sub
 from unittest import TestCase
 
 from lepl.support.lib import str
-from lepl.stream.maxdepth import FullFirstMatchException
+#from lepl.stream.maxdepth import FullFirstMatchException
 
 
 class BaseTest(TestCase):
