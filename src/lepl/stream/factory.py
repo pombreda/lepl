@@ -32,7 +32,7 @@ from collections import Iterable
 
 from lepl.stream.simple import SequenceHelper, StringHelper, ListHelper
 from lepl.stream.iter import IterableHelper, Cons
-from lepl.support.lib import basestring, format, add_defaults
+from lepl.support.lib import basestring, format, add_defaults, file
 
 
 class StreamFactory(object):
@@ -49,64 +49,44 @@ class StreamFactory(object):
 
     def from_list(self, list_, **kargs):
         '''
-        Provide a list for the contents of the string.
+        Provide a stream for the contents of the list.
         '''
         add_defaults(kargs, {'factory': self})
         return (0, ListHelper(list_, **kargs))
 
     def from_sequence(self, sequence, **kargs):
         '''
-        Return a generic stream.
+        Return a generic stream for any indexable sequence.
         '''
         add_defaults(kargs, {'factory': self})
         return (0, SequenceHelper(sequence, **kargs))
 
     def from_iterable(self, iterable, **kargs):
+        '''
+        Provide a stream for the contents of the iterable.  This assumes that
+        each value from the iterable is a "line" which will, in turn, be
+        passed to the stream factory.
+        '''
         add_defaults(kargs, {'factory': self})
         cons = Cons(iterable)
         return ((cons, self(cons.head, **kargs)), IterableHelper(**kargs))
-        
     
-    def from_file(self, file_):
+    def from_file(self, file_, **kargs):
         '''
-        Provide a stream for the contents of the file.
+        Provide a stream for the contents of the file.  There is no 
+        corresponding `from_path` because the opening and closing of the
+        path must be done outside the parsing (or the contents will become
+        unavailable), so use instead:
+          with open(path) as f:
+              parser.parse_file(f)
+        which will close the file after parsing.
         '''
-        return self.from_lines(file_.readlines())
+        try:
+            add_defaults(kargs, {'filename': file_.name})
+        except AttributeError:
+            pass
+        return self.from_iterable(file_, **kargs)
             
-    def from_path(self, path):
-        '''
-        Provide a stream for the contents of the file at the given path.
-        '''
-        with open(path) as file_:
-            stream = self.from_file(file_)
-        return stream
-    
-    def from_lines(self, lines, join='\n'.join):
-        '''
-        Provide a stream for the contents of an iterator over lines.
-        '''
-        return self.auto(join(lines))
-    
-    def from_items(self, items, sub_list=True):
-        '''
-        Provide a stream for the contents of an iterator over items.
-        
-        The `sub_list` causes each each item to be wrapped in a list.  This 
-        may seem unusual but is typically what is needed, because it makes the
-        items resemble strings.  In particular, it allows single values to
-        be joined with `+`.
-        
-        To understand further, compare "123" and [1,2,3].  The components of
-        the former are "1", "2" and "3', which can be joined with `+` as
-        expected.  However, the components of the latter are 1, 2, and 3 which
-        will "join" to give "6" instead of "123".  This is avoided if we
-        wrap in lists: [[1],[2],[3]] has components [1], [2], [3] which join
-        to give [1,2,3] as likely expected.  
-        '''
-        if sub_list:
-            items = ([item] for item in items)
-        return self.auto(list(items))
-    
     def __call__(self, sequence, **kargs):
         '''
         Auto-detect type and wrap appropriately.
@@ -115,6 +95,8 @@ class StreamFactory(object):
             return self.from_string(sequence, **kargs)
         elif isinstance(sequence, list):
             return self.from_list(sequence, **kargs)
+        elif isinstance(sequence, file):
+            return self.from_file(sequence, **kargs)
         elif hasattr(sequence, '__getitem__') and hasattr(sequence, '__len__'):
             return self.from_sequence(sequence, **kargs)
         elif isinstance(sequence, Iterable):

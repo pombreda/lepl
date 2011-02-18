@@ -40,6 +40,8 @@ Matchers that embody fundamental, common actions.
 
 from re import compile as compile_
 
+from lepl.stream.core import s_next, s_eq, s_empty, s_line
+from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 from lepl.core.parser import tagged
 from lepl.regexp.matchers import DfaRegexp
 from lepl.matchers.support import OperatorMatcher, coerce_, \
@@ -76,21 +78,20 @@ def Any(restrict=None):
         '''
         Do the matching.  The result will be a single matching character.
         '''
-        (head, offset, helper) = stream
-        ok = offset < len(head)
-        if ok and restrict:
+        (value, next_stream) = s_next(stream)
+        if restrict:
             try:
-                ok = head[offset] in restrict
+                if value not in restrict:
+                    raise StopIteration
             except TypeError:
                 # it would be nice to make this an error, but for line aware
                 # parsing (and any other heterogenous input) it's legal
                 if not warned[0]:
                     support._warn(format('Cannot restrict {0} with {1!r}',
-                                          head[offset], restrict))
+                                          value, restrict))
                     warned[0] = True
-                    ok = False
-        if ok:
-            return ([head[offset]], (head, offset+1, helper))
+                    raise StopIteration
+        return ([value], next_stream)
             
     return match
             
@@ -113,9 +114,9 @@ def Literal(text):
         provided by the stream interface.
         '''
         try:
-            (head, offset, helper) = stream
-            if text == head[offset:offset+delta]:
-                return ([text], (head, offset+delta, helper))
+            (value, next_stream) = s_next(stream, count=delta)
+            if text == value:
+                return ([value], next_stream)
         except IndexError:
             pass
     return match
@@ -192,14 +193,14 @@ def Regexp(pattern):
     pattern = compile_(pattern)
     
     def match(support, stream):
-        (head, offset, helper) = stream
-        match = pattern.match(head[offset:])
+        (line, _) = s_line(stream)
+        match = pattern.match(line)
         if match:
             eaten = len(match.group())
             if match.groups():
-                return (list(match.groups()), (head, offset + eaten, helper))
+                return (list(match.groups()), s_next(stream, count=eaten)[1])
             else:
-                return ([match.group()], (head, offset + eaten, helper))
+                return ([match.group()], s_next(stream, count=eaten)[1])
     return match
         
 
@@ -243,8 +244,7 @@ def Eof(support, stream):
 
     This is also aliased to Eos in lepl.derived.
     '''
-    (head, offset, _) = stream
-    if offset >= len(head):
+    if s_empty(stream):
         return ([], stream)
 
 
@@ -261,7 +261,7 @@ def Consumer(matcher, consume=True):
             generator = matcher._match(stream_in)
             while True:
                 (result, stream_out) = yield generator
-                if consume == (stream_in != stream_out):
+                if consume != s_eq(stream_in, stream_out):
                     yield (result, stream_out)
         except StopIteration:
             pass
@@ -269,7 +269,7 @@ def Consumer(matcher, consume=True):
 
 
 @trampoline_matcher_factory(matcher=to(Literal), condition=to(DfaRegexp))
-def PostMatch(matcher, condition, not_=False, equals=True, helper=None):
+def PostMatch(matcher, condition, not_=False, equals=True, stream_factory=None):
     '''
     Apply the condition to each result from the matcher.  It should return
     either an exact match (equals=True) or simply not fail (equals=False).
@@ -277,22 +277,21 @@ def PostMatch(matcher, condition, not_=False, equals=True, helper=None):
     
     `matcher` is coerced to `Literal()`, condition to `DfaRegexp()`
     
-    `helper` is used to generate a stream from the result.  If not set it
-    is taken from the input stream.
+    `factory` is used to generate a stream from the result.  If not set the
+    default factory is used.
     '''
-    def match(support, stream_in, helper=helper):
+    def match(support, stream_in, stream_factory=stream_factory):
         '''
         Do the match and test the result.
         '''
-        if helper is None:
-            (_, _, helper) = stream_in
+        stream_factory = stream_factory if stream_factory else DEFAULT_STREAM_FACTORY
         generator = matcher._match(stream_in)
         while True:
             (results, stream_out) = yield generator
             success = True
             for result in results:
                 if not success: break
-                generator2 = condition._match((result, 0, helper))
+                generator2 = condition._match(stream_factory(result))
                 try:
                     (results2, _ignored) = yield generator2
                     if not_:

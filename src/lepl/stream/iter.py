@@ -59,7 +59,7 @@ be possible to have iterables of iterables...
 from lepl.support.lib import HashedValue, add_defaults
 from lepl.stream.simple import OFFSET, LINENO, BaseHelper
 from lepl.stream.core import s_delta, s_kargs, s_format, s_debug, s_next, \
-    s_line, s_join, s_empty
+    s_line, s_join, s_empty, s_eq
 
 
 class Cons(object):
@@ -169,3 +169,9 @@ class IterableHelper(BaseHelper):
     def delta(self, state):
         (_, line_stream) = state
         return s_delta(line_stream)
+    
+    def eq(self, state1, state2):
+        (_, line_stream1) = state1
+        (_, line_stream2) = state2
+        return s_eq(line_stream1, line_stream2)
+

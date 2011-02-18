@@ -191,6 +191,12 @@ class StreamHelper(_StreamHelper):
         the entire stream, as a tuple. 
         '''
         raise NotImplementedError
+    
+    def eq(self, state1, state2):
+        '''
+        Are the two states equal?
+        '''
+        return state1 == state2
 
 
 # The following are helper functions that allow the methods above to be
@@ -217,6 +223,7 @@ s_join = lambda stream, *values: stream[1].join(stream[0], *values)
 s_empty = lambda stream: stream[1].empty(stream[0])
 '''Invoke helper.empty(state)'''
 
+# TODO - do we ever use the stream?  if not, don't return it...
 s_line = lambda stream: stream[1].line(stream[0])
 '''Invoke helper.line(state)'''
 
@@ -228,3 +235,6 @@ s_deepest = lambda stream: stream[1].deepest()
 
 s_delta = lambda stream: stream[1].delta(stream[0])
 '''Invoke helper.delta(state)'''
+
+s_eq = lambda stream1, stream2: stream1[1].eq(stream1[0], stream2[0])
+'''Compare two streams (which should have identical helpers)'''

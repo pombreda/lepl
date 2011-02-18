@@ -65,6 +65,7 @@ from abc import ABCMeta, abstractmethod
 from collections import deque
 from itertools import chain
 
+from lepl.stream.core import s_next, s_empty, s_line
 from lepl.support.graph import ConstructorWalker, clone, Clone
 from lepl.support.node import Node
 from lepl.regexp.interval import Character, TaggedFragments, IntervalMap,\
@@ -728,14 +729,13 @@ class NfaPattern(LogMixin):
                 # re-add empties with old match
                 stack.append((None, None, empties, match, stream))
                 # and try matching a character
-                if stream:
-                    (head, offset, helper) = stream
+                if not s_empty(stream):
+                    (value, next_stream) = s_next(stream)
                     try:
-                        char = head[offset]
-                        matched = map_[char]
+                        matched = map_[value]
                         if matched:
                             stack.append((None, matched, None,
-                                          match + [char], (head, offset+1, helper)))
+                                          match + [value], next_stream))
                     except IndexError:
                         pass
             elif matched:
@@ -925,9 +925,9 @@ class DfaPattern(LogMixin):
         Match against the stream.
         '''
         try:
-            (terminals, size, stream_out) = self.size_match(stream_in)
-            (head, offset, _) = stream_in
-            return (terminals, head[offset:offset+size], stream_out)
+            (terminals, size, _) = self.size_match(stream_in)
+            (value, stream_out) = s_next(stream_in, count=size)
+            return (terminals, value, stream_out)
         except TypeError:
             # the matcher returned None
             return None
@@ -935,14 +935,17 @@ class DfaPattern(LogMixin):
     def size_match(self, stream):
         '''
         Match against the stream, but return the length of the match.
+        
+        TODO - don't store streams, just offsets, then generate stream at end.
+        (is stream used at all - it isn't used above!)
         '''
         state = 0
         size = 0
-        (head, offset, helper) = stream
-        longest = (self.__empty_labels, offset, stream) \
+        (line, _) = s_line(stream)
+        longest = (self.__empty_labels, 0, stream) \
                     if self.__empty_labels else None
-        while offset + size < len(head):
-            future = self.__table[state][head[offset + size]]
+        while size < len(line):
+            future = self.__table[state][line[size]]
             if future is None:
                 break
             # update state
@@ -951,5 +954,6 @@ class DfaPattern(LogMixin):
             # match is strictly increasing, so storing the length is enough
             # (no need to make an expensive copy)
             if terminals:
-                longest = (terminals, size, (head, offset + size, helper))
+                (_, next_stream) = s_next(stream, count=size)
+                longest = (terminals, size, next_stream)
         return longest

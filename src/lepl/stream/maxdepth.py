@@ -27,57 +27,12 @@
 # MPL or the LGPL License.
 
 '''
-Track the maximum depth of a stream.
-
-The head attribute is used to access the underlying stream in, for example,
-formatting and token creation.
+Raise an exception if the stream is not consumed entirely.
 '''
 
+from lepl.stream.core import s_empty, s_format, s_deepest
 from lepl.matchers.support import trampoline_matcher_factory
 
-
-class Facade(object):
-    
-    def __init__(self, head, deepest):
-        self.head = head
-        self.deepest = deepest
-
-    def __len__(self):
-        return len(self.head)
-    
-    def __getitem__(self, index):
-        if isinstance(index, slice):
-            if index.stop is None:
-                offset = len(self.head)
-            else:
-                offset = min(index.stop, len(self.head))
-            self.deepest = max(self.deepest, offset-1)
-        else:
-            self.deepest = max(self.deepest, index)
-        return self.head.__getitem__(index)
-    
-    
-class TokenFacade(object):
-    
-    def __init__(self, head, facade, offset):
-        self.head = head
-        self.facade = facade
-        self.offset = offset
-        
-    def __len__(self):
-        return len(self.head)
-    
-    def __getitem__(self, index):
-        if isinstance(index, slice):
-            if index.stop is None:
-                delta = len(self.head)
-            else:
-                delta = min(index.stop, len(self.head))
-            self.facade.deepest = max(self.facade.deepest, self.offset + delta)
-        else:
-            self.facade.deepest = max(self.facade.deepest, self.offset + index)
-        return self.head.__getitem__(index)
-    
 
 @trampoline_matcher_factory()
 def FullFirstMatch(matcher, eos=True):
@@ -92,28 +47,21 @@ def FullFirstMatch(matcher, eos=True):
     '''
     
     def _matcher(support, stream1):
-        # add facade to stream
-        (head1, offset1, helper) = stream1
-        facade = Facade(head1, offset1)
-        stream2 = (facade, offset1, helper)
-        
         # first match
-        generator = matcher._match(stream2)
+        generator = matcher._match(stream1)
         try:
-            (result2, stream3) = yield generator
-            (head2, offset2, _) = stream3
-            if eos and offset2 < len(head2):
-                raise FullFirstMatchException(head1, facade.deepest, helper)
+            (result2, stream2) = yield generator
+            if eos and not s_empty(stream2):
+                raise FullFirstMatchException(stream2)
             else:
-                yield (result2, (head1, offset2, helper))
+                yield (result2, stream2)
         except StopIteration:
-            raise FullFirstMatchException(head1, facade.deepest, helper)
+            raise FullFirstMatchException(stream1)
         
         # subsequent matches:
         while True:
-            (result2, stream3) = yield generator
-            (head2, offset2, _) = stream3
-            yield (result2, (head1, offset2, helper))
+            result = yield generator
+            yield result
 
     return _matcher
 
@@ -124,8 +72,8 @@ class FullFirstMatchException(Exception):
     about the deepest point read in the stream. 
     '''
     
-    def __init__(self, head, deepest, helper):
+    def __init__(self, stream):
         super(FullFirstMatchException, self).__init__(
-            helper.format('The match failed in {filename} at {rest} ({location}).',
-                          head, deepest))
+            s_format(s_deepest(stream),
+                     'The match failed in {filename} at {rest} ({location}).'))
 

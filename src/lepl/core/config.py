@@ -734,7 +734,7 @@ class ParserMixin(object):
             if from_:
                 stream_factory = getattr(config.stream_factory, 'from_' + from_)
             else:
-                stream_factory = config.stream_factory.auto
+                stream_factory = config.stream_factory
             self.__raw_parser_cache = \
                 make_raw_parser(self, stream_factory, config)
         return self.__raw_parser_cache

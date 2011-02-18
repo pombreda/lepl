@@ -38,11 +38,13 @@ try:
     chr = unichr
     str = unicode
     basestring = basestring
+    file = file
 except NameError:
+    from io import IOBase
     chr = chr
     str = str
     basestring = str
-
+    file = IOBase
 
 
 def assert_type(name, value, type_, none_ok=False):
