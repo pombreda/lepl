@@ -35,11 +35,10 @@ from string import whitespace, digits, ascii_letters, \
     ascii_uppercase, ascii_lowercase, printable, punctuation
 
 from lepl.stream.core import s_line, s_next, s_stream
-from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 from lepl.core.parser import tagged
 from lepl.matchers.combine import And, DepthFirst, BreadthFirst, \
-    OrderByResultCount, Or, First, Limit
-from lepl.matchers.core import Lookahead, Any, Eof, Literal, Empty, Regexp
+    OrderByResultCount, Or, Limit
+from lepl.matchers.core import Lookahead, Any, Eof, Literal, Regexp
 from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
     NON_GREEDY
 from lepl.matchers.support import OperatorMatcher, coerce_, trampoline_matcher

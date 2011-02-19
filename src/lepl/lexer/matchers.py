@@ -1,4 +1,5 @@
-from lepl.stream.core import s_empty, s_line, s_factory, s_stream, s_debug
+from lepl.stream.core import s_empty, s_line, s_factory, s_stream, s_debug,\
+    s_next
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -216,35 +217,18 @@ class BaseToken(OperatorMatcher, NoMemo):
                        'You must use the lexer rewriter with Tokens. '
                        'This can be done by using matcher.config.lexer().',
                        self.__class__.__name__))
-        (head, offset, helper) = stream
-        if offset < len(head):
-            (tokens, contents, delta) = head[offset]
-            if self.id_ in tokens:
-                if self.content is None:
-                    # result contains all data (drop facade)
-                    yield ([contents[0:]], (head, offset+1, helper))
-                else:
-                    new_stream = (contents, 0, TokenLevelWrapper(delta, helper))
-                    generator = self.content._match(new_stream)
-                    while True:
-                        (result, stream_out) = yield generator
-                        (_, consumed, _) = stream_out
-                        if consumed == len(contents) or not self.complete:
-                            yield (result, (head, offset+1, helper))
-                            
-        ((tokens, contents, delta), stream) = s_next(stream)
+        ((tokens, line_stream), next_stream) = s_next(stream)
         if self.id_ in tokens:
             if self.content is None:
                 # result contains all data (drop facade)
-                yield ([contents[0:]], stream)
+                (line, _) = s_line(line_stream)
+                yield (line, next_stream)
             else:
-                new_stream = (contents, 0, TokenLevelWrapper(delta, helper)) # TODO
-                generator = self.content._match(new_stream)
+                generator = self.content._match(line_stream)
                 while True:
-                    (result, stream_out) = yield generator
-                    if s_empty(stream_out) or not self.complete:
-                        yield (result, stream)
-    
+                    (result, next_line_stream) = yield generator
+                    if s_empty(next_line_stream) or not self.complete:
+                        yield (result, next_stream)
         
     def __str__(self):
         return format('{0}: {1!s}', self.id_, self.regexp)
@@ -372,13 +356,13 @@ class Lexer(NamespaceMixin, BaseMatcher):
                     (terminals, match, next_stream) = self.t_regexp.match(stream)
                     self._debug(format('Token: {0!r} {1!r} {2!s}',
                                        terminals, match, s_debug(stream)))
-                    yield (terminals, s_stream(match, stream))
+                    yield (terminals, s_stream(stream, match))
                 except TypeError:
                     (terminals, _size, next_stream) = self.s_regexp.size_match(stream)
                     self._debug(format('Space: {0!r} {1!s}',
                                        terminals, s_debug(stream)))
                 stream = next_stream
-        token_stream = s_factory(in_stream).to_token(tokens, in_stream)
+        token_stream = s_factory(in_stream).to_token(tokens(), in_stream)
         generator = self.matcher._match(token_stream)
         while True:
             yield (yield generator)

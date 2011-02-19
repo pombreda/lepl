@@ -1,4 +1,3 @@
-from lepl.stream.core import s_debug
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -38,6 +37,7 @@ from __future__ import generators, print_function
 from contextlib import contextmanager
 from sys import stderr, _getframe
 
+from lepl.stream.core import s_debug
 from lepl.matchers.support import trampoline_matcher_factory
 from lepl.support.lib import format, str
 

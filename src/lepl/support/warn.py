@@ -49,7 +49,7 @@ class Warning(object):
         self.displayed = False
         self.name = name
         self.message = message
-        assert self.name not in _WARNINGS
+        assert self.name not in _WARNINGS, (self.name, _WARNINGS)
         _WARNINGS[self.name] = self
         
     def warn(self):
