@@ -41,6 +41,7 @@ from collections import deque
 from logging import getLogger
 from traceback import format_exc
 
+from lepl.stream.core import s_debug
 from lepl.core.monitor import prepare_monitors
 from lepl.support.lib import format
 
@@ -91,7 +92,7 @@ class GeneratorWrapper(object):
         Lazily evaluated for speed - saves 1/3 of time spent in constructor
         '''
         if not self.__cached_repr:
-            self.__cached_repr = format('{0}({1!r})', self.matcher, self.stream)
+            self.__cached_repr = format('{0}({1})', self.matcher, s_debug(self.stream))
         return self.__cached_repr
     
     def __str__(self):

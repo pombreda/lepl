@@ -140,7 +140,6 @@ class RTable(LogMixin):
         self.__table = []
         self.__stopped = False
         self.__active = False
-        self.__cached_stream = None
         
     def __read(self, i, matcher, stream):
         '''
@@ -160,7 +159,6 @@ matcher: {matcher!s}''', kargs = {
             while i >= len(self.__table) and not self.__stopped:
                 try:
                     self.__active = True
-                    self.__cached_stream = stream
                     result = yield self.__generator
                 finally:
                     self.__active = False
@@ -169,8 +167,6 @@ matcher: {matcher!s}''', kargs = {
             self.__stopped = True
         if i < len(self.__table):
             yield self.__table[i]
-        else:
-            raise StopIteration()
     
     def generator(self, matcher, stream):
         '''

@@ -164,14 +164,17 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         Provide a standard format for location.
         '''
-        (offset, lineno, char) = s_delta(self.generator.stream)
-        locn = format('{0}/{1}.{2}', offset, lineno, char)
-        depth = -s_len(self.generator.stream)
         try:
-            stream = sample('', s_line(self.generator.stream)[0], 9)
+            (offset, lineno, char) = s_delta(self.generator.stream)
+            locn = format('{0}/{1}.{2}', offset, lineno, char)
+            depth = -s_len(self.generator.stream)
+            try:
+                stream = sample('', s_line(self.generator.stream)[0], 9)
+            except StopIteration:
+                stream = '<EOS>'
+            return (stream, depth, locn)
         except StopIteration:
-            stream = '<EOS>'
-        return (stream, depth, locn)
+            return ('', -1, '')
         
     def yield_(self, value):
         '''

@@ -214,6 +214,7 @@ class RecursionTest(TestCase):
         #basicConfig(level=DEBUG)
         matcher = self.right_token()
         matcher.config.no_full_first_match().auto_memoize(full=True).trace(True)
+        #matcher.config.no_full_first_match().auto_memoize(full=True)
         self.do_test(matcher.get_parse())
         
     def test_right_token_string_content(self):

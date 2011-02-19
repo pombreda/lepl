@@ -66,8 +66,11 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
         if self._len is None:
             raise TypeError
         else:
-            (_, line_stream) = cons.head
-            return self._len - s_delta(line_stream)[OFFSET]
+            try:
+                (_, line_stream) = cons.head
+                return self._len - s_delta(line_stream)[OFFSET]
+            except StopIteration:
+                return 0
     
     def stream(self, state, value):
         raise TypeError
