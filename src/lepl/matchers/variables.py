@@ -1,3 +1,4 @@
+from lepl.stream.core import s_debug
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -101,11 +102,9 @@ def name(name, show_failures=True, width=80, out=stderr):
     def namer(stream_in, matcher):
         try:
             (result, stream_out) = matcher()
-            (head, offset, _) = stream_out
-            stream = _adjust(format('stream = \'{0}\'', head[offset:]), right) 
+            stream = _adjust(format('stream = \'{0}\'', s_debug(stream_out)), right) 
             str_name = _adjust(name, left // 4, True, True)
-            match = _adjust(format(' {0} = {1}', str_name, result),
-                            left, True)
+            match = _adjust(format(' {0} = {1}', str_name, result), left, True)
             # Python bug #4618
             print(match + ' ' + stream, file=out, end=str('\n'))
             return (result, stream_out)

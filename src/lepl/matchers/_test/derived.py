@@ -151,7 +151,7 @@ class RangeMatch(OperatorMatcher):
     @tagged
     def _match(self, stream):
         (value, next_stream) = s_next(stream)
-        for i in range(value):
+        for i in range(value[0]):
             yield ([i], next_stream)
 
 

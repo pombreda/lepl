@@ -1,4 +1,4 @@
-from lepl.stream.core import s_empty, s_line, s_factory
+from lepl.stream.core import s_empty, s_line, s_factory, s_stream, s_debug
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -361,47 +361,24 @@ class Lexer(NamespaceMixin, BaseMatcher):
                 return token
         
     @tagged
-    def _match(self, stream):
+    def _match(self, in_stream):
         '''
         Implement matching - pass token stream to tokens.
         '''
         def tokens():
-            factory = s_factory(stream).to_token
+            stream = in_stream
             while not s_empty(stream):
                 try:
                     (terminals, match, next_stream) = self.t_regexp.match(stream)
-                    yield factory(terminals, s_stream(match, stream))
-                except:
-                    pass
-#        s_next_line
-#        s_join_lines
-#        iterator support
-#        someway to connect helpers
-        tokens = []
-        while True:
-            try:
-                stream = (head, offset, helper)
-                (terminals, match, (_, new_offset, _)) = self.t_regexp.match(stream)
-                if offset == new_offset:
-                    raise RuntimeLexerError('Tokens matched an empty '
-                        'string.\nChange your token definitions so that '
-                        'they cannot be empty.')
-                self._debug(format('Token: {0!r} {1!r} {2!r}',
-                                   terminals, match, offset))
-                if facade:
-                    match = TokenFacade(match, facade, offset)
-                tokens.append((terminals, match, offset))
-                offset = new_offset
-            except TypeError:
-                try:
-                    (terminals, _size, (_, offset, _)) = self.s_regexp.size_match(stream)
-                    self._debug(format('Space: {0!r} {1!r}', terminals, offset))
+                    self._debug(format('Token: {0!r} {1!r} {2!s}',
+                                       terminals, match, s_debug(stream)))
+                    yield (terminals, s_stream(match, stream))
                 except TypeError:
-                    raise RuntimeLexerError(helper.format('No lexer for {rest} at {location} of {text}.', head, offset))
-        # pylint: disable-msg=W0212
-        # implementation, not public, method
-        generator = self.matcher._match(
-                        (tokens, 0, SourceLevelWrapper(head, helper)))
+                    (terminals, _size, next_stream) = self.s_regexp.size_match(stream)
+                    self._debug(format('Space: {0!r} {1!s}',
+                                       terminals, s_debug(stream)))
+                stream = next_stream
+        token_stream = s_factory(in_stream).to_token(tokens, in_stream)
+        generator = self.matcher._match(token_stream)
         while True:
-            (result, stream_out) = yield generator
-            yield (result, stream_out)
+            yield (yield generator)
