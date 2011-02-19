@@ -65,7 +65,7 @@ class GenericTest(BaseTest):
         s10 = s_stream(s2, l1)
         (l1, s20) = s_line(s10)
         assert l1 == 'first line', l1
-        assert s_empty(s20)
+        assert not s_empty(s20)
         (c1, s11) = s_next(s10)
         assert c1 == 'f', c1
         d = s_debug(s11)

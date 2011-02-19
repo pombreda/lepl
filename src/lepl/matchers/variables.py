@@ -37,7 +37,7 @@ from __future__ import generators, print_function
 from contextlib import contextmanager
 from sys import stderr, _getframe
 
-from lepl.stream.core import s_debug
+from lepl.stream.core import s_debug, s_line
 from lepl.matchers.support import trampoline_matcher_factory
 from lepl.support.lib import format, str
 
@@ -46,24 +46,27 @@ from lepl.support.lib import format, str
 def NamedResult(name, matcher, out=stderr):
     
     def format_stream(stream):
-        (head, offset, _) = stream
-        text = str(head[offset:])
-        if len(text) > 20:
-            text = text[:17] + '...'
-        return text
+        try:
+            (line, _) = s_line(stream)
+            text = str(line)
+            if len(text) > 20:
+                text = text[:17] + '...'
+            return repr(text)
+        except StopIteration:
+            return '<EOS>'
     
     def record_success(count, stream_in, result):
         (value, stream_out) = result
         count_desc = format(' ({0})', count) if count > 1 else ''
         # Python bug #4618
-        print(format('{0}{1} = {2}\n    "{3}" -> "{4}"', 
+        print(format('{0}{1} = {2}\n    {3} -> {4}', 
                      name, count_desc, value, 
                      format_stream(stream_in), format_stream(stream_out)), 
               file=out, end=str('\n'))
         
     def record_failure(count, stream_in):
         # Python bug #4618
-        print(format('! {0} (after {1} matches)\n    "{2}"', name, count, 
+        print(format('! {0} (after {1} matches)\n    {2}', name, count, 
                      format_stream(stream_in)),
               file=out, end=str('\n'))
     
@@ -102,7 +105,7 @@ def name(name, show_failures=True, width=80, out=stderr):
     def namer(stream_in, matcher):
         try:
             (result, stream_out) = matcher()
-            stream = _adjust(format('stream = \'{0}\'', s_debug(stream_out)), right) 
+            stream = _adjust(format('stream = {0}', s_debug(stream_out)), right) 
             str_name = _adjust(name, left // 4, True, True)
             match = _adjust(format(' {0} = {1}', str_name, result), left, True)
             # Python bug #4618
@@ -110,7 +113,7 @@ def name(name, show_failures=True, width=80, out=stderr):
             return (result, stream_out)
         except StopIteration:
             if show_failures:
-                stream = _adjust(format('stream = \'{0}\'', s_debug(stream_in)), right) 
+                stream = _adjust(format('stream = {0}', s_debug(stream_in)), right) 
                 str_name = _adjust(name, left // 4, True, True)
                 match = _adjust(format(' {0} failed', str_name), left, True)
                 # Python bug #4618

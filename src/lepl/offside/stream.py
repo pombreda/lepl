@@ -33,7 +33,6 @@ A stream that adds tokens at the start and end of lines.
 
 from io import StringIO
 
-from lepl.lexer.stream import TokenSource
 from lepl.offside.regexp import _INDENT
 from lepl.offside.support import LineAwareError, OffsideError
 from lepl.stream.stream import DefaultStreamFactory, LineSource, sample

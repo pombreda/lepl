@@ -169,9 +169,9 @@ class IterableHelper(base_iterable_factory(lambda state: state[1],
             def next_line(empty_line_stream):
                 delta = s_delta(empty_line_stream)
                 delta = (delta[OFFSET], delta[LINENO]+1, 1)
-                return self._factory(cons.head, factory=self.factory,
-                                     max=self.max, global_kargs=self.global_kargs, 
-                                     delta=delta)
+                return self.factory(cons.head, factory=self.factory,
+                                    max=self.max, global_kargs=self.global_kargs, 
+                                    delta=delta)
             if s_empty(line_stream):
                 next_line_stream = next_line(line_stream)
                 next_stream = ((cons, next_line_stream), self)
@@ -195,9 +195,9 @@ class IterableHelper(base_iterable_factory(lambda state: state[1],
     def stream(self, state, value):
         (cons, line_stream) = state
         next_line_stream = \
-            self._factory(value, factory=self.factory, max=self.max, 
-                          global_kargs=self.global_kargs, 
-                          delta=s_delta(line_stream))
+            self.factory(value, factory=self.factory, max=self.max, 
+                         global_kargs=self.global_kargs, 
+                         delta=s_delta(line_stream))
         return ((cons, next_line_stream), self)
     
     def deepest(self):

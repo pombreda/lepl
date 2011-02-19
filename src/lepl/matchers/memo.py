@@ -117,8 +117,7 @@ class _RMemo(OperatorMatcher):
         Match the stream without trampolining (we don't need to worry about
         recursion).
         '''
-        (_, _, helper) = stream
-        key = helper.to_hash(stream, self.__state)
+        key = s_hash(stream, self.__state)
         if key not in self.__table:
             self.__table[key] = ([], self.matcher._untagged_match(stream))
         (known, generator) = self.__table[key]
@@ -235,8 +234,7 @@ class _LMemo(OperatorMatcher):
         '''
         Attempt to match the stream.
         '''
-        (_, _, helper) = stream
-        key = helper.to_hash(stream, self.__state)
+        key = s_hash(stream, self.__state)
         if key not in self.__caches:
             self.__caches[key] = PerStreamCache(self.matcher)
         return self.__caches[key]._match(stream)

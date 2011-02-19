@@ -51,15 +51,15 @@ class ExplicitTest(TestCase):
         list(parser('abc'))
         text = output.getvalue()
         assert_str(text, '''foo = ['a', 'b', 'c']
-    "abc" -> ""
+    'abc' -> <EOS>
 foo (2) = ['a', 'b']
-    "abc" -> "c"
+    'abc' -> 'c'
 foo (3) = ['a']
-    "abc" -> "bc"
+    'abc' -> 'bc'
 foo (4) = []
-    "abc" -> "abc"
+    'abc' -> 'abc'
 ! foo (after 4 matches)
-    "abc"
+    'abc'
 ''')
         
     def test_context(self):
@@ -71,8 +71,8 @@ foo (4) = []
         repr(bar)
         list(bar.match('abc'))
         text = output.getvalue()
-        assert_str(text, '''         bar = ['a']                            stream = 'bc'
-         bar failed                             stream = 'abc'
+        assert_str(text, '''         bar = ['a']                            stream = 1:'b'
+         bar failed                             stream = 0:'a'
 ''')
 
         
