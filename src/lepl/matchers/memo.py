@@ -45,7 +45,7 @@ from itertools import count
 from lepl.matchers.core import OperatorMatcher
 from lepl.matchers.matcher import is_child
 from lepl.core.parser import tagged, GeneratorWrapper
-from lepl.stream.core import s_hash
+from lepl.stream.core import s_key, s_format
 from lepl.support.state import State
 from lepl.support.lib import LogMixin, empty, format
 
@@ -101,7 +101,7 @@ class _RMemo(OperatorMatcher):
         '''
         # pylint: disable-msg=W0212
         # (_match is an internal interface)
-        key = s_hash(stream, self.__state)
+        key = s_key(stream, self.__state)
         if key not in self.__table:
             # we have no cache for this stream, so we need to generate the
             # entry.  we do not care about nested calls with the same stream
@@ -117,7 +117,7 @@ class _RMemo(OperatorMatcher):
         Match the stream without trampolining (we don't need to worry about
         recursion).
         '''
-        key = s_hash(stream, self.__state)
+        key = s_key(stream, self.__state)
         if key not in self.__table:
             self.__table[key] = ([], self.matcher._untagged_match(stream))
         (known, generator) = self.__table[key]
@@ -148,19 +148,14 @@ class RTable(LogMixin):
         embedded generator to get the next value (and then store it).
         '''
         if self.__active:
-            (head, offset, helper) = stream
-            kargs = helper.to_kargs(head, offset)
-            (head, offset, helper) = self.__cached_stream
-            kargs.update(helper.to_kargs(head, offset, prefix='initial_'))
-            kargs.update({'i': i, 
-                          'table': self.__table, 
-                          'matcher': matcher})
-            raise MemoException(format('''Left recursion with RMemo?
+            raise MemoException(s_format(stream, '''Left recursion with RMemo?
 i: {i}
 table: {table!r}
-stream: {repr}/{type} (initially {initial_repr})
-matcher: {matcher!s}''', **kargs))
-            
+stream: {repr}/{type}
+matcher: {matcher!s}''', kargs = {
+                'i': i,
+                'table': self.__table,
+                'matcher': matcher}))
         try:
             while i >= len(self.__table) and not self.__stopped:
                 try:
@@ -234,7 +229,7 @@ class _LMemo(OperatorMatcher):
         '''
         Attempt to match the stream.
         '''
-        key = s_hash(stream, self.__state)
+        key = s_key(stream, self.__state)
         if key not in self.__caches:
             self.__caches[key] = PerStreamCache(self.matcher)
         return self.__caches[key]._match(stream)

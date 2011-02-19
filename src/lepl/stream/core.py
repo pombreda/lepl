@@ -67,6 +67,7 @@ class StreamHelper(_StreamHelper):
         self.factory = factory if factory else DEFAULT_STREAM_FACTORY
         self.max = max if max else MutableMax()
         self.global_kargs = global_kargs if global_kargs else {}
+        self._id = hash(self) # use to identify this stream in hash key
     
     def __repr__(self):
         '''Simplify for comparison in tests'''
@@ -78,10 +79,10 @@ class StreamHelper(_StreamHelper):
     def __hash__(self):
         return super(StreamHelper, self).__hash__()
 
-    def hash(self, state, other):
+    def key(self, state, other):
         '''
-        Generate an object that can be hashed (implements __hash__ and __eq__),
-        and whose value attribute contains the stream.  See `HashedValue`.
+        Generate an object that can be hashed (implements __hash__ and __eq__).
+        See `HashKey`.
         '''
         raise NotImplementedError
     
@@ -207,8 +208,8 @@ class StreamHelper(_StreamHelper):
 # The following are helper functions that allow the methods above to be
 # called on (state, helper) tuples
 
-s_hash = lambda stream, other: stream[1].hash(stream[0], other)
-'''Invoke helper.hash(state)'''
+s_key = lambda stream, other: stream[1].key(stream[0], other)
+'''Invoke helper.key(state, other)'''
 
 s_kargs = lambda stream, prefix='', kargs=None: stream[1].kargs(stream[0], prefix=prefix, kargs=kargs)
 '''Invoke helper.kargs(state, prefix, kargs)'''
@@ -264,4 +265,26 @@ class MutableMax(object):
         
     def __int__(self):
         return self.value
+    
 
+class HashKey(object):
+    '''
+    Used to store a value with a given hash.
+    '''
+    
+    __slots__ = ['hash', 'eq']
+    
+    def __init__(self, hash, eq=None):
+        self.hash = hash
+        self.eq = eq
+        
+    def __hash__(self):
+        return self.hash
+    
+    def __eq__(self, other):
+        try:
+            return other.hash == self.hash and other.eq == self.eq
+        except AttributeError:
+            return False
+        
+        

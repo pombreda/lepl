@@ -676,13 +676,15 @@ class _Columns(OperatorMatcher):
                 # extract the location in the line
                 (_, left_aligned_line_stream) = s_next(line_stream, count=left)
                 (word, _) = s_next(left_aligned_line_stream, count=right-left)
+                support._debug(format('Columns {0}-{1} {2!r}', left, right, word))
                 word_stream = s_stream(left_aligned_line_stream, word)
                 # do the match
                 (result, _) = yield matcher._match(word_stream)
                 results.extend(result)
-            yield (list(results), next_stream)
+            support._debug(repr(results))
+            yield (results, next_stream)
             
-        return LineMatcher()[:]
+        return LineMatcher()
 
 
 # Python 2.6 doesn't support named arg after *args

@@ -56,10 +56,10 @@ existing code where possible (in the use of the sub-helper).  It should even
 be possible to have iterables of iterables...
 '''
 
-from lepl.support.lib import HashedValue, add_defaults
+from lepl.support.lib import add_defaults
 from lepl.stream.simple import OFFSET, LINENO, BaseHelper
 from lepl.stream.core import s_delta, s_kargs, s_format, s_debug, s_next, \
-    s_line, s_join, s_empty, s_eq
+    s_line, s_join, s_empty, s_eq, HashKey
 
 
 class Cons(object):
@@ -105,11 +105,10 @@ def base_iterable_factory(state_to_line_stream, type_):
             self._kargs = dict(self.global_kargs)
             add_defaults(self._kargs, {'type': type_})
             
-        def hash(self, state, other):
+        def key(self, state, other):
             line_stream = state_to_line_stream(state)
             offset = s_delta(line_stream)[OFFSET]
-            return HashedValue(offset ^ hash(other), (state, self), 
-                               (offset, other))
+            return HashKey(self._id ^ offset ^ hash(other), (self._id, other))
         
         def kargs(self, state, prefix='', kargs=None):
             line_stream = state_to_line_stream(state)

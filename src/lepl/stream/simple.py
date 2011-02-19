@@ -36,8 +36,8 @@ offset are stored in the helper.
 
 from itertools import chain
 
-from lepl.support.lib import HashedValue, format, add_defaults, str
-from lepl.stream.core import StreamHelper, OFFSET, LINENO, CHAR
+from lepl.support.lib import format, add_defaults, str
+from lepl.stream.core import StreamHelper, OFFSET, LINENO, CHAR, HashKey
 
 
 class BaseHelper(StreamHelper):
@@ -61,11 +61,12 @@ class SequenceHelper(BaseHelper):
         self._kargs = dict(self.global_kargs)
         add_defaults(self._kargs, {'type': type_})
 
-    def hash(self, state, other):
+    def key(self, state, other):
         offset = state + self._delta[OFFSET]
-        # hash on offset, but use sequence for full equality
-        return HashedValue(offset ^ hash(other), (state, self), 
-                           (self._sequence, other))
+        #key = HashKey(self._id ^ offset ^ hash(other), (self._id , other))
+        key = HashKey(offset ^ hash(other), (self._id , other))
+        #print(self._id, offset, hash(other), self.debug(state), hash(key))
+        return key
     
     def _fmt(self, sequence, offset, maxlen=60, left='', right='', index=True):
         '''Format a possibly long subsection of data.'''
