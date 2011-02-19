@@ -29,6 +29,7 @@
 
 
 from lepl.stream.iter import base_iterable_factory
+from lepl.stream.core import OFFSET, s_delta, s_line
 
 
 class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
@@ -46,12 +47,27 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
     there is no need to store the line_stream explicitly in the state.
     '''
     
+    def __init__(self, id=None, factory=None, max=None, global_kargs=None, 
+                 delta=None, len=None):
+        super(TokenHelper, self).__init__(id=id, factory=factory, 
+                                          max=max, global_kargs=global_kargs, 
+                                          delta=delta)
+        self._len = len
+
     def next(self, cons, count=1):
         assert count == 1
         return (cons.head, (cons.tail, self))
     
-    def line(self, state):
-        raise TypeError
+    def line(self, cons):
+        (_, line_stream) = cons.head
+        return s_line(line_stream)
+    
+    def len(self, cons):
+        if self._len is None:
+            raise TypeError
+        else:
+            (_, line_stream) = cons.head
+            return self._len - s_delta(line_stream)[OFFSET]
     
     def stream(self, state, value):
         raise TypeError

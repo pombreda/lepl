@@ -94,8 +94,10 @@ def base_iterable_factory(state_to_line_stream, type_):
     
     class BaseIterableHelper(BaseHelper):
     
-        def __init__(self, factory=None, max=None, global_kargs=None, delta=None):
-            super(BaseIterableHelper, self).__init__(factory=factory, max=max, 
+        def __init__(self, id=None, factory=None, max=None, global_kargs=None, 
+                     delta=None):
+            super(BaseIterableHelper, self).__init__(id=id, factory=factory, 
+                                                     max=max,
                                                      global_kargs=global_kargs, 
                                                      delta=delta)
             self._max_line_stream = None
@@ -108,7 +110,7 @@ def base_iterable_factory(state_to_line_stream, type_):
         def key(self, state, other):
             line_stream = state_to_line_stream(state)
             offset = s_delta(line_stream)[OFFSET]
-            return HashKey(self._id ^ offset ^ hash(other), (self._id, other))
+            return HashKey(self.id ^ offset ^ hash(other), (self.id, other))
         
         def kargs(self, state, prefix='', kargs=None):
             line_stream = state_to_line_stream(state)
@@ -150,8 +152,8 @@ def base_iterable_factory(state_to_line_stream, type_):
     return BaseIterableHelper
 
 
-class IterableHelper(base_iterable_factory(lambda state: state[1], 
-                                           '<iterable>')):
+class IterableHelper(
+        base_iterable_factory(lambda state: state[1], '<iterable>')):
     
     def next(self, state, count=1):
         (cons, line_stream) = state
@@ -168,7 +170,7 @@ class IterableHelper(base_iterable_factory(lambda state: state[1],
             def next_line(empty_line_stream):
                 delta = s_delta(empty_line_stream)
                 delta = (delta[OFFSET], delta[LINENO]+1, 1)
-                return self.factory(cons.head, factory=self.factory,
+                return self.factory(cons.head, id=self.id, factory=self.factory,
                                     max=self.max, global_kargs=self.global_kargs, 
                                     delta=delta)
             if s_empty(line_stream):
@@ -191,10 +193,13 @@ class IterableHelper(base_iterable_factory(lambda state: state[1],
         self._checkpoint(next_line_stream)
         return (value, ((cons, next_line_stream), self))
     
+    def len(self, state):
+        raise TypeError
+        
     def stream(self, state, value):
         (cons, line_stream) = state
         next_line_stream = \
-            self.factory(value, factory=self.factory, max=self.max, 
+            self.factory(value, id=self.id, factory=self.factory, max=self.max, 
                          global_kargs=self.global_kargs, 
                          delta=s_delta(line_stream))
         return ((cons, next_line_stream), self)

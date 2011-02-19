@@ -42,16 +42,17 @@ from lepl.stream.core import StreamHelper, OFFSET, LINENO, CHAR, HashKey
 
 class BaseHelper(StreamHelper):
     
-    def __init__(self, factory=None, max=None, global_kargs=None, delta=None):
-        super(BaseHelper, self).__init__(factory, max, global_kargs)
+    def __init__(self, id=None, factory=None, max=None, global_kargs=None, delta=None):
+        super(BaseHelper, self).__init__(id=id, factory=factory, max=max, 
+                                         global_kargs=global_kargs)
         self._delta = delta if delta else (0,1,1)
 
 
 class SequenceHelper(BaseHelper):
     
-    def __init__(self, sequence, factory=None, max=None, 
+    def __init__(self, sequence, id=None, factory=None, max=None, 
                  global_kargs=None, delta=None):
-        super(SequenceHelper, self).__init__(factory=factory, max=max,
+        super(SequenceHelper, self).__init__(id=id, factory=factory, max=max,
                                 global_kargs=global_kargs, delta=delta)
         self._sequence = sequence
         type_ = self._typename(sequence)
@@ -63,9 +64,8 @@ class SequenceHelper(BaseHelper):
 
     def key(self, state, other):
         offset = state + self._delta[OFFSET]
-        #key = HashKey(self._id ^ offset ^ hash(other), (self._id , other))
-        key = HashKey(offset ^ hash(other), (self._id , other))
-        #print(self._id, offset, hash(other), self.debug(state), hash(key))
+        key = HashKey(self.id ^ offset ^ hash(other), (self.id, hash(other)))
+        #print(self.id, offset, hash(other), self.debug(state), hash(key))
         return key
     
     def _fmt(self, sequence, offset, maxlen=60, left='', right='', index=True):
@@ -184,10 +184,13 @@ class SequenceHelper(BaseHelper):
             return (self._sequence[state:new_state], (new_state, self))
         else:
             raise StopIteration
+        
+    def len(self, state):
+        return len(self._sequence) - state
     
     def stream(self, state, value):
-        return self.factory(value, factory=self.factory, max=self.max, 
-                            global_kargs=self.global_kargs,
+        return self.factory(value, id=self.id, factory=self.factory, 
+                            max=self.max, global_kargs=self.global_kargs,
                             delta=self.delta(state))
         
     def deepest(self):
@@ -255,8 +258,8 @@ class StringHelper(SequenceHelper):
             raise StopIteration
 
     def stream(self, state, value):
-        return self.factory(value,  factory=self.factory, max=self.max,
-                            global_kargs=self.global_kargs, 
+        return self.factory(value,  id=self.id, factory=self.factory, 
+                            max=self.max, global_kargs=self.global_kargs, 
                             delta=self.delta(state))
         
     

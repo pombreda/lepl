@@ -45,7 +45,7 @@ from itertools import count
 from lepl.matchers.core import OperatorMatcher
 from lepl.matchers.matcher import is_child
 from lepl.core.parser import tagged, GeneratorWrapper
-from lepl.stream.core import s_key, s_format
+from lepl.stream.core import s_key, s_format, s_len
 from lepl.support.state import State
 from lepl.support.lib import LogMixin, empty, format
 
@@ -265,7 +265,7 @@ class PerStreamCache(LogMixin):
         if count_ == 1:
             return False
         else:
-            return count_ > len(stream) 
+            return count_ > s_len(stream) 
         
     @tagged
     def _match(self, stream):

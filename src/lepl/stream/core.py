@@ -62,12 +62,12 @@ class StreamHelper(_StreamHelper):
     The interface that all helpers should implement.
     '''
     
-    def __init__(self, factory=None, max=None, global_kargs=None):
+    def __init__(self, id=None, factory=None, max=None, global_kargs=None):
         from lepl.stream.factory import DEFAULT_STREAM_FACTORY
+        self.id = id if id is not None else hash(self)
         self.factory = factory if factory else DEFAULT_STREAM_FACTORY
         self.max = max if max else MutableMax()
         self.global_kargs = global_kargs if global_kargs else {}
-        self._id = hash(self) # use to identify this stream in hash key
     
     def __repr__(self):
         '''Simplify for comparison in tests'''
@@ -168,6 +168,13 @@ class StreamHelper(_StreamHelper):
         '''
         raise NotImplementedError
     
+    def len(self, state):
+        '''
+        Return the remaining length of the stream.  Streams of unknown
+        length (iterables) should raise a TypeError.
+        '''
+        raise NotImplementedError
+    
     def stream(self, state, value):
         '''
         Return a new stream that encapsulates the value given, starting at
@@ -229,9 +236,11 @@ s_join = lambda stream, *values: stream[1].join(stream[0], *values)
 s_empty = lambda stream: stream[1].empty(stream[0])
 '''Invoke helper.empty(state)'''
 
-# TODO - do we ever use the stream?  if not, don't return it...
 s_line = lambda stream: stream[1].line(stream[0])
 '''Invoke helper.line(state)'''
+
+s_len = lambda stream: stream[1].len(stream[0])
+'''Invoke helper.len(state)'''
 
 s_stream = lambda stream, value: stream[1].stream(stream[0], value)
 '''Invoke helper.stream(state, value)'''
@@ -244,6 +253,9 @@ s_delta = lambda stream: stream[1].delta(stream[0])
 
 s_eq = lambda stream1, stream2: stream1[1].eq(stream1[0], stream2[0])
 '''Compare two streams (which should have identical helpers)'''
+
+s_id = lambda stream: stream[1].id
+'''Access the ID attribute.'''
 
 s_factory = lambda stream: stream[1].factory
 '''Access the factory attribute.'''

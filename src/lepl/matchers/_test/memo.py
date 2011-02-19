@@ -1,3 +1,4 @@
+from lepl.matchers.variables import TraceVariables
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -31,7 +32,7 @@
 Tests for the lepl.matchers.memo module.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from time import time
 from unittest import TestCase
 
@@ -192,6 +193,7 @@ class RecursionTest(TestCase):
         assert result == ['a', 'b', 'a'], result
         
     def test_right_string(self):
+        #basicConfig(level=DEBUG)
         matcher = self.right()
         matcher.config.no_full_first_match().auto_memoize(full=True).trace(True)
         self.do_test(matcher.get_parse_string())
@@ -260,9 +262,11 @@ class RecursionTest(TestCase):
         self.do_test(matcher.get_parse())
         
     def test_left_string(self):
+        #basicConfig(level=DEBUG)
         matcher = self.left()
         matcher.config.no_full_first_match().auto_memoize(full=True).trace(True)
-        self.do_test(matcher.get_parse_string())
+        #self.do_test(lambda stream: list(matcher.parse_string_all(stream)))
+        self.do_test(matcher.get_parse())
         
     def test_left_null(self):
         matcher = self.left()

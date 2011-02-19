@@ -34,6 +34,7 @@ Tools for logging and tracing.
 # we abuse conventions to give a consistent interface 
 # pylint: disable-msg=C0103
 
+from lepl.stream.core import s_delta, s_line
 from lepl.core.monitor import ActiveMonitor, ValueMonitor, StackMonitor
 from lepl.support.lib import CircularFifo, LogMixin, sample, format, str
 
@@ -163,19 +164,10 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         Provide a standard format for location.
         '''
-        try:
-            (lineno, offset, depth, _text, _source) = \
-                    self.generator.stream.location
-            if not isinstance(lineno, int):
-                locn = format('{0:<3d}', offset)
-            elif lineno < 0:
-                locn = '  eof  '
-            else:
-                locn = format('{0:3d}.{1:<3d}', lineno, offset)
-        except AttributeError: # no .location above
-            depth = -len(self.generator.stream)
-            locn = '<unknown>'
-        stream = sample('', str(self.generator.stream), 9)
+        (offset, lineno, char) = s_delta(self.generator.stream)
+        locn = format('{0}/{1}.{2}', offset, lineno, char)
+        depth = -len(self.generator.stream)
+        stream = sample('', s_line(self.generator.stream)[0], 9)
         return (stream, depth, locn)
         
     def yield_(self, value):
@@ -287,7 +279,7 @@ class _RecordDeepest(_TraceResults):
         try:
             depth = stream.depth()
         except AttributeError: # no .depth()
-            depth = -len(stream)
+            depth = -s_len(stream)
         if depth >= self._deepest and is_result:
             self._deepest = depth
             self._countdown_result = self.n_results_after

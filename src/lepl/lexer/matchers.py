@@ -37,7 +37,7 @@ expressions.
 from abc import ABCMeta
 
 from lepl.stream.core import s_empty, s_line, s_factory, s_stream, s_debug, \
-    s_next, s_format
+    s_next, s_format, s_len
 from lepl.support.context import Namespace, NamespaceMixin
 from lepl.matchers.derived import Add, Apply, Drop, KApply, Map
 from lepl.matchers.error import raise_error
