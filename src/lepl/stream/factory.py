@@ -33,6 +33,8 @@ from collections import Iterable
 from lepl.stream.simple import SequenceHelper, StringHelper, ListHelper
 from lepl.stream.iter import IterableHelper, Cons
 from lepl.support.lib import basestring, format, add_defaults, file
+from lepl.lexer.stream import TokenHelper
+from lepl.stream.core import s_global_kargs, s_max, s_delta
 
 
 class StreamFactory(object):
@@ -86,6 +88,16 @@ class StreamFactory(object):
         except AttributeError:
             pass
         return self.from_iterable(file_, **kargs)
+    
+    def to_token(self, iterable, stream):
+        '''
+        Create a stream for tokens.  The `iterable` is a source of
+        (token_ids, sub_stream) tuples, where `sub_stream` will be
+        matched within the token.
+        '''
+        return (Cons(iterable), TokenHelper(factory=self, max=s_max(stream),
+                                            global_kargs=s_global_kargs(stream),
+                                            delta=s_delta(stream)))
             
     def __call__(self, sequence, **kargs):
         '''

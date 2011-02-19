@@ -1,3 +1,4 @@
+from lepl.stream.core import s_next
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -72,7 +73,7 @@ class RepeatTest(TestCase):
     def assert_simple(self, stream, start, stop, algorithm, target):
         matcher = Repeat(RangeMatch(), start, stop, algorithm=algorithm)
         matcher.config.no_full_first_match()
-        result = list(matcher.match_items(stream, sub_list=False))
+        result = list(matcher.match_list(stream))
         #print(result)
         result = [''.join(map(str, l)) for (l, _s) in result]
         assert target == result, result
@@ -101,7 +102,7 @@ class RepeatTest(TestCase):
     def assert_mixin(self, match, stream, target):
         match.config.no_full_first_match()
         result = [''.join(map(str, l)) 
-                  for (l, _s) in match.match_items(stream, sub_list=False)]
+                  for (l, _s) in match.match_list(stream)]
         assert target == result, result
        
     def test_separator(self):
@@ -149,10 +150,9 @@ class RangeMatch(OperatorMatcher):
     
     @tagged
     def _match(self, stream):
-        (head, offset, helper) = stream
-        if offset < len(head):
-            for i in range(head[offset]):
-                yield ([i], (head, offset+1, helper))
+        (value, next_stream) = s_next(stream)
+        for i in range(value):
+            yield ([i], next_stream)
 
 
 class SpaceTest(BaseTest):

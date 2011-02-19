@@ -1,3 +1,4 @@
+from lepl.stream.core import s_empty, s_line, s_factory
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -40,7 +41,6 @@ from lepl.support.context import Namespace, NamespaceMixin
 from lepl.matchers.derived import Add, Apply, Drop, KApply, Map
 from lepl.matchers.error import raise_error
 from lepl.lexer.support import LexerError, RuntimeLexerError
-from lepl.lexer.stream import TokenLevelWrapper, SourceLevelWrapper
 #from lepl.stream.maxdepth import Facade, TokenFacade
 from lepl.matchers.core import OperatorMatcher, Any, Literal, Lookahead, Regexp
 from lepl.matchers.combine import And, Or, First
@@ -365,18 +365,20 @@ class Lexer(NamespaceMixin, BaseMatcher):
         '''
         Implement matching - pass token stream to tokens.
         '''
+        def tokens():
+            factory = s_factory(stream).to_token
+            while not s_empty(stream):
+                try:
+                    (terminals, match, next_stream) = self.t_regexp.match(stream)
+                    yield factory(terminals, s_stream(match, stream))
+                except:
+                    pass
 #        s_next_line
 #        s_join_lines
 #        iterator support
 #        someway to connect helpers
-        (head, offset, helper) = stream
-        if isinstance(head, Facade):
-            facade = head
-            head = head.head
-        else:
-            facade = None
         tokens = []
-        while offset < len(head):
+        while True:
             try:
                 stream = (head, offset, helper)
                 (terminals, match, (_, new_offset, _)) = self.t_regexp.match(stream)

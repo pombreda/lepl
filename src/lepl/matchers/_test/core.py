@@ -59,32 +59,29 @@ class AndTest(BaseTest):
 
     def test_simple(self):
         #basicConfig(level=DEBUG)
-        self.assert_join([1], Any(), [[1]])
-        self.assert_join([1,2], And(Any(), Any()), [[1, 2]])
-        self.assert_join([1,2,3], And(Any(), Any()), [[1, 2]])
+        self.assert_join([1], Any(), [[[1]]])
+        self.assert_join([1,2], And(Any(), Any()), [[[1],[2]]])
+        self.assert_join([1,2,3], And(Any(), Any()), [[[1],[2]]])
         self.assert_join([1], And(Any(), Any()), [])
         
     def test_and(self):
         #basicConfig(level=DEBUG)
-        self.assert_join([1,2], Any() & Any(), [[1, 2]])
-        self.assert_join([1,2,3], Any() & Any(), [[1, 2]])
-        self.assert_join([1,2,3], Any() & Any() & Any(), [[1, 2, 3]])
+        self.assert_join([1,2], Any() & Any(), [[[1],[2]]])
+        self.assert_join([1,2,3], Any() & Any(), [[[1],[2]]])
+        self.assert_join([1,2,3], Any() & Any() & Any(), [[[1],[2],[3]]])
         self.assert_join([1], Any() & Any(), [])
         
     def assert_join(self, stream, match, target):
         match.config.no_full_first_match()
-        result = list(match.parse_items_all(stream, sub_list=False))
+        result = list(match.parse_list_all(stream))
         assert target == result, result
 
     def test_add(self):
         #basicConfig(level=DEBUG)
-        self.assert_list(['1','2'], Any() + Any(), [['12']], 
-                         sub_list=False)
-        self.assert_list(['1','2','3'], Any() + Any(), [['12']], 
-                         sub_list=False)
-        self.assert_list(['1','2','3'], Any() + Any() + Any(), [['123']], 
-                         sub_list=False)
-        self.assert_list(['1'], Any() + Any(), [])
+        self.assert_list([1,2], Any() + Any(), [[[1,2]]])
+        self.assert_list([1,2,3], Any() + Any(), [[[1,2]]])
+        self.assert_list([1,2,3], Any() + Any() + Any(), [[[1,2,3]]])
+        self.assert_list([1], Any() + Any(), [])
     
     
 class CoercionTest(BaseTest):

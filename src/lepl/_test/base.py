@@ -36,7 +36,7 @@ from re import sub
 from unittest import TestCase
 
 from lepl.support.lib import str
-#from lepl.stream.maxdepth import FullFirstMatchException
+from lepl.stream.maxdepth import FullFirstMatchException
 
 
 class BaseTest(TestCase):
@@ -55,13 +55,14 @@ class BaseTest(TestCase):
         
     def assert_list(self, stream, match, target, **kargs):
         match.config.no_full_first_match()
-        matcher = match.get_parse_items_all()
+        matcher = match.get_parse_list_all()
         #print(matcher.matcher)
         result = list(matcher(stream, **kargs))
         assert target == result, result
         
     def assert_literal(self, stream, matcher):
         self.assert_direct(stream, matcher, [[stream]])
+        
         
 def assert_str(a, b):
     '''

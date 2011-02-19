@@ -62,6 +62,12 @@ class StreamHelper(_StreamHelper):
     The interface that all helpers should implement.
     '''
     
+    def __init__(self, factory=None, max=None, global_kargs=None):
+        from lepl.stream.factory import DEFAULT_STREAM_FACTORY
+        self.factory = factory if factory else DEFAULT_STREAM_FACTORY
+        self.max = max if max else MutableMax()
+        self.global_kargs = global_kargs if global_kargs else {}
+    
     def __repr__(self):
         '''Simplify for comparison in tests'''
         return '<helper>'
@@ -72,11 +78,10 @@ class StreamHelper(_StreamHelper):
     def __hash__(self):
         return super(StreamHelper, self).__hash__()
 
-    def hash(self, state):
+    def hash(self, state, other):
         '''
         Generate an object that can be hashed (implements __hash__ and __eq__),
-        and whose value attribute contains the stream (ie is the tuple 
-        (state, helper)).  See `HashedValue`.
+        and whose value attribute contains the stream.  See `HashedValue`.
         '''
         raise NotImplementedError
     
@@ -202,7 +207,7 @@ class StreamHelper(_StreamHelper):
 # The following are helper functions that allow the methods above to be
 # called on (state, helper) tuples
 
-s_hash = lambda stream: stream[1].hash(stream[0])
+s_hash = lambda stream, other: stream[1].hash(stream[0], other)
 '''Invoke helper.hash(state)'''
 
 s_kargs = lambda stream, prefix='', kargs=None: stream[1].kargs(stream[0], prefix=prefix, kargs=kargs)
@@ -238,3 +243,25 @@ s_delta = lambda stream: stream[1].delta(stream[0])
 
 s_eq = lambda stream1, stream2: stream1[1].eq(stream1[0], stream2[0])
 '''Compare two streams (which should have identical helpers)'''
+
+s_factory = lambda stream: stream[1].factory
+'''Access the factory attribute.'''
+
+s_max = lambda stream: stream[1].max
+'''Access the max attribute.'''
+
+s_global_kargs = lambda stream: stream[1].global_kargs
+'''Access the global_kargs attribute.'''
+
+
+class MutableMax(object):
+    
+    def __init__(self):
+        self.value = 0
+        
+    def __call__(self, value):
+        self.value = max(self.value, value)
+        
+    def __int__(self):
+        return self.value
+

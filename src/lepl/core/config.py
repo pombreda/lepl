@@ -742,48 +742,46 @@ class ParserMixin(object):
     
     def get_match_file(self):
         '''
-        Get a function that will parse the contents of a file, 
-        returning a sequence of (results, stream) pairs and using a 
-        stream internally.
+        Get a function that will parse the contents of a file, returning a 
+        sequence of (results, stream) pairs.  The data will be read as 
+        required (using an iterator), so the file must remain open during 
+        parsing.  To avoid this, read all data into a string and parse that.
         '''
         return self._raw_parser('file')
         
-    def get_match_items(self):
+    def get_match_iterable(self):
         '''
-        Get a function that will parse the contents of a sequence of items 
-        (an item is something that would be matched by `Any`), returning a 
-        sequence of (results, stream) pairs and using a stream internally.
+        Get a function that will parse the contents of an iterable
+        (eg. a generator), returning a sequence of (results, stream) pairs.
+        The data will be read as required.
         '''
-        return self._raw_parser('items')
+        return self._raw_parser('iterable')
         
-    def get_match_path(self):
+    def get_match_list(self):
         '''
-        Get a function that will parse the contents of a file, 
-        returning a sequence of (results, stream) pairs and using a 
-        stream internally.
+        Get a function that will parse the contents of a list returning a 
+        sequence of (results, stream) pairs.
         '''
-        return self._raw_parser('path')
+        return self._raw_parser('list')
         
     def get_match_string(self,):
         '''
-        Get a function that will parse the contents of a string, 
-        returning a sequence of (results, stream) pairs and using a 
-        stream internally.
+        Get a function that will parse the contents of a string returning a 
+        sequence of (results, stream) pairs.
         '''
         return self._raw_parser('string')
     
-    def get_match_null(self):
+    def get_match_sequence(self):
         '''
-        Get a function that will parse the contents of a string or list, 
-        returning a sequence of (results, stream) pairs 
-        (this does not use streams).
+        Get a function that will parse the contents of a generic sequence
+        (with [] and len()) returning a sequence of (results, stream) pairs.
         '''
-        return self._raw_parser('null')
+        return self._raw_parser('sequence')
     
     def get_match(self):
         '''
         Get a function that will parse input, returning a sequence of 
-        (results, stream) pairs and using a stream internally.  
+        (results, stream) pairs.  
         The type of stream is inferred from the input to the parser.
         '''
         return self._raw_parser()
@@ -792,88 +790,90 @@ class ParserMixin(object):
     def match_file(self, file_, **kargs):
         '''
         Parse the contents of a file, returning a sequence of 
-        (results, stream) pairs and using a stream internally.
+        (results, stream) pairs.  The data will be read as required 
+        (using an iterator), so the file must remain open during parsing.  
+        To avoid this, read all data into a string and parse that.
         '''
         return self.get_match_file()(file_, **kargs)
         
-    def match_items(self, list_, **kargs):
+    def match_iterable(self, iterable, **kargs):
         '''
-        Parse the contents of a sequence of items (an item is something
-        that would be matched by `Any`), returning a sequence of 
-        (results, stream) pairs and using a stream internally.
+        Parse the contents of an iterable (eg. a generator), returning 
+        a sequence of (results, stream) pairs.  The data will be read as 
+        required.
         '''
-        return self.get_match_items()(list_, **kargs)
+        return self.get_match_iterable()(iterable, **kargs)
         
-    def match_path(self, path, **kargs):
+    def match_list(self, list_, **kargs):
         '''
-        Parse the contents of a file, returning a sequence of 
-        (results, stream) pairs and using a stream internally.
+        Parse the contents of a list returning a sequence of (results, stream) 
+        pairs.
         '''
-        return self.get_match_path()(path, **kargs)
+        return self.get_match_list()(list_, **kargs)
         
     def match_string(self, string, **kargs):
         '''
         Parse the contents of a string, returning a sequence of 
-        (results, stream) pairs and using a stream internally.
+        (results, stream) pairs.
         '''
         return self.get_match_string()(string, **kargs)
     
-    def match_null(self, stream, **kargs):
+    def match_sequence(self, sequence, **kargs):
         '''
-        Parse the contents of a string or list, returning a sequence of 
-        (results, stream) pairs (this does not use streams).
+        Parse the contents of a generic sequence (with [] and len()) 
+        returning a sequence of (results, stream) pairs.
         '''
-        return self.get_match_null()(stream, **kargs)
+        return self.get_match_sequence()(sequence, **kargs)
     
-    def match(self, stream, **kargs):
+    def match(self, input, **kargs):
         '''
-        Parse the input, returning a sequence of 
-        (results, stream) pairs and using a stream internally.  
-        The type of stream is inferred from the input to the parser.
+        Parse input, returning a sequence of (results, stream) pairs.  
+        The type of stream is inferred from the input.
         '''
-        return self.get_match()(stream, **kargs)
+        return self.get_match()(input, **kargs)
     
     
     def get_parse_file(self):
         '''
-        Get a function that will parse the contents of a file, 
-        returning a single match and using a stream internally.
+        Get a function that will parse the contents of a file, returning a 
+        single match.  The data will be read as required (using an iterator), 
+        so the file must remain open during parsing.  To avoid this, read 
+        all data into a string and parse that.
         '''
         return make_single(self.get_match_file())
         
-    def get_parse_items(self):
+    def get_parse_iterable(self):
         '''
-        Get a function that will parse the contents of a sequence of items 
-        (an item is something that would be matched by `Any`), 
-        returning a single match and using a stream internally.
+        Get a function that will parse the contents of an iterable
+        (eg. a generator), returning a single match.  The data will be read 
+        as required.
         '''
-        return make_single(self.get_match_items())
+        return make_single(self.get_match_iterable())
         
-    def get_parse_path(self):
+    def get_parse_list(self):
         '''
-        Get a function that will parse the contents of a file, 
-        returning a single match and using a stream internally.
+        Get a function that will parse the contents of a list returning a 
+        single match.
         '''
-        return make_single(self.get_match_path())
+        return make_single(self.get_match_list())
         
     def get_parse_string(self):
         '''
-        Get a function that will parse the contents of a string, 
-        returning a single match and using a stream internally.
+        Get a function that will parse the contents of a string returning a 
+        single match.
         '''
         return make_single(self.get_match_string())
     
-    def get_parse_null(self):
+    def get_parse_sequence(self):
         '''
-        Get a function that will parse the contents of a string or list, 
-        returning a single match (this does not use streams).
+        Get a function that will parse the contents of a generic sequence
+        (with [] and len()) returning a single match.
         '''
-        return make_single(self.get_match_null())
+        return make_single(self.get_match_sequence())
     
     def get_parse(self):
         '''
-        Get a function that will parse the input, 
-        returning a single match and using a stream internally.
+        Get a function that will parse input, returning a single match.
         The type of stream is inferred from the input to the parser.
         '''
         return make_single(self.get_match())
@@ -881,133 +881,133 @@ class ParserMixin(object):
     
     def parse_file(self, file_, **kargs):
         '''
-        Parse the contents of a file, returning a single match and using a
-        stream internally.
+        Parse the contents of a file, returning a single match.  The data 
+        will be read as required (using an iterator), so the file must 
+        remain open during parsing.  To avoid this, read all data into a
+        string and parse that.
         '''
         return self.get_parse_file()(file_, **kargs)
         
-    def parse_items(self, list_, **kargs):
+    def parse_iterable(self, iterable, **kargs):
         '''
-        Parse the contents of a sequence of items (an item is something
-        that would be matched by `Any`), returning a single match and using a
-        stream internally.
+        Parse the contents of an iterable (eg. a generator), returning 
+        a single match.  The data will be read as required.
         '''
-        return self.get_parse_items()(list_, **kargs)
+        return self.get_parse_iterable()(iterable, **kargs)
         
-    def parse_path(self, path, **kargs):
+    def parse_list(self, list_, **kargs):
         '''
-        Parse the contents of a file, returning a single match and using a
-        stream internally.
+        Parse the contents of a list returning a single match.
         '''
-        return self.get_parse_path()(path, **kargs)
-        
+        return self.get_parse_list()(list_, **kargs)
+    
     def parse_string(self, string, **kargs):
         '''
-        Parse the contents of a string, returning a single match and using a
-        stream internally.
+        Parse the contents of a string, returning a single match.
         '''
         return self.get_parse_string()(string, **kargs)
     
-    def parse_null(self, stream, **kargs):
+    def parse_sequence(self, sequence, **kargs):
         '''
-        Parse the contents of a string or list, returning a single match (this
-        does not use streams).
+        Pparse the contents of a generic sequence (with [] and len()) 
+        returning a single match.
         '''
-        return self.get_parse_null()(stream, **kargs)
+        return self.get_parse_sequence()(sequence, **kargs)
     
-    def parse(self, stream, **kargs):
+    def parse(self, input, **kargs):
         '''
-        Parse the input, returning a single match and using a stream internally.
-        The type of stream is inferred from the input to the parser.
+        Parse the input, returning a single match.  The type of stream is 
+        inferred from the input.
         '''
-        return self.get_parse()(stream, **kargs)
+        return self.get_parse()(input, **kargs)
     
     
     def get_parse_file_all(self):
         '''
-        Get a function that will parse the contents of a file, 
-        returning a sequence of matches and using a stream internally.
+        Get a function that will parse the contents of a file, returning a 
+        sequence of matches.  The data will be read as required (using an 
+        iterator), so the file must remain open during parsing.  To avoid 
+        this, read all data into a string and parse that.
         '''
         return make_multiple(self.get_match_file())
         
-    def get_parse_items_all(self):
+    def get_parse_iterable_all(self):
         '''
-        Get a function that will parse a sequence of items 
-        (an item is something that would be matched by `Any`), 
-        returning a sequence of matches and using a stream internally.
+        Get a function that will parse the contents of an iterable
+        (eg. a generator), returning a sequence of matches.  The data will 
+        be read as required.
         '''
-        return make_multiple(self.get_match_items())
+        return make_multiple(self.get_match_iterable())
         
-    def get_parse_path_all(self):
+    def get_parse_list_all(self):
         '''
-        Get a function that will parse a file, returning a 
-        sequence of matches and using a stream internally.
+        Get a function that will parse the contents of a list returning a 
+        sequence of matches.
         '''
-        return make_multiple(self.get_match_path())
+        return make_multiple(self.get_match_list())
         
     def get_parse_string_all(self):
         '''
-        Get a function that will parse a string, returning a 
-        sequence of matches and using a stream internally.
+        Get a function that will parse a string, returning a sequence of 
+        matches.
         '''
         return make_multiple(self.get_match_string())
 
-    def get_parse_null_all(self):
+    def get_parse_sequence_all(self):
         '''
-        Get a function that will parse a string or list, returning a 
-        sequence of matches (this does not use streams).
+        Get a function that will parse the contents of a generic sequence
+        (with [] and len()) returning a sequence of matches.
         '''
-        return make_multiple(self.get_match_null())
+        return make_multiple(self.get_match_sequence())
 
     def get_parse_all(self):
         '''
-        Get a function that will parse the input, returning a 
-        sequence of matches and using a stream internally.
-        The type of stream is inferred from the input to the parser.
+        Get a function that will parse input, returning a sequence of 
+        matches.  The type of stream is inferred from the input to the 
+        parser.
         '''
         return make_multiple(self.get_match())
 
     
     def parse_file_all(self, file_, **kargs):
         '''
-        Parse the contents of a file, returning a sequence of matches and using 
-        a stream internally.
+        Parse the contents of a file, returning a sequence of matches.  
+        The data will be read as required (using an iterator), so the file 
+        must remain open during parsing.  To avoid this, read all data 
+        into a string and parse that.
         '''
         return self.get_parse_file_all()(file_, **kargs)
         
-    def parse_items_all(self, list_, **kargs):
+    def parse_iterable_all(self, iterable, **kargs):
         '''
-        Parse a sequence of items (an item is something that would be matched
-        by `Any`), returning a sequence of matches and using a
-        stream internally.
+        Parse the contents of an iterable (eg. a generator), returning 
+        a sequence of matches.  The data will be read as required.
         '''
-        return self.get_parse_items_all()(list_, **kargs)
+        return self.get_parse_iterable_all()(iterable, **kargs)
         
-    def parse_path_all(self, path, **kargs):
+    def parse_list_all(self, list_, **kargs):
         '''
-        Parse a file, returning a sequence of matches and using a
-        stream internally.
+        Parse the contents of a list returning a sequence of matches.
         '''
-        return self.get_parse_path_all()(path, **kargs)
+        return self.get_parse_list_all()(list_, **kargs)
         
     def parse_string_all(self, string, **kargs):
         '''
-        Parse a string, returning a sequence of matches and using a
-        stream internally.
+        Parse the contents of a string, returning a sequence of matches.
         '''
         return self.get_parse_string_all()(string, **kargs)
 
-    def parse_null_all(self, stream, **kargs):
+    def parse_sequence_all(self, sequence, **kargs):
         '''
-        Parse a string or list, returning a sequence of matches 
-        (this does not use streams).
+        Parse the contents of a generic sequence (with [] and len()) 
+        returning a sequence of matches.
         '''
-        return self.get_parse_null_all()(stream, **kargs)
+        return self.get_parse_sequence_all()(sequence, **kargs)
 
-    def parse_all(self, stream, **kargs):
+    def parse_all(self, input, **kargs):
         '''
-        Parse the input, returning a sequence of matches and using a 
-        stream internally. 
-        The type of stream is inferred from the input to the parser.
+        Parse input, returning a sequence of 
+        matches.  The type of stream is inferred from the input to the 
+        parser.
         '''
-        return self.get_parse_all()(stream, **kargs)
+        return self.get_parse_all()(input, **kargs)

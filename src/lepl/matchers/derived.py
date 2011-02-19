@@ -34,13 +34,15 @@ Matchers that are defined in terms of other matchers (ie the majority).
 from string import whitespace, digits, ascii_letters, \
     ascii_uppercase, ascii_lowercase, printable, punctuation
 
+from lepl.stream.core import s_line, s_next, s_stream
+from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 from lepl.core.parser import tagged
 from lepl.matchers.combine import And, DepthFirst, BreadthFirst, \
     OrderByResultCount, Or, First, Limit
 from lepl.matchers.core import Lookahead, Any, Eof, Literal, Empty, Regexp
 from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
     NON_GREEDY
-from lepl.matchers.support import OperatorMatcher, coerce_
+from lepl.matchers.support import OperatorMatcher, coerce_, trampoline_matcher
 from lepl.matchers.transform import TransformationWrapper, Transform, \
     ApplyArgs, ApplyRaw
 from lepl.regexp.matchers import NfaRegexp
@@ -633,6 +635,60 @@ def SkipTo(matcher, include=True):
 
 # pylint: disable-msg=E1101
 class _Columns(OperatorMatcher):
+ 
+    def __init__(self, indices, *matchers):
+        super(_Columns, self).__init__()
+        self._arg(indices=indices)
+        self._args(matchers=matchers)
+        
+    @tagged
+    def _match(self, stream_in):
+        '''
+        Build the generator from standard components and then evaluate it.
+        '''
+        matcher = self.__build_matcher(stream_in)
+        generator = matcher._match(stream_in)
+        yield (yield generator)
+        
+    def __build_matcher(self, stream_in):
+        '''
+        Build a matcher that, when it is evaluated, will return the 
+        matcher results for the columns.  We base this on `And`, but need
+        to force the correct streams.
+        '''
+        def clean():
+            right = 0
+            for (col, matcher) in zip(self.indices, self.matchers):
+                try:
+                    (left, right) = col
+                except TypeError:
+                    left = right
+                    right = right + col
+                yield (left, right, matcher)
+        cleaned = list(clean())
+        
+        @trampoline_matcher
+        def LineMatcher(support, stream):
+            # extract a line
+            (line, next_stream) = s_line(stream)
+            line_stream = s_stream(stream, line)
+            results = []
+            for (left, right, matcher) in cleaned:
+                # extract the location in the line
+                (_, left_aligned_line_stream) = s_next(line_stream, count=left)
+                (word, _) = s_next(left_aligned_line_stream, count=right-left)
+                word_stream = s_stream(left_aligned_line_stream, word)
+                # do the match
+                (result, _) = yield matcher._match(word_stream)
+                results.extend(result)
+            yield (list(results), next_stream)
+            
+        return LineMatcher()[:]
+
+
+# Python 2.6 doesn't support named arg after *args
+#def Columns(*columns, stream_factory=None):
+def Columns(*columns, **kargs):
     '''
     Match data in a set of columns.
     
@@ -650,106 +706,14 @@ class _Columns(OperatorMatcher):
     separate stream.  If a matcher should consume the entire column then
     it should check for `Eos`.
     
-    Finally, the skip parameter allows control of how much input is consumed.  
-    If it is unset the remaining stream starts after the final column matched. 
+    Finally, the skip parameter controls how data to "the right" of the
+    columns is handled.  If unset, the data are discarded (this functions
+    as an additional, final, column that currently drops data).  Data to
+    "the left" are simply discarded.
     
-    Note that with backtracking this matcher can be quite expensive, because
-    each different combination of results is returned.
-    
-    TODO - this needs to use a similar approach to lexers.  Currently it will
-    break (and needs a test for) deepest match.
+    Note: This does not support backtracking over the columns.
     '''
- 
-    def __init__(self, skip, indices, *matchers):
-        super(_Columns, self).__init__()
-        self._arg(skip=skip)
-        self._arg(indices=indices)
-        self._args(matchers=matchers)
-        
-    @tagged
-    def _match(self, stream_in):
-        '''
-        Build the generator from standard components and then evaluate it.
-        '''
-        try:
-            matcher = self.__build_matcher(stream_in)
-            generator = matcher._match(stream_in)
-            try:
-                while True:
-                    yield (yield generator)
-            except StopIteration:
-                pass
-        # if there is insufficient data for the columns, skip
-        except IndexError:
-            pass
-        
-    def __build_matcher(self, stream_in):
-        '''
-        Build a matcher that, when it is evaluated, will return the 
-        matcher results for the columns.  We base this on `And`, but need
-        to force the correct streams.
-        '''
-        def force_out(stream, left, right):
-            '''
-            Generate a transformer function that replaces the stream_out.
-            '''
-            (head, offset, helper) = stream
-            left += offset
-            if right is None:
-                right = len(head)
-            else:
-                right += offset
-            def replace_out(_stream, matcher):
-                (results, _stream_out) = matcher()
-                return (results, (head[left:right], 0, helper))
-            return replace_out
-        # left and right are the indices for the column
-        # matchers is the list of matchers that will be joined by And
-        # previous is the "column before", which must be modified so that
-        # it returns the correct stream_out for the next matcher
-        right, matchers, previous = 0, [], Empty()
-        columns = list(zip(self.indices, self.matchers))
-        if self.skip: 
-            # this takes the entire stream_in and applies it to skip
-            columns.append(((0, None), Drop(self.skip)))
-        else:
-            # this takes everything to the right of the previous column
-            columns.append((None, Empty()))
-        for (col, matcher) in columns:
-            try:
-                (left, right) = col
-            except TypeError:
-                left = right
-                right = None if col is None else right + col
-            matchers.append(Transform(previous, 
-                                      force_out(stream_in, left, right)))
-            previous = matcher
-        matchers.append(previous)
-        return And(*matchers)
-
-
-# Python 2.6 doesn't support named arg after *args
-#def Columns(*columns, skip=None):
-_SKIP = 'skip'
-def Columns(*columns, **kargs):
-    '''
-    Provide a cleaner syntax to `_Columns` (we can't do this directly
-    because the clone function isn't smart enough to unpack complex
-    arguments). 
-    '''
-    if _SKIP in kargs:
-        skip = kargs[_SKIP]
-        del kargs[_SKIP]
-    else:
-        skip = SkipTo(First(Newline(), Eos()))
-    if kargs:
-        raise SyntaxError(format('Columns only accepts a single keyword: {0}',
-                                 _SKIP))
-    indices = []
-    matchers = []
-    for (col, matcher) in columns:
-        indices.append(col)
-        matchers.append(matcher)
-    return _Columns(skip, indices, *matchers)
-
-
+    # Note - this is the public-facing wrapper that pre-process the arguments  
+    # so that matchers are handled correctly.  The work is done by `_Columns`.
+    (indices, matchers) = zip(*columns)
+    return _Columns(indices, *matchers)

@@ -45,6 +45,7 @@ from itertools import count
 from lepl.matchers.core import OperatorMatcher
 from lepl.matchers.matcher import is_child
 from lepl.core.parser import tagged, GeneratorWrapper
+from lepl.stream.core import s_hash
 from lepl.support.state import State
 from lepl.support.lib import LogMixin, empty, format
 
@@ -100,8 +101,7 @@ class _RMemo(OperatorMatcher):
         '''
         # pylint: disable-msg=W0212
         # (_match is an internal interface)
-        (_, _, helper) = stream
-        key = helper.to_hash(stream, self.__state)
+        key = s_hash(stream, self.__state)
         if key not in self.__table:
             # we have no cache for this stream, so we need to generate the
             # entry.  we do not care about nested calls with the same stream

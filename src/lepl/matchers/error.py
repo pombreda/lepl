@@ -35,6 +35,7 @@ This is not that complete or well thought through; it needs to be revised.
 
 from lepl.support.node import Node
 from lepl.support.lib import format
+from lepl.stream.core import s_kargs
 
 
 def make_error(msg):
@@ -51,15 +52,14 @@ def make_error(msg):
         return Error(format(msg, **kargs), kargs)
     return fun
 
+from lepl.stream.core import s_kargs
 
 def syntax_error_kargs(stream_in, stream_out, results):
     '''
     Helper function for constructing format dictionary.
     '''
-    (head_in, offset_in, helper_in) = stream_in
-    kargs = helper_in.to_kargs(head_in, offset_in, prefix='in_')
-    (head_out, offset_out, helper_out) = stream_out
-    kargs = helper_out.to_kargs(head_out, offset_out, prefix='out_', kargs=kargs)
+    kargs = s_kargs(stream_in, prefix='in_')
+    kargs = s_kargs(stream_out, prefix='out_', kargs=kargs)
     kargs['results'] = results
     return kargs
 

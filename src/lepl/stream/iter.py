@@ -72,40 +72,73 @@ class Cons(object):
         return Cons(self._iterable) 
 
 
-class IterableHelper(BaseHelper):
+def base_iterable_factory(state_to_line_stream, type_):
+    '''
+    This and the token helper differ mainly in how they map from `state`
+    to `line_stream`.
+    '''
     
-    def __init__(self, factory, delta=None, max=None, global_kargs=None):
-        super(IterableHelper, self).__init__(factory, delta=delta, max=max, 
-                                             global_kargs=global_kargs)
-        self._max_line_stream = None
-        type_ = '<iterable>'
-        add_defaults(self._global_kargs, {
-            'global_type': type_,
-            'filename': type_})
-        self._kargs = dict(self._global_kargs)
-        add_defaults(self._kargs, {'type': type_})
+    class BaseIterableHelper(BaseHelper):
+    
+        def __init__(self, factory=None, max=None, global_kargs=None, delta=None):
+            super(BaseIterableHelper, self).__init__(factory=factory, max=max, 
+                                                     global_kargs=global_kargs, 
+                                                     delta=delta)
+            self._max_line_stream = None
+            add_defaults(self.global_kargs, {
+                'global_type': type_,
+                'filename': type_})
+            self._kargs = dict(self.global_kargs)
+            add_defaults(self._kargs, {'type': type_})
+            
+        def hash(self, state, other):
+            line_stream = state_to_line_stream(state)
+            offset = s_delta(line_stream)[OFFSET]
+            return HashedValue(offset ^ hash(other), (state, self), 
+                               (offset, other))
         
-    def hash(self, state):
-        (_, line_stream) = state
-        offset = s_delta(line_stream)[OFFSET]
-        return HashedValue(offset, (state, self), self._sequence)
+        def kargs(self, state, prefix='', kargs=None):
+            line_stream = state_to_line_stream(state)
+            return s_kargs(line_stream, prefix=prefix, kargs=kargs)
     
-    def kargs(self, state, prefix='', kargs=None):
-        (_, line_stream) = state
-        return s_kargs(line_stream, prefix=prefix, kargs=kargs)
+        def format(self, state, template, prefix='', kargs=None):
+            line_stream = state_to_line_stream(state)
+            return s_format(line_stream, template, prefix=prefix, kargs=kargs)
+        
+        def debug(self, state):
+            line_stream = state_to_line_stream(state)
+            return s_debug(line_stream)
+        
+        def _checkpoint(self, line_stream):
+            if self._max_line_stream is None or \
+                    s_delta(line_stream)[OFFSET] == int(self.max):
+                self._max_line_stream = line_stream
+       
+        def join(self, state, *values):
+            line_stream = state_to_line_stream(state)
+            return s_join(line_stream, *values)
+        
+        def empty(self, state):
+            try:
+                self.next(state)
+                return False
+            except StopIteration:
+                return True
+        
+        def delta(self, state):
+            line_stream = state_to_line_stream(state)
+            return s_delta(line_stream)
+        
+        def eq(self, state1, state2):
+            line_stream1 = state_to_line_stream(state1)
+            line_stream2 = state_to_line_stream(state2)
+            return s_eq(line_stream1, line_stream2)
+        
+    return BaseIterableHelper
 
-    def format(self, state, template, prefix='', kargs=None):
-        (_, line_stream) = state
-        return s_format(line_stream, template, prefix=prefix, kargs=kargs)
-    
-    def debug(self, state):
-        (_, line_stream) = state
-        return s_debug(line_stream)
-    
-    def _checkpoint(self, line_stream):
-        if self._max_line_stream is None or \
-                s_delta(line_stream)[OFFSET] == int(self._max):
-            self._max_line_stream = line_stream
+
+class IterableHelper(base_iterable_factory(lambda state: state[1], 
+                                           '<iterable>')):
     
     def next(self, state, count=1):
         (cons, line_stream) = state
@@ -122,9 +155,9 @@ class IterableHelper(BaseHelper):
             def next_line(empty_line_stream):
                 delta = s_delta(empty_line_stream)
                 delta = (delta[OFFSET], delta[LINENO]+1, 1)
-                return self._factory(cons.head, factory=self._factory,
-                                     delta=delta, max=self._max, 
-                                     global_kargs=self._global_kargs)
+                return self._factory(cons.head, factory=self.factory,
+                                     max=self.max, global_kargs=self.global_kargs, 
+                                     delta=delta)
             if s_empty(line_stream):
                 next_line_stream = next_line(line_stream)
                 next_stream = ((cons, next_line_stream), self)
@@ -139,17 +172,6 @@ class IterableHelper(BaseHelper):
                 value = line_stream.join(line, extra)
                 return (value, final_stream)
     
-    def join(self, state, *values):
-        (_, line_stream) = state
-        return s_join(line_stream, *values)
-    
-    def empty(self, state):
-        try:
-            self.next(state)
-            return False
-        except StopIteration:
-            return True
-    
     def line(self, state):
         (cons, line_stream) = state
         (value, next_line_stream) = s_line(line_stream)
@@ -158,20 +180,12 @@ class IterableHelper(BaseHelper):
     
     def stream(self, state, value):
         (cons, line_stream) = state
-        next_line_stream = self._factory(value, factory=self._factory,
-                                         delta=s_delta(line_stream), max=self._max, 
-                                         global_kargs=self._global_kargs)
+        next_line_stream = \
+            self._factory(value, factory=self.factory, max=self.max, 
+                          global_kargs=self.global_kargs, 
+                          delta=s_delta(line_stream))
         return ((cons, next_line_stream), self)
     
     def deepest(self):
         return ((None, self._max_line_stream), self)
     
-    def delta(self, state):
-        (_, line_stream) = state
-        return s_delta(line_stream)
-    
-    def eq(self, state1, state2):
-        (_, line_stream1) = state1
-        (_, line_stream2) = state2
-        return s_eq(line_stream1, line_stream2)
-

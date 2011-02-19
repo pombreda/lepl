@@ -72,32 +72,26 @@ class ParseTest(TestCase):
     def test_string(self):
         self.run_test('_string', 'abc', 
                       "['abc']", 
-                      "[(['ab'], ('abc', 2, <helper>))]", 
-                      "[(['abc'], ('abc', 3, <helper>))]", 
-                      "The match failed in <string> at 'abc' (line 1, character 1).")
+                      "[(['ab'], (2, <helper>))]", 
+                      "[(['abc'], (3, <helper>))]", 
+                      "The match failed in <string> at 'bc' (line 1, character 2).")
         self.run_test('', 'abc', 
                       "['abc']", 
-                      "[(['ab'], ('abc', 2, <helper>))]", 
-                      "[(['abc'], ('abc', 3, <helper>))]",
-                      "The match failed in <string> at 'abc' (line 1, character 1).")
-        self.run_test('_null', 'abc', 
+                      "[(['ab'], (2, <helper>))]", 
+                      "[(['abc'], (3, <helper>))]",
+                      "The match failed in <string> at 'bc' (line 1, character 2).")
+        self.run_test('_sequence', 'abc', 
                       "['abc']", 
-                      "[(['ab'], ('abc', 2, <helper>))]", 
-                      "[(['abc'], ('abc', 3, <helper>))]",
-                      "The match failed in <str> at 'abc' (offset 0, value 'a').")
+                      "[(['ab'], (2, <helper>))]", 
+                      "[(['abc'], (3, <helper>))]",
+                      "The match failed in <str> at 'bc' (offset 1, value 'b').")
 
     def test_string_list(self):
-        self.run_test('_items', ['a', 'b', 'c'], 
-                      "['abc']", 
-                      "[(['ab'], (['a', 'b', 'c'], 2, <helper>))]", 
-                      "[(['abc'], (['a', 'b', 'c'], 3, <helper>))]",
-                      "The match failed in <list<str>> at ['a', 'b', 'c'] (offset 0, value 'a').", 
-                      config=lambda m: m.config.no_compile_to_regexp(), sub_list=False)
-        self.run_test('_items', ['a', 'b', 'c'], 
+        self.run_test('_list', ['a', 'b', 'c'], 
                       "[['a', 'b', 'c']]", 
-                      "[([['a', 'b']], ([['a'], ['b'], ['c']], 2, <helper>))]", 
-                      "[([['a', 'b', 'c']], ([['a'], ['b'], ['c']], 3, <helper>))]",
-                      "The match failed in <list<list<str>>> at [['a'], ['b'], ['c']] (offset 0, value ['a']).", 
+                      "[([['a', 'b']], (2, <helper>))]", 
+                      "[([['a', 'b', 'c']], (3, <helper>))]",
+                      "The match failed in <list<str>> at ['b', 'c'] (offset 1, value 'b').", 
                       config=lambda m: m.config.no_compile_to_regexp())
         
     def test_int_list(self):
@@ -105,14 +99,14 @@ class ParseTest(TestCase):
         try:
             # this fails for python2 because it relies on 
             # comparison between types failing
-            self.run_test('_items', [1, 2, 3], [], [], [], """""")
+            self.run_test('_list', [1, 2, 3], [], [], [], """""")
         except RegexpError as e:
             assert 'no_compile_to_regexp' in str(e), str(e)
-        self.run_test('_items', [1, 2, 3], 
+        self.run_test('_list', [1, 2, 3], 
                       "[[1, 2, 3]]", 
-                      "[([[1, 2]], ([[1], [2], [3]], 2, <helper>))]", 
-                      "[([[1, 2, 3]], ([[1], [2], [3]], 3, <helper>))]",
-                      "The match failed in <list<list<int>>> at [[1], [2], [3]] (offset 0, value [1]).",
+                      "[([[1, 2]], (2, <helper>))]", 
+                      "[([[1, 2, 3]], (3, <helper>))]",
+                      "The match failed in <list<int>> at [2, 3] (offset 1, value 2).",
 config=lambda m: m.config.no_compile_to_regexp())
 
 
@@ -121,5 +115,5 @@ class BugTest(TestCase):
     def test_bug(self):
         matcher = Any('a')
         matcher.config.clear()
-        result = list(matcher.match_items(['b']))
+        result = list(matcher.match_list(['b']))
         assert result == [], result

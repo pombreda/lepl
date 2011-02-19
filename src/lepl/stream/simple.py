@@ -40,45 +40,32 @@ from lepl.support.lib import HashedValue, format, add_defaults, str
 from lepl.stream.core import StreamHelper, OFFSET, LINENO, CHAR
 
 
-class MutableMax(object):
-    
-    def __init__(self):
-        self.value = 0
-        
-    def __call__(self, value):
-        self.value = max(self.value, value)
-        
-    def __int__(self):
-        return self.value
-
-
 class BaseHelper(StreamHelper):
     
-    def __init__(self, factory, delta=None, max=None, global_kargs=None):
-        self._factory = factory
+    def __init__(self, factory=None, max=None, global_kargs=None, delta=None):
+        super(BaseHelper, self).__init__(factory, max, global_kargs)
         self._delta = delta if delta else (0,1,1)
-        self._max = max if max else MutableMax()
-        self._global_kargs = global_kargs if global_kargs else {}
 
 
 class SequenceHelper(BaseHelper):
     
-    def __init__(self, sequence, factory, 
-                 delta=None, max=None, global_kargs=None):
-        super(SequenceHelper, self).__init__(factory, delta=delta, max=max,
-                                             global_kargs=global_kargs)
+    def __init__(self, sequence, factory=None, max=None, 
+                 global_kargs=None, delta=None):
+        super(SequenceHelper, self).__init__(factory=factory, max=max,
+                                global_kargs=global_kargs, delta=delta)
         self._sequence = sequence
         type_ = self._typename(sequence)
-        add_defaults(self._global_kargs, {
+        add_defaults(self.global_kargs, {
             'global_type': type_,
             'filename': type_})
-        self._kargs = dict(self._global_kargs)
+        self._kargs = dict(self.global_kargs)
         add_defaults(self._kargs, {'type': type_})
 
-    def hash(self, state):
+    def hash(self, state, other):
         offset = state + self._delta[OFFSET]
         # hash on offset, but use sequence for full equality
-        return HashedValue(offset, (state, self), self._sequence)
+        return HashedValue(offset ^ hash(other), (state, self), 
+                           (self._sequence, other))
     
     def _fmt(self, sequence, offset, maxlen=60, left='', right='', index=True):
         '''Format a possibly long subsection of data.'''
@@ -173,7 +160,7 @@ class SequenceHelper(BaseHelper):
     def next(self, state, count=1):
         new_state = state+count
         if new_state <= len(self._sequence):
-            self._max(self._delta[OFFSET] + new_state)
+            self.max(self._delta[OFFSET] + new_state)
             return (self._sequence[state:new_state], (new_state, self))
         else:
             raise StopIteration
@@ -192,18 +179,18 @@ class SequenceHelper(BaseHelper):
         '''Returns the rest of the data.'''
         new_state = len(self._sequence)
         if state < new_state:
-            self._max(self._delta[OFFSET] + new_state)
+            self.max(self._delta[OFFSET] + new_state)
             return (self._sequence[state:new_state], (new_state, self))
         else:
             raise StopIteration
     
     def stream(self, state, value):
-        return self._factory(value, factory=self._factory,
-                             delta=self.delta(state),
-                             max=self._max, global_kargs=self._global_kargs)
+        return self.factory(value, factory=self.factory, max=self.max, 
+                            global_kargs=self.global_kargs,
+                            delta=self.delta(state))
         
     def deepest(self):
-        return (int(self._max) - self._delta[OFFSET], self)
+        return (int(self.max) - self._delta[OFFSET], self)
     
     def debug(self, state):
         try:
@@ -247,9 +234,11 @@ class StringHelper(SequenceHelper):
         else:
             rest = repr(self._sequence[state:end])
         add_defaults(kargs, {
-            prefix + 'rest': rest,
-            prefix + 'lineno': lineno,
-            prefix + 'char': char})
+            'type': '<string>',
+            'filename': '<string>',
+            'rest': rest,
+            'lineno': lineno,
+            'char': char}, prefix=prefix)
         return super(StringHelper, self).kargs(state, prefix=prefix, kargs=kargs)
     
     def join(self, state, *values):
@@ -265,9 +254,9 @@ class StringHelper(SequenceHelper):
             raise StopIteration
 
     def stream(self, state, value):
-        return self._factory(value,  factory=self._factory,
-                             delta=self.delta(state), max=self._max,
-                             global_kargs=self._global_kargs)
+        return self.factory(value,  factory=self.factory, max=self.max,
+                            global_kargs=self.global_kargs, 
+                            delta=self.delta(state))
         
     
 class ListHelper(SequenceHelper):
@@ -276,8 +265,8 @@ class ListHelper(SequenceHelper):
     '''
     
     def _fmt(self, sequence, offset, maxlen=60, left="[", right="]", index=True):
-        return super(StringHelper, self)._fmt(sequence, offset, maxlen=maxlen, 
-                                              left=left, right=right, index=index)
+        return super(ListHelper, self)._fmt(sequence, offset, maxlen=maxlen, 
+                                            left=left, right=right, index=index)
 
     def join(self, state, *values):
         return list(chain(*values))
