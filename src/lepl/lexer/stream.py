@@ -48,7 +48,7 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
     
     def next(self, cons, count=1):
         assert count == 1
-        return (cons.head, (cons.tail(), self))
+        return (cons.head, (cons.tail, self))
     
     def line(self, state):
         raise TypeError

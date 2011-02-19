@@ -110,8 +110,7 @@ def name(name, show_failures=True, width=80, out=stderr):
             return (result, stream_out)
         except StopIteration:
             if show_failures:
-                (head, offset, _) = stream_in
-                stream = _adjust(format('stream = \'{0}\'', head[offset:]), right) 
+                stream = _adjust(format('stream = \'{0}\'', s_debug(stream_in)), right) 
                 str_name = _adjust(name, left // 4, True, True)
                 match = _adjust(format(' {0} failed', str_name), left, True)
                 # Python bug #4618

@@ -133,7 +133,7 @@ class TokenRewriteTest(TestCase):
         #basicConfig(level=DEBUG)
         words = Token('[a-z]+')[:]
         words.config.lexer()
-        parser = words.get_parse_null()
+        parser = words.get_parse_sequence()
         try:
             parser('abc defXghi')
             assert False, 'expected error'
@@ -239,7 +239,7 @@ class TokenRewriteTest(TestCase):
                     'cos': cos}
             def __float__(self):
                 return self.funs[self[0]](self[1])
-            
+        
         # we use unsigned float then handle negative values explicitly;
         # this lets us handle the ambiguity between subtraction and
         # negation which requires context (not available to the the lexer)
@@ -273,7 +273,8 @@ class TokenRewriteTest(TestCase):
         parser  = line.get_parse()
         
         def myeval(text):
-            return float(parser(text)[0])
+            result = parser(text)
+            return float(result[0])
         
         self.assertAlmostEqual(myeval('1'), 1)
         self.assertAlmostEqual(myeval('1 + 2*3'), 7)

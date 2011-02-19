@@ -65,11 +65,25 @@ from lepl.stream.core import s_delta, s_kargs, s_format, s_debug, s_next, \
 class Cons(object):
     
     def __init__(self, iterable):
-        self.head = next(iterable)
         self._iterable = iterable
+        self._cons = [None, None]
+        self._expanded = False
         
+    def _expand(self):
+        if not self._expanded:
+            self._cons[0] = next(self._iterable)
+            self._cons[1] = Cons(self._iterable)
+            self._expanded = True
+    
+    @property
+    def head(self):
+        self._expand()
+        return self._cons[0]
+    
+    @property
     def tail(self):
-        return Cons(self._iterable) 
+        self._expand()
+        return self._cons[1]
 
 
 def base_iterable_factory(state_to_line_stream, type_):
@@ -151,7 +165,7 @@ class IterableHelper(base_iterable_factory(lambda state: state[1],
             # current line, create the next, and take the rest from that.
             # of course, that may also not have enough, in which case it
             # will recurse.
-            cons = cons.tail()
+            cons = cons.tail
             def next_line(empty_line_stream):
                 delta = s_delta(empty_line_stream)
                 delta = (delta[OFFSET], delta[LINENO]+1, 1)
