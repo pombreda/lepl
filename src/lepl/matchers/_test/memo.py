@@ -53,10 +53,11 @@ class MemoTest(TestCase):
         letter = Any()
         seq   += letter & Optional(seq)
         
-        #print(seq)
+        #print(seq.tree())
         seq.config.clear().right_memoize().trace(True)
+        #seq.config.clear().right_memoize()
         p = seq.get_match_string()
-        #print(p.matcher)
+        #print(p.matcher.tree())
         
         results = list(p('ab'))
         assert len(results) == 2, len(results)

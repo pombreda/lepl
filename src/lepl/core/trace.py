@@ -34,7 +34,7 @@ Tools for logging and tracing.
 # we abuse conventions to give a consistent interface 
 # pylint: disable-msg=C0103
 
-from lepl.stream.core import s_delta, s_line
+from lepl.stream.core import s_delta, s_line, s_len
 from lepl.core.monitor import ActiveMonitor, ValueMonitor, StackMonitor
 from lepl.support.lib import CircularFifo, LogMixin, sample, format, str
 
@@ -166,8 +166,11 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         (offset, lineno, char) = s_delta(self.generator.stream)
         locn = format('{0}/{1}.{2}', offset, lineno, char)
-        depth = -len(self.generator.stream)
-        stream = sample('', s_line(self.generator.stream)[0], 9)
+        depth = -s_len(self.generator.stream)
+        try:
+            stream = sample('', s_line(self.generator.stream)[0], 9)
+        except StopIteration:
+            stream = '<EOS>'
         return (stream, depth, locn)
         
     def yield_(self, value):
