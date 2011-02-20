@@ -669,7 +669,7 @@ class _Columns(OperatorMatcher):
         @trampoline_matcher
         def LineMatcher(support, stream):
             # extract a line
-            (line, next_stream) = s_line(stream)
+            (line, next_stream) = s_line(stream, False)
             line_stream = s_stream(stream, line)
             results = []
             for (left, right, matcher) in cleaned:

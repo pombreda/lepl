@@ -35,6 +35,8 @@
 Examples from the documentation.
 '''
 
+from logging import basicConfig, DEBUG
+
 from lepl import *
 from lepl._example.support import Example
 from lepl._test.base import assert_str
@@ -43,6 +45,7 @@ from lepl._test.base import assert_str
 class NodeExample(Example):
     
     def test_flat(self):
+        #basicConfig(level=DEBUG)
         
         expr   = Delayed()
         number = Digit()[1:,...]

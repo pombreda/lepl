@@ -56,7 +56,7 @@ SyntaxError: The operator > for And(Literal, Transform, Transform) was applied t
         
         self.examples([(lambda: abcd.parse('ac'), "['a', 'c']"),
                        (lambda: abcd.parse('ab'), 
-                        "lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at 'b' (line 1, character 2).\n")])
+                        "FullFirstMatchException: The match failed in <string> at 'b' (line 1, character 2).\n")])
             
         sentence = None
         word = Letter()[:,...]

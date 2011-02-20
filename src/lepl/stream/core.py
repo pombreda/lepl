@@ -112,10 +112,10 @@ class StreamHelper(_StreamHelper):
         - global_text: as text, but for the entire sequence
         - type: the type of the sequence
         - global_type: the type of the entire sequence
-        - offset: a 0-based index into the sequence
         - global_offset: a 0-based index into the underlying sequence
 
         These values are always local:
+        - offset: a 0-based index into the sequence
         - rest: the data following the current point
         - repr: the current value, or <EOS>
         - str: the current value, or an empty string
@@ -160,7 +160,7 @@ class StreamHelper(_StreamHelper):
         '''
         raise NotImplementedError
     
-    def line(self, state):
+    def line(self, state, empty_ok):
         '''
         Return (values, stream) where `values` correspond to something
         like "the rest of the line" from the current point and `stream`
@@ -182,7 +182,7 @@ class StreamHelper(_StreamHelper):
         the start of the value.
           
         For example:
-            (line, next_stream) = s_line(stream)
+            (line, next_stream) = s_line(stream, False)
             token_stream = s_stream(stream, line) # uses stream, not next_stream
          
         This is used when processing Tokens, for example, or columns (where
@@ -236,8 +236,8 @@ s_join = lambda stream, *values: stream[1].join(stream[0], *values)
 s_empty = lambda stream: stream[1].empty(stream[0])
 '''Invoke helper.empty(state)'''
 
-s_line = lambda stream: stream[1].line(stream[0])
-'''Invoke helper.line(state)'''
+s_line = lambda stream, empty_ok: stream[1].line(stream[0], empty_ok)
+'''Invoke helper.line(state, empty_ok)'''
 
 s_len = lambda stream: stream[1].len(stream[0])
 '''Invoke helper.len(state)'''

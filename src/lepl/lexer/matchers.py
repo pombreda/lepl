@@ -220,7 +220,7 @@ class BaseToken(OperatorMatcher, NoMemo):
         if self.id_ in tokens:
             if self.content is None:
                 # result contains all data (drop facade)
-                (line, _) = s_line(line_stream)
+                (line, _) = s_line(line_stream, True)
                 yield ([line], next_stream)
             else:
                 generator = self.content._match(line_stream)

@@ -43,10 +43,10 @@ from lepl._example.support import Example
 
 class FullFirstMatchTest(Example):
     
-    def run_null(self):
+    def run_sequence(self):
         matcher = Any()[5]
         try:
-            matcher.parse_null('1234567')
+            matcher.parse_sequence('1234567')
         except FullFirstMatchException as e:
             #print(str(e))[1, 2, 3]
             return str(e)
@@ -60,6 +60,6 @@ class FullFirstMatchTest(Example):
             return str(e)
 
     def test_all(self):
-        self.examples([(self.run_null, "The match failed in <str> at '567' (offset 4, value '5')."),
+        self.examples([(self.run_sequence, "The match failed in <str> at '567' (offset 4, value '5')."),
                        (self.run_string, "The match failed in <string> at '567' (line 1, character 5).")])
     

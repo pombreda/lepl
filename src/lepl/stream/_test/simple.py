@@ -51,7 +51,7 @@ class GenericTest(BaseTest):
             except StopIteration:
                 pass
             try:
-                s_line(s)
+                s_line(s, False)
                 assert False, format('expected error: {0}', s) 
             except StopIteration:
                 pass
@@ -68,7 +68,7 @@ class GenericTest(BaseTest):
             (value, n) = s_next(s)
             assert value == data
             assert s_empty(n)
-            (line, n) = s_line(s)
+            (line, n) = s_line(s, False)
             assert line == data
             assert s_empty(n)
             
@@ -86,16 +86,16 @@ class GenericTest(BaseTest):
             (value, n) = s_next(n)
             assert value == data[1:2]
             assert s_empty(n)
-            (line, n) = s_line(s)
+            (line, n) = s_line(s, False)
             assert line == data
             assert s_empty(n)
 
     def test_string_lines(self):
         f = DEFAULT_STREAM_FACTORY
         s = f.from_string('line 1\nline 2\nline 3\n')
-        (l, s) = s_line(s)
+        (l, s) = s_line(s, False)
         assert l == 'line 1\n', l
-        (l, _) = s_line(s)
+        (l, _) = s_line(s, False)
         assert l == 'line 2\n', repr(l)
         locn = s_format(s, '{location}')
         assert locn == 'line 2, character 1', locn

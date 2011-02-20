@@ -74,24 +74,24 @@ class ParseTest(TestCase):
                       "['abc']", 
                       "[(['ab'], (2, <helper>))]", 
                       "[(['abc'], (3, <helper>))]", 
-                      "The match failed in <string> at 'bc' (line 1, character 2).")
+                      "The match failed in <string> at 'abc' (line 1, character 1).")
         self.run_test('', 'abc', 
                       "['abc']", 
                       "[(['ab'], (2, <helper>))]", 
                       "[(['abc'], (3, <helper>))]",
-                      "The match failed in <string> at 'bc' (line 1, character 2).")
+                      "The match failed in <string> at 'abc' (line 1, character 1).")
         self.run_test('_sequence', 'abc', 
                       "['abc']", 
                       "[(['ab'], (2, <helper>))]", 
                       "[(['abc'], (3, <helper>))]",
-                      "The match failed in <str> at 'bc' (offset 1, value 'b').")
+                      "The match failed in <str> at 'abc' (offset 0, value 'a').")
 
     def test_string_list(self):
         self.run_test('_list', ['a', 'b', 'c'], 
                       "[['a', 'b', 'c']]", 
                       "[([['a', 'b']], (2, <helper>))]", 
                       "[([['a', 'b', 'c']], (3, <helper>))]",
-                      "The match failed in <list<str>> at ['b', 'c'] (offset 1, value 'b').", 
+                      "The match failed in <list<str>> at ['a', 'b', 'c'] (offset 0, value 'a').", 
                       config=lambda m: m.config.no_compile_to_regexp())
         
     def test_int_list(self):
@@ -106,7 +106,7 @@ class ParseTest(TestCase):
                       "[[1, 2, 3]]", 
                       "[([[1, 2]], (2, <helper>))]", 
                       "[([[1, 2, 3]], (3, <helper>))]",
-                      "The match failed in <list<int>> at [2, 3] (offset 1, value 2).",
+                      "The match failed in <list<int>> at [1, 2, 3] (offset 0, value 1).",
 config=lambda m: m.config.no_compile_to_regexp())
 
 

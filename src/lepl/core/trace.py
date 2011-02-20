@@ -169,7 +169,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
             locn = format('{0}/{1}.{2}', offset, lineno, char)
             depth = -s_len(self.generator.stream)
             try:
-                stream = sample('', s_line(self.generator.stream)[0], 9)
+                stream = sample('', s_line(self.generator.stream, False)[0], 9)
             except StopIteration:
                 stream = '<EOS>'
             return (stream, depth, locn)

@@ -43,7 +43,7 @@ class GenericTest(BaseTest):
         # just created
         assert not s_empty(s1)
         # get first line
-        (l1, s2) = s_line(s1)
+        (l1, s2) = s_line(s1, False)
         assert 'first line' == l1, l1
         # get first character of next line
         (c21, s21) = s_next(s2)
@@ -63,7 +63,7 @@ class GenericTest(BaseTest):
         assert c32 == 'h', c32
         # now try branching (think tokens) at line 1
         s10 = s_stream(s2, l1)
-        (l1, s20) = s_line(s10)
+        (l1, s20) = s_line(s10, False)
         assert l1 == 'first line', l1
         assert not s_empty(s20)
         (c1, s11) = s_next(s10)

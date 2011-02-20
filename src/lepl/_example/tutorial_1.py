@@ -95,7 +95,7 @@ class Tutorial1Example(Example):
 """FullFirstMatchException: The match failed in <string> at '.2' (line 1, character 2).
 """),
 (lambda: Float().parse('1'),
-"""FullFirstMatchException: The match failed in <string> at '' (line 1, character 2).
+"""FullFirstMatchException: The match failed in <string> at '1' (line 1, character 1).
 """),
 (lambda: Float().parse('1.2'),
 """['1.2']"""),

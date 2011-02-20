@@ -100,7 +100,6 @@ def base_iterable_factory(state_to_line_stream, type_):
                                                      max=max,
                                                      global_kargs=global_kargs, 
                                                      delta=delta)
-            self._max_line_stream = None
             add_defaults(self.global_kargs, {
                 'global_type': type_,
                 'filename': type_})
@@ -130,11 +129,6 @@ def base_iterable_factory(state_to_line_stream, type_):
             except StopIteration:
                 return '<EOS>'
         
-        def _checkpoint(self, line_stream):
-            if self._max_line_stream is None or \
-                    s_delta(line_stream)[OFFSET] == int(self.max):
-                self._max_line_stream = line_stream
-       
         def join(self, state, *values):
             line_stream = state_to_line_stream(state)
             return s_join(line_stream, *values)
@@ -165,7 +159,6 @@ class IterableHelper(
         (cons, line_stream) = state
         try:
             (value, next_line_stream) = s_next(line_stream, count=count)
-            self._checkpoint(next_line_stream)
             return (value, ((cons, next_line_stream), self))
         except StopIteration:
             # the general approach here is to take what we can from the
@@ -184,20 +177,23 @@ class IterableHelper(
                 next_stream = ((cons, next_line_stream), self)
                 return s_next(next_stream, count=count)
             else:
-                (line, end_line_stream) = s_line(line_stream)
+                (line, end_line_stream) = s_line(line_stream, False)
                 next_line_stream = next_line(end_line_stream)
                 next_stream = ((cons, next_line_stream), self)
                 (extra, final_stream) = s_next(next_stream, count=count-len(line))
-                (_, final_line_stream) = final_stream
-                self._checkpoint(final_line_stream)
                 value = line_stream.join(line, extra)
                 return (value, final_stream)
     
-    def line(self, state):
-        (cons, line_stream) = state
-        (value, next_line_stream) = s_line(line_stream)
-        self._checkpoint(next_line_stream)
-        return (value, ((cons, next_line_stream), self))
+    def line(self, state, empty_ok):
+        try:
+            (cons, line_stream) = state
+            (value, next_line_stream) = s_line(line_stream, empty_ok)
+            return (value, ((cons, next_line_stream), self))
+        except StopIteration:
+            if empty_ok:
+                raise TypeError('Iterable stream cannot return an empty line')
+            else:
+                raise
     
     def len(self, state):
         raise TypeError
@@ -211,5 +207,5 @@ class IterableHelper(
         return ((cons, next_line_stream), self)
     
     def deepest(self):
-        return ((None, self._max_line_stream), self)
+        raise TypeError
     

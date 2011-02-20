@@ -47,7 +47,7 @@ def NamedResult(name, matcher, out=stderr):
     
     def format_stream(stream):
         try:
-            (line, _) = s_line(stream)
+            (line, _) = s_line(stream, False)
             text = str(line)
             if len(text) > 20:
                 text = text[:17] + '...'

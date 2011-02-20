@@ -74,7 +74,7 @@ class NodeErrorTest(Example):
         
         return line.get_parse()
     
-    def test_errors(self):
+    def test_errors1(self):
         parser = self.make_parser()
         self.examples([(lambda: parser('1 + 2 * (3 + 4 - 5')[0],
                        """  File "<string>", line 1
@@ -135,7 +135,7 @@ class ListErrorTest(Example):
         
         return line.get_parse()
     
-    def test_errors(self):
+    def test_errors2(self):
         parser = self.make_parser()
         self.examples([(lambda: parser('1 + 2 * (3 + 4 - 5')[0],
                        """  File "<string>", line 1

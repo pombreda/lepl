@@ -193,7 +193,7 @@ def Regexp(pattern):
     pattern = compile_(pattern)
     
     def match(support, stream):
-        (line, _) = s_line(stream)
+        (line, _) = s_line(stream, True)
         match = pattern.match(line)
         if match:
             eaten = len(match.group())

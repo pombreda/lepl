@@ -31,6 +31,7 @@
 from lepl._example.support import Example
 
 from lepl import *
+from lepl.stream.core import s_next
 
 
 @sequence_matcher
@@ -39,20 +40,10 @@ def Digit(support, stream):
               '4': 'ghi',  '5': 'jkl',  '6': 'mno',
               '7': 'pqrs', '8': 'tuv',  '9': 'wxyz',
               '0': ''}
-    (head, offset, helper) = stream
-    if offset < len(head):
-        digit = head[offset]
-        tail = (head, offset+1, helper)
-        yield ([digit], tail)
-        if digit in digits:
-            for letter in digits[digit]:
-                yield ([letter], tail)
-    
-    (digit, stream) = s_next(stream)
-    yield ([digit], stream)
+    (digit, next_stream) = s_next(stream)
+    yield ([digit], next_stream)
     for letter in digits.get(digit, ''):
-        yield ([letter], stream)
-    
+        yield ([letter], next_stream)
 
 
 class LettersTest(Example):

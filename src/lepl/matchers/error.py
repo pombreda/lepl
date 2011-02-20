@@ -52,7 +52,6 @@ def make_error(msg):
         return Error(format(msg, **kargs), kargs)
     return fun
 
-from lepl.stream.core import s_kargs
 
 def syntax_error_kargs(stream_in, stream_out, results):
     '''
@@ -87,11 +86,18 @@ class Error(Node, SyntaxError):
     def __init__(self, msg, kargs):
         # pylint: disable-msg=W0142
         Node.__init__(self, msg, kargs)
-        SyntaxError.__init__(self, msg, 
-                             (kargs.get('in_filename', ''),
-                              int(kargs.get('in_lineno', 0)),
-                              int(kargs.get('in_char', 0)),
-                              kargs.get('in_line', '')))
+        if 'in_all' in kargs:
+            SyntaxError.__init__(self, msg, 
+                                 (kargs.get('in_filename', ''),
+                                  int(kargs.get('in_lineno', 0)),
+                                  int(kargs.get('in_char', 0)),
+                                  kargs.get('in_all')))
+        else:
+            SyntaxError.__init__(self, msg, 
+                                 (kargs.get('in_filename', ''),
+                                  int(kargs.get('in_lineno', -1)),
+                                  int(kargs.get('in_offset', 1)),
+                                  kargs.get('in_rest', '')))
         
     def __str__(self):
         return SyntaxError.__str__(self)

@@ -941,9 +941,9 @@ class DfaPattern(LogMixin):
         '''
         state = 0
         size = 0
-        (line, _) = s_line(stream)
         longest = (self.__empty_labels, 0, stream) \
                     if self.__empty_labels else None
+        (line, _) = s_line(stream, True)
         while size < len(line):
             future = self.__table[state][line[size]]
             if future is None:
@@ -954,6 +954,9 @@ class DfaPattern(LogMixin):
             # match is strictly increasing, so storing the length is enough
             # (no need to make an expensive copy)
             if terminals:
-                (_, next_stream) = s_next(stream, count=size)
-                longest = (terminals, size, next_stream)
+                try:
+                    (_, next_stream) = s_next(stream, count=size)
+                    longest = (terminals, size, next_stream)
+                except StopIteration:
+                    pass
         return longest

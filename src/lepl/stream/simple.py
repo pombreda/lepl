@@ -161,7 +161,7 @@ class SequenceHelper(BaseHelper):
     def next(self, state, count=1):
         new_state = state+count
         if new_state <= len(self._sequence):
-            self.max(self._delta[OFFSET] + new_state)
+            self.max(self._delta[OFFSET] + new_state - 1)
             return (self._sequence[state:new_state], (new_state, self))
         else:
             raise StopIteration
@@ -176,10 +176,10 @@ class SequenceHelper(BaseHelper):
     def empty(self, state):
         return state >= len(self._sequence)
     
-    def line(self, state):
+    def line(self, state, empty_ok):
         '''Returns the rest of the data.'''
         new_state = len(self._sequence)
-        if state < new_state:
+        if state < new_state or (empty_ok and state == new_state):
             self.max(self._delta[OFFSET] + new_state)
             return (self._sequence[state:new_state], (new_state, self))
         else:
@@ -232,15 +232,20 @@ class StringHelper(SequenceHelper):
     def kargs(self, state, prefix='', kargs=None):
         if kargs is None: kargs = {}
         (_, lineno, char) = self.delta(state)
+        start = self._sequence.rfind('\n', 0, state) + 1 # omit \n
         end = self._sequence.find('\n', state) # omit \n
+        # all is str() because passed to SyntaxError constructor
         if end < 0:
             rest = repr(self._sequence[state:])
+            all = str(self._sequence[start:])
         else:
             rest = repr(self._sequence[state:end])
+            all = str(self._sequence[start:end])
         add_defaults(kargs, {
             'type': '<string>',
             'filename': '<string>',
             'rest': rest,
+            'all': all,
             'lineno': lineno,
             'char': char}, prefix=prefix)
         return super(StringHelper, self).kargs(state, prefix=prefix, kargs=kargs)
@@ -248,9 +253,10 @@ class StringHelper(SequenceHelper):
     def join(self, state, *values):
         return str().join(*values)
     
-    def line(self, state):
+    def line(self, state, empty_ok):
         '''Returns up to, and including then next \n'''
-        if state < len(self._sequence):
+        max_len = len(self._sequence)
+        if state < max_len or (empty_ok and state == max_len):
             end = self._sequence.find('\n', state) + 1
             if not end: end = len(self._sequence)
             return (self._sequence[state:end], (end, self))

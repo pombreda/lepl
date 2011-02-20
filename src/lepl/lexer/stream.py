@@ -58,9 +58,15 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
         assert count == 1
         return (cons.head, (cons.tail, self))
     
-    def line(self, cons):
-        (_, line_stream) = cons.head
-        return s_line(line_stream)
+    def line(self, cons, empty_ok):
+        try:
+            (_, line_stream) = cons.head
+            return s_line(line_stream, empty_ok)
+        except StopIteration:
+            if empty_ok:
+                raise TypeError('Token stream cannot return an empty line')
+            else:
+                raise
     
     def len(self, cons):
         if self._len is None:
