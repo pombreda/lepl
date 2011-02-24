@@ -34,6 +34,7 @@ from lepl.matchers.support import to, trampoline_matcher_factory,\
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 from lepl.core.parser import tagged
 from lepl.stream.core import s_line, s_stream, s_next
+from lepl.support.lib import format
 
 
 @trampoline_matcher_factory(matcher=to(Literal), condition=to(DfaRegexp))

@@ -1,3 +1,4 @@
+from lepl.stream.simple import StringHelper
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -268,7 +269,7 @@ class DfaGraphTest(TestCase):
 class DfaTest(TestCase):
     
     def assert_dfa(self, regexp, text, results):
-        r = _test_parser(regexp).dfa().match((text, 0, None))
+        r = _test_parser(regexp).dfa().match((0, StringHelper(text)))
         assert r[1] == results, r
         
     def test_simple(self):

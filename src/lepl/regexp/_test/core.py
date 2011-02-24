@@ -37,6 +37,8 @@ from unittest import TestCase
 from lepl import UnicodeAlphabet
 from lepl.regexp.core import Compiler
 from lepl.support.lib import format
+from lepl.stream.simple import StringHelper
+from lepl.stream.core import DUMMY_HELPER
 
 
 # pylint: disable-msg=C0103, C0111, C0301
@@ -48,34 +50,34 @@ class CompilerTest(TestCase):
     def test_compiler(self):
         #basicConfig(level=DEBUG)
         self.do_test('a', 'a', 
-                     (['label'], 'a', ('a', 1, None)), 
-                     [('label', 'a', ('a', 1, None))])
+                     (['label'], 'a', (1, DUMMY_HELPER)), 
+                     [('label', 'a', (1, DUMMY_HELPER))])
         self.do_test('ab', 'ab', 
-                     (['label'], 'ab', ('ab', 2, None)), 
-                     [('label', 'ab', ('ab', 2, None))])
+                     (['label'], 'ab', (2, DUMMY_HELPER)), 
+                     [('label', 'ab', (2, DUMMY_HELPER))])
         self.do_test('a', 'ab', 
-                     (['label'], 'a', ('ab', 1, None)), 
-                     [('label', 'a', ('ab', 1, None))])
+                     (['label'], 'a', (1, DUMMY_HELPER)), 
+                     [('label', 'a', (1, DUMMY_HELPER))])
         self.do_test('a*', 'aab', 
-                     (['label'], 'aa', ('aab', 2, None)), 
-                     [('label', 'aa', ('aab', 2, None)), 
-                      ('label', 'a', ('aab', 1, None)), 
-                      ('label', '', ('aab', 0, None))])
+                     (['label'], 'aa', (2, DUMMY_HELPER)), 
+                     [('label', 'aa', (2, DUMMY_HELPER)), 
+                      ('label', 'a', (1, DUMMY_HELPER)), 
+                      ('label', '', (0, DUMMY_HELPER))])
         self.do_test('(?:a|b)', 'a', 
-                     (['label'], 'a', ('a', 1, None)), 
-                     [('label', 'a', ('a', 1, None))])
+                     (['label'], 'a', (1, DUMMY_HELPER)), 
+                     [('label', 'a', (1, DUMMY_HELPER))])
         self.do_test('(?:a|b)', 'b', 
-                     (['label'], 'b', ('b', 1, None)), 
-                     [('label', 'b', ('b', 1, None))])
+                     (['label'], 'b', (1, DUMMY_HELPER)), 
+                     [('label', 'b', (1, DUMMY_HELPER))])
         # note how the DFA gives the longest match (only) here 
         self.do_test('(?:a|ab)', 'ab', 
-                     (['label'], 'ab', ('ab', 2, None)), 
-                     [('label', 'a', ('ab', 1, None)), 
-                      ('label', 'ab', ('ab', 2, None))])
+                     (['label'], 'ab', (2, DUMMY_HELPER)), 
+                     [('label', 'a', (1, DUMMY_HELPER)), 
+                      ('label', 'ab', (2, DUMMY_HELPER))])
         self.do_test('(?:ab|a)', 'ab', 
-                     (['label'], 'ab', ('ab', 2, None)),
-                     [('label', 'ab', ('ab', 2, None)), 
-                      ('label', 'a', ('ab', 1, None))])
+                     (['label'], 'ab', (2, DUMMY_HELPER)),
+                     [('label', 'ab', (2, DUMMY_HELPER)), 
+                      ('label', 'a', (1, DUMMY_HELPER))])
         
     def do_test(self, pattern, target, dfa_result, nfa_result):
         alphabet = UnicodeAlphabet.instance()
@@ -83,8 +85,8 @@ class CompilerTest(TestCase):
         text = str(compiler.expression)
         assert text == format('(?P<label>{0!s})', pattern), text
         nfa = compiler.nfa()
-        result = list(nfa.match((target, 0, None)))
+        result = list(nfa.match((0, StringHelper(target))))
         assert result == nfa_result, result
         dfa = compiler.dfa()
-        result = dfa.match((target, 0, None))
+        result = dfa.match((0, StringHelper(target)))
         assert result == dfa_result, result

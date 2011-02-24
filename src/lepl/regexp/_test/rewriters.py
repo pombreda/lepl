@@ -1,3 +1,4 @@
+from lepl.stream.core import DUMMY_HELPER
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -49,15 +50,15 @@ class RewriteTest(TestCase):
         char = Any()
         
         char.config.clear().compile_to_nfa(force=True)
-        matcher = char.get_match_null()
+        matcher = char.get_match_sequence()
         results = list(matcher('abc'))
-        assert results == [(['a'], 'bc')], results
+        assert results == [(['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp)
         
         char.config.clear().compile_to_nfa(force=True).compose_transforms()
-        matcher = char.get_match_null()
+        matcher = char.get_match_sequence()
         results = list(matcher('abc'))
-        assert results == [(['a'], 'bc')], results
+        assert results == [(['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp)
         
     def test_or(self):
@@ -65,104 +66,107 @@ class RewriteTest(TestCase):
         rx = Any('a') | Any('b') 
         
         rx.config.clear().compile_to_nfa(force=True)
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('bq'))
-        assert results == [(['b'], 'q')], results
+        assert results == [(['b'], (1, DUMMY_HELPER))], results
         results = list(matcher('aq'))
-        assert results == [(['a'], 'q')], results
+        assert results == [(['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp)
         
         rx.config.clear().compile_to_nfa(force=True).compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('bq'))
-        assert results == [(['b'], 'q')], results
+        assert results == [(['b'], (1, DUMMY_HELPER))], results
         results = list(matcher('aq'))
-        assert results == [(['a'], 'q')], results
+        assert results == [(['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp)
         
     def test_plus(self):
         rx = Any('a') + Any('b') 
         
         rx.config.clear().compile_to_nfa(force=True)
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('abq'))
-        assert results == [(['ab'], 'q')], results
+        assert results == [(['ab'], (2, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
         rx.config.clear().compile_to_nfa(force=True).compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('abq'))
-        assert results == [(['ab'], 'q')], results
+        assert results == [(['ab'], (2, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
     def test_add(self):
         rx = Add(And(Any('a'), Any('b'))) 
         
         rx.config.clear().compile_to_nfa(force=True)
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('abq'))
-        assert results == [(['ab'], 'q')], results
+        assert results == [(['ab'], (2, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         rx.config.clear().compile_to_nfa(force=True).compose_transforms()
         
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('abq'))
-        assert results == [(['ab'], 'q')], results
+        assert results == [(['ab'], (2, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
     def test_literal(self):
         rx = Literal('abc')
         
         rx.config.clear().compile_to_nfa(force=True)
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         results = list(matcher('abcd'))
-        assert results == [(['abc'], 'd')], results
+        assert results == [(['abc'], (3, DUMMY_HELPER))], results
         
         rx.config.clear().compile_to_nfa(force=True).compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         results = list(matcher('abcd'))
-        assert results == [(['abc'], 'd')], results
+        assert results == [(['abc'], (3, DUMMY_HELPER))], results
         
         rx = Literal('abc') >> (lambda x: x+'e')
         
         rx.config.clear().compile_to_nfa(force=True)
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
-        assert results == [(['abce'], 'd')], results
+        assert results == [(['abce'], (3, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
         rx.config.clear().compile_to_nfa(force=True).compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
-        assert results == [(['abce'], 'd')], results
+        assert results == [(['abce'], (3, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
     def test_dfs(self):
-        expected = [(['abcd'], ''), (['abc'], 'd'), (['ab'], 'cd'), 
-                    (['a'], 'bcd'), ([], 'abcd')]
+        expected = [(['abcd'], (4, DUMMY_HELPER)), 
+                    (['abc'], (3, DUMMY_HELPER)), 
+                    (['ab'], (2, DUMMY_HELPER)), 
+                    (['a'], (1, DUMMY_HELPER)),
+                     ([], (0, DUMMY_HELPER))]
         rx = Any()[:, ...]
         
         # do un-rewritten to check whether [] or [''] is correct
         rx.config.clear()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
         assert results == expected, results
         
         rx.config.clear().compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
         assert results == expected, results
         
         rx.config.clear().compile_to_nfa()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
         assert results == expected, results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
         rx.config.clear().compile_to_nfa().compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
         assert results == expected, results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
@@ -172,35 +176,41 @@ class RewriteTest(TestCase):
         rx = Literal('foo') | (Literal('ba') + Any('a')[1:,...])
         
         rx.config.compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         results = list(matcher('foo'))
-        assert results == [(['foo'], '')], results
+        assert results == [(['foo'], (3, DUMMY_HELPER))], results
         results = list(matcher('baaaaax'))
-        assert results == [(['baaaaa'], 'x'), (['baaaa'], 'ax'), 
-                           (['baaa'], 'aax'), (['baa'], 'aaax')], results
+        assert results == [(['baaaaa'], (6, DUMMY_HELPER)), 
+                           (['baaaa'], (5, DUMMY_HELPER)), 
+                           (['baaa'], (4, DUMMY_HELPER)), 
+                           (['baa'], (3, DUMMY_HELPER))], results
         results = list(matcher('ba'))
         assert results == [], results
         
         rx.config.clear().compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         results = list(matcher('foo'))
-        assert results == [(['foo'], '')], results
+        assert results == [(['foo'], (3, DUMMY_HELPER))], results
         results = list(matcher('baaaaax'))
-        assert results == [(['baaaaa'], 'x'), (['baaaa'], 'ax'), 
-                           (['baaa'], 'aax'), (['baa'], 'aaax')], results
+        assert results == [(['baaaaa'], (6, DUMMY_HELPER)), 
+                           (['baaaa'], (5, DUMMY_HELPER)), 
+                           (['baaa'], (4, DUMMY_HELPER)), 
+                           (['baa'], (3, DUMMY_HELPER))], results
         results = list(matcher('ba'))
         assert results == [], results
         
         rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         results = list(matcher('foo'))
-        assert results == [(['foo'], '')], results
+        assert results == [(['foo'], (3, DUMMY_HELPER))], results
         results = list(matcher('baaaaax'))
-        assert results == [(['baaaaa'], 'x'), (['baaaa'], 'ax'), 
-                           (['baaa'], 'aax'), (['baa'], 'aaax')], results
+        assert results == [(['baaaaa'], (6, DUMMY_HELPER)), 
+                           (['baaaa'], (5, DUMMY_HELPER)), 
+                           (['baaa'], (4, DUMMY_HELPER)), 
+                           (['baa'], (3, DUMMY_HELPER))], results
         results = list(matcher('ba'))
         assert results == [], results
 
@@ -208,84 +218,84 @@ class RewriteTest(TestCase):
         rx = Integer()
         
         rx.config.compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('12x'))
-        assert results == [(['12'], 'x'), (['1'], '2x')], results
+        assert results == [(['12'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
         rx.config.clear().compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('12x'))
-        assert results == [(['12'], 'x'), (['1'], '2x')], results
+        assert results == [(['12'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
         rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('12x'))
-        assert results == [(['12'], 'x'), (['1'], '2x')], results
+        assert results == [(['12'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
     def test_real(self):
         rx = Real()
         
         rx.config.compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
-        assert results == [(['1.2'], 'x'), (['1.'], '2x'), (['1'], '.2x')], results
+        assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
         rx.config.clear().compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
-        assert results == [(['1.2'], 'x'), (['1.'], '2x'), (['1'], '.2x')], results
+        assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
         rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
-        assert results == [(['1.2'], 'x'), (['1.'], '2x'), (['1'], '.2x')], results
+        assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
     def test_float(self):
         rx = Float()
         
         rx.config.compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
-        assert results == [(['1.2'], 'x'), (['1.'], '2x')], results
+        assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
         rx.config.clear().compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
-        assert results == [(['1.2'], 'x'), (['1.'], '2x')], results
+        assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
         rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
-        assert results == [(['1.2'], 'x'), (['1.'], '2x')], results
+        assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
     def test_star(self):
         rx = Add(Star('a')) 
         
         rx.config.compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
-        assert results == [(['aa'], ''), (['a'], 'a'), ([], 'aa')], results
+        assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER)), ([], (0, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
         rx.config.clear().compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
-        assert results == [(['aa'], ''), (['a'], 'a'), ([], 'aa')], results
+        assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER)), ([], (0, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
         rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
-        assert results == [(['aa'], ''), (['a'], 'a'), ([], 'aa')], results
+        assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER)), ([], (0, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
     def test_word(self):
@@ -293,21 +303,21 @@ class RewriteTest(TestCase):
         rx = Word('a')
         
         rx.config.compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
-        assert results == [(['aa'], ''), (['a'], 'a')], results
+        assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
         rx.config.clear().compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
-        assert results == [(['aa'], ''), (['a'], 'a')], results
+        assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
         rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
-        assert results == [(['aa'], ''), (['a'], 'a')], results
+        assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
 
@@ -382,9 +392,9 @@ class WordBugTest(TestCase):
         rx = Word()
         
         rx.config.compile_to_nfa().no_full_first_match()
-        matcher = rx.get_match_null()
+        matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
-        assert results == [(['aa'], ''), (['a'], 'a')], results
+        assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
 
