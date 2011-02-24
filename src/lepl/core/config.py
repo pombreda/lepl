@@ -1,4 +1,5 @@
 
+
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -397,7 +398,7 @@ class ConfigBuilder(object):
         from lepl.core.rewriters import OptimizeOr
         return self.remove_all_rewriters(OptimizeOr)
         
-    def lexer(self, alphabet=None, discard=None, source=None):
+    def lexer(self, alphabet=None, discard=None, lexer=None):
         '''
         Detect the use of `Token()` and modify the parser to use the lexer.
         If tokens are not used, this has no effect on parsing.
@@ -409,7 +410,7 @@ class ConfigBuilder(object):
         self.alphabet(alphabet)
         return self.add_rewriter(
             AddLexer(alphabet=self.__get_alphabet(), discard=discard, 
-                     source=source))
+                     lexer=lexer))
         
     def no_lexer(self):
         '''
@@ -575,12 +576,13 @@ class ConfigBuilder(object):
         `block_policy` and `block_start` must be given.
         `
         '''
-        from lepl.offside.matchers import DEFAULT_TABSIZE
-        from lepl.offside.regexp import LineAwareAlphabet, \
-            make_hide_sol_eol_parser
-        from lepl.offside.stream import LineAwareStreamFactory, \
-            LineAwareTokenSource
-        from lepl.regexp.unicode import UnicodeAlphabet
+        from lepl.lexer.line_aware.lexer import LineAwareLexer
+#        from lepl.offside.matchers import DEFAULT_TABSIZE
+#        from lepl.offside.regexp import LineAwareAlphabet, \
+#            make_hide_sol_eol_parser
+#        from lepl.offside.stream import LineAwareStreamFactory, \
+#            LineAwareTokenSource
+#        from lepl.regexp.unicode import UnicodeAlphabet
         
         self.clear()
         
@@ -588,20 +590,21 @@ class ConfigBuilder(object):
         if use_blocks:
             self.blocks(block_policy, block_start)
             
-        if tabsize and tabsize < 0:
-            tabsize = DEFAULT_TABSIZE
-        if alphabet is None:
-            alphabet = UnicodeAlphabet.instance()
-        if not parser_factory:
-            parser_factory = make_hide_sol_eol_parser
-        self.alphabet(LineAwareAlphabet(alphabet, parser_factory))
-
-        self.set_alphabet_arg()
-        if use_blocks:
-            self.set_block_policy_arg(block_policy)
-        self.lexer(alphabet=self.__get_alphabet(), discard=discard, 
-                   source=LineAwareTokenSource.factory(tabsize))
-        self.stream_factory(LineAwareStreamFactory(self.__get_alphabet()))
+#        if tabsize and tabsize < 0:
+#            tabsize = DEFAULT_TABSIZE
+#        if alphabet is None:
+#            alphabet = UnicodeAlphabet.instance()
+#        if not parser_factory:
+#            parser_factory = make_hide_sol_eol_parser
+#        self.alphabet(LineAwareAlphabet(alphabet, parser_factory))
+#
+#        self.set_alphabet_arg()
+#        if use_blocks:
+#            self.set_block_policy_arg(block_policy)
+#        self.lexer(alphabet=self.__get_alphabet(), discard=discard, 
+#                   source=LineAwareTokenSource.factory(tabsize))
+#        self.stream_factory(LineAwareStreamFactory(self.__get_alphabet()))
+        self.lexer(alphabet, discard, LineAwareLexer)
         
         return self
         

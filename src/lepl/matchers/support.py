@@ -31,6 +31,7 @@
 Support classes for matchers.
 '''
 
+from abc import ABCMeta
 from inspect import getargspec
 
 from lepl.core.config import ParserMixin
@@ -48,6 +49,15 @@ from lepl.support.lib import LogMixin, basestring, format, document, identity
 # (_args create attributes)
 # pylint: disable-msg=R0901, R0904, W0142
 # lepl conventions
+
+
+# pylint: disable-msg=W0105, C0103, R0903, W0212
+# Python 2.6
+#class NoMemo(metaclass=NoMemo):
+NoMemo = ABCMeta('NoMemo', (object, ), {})
+'''
+ABC used to indicate that memoisation should not be applied.  
+'''
 
 
 class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin, 
@@ -519,7 +529,6 @@ def make_wrapper_factory(wrapper, factory, modifiers,
     
     `memo` should be set to False for matchers that do not want memoisation.
     '''
-    from lepl.matchers.memo import NoMemo
     check_args(factory)
     check_modifiers(factory, modifiers)
     def wrapper_factory(*args, **kargs):

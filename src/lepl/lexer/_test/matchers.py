@@ -39,7 +39,8 @@ from math import sin, cos
 from operator import add, sub, truediv, mul
 from unittest import TestCase
 
-from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
+from lepl.lexer.matchers import Token
+from lepl.lexer.support import LexerError, RuntimeLexerError
 from lepl.matchers.core import Literal, Delayed
 from lepl.matchers.derived import Real,  Any, Eos, UnsignedReal, Word
 from lepl.matchers.combine import Or

@@ -97,24 +97,24 @@ class MatcherExample(Example):
         matcher = Or(Any('h'), Any()[3])
         matcher.config.no_full_first_match()
         matcher = matcher.match_sequence('hello world')
-        assert str(next(matcher)) == "(['h'], ('hello world', 1, <helper>))"
-        assert str(next(matcher)) == "(['h', 'e', 'l'], ('hello world', 3, <helper>))"
+        assert str(next(matcher)) == "(['h'], (1, <helper>))"
+        assert str(next(matcher)) == "(['h', 'e', 'l'], (3, <helper>))"
 
 
     def test_repeat(self):
         matcher = Repeat(Any(), 3)
         matcher = matcher.match_sequence('12345')
         result = str(next(matcher))
-        assert result == "(['1', '2', '3', '4', '5'], ('12345', 5, <helper>))", result
-        assert str(next(matcher)) == "(['1', '2', '3', '4'], ('12345', 4, <helper>))"
-        assert str(next(matcher)) == "(['1', '2', '3'], ('12345', 3, <helper>))"
+        assert result == "(['1', '2', '3', '4', '5'], (5, <helper>))", result
+        assert str(next(matcher)) == "(['1', '2', '3', '4'], (4, <helper>))"
+        assert str(next(matcher)) == "(['1', '2', '3'], (3, <helper>))"
         
         matcher = Repeat(Any(), 3, None, algorithm='b')
         matcher.config.no_full_first_match()
         matcher = matcher.match_sequence('12345')
-        assert str(next(matcher)) == "(['1', '2', '3'], ('12345', 3, <helper>))"
-        assert str(next(matcher)) == "(['1', '2', '3', '4'], ('12345', 4, <helper>))"
-        assert str(next(matcher)) == "(['1', '2', '3', '4', '5'], ('12345', 5, <helper>))"
+        assert str(next(matcher)) == "(['1', '2', '3'], (3, <helper>))"
+        assert str(next(matcher)) == "(['1', '2', '3', '4'], (4, <helper>))"
+        assert str(next(matcher)) == "(['1', '2', '3', '4', '5'], (5, <helper>))"
 
 
 

@@ -42,35 +42,39 @@ from lepl._example.support import Example
 
 class LineAwareExamples(Example):
     
-    def test_regexp(self):
+    def test_single_line(self):
         #basicConfig(level=DEBUG)
-        start = DfaRegexp('(*SOL) *')
-        words = Word()[:,~Space()[:]] > list
-        end = DfaRegexp('(*EOL)')
+        start = LineAwareSol()
+        words = Token(Word())[:]
+        end = LineAwareEol()
         line = start & words & end
-        line.config.default_line_aware()
-        parser = line.get_parse()
-        self.examples([(lambda: parser('  abc def'), 
-                        "['  ', ['abc', 'def'], '']")])
+        line.config.default_line_aware().no_full_first_match()
+        self.examples([
+(lambda: line.parse('  abc def'), "['abc', 'def']"),
+(lambda: line.parse('  abc def\n pqr'), "['abc', 'def']")
+])
 
-    def test_match(self):
+    def test_multiple_lines(self):
         #basicConfig(level=DEBUG)
-        start = SOL() & Space()[:, ...]
-        words = Word()[:,~Space()[:]] > list
-        end = EOL()
+        start = LineAwareSol()
+        words = Token(Word())[:] > list
+        end = LineAwareEol()
         line = start & words & end
-        line.config.default_line_aware()
-        self.examples([(lambda: line.parse('  abc def'), 
-                        "['  ', ['abc', 'def']]")])
+        lines = line[:]
+        lines.config.default_line_aware().no_full_first_match()
+        self.examples([
+(lambda: lines.parse('  abc def'), "[['abc', 'def']]"),
+(lambda: lines.parse('  abc def\n pqr'), "[['abc', 'def'], ['pqr']]")
+])
 
-    def test_indent_token(self):
-        #basicConfig(level=DEBUG)
-        words = Token(Word(Lower()))[:] > list
-        line = Indent() & words & LineAwareEol()
-        line.config.default_line_aware(tabsize=4)
-        parser = line.get_parse_string()
-        self.examples([(lambda: parser('\tabc def'), 
-                        "['    ', ['abc', 'def'], '']")])
+#    def test_indent_token(self):
+#        #basicConfig(level=DEBUG)
+#        words = Token(Word(Lower()))[:] > list
+#        line = Indent() & words & LineAwareEol()
+#        line.config.default_line_aware(tabsize=4)
+#        parser = line.get_parse_string()
+#        self.examples([(lambda: parser('\tabc def'), 
+#                        "['    ', ['abc', 'def'], '']")])
 
     def test_line_token(self):
         #basicConfig(level=DEBUG)

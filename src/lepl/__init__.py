@@ -116,7 +116,8 @@ from lepl.core.manager import GeneratorManager
 from lepl.core.trace import RecordDeepest, TraceResults
 from lepl.matchers.combine import And, Or, First, Difference, Limit
 from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
-    Lookahead, PostMatch, Regexp
+    Lookahead,  Regexp
+from lepl.matchers.complex import PostMatch, Columns
 from lepl.matchers.monitor import Trace, Commit
 from lepl.matchers.derived import Apply, args, KApply, Join, \
     AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Repeat, Plus, \
@@ -125,7 +126,7 @@ from lepl.matchers.derived import Apply, args, KApply, Join, \
     UnsignedInteger, SignedInteger, Integer, UnsignedFloat, SignedFloat, \
     UnsignedEFloat, SignedEFloat, Float, UnsignedReal, SignedReal, \
     UnsignedEReal, SignedEReal, Real, Word, DropEmpty, Literals, \
-    String, SingleLineString, SkipString, SkipTo, Columns
+    String, SingleLineString, SkipString, SkipTo
 from lepl.matchers.error import Error, make_error, raise_error
 from lepl.matchers.memo import RMemo, LMemo, MemoException
 from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
@@ -135,7 +136,10 @@ from lepl.matchers.support import function_matcher, function_matcher_factory, \
     trampoline_matcher, trampoline_matcher_factory
 from lepl.matchers.transform import PostCondition
 from lepl.matchers.variables import TraceVariables
-from lepl.lexer.matchers import Token, LexerError, RuntimeLexerError
+from lepl.lexer.matchers import Token
+from lepl.lexer.support import LexerError, RuntimeLexerError
+from lepl.lexer.line_aware.matchers import LineAwareEol, LineAwareSol, Line, \
+    ContinuedLineFactory
 #from lepl.offside.lexer import Indent, LineAwareEol, LineAwareSol, BIndent
 #from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
 #    ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent, \
@@ -169,8 +173,6 @@ __all__ = [
         'Literal',
         'Empty',
         'Lookahead',
-        'PostMatch',
-        'Columns',
         'Regexp', 
         
         # lepl.matchers.combine
@@ -241,6 +243,10 @@ __all__ = [
         'DEPTH_FIRST',
         'BREADTH_FIRST',
         
+        # lepl.matchers.complex
+        'PostMatch',
+        'Columns',
+
         # lepl.matchers.support
         'function_matcher', 
         'function_matcher_factory',
@@ -305,13 +311,19 @@ __all__ = [
         # lepl.stream.maxdepth
         'FullFirstMatchException',
         
-        # lepl.offside.lexer
-#        'Indent',_helper.
+        # lepl.lexer.line_aware.matchers
+        'LineAwareEol',
+        'LineAwareSol',
+        'Line',
+        'ContinuedLineFactory',
+        
+#        # lepl.offside.lexer
+#        'Indent',
 #        'LineAwareEol',
 #        'LineAwareSol',
 #        'BIndent',
-        
-        # lepl.offside.matchers
+#        
+#        # lepl.offside.matchers
 #        'Line',
 #        'Block',
 #        'BLine',

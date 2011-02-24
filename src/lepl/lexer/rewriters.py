@@ -34,7 +34,9 @@ Rewrite a matcher graph to include lexing.
 from collections import deque
 
 from lepl.core.rewriters import Rewriter
-from lepl.lexer.matchers import BaseToken, Lexer, LexerError, NonToken
+from lepl.lexer.lexer import Lexer
+from lepl.lexer.support import LexerError
+from lepl.lexer.matchers import BaseToken, NonToken
 from lepl.matchers.matcher import Matcher, is_child
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.support.lib import format
@@ -102,28 +104,25 @@ class AddLexer(Rewriter):
     
     discard is a regular expression that is used to match space (typically)
     if no token can be matched (and which is then discarded)
-    
-    source is the source used to generate the final stream (it is used for
-    offside parsing).
     '''
 
-    def __init__(self, alphabet=None, discard=None, source=None):
+    def __init__(self, alphabet=None, discard=None, lexer=None):
         if alphabet is None:
             alphabet = UnicodeAlphabet.instance()
         # use '' to have no discard at all
         if discard is None:
             discard = '[ \t\r\n]'
         super(AddLexer, self).__init__(Rewriter.LEXER,
-            format('Lexer({0}, {1}, {2})', alphabet, discard, source))
+            name=format('Lexer({0}, {1}, {2})', alphabet, discard, lexer))
         self.alphabet = alphabet
         self.discard = discard
-        self.source = source
+        self.lexer = lexer if lexer else Lexer
         
     def __call__(self, graph):
         tokens = find_tokens(graph)
         if tokens:
-            return Lexer(graph, tokens, self.alphabet, self.discard, 
-                         source=self.source)
+            self._debug(format('Found {0}', [token.id_ for token in tokens]))
+            return self.lexer(graph, tokens, self.alphabet, self.discard)
         else:
             self._info('Lexer rewriter used, but no tokens found.')
             return graph

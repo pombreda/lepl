@@ -69,7 +69,7 @@ class CompilerTest(TestCase):
                      [('label', 'b', ('b', 1, None))])
         # note how the DFA gives the longest match (only) here 
         self.do_test('(?:a|ab)', 'ab', 
-                     (['label'], 'ab', ('ab', 2 None)), 
+                     (['label'], 'ab', ('ab', 2, None)), 
                      [('label', 'a', ('ab', 1, None)), 
                       ('label', 'ab', ('ab', 2, None))])
         self.do_test('(?:ab|a)', 'ab', 

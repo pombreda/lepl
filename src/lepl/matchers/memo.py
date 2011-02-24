@@ -39,24 +39,16 @@ generators implemented here.
 # for some reason (parsing of yields?) pyulint cannot process this file
 # (but running from the command line gives partial data)
 
-from abc import ABCMeta
 from itertools import count
 
 from lepl.matchers.core import OperatorMatcher
 from lepl.matchers.matcher import is_child
+from lepl.matchers.support import NoMemo
 from lepl.core.parser import tagged, GeneratorWrapper
 from lepl.stream.core import s_key, s_format, s_len
 from lepl.support.state import State
 from lepl.support.lib import LogMixin, empty, format
 
-
-# pylint: disable-msg=W0105, C0103, R0903, W0212
-# Python 2.6
-#class NoMemo(metaclass=NoMemo):
-NoMemo = ABCMeta('NoMemo', (object, ), {})
-'''
-ABC used to indicate that memoisation should not be applied.  
-'''
 
 # pylint: disable-msg=R0901, R0904
 # lepl conventions

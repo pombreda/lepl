@@ -36,11 +36,11 @@ offset are stored in the helper.
 
 from itertools import chain
 
-from lepl.support.lib import format, add_defaults, str
+from lepl.support.lib import format, add_defaults, str, LogMixin
 from lepl.stream.core import StreamHelper, OFFSET, LINENO, CHAR, HashKey
 
 
-class BaseHelper(StreamHelper):
+class BaseHelper(LogMixin, StreamHelper):
     
     def __init__(self, id=None, factory=None, max=None, global_kargs=None, delta=None):
         super(BaseHelper, self).__init__(id=id, factory=factory, max=max, 
@@ -281,3 +281,4 @@ class ListHelper(SequenceHelper):
     def join(self, state, *values):
         return list(chain(*values))
     
+

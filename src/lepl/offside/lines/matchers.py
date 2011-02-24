@@ -37,20 +37,23 @@ from lepl.matchers.support import coerce_, OperatorMatcher
 from lepl.core.parser import tagged
 from lepl.offside.lexer import Indent, LineAwareEol, BIndent
 from lepl.offside.monitor import BlockMonitor
-from lepl.offside.regexp import SOL as _SOL, EOL as _EOL
+#from lepl.offside.regexp import SOL as _SOL, EOL as _EOL
 from lepl.support.lib import format
 from lepl.lexer.matchers import Token
 
+ExcludeSequence = lambda x, y: None
 
 # pylint: disable-msg=W0105
 # pylint convention
 
-SOL = lambda: ~Any([_SOL])
+#SOL = lambda: ~Any([_SOL])
+SOL = lambda x: None
 '''
 Allow explicit matching of start of line marker.
 '''
 
-EOL = lambda: ~Any([_EOL])
+#EOL = lambda: ~Any([_EOL])
+EOL = lambda x: None
 '''
 Allow explicit matching of end of line marker.
 '''
@@ -195,13 +198,6 @@ class Block(OperatorMatcher):
 
 # pylint: disable-msg=C0103
 # consistent interface
-def Line(matcher):
-    '''
-    Match the matcher within a line.
-    '''
-    return ~Indent() & matcher & ~LineAwareEol()
-
-
 def BLine(matcher):
     '''
     Match the matcher within a line with block indent.
@@ -227,42 +223,42 @@ def any_token(token, item):
     return token.id_ in tokens
 
 
-#def _ContinuedLineFactory(continuation, base):
-#    '''
-#    Return the base (line) matcher, modified so that it applies its contents 
-#    to a stream which continues past line breaks if the given token is present.
-#    '''
-#    continuation = coerce_(continuation, Token)
-#    
-#    def ContinuedLine(matcher):
-#        '''
-#        Like `base`, but continues over multiple lines if the continuation 
-#        token is found at the end of each line.
-#        '''
-#        multiple = ExcludeSequence(any_token, 
-#                                   [continuation, LineAwareEol(), Indent()])
-#        return base(multiple(matcher))
-#    return ContinuedLine
-#
-#
-#def ContinuedLineFactory(continuation):
-#    '''
-#    Construct a matcher like `Line`, but which extends over multiple lines if
-#    the continuation token ends a line.
-#    '''
-#    return _ContinuedLineFactory(continuation, Line)
-#    
-#
-#def ContinuedBLineFactory(continuation):
-#    '''
-#    Construct a matcher like `BLine`, but which extends over multiple lines if
-#    the continuation token ends a line.
-#    '''
-#    return _ContinuedLineFactory(continuation, BLine)
-#    
-#Extend = ExcludeSequence(only_token, [LineAwareEol(), Indent()])
-#'''
-#Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 
-#filtered out.  On matching, return the "outer" stream at the appropriate
-#position (ie just after the last matched token in the filtered stream).
-#'''
+def _ContinuedLineFactory(continuation, base):
+    '''
+    Return the base (line) matcher, modified so that it applies its contents 
+    to a stream which continues past line breaks if the given token is present.
+    '''
+    continuation = coerce_(continuation, Token)
+    
+    def ContinuedLine(matcher):
+        '''
+        Like `base`, but continues over multiple lines if the continuation 
+        token is found at the end of each line.
+        '''
+        multiple = ExcludeSequence(any_token, 
+                                   [continuation, LineAwareEol(), Indent()])
+        return base(multiple(matcher))
+    return ContinuedLine
+
+
+def ContinuedLineFactory(continuation):
+    '''
+    Construct a matcher like `Line`, but which extends over multiple lines if
+    the continuation token ends a line.
+    '''
+    return _ContinuedLineFactory(continuation, Line)
+    
+
+def ContinuedBLineFactory(continuation):
+    '''
+    Construct a matcher like `BLine`, but which extends over multiple lines if
+    the continuation token ends a line.
+    '''
+    return _ContinuedLineFactory(continuation, BLine)
+    
+Extend = ExcludeSequence(only_token, [LineAwareEol(), Indent()])
+'''
+Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 
+filtered out.  On matching, return the "outer" stream at the appropriate
+position (ie just after the last matched token in the filtered stream).
+'''

@@ -43,7 +43,6 @@ from re import compile as compile_
 from lepl.stream.core import s_next, s_eq, s_empty, s_line
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 from lepl.core.parser import tagged
-from lepl.regexp.matchers import DfaRegexp
 from lepl.matchers.support import OperatorMatcher, coerce_, \
     function_matcher, function_matcher_factory, trampoline_matcher_factory, \
     to, sequence_matcher
@@ -54,6 +53,9 @@ from lepl.support.lib import format
 def Never(support, stream):
     '''
     Always fails to match.
+    
+    (in this package rather than lepl.matchers.memo to simplify import 
+    dependencies)
     '''
     if False:
         yield
@@ -268,53 +270,3 @@ def Consumer(matcher, consume=True):
     return match
 
 
-@trampoline_matcher_factory(matcher=to(Literal), condition=to(DfaRegexp))
-def PostMatch(matcher, condition, not_=False, equals=True, stream_factory=None):
-    '''
-    Apply the condition to each result from the matcher.  It should return
-    either an exact match (equals=True) or simply not fail (equals=False).
-    If `not_` is set, the test is inverted.
-    
-    `matcher` is coerced to `Literal()`, condition to `DfaRegexp()`
-    
-    `factory` is used to generate a stream from the result.  If not set the
-    default factory is used.
-    '''
-    def match(support, stream_in, stream_factory=stream_factory):
-        '''
-        Do the match and test the result.
-        '''
-        stream_factory = stream_factory if stream_factory else DEFAULT_STREAM_FACTORY
-        generator = matcher._match(stream_in)
-        while True:
-            (results, stream_out) = yield generator
-            success = True
-            for result in results:
-                if not success: break
-                generator2 = condition._match(stream_factory(result))
-                try:
-                    (results2, _ignored) = yield generator2
-                    if not_:
-                        # if equals is false, we need to fail just because
-                        # we matched.  otherwise, we need to fail only if
-                        # we match.
-                        if not equals or (len(results2) == 1 or 
-                                          results2[0] == result):
-                            success = False
-                    else:
-                        # if equals is false, not generating an error is
-                        # sufficient, otherwise we must fail if the result
-                        # does not match
-                        if equals and (len(results2) != 1 or 
-                                       results2[0] != result):
-                            success = False
-                except:
-                    # fail unless if we were expecting any kind of match
-                    if not not_:
-                        success = False
-            if success:
-                yield (results, stream_out)
-    
-    return match
-
-                    

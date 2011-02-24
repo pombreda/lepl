@@ -1,3 +1,5 @@
+from lepl.lexer.operators import TOKENS, TokenNamespace
+from lepl.lexer.stream import FilteredTokenHelper
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -36,21 +38,13 @@ expressions.
 
 from abc import ABCMeta
 
-from lepl.stream.core import s_empty, s_line, s_factory, s_stream, s_debug, \
-    s_next, s_format, s_len
-from lepl.support.context import Namespace, NamespaceMixin
-from lepl.matchers.derived import Add, Apply, Drop, KApply, Map
-from lepl.matchers.error import raise_error
-from lepl.lexer.support import LexerError, RuntimeLexerError
+from lepl.stream.core import s_empty, s_line, s_next
+from lepl.lexer.support import LexerError
 from lepl.matchers.core import OperatorMatcher, Any, Literal, Lookahead, Regexp
-from lepl.matchers.combine import And, Or, First
 from lepl.matchers.matcher import Matcher, add_children
 from lepl.matchers.memo import NoMemo
-from lepl.matchers.operators import ADD, AND, OR, APPLY, APPLY_RAW, \
-    NOT, KARGS, RAISE, REPEAT, FIRST, MAP, RepeatWrapper
-from lepl.matchers.support import BaseMatcher, coerce_
+from lepl.matchers.support import coerce_, trampoline_matcher_factory
 from lepl.core.parser import tagged
-from lepl.regexp.core import Compiler
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import CompileRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
@@ -59,10 +53,6 @@ from lepl.support.lib import format, str
 
 # pylint: disable-msg=W0105
 # epydoc convention
-TOKENS = 'tokens'
-'''
-The namespace used for global per-thread data for matchers defined here. 
-'''
 
 # pylint: disable-msg=C0103
 # it's a class
@@ -80,34 +70,6 @@ functionality.
 add_children(NonToken, Lookahead, Any, Literal, Regexp)
 # don't register Empty() here because it's useful as a token(!)
 
-
-class TokenNamespace(Namespace):
-    '''
-    A modified version of the usual ``OperatorNamespace`` without handling of
-    spaces (since that is handled by the lexer), allowing Tokens and other
-    matchers to be configured separately (because they process different 
-    types).
-    
-    At one point this also defined alphabet and discard, used by the rewriter,
-    but because those are global values it makes more sense to supply them
-    directly to the rewriter.
-    '''
-    
-    def __init__(self):
-        super(TokenNamespace, self).__init__({
-            ADD:       lambda a, b: Add(And(a, b)),
-            AND:       And,
-            OR:        Or,
-            APPLY:     Apply,
-            APPLY_RAW: lambda a, b: Apply(a, b, raw=True),
-            NOT:       Drop,
-            KARGS:     KApply,
-            RAISE:     lambda a, b: KApply(a, raise_error(b)),
-            REPEAT:    RepeatWrapper,
-            FIRST:     First,
-            MAP:       Map,
-        })
-        
 
 # pylint: disable-msg=R0901, R0904, R0913, W0201, W0142, E1101
 # lepl standards
@@ -283,90 +245,45 @@ class  Token(BaseToken):
         self._karg(regexp=regexp)
         
         
-class Lexer(NamespaceMixin, BaseMatcher):
+class EmptyToken(Token):
     '''
-    This takes a set of regular expressions and provides a matcher that
-    converts a stream into a stream of tokens, passing the new stream to 
-    the embedded matcher.
-    
-    It is added to the matcher graph by the lexer_rewriter; it is not
-    specified explicitly by the user.
+    A token that cannot be specialised, and that returns nothing.
     '''
     
-    def __init__(self, matcher, tokens, alphabet, discard, 
-                  t_regexp=None, s_regexp=None, source=None):
-        '''
-        matcher is the head of the original matcher graph, which will be called
-        with a tokenised stream. 
-        
-        tokens is the set of `Token` instances that define the lexer.
-        
-        alphabet is the alphabet for which the regexps are defined.
-        
-        discard is the regular expression for spaces (which are silently
-        dropped if not token can be matcher).
-        
-        t_regexp and s_regexp are internally compiled state, use in cloning,
-        and should not be provided by non-cloning callers.
-        
-        source is the source used to generate the final stream.
-        '''
-        super(Lexer, self).__init__(TOKENS, TokenNamespace)
-        if t_regexp is None:
-            unique = {}
-            for token in tokens:
-                token.compile(alphabet)
-                self._debug(format('Token: {0}', token))
-                # this just reduces the work for the regexp compiler
-                unique[token.id_] = token
-            t_regexp = Compiler.multiple(alphabet, 
-                            [(t.id_, t.regexp) for t in unique.values()]).dfa()
-        if s_regexp is None and discard is not None:
-            s_regexp = Compiler.single(alphabet, discard).dfa()
-        self._arg(matcher=matcher)
-        self._arg(tokens=tokens)
-        self._arg(alphabet=alphabet)
-        self._arg(discard=discard)
-        self._karg(t_regexp=t_regexp)
-        self._karg(s_regexp=s_regexp)
-        self._karg(source=source)
-        
-    def token_for_id(self, id_):
-        '''
-        A utility that checks the known tokens for a given ID.  The ID is used
-        internally, but is (by default) an unfriendly integer value.  Note that 
-        a lexed stream associates a chunk of input with a list of IDs - more 
-        than one regexp may be a maximal match (and this is a feature, not a 
-        bug).
-        '''
-        for token in self.tokens:
-            if token.id_ == id_:
-                return token
-        
+    def __call__(self, *args, **kargs):
+        raise TypeError('Empty token')
+    
     @tagged
-    def _match(self, in_stream):
+    def _match(self, stream):
         '''
-        Implement matching - pass token stream to tokens.
+        On matching we first assert that the token type is correct and then
+        delegate to the content.
         '''
-        def tokens():
-            stream = in_stream
-            try:
-                while not s_empty(stream):
-                    try:
-                        (terminals, match, next_stream) = self.t_regexp.match(stream)
-                        self._debug(format('Token: {0!r} {1!r} {2!s}',
-                                           terminals, match, s_debug(stream)))
-                        yield (terminals, s_stream(stream, match))
-                    except TypeError:
-                        (terminals, _size, next_stream) = self.s_regexp.size_match(stream)
-                        self._debug(format('Space: {0!r} {1!s}',
-                                           terminals, s_debug(stream)))
-                    stream = next_stream
-            except TypeError:
-                raise RuntimeLexerError(
-                    s_format(stream, 
-                             'No lexer for {rest} at {location} of {text}.'))
-        token_stream = s_factory(in_stream).to_token(tokens(), in_stream)
-        generator = self.matcher._match(token_stream)
-        while True:
-            yield (yield generator)
+        if not self.compiled:
+            raise LexerError(
+                format('A {0} token has not been compiled. '
+                       'You must use the lexer rewriter with Tokens. '
+                       'This can be done by using matcher.config.lexer().',
+                       self.__class__.__name__))
+        ((tokens, _), next_stream) = s_next(stream)
+        if self.id_ in tokens:
+            yield ([], next_stream)
+    
+
+
+def RestrictTokensBy(*tokens):
+    @trampoline_matcher_factory()
+    def factory(matcher, *tokens):
+        def match(support, in_stream):
+            ids = [token.id_ for token in tokens]
+            (state, helper) = in_stream
+            filtered = (state, FilteredTokenHelper(helper, *ids))
+            generator = matcher._match(filtered)
+            while True:
+                (result, (state, _)) = yield generator
+                support._debug(format('Result {0}', result))
+                yield (result, (state, helper))
+        return match
+    def pass_args(matcher):
+        return factory(matcher, *tokens)
+    return pass_args
