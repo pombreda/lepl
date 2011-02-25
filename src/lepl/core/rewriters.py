@@ -42,7 +42,7 @@ from lepl.matchers.derived import add
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
     matcher_type, MatcherTypeException, canonical_matcher_type
 from lepl.matchers.support import NoTrampoline
-from lepl.support.lib import lmap, format, LogMixin
+from lepl.support.lib import lmap, fmt, LogMixin
 
 
 class Rewriter(LogMixin):
@@ -260,7 +260,7 @@ class Flatten(Rewriter):
 
 class ComposeTransforms(Rewriter):
     '''
-    A rewriter that joins adjacent transformations into a single
+    A rewriter that joins adjacent transfmtions into a single
     operation, avoiding trampolining in some cases.
     '''
 
@@ -292,7 +292,7 @@ class Memoize(Rewriter):
     
     def __init__(self, memoizer):
         super(Memoize, self).__init__(Rewriter.MEMOIZE,
-                                      format('Memoize({0})', memoizer.__name__))
+                                      fmt('Memoize({0})', memoizer.__name__))
         self.memoizer = memoizer
         
     def __call__(self, graph):
@@ -310,7 +310,7 @@ class AutoMemoize(Rewriter):
     
     def __init__(self, conservative=False, left=None, right=None):
         super(AutoMemoize, self).__init__(Rewriter.MEMOIZE,
-            format('AutoMemoize({0}, {1}, {2})', conservative, left, right))
+            fmt('AutoMemoize({0}, {1}, {2})', conservative, left, right))
         self.conservative = conservative
         self.left = left
         self.right = right
@@ -447,7 +447,7 @@ class SetArguments(Rewriter):
     
     def __init__(self, type_, **extra_kargs):
         super(SetArguments, self).__init__(Rewriter.SET_ARGUMENTS,
-            format('SetArguments({0}, {1})', type_, extra_kargs), False)
+            fmt('SetArguments({0}, {1})', type_, extra_kargs), False)
         self.type = type_
         self.extra_kargs = extra_kargs
         
@@ -474,7 +474,7 @@ class DirectEvaluation(Rewriter):
     
     def __init__(self, spec=None):
         super(DirectEvaluation, self).__init__(Rewriter.DIRECT_EVALUATION,
-            format('DirectEvaluation({0})', spec))
+            fmt('DirectEvaluation({0})', spec))
         if spec is None:
             spec = {DepthFirst: DepthNoTrampoline,
                     BreadthFirst: BreadthNoTrampoline,
@@ -506,7 +506,7 @@ class DirectEvaluation(Rewriter):
                 copy_standard_attributes(node, copy)
                 return copy
             except TypeError as err:
-                raise TypeError(format('Error cloning {0} with ({1}, {2}): {3}',
+                raise TypeError(fmt('Error cloning {0} with ({1}, {2}): {3}',
                                        type_, args, kargs, err))
         return graph.postorder(DelayedClone(new_clone), Matcher)
     
@@ -521,7 +521,7 @@ class FullFirstMatch(Rewriter):
     
     def __init__(self, eos=False):
         super(FullFirstMatch, self).__init__(Rewriter.FULL_FIRST_MATCH,
-                                       format('FullFirstMatch({0})', eos))
+                                       fmt('FullFirstMatch({0})', eos))
         self.eos = eos
         
     def __call__(self, graph):
@@ -581,7 +581,7 @@ class NodeStats(object):
             self.add(type_, child)
 
     def __str__(self):
-        counts = format('total:      {total:3d}\n'
+        counts = fmt('total:      {total:3d}\n'
                         'leaves:     {leaves:3d}\n'
                         'loops:      {loops:3d}\n'
                         'duplicates: {duplicates:3d}\n'
@@ -589,6 +589,6 @@ class NodeStats(object):
                         'unhashable: {unhashable:3d}\n', **self.__dict__)
         keys = list(self.types.keys())
         keys.sort(key=repr)
-        types = '\n'.join([format('{0:40s}: {1:3d}', key, len(self.types[key]))
+        types = '\n'.join([fmt('{0:40s}: {1:3d}', key, len(self.types[key]))
                            for key in keys])
         return counts + types

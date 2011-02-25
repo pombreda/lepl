@@ -35,7 +35,7 @@ from re import compile as compile_
 
 from lepl.matchers.matcher import Matcher
 from lepl.support.context import Namespace, NamespaceMixin, Scope
-from lepl.support.lib import open_stop, format, basestring
+from lepl.support.lib import open_stop, fmt, basestring
 
 
 DIGITS = compile_('^(-?\d+)(.*)')
@@ -58,7 +58,7 @@ def RepeatWrapper(matcher, start, stop, step, separator, add):
                     limit = int(match.group(1))
                     step = match.group(2)
                 else:
-                    raise TypeError(format('Cannot parse limit/algorithm for []: {}',
+                    raise TypeError(fmt('Cannot parse limit/algorithm for []: {}',
                                            step))
             else:
                 if algorithm is None:
@@ -586,7 +586,7 @@ class OperatorMixin(NamespaceMixin):
             if isinstance(index, int):
                 if have_index:
                     raise TypeError(
-                        format('Multiple slices not supported: {0!r}', index))
+                        fmt('Multiple slices not supported: {0!r}', index))
                 start = index
                 stop = index
                 step = DEPTH_FIRST
@@ -594,7 +594,7 @@ class OperatorMixin(NamespaceMixin):
             elif isinstance(index, slice):
                 if have_index:
                     raise TypeError(
-                        format('Multiple slices not supported: {0!r}', index))
+                        fmt('Multiple slices not supported: {0!r}', index))
                 start = index.start if index.start != None else 0
                 stop = index.stop if not open_stop(index) else None
                 step = index.step if index.step != None else DEPTH_FIRST
@@ -727,5 +727,5 @@ class OperatorMixin(NamespaceMixin):
                     msg = 'The operator {0} for {1} was applied to a matcher ' \
                         '({2}).'
                 msg += ' Check syntax and parentheses.'
-                raise SyntaxError(format(msg, name, self, other))
+                raise SyntaxError(fmt(msg, name, self, other))
 

@@ -39,7 +39,7 @@ from sys import exc_info
 from unittest import TestCase
 
 from lepl.regexp.matchers import DfaRegexp, NfaRegexp
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 def randbool(weight=1):
     return choice([True] * weight + [False])
@@ -67,19 +67,19 @@ def random_sequence(depth_left, alphabet):
 def random_option(depth_left, alphabet):
     subexpr = random_expression(depth_left, alphabet)
     if len(subexpr) > 1:
-        return format('(?:{0})?', subexpr)
+        return fmt('(?:{0})?', subexpr)
     else:
         return subexpr + '?'
 
 def random_repeat(depth_left, alphabet):
     subexpr = random_expression(depth_left, alphabet)
     if len(subexpr) > 1:
-        return format('(?:{0})*', subexpr)
+        return fmt('(?:{0})*', subexpr)
     else:
         return subexpr + '*'
 
 def random_choice(depth_left, alphabet):
-    return format('(?:{0})', '|'.join(random_expression(depth_left, alphabet)
+    return fmt('(?:{0})', '|'.join(random_expression(depth_left, alphabet)
                                       for _ in range(randint(1, 3))))
 
 def random_range(_depth_left, alphabet):
@@ -92,7 +92,7 @@ def random_range(_depth_left, alphabet):
                 a, b = choice(alphabet), choice(alphabet)
                 if a > b:
                     a, b = b, a
-                subexpr += format('{0}-{1}', a, b)
+                subexpr += fmt('{0}-{1}', a, b)
         return subexpr
     def random_content():
         if randbool(len(alphabet)):
@@ -101,9 +101,9 @@ def random_range(_depth_left, alphabet):
             return '.'
     # cannot use random_content below with current lepl regexp
     if randbool():
-        return format('[{0}]', random_chars())
+        return fmt('[{0}]', random_chars())
     else:
-        return format('[^{0}]', random_chars())
+        return fmt('[^{0}]', random_chars())
 
 def random_string(depth_left, alphabet):
     if depth_left:
@@ -134,13 +134,13 @@ class RandomTest(TestCase):
             lepl_result = matcher.parse(string)
             if lepl_result:
                 lepl_result = lepl_result[0]
-            log.debug(format('{0} {1} {2}', expression, string, lepl_result))
+            log.debug(fmt('{0} {1} {2}', expression, string, lepl_result))
             try:
                 python_result = compile_(expression).match(string) 
                 if python_result:
                     python_result = python_result.group()
                 assert lepl_result == python_result, \
-                    format('{0} != {1}\n{2} {3}', 
+                    fmt('{0} != {1}\n{2} {3}', 
                            lepl_result, python_result, expression, string)
             except:
                 (e, v, _t) = exc_info()

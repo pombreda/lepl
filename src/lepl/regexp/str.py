@@ -35,7 +35,7 @@ converted to strings using str().
 from lepl.matchers.support import coerce_
 from lepl.regexp.core import Alphabet, Character, Sequence, Choice, Repeat, \
     Option, _Choice, _Character
-from lepl.support.lib import format, str, LogMixin
+from lepl.support.lib import fmt, str, LogMixin
 
 
 ILLEGAL = '{}[]*()-?.+\\^$|'
@@ -254,7 +254,7 @@ class StrAlphabet(Alphabet):
         
     def _no_parens(self, children):
         '''
-        Returns True of no parens are needed around this when formatting.
+        Returns True of no parens are needed around this when fmtting.
         '''
         return len(children) == 1 and \
             (isinstance(children[0], _Character) or
@@ -274,11 +274,11 @@ class StrAlphabet(Alphabet):
             if len(x) > 1 or 32 <= ord(x) <= 127:
                 return str(x)
             elif ord(c) < 0x100:
-                return format('\\x{0:02x}', ord(c)) 
+                return fmt('\\x{0:02x}', ord(c)) 
             elif ord(c) < 0x10000:
-                return format('\\u{0:04x}', ord(c)) 
+                return fmt('\\u{0:04x}', ord(c)) 
             else:
-                return format('\\U{0:08x}', ord(c)) 
+                return fmt('\\U{0:08x}', ord(c)) 
         ranges = []
         if len(intervals) == 1:
             if intervals[0][0] == intervals[0][1]:
@@ -291,8 +291,8 @@ class StrAlphabet(Alphabet):
             if a == b:
                 ranges.append(pretty(a))
             else:
-                ranges.append(format('{0!s}-{1!s}', pretty(a), pretty(b)))
-        return format('[{0}]', self.join(ranges))
+                ranges.append(fmt('{0!s}-{1!s}', pretty(a), pretty(b)))
+        return fmt('[{0}]', self.join(ranges))
     
     def fmt_sequence(self, children):
         '''
@@ -314,7 +314,7 @@ class StrAlphabet(Alphabet):
         if self._no_parens(children):
             return string + '*'
         else:
-            return format('(?:{0})*', string)
+            return fmt('(?:{0})*', string)
 
     def fmt_choice(self, children):
         '''
@@ -323,7 +323,7 @@ class StrAlphabet(Alphabet):
         This must fully describe the data in the children (it is used to
         hash the data).
         '''
-        return format('(?:{0})', '|'.join(str(child) for child in children))
+        return fmt('(?:{0})', '|'.join(str(child) for child in children))
 
     def fmt_option(self, children):
         '''
@@ -336,7 +336,7 @@ class StrAlphabet(Alphabet):
         if self._no_parens(children):
             return string + '?'
         else:
-            return format('(?:{0})?', string)
+            return fmt('(?:{0})?', string)
         
     def fmt_label(self, label, child):
         '''
@@ -345,7 +345,7 @@ class StrAlphabet(Alphabet):
         This must fully describe the data in the children (it is used to
         hash the data).
         '''
-        return format('(?P<{0}>{1})', label, child)
+        return fmt('(?P<{0}>{1})', label, child)
         
     def join(self, chars):
         '''

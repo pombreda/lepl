@@ -35,7 +35,7 @@ The general support works with any nested iterables (except strings).
 
 from functools import reduce
 
-from lepl.support.lib import format, basestring
+from lepl.support.lib import fmt, basestring
 from lepl.support.node import Node
 
 
@@ -133,12 +133,12 @@ sexpr_flatten = sexpr_fold(per_list=lambda type_, items: join(items),
 Flatten a list completely, so [[1],[2, [3]]] becomes [1,2,3]
 '''
 
-_FORMAT={}
-_FORMAT[list] = '[{1}]'
-_FORMAT[tuple] = '({1})'
+_fmt={}
+_fmt[list] = '[{1}]'
+_fmt[tuple] = '({1})'
 
 sexpr_to_str = sexpr_fold(per_list=lambda type_, items: 
-                            format(_FORMAT.get(type_, '{0}([{1}])'),
+                            fmt(_fmt.get(type_, '{0}([{1}])'),
                                     type_.__name__, ','.join(items)), 
                           per_item=lambda item: repr(item))
 '''

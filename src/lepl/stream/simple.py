@@ -36,7 +36,7 @@ offset are stored in the helper.
 
 from itertools import chain
 
-from lepl.support.lib import format, add_defaults, str, LogMixin
+from lepl.support.lib import fmt, add_defaults, str, LogMixin
 from lepl.stream.core import StreamHelper, OFFSET, LINENO, CHAR, HashKey
 
 
@@ -69,12 +69,12 @@ class SequenceHelper(BaseHelper):
         return key
     
     def _fmt(self, sequence, offset, maxlen=60, left='', right='', index=True):
-        '''Format a possibly long subsection of data.'''
+        '''fmt a possibly long subsection of data.'''
         if not sequence:
             if index:
-                return format('{0!r}[{1:d}]', sequence, offset)
+                return fmt('{0!r}[{1:d}]', sequence, offset)
             else:
-                return format('{0!r}', sequence)
+                return fmt('{0!r}', sequence)
         if offset >= 0 and offset < len(sequence):
             centre = offset
         elif offset > 0:
@@ -97,9 +97,9 @@ class SequenceHelper(BaseHelper):
             body = repr(sequence[begin:end])[len(left):]
             if len(right):
                 body = body[:-len(right)]
-            text = format(template, left, body, right, offset)
+            text = fmt(template, left, body, right, offset)
             if index:
-                text = format('{0!s}[{1:d}:]', text, offset)
+                text = fmt('{0!s}[{1:d}:]', text, offset)
             if longest is None or len(text) <= maxlen:
                 longest = text
             if len(text) > maxlen:
@@ -113,15 +113,15 @@ class SequenceHelper(BaseHelper):
                 
     def _location(self, kargs, prefix):
         '''Location (separate method so subclasses can replace).'''
-        return format('offset {' + prefix + 'global_offset}, value {' + prefix + 'repr}',
+        return fmt('offset {' + prefix + 'global_offset}, value {' + prefix + 'repr}',
                       **kargs)
     
     def _typename(self, instance):
         if isinstance(instance, list) and instance:
-            return format('<list{0}>', self._typename(instance[0]))
+            return fmt('<list{0}>', self._typename(instance[0]))
         else:
             try:
-                return format('<{0}>', instance.__class__.__name__)
+                return fmt('<{0}>', instance.__class__.__name__)
             except:
                 return '<unknown>'
     
@@ -198,9 +198,9 @@ class SequenceHelper(BaseHelper):
     
     def debug(self, state):
         try:
-            return format('{0:d}:{1!r}', state, self._sequence[state])
+            return fmt('{0:d}:{1!r}', state, self._sequence[state])
         except IndexError:
-            return format('{0:d}:<EOS>', state)
+            return fmt('{0:d}:<EOS>', state)
         
     def delta(self, state):
         offset = state + self._delta[OFFSET]
@@ -209,7 +209,7 @@ class SequenceHelper(BaseHelper):
     
 class StringHelper(SequenceHelper):
     '''
-    String-specific formatting and location.
+    String-specific fmtting and location.
     '''
     
     def _fmt(self, sequence, offset, maxlen=60, left="'", right="'", index=True):
@@ -217,7 +217,7 @@ class StringHelper(SequenceHelper):
                                               left=left, right=right, index=index)
         
     def _location(self, kargs, prefix):
-        return format('line {' + prefix + 'lineno:d}, character {' + prefix + 'char:d}', **kargs)
+        return fmt('line {' + prefix + 'lineno:d}, character {' + prefix + 'char:d}', **kargs)
     
     def delta(self, state):
         offset = self._delta[OFFSET] + state
@@ -271,7 +271,7 @@ class StringHelper(SequenceHelper):
     
 class ListHelper(SequenceHelper):
     '''
-    List-specific formatting
+    List-specific fmtting
     '''
     
     def _fmt(self, sequence, offset, maxlen=60, left="[", right="]", index=True):

@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-An example config file format using blocks with three levels.
+An example config file fmt using blocks with three levels.
 '''
 
 from string import ascii_letters

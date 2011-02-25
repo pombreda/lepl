@@ -40,7 +40,7 @@ from lepl.offside.regexp import LineAwareAlphabet, make_hide_sol_eol_parser
 from lepl.offside.stream import LineAwareStreamFactory
 from lepl.regexp.core import Compiler
 from lepl.regexp.str import make_str_parser
-#from lepl.support.lib import format
+#from lepl.support.lib import fmt
 
 
 # pylint: disable-msg=C0103, C0111, C0301
@@ -85,7 +85,7 @@ class CompilerTest(TestCase):
         compiler = Compiler.single(alphabet, pattern)
         str(compiler.expression)
 #        text = str(compiler.expression)
-#        assert text == format('(?P<label>{0!s})', pattern), text
+#        assert text == fmt('(?P<label>{0!s})', pattern), text
         
         factory = LineAwareStreamFactory(alphabet)
         target = factory.from_string(target)

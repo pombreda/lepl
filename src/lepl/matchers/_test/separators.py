@@ -79,7 +79,7 @@ class AbcSeparatorTest(TestCase):
             parsed = parser.parse(stream) is not None
             if PRINT:
                 print('{0!r:9} : {1!r:5} {2!r:5}'
-                      .format(stream, parsed, parsed == expected))
+                      .fmt(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -92,7 +92,7 @@ class AbcSeparatorTest(TestCase):
             parsed = parser.parse_string(stream) is not None
             if PRINT:
                 print('{0!r:9} : {1!r:5} {2!r:5}'
-                      .format(stream, parsed, parsed == expected))
+                      .fmt(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -142,7 +142,7 @@ class AbSeparatorTest(TestCase):
             parsed = parser.parse(stream) is not None
             if PRINT:
                 print('{0!r:9} : {1!r:5} {2!r:5}'
-                      .format(stream, parsed, parsed == expected))
+                      .fmt(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -155,7 +155,7 @@ class AbSeparatorTest(TestCase):
             parsed = parser.parse_string(stream) is not None
             if PRINT:
                 print('{0!r:9} : {1!r:5} {2!r:5}'
-                      .format(stream, parsed, parsed == expected))
+                      .fmt(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -205,7 +205,7 @@ class AbcEosSeparatorTest(TestCase):
             parsed = parser.parse(stream) is not None
             if PRINT:
                 print('{0!r:9} : {1!r:5} {2!r:5}'
-                      .format(stream, parsed, parsed == expected))
+                      .fmt(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -218,7 +218,7 @@ class AbcEosSeparatorTest(TestCase):
             parsed = parser.parse_string(stream) is not None
             if PRINT:
                 print('{0!r:9} : {1!r:5} {2!r:5}'
-                      .format(stream, parsed, parsed == expected))
+                      .fmt(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -268,7 +268,7 @@ class AbEosSeparatorTest(TestCase):
             parsed = parser.parse(stream) is not None
             if PRINT:
                 print('{0!r:9} : {1!r:5} {2!r:5}'
-                      .format(stream, parsed, parsed == expected))
+                      .fmt(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         
@@ -281,7 +281,7 @@ class AbEosSeparatorTest(TestCase):
             parsed = parser.parse(stream) is not None
             if PRINT:
                 print('{0!r:9} : {1!r:5} {2!r:5}'
-                      .format(stream, parsed, parsed == expected))
+                      .fmt(stream, parsed, parsed == expected))
             ok = ok and (parsed == expected)
         assert ok
         

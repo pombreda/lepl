@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-Display information when matchers that are bound to variables are called.
+Display infmtion when matchers that are bound to variables are called.
 
 This is possible thanks to a neat trick suggested by Carl Banks on c.l.p 
 '''
@@ -39,13 +39,13 @@ from sys import stderr, _getframe
 
 from lepl.stream.core import s_debug, s_line
 from lepl.matchers.support import trampoline_matcher_factory
-from lepl.support.lib import format, str
+from lepl.support.lib import fmt, str
 
 
 @trampoline_matcher_factory()
 def NamedResult(name, matcher, out=stderr):
     
-    def format_stream(stream):
+    def fmt_stream(stream):
         try:
             (line, _) = s_line(stream, False)
             text = str(line)
@@ -57,17 +57,17 @@ def NamedResult(name, matcher, out=stderr):
     
     def record_success(count, stream_in, result):
         (value, stream_out) = result
-        count_desc = format(' ({0})', count) if count > 1 else ''
+        count_desc = fmt(' ({0})', count) if count > 1 else ''
         # Python bug #4618
-        print(format('{0}{1} = {2}\n    {3} -> {4}', 
+        print(fmt('{0}{1} = {2}\n    {3} -> {4}', 
                      name, count_desc, value, 
-                     format_stream(stream_in), format_stream(stream_out)), 
+                     fmt_stream(stream_in), fmt_stream(stream_out)), 
               file=out, end=str('\n'))
         
     def record_failure(count, stream_in):
         # Python bug #4618
-        print(format('! {0} (after {1} matches)\n    {2}', name, count, 
-                     format_stream(stream_in)),
+        print(fmt('! {0} (after {1} matches)\n    {2}', name, count, 
+                     fmt_stream(stream_in)),
               file=out, end=str('\n'))
     
     def match(support, stream):
@@ -105,17 +105,17 @@ def name(name, show_failures=True, width=80, out=stderr):
     def namer(stream_in, matcher):
         try:
             (result, stream_out) = matcher()
-            stream = _adjust(format('stream = {0}', s_debug(stream_out)), right) 
+            stream = _adjust(fmt('stream = {0}', s_debug(stream_out)), right) 
             str_name = _adjust(name, left // 4, True, True)
-            match = _adjust(format(' {0} = {1}', str_name, result), left, True)
+            match = _adjust(fmt(' {0} = {1}', str_name, result), left, True)
             # Python bug #4618
             print(match + ' ' + stream, file=out, end=str('\n'))
             return (result, stream_out)
         except StopIteration:
             if show_failures:
-                stream = _adjust(format('stream = {0}', s_debug(stream_in)), right) 
+                stream = _adjust(fmt('stream = {0}', s_debug(stream_in)), right) 
                 str_name = _adjust(name, left // 4, True, True)
-                match = _adjust(format(' {0} failed', str_name), left, True)
+                match = _adjust(fmt(' {0} failed', str_name), left, True)
                 # Python bug #4618
                 print(match + ' ' + stream, file=out, end=str('\n'))
             raise StopIteration
@@ -143,7 +143,7 @@ def TraceVariables(on=True, show_failures=True, width=80, out=stderr):
                               'be tracked:', end=str('\n'))
                         warned = True
                     # Python bug #4618
-                    print(format('  {0} = {1}', key, value), end=str('\n'))
+                    print(fmt('  {0} = {1}', key, value), end=str('\n'))
                     
 
 

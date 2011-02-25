@@ -50,7 +50,7 @@ class MessageTest(TestCase):
     
     def test_simple(self):
         '''
-        Test a message with no formatting.
+        Test a message with no fmtting.
         '''
         parser = (Literal('abc') > 'name') ** make_error('msg')
         parser.config.no_full_first_match()
@@ -60,9 +60,9 @@ class MessageTest(TestCase):
         assert str(node).startswith('msg ('), str(node)
         assert isinstance(node, Exception), type(node)
 
-    def test_formatted(self):
+    def test_fmtted(self):
         '''
-        Test a message with formatting.
+        Test a message with fmtting.
         '''
         parser = (Literal('abc') > 'name') ** make_error('msg {in_rest}')
         parser.config.no_full_first_match()
@@ -72,9 +72,9 @@ class MessageTest(TestCase):
         assert str(node).startswith("msg 'abc' ("), str(node)
         assert isinstance(node, Exception), type(node)
         
-    def test_bad_format(self):
+    def test_bad_fmt(self):
         '''
-        Test a message with bad formatting.
+        Test a message with bad fmtting.
         '''
         try:
             parser = (Literal('abc') > 'name') ** make_error('msg {0}')

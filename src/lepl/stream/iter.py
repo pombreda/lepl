@@ -58,7 +58,7 @@ be possible to have iterables of iterables...
 
 from lepl.support.lib import add_defaults
 from lepl.stream.simple import OFFSET, LINENO, BaseHelper
-from lepl.stream.core import s_delta, s_kargs, s_format, s_debug, s_next, \
+from lepl.stream.core import s_delta, s_kargs, s_fmt, s_debug, s_next, \
     s_line, s_join, s_empty, s_eq, HashKey
 
 
@@ -118,9 +118,9 @@ def base_iterable_factory(state_to_line_stream, type_):
             line_stream = state_to_line_stream(state)
             return s_kargs(line_stream, prefix=prefix, kargs=kargs)
     
-        def format(self, state, template, prefix='', kargs=None):
+        def fmt(self, state, template, prefix='', kargs=None):
             line_stream = state_to_line_stream(state)
-            return s_format(line_stream, template, prefix=prefix, kargs=kargs)
+            return s_fmt(line_stream, template, prefix=prefix, kargs=kargs)
         
         def debug(self, state):
             try:

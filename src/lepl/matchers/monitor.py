@@ -39,7 +39,7 @@ from lepl.core.parser import tagged
 
 class Commit(OperatorMatcher):
     '''
-    Commit to the current state - deletes all backtracking information.
+    Commit to the current state - deletes all backtracking infmtion.
     This only works if the `GeneratorManager` monitor is present
     (see `Configuration`) and the min_queue option is greater than zero.
     '''

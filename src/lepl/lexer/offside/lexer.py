@@ -30,31 +30,44 @@
 from lepl.lexer.lexer import Lexer
 from lepl.core.parser import tagged
 from lepl.stream.core import s_empty, s_line, s_debug, s_stream, s_fmt,\
-    s_factory
+    s_factory, s_next
 from lepl.lexer.support import RuntimeLexerError
 from lepl.support.lib import fmt
-from lepl.stream.simple import ListHelper
+from lepl.lexer.line_aware.lexer import END, EMPTY
 
 
-START = 'SOL'
-'''
-Name for start of line token.
-'''
 
-END = 'EOL'
+
+INDENT = 'INDENT'
 '''
-Name for end of line token.
+Name for indent token.
 '''
 
-EMPTY = (0, ListHelper([]))
-'''An empty stream.'''
 
-
-class LineLexer(Lexer):
+def make_offside_lexer(tabsize):
     '''
-    An alternative lexer that adds SOL and EOL tokens.
+    Provide the standard `Lexer` interface while including `tabsize`.
+    '''
+    def wrapper(matcher, tokens, alphabet, discard, 
+                t_regexp=None, s_regexp=None):
+        return _OffsideLexer(matcher, tokens, alphabet, discard,
+                             t_regexp=t_regexp, s_regexp=s_regexp, 
+                             tabsize=tabsize)
+    return wrapper
+
+
+class _OffsideLexer(Lexer):
+    '''
+    An alternative lexer that adds INDENT and EOL tokens.
     '''
     
+    def __init__(self, matcher, tokens, alphabet, discard, 
+                  t_regexp=None, s_regexp=None, tabsize=8):
+        super(_OffsideLexer, self).__init__(matcher, tokens, alphabet, discard,
+                                            t_regexp=t_regexp, s_regexp=s_regexp)
+        self._karg(tabsize=tabsize)
+        self._tab = ' ' * tabsize
+
     @tagged
     def _match(self, in_stream):
         '''
@@ -64,9 +77,20 @@ class LineLexer(Lexer):
             stream = in_stream
             try:
                 while not s_empty(stream):
+                    # this section differs from token lexer
                     (line, next_stream) = s_line(stream, False)
                     line_stream = s_stream(stream, line)
-                    yield ([START], EMPTY)
+                    try:
+                        (terminals, size, _) = self.s_regexp.size_match(line_stream)
+                    except TypeError:
+                        (terminals, size) = ([INDENT], 0)
+                    (indent, line_stream) = s_next(line_stream, count=size)
+                    if '\t' in indent:
+                        indent = indent.replace('\t', self._tab)
+                    self._debug(fmt('Indent: {0!r} {1!r} {2!s}',
+                                       terminals, indent, s_debug(line_stream)))
+                    yield ([INDENT], s_stream(line_stream, indent))
+                    # from here on, as token lexer (share?)
                     while not s_empty(line_stream):
                         try:
                             (terminals, match, next_line_stream) = self.t_regexp.match(line_stream)

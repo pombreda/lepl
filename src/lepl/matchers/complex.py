@@ -34,7 +34,7 @@ from lepl.matchers.support import to, trampoline_matcher_factory,\
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 from lepl.core.parser import tagged
 from lepl.stream.core import s_line, s_stream, s_next
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 
 @trampoline_matcher_factory(matcher=to(Literal), condition=to(DfaRegexp))
@@ -131,7 +131,7 @@ class _Columns(OperatorMatcher):
                 # extract the location in the line
                 (_, left_aligned_line_stream) = s_next(line_stream, count=left)
                 (word, _) = s_next(left_aligned_line_stream, count=right-left)
-                support._debug(format('Columns {0}-{1} {2!r}', left, right, word))
+                support._debug(fmt('Columns {0}-{1} {2!r}', left, right, word))
                 word_stream = s_stream(left_aligned_line_stream, word)
                 # do the match
                 (result, _) = yield matcher._match(word_stream)

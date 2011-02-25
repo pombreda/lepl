@@ -41,7 +41,7 @@ from lepl.support.graph import ArgAsAttributeMixin, PostorderWalkerMixin, \
 from lepl.matchers.matcher import Matcher, FactoryMatcher, add_child, is_child
 from lepl.matchers.operators import OperatorMixin, OPERATORS, \
     OperatorNamespace
-from lepl.support.lib import LogMixin, basestring, format, document, identity
+from lepl.support.lib import LogMixin, basestring, fmt, document, identity
 
 # pylint: disable-msg=C0103,W0212
 # (consistent interfaces)
@@ -79,8 +79,8 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         else:
             return prefix + repr(value)
         
-    def _format_repr(self, indent, key, contents):
-        return format('{0}{1}{2}({3}{4})', 
+    def _fmt_repr(self, indent, key, contents):
+        return fmt('{0}{1}{2}({3}{4})', 
                       ' ' * indent,
                       key + '=' if key else '',
                       self._small_str,
@@ -94,7 +94,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         indent1 = 0 if self._fmt_compact else indent0 + 1 
         contents = [self._fmt_repr(indent1, arg, visited) for arg in args] + \
             [self._fmt_repr(indent1, kargs[key], visited, key) for key in kargs]
-        return self._format_repr(indent0, key, contents)
+        return self._fmt_repr(indent0, key, contents)
         
     @property
     def _fmt_compact(self):
@@ -123,7 +123,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         (args, kargs) = self._constructor_args()
         contents = [self._fmt_str(arg) for arg in args] + \
             [self._fmt_str(kargs[key], key) for key in kargs]
-        return format('{0}({1})', self._small_str,
+        return fmt('{0}({1})', self._small_str,
                       ', '.join(contents))
     
     @property
@@ -174,24 +174,24 @@ class Transformable(OperatorMatcher):
     '''
 
     def __init__(self, function=None):
-        from lepl.matchers.transform import TransformationWrapper
+        from lepl.matchers.transform import TransfmtionWrapper
         super(Transformable, self).__init__()
-        if not isinstance(function, TransformationWrapper):
-            function = TransformationWrapper(function)
+        if not isinstance(function, TransfmtionWrapper):
+            function = TransfmtionWrapper(function)
         self.wrapper = function
 
     def compose(self, wrapper):
         '''
-        Combine with a transformation wrapper, returning a new instance.
+        Combine with a transfmtion wrapper, returning a new instance.
         
         We must return a new instance because the same Transformable may 
         occur more than once in a graph and we don't want to include the
-        transformation in other cases.
+        transfmtion in other cases.
         '''
         raise NotImplementedError()
 
-    def _format_repr(self, indent, key, contents):
-        return format('{0}{1}{2}({3}{4})', 
+    def _fmt_repr(self, indent, key, contents):
+        return fmt('{0}{1}{2}({3}{4})', 
                       ' ' * indent,
                       key + '=' if key else '',
                       self.tree_repr(),
@@ -199,7 +199,7 @@ class Transformable(OperatorMatcher):
                       ',\n'.join(contents))
         
     def tree_repr(self):
-        return format('{0}:{1}',
+        return fmt('{0}:{1}',
                       self._small_str,
                       self.wrapper)
         
@@ -246,14 +246,14 @@ class BaseFactoryMatcher(FactoryMatcher):
             elif name in defaults:
                 self._karg(**{name: defaults[name]})
             else:
-                raise TypeError(format("No value for argument '{0}' in "
+                raise TypeError(fmt("No value for argument '{0}' in "
                                        "{1}(...)", 
                                        name, self._small_str))
         if self.__args:
             if spec.varargs:
                 self._args(**{spec.varargs: self.__args})
             else:
-                raise TypeError(format("No parameter matches the argument "
+                raise TypeError(fmt("No parameter matches the argument "
                                        "{0!r} in {1}(...)", 
                                        self.__args[0], self._small_str))
         if self.__kargs:
@@ -262,7 +262,7 @@ class BaseFactoryMatcher(FactoryMatcher):
             else:
                 name = list(self.__kargs.keys())[0]
                 value = self.__kargs[name]
-                raise TypeError(format("No parameter matches the argument "
+                raise TypeError(fmt("No parameter matches the argument "
                                        "{0}={1!r} in {2}(...)", 
                                        name, value, self._small_str))
         
@@ -280,7 +280,7 @@ class BaseFactoryMatcher(FactoryMatcher):
             self.__args_as_attributes()
 
     def tree_repr(self):
-        return format('{0}<{1}>',
+        return fmt('{0}<{1}>',
                       self.__class__.__name__,
                       self._small_str)
         
@@ -305,7 +305,7 @@ class TransformableWrapper(BaseFactoryMatcher, Transformable):
         return copy
     
     def tree_repr(self):
-        return format('{0}<{1}:{2}>',
+        return fmt('{0}<{1}:{2}>',
                       self.__class__.__name__,
                       self._small_str,
                       self.wrapper)
@@ -430,7 +430,7 @@ def check_matcher(matcher):
     check_args(matcher)
     spec = getargspec(matcher)
     if len(spec.args) != 2:
-        raise TypeError(format(
+        raise TypeError(fmt(
 '''The function {0} cannot be used as a matcher because it does not have
 exactly two parameters.
 
@@ -452,7 +452,7 @@ def check_args(func):
     try:
         getargspec(func)
     except Exception as e:
-        raise TypeError(format(
+        raise TypeError(fmt(
 '''The function {0} uses Python 3 style parameters (keyword only, etc).
 These are not supported by LEPL factory wrappers currently.  If you really
 need this functionality, subclass BaseMatcher.''', func.__name__))
@@ -466,7 +466,7 @@ def check_modifiers(func, modifiers):
     for name in modifiers:
         if name not in argspec.args:
             raise TypeError(
-                format("A modifier was specified for argument {'0}' "
+                fmt("A modifier was specified for argument {'0}' "
                        "in {1}(), but is not declared.", name, func.__name__))
             
             
@@ -497,20 +497,20 @@ def apply_modifiers(func, args, kargs, modifiers, margs, mkargs):
                 value = modifiers[name](value)
             newkargs[name] = value
         else:
-            raise TypeError(format("No value for argument '{0}' in "
+            raise TypeError(fmt("No value for argument '{0}' in "
                                    "{1}(...)", name, func.__name__))
     # copy across varags
     if spec.varargs:
         newargs.extend(map(margs, args))
     elif args:
-        raise TypeError(format("Unexpected argument {0!r} for {1}(...)", 
+        raise TypeError(fmt("Unexpected argument {0!r} for {1}(...)", 
                                args[0], func.__name__))
     if spec.keywords:
         for name in kargs:
             newkargs[name] = mkargs(kargs[name])
     elif kargs:
         for name in kargs:
-            raise TypeError(format("Unexpected argument {0}={1!r} for {2}(...)", 
+            raise TypeError(fmt("Unexpected argument {0}={1!r} for {2}(...)", 
                                    name, kargs[name], func.__name__))
     return (newargs, newkargs)
                 
@@ -554,7 +554,7 @@ def make_factory(maker, matcher):
     '''
     def factory(*args, **kargs):
         if args or kargs:
-            raise TypeError(format('{0}() takes no arguments', 
+            raise TypeError(fmt('{0}() takes no arguments', 
                                    matcher.__name__))
         return matcher
     document(factory, matcher)

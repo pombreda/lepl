@@ -30,7 +30,7 @@
 Raise an exception if the stream is not consumed entirely.
 '''
 
-from lepl.stream.core import s_empty, s_format, s_deepest
+from lepl.stream.core import s_empty, s_fmt, s_deepest
 from lepl.matchers.support import trampoline_matcher_factory
 
 
@@ -39,7 +39,7 @@ def FullFirstMatch(matcher, eos=True):
     '''
     Raise an exception if the first match fails (if eos=False) or does not
     consume the entire input stream (eos=True).  The exception includes 
-    information about the location of the deepest match.
+    infmtion about the location of the deepest match.
     
     This only works for the first match because we cannot reset the stream
     facade for subsequent matches (also, if you want multiple matches you
@@ -68,12 +68,12 @@ def FullFirstMatch(matcher, eos=True):
 
 class FullFirstMatchException(Exception):
     '''
-    The exception raised by `FullFirstMatch`.  This includes information
+    The exception raised by `FullFirstMatch`.  This includes infmtion
     about the deepest point read in the stream. 
     '''
     
     def __init__(self, stream):
         super(FullFirstMatchException, self).__init__(
-            s_format(s_deepest(stream),
+            s_fmt(s_deepest(stream),
                      'The match failed in {filename} at {rest} ({location}).'))
 

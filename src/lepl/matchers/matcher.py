@@ -35,7 +35,7 @@ Base class for matchers.
 from abc import ABCMeta
 from types import FunctionType
 
-from lepl.support.lib import format, singleton, identity
+from lepl.support.lib import fmt, singleton, identity
 
 # pylint: disable-msg=C0103, W0105
 # Python 2.6
@@ -115,7 +115,7 @@ def case_type(matcher, if_factory, if_matcher):
         return if_matcher(matcher)
     else:
         raise MatcherTypeException(
-            format('{0!s} ({1}) does not appear to be a matcher type', 
+            fmt('{0!s} ({1}) does not appear to be a matcher type', 
                    matcher, type(matcher)))
 
 
@@ -133,7 +133,7 @@ def case_instance(matcher, if_wrapper, if_matcher):
         return if_matcher(matcher)
     else:
         raise MatcherTypeException(
-            format('{0!s} ({1}) does not appear to be a matcher', 
+            fmt('{0!s} ({1}) does not appear to be a matcher', 
                    matcher, type(matcher)))
 
 

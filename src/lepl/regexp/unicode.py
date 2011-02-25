@@ -34,7 +34,7 @@ A regexp implementation for unicode strings.
 from sys import maxunicode
 
 from lepl.regexp.str import StrAlphabet, ILLEGAL
-from lepl.support.lib import chr, lmap, format
+from lepl.support.lib import chr, lmap, fmt
 
 _WHITESPACE = '\u0009\u000A\u000B\u000C\u000D\u0020\u0085\u00A0\u1680' \
                 '\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007' \

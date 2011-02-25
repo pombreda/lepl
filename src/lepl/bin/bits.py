@@ -43,7 +43,7 @@ stored in memory.  Unfortunately we cannot implement both because integer
 values do not contain any flag to say how the user specified them (hex or
 decimal).
 
-A very similar issue - that integers do not carry any information to say
+A very similar issue - that integers do not carry any infmtion to say
 how many leading zeroes were entered by the user - suggests a solution to
 this problem.  To solve the leading zeroes issue we accept integers as 
 strings and do the conversion ourselves.  Since we are dealing with strings 
@@ -95,7 +95,7 @@ else:
             return self.__length
     
         def __repr__(self):
-            return 'Int({0},{1})'.format(super(Int, self).__str__(), 
+            return 'Int({0},{1})'.fmt(super(Int, self).__str__(), 
                                          self.__length)
     
     
@@ -122,7 +122,7 @@ else:
         A sequence of bits, of arbitrary length.  Has similar semantics to
         strings, in that a single index is itself a BitString (of unit length).
         
-        This is intended as a standard format for arbitrary binary data, to help
+        This is intended as a standard fmt for arbitrary binary data, to help
         with conversion between other types.  In other words, convert to and from
         this, and then chain conversions.
         
@@ -150,17 +150,17 @@ else:
             if value is None:
                 value = bytes()
             if not isinstance(value, bytes):
-                raise TypeError('BitString wraps bytes: {0!r}'.format(value))
+                raise TypeError('BitString wraps bytes: {0!r}'.fmt(value))
             if length < 0:
-                raise ValueError('Negative length: {0!r}'.format(length))
+                raise ValueError('Negative length: {0!r}'.fmt(length))
             if not 0 <= offset < 8 :
-                raise ValueError('Non-byte offset: {0!r}'.format(offset))
+                raise ValueError('Non-byte offset: {0!r}'.fmt(offset))
             self.__bytes = value
             self.__length = unpack_length(length)
             self.__offset = offset
             if len(value) != bytes_for_bits(self.__length, self.__offset):
                 raise ValueError('Inconsistent length: {0!r}/{1!r}'
-                                 .format(value, length))
+                                 .fmt(value, length))
             
         def bytes(self, offset=0):
             '''
@@ -191,7 +191,7 @@ else:
             and bits running from left to right.  This is a "picture" of the bits.
             
             For more than 64 bits, give a hex encoding of bytes (right padded
-            with zeros), shown in big-endian format.
+            with zeros), shown in big-endian fmt.
             
             In both cases, the length in bits is given after a trailing slash.
             
@@ -200,7 +200,7 @@ else:
             '''
             if self.__length > 64:
                 hex_ = ''.join(hex(x)[2:] for x in self.bytes())
-                return '{0}x0/{1}'.format(hex_, self.__length)
+                return '{0}x0/{1}'.fmt(hex_, self.__length)
             else:
                 chars = []
                 byte = []
@@ -217,14 +217,14 @@ else:
                         byte.append('1')
                     count += 1
                 chars.extend(byte)
-                return '{0}b0/{1}'.format(''.join(chars), self.__length)
+                return '{0}b0/{1}'.fmt(''.join(chars), self.__length)
         
         def __repr__(self):
             '''
             An explicit display of internal state, including padding and offset.
             '''
             return 'BitString({0!r}, {1!r}, {2!r})' \
-                .format(self.__bytes, self.__length, self.__offset)
+                .fmt(self.__bytes, self.__length, self.__offset)
             
         def __len__(self):
             return self.__length
@@ -281,7 +281,7 @@ else:
             if big_endian and self.__length % 8:
                 raise ValueError('Length is not a multiple of 8 bits, so big '
                                  'endian integer poorly defined: {0}'
-                                 .format(self.__length))
+                                 .fmt(self.__length))
             bbs = self.bytes()
             if not big_endian:
                 bbs = reversed(list(bbs))
@@ -375,7 +375,7 @@ else:
             A plain int, or no tag, or leading tag, is byte little-endian by 
             default.
             
-            Length and big-endianness are inferred from the format for values 
+            Length and big-endianness are inferred from the fmt for values 
             given as strings, but explicit parameters override these.
             If no length is given, and none can be inferred, 32 bits is assumed
             (bit length cannot be inferred for decimal values, even as strings).
@@ -415,7 +415,7 @@ else:
                 if len(value) > 1 and not value[1].isdigit() and length is None:
                     bits = {'b':1, 'o':3, 'x':4}.get(value[1].lower(), None)
                     if not bits:
-                        raise ValueError('Unexpected base: {0!r}'.format(value))
+                        raise ValueError('Unexpected base: {0!r}'.fmt(value))
                     length = bits * (len(value) - 2)
                 if big_endian and bits == 1:
                     # binary value is backwards!
@@ -433,7 +433,7 @@ else:
                 raise ValueError('A big-endian int with a length that '
                                  'is not an integer number of bytes cannot be '
                                  'encoded as a stream of bits: {0!r}/{1!r}'
-                                 .format(value,  length))
+                                 .fmt(value,  length))
             bbs, val = bytearray(), value
             for _index in range(bytes_for_bits(length)):
                 bbs.append(val & 0xff)

@@ -36,7 +36,7 @@ from unittest import TestCase
 
 from lepl import UnicodeAlphabet
 from lepl.regexp.core import Compiler
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 from lepl.stream.simple import StringHelper
 from lepl.stream.core import DUMMY_HELPER
 
@@ -83,7 +83,7 @@ class CompilerTest(TestCase):
         alphabet = UnicodeAlphabet.instance()
         compiler = Compiler.single(alphabet, pattern)
         text = str(compiler.expression)
-        assert text == format('(?P<label>{0!s})', pattern), text
+        assert text == fmt('(?P<label>{0!s})', pattern), text
         nfa = compiler.nfa()
         result = list(nfa.match((0, StringHelper(target))))
         assert result == nfa_result, result

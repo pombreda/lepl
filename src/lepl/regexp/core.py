@@ -70,7 +70,7 @@ from lepl.support.graph import ConstructorWalker, clone, Clone
 from lepl.support.node import Node
 from lepl.regexp.interval import Character, TaggedFragments, IntervalMap,\
     _Character
-from lepl.support.lib import format, basestring, str, LogMixin
+from lepl.support.lib import fmt, basestring, str, LogMixin
 
 
 # pylint: disable-msg=C0103
@@ -159,7 +159,7 @@ class Alphabet(LogMixin, _Alphabet):
             last = b
         if last != self.max:
             inverted.append((self.after(last), self.max))
-        self._debug(format('invert {0} -> {1}', intervals, inverted))
+        self._debug(fmt('invert {0} -> {1}', intervals, inverted))
         return inverted
     
     def extension(self, text):
@@ -168,7 +168,7 @@ class Alphabet(LogMixin, _Alphabet):
         sequence of capitals.  It should return a character range.  Further
         uses of (*...) are still to be decided.
         '''
-        raise RegexpError(format('Extension {0!r} not supported by {1!s}',
+        raise RegexpError(fmt('Extension {0!r} not supported by {1!s}',
                                  text, self.__class__))
 
     @abstractmethod
@@ -438,10 +438,10 @@ class Compiler(LogMixin):
         '''
         Generate a NFA-based matcher.
         '''
-        self._debug(format('compiling to nfa: {0}', self))
+        self._debug(fmt('compiling to nfa: {0}', self))
         graph = NfaGraph(self.alphabet)
         self.expression.build(graph, graph.new_node(), graph.new_node())
-        self._debug(format('nfa graph: {0}', graph))
+        self._debug(fmt('nfa graph: {0}', graph))
         return NfaPattern(graph, self.alphabet)
         
     def dfa(self):
@@ -449,12 +449,12 @@ class Compiler(LogMixin):
         Generate a DFA-based matcher (faster than NFA, but returns only a
         single, greedy match).
         '''
-        self._debug(format('compiling to dfa: {0}', self))
+        self._debug(fmt('compiling to dfa: {0}', self))
         ngraph = NfaGraph(self.alphabet)
         self.expression.build(ngraph, ngraph.new_node(), ngraph.new_node())
-        self._debug(format('nfa graph: {0}', ngraph))
+        self._debug(fmt('nfa graph: {0}', ngraph))
         dgraph = NfaToDfa(ngraph, self.alphabet).dfa
-        self._debug(format('dfa graph: {0}', dgraph))
+        self._debug(fmt('dfa graph: {0}', dgraph))
         return DfaPattern(dgraph, self.alphabet)
     
     def __str__(self):
@@ -471,7 +471,7 @@ class Compiler(LogMixin):
         if isinstance(regexp, basestring):
             coerced = alphabet.parse(regexp)
             if not coerced:
-                raise RegexpError(format('Cannot parse regexp {0!r} using {1}',
+                raise RegexpError(fmt('Cannot parse regexp {0!r} using {1}',
                                          regexp, alphabet))
             return coerced
         else:
@@ -641,16 +641,16 @@ class NfaGraph(BaseGraph):
         for node in self:
             edges = []
             for (dest, edge) in self.transitions(node):
-                edges.append(format('{0}->{1}', edge, dest))
+                edges.append(fmt('{0}->{1}', edge, dest))
             for dest in self.empty_transitions(node):
                 edges.append(str(dest))
             label = '' if self.terminal(node) is None \
-                       else format('({0})', self.terminal(node))
+                       else fmt('({0})', self.terminal(node))
             if edges:
                 lines.append(
-                    format('{0}{1}: {2}', node, label, ', '.join(edges)))
+                    fmt('{0}{1}: {2}', node, label, ', '.join(edges)))
             else:
-                lines.append(format('{0}{1}', node, label))
+                lines.append(fmt('{0}{1}', node, label))
         return '; '.join(lines)
 
 
@@ -795,13 +795,13 @@ class DfaGraph(BaseGraph):
         for node in self:
             edges = []
             for (dest, edge) in self.transitions(node):
-                edges.append(format('{0}->{1}', edge, dest))
+                edges.append(fmt('{0}->{1}', edge, dest))
             nodes = [n for n in self.nfa_nodes(node)]
             edges = ' ' + ','.join(edges) if edges else ''
             labels = list(self.terminals(node))
-            labels = format('({0})', ','.join(str(label) for label in labels)) \
+            labels = fmt('({0})', ','.join(str(label) for label in labels)) \
                      if labels else ''
-            lines.append(format('{0}{1}: {2}{3}', node, labels, nodes, edges))
+            lines.append(fmt('{0}{1}: {2}{3}', node, labels, nodes, edges))
         return '; '.join(lines)
 
 

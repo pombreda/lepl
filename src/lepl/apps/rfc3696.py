@@ -178,7 +178,7 @@ def _Ipv6Address():
     A matcher for IPv6 addresses.
     
     Again, RFC 3696 says little; RFC 2373 (addresses) and 2732 (URLs) have 
-    much more information:
+    much more infmtion:
     
     1. The preferred form is x:x:x:x:x:x:x:x, where the 'x's are the
     hexadecimal values of the eight 16-bit pieces of the address.

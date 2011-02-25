@@ -34,7 +34,7 @@
 '''
 This is an example that generates some tables showing how the different
 separators handle spaces in a variety of different cases.  The output
-format is restructured text, which can be included directly in the 
+fmt is restructured text, which can be included directly in the 
 documentation.
 '''
 
@@ -76,12 +76,12 @@ def make_table(base, streams, separators_, title, titles_):
     
 def print_titles(title, titles_):
     '''
-    Print titles in the format expected by restructured text.
+    Print titles in the fmt expected by restructured text.
     '''
     n_titles = len(titles_)
     width = W_STREAM + n_titles * (W_YES+1) * 4
-    print('+{0}+'.format('-' * width))
-    print('|{0:{1}}|'.format(title, width))
+    print('+{0}+'.fmt('-' * width))
+    print('|{0:{1}}|'.fmt(title, width))
     print_row(True, n_titles, 4)
     print_columns('', 1, 4, titles_)
     print_row(False,  n_titles*2, 2)
@@ -100,10 +100,10 @@ def print_row(left, count, width, line='-'):
     print('+')
 
 def print_columns(left, count, width, titles_):
-    _print('|{0:{1}}'.format(left, W_STREAM), end='')
+    _print('|{0:{1}}'.fmt(left, W_STREAM), end='')
     for _i in range(count):
         for title in titles_:
-            _print('|{0:{1}}'.format(title, width * W_YES + width - 1), end='')
+            _print('|{0:{1}}'.fmt(title, width * W_YES + width - 1), end='')
     _print('|')
     
 def build_parsers(base, separators_):

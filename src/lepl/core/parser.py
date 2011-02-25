@@ -43,7 +43,7 @@ from traceback import format_exc
 
 from lepl.stream.core import s_debug
 from lepl.core.monitor import prepare_monitors
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
     
 def tagged(method):
@@ -92,7 +92,7 @@ class GeneratorWrapper(object):
         Lazily evaluated for speed - saves 1/3 of time spent in constructor
         '''
         if not self.__cached_repr:
-            self.__cached_repr = format('{0}({1})', self.matcher, s_debug(self.stream))
+            self.__cached_repr = fmt('{0}({1})', self.matcher, s_debug(self.stream))
         return self.__cached_repr
     
     def __str__(self):
@@ -188,16 +188,16 @@ def trampoline(main, m_stack=None, m_value=None):
                     m_value.exception(value)
             except Exception as exception:
                 # do some logging etc before re-raising
-                log.error(format('Exception at epoch {0}, {1!s}: {2!s}',
+                log.error(fmt('Exception at epoch {0}, {1!s}: {2!s}',
                                  epoch, value, exception))
                 if stack:
-                    log.debug(format('Top of stack: {0}', stack[-1]))
+                    log.debug(fmt('Top of stack: {0}', stack[-1]))
                     try:
                         log.warn(format_exc())
                     except:
-                        log.warn('Exception cannot be formatted!')
+                        log.warn('Exception cannot be fmtted!')
                     for generator in stack:
-                        log.debug(format('Stack: {0}', generator))
+                        log.debug(fmt('Stack: {0}', generator))
                 raise
     finally:
         # record the remaining stack

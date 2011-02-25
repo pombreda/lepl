@@ -44,7 +44,7 @@ from lepl.support.graph import ConstructorWalker
 from lepl.matchers.matcher import Matcher, canonical_matcher_type,\
     MatcherTypeException, is_child
 from lepl.matchers.memo import _LMemo, _RMemo, LMemo, RMemo
-from lepl.matchers.transform import Transform, TransformationWrapper
+from lepl.matchers.transform import Transform, TransfmtionWrapper
 from lepl.core.rewriters import DelayedClone, NodeStats, Flatten, Memoize, \
     ComposeTransforms, AutoMemoize
 
@@ -106,7 +106,7 @@ class DelayedCloneTest(TestCase):
         '''
         Check children are non-None.
         '''
-#        print('>>>{0!s}<<<'.format(b))
+#        print('>>>{0!s}<<<'.fmt(b))
         assert is_child(b, Or)
         for child in b.matchers:
             assert child
@@ -150,7 +150,7 @@ class CloneTest(TestCase):
         self.assert_count(desc1, Or, 1)
         self.assert_count(desc1, Delayed, 2)
         self.assert_count(desc1, Transform, 7)
-        self.assert_count(desc1, TransformationWrapper, 7)
+        self.assert_count(desc1, TransfmtionWrapper, 7)
         
         clone2 = ComposeTransforms()(clone1)
         desc2 = NodeStats(clone2)
@@ -161,7 +161,7 @@ class CloneTest(TestCase):
         self.assert_count(desc2, Or, 1)
         self.assert_count(desc2, Delayed, 2)
         self.assert_count(desc2, Transform, 2)
-        self.assert_count(desc2, TransformationWrapper, 2)
+        self.assert_count(desc2, TransfmtionWrapper, 2)
         
         clone3 = Memoize(RMemo)(clone2)
         desc3 = NodeStats(clone3) 

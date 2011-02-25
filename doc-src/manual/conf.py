@@ -40,7 +40,7 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'contents'
 
-# General information about the project.
+# General infmtion about the project.
 project = u'LEPL'
 copyright = u'2009-2011, Andrew Cooke'
 
@@ -60,7 +60,7 @@ release = '4.4.0'
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
 #today = ''
-# Else, today_fmt is used as the format for a strftime call.
+# Else, today_fmt is used as the fmt for a strftime call.
 #today_fmt = '%B %d, %Y'
 
 # List of documents that shouldn't be included in the build.
@@ -159,7 +159,7 @@ html_theme_options = {
 html_static_path = ['.static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
-# using the given strftime format.
+# using the given strftime fmt.
 #html_last_updated_fmt = '%b %d, %Y'
 
 # If true, SmartyPants will be used to convert quotes and dashes to

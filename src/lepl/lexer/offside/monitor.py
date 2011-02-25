@@ -28,52 +28,58 @@
 # MPL or the LGPL License.
 
 '''
-Initial exploration of cairo.
+Support the stack-scoped tracking of indent level blocks.
 '''
 
-import cairo
 
-from lepl.cairo.context import cset
-from lepl.cairo.colour import WHITE, BLUE, BLACK
+from lepl.core.monitor import ActiveMonitor
+from lepl.lexer.offside.support import OffsideError
+from lepl.support.state import State
+from lepl.support.lib import LogMixin, fmt
 
-    
-def spiral():
-    
-    width, height = 400, 300
-    
-    surface = cairo.ImageSurface(cairo.fmt_ARGB32, width, height)
-    ctx = cairo.Context(surface)
-    
-    with cset(ctx,
-              source_rgb=WHITE,
-              operator=cairo.OPERATOR_SOURCE):
-        ctx.paint()
 
-    with cset(ctx,
-              line_width=0.1,
-              source_rgb=BLACK):
-        ctx.rectangle(0.25, 0.25, 0.5, 0.5)
-        ctx.stroke()
+class BlockMonitor(ActiveMonitor, LogMixin):
+    '''
+    This tracks the current indent level (in number of spaces).  It is
+    read by `Line` and updated by `Block`.
+    '''
     
-    wd = .02 * width
-    hd = .02 * height
-    width -= 2
-    height -= 2
-
-    with cset(ctx, 
-              source_rgb=BLUE):
-        ctx.move_to(width + 1, 1 - hd)
-        for i in range(9):
-            ctx.rel_line_to (0, height - hd * (2 * i - 1))
-            ctx.rel_line_to (- (width - wd * (2 *i)), 0)
-            ctx.rel_line_to (0, - (height - hd * (2*i)))
-            ctx.rel_line_to (width - wd * (2 * i + 1), 0)
-        ctx.stroke()
-
-    surface.write_to_png('spiral.png')
-   
-
+    def __init__(self, start=0):
+        '''
+        start is the initial indent (in spaces).
+        '''
+        super(BlockMonitor, self).__init__()
+        self.__stack = [start]
+        self.__state = State.singleton()
+        
+    def push_level(self, level):
+        '''
+        Add a new indent level.
+        '''
+        self.__stack.append(level)
+        self.__state[BlockMonitor] = level
+        self._debug(fmt('Indent -> {0:d}', level))
+        
+    def pop_level(self):
+        '''
+        Drop one level.
+        '''
+        self.__stack.pop()
+        if not self.__stack:
+            raise OffsideError('Closed an unopened indent.') 
+        self.__state[BlockMonitor] = self.indent
+        self._debug(fmt('Indent <- {0:d}', self.indent))
+       
+    @property
+    def indent(self):
+        '''
+        The current indent value (number of spaces).
+        '''
+        return self.__stack[-1]
     
-if __name__ == '__main__':
-    spiral()
-    
+
+def block_monitor(start=0):
+    '''
+    Add an extra lambda for the standard monitor interface.
+    '''
+    return lambda: BlockMonitor(start)

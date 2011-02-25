@@ -61,7 +61,7 @@ from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.interval import Character
 from lepl.regexp.unicode import UnicodeAlphabet
 from lepl.core.rewriters import clone, DelayedClone, Rewriter
-from lepl.support.lib import format, str, basestring
+from lepl.support.lib import fmt, str, basestring
 
 
 class RegexpContainer(object):
@@ -95,7 +95,7 @@ class RegexpContainer(object):
         regexps = []
         for possible in possibles:
             if isinstance(possible, RegexpContainer):
-                cls.log.debug(format('unpacking: {0!s}', possible))
+                cls.log.debug(fmt('unpacking: {0!s}', possible))
                 if have_add is None or possible.add_reqd == have_add:
                     regexps.append(possible.regexp)
                     # this flag indicates that it's "worth" using the regexp
@@ -104,7 +104,7 @@ class RegexpContainer(object):
                 else:
                     raise Unsuitable('Add inconsistent.')
             else:
-                cls.log.debug(format('cannot unpack: {0!s}', 
+                cls.log.debug(fmt('cannot unpack: {0!s}', 
                                      possible.__class__))
                 raise Unsuitable('Not a container.')
         return (use, regexps)
@@ -127,10 +127,10 @@ class RegexpContainer(object):
         '''
         if use and not add_reqd:
             matcher = single(alphabet, node, regexp, regexp_type, wrapper)
-            # if matcher is a Transformable with a Transformation other than
+            # if matcher is a Transformable with a Transfmtion other than
             # the standard empty_adapter then we must stop
             if len(matcher.wrapper.functions) > 1:
-                cls.log.debug(format('Force matcher: {0}', matcher.wrapper))
+                cls.log.debug(fmt('Force matcher: {0}', matcher.wrapper))
                 return matcher
         else:
             # not good enough to have a regexp as default, so either force
@@ -147,13 +147,13 @@ def single(alphabet, node, regexp, regexp_type, wrapper=None):
     Create a matcher for the given regular expression.
     '''
     # avoid dependency loops
-    from lepl.matchers.transform import TransformationWrapper
+    from lepl.matchers.transform import TransfmtionWrapper
     matcher = regexp_type(regexp, alphabet)
-    matcher = matcher.compose(TransformationWrapper(empty_adapter))
+    matcher = matcher.compose(TransfmtionWrapper(empty_adapter))
     if wrapper is None:
         wrapper = node.wrapper
-    elif wrapper and not isinstance(wrapper, TransformationWrapper):
-        wrapper = TransformationWrapper(wrapper)
+    elif wrapper and not isinstance(wrapper, TransfmtionWrapper):
+        wrapper = TransfmtionWrapper(wrapper)
     if wrapper:
         wrapper.functions = \
                 list(filter(lambda x: x != empty_adapter, wrapper.functions))
@@ -207,7 +207,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
             char = Character([(alphabet_.min, alphabet_.max)], alphabet_)
         else:
             char = Character(((char, char) for char in restrict), alphabet_)
-        log.debug(format('Any: cloned {0}', char))
+        log.debug(fmt('Any: cloned {0}', char))
         regexp = Sequence(alphabet_, char)
         return RegexpContainer.build(original, regexp, alphabet_, 
                                      regexp_type, use)
@@ -220,7 +220,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
         (use, regexps) = \
             RegexpContainer.to_regexps(use, matchers, have_add=False)
         regexp = Choice(alphabet_, *regexps)
-        log.debug(format('Or: cloned {0}', regexp))
+        log.debug(fmt('Or: cloned {0}', regexp))
         return RegexpContainer.build(original, regexp, alphabet_, 
                                      regexp_type, use)
 
@@ -244,7 +244,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
                 RegexpContainer.to_regexps(use, matchers, have_add=None)
             # if we have regexp sub-expressions, join them
             regexp = Sequence(alphabet_, *regexps)
-            log.debug(format('And: cloning {0}', regexp))
+            log.debug(fmt('And: cloning {0}', regexp))
             return RegexpContainer.build(original, regexp, alphabet_, 
                                          regexp_type, use, add_reqd=add_reqd,
                                          wrapper=wrapper)
@@ -286,7 +286,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
         
     def clone_transform(use, original, matcher, wrapper):
         '''
-        We can assume that wrapper is a transformation.  add joins into
+        We can assume that wrapper is a transfmtion.  add joins into
         a sequence.
         '''
         if original.wrapper:
@@ -301,7 +301,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
             return matcher
         (use, [regexp]) = \
             RegexpContainer.to_regexps(use, [matcher], have_add=have_add)
-        log.debug(format('Transform: cloning {0}', regexp))
+        log.debug(fmt('Transform: cloning {0}', regexp))
         return RegexpContainer.build(original, regexp, alphabet_, 
                                      regexp_type, use,
                                      add_reqd=False, wrapper=wrapper)
@@ -312,7 +312,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
         '''
         chars = [Character([(c, c)], alphabet_) for c in text]
         regexp = Sequence(alphabet_, *chars)
-        log.debug(format('Literal: cloned {0}', regexp))
+        log.debug(fmt('Literal: cloned {0}', regexp))
         return RegexpContainer.build(original, regexp, alphabet_, 
                                      regexp_type, use)
     
@@ -364,7 +364,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
         regexp = Sequence(alphabet_, *seq)
         if addzero:
             regexp = Choice(alphabet_, regexp, Empty(alphabet_))
-        log.debug(format('DFS: cloned {0}', regexp))
+        log.debug(fmt('DFS: cloned {0}', regexp))
         return RegexpContainer.build(original, regexp, alphabet_, 
                                      regexp_type, use, add_reqd=add_reqd,
                                      wrapper=wrapper)
@@ -372,10 +372,10 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
     def clone_wrapper(use, original, *args, **kargs):
         factory = original.factory
         if factory in map_:
-            log.debug(format('Found {0}', factory))
+            log.debug(fmt('Found {0}', factory))
             return map_[factory](use, original, *args, **kargs)
         else:
-            log.debug(format('No clone for {0}, {1}', factory, map_.keys()))
+            log.debug(fmt('No clone for {0}, {1}', factory, map_.keys()))
             return original
         
     map_ = matcher_map({Any: clone_any, 
@@ -428,7 +428,7 @@ class CompileRegexp(Rewriter):
         if alphabet is None:
             alphabet = UnicodeAlphabet.instance()
         super(CompileRegexp, self).__init__(Rewriter.COMPILE_REGEXP,
-            format('CompileRegexp({0}, {1}, {2})', alphabet, use, matcher))
+            fmt('CompileRegexp({0}, {1}, {2})', alphabet, use, matcher))
         self.alphabet = alphabet
         self.use = use
         self.matcher = matcher

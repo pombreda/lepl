@@ -39,7 +39,7 @@ from lepl.lexer.support import LexerError
 from lepl.lexer.matchers import BaseToken, NonToken
 from lepl.matchers.matcher import Matcher, is_child
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 
 def find_tokens(matcher):
@@ -68,7 +68,7 @@ def find_tokens(matcher):
             visited.add(matcher)
     if tokens and non_tokens:
         raise LexerError(
-            format('The grammar contains a mix of Tokens and non-Token '
+            fmt('The grammar contains a mix of Tokens and non-Token '
                    'matchers at the top level. If Tokens are used then '
                    'non-token matchers that consume input must only '
                    'appear "inside" Tokens.  The non-Token matchers '
@@ -84,7 +84,7 @@ def assert_not_token(node, visited):
     if isinstance(node, Matcher) and node not in visited:
         visited.add(node)
         if isinstance(node, BaseToken):
-            raise LexerError(format('Nested token: {0}', node))
+            raise LexerError(fmt('Nested token: {0}', node))
         else:
             for child in node:
                 assert_not_token(child, visited)
@@ -111,9 +111,9 @@ class AddLexer(Rewriter):
             alphabet = UnicodeAlphabet.instance()
         # use '' to have no discard at all
         if discard is None:
-            discard = '[ \t\r\n]'
+            discard = '[ \t\r\n]+'
         super(AddLexer, self).__init__(Rewriter.LEXER,
-            name=format('Lexer({0}, {1}, {2})', alphabet, discard, lexer))
+            name=fmt('Lexer({0}, {1}, {2})', alphabet, discard, lexer))
         self.alphabet = alphabet
         self.discard = discard
         self.lexer = lexer if lexer else Lexer
@@ -121,7 +121,7 @@ class AddLexer(Rewriter):
     def __call__(self, graph):
         tokens = find_tokens(graph)
         if tokens:
-            self._debug(format('Found {0}', [token.id_ for token in tokens]))
+            self._debug(fmt('Found {0}', [token.id_ for token in tokens]))
             return self.lexer(graph, tokens, self.alphabet, self.discard)
         else:
             self._info('Lexer rewriter used, but no tokens found.')

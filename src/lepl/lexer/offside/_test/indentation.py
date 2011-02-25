@@ -36,7 +36,8 @@ from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.matchers.derived import Word, Letter
-from lepl.offside.lexer import Indent, LineAwareEol
+from lepl.lexer.offside.matchers import Indent, NO_BLOCKS
+from lepl.lexer.line_aware.matchers import LineEnd
 
 
 # pylint: disable-msg=R0201
@@ -56,11 +57,11 @@ left
     four'''
         word = Token(Word(Letter()))
         indent = Indent()
-        line1 = indent('') + LineAwareEol()
-        line2 = indent('') & word('left') + LineAwareEol()
-        line3 = indent('    ') & word('four') + LineAwareEol()
+        line1 = indent('') + LineEnd()
+        line2 = indent('') & word('left') + LineEnd()
+        line3 = indent('    ') & word('four') + LineEnd()
         expr = (line1 & line2 & line3)
-        expr.config.default_line_aware()
+        expr.config.offside(block_start=NO_BLOCKS)
         parser = expr.get_parse_string()
         result = parser(text)
         assert result == ['', '', 'left', '    ', 'four'], result
@@ -81,11 +82,11 @@ class TabTest(TestCase):
  \tspaceandtab'''
         word = Token(Word(Letter()))
         indent = Indent()
-        line1 = indent('') & ~LineAwareEol()
-        line2 = indent(' ') & word('onespace') & ~LineAwareEol()
-        line3 = indent('     ') & word('spaceandtab') & ~LineAwareEol()
+        line1 = indent('') & ~LineEnd()
+        line2 = indent(' ') & word('onespace') & ~LineEnd()
+        line3 = indent('     ') & word('spaceandtab') & ~LineEnd()
         expr = line1 & line2 & line3
-        expr.config.default_line_aware(tabsize=4).trace(True)
+        expr.config.offside(tabsize=4, block_start=NO_BLOCKS).trace(True)
         parser = expr.get_parse_string()
         result = parser(text)
         #print(result)

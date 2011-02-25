@@ -84,7 +84,7 @@ def left():
 
 def time(name='right'):
     from timeit import Timer
-    t = Timer("{0}()".format(name), "from __main__ import {0}".format(name))
+    t = Timer("{0}()".fmt(name), "from __main__ import {0}".fmt(name))
     print(t.timeit(number=10 if name == 'right' else 6)) 
     # right - 16.2 for 10
     # left - 82.5 for 6 (!)
@@ -103,7 +103,7 @@ p.sort_stats('time')
 p.print_stats(35)
     '''
     import cProfile
-    cProfile.run('{0}()'.format(name), 'nested.prof')
+    cProfile.run('{0}()'.fmt(name), 'nested.prof')
 
 if __name__ == '__main__':
 #    time('left')

@@ -43,7 +43,7 @@ from timeit import timeit
 
 from lepl import *
 from lepl._example.support import Example
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 NUMBER = 10
 REPEAT = 3
@@ -105,7 +105,7 @@ def dfa_regexp():
 # Next, build all the tests, making sure that we pre-compile parsers where
 # necessary and (important!) we avoid reusing a parser with a cache
 
-data = [format('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
+data = [fmt('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
                random(), random(), random(), random(), random())
         for i in range(NUMBER)]
 
@@ -139,8 +139,8 @@ for matcher in matchers:
 
 def run(matcher, cached, repeat):
     '''Time the given test.'''
-    stmt = 'tests[{0}][{1}][{2}]()'.format(matcher.__name__, cached, repeat)
-    setup = 'from __main__ import tests, {0}'.format(matcher.__name__)
+    stmt = 'tests[{0}][{1}][{2}]()'.fmt(matcher.__name__, cached, repeat)
+    setup = 'from __main__ import tests, {0}'.fmt(matcher.__name__)
     return timeit(stmt, setup, number=1)
 
 def analyse(matcher, t_uncached_base=None, t_cached_base=None):
@@ -154,7 +154,7 @@ def analyse(matcher, t_uncached_base=None, t_cached_base=None):
     (t_uncached, t_cached) = (min(t_uncached), min(t_cached))
     t_uncached = 1000.0 * t_uncached / NUMBER
     t_cached = 1000.0 * t_cached / NUMBER 
-    print(format('{0:>20s} {1:5.1f} {2:8s}  {3:5.1f} {4:8s}',
+    print(fmt('{0:>20s} {1:5.1f} {2:8s}  {3:5.1f} {4:8s}',
                  matcher.__name__, 
                  t_uncached, normalize(t_uncached, t_uncached_base), 
                  t_cached, normalize(t_cached, t_cached_base)))
@@ -162,14 +162,14 @@ def analyse(matcher, t_uncached_base=None, t_cached_base=None):
 
 def normalize(time, base):
     if base:
-        return '(x{0:5.2f})'.format(time / base)
+        return '(x{0:5.2f})'.fmt(time / base)
     else:
         return ''
 
 def main():
-    print('{0:d} iterations; time per iteration in ms (best of {1:d})\n'.format(
+    print('{0:d} iterations; time per iteration in ms (best of {1:d})\n'.fmt(
             NUMBER, REPEAT))
-    print(format('{0:>35s}    {1:s}', 're-compiled', 'cached'))
+    print(fmt('{0:>35s}    {1:s}', 're-compiled', 'cached'))
     (t_uncached, t_cached) = analyse(default)
     for matcher in matchers:
         if matcher is not default:

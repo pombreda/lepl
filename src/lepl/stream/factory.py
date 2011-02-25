@@ -32,7 +32,7 @@ from collections import Iterable
 
 from lepl.stream.simple import SequenceHelper, StringHelper, ListHelper
 from lepl.stream.iter import IterableHelper, Cons
-from lepl.support.lib import basestring, format, add_defaults, file
+from lepl.support.lib import basestring, fmt, add_defaults, file
 from lepl.lexer.stream import TokenHelper
 from lepl.stream.core import s_global_kargs, s_max, s_delta, s_id, s_len
 
@@ -119,7 +119,7 @@ class StreamFactory(object):
         elif isinstance(sequence, Iterable):
             return self.from_iterable(sequence, **kargs)
         else:
-            raise TypeError(format('Cannot generate a stream for type {0}',
+            raise TypeError(fmt('Cannot generate a stream for type {0}',
                                    type(sequence)))
 
 DEFAULT_STREAM_FACTORY = StreamFactory()

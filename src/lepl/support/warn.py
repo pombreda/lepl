@@ -34,7 +34,7 @@ and to disable those warnings.
 
 from logging import getLogger
 
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 
 _WARNINGS = {}
@@ -55,7 +55,7 @@ class Warning(object):
     def warn(self):
         if not self.silent and not self.displayed:
             print(self.message)
-            print(format('To disable this message call '
+            print(fmt('To disable this message call '
                          'lepl.support.warn.silence({0!r})', self.name)) 
             self.displayed = True
             
@@ -68,7 +68,7 @@ def silence(name):
     if name in _WARNINGS:
         _WARNINGS[name].silent = True
     else:
-        LOG.warn(format('No warning registered for {0}', name))
+        LOG.warn(fmt('No warning registered for {0}', name))
 
 
 def warn_on_use(message, name=None):

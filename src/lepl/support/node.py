@@ -33,7 +33,7 @@ Base classes for AST nodes (and associated functions).
 
 from lepl.support.graph import GraphStr, ConstructorGraphNode, ConstructorWalker,\
     postorder
-from lepl.support.lib import LogMixin, basestring, format
+from lepl.support.lib import LogMixin, basestring, fmt
 
 
 class NodeException(Exception):
@@ -57,7 +57,7 @@ def new_named_node(name, node):
     '''
     if type(node) != Node:
         raise NodeException(
-            format('Will not coerce a node subclass ({0}) to {1}',
+            fmt('Will not coerce a node subclass ({0}) to {1}',
                    type(node), name))
     class_ = type(name, (Node,), {})
     (args, kargs) = node._constructor_args()

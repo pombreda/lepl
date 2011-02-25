@@ -31,7 +31,7 @@
 from lepl.stream.iter import base_iterable_factory
 from lepl.stream.core import OFFSET, s_delta, s_line
 from lepl.stream.facade import HelperFacade
-from lepl.support.lib import format, LogMixin
+from lepl.support.lib import fmt, LogMixin
 
 
 class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
@@ -58,7 +58,7 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
 
     def next(self, cons, count=1):
         assert count == 1
-        self._debug(format('Token {0}', cons.head[0]))
+        self._debug(fmt('Token {0}', cons.head[0]))
         return (cons.head, (cons.tail, self))
     
     def line(self, cons, empty_ok):
@@ -99,12 +99,12 @@ class FilteredTokenHelper(LogMixin, HelperFacade):
     def __init__(self, delegate, *ids):
         super(FilteredTokenHelper, self).__init__(delegate)
         self._ids = ids
-        self._debug(format('Filtering tokens {0}', ids))
+        self._debug(fmt('Filtering tokens {0}', ids))
         
     def next(self, state, count=1):
         def add_self(response):
             ((tokens, token), (state, _)) = response
-            self._debug(format('Return {0}', tokens))
+            self._debug(fmt('Return {0}', tokens))
             return ((tokens, token), (state, self))
         self._debug('Filtering')
         if count != 1:
@@ -114,10 +114,10 @@ class FilteredTokenHelper(LogMixin, HelperFacade):
         while discard:
             ((tokens, _), (state, _)) = super(FilteredTokenHelper, self).next(state)
             if discard[-1] in tokens:
-                self._debug(format('Discarding token {0}', discard[-1]))
+                self._debug(fmt('Discarding token {0}', discard[-1]))
                 discard.pop()
             else:
-                self._debug(format('Failed to discard token {0}: {1}', 
+                self._debug(fmt('Failed to discard token {0}: {1}', 
                                    discard[-1], tokens))
                 return add_self(super(FilteredTokenHelper, self).next(start))
         return add_self(super(FilteredTokenHelper, self).next(state))

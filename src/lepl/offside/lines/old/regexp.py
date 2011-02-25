@@ -35,7 +35,7 @@ and end.
 from lepl.offside.support import LineAwareError, OffsideError
 from lepl.regexp.core import Character
 from lepl.regexp.str import StrAlphabet, StrParser
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 
 # pylint: disable-msg=W0105
@@ -94,7 +94,7 @@ class Marker(object):
         return hash(repr(self))
     
     def __repr__(self):
-        return format('Marker({0!r},{1!r})', self.text, self.high)
+        return fmt('Marker({0!r},{1!r})', self.text, self.high)
     
     def __len__(self):
         return 1
@@ -107,7 +107,7 @@ class Marker(object):
         return other
 
 def as_extension(x):
-    return format('(*{0})', x)
+    return fmt('(*{0})', x)
 
 
 SOL = Marker(as_extension(START), False)
@@ -131,7 +131,7 @@ class LineAwareAlphabet(StrAlphabet):
     def __init__(self, alphabet, parser_factory):
         if not isinstance(alphabet, StrAlphabet):
             raise LineAwareError(
-                format('Only StrAlphabet subclasses supported: {0}/{1}',
+                fmt('Only StrAlphabet subclasses supported: {0}/{1}',
                        alphabet, type(alphabet).__name__))
         super(LineAwareAlphabet, self).__init__(SOL, EOL,
                                                 parser_factory=parser_factory,
@@ -182,7 +182,7 @@ class LineAwareAlphabet(StrAlphabet):
                     filter(lambda x: x not in (SOL, EOL), chars))
         
     def __str__(self):
-        return format('<{0}<{1}>>', self.__class__.__name__,
+        return fmt('<{0}<{1}>>', self.__class__.__name__,
                       self.base.__class__.__name__) 
             
             
@@ -211,7 +211,7 @@ class HideSolEolParser(StrParser):
         # happening and we just use the usual alphabet
         if intervals[0][0] == self.alphabet.min or \
                 intervals[-1][1] == self.alphabet.max:
-            raise OffsideError(format('Using {0!s} with explicit markers.\n'
+            raise OffsideError(fmt('Using {0!s} with explicit markers.\n'
                 'Usually this means that you have (*SOL) or (*EOL) in a '
                 'regular expression.  This should not be necessary.  If you '
                 'do need to match those then you should disable their '

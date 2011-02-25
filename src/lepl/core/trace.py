@@ -36,7 +36,7 @@ Tools for logging and tracing.
 
 from lepl.stream.core import s_delta, s_line, s_len
 from lepl.core.monitor import ActiveMonitor, ValueMonitor, StackMonitor
-from lepl.support.lib import CircularFifo, LogMixin, sample, format, str
+from lepl.support.lib import CircularFifo, LogMixin, sample, fmt, str
 
 
 def TraceResults(enabled=False):
@@ -79,7 +79,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         if self.enabled > 0:
             self.generator = generator
-            self.action = format('next({0})', generator)
+            self.action = fmt('next({0})', generator)
     
     def after_next(self, value):
         '''
@@ -95,9 +95,9 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         if self.enabled > 0:
             self.generator = generator
             if type(value) is StopIteration:
-                self.action = format('stop  ->  {0}', generator)
+                self.action = fmt('stop  ->  {0}', generator)
             else:
-                self.action = format('{1!r}  ->  {0}', generator, value)
+                self.action = fmt('{1!r}  ->  {0}', generator, value)
     
     def after_throw(self, value):
         '''
@@ -112,7 +112,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         if self.enabled > 0:
             self.generator = generator
-            self.action = format('{1!r}  ->  {0}', generator, value)
+            self.action = fmt('{1!r}  ->  {0}', generator, value)
     
     def after_send(self, value):
         '''
@@ -133,10 +133,10 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         
     def fmt_result(self, value):
         '''
-        Provide a standard format for the results.
+        Provide a standard fmt for the results.
         '''
         (stream, depth, locn) = self.fmt_stream() 
-        return format('{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} '
+        return fmt('{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} '
                       '{5:s}  ->  {6!r}',
                       self.epoch, 
                       stream,
@@ -148,10 +148,10 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
                 
     def fmt_done(self):
         '''
-        Provide a standard format for failure.
+        Provide a standard fmt for failure.
         '''
         (stream, depth, locn) = self.fmt_stream() 
-        return format('{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} '
+        return fmt('{0:05d} {1!r:11s} {2} ({3:04d}) {4:03d} '
                       '{5:s}  ->  stop',
                       self.epoch, 
                       stream,
@@ -162,11 +162,11 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
                 
     def fmt_stream(self):
         '''
-        Provide a standard format for location.
+        Provide a standard fmt for location.
         '''
         try:
             (offset, lineno, char) = s_delta(self.generator.stream)
-            locn = format('{0}/{1}.{2}', offset, lineno, char)
+            locn = fmt('{0}/{1}.{2}', offset, lineno, char)
             depth = -s_len(self.generator.stream)
             try:
                 stream = sample('', s_line(self.generator.stream, False)[0], 9)
@@ -189,15 +189,15 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         '''
         if self.enabled > 0:
             if type(value) is StopIteration:
-                self._info(self.fmt_final_result(format('raise {0!r}', value)))
+                self._info(self.fmt_final_result(fmt('raise {0!r}', value)))
             else:
-                self._warn(self.fmt_final_result(format('raise {0!r}', value)))
+                self._warn(self.fmt_final_result(fmt('raise {0!r}', value)))
         
     def fmt_final_result(self, value):
         '''
-        Provide a standard format for the result.
+        Provide a standard fmt for the result.
         '''
-        return format('{0:05d}                            {1:03d} {2} {3}',
+        return fmt('{0:05d}                            {1:03d} {2} {3}',
                       self.epoch,
                       self.depth,
                       ' ' * 63,
@@ -325,13 +325,13 @@ class _RecordDeepest(_TraceResults):
         '''
         Display the result.
         '''
-        self._info(self.__format())
+        self._info(self.__fmt())
         
-    def __format(self):
+    def __fmt(self):
         '''
-        Format the result.
+        fmt the result.
         '''
-        return format(
+        return fmt(
             '\nUp to {0} matches before and including longest match:\n{1}\n'
             'Up to {2} failures following longest match:\n{3}\n'
             'Up to {4} successful matches following longest match:\n{5}\n',
@@ -357,7 +357,7 @@ class StreamMonitor(StackMonitor):
         type_ = type(stream)
         new = False
         if type_ not in self._streams:
-            print(format('Found new stream type: {0}', type_))
+            print(fmt('Found new stream type: {0}', type_))
             self._streams[type_] = set()
         streams = self._streams[type_]
         if stream not in streams:
@@ -365,9 +365,9 @@ class StreamMonitor(StackMonitor):
             if stream in streams:
                 new = True
         if new:
-            print(format('Found new stream: {2} {0} ({1})', 
+            print(fmt('Found new stream: {2} {0} ({1})', 
                          stream, type_, hash(stream)))
-            print(format(' source {1} ({0})', 
+            print(fmt(' source {1} ({0})', 
                          stream.source, type(stream.source)))
             
     

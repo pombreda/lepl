@@ -276,23 +276,23 @@ class ConfigBuilder(object):
         self.set_arguments(BaseToken, alphabet=alphabet)
         return self
 
-    def set_block_policy_arg(self, block_policy):
-        '''
-        Set the block policy on all `Block` instances.
-        
-        Although this option is required for "offside rule" parsing,
-        you normally do not need to call this because it is called by 
-        `default_line_aware` (and `line_aware`) if either `block_policy` 
-        or `block_start` is specified.
-        '''
-        from lepl.offside.matchers import Block
-        return self.set_arguments(Block, policy=block_policy)
-    
+#    def set_block_policy_arg(self, block_policy):
+#        '''
+#        Set the block policy on all `Block` instances.
+#        
+#        Although this option is required for "offside rule" parsing,
+#        you normally do not need to call this because it is called by 
+#        `default_line_aware` (and `line_aware`) if either `block_policy` 
+#        or `block_start` is specified.
+#        '''
+#        from lepl.offside.matchers import Block
+#        return self.set_arguments(Block, policy=block_policy)
+#    
     def full_first_match(self, eos=True):
         '''
         Raise an error if the first match fails.  If `eos` is True then this
         requires that the entire input is matched, otherwise it only requires
-        that the matcher succeed.  The exception includes information about
+        that the matcher succeed.  The exception includes infmtion about
         the deepest read to the stream (which is a good indication of where
         any error occurs).
         
@@ -517,7 +517,8 @@ class ConfigBuilder(object):
         self.remove_all_rewriters(Memoize)
         return self.remove_all_rewriters(AutoMemoize)
         
-    def blocks(self, block_policy=None, block_start=None):
+    def blocks(self, alphabet=None, discard=None, tabsize=None,
+               block_policy=None, block_start=None):
         '''
         Set the given `block_policy` on all block elements and add a 
         `block_monitor` with the given `block_start`.  If either is
@@ -528,19 +529,19 @@ class ConfigBuilder(object):
         `default_line_aware`  if either `block_policy` or 
         `block_start` is specified.
         '''
-        from lepl.offside.matchers import DEFAULT_POLICY 
-        from lepl.offside.monitor import block_monitor
+        from lepl.lexer.offside.lexer import make_offside_lexer
+        from lepl.lexer.offside.matchers import DEFAULT_POLICY, Block 
+        from lepl.lexer.offside.monitor import block_monitor
         if block_policy is None:
             block_policy = DEFAULT_POLICY
         if block_start is None:
             block_start = 0
         self.add_monitor(block_monitor(block_start))
-        self.set_block_policy_arg(block_policy)
+        self.set_arguments(Block, policy=block_policy)
+        self.lexer(alphabet, discard, make_offside_lexer(tabsize))
         return self
     
-    def line_aware(self, alphabet=None, parser_factory=None,
-                   discard=None, tabsize=-1, 
-                   block_policy=None, block_start=None):
+    def lines(self, alphabet=None, discard=None):
         '''
         Configure the parser for line aware behaviour.  This clears the
         current setting and sets many different options.
@@ -576,7 +577,7 @@ class ConfigBuilder(object):
         `block_policy` and `block_start` must be given.
         `
         '''
-        from lepl.lexer.line_aware.lexer import LineAwareLexer
+        from lepl.lexer.line_aware.lexer import LineLexer
 #        from lepl.offside.matchers import DEFAULT_TABSIZE
 #        from lepl.offside.regexp import LineAwareAlphabet, \
 #            make_hide_sol_eol_parser
@@ -584,11 +585,11 @@ class ConfigBuilder(object):
 #            LineAwareTokenSource
 #        from lepl.regexp.unicode import UnicodeAlphabet
         
-        self.clear()
+#        self.clear()
         
-        use_blocks = block_policy is not None or block_start is not None
-        if use_blocks:
-            self.blocks(block_policy, block_start)
+#        use_blocks = block_policy is not None or block_start is not None
+#        if use_blocks:
+#            self.blocks(block_policy, block_start)
             
 #        if tabsize and tabsize < 0:
 #            tabsize = DEFAULT_TABSIZE
@@ -604,7 +605,7 @@ class ConfigBuilder(object):
 #        self.lexer(alphabet=self.__get_alphabet(), discard=discard, 
 #                   source=LineAwareTokenSource.factory(tabsize))
 #        self.stream_factory(LineAwareStreamFactory(self.__get_alphabet()))
-        self.lexer(alphabet, discard, LineAwareLexer)
+        self.lexer(alphabet, discard, LineLexer)
         
         return self
         
@@ -634,9 +635,9 @@ class ConfigBuilder(object):
     
     # packages
     
-    def default_line_aware(self, alphabet=None, parser_factory=None,
-                           discard=None, tabsize=-1, 
-                           block_policy=None, block_start=None):
+    def offside(self, alphabet=None, parser_factory=None,
+                discard=None, tabsize=-1, 
+                block_policy=None, block_start=None):
         '''
         Configure the parser for line aware behaviour.  This sets many 
         different options and is intended to be the "normal" way to enable
@@ -677,8 +678,9 @@ class ConfigBuilder(object):
         `block_policy` and `block_start` must be given.
         `
         '''
-        self.line_aware(alphabet, parser_factory, discard, tabsize, 
-                        block_policy, block_start)
+        self.clear()
+        self.blocks(alphabet=alphabet, discard=discard, tabsize=tabsize, 
+                    block_policy=block_policy, block_start=block_start)
         self.flatten()
         self.compose_transforms()
         self.auto_memoize()

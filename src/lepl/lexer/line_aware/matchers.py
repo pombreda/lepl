@@ -1,5 +1,3 @@
-from lepl.lexer.matchers import Token, RestrictTokensBy, EmptyToken
-from lepl.lexer.line_aware.lexer import START, END
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -29,6 +27,8 @@ from lepl.lexer.line_aware.lexer import START, END
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
+from lepl.lexer.matchers import Token, RestrictTokensBy, EmptyToken
+from lepl.lexer.line_aware.lexer import START, END
 
 
 class LineStart(EmptyToken):

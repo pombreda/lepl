@@ -1,4 +1,4 @@
-from lepl.stream.core import s_empty, s_line, s_debug, s_stream, s_format,\
+from lepl.stream.core import s_empty, s_line, s_debug, s_stream, s_fmt,\
     s_factory
 from lepl.lexer.support import RuntimeLexerError
 
@@ -40,7 +40,7 @@ from lepl.offside.monitor import BlockMonitor
 #from lepl.offside.regexp import START, END, _INDENT
 from lepl.offside.support import OffsideError
 from lepl.core.parser import tagged
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 
 # pylint: disable-msg=R0901, R0904, R0913, E1101
@@ -204,7 +204,7 @@ def Line(matcher):
 #                    yield (indent, stream)
 #                else:
 #                    self._debug(
-#                        format('Incorrect indent ({0:d} != len({1!r}), {2:d})',
+#                        fmt('Incorrect indent ({0:d} != len({1!r}), {2:d})',
 #                               self.__current_indent, indent[0], 
 #                               len(indent[0])))
 #        except StopIteration:

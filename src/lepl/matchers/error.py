@@ -34,13 +34,13 @@ This is not that complete or well thought through; it needs to be revised.
 '''
 
 from lepl.support.node import Node
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 from lepl.stream.core import s_kargs
 
 
 def make_error(msg):
     '''
-    Create an error node using a format string.
+    Create an error node using a fmt string.
     
     Invoke as ``** make_error('bad results: {results}')``, for example.
     '''
@@ -49,13 +49,13 @@ def make_error(msg):
         Create the error node when results are available.
         '''
         kargs = syntax_error_kargs(stream_in, stream_out, results)
-        return Error(format(msg, **kargs), kargs)
+        return Error(fmt(msg, **kargs), kargs)
     return fun
 
 
 def syntax_error_kargs(stream_in, stream_out, results):
     '''
-    Helper function for constructing format dictionary.
+    Helper function for constructing fmt dictionary.
     '''
     kargs = s_kargs(stream_in, prefix='in_')
     kargs = s_kargs(stream_out, prefix='out_', kargs=kargs)

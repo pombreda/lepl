@@ -54,8 +54,8 @@ class HelperFacade(StreamHelper):
     def kargs(self, state, prefix='', kargs=None):
         return self._delegate.kargs(state, prefix=prefix, kargs=kargs)
 
-    def format(self, state, template, prefix='', kargs=None):
-        return self._delegate.format(state, template, prefix=prefix, kargs=kargs)
+    def fmt(self, state, template, prefix='', kargs=None):
+        return self._delegate.fmt(state, template, prefix=prefix, kargs=kargs)
     
     def debug(self, state):
         return self._delegate.debug(state)

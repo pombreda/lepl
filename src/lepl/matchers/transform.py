@@ -28,19 +28,19 @@
 # MPL or the LGPL License.
 
 '''
-A transformation is a function that modifies the result of calling a matcher
+A transfmtion is a function that modifies the result of calling a matcher
 once.
 
-From the point of view of a transformation, a matcher is a function that 
+From the point of view of a transfmtion, a matcher is a function that 
 takes no arguments and either returns (results, stream_out) or raises a 
 StopIteration (note - this is an interface - the way you typically define 
 matchers doesn't conform to that interface, but decorators like 
 @function_matcher etc do the necessary work to adapt things as necessary).
 
-A transformation takes two arguments - the initial stream and a matcher 
-(as described above).  The transformation, when called, should return 
+A transfmtion takes two arguments - the initial stream and a matcher 
+(as described above).  The transfmtion, when called, should return 
 either return a (result, stream_out) pair, or raise a StopIteration.  
-A null transformation, therefore, would simply evaluate the matcher it 
+A null transfmtion, therefore, would simply evaluate the matcher it 
 receives:
     null_transform = lambda stream, matcher: matcher()
 '''
@@ -57,7 +57,7 @@ from abc import ABCMeta
 
 from lepl.core.parser import tagged
 from lepl.matchers.support import Transformable, coerce_
-from lepl.support.lib import format, str
+from lepl.support.lib import fmt, str
 from lepl.support.node import Node
 
 
@@ -80,7 +80,7 @@ ABC used to control `Apply`, so that the results list is supplied as "*args".
 ApplyArgs.register(Node)
 
 
-class NullTransformation(object):
+class NullTransfmtion(object):
     
     def __call__(self, _stream, matcher):
         return matcher()
@@ -93,10 +93,10 @@ class NullTransformation(object):
         return self.__bool__()
     
 
-class TransformationWrapper(object):
+class TransfmtionWrapper(object):
     '''
-    Helper object that composes transformations and also keeps a list of
-    the separate transformations for introspection.
+    Helper object that composes transfmtions and also keeps a list of
+    the separate transfmtions for introspection.
     '''
     
     def __init__(self, functions=None):
@@ -107,7 +107,7 @@ class TransformationWrapper(object):
         if not isinstance(functions, list):
             functions = [functions]
         self.functions = []
-        self.function = NullTransformation()
+        self.function = NullTransfmtion()
         self.extend(functions)
         
     def extend(self, functions):
@@ -125,25 +125,25 @@ class TransformationWrapper(object):
         
     def compose(self, wrapper):
         '''
-        Apply wrapped transformations to the results of this wrapper.
+        Apply wrapped transfmtions to the results of this wrapper.
         '''
         functions = list(self.functions)
         functions.extend(wrapper.functions)
-        return TransformationWrapper(functions)
+        return TransfmtionWrapper(functions)
 
     def precompose(self, wrapper):
         '''
-        Insert the transformation before the existing functions.
+        Insert the transfmtion before the existing functions.
         '''
         functions = list(wrapper.functions)
         functions.extend(self.functions)
-        return TransformationWrapper(functions)
+        return TransfmtionWrapper(functions)
         
     def __str__(self):
         return '<' + ','.join(map(lambda x: x.__name__, self.functions)) + '>'
         
     def __repr__(self):
-        return format('TransformationWrapper({0})', self)
+        return fmt('TransfmtionWrapper({0})', self)
     
     def __bool__(self):
         return bool(self.functions)
@@ -180,8 +180,8 @@ class Transform(Transformable):
         # (Transformable cannot have an argument because it subclasses
         # OperatorMatcher, and passing in function as a constructor arg
         # is a nightmare).
-        if not isinstance(function, TransformationWrapper):
-            function = TransformationWrapper(function)
+        if not isinstance(function, TransfmtionWrapper):
+            function = TransfmtionWrapper(function)
         self._arg(wrapper=function)
 
     @tagged
@@ -220,10 +220,10 @@ def PostCondition(matcher, predicate):
     if it is always True.
     '''
     
-    def transformation(stream_in, matcher):
+    def transfmtion(stream_in, matcher):
         (result, stream_out) = matcher()
         if predicate(result):
             return (result, stream_out)
         else:
             raise StopIteration
-    return Transform(matcher, transformation)
+    return Transform(matcher, transfmtion)

@@ -35,7 +35,7 @@ from unittest import TestCase
 
 #from logging import basicConfig, DEBUG
 from lepl.regexp.binary import binary_single_parser
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 # pylint: disable-msg=C0103, C0111, C0301, C0324, R0201, R0903, R0904
 # (dude this is just a test)
@@ -45,7 +45,7 @@ def _test_parser(text):
     return binary_single_parser('label', text)
 
 def label(text):
-    return format('(?P<label>{0!s})', text)
+    return fmt('(?P<label>{0!s})', text)
     
 class CharactersTest(TestCase):
     

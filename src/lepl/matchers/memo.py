@@ -45,9 +45,9 @@ from lepl.matchers.core import OperatorMatcher
 from lepl.matchers.matcher import is_child
 from lepl.matchers.support import NoMemo
 from lepl.core.parser import tagged, GeneratorWrapper
-from lepl.stream.core import s_key, s_format, s_len
+from lepl.stream.core import s_key, s_fmt, s_len
 from lepl.support.state import State
-from lepl.support.lib import LogMixin, empty, format
+from lepl.support.lib import LogMixin, empty, fmt
 
 
 # pylint: disable-msg=R0901, R0904
@@ -75,7 +75,7 @@ class _RMemo(OperatorMatcher):
     fails with left recursion it's safer to always use LMemo.
     
     Making this class Transformable did not improve performance (it's better
-    to place the transformation on critical classes like Or and And). 
+    to place the transfmtion on critical classes like Or and And). 
     '''
     
     # pylint: disable-msg=E1101
@@ -139,7 +139,7 @@ class RTable(LogMixin):
         embedded generator to get the next value (and then store it).
         '''
         if self.__active:
-            raise MemoException(s_format(stream, '''Left recursion with RMemo?
+            raise MemoException(s_fmt(stream, '''Left recursion with RMemo?
 i: {i}
 table: {table!r}
 stream: {repr}/{type}
@@ -180,7 +180,7 @@ class _DummyMatcher(object):
         '''
         Making this lazy has no effect on efficiency for nested.right.
         '''
-        self.__cached_repr = format('{0}({1})', outer, inner)
+        self.__cached_repr = fmt('{0}({1})', outer, inner)
         
     def __repr__(self):
         return self.__cached_repr
@@ -314,7 +314,7 @@ class PerCallCache(LogMixin):
                 result = yield self.__generator
                 if self.__unstable:
                     self._warn(
-                        format('A view completed before the cache was '
+                        fmt('A view completed before the cache was '
                                'complete: {0!r}. This typically means that '
                                'the grammar contains a matcher that does not '
                                'consume input within a loop and is usually '

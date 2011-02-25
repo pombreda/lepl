@@ -29,7 +29,7 @@
 
 
 from lepl._test.base import BaseTest
-from lepl.stream.core import s_empty, s_format, s_line, s_next, s_stream, \
+from lepl.stream.core import s_empty, s_fmt, s_line, s_next, s_stream, \
     s_debug, s_deepest
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 
@@ -48,8 +48,8 @@ class GenericTest(BaseTest):
         # get first character of next line
         (c21, s21) = s_next(s2)
         assert c21 == 's', c21
-        # and test formatting
-        locn = s_format(s21, '{location}: {rest}')
+        # and test fmtting
+        locn = s_fmt(s21, '{location}: {rest}')
         assert locn == "line 2, character 2: 'econd line'", locn
         # then get rest of second line
         (c22, s3) = s_next(s21, count=len('econd line'))
@@ -72,7 +72,7 @@ class GenericTest(BaseTest):
         assert d == "1:'i'", d
         # finally look at max depth (which was after 'h' in third line)
         m = s_deepest(s1)
-        locn = s_format(m, '{location}: {rest}')
+        locn = s_fmt(m, '{location}: {rest}')
         assert locn == "line 3, character 3: 'ird line'", locn
         
         

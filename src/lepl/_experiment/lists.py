@@ -41,7 +41,7 @@ and that would be considered the default for future work.
 from functools import reduce
 
 from lepl import *
-from lepl.support.lib import lmap, format
+from lepl.support.lib import lmap, fmt
 
 class List(list):
     '''
@@ -117,7 +117,7 @@ def make_fold(per_list=None, per_item=None,
 #print(flatten([[[1,2],3],4,5]))
 #
 #'''
-#This need adapting to use higher order functions to all the neat formatting,
+#This need adapting to use higher order functions to all the neat fmtting,
 #but shows the basic idea.
 #'''
 ##list_to_tree = \
@@ -126,7 +126,7 @@ def make_fold(per_list=None, per_item=None,
 ##                            per_item=lambda item: [str(item)])(list_))
 #        
 #list_to_str = make_fold(per_list=lambda type_, items: 
-#                            format('{0}({1})', type_.__name__, ','.join(items)), 
+#                            fmt('{0}({1})', type_.__name__, ','.join(items)), 
 #                        per_item=lambda item: repr(item))
 
 def list_to_tree(list_):

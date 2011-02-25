@@ -78,7 +78,7 @@ class CircularFifoTest(TestCase):
                 assert None == fifo.append(j)
             for j in range(i):
                 popped = fifo.pop()
-                assert j == popped, '{0} {1} {2}'.format(i, j, popped)
+                assert j == popped, '{0} {1} {2}'.fmt(i, j, popped)
         for i in range(4):
             fifo.append(i)
         assert 1 == fifo.pop()

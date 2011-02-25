@@ -46,7 +46,7 @@ from lepl.core.parser import tagged
 from lepl.matchers.support import OperatorMatcher, coerce_, \
     function_matcher, function_matcher_factory, trampoline_matcher_factory, \
     to, sequence_matcher
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 
 @sequence_matcher
@@ -89,7 +89,7 @@ def Any(restrict=None):
                 # it would be nice to make this an error, but for line aware
                 # parsing (and any other heterogenous input) it's legal
                 if not warned[0]:
-                    support._warn(format('Cannot restrict {0} with {1!r}',
+                    support._warn(fmt('Cannot restrict {0} with {1!r}',
                                           value, restrict))
                     warned[0] = True
                     raise StopIteration

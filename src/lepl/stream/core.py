@@ -41,7 +41,7 @@ the state at all, simply creating a new helper at each point.
 
 from abc import ABCMeta
 
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 
 #class _SimpleStream(metaclass=ABCMeta):
@@ -128,9 +128,9 @@ class StreamHelper(_StreamHelper):
         '''
         raise NotImplementedError
 
-    def format(self, state, template, prefix='', kargs=None):
-        '''Format a message using the expensive kargs function.'''
-        return format(template, **self.kargs(state, prefix=prefix, kargs=kargs))
+    def fmt(self, state, template, prefix='', kargs=None):
+        '''fmt a message using the expensive kargs function.'''
+        return fmt(template, **self.kargs(state, prefix=prefix, kargs=kargs))
     
     def debug(self, state):
         '''Generate an inexpensive debug message.'''
@@ -194,7 +194,7 @@ class StreamHelper(_StreamHelper):
         '''
         Return a stream that represents the deepest match.  The stream may be
         incomplete in some sense (it may not be possible to use it for
-        parsing more data), but it will have usable format and kargs methods.
+        parsing more data), but it will have usable fmt and kargs methods.
         '''
         raise NotImplementedError
     
@@ -215,14 +215,14 @@ class StreamHelper(_StreamHelper):
 # The following are helper functions that allow the methods above to be
 # called on (state, helper) tuples
 
-s_key = lambda stream, other: stream[1].key(stream[0], other)
+s_key = lambda stream, other=None: stream[1].key(stream[0], other)
 '''Invoke helper.key(state, other)'''
 
 s_kargs = lambda stream, prefix='', kargs=None: stream[1].kargs(stream[0], prefix=prefix, kargs=kargs)
 '''Invoke helper.kargs(state, prefix, kargs)'''
 
-s_format = lambda stream, template, prefix='', kargs=None: stream[1].format(stream[0], template, prefix=prefix, kargs=kargs)
-'''Invoke helper.format(state, template, prefix, kargs)'''
+s_fmt = lambda stream, template, prefix='', kargs=None: stream[1].fmt(stream[0], template, prefix=prefix, kargs=kargs)
+'''Invoke helper.fmt(state, template, prefix, kargs)'''
 
 s_debug = lambda stream: stream[1].debug(stream[0])
 '''Invoke helper.debug()'''

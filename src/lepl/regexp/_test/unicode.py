@@ -38,7 +38,7 @@ from unittest import TestCase
 from lepl import RegexpError, DEFAULT_STREAM_FACTORY
 from lepl.regexp.core import NfaGraph, NfaToDfa, Compiler
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 
 # pylint: disable-msg=C0103, C0111, C0301, R0201, R0904
 # (dude this is just a test)
@@ -51,7 +51,7 @@ def _test_parser(regexp):
     return Compiler.single(UNICODE, regexp, 'label')
 
 def label(text):
-    return format('(?P<label>{0!s})', text)
+    return fmt('(?P<label>{0!s})', text)
     
 class CharactersTest(TestCase):
     

@@ -28,9 +28,9 @@
 # MPL or the LGPL License.
 
 
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 from lepl._test.base import BaseTest
-from lepl.stream.core import s_empty, s_format, s_line, s_next, s_stream
+from lepl.stream.core import s_empty, s_fmt, s_line, s_next, s_stream
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 
 
@@ -47,12 +47,12 @@ class GenericTest(BaseTest):
             assert s_empty(s)
             try:
                 s_next(s)
-                assert False, format('expected error: {0}', s) 
+                assert False, fmt('expected error: {0}', s) 
             except StopIteration:
                 pass
             try:
                 s_line(s, False)
-                assert False, format('expected error: {0}', s) 
+                assert False, fmt('expected error: {0}', s) 
             except StopIteration:
                 pass
         
@@ -97,11 +97,11 @@ class GenericTest(BaseTest):
         assert l == 'line 1\n', l
         (l, _) = s_line(s, False)
         assert l == 'line 2\n', repr(l)
-        locn = s_format(s, '{location}')
+        locn = s_fmt(s, '{location}')
         assert locn == 'line 2, character 1', locn
         sl = s_stream(s, l)
         (_, sl) = s_next(sl, count=2)
-        locn = s_format(sl, '{location}')
+        locn = s_fmt(sl, '{location}')
         assert locn == 'line 2, character 3', locn
         
         

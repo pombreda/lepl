@@ -48,7 +48,7 @@ from lepl.core.parser import tagged
 from lepl.regexp.matchers import BaseRegexp
 from lepl.regexp.rewriters import CompileRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.support.lib import format, str
+from lepl.support.lib import fmt, str
 
 
 # pylint: disable-msg=W0105
@@ -62,7 +62,7 @@ ABC used to identify matchers that actually consume from the stream.  These
 are the "leaf" matchers that "do the real work" and they cannot be used at
 the same level as Tokens, but must be embedded inside them.
 
-This is a purely informative interface used, for example, to generate warnings 
+This is a purely infmtive interface used, for example, to generate warnings 
 for the user.  Not implementing this interface will not block any 
 functionality.
 '''
@@ -144,13 +144,13 @@ class BaseToken(OperatorMatcher, NoMemo):
         if isinstance(regexp, Matcher):
             rewriter = CompileRegexp(alphabet)
             rewrite = rewriter(regexp)
-            # one transformation is empty_adapter
+            # one transfmtion is empty_adapter
             if isinstance(rewrite, BaseRegexp) and \
                     len(rewrite.wrapper.functions) <= 1:
                 regexp = str(rewrite.regexp)
             else:
                 raise LexerError(
-                    format('A Token was specified with a matcher, '
+                    fmt('A Token was specified with a matcher, '
                            'but the matcher could not be converted to '
                            'a regular expression: {0}', rewrite))
         return regexp
@@ -174,7 +174,7 @@ class BaseToken(OperatorMatcher, NoMemo):
         '''
         if not self.compiled:
             raise LexerError(
-                format('A {0} token has not been compiled. '
+                fmt('A {0} token has not been compiled. '
                        'You must use the lexer rewriter with Tokens. '
                        'This can be done by using matcher.config.lexer().',
                        self.__class__.__name__))
@@ -192,10 +192,10 @@ class BaseToken(OperatorMatcher, NoMemo):
                         yield (result, next_stream)
         
     def __str__(self):
-        return format('{0}: {1!s}', self.id_, self.regexp)
+        return fmt('{0}: {1!s}', self.id_, self.regexp)
     
     def __repr__(self):
-        return format('<Token({0!s})>', self)
+        return fmt('<Token({0!s})>', self)
     
     @classmethod
     def reset_ids(cls):
@@ -261,7 +261,7 @@ class EmptyToken(Token):
         '''
         if not self.compiled:
             raise LexerError(
-                format('A {0} token has not been compiled. '
+                fmt('A {0} token has not been compiled. '
                        'You must use the lexer rewriter with Tokens. '
                        'This can be done by using matcher.config.lexer().',
                        self.__class__.__name__))
@@ -281,7 +281,7 @@ def RestrictTokensBy(*tokens):
             generator = matcher._match(filtered)
             while True:
                 (result, (state, _)) = yield generator
-                support._debug(format('Result {0}', result))
+                support._debug(fmt('Result {0}', result))
                 yield (result, (state, helper))
         return match
     def pass_args(matcher):

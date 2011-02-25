@@ -235,8 +235,8 @@ class StrTest(TestCase):
          stop=None,
          rest=FunctionWrapper<Any:<>>('0123456789'),
          first=FunctionWrapper<Any:<>>('0123456789')),
-        TransformationWrapper(<add>)),
-       TransformationWrapper(<apply>)),
+        TransfmtionWrapper(<add>)),
+       TransfmtionWrapper(<apply>)),
       TrampolineWrapper<And:<>>(
        TrampolineWrapper<And:<>>(
         FunctionWrapper<Literal:<>>('('),
@@ -246,7 +246,7 @@ class StrTest(TestCase):
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
           first=FunctionWrapper<Any:<>>(' \t')),
-         TransformationWrapper(<add>)),
+         TransfmtionWrapper(<add>)),
         [Delayed]),
        Transform:<add>(
         TrampolineWrapper<DepthFirst:<>>(
@@ -254,30 +254,30 @@ class StrTest(TestCase):
          stop=None,
          rest=FunctionWrapper<Any:<>>(' \t'),
          first=FunctionWrapper<Any:<>>(' \t')),
-        TransformationWrapper(<add>)),
+        TransfmtionWrapper(<add>)),
        FunctionWrapper<Literal:<>>(')'))),
-     TransformationWrapper(<apply>)),
+     TransfmtionWrapper(<apply>)),
     Transform:<add>(
      TrampolineWrapper<DepthFirst:<>>(
       start=0,
       stop=None,
       rest=FunctionWrapper<Any:<>>(' \t'),
       first=FunctionWrapper<Any:<>>(' \t')),
-     TransformationWrapper(<add>)),
+     TransfmtionWrapper(<add>)),
     TrampolineWrapper<DepthFirst:<>>(
      start=0,
      stop=None,
      rest=TrampolineWrapper<And:<>>(
       Transform:<apply>(
        FunctionWrapper<Any:<>>('*/'),
-       TransformationWrapper(<apply>)),
+       TransfmtionWrapper(<apply>)),
       Transform:<add>(
        TrampolineWrapper<DepthFirst:<>>(
         start=0,
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
         first=FunctionWrapper<Any:<>>(' \t')),
-       TransformationWrapper(<add>)),
+       TransfmtionWrapper(<add>)),
       Transform:<apply>(
        TrampolineWrapper<Or:<>>(
         Transform:<apply>(
@@ -287,8 +287,8 @@ class StrTest(TestCase):
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
            first=FunctionWrapper<Any:<>>('0123456789')),
-          TransformationWrapper(<add>)),
-         TransformationWrapper(<apply>)),
+          TransfmtionWrapper(<add>)),
+         TransfmtionWrapper(<apply>)),
         TrampolineWrapper<And:<>>(
          TrampolineWrapper<And:<>>(
           FunctionWrapper<Literal:<>>('('),
@@ -298,7 +298,7 @@ class StrTest(TestCase):
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
             first=FunctionWrapper<Any:<>>(' \t')),
-           TransformationWrapper(<add>)),
+           TransfmtionWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
@@ -306,20 +306,20 @@ class StrTest(TestCase):
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
-          TransformationWrapper(<add>)),
+          TransfmtionWrapper(<add>)),
          FunctionWrapper<Literal:<>>(')'))),
-       TransformationWrapper(<apply>))),
+       TransfmtionWrapper(<apply>))),
      first=TrampolineWrapper<And:<>>(
       Transform:<apply>(
        FunctionWrapper<Any:<>>('*/'),
-       TransformationWrapper(<apply>)),
+       TransfmtionWrapper(<apply>)),
       Transform:<add>(
        TrampolineWrapper<DepthFirst:<>>(
         start=0,
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
         first=FunctionWrapper<Any:<>>(' \t')),
-       TransformationWrapper(<add>)),
+       TransfmtionWrapper(<add>)),
       Transform:<apply>(
        TrampolineWrapper<Or:<>>(
         Transform:<apply>(
@@ -329,8 +329,8 @@ class StrTest(TestCase):
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
            first=FunctionWrapper<Any:<>>('0123456789')),
-          TransformationWrapper(<add>)),
-         TransformationWrapper(<apply>)),
+          TransfmtionWrapper(<add>)),
+         TransfmtionWrapper(<apply>)),
         TrampolineWrapper<And:<>>(
          TrampolineWrapper<And:<>>(
           FunctionWrapper<Literal:<>>('('),
@@ -340,7 +340,7 @@ class StrTest(TestCase):
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
             first=FunctionWrapper<Any:<>>(' \t')),
-           TransformationWrapper(<add>)),
+           TransfmtionWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
@@ -348,31 +348,31 @@ class StrTest(TestCase):
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
-          TransformationWrapper(<add>)),
+          TransfmtionWrapper(<add>)),
          FunctionWrapper<Literal:<>>(')'))),
-       TransformationWrapper(<apply>))))),
-   TransformationWrapper(<apply>)),
+       TransfmtionWrapper(<apply>))))),
+   TransfmtionWrapper(<apply>)),
   Transform:<add>(
    TrampolineWrapper<DepthFirst:<>>(
     start=0,
     stop=None,
     rest=FunctionWrapper<Any:<>>(' \t'),
     first=FunctionWrapper<Any:<>>(' \t')),
-   TransformationWrapper(<add>)),
+   TransfmtionWrapper(<add>)),
   TrampolineWrapper<DepthFirst:<>>(
    start=0,
    stop=None,
    rest=TrampolineWrapper<And:<>>(
     Transform:<apply>(
      FunctionWrapper<Any:<>>('+-'),
-     TransformationWrapper(<apply>)),
+     TransfmtionWrapper(<apply>)),
     Transform:<add>(
      TrampolineWrapper<DepthFirst:<>>(
       start=0,
       stop=None,
       rest=FunctionWrapper<Any:<>>(' \t'),
       first=FunctionWrapper<Any:<>>(' \t')),
-     TransformationWrapper(<add>)),
+     TransfmtionWrapper(<add>)),
     Transform:<apply>(
      TrampolineWrapper<And:<>>(
       Transform:<apply>(
@@ -384,8 +384,8 @@ class StrTest(TestCase):
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
            first=FunctionWrapper<Any:<>>('0123456789')),
-          TransformationWrapper(<add>)),
-         TransformationWrapper(<apply>)),
+          TransfmtionWrapper(<add>)),
+         TransfmtionWrapper(<apply>)),
         TrampolineWrapper<And:<>>(
          TrampolineWrapper<And:<>>(
           FunctionWrapper<Literal:<>>('('),
@@ -395,7 +395,7 @@ class StrTest(TestCase):
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
             first=FunctionWrapper<Any:<>>(' \t')),
-           TransformationWrapper(<add>)),
+           TransfmtionWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
@@ -403,30 +403,30 @@ class StrTest(TestCase):
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
-          TransformationWrapper(<add>)),
+          TransfmtionWrapper(<add>)),
          FunctionWrapper<Literal:<>>(')'))),
-       TransformationWrapper(<apply>)),
+       TransfmtionWrapper(<apply>)),
       Transform:<add>(
        TrampolineWrapper<DepthFirst:<>>(
         start=0,
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
         first=FunctionWrapper<Any:<>>(' \t')),
-       TransformationWrapper(<add>)),
+       TransfmtionWrapper(<add>)),
       TrampolineWrapper<DepthFirst:<>>(
        start=0,
        stop=None,
        rest=TrampolineWrapper<And:<>>(
         Transform:<apply>(
          FunctionWrapper<Any:<>>('*/'),
-         TransformationWrapper(<apply>)),
+         TransfmtionWrapper(<apply>)),
         Transform:<add>(
          TrampolineWrapper<DepthFirst:<>>(
           start=0,
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
           first=FunctionWrapper<Any:<>>(' \t')),
-         TransformationWrapper(<add>)),
+         TransfmtionWrapper(<add>)),
         Transform:<apply>(
          TrampolineWrapper<Or:<>>(
           Transform:<apply>(
@@ -436,8 +436,8 @@ class StrTest(TestCase):
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
              first=FunctionWrapper<Any:<>>('0123456789')),
-            TransformationWrapper(<add>)),
-           TransformationWrapper(<apply>)),
+            TransfmtionWrapper(<add>)),
+           TransfmtionWrapper(<apply>)),
           TrampolineWrapper<And:<>>(
            TrampolineWrapper<And:<>>(
             FunctionWrapper<Literal:<>>('('),
@@ -447,7 +447,7 @@ class StrTest(TestCase):
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
               first=FunctionWrapper<Any:<>>(' \t')),
-             TransformationWrapper(<add>)),
+             TransfmtionWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
@@ -455,20 +455,20 @@ class StrTest(TestCase):
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
-            TransformationWrapper(<add>)),
+            TransfmtionWrapper(<add>)),
            FunctionWrapper<Literal:<>>(')'))),
-         TransformationWrapper(<apply>))),
+         TransfmtionWrapper(<apply>))),
        first=TrampolineWrapper<And:<>>(
         Transform:<apply>(
          FunctionWrapper<Any:<>>('*/'),
-         TransformationWrapper(<apply>)),
+         TransfmtionWrapper(<apply>)),
         Transform:<add>(
          TrampolineWrapper<DepthFirst:<>>(
           start=0,
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
           first=FunctionWrapper<Any:<>>(' \t')),
-         TransformationWrapper(<add>)),
+         TransfmtionWrapper(<add>)),
         Transform:<apply>(
          TrampolineWrapper<Or:<>>(
           Transform:<apply>(
@@ -478,8 +478,8 @@ class StrTest(TestCase):
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
              first=FunctionWrapper<Any:<>>('0123456789')),
-            TransformationWrapper(<add>)),
-           TransformationWrapper(<apply>)),
+            TransfmtionWrapper(<add>)),
+           TransfmtionWrapper(<apply>)),
           TrampolineWrapper<And:<>>(
            TrampolineWrapper<And:<>>(
             FunctionWrapper<Literal:<>>('('),
@@ -489,7 +489,7 @@ class StrTest(TestCase):
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
               first=FunctionWrapper<Any:<>>(' \t')),
-             TransformationWrapper(<add>)),
+             TransfmtionWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
@@ -497,21 +497,21 @@ class StrTest(TestCase):
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
-            TransformationWrapper(<add>)),
+            TransfmtionWrapper(<add>)),
            FunctionWrapper<Literal:<>>(')'))),
-         TransformationWrapper(<apply>))))),
-     TransformationWrapper(<apply>))),
+         TransfmtionWrapper(<apply>))))),
+     TransfmtionWrapper(<apply>))),
    first=TrampolineWrapper<And:<>>(
     Transform:<apply>(
      FunctionWrapper<Any:<>>('+-'),
-     TransformationWrapper(<apply>)),
+     TransfmtionWrapper(<apply>)),
     Transform:<add>(
      TrampolineWrapper<DepthFirst:<>>(
       start=0,
       stop=None,
       rest=FunctionWrapper<Any:<>>(' \t'),
       first=FunctionWrapper<Any:<>>(' \t')),
-     TransformationWrapper(<add>)),
+     TransfmtionWrapper(<add>)),
     Transform:<apply>(
      TrampolineWrapper<And:<>>(
       Transform:<apply>(
@@ -523,8 +523,8 @@ class StrTest(TestCase):
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
            first=FunctionWrapper<Any:<>>('0123456789')),
-          TransformationWrapper(<add>)),
-         TransformationWrapper(<apply>)),
+          TransfmtionWrapper(<add>)),
+         TransfmtionWrapper(<apply>)),
         TrampolineWrapper<And:<>>(
          TrampolineWrapper<And:<>>(
           FunctionWrapper<Literal:<>>('('),
@@ -534,7 +534,7 @@ class StrTest(TestCase):
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
             first=FunctionWrapper<Any:<>>(' \t')),
-           TransformationWrapper(<add>)),
+           TransfmtionWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
@@ -542,30 +542,30 @@ class StrTest(TestCase):
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
-          TransformationWrapper(<add>)),
+          TransfmtionWrapper(<add>)),
          FunctionWrapper<Literal:<>>(')'))),
-       TransformationWrapper(<apply>)),
+       TransfmtionWrapper(<apply>)),
       Transform:<add>(
        TrampolineWrapper<DepthFirst:<>>(
         start=0,
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
         first=FunctionWrapper<Any:<>>(' \t')),
-       TransformationWrapper(<add>)),
+       TransfmtionWrapper(<add>)),
       TrampolineWrapper<DepthFirst:<>>(
        start=0,
        stop=None,
        rest=TrampolineWrapper<And:<>>(
         Transform:<apply>(
          FunctionWrapper<Any:<>>('*/'),
-         TransformationWrapper(<apply>)),
+         TransfmtionWrapper(<apply>)),
         Transform:<add>(
          TrampolineWrapper<DepthFirst:<>>(
           start=0,
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
           first=FunctionWrapper<Any:<>>(' \t')),
-         TransformationWrapper(<add>)),
+         TransfmtionWrapper(<add>)),
         Transform:<apply>(
          TrampolineWrapper<Or:<>>(
           Transform:<apply>(
@@ -575,8 +575,8 @@ class StrTest(TestCase):
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
              first=FunctionWrapper<Any:<>>('0123456789')),
-            TransformationWrapper(<add>)),
-           TransformationWrapper(<apply>)),
+            TransfmtionWrapper(<add>)),
+           TransfmtionWrapper(<apply>)),
           TrampolineWrapper<And:<>>(
            TrampolineWrapper<And:<>>(
             FunctionWrapper<Literal:<>>('('),
@@ -586,7 +586,7 @@ class StrTest(TestCase):
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
               first=FunctionWrapper<Any:<>>(' \t')),
-             TransformationWrapper(<add>)),
+             TransfmtionWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
@@ -594,20 +594,20 @@ class StrTest(TestCase):
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
-            TransformationWrapper(<add>)),
+            TransfmtionWrapper(<add>)),
            FunctionWrapper<Literal:<>>(')'))),
-         TransformationWrapper(<apply>))),
+         TransfmtionWrapper(<apply>))),
        first=TrampolineWrapper<And:<>>(
         Transform:<apply>(
          FunctionWrapper<Any:<>>('*/'),
-         TransformationWrapper(<apply>)),
+         TransfmtionWrapper(<apply>)),
         Transform:<add>(
          TrampolineWrapper<DepthFirst:<>>(
           start=0,
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
           first=FunctionWrapper<Any:<>>(' \t')),
-         TransformationWrapper(<add>)),
+         TransfmtionWrapper(<add>)),
         Transform:<apply>(
          TrampolineWrapper<Or:<>>(
           Transform:<apply>(
@@ -617,8 +617,8 @@ class StrTest(TestCase):
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
              first=FunctionWrapper<Any:<>>('0123456789')),
-            TransformationWrapper(<add>)),
-           TransformationWrapper(<apply>)),
+            TransfmtionWrapper(<add>)),
+           TransfmtionWrapper(<apply>)),
           TrampolineWrapper<And:<>>(
            TrampolineWrapper<And:<>>(
             FunctionWrapper<Literal:<>>('('),
@@ -628,7 +628,7 @@ class StrTest(TestCase):
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
               first=FunctionWrapper<Any:<>>(' \t')),
-             TransformationWrapper(<add>)),
+             TransfmtionWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
@@ -636,11 +636,11 @@ class StrTest(TestCase):
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
-            TransformationWrapper(<add>)),
+            TransfmtionWrapper(<add>)),
            FunctionWrapper<Literal:<>>(')'))),
-         TransformationWrapper(<apply>))))),
-     TransformationWrapper(<apply>))))),
- TransformationWrapper(<apply>)))''')
+         TransfmtionWrapper(<apply>))))),
+     TransfmtionWrapper(<apply>))))),
+ TransfmtionWrapper(<apply>)))''')
         parser = expression.get_parse()
         description = parser.matcher.tree()
         self.assert_same(description, r"""TrampolineWrapper<FullFirstMatch:<>>

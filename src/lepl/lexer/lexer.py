@@ -27,12 +27,12 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
-from lepl.support.lib import format
+from lepl.support.lib import fmt
 from lepl.support.context import NamespaceMixin
 from lepl.matchers.support import BaseMatcher
 from lepl.lexer.operators import TOKENS, TokenNamespace
 from lepl.core.parser import tagged
-from lepl.stream.core import s_empty, s_debug, s_stream, s_format, s_factory
+from lepl.stream.core import s_empty, s_debug, s_stream, s_fmt, s_factory
 from lepl.lexer.support import RuntimeLexerError
 from lepl.regexp.core import Compiler
 
@@ -68,7 +68,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
             unique = {}
             for token in tokens:
                 token.compile(alphabet)
-                self._debug(format('Token: {0}', token))
+                self._debug(fmt('Token: {0}', token))
                 # this just reduces the work for the regexp compiler
                 unique[token.id_] = token
             t_regexp = Compiler.multiple(alphabet, 
@@ -106,18 +106,18 @@ class Lexer(NamespaceMixin, BaseMatcher):
                 while not s_empty(stream):
                     try:
                         (terminals, match, next_stream) = self.t_regexp.match(stream)
-                        self._debug(format('Token: {0!r} {1!r} {2!s}',
+                        self._debug(fmt('Token: {0!r} {1!r} {2!s}',
                                            terminals, match, s_debug(stream)))
                         yield (terminals, s_stream(stream, match))
                     except TypeError:
                         (terminals, _size, next_stream) = self.s_regexp.size_match(stream)
-                        self._debug(format('Space: {0!r} {1!s}',
+                        self._debug(fmt('Space: {0!r} {1!s}',
                                            terminals, s_debug(stream)))
                     stream = next_stream
             except TypeError:
                 raise RuntimeLexerError(
-                    s_format(stream, 
-                             'No lexer for {rest} at {location} of {text}.'))
+                    s_fmt(stream, 
+                             'No token for {rest} at {location} of {text}.'))
         token_stream = s_factory(in_stream).to_token(tokens(), in_stream)
         generator = self.matcher._match(token_stream)
         while True:

@@ -50,7 +50,7 @@ from collections import deque
 #from logging import getLogger
 from threading import local
 
-from lepl.support.lib import singleton, format
+from lepl.support.lib import singleton, fmt
 
 
 class ContextError(Exception):
@@ -170,7 +170,7 @@ class OnceOnlyNamespace(Namespace):
         Set a value (if it has not already been set).
         '''
         if name in self.__once_only and self.get(name, None) is not None:
-            raise ContextError(format('{0} can only be set once', name))
+            raise ContextError(fmt('{0} can only be set once', name))
         else:
             super(OnceOnlyNamespace, self).set(name, value)
         

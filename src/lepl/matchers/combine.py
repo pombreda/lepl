@@ -46,7 +46,7 @@ from lepl.matchers.matcher import add_children
 from lepl.matchers.support import coerce_, sequence_matcher_factory, \
     trampoline_matcher_factory, to
 from lepl.matchers.transform import Transformable
-from lepl.support.lib import lmap, format, document
+from lepl.support.lib import lmap, fmt, document
 
 
 # pylint: disable-msg=C0103, W0105
@@ -433,7 +433,7 @@ def Difference(matcher, exclude, count=-1):
                 try:
                     while count:
                         (excluded, stream2) = yield bad_generator
-                        support._debug(format('Exclude: {0!r}', excluded))
+                        support._debug(fmt('Exclude: {0!r}', excluded))
                         grow_bad(stream2)
                         # limit number of matchers, if requested 
                         count -= 1
@@ -443,7 +443,7 @@ def Difference(matcher, exclude, count=-1):
             if stream1 not in bad[0]:
                 yield (value, stream1)
             else:
-                support._debug(format('Excluding: {0!r}', value))
+                support._debug(fmt('Excluding: {0!r}', value))
                 
     return match
 

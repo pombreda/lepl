@@ -61,7 +61,7 @@ calls it in a way that replicates the original calls to the node constructors.
 
 from collections import Sequence, deque
 
-from lepl.support.lib import compose, safe_in, safe_add, empty, format
+from lepl.support.lib import compose, safe_in, safe_add, empty, fmt
 
 
 FORWARD = 1    # forward edge
@@ -196,10 +196,10 @@ def loops(node, type_):
 # interface
 class ConstructorGraphNode(object):
     '''
-    An interface that provides information on constructor arguments.
+    An interface that provides infmtion on constructor arguments.
     
     This is used by `ConstructorWalker` to provide the results of
-    walking child nodes in the same format as those nodes were provided in
+    walking child nodes in the same fmt as those nodes were provided in
     the constructor.  The main advantage is that the names of named
     arguments are associated with the appropriate results.
     
@@ -374,7 +374,7 @@ class ConstructorWalker(object):
     Tree walker (it handles cyclic graphs by ignoring repeated nodes).
     
     This is based directly on the catamorphism of the graph.  The visitor 
-    encodes the type information.  It may help to see the constructor 
+    encodes the type infmtion.  It may help to see the constructor 
     arguments as type constructors.
     
     Nodes should be subclasses of `ConstructorGraphNode`.
@@ -566,7 +566,7 @@ class ConstructorStr(Visitor):
             scan = scan + 1
         while sections:
             self.__compress(lines, sections.pop()[1], len(lines))
-        return self.__format(lines)
+        return self.__fmt(lines)
     
     def __compress(self, lines, start, stop):
         '''
@@ -613,7 +613,7 @@ class ConstructorStr(Visitor):
         return (start-1, indent)
 
     @staticmethod
-    def __format(lines):
+    def __fmt(lines):
         '''
         Join lines together, given the indent.
         '''
@@ -740,7 +740,7 @@ def clone(node, args, kargs):
         # pylint: disable-msg=W0142
         return type(node)(*args, **kargs)
     except TypeError as err:
-        raise TypeError(format('Error cloning {0} with ({1}, {2}): {3}',
+        raise TypeError(fmt('Error cloning {0} with ({1}, {2}): {3}',
                                type(node), args, kargs, err))
 
 

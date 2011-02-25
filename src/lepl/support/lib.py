@@ -55,7 +55,7 @@ def assert_type(name, value, type_, none_ok=False):
         return
     if isinstance(value, type_):
         return
-    raise TypeError(format('{0} (value {1}) must be of type {2}.',
+    raise TypeError(fmt('{0} (value {1}) must be of type {2}.',
                            name, repr(value), type_.__name__))
 
 
@@ -196,7 +196,7 @@ def safe_in(value, container, default=False):
         return value in container
     except TypeError:
         log = getLogger('lepl.support.safe_in')
-        log.warn(format('Cannot test for {0!r} in collection', value))
+        log.warn(fmt('Cannot test for {0!r} in collection', value))
         return default
     
     
@@ -208,7 +208,7 @@ def safe_add(container, value):
         container.add(value)
     except TypeError:
         log = getLogger('lepl.support.safe_add')
-        log.warn(format('Cannot add {0!r} to collection', value))
+        log.warn(fmt('Cannot add {0!r} to collection', value))
 
 
 def fold(fun, start, sequence):
@@ -246,7 +246,7 @@ def singleton(key, factory=None):
     return __SINGLETONS[key]
 
 
-def format(template, *args, **kargs):
+def fmt(template, *args, **kargs):
     '''
     Guarantee that template is always unicode, as embedding unicode in ascii
     can cause errors.

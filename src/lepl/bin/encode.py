@@ -42,7 +42,7 @@ some cases, when using existing types.
 
 The next simplest approach seems to be to use some kind of separate dispatch
 (rather than the classes themselves) to convert things to a standard 
-intermediate format.  That is what I do here.  The intermediate format
+intermediate fmt.  That is what I do here.  The intermediate fmt
 is the pair (type, BitString), where "type" can be any value (but will be the
 type of the value in all implementations here - value could be used, but we're
 trying to give some impression of a layered approach).
@@ -104,7 +104,7 @@ else:
             for key in table:
                 if isinstance(value, key):
                     return (type_, table[key](value))
-            raise TypeError('Cannot convert {0!r}:{1!r}'.format(value, type_))
+            raise TypeError('Cannot convert {0!r}:{1!r}'.fmt(value, type_))
         return converter
     
     

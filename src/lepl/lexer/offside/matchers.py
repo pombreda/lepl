@@ -27,36 +27,77 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
-'''
-Matchers that are indent aware.
-'''
 
-from lepl.matchers.core import Any
-from lepl.matchers.combine import And
-from lepl.matchers.support import coerce_, OperatorMatcher
-from lepl.core.parser import tagged
-from lepl.offside.lexer import Indent, LineAwareEol, BIndent
-from lepl.offside.monitor import BlockMonitor
-#from lepl.offside.regexp import SOL as _SOL, EOL as _EOL
-from lepl.support.lib import fmt
 from lepl.lexer.matchers import Token
+from lepl.lexer.offside.lexer import INDENT
+from lepl.lexer.offside.monitor import BlockMonitor
+from lepl.core.parser import tagged
+from lepl.lexer.offside.support import OffsideError
+from lepl.matchers.support import OperatorMatcher, coerce_
+from lepl.matchers.combine import And
+from lepl.lexer.line_aware.matchers import LineEnd
+from lepl.support.lib import fmt
+from lepl.stream.core import s_key
 
-ExcludeSequence = lambda x, y: None
-
-# pylint: disable-msg=W0105
-# pylint convention
-
-#SOL = lambda: ~Any([_SOL])
-SOL = lambda x: None
+NO_BLOCKS = -1
 '''
-Allow explicit matching of start of line marker.
+Magic initial value for offset to disable indentation checks.
 '''
 
-#EOL = lambda: ~Any([_EOL])
-EOL = lambda x: None
-'''
-Allow explicit matching of end of line marker.
-'''
+
+class Indent(Token):
+    '''
+    Match an indent (space at start of line with offside lexer).
+    '''
+    
+    def __init__(self, regexp=None, content=None, id_=None, alphabet=None, 
+                 complete=True, compiled=False):
+        '''
+        Arguments used only to support cloning.
+        '''
+        super(Indent, self).__init__(regexp=None, content=None, id_=INDENT, 
+                                     alphabet=None, complete=True, 
+                                     compiled=compiled)
+        self.monitor_class = BlockMonitor
+        self.__current_indent = None
+        
+    def on_push(self, monitor):
+        '''
+        Read the global indentation level.
+        '''
+        self.__current_indent = monitor.indent
+        
+    def on_pop(self, monitor):
+        '''
+        Unused
+        '''
+    
+    @tagged
+    def _match(self, stream_in):
+        '''
+        Check that we match the current level
+        '''
+        if self.__current_indent is None:
+            raise OffsideError('No initial indentation has been set. '
+                               'You probably have not specified one of '
+                               'block_policy or block_start in the '
+                               'configuration')
+        try:
+            generator = super(Indent, self)._match(stream_in)
+            while True:
+                (indent, stream) = yield generator
+                self._debug(fmt('Indent {0!r}', indent))
+                if indent[0] and indent[0][-1] == '\n': indent[0] = indent[0][:-1]
+                if self.__current_indent == NO_BLOCKS or \
+                        len(indent[0]) == self.__current_indent:
+                    yield (indent, stream)
+                else:
+                    self._debug(
+                        fmt('Incorrect indent ({0:d} != len({1!r}), {2:d})',
+                               self.__current_indent, indent[0], 
+                               len(indent[0])))
+        except StopIteration:
+            return
 
 
 def constant_indent(n_spaces):
@@ -88,6 +129,7 @@ def to_right(current, indent):
     if new <= current:
         raise StopIteration
     return new
+
 
 
 # pylint: disable-msg=W0105
@@ -123,7 +165,6 @@ class Block(OperatorMatcher):
     '''
     
     POLICY = 'policy'
-    INDENT = 'indent'
     # class-wide default
     __indent = Indent()
     
@@ -177,11 +218,11 @@ class Block(OperatorMatcher):
         then evaluate the contents.
         '''
         # detect a nested call
-        (_line_no, _line_off, char_off, _desc, _text) = stream_in.location
-        if char_off in self.__streams:
+        key = s_key(stream_in)
+        if key in self.__streams:
             self._debug('Avoided left recursive call to Block.')
             return
-        self.__streams.add(char_off)
+        self.__streams.add(key)
         try:
             (indent, _stream) = yield self.indent._match(stream_in)
             current = self.__monitor.indent
@@ -193,7 +234,7 @@ class Block(OperatorMatcher):
             while True:
                 yield (yield generator)
         finally:
-            self.__streams.remove(char_off)
+            self.__streams.remove(key)
 
 
 # pylint: disable-msg=C0103
@@ -202,7 +243,7 @@ def BLine(matcher):
     '''
     Match the matcher within a line with block indent.
     '''
-    return ~BIndent() & matcher & ~LineAwareEol()
+    return ~Indent() & matcher & ~LineEnd()
 
 
 def only_token(token, item):
@@ -256,7 +297,7 @@ def ContinuedBLineFactory(continuation):
     '''
     return _ContinuedLineFactory(continuation, BLine)
     
-Extend = ExcludeSequence(only_token, [LineAwareEol(), Indent()])
+#Extend = ExcludeSequence(only_token, [LineAwareEol(), Indent()])
 '''
 Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 
 filtered out.  On matching, return the "outer" stream at the appropriate
