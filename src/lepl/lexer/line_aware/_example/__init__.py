@@ -36,6 +36,4 @@ Examples for the lepl.offside package.
 
 # pylint: disable-msg=E0611
 #@PydevCodeAnalysisIgnore
-import lepl.offside._example.line_aware
-import lepl.offside._example.offside
-import lepl.offside._example.pithon
+import lepl.lexer.line_aware._example.line_aware

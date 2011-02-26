@@ -915,7 +915,8 @@ class DfaPattern(LogMixin):
         for src in self.__graph:
             row = IntervalMap()
             for (dest, char) in self.__graph.transitions(src):
-                labels = list(self.__graph.terminals(dest))
+                # use tuple rather than list to allow hashing of tokens!
+                labels = tuple(self.__graph.terminals(dest))
                 for interval in char:
                     row[interval] = (dest, labels)
             self.__table[src] = row

@@ -30,10 +30,10 @@
 from lepl.lexer.lexer import Lexer
 from lepl.core.parser import tagged
 from lepl.stream.core import s_empty, s_line, s_debug, s_stream, s_fmt,\
-    s_factory, s_next
+    s_factory, s_next, s_delta, s_key
 from lepl.lexer.support import RuntimeLexerError
 from lepl.support.lib import fmt
-from lepl.lexer.line_aware.lexer import END, EMPTY
+from lepl.lexer.line_aware.lexer import END
 
 
 
@@ -50,20 +50,25 @@ def make_offside_lexer(tabsize):
     '''
     def wrapper(matcher, tokens, alphabet, discard, 
                 t_regexp=None, s_regexp=None):
-        return _OffsideLexer(matcher, tokens, alphabet, discard,
+        return OffsideLexer(matcher, tokens, alphabet, discard,
                              t_regexp=t_regexp, s_regexp=s_regexp, 
                              tabsize=tabsize)
     return wrapper
 
 
-class _OffsideLexer(Lexer):
+class OffsideLexer(Lexer):
     '''
     An alternative lexer that adds INDENT and EOL tokens.
+    
+    Note that because of the extend argument list this must be used in
+    the config via `make_offside_lexer()` (although in normal use it is
+    supplied by simply calling `config.blocks()` so you don't need to refer
+    to this class at all)
     '''
     
     def __init__(self, matcher, tokens, alphabet, discard, 
                   t_regexp=None, s_regexp=None, tabsize=8):
-        super(_OffsideLexer, self).__init__(matcher, tokens, alphabet, discard,
+        super(OffsideLexer, self).__init__(matcher, tokens, alphabet, discard,
                                             t_regexp=t_regexp, s_regexp=s_regexp)
         self._karg(tabsize=tabsize)
         self._tab = ' ' * tabsize
@@ -77,32 +82,39 @@ class _OffsideLexer(Lexer):
             stream = in_stream
             try:
                 while not s_empty(stream):
+                    
                     # this section differs from token lexer
                     (line, next_stream) = s_line(stream, False)
                     line_stream = s_stream(stream, line)
                     try:
                         (terminals, size, _) = self.s_regexp.size_match(line_stream)
-                    except TypeError:
-                        (terminals, size) = ([INDENT], 0)
-                    (indent, line_stream) = s_next(line_stream, count=size)
+                    except TypeError as e:
+                        (terminals, size) = ('<no initial space>', 0)
+                    (indent, next_line_stream) = s_next(line_stream, count=size)
                     if '\t' in indent:
                         indent = indent.replace('\t', self._tab)
-                    self._debug(fmt('Indent: {0!r} {1!r} {2!s}',
-                                       terminals, indent, s_debug(line_stream)))
-                    yield ([INDENT], s_stream(line_stream, indent))
-                    # from here on, as token lexer (share?)
+                    self._debug(fmt('Indent: {0!r} {1!r} {2!s} {3}',
+                                       terminals, indent, s_debug(line_stream),
+                                       s_delta(line_stream)))
+                    s = s_stream(line_stream, indent)
+                    self._debug(fmt('{0} {1} {2} {3} {4} {5}', s_delta(s), hash(s_key(s)), s_debug(line_stream), s_delta(line_stream), s_debug(stream), s_delta(stream)))
+                    yield ((INDENT,), s_stream(line_stream, indent))
+                    line_stream = next_line_stream
+                    
+                    # from here on, as line lexer (share?)
                     while not s_empty(line_stream):
                         try:
                             (terminals, match, next_line_stream) = self.t_regexp.match(line_stream)
-                            self._debug(fmt('Token: {0!r} {1!r} {2!s}',
-                                               terminals, match, s_debug(line_stream)))
+                            self._debug(fmt('Token: {0!r} {1!r} {2!s} {3}',
+                                               terminals, match, s_debug(line_stream),
+                                               s_delta(line_stream)))
                             yield (terminals, s_stream(line_stream, match))
                         except TypeError:
                             (terminals, _size, next_line_stream) = self.s_regexp.size_match(line_stream)
                             self._debug(fmt('Space: {0!r} {1!s}',
                                                terminals, s_debug(line_stream)))
                         line_stream = next_line_stream
-                    yield ([END], EMPTY)
+                    yield ((END,), s_stream(line_stream, ''))
                     stream = next_stream
             except TypeError:
                 raise RuntimeLexerError(

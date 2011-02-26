@@ -21,36 +21,39 @@ class ClosedBugTest(TestCase):
         self.run_test(program.get_parse(), False)
 
     def test_fixed(self):
-        #basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         empty = ~BLine(Empty(), indent=False)
         word = Token(Word())
         text = word[1:]
         block = Delayed()
         line = BLine(text) | block | empty
         block += Block(line[:]) > list
-        program = block[:] & Eos()
+        program = Trace(block[:] & Eos())
         program.config.blocks(block_policy=to_right, block_start=-1)
         self.run_test(program.get_parse(), True)
         
     def run_test(self, parser, ok):
         try:
             result = parser("""
-a1
 a2
-    b2
-        c2
-    b2
-    b2
-        c2
-           d2
-            e2
-    b2
-
-a3
-    b3
-
-a4
-    """)
+    b2""")
+#            result = parser("""
+#a1
+#a2
+#    b2
+#        c2
+#    b2
+#    
+#    b2
+#        c2
+#        
+#           d2
+#            e2
+#    b2
+#a3
+#    b3
+#a4
+#""")
             if ok:
                 assert result == [['a1', 'a2', ['b2', ['c2'], 'b2', 'b2', ['c2', ['d2', ['e2']]], 'b2'], 'a3', ['b3'], 'a4']], result
         except:

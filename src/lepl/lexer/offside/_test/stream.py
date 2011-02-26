@@ -36,8 +36,8 @@ from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.matchers.core import Regexp, Literal, Any
-from lepl.offside.matchers import BLine, Indent, LineAwareEol
-from lepl.offside.support import OffsideError
+from lepl.lexer.offside.matchers import BLine, Indent, LineEnd
+from lepl.lexer.offside.support import OffsideError
 from lepl.regexp.matchers import DfaRegexp
 
 class LineTest(TestCase):
@@ -47,7 +47,7 @@ class LineTest(TestCase):
         text = Token('[^\n\r]+')
         quoted = Regexp("'[^']'")
         line = BLine(text(quoted))
-        line.config.default_line_aware()
+        line.config.lines()
         parser = line.get_parse_string()
         try:
             parser("'a'")
@@ -60,7 +60,7 @@ class LineTest(TestCase):
         text = Token('[^\n\r]+')
         quoted = Regexp("'[^']'")
         line = BLine(text(quoted))
-        line.config.default_line_aware(block_start=0)
+        line.config.blocks(block_start=0)
         parser = line.get_parse_string()
         assert parser("'a'") == ["'a'"]
         
@@ -68,7 +68,7 @@ class LineTest(TestCase):
         #basicConfig(level=DEBUG)
         text = Token('[^\n\r]+')
         line = BLine(text(~Literal('aa') & Regexp('.*')))
-        line.config.default_line_aware(block_start=0)
+        line.config.blocks(block_start=0)
         parser = line.get_parse_string()
         assert parser('aabc') == ['bc']
         # what happens with an empty match?
@@ -77,12 +77,12 @@ class LineTest(TestCase):
         assert check.parse('aa') == ['']
         assert parser('aa') == ['']
         
-    def test_single_line(self):
-        #basicConfig(level=DEBUG)
-        line = DfaRegexp('(*SOL)[a-z]*(*EOL)')
-        line.config.default_line_aware()
-        parser = line.get_parse_string()
-        assert parser('abc') == ['abc']
+#    def test_single_line(self):
+#        #basicConfig(level=DEBUG)
+#        line = DfaRegexp('(*SOL)[a-z]*(*EOL)')
+#        line.config.blocks()
+#        parser = line.get_parse_string()
+#        assert parser('abc') == ['abc']
         
     def test_tabs(self):
         '''
@@ -90,16 +90,16 @@ class LineTest(TestCase):
         and EOL is used; otherwise Any()[:] matches those and we end up
         with a single monster token.
         '''
-        line = Indent() & Token(Any()) & LineAwareEol()
-        line.config.default_line_aware(tabsize=8, block_policy=0).trace(True)
+        line = Indent() & Token(Any()) & LineEnd()
+        line.config.blocks(tabsize=8, block_policy=0).trace(True)
         result = line.parse('a')
-        assert result == ['', 'a', ''], result
+        assert result == ['', 'a'], result
         result = line.parse('\ta')
-        assert result == ['        ', 'a', ''], result
-        line.config.default_line_aware(tabsize=None, block_policy=0)
+        assert result == ['        ', 'a'], result
+        line.config.blocks(tabsize=None, block_policy=0)
         result = line.parse('\ta')
-        assert result == ['\t', 'a', ''], result
-        line.config.default_line_aware(block_policy=0)
+        assert result == ['\t', 'a'], result
+        line.config.blocks(block_policy=0)
         result = line.parse('\ta')
-        assert result == ['        ', 'a', ''], result
+        assert result == ['        ', 'a'], result
 

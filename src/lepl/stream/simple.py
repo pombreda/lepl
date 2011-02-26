@@ -65,7 +65,7 @@ class SequenceHelper(BaseHelper):
     def key(self, state, other):
         offset = state + self._delta[OFFSET]
         key = HashKey(self.id ^ offset ^ hash(other), (self.id, hash(other)))
-        #print(self.id, offset, hash(other), self.debug(state), hash(key))
+        self._debug(fmt('Hash at offset {0}: {1}', offset, hash(key)))
         return key
     
     def _fmt(self, sequence, offset, maxlen=60, left='', right='', index=True):
@@ -161,8 +161,9 @@ class SequenceHelper(BaseHelper):
     def next(self, state, count=1):
         new_state = state+count
         if new_state <= len(self._sequence):
-            self.max(self._delta[OFFSET] + new_state - 1)
-            return (self._sequence[state:new_state], (new_state, self))
+            stream = (new_state, self)
+            self.max.update(self._delta[OFFSET] + new_state - 1, stream)
+            return (self._sequence[state:new_state], stream)
         else:
             raise StopIteration
     
@@ -180,8 +181,9 @@ class SequenceHelper(BaseHelper):
         '''Returns the rest of the data.'''
         new_state = len(self._sequence)
         if state < new_state or (empty_ok and state == new_state):
-            self.max(self._delta[OFFSET] + new_state)
-            return (self._sequence[state:new_state], (new_state, self))
+            stream = (new_state, self)
+            self.max.update(self._delta[OFFSET] + new_state, stream)
+            return (self._sequence[state:new_state], stream)
         else:
             raise StopIteration
         
@@ -194,7 +196,7 @@ class SequenceHelper(BaseHelper):
                             delta=self.delta(state))
         
     def deepest(self):
-        return (int(self.max) - self._delta[OFFSET], self)
+        return self.max.get()
     
     def debug(self, state):
         try:

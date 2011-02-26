@@ -66,7 +66,7 @@ class StreamHelper(_StreamHelper):
         from lepl.stream.factory import DEFAULT_STREAM_FACTORY
         self.id = id if id is not None else hash(self)
         self.factory = factory if factory else DEFAULT_STREAM_FACTORY
-        self.max = max if max else MutableMax()
+        self.max = max if max else MutableMaxDepth()
         self.global_kargs = global_kargs if global_kargs else {}
     
     def __repr__(self):
@@ -267,16 +267,31 @@ s_global_kargs = lambda stream: stream[1].global_kargs
 '''Access the global_kargs attribute.'''
 
 
-class MutableMax(object):
+#class MutableMax(object):
+#    
+#    def __init__(self):
+#        self.value = 0
+#        
+#    def __call__(self, value):
+#        self.value = max(self.value, value)
+#        
+#    def __int__(self):
+#        return self.value
+    
+
+class MutableMaxDepth(object):
     
     def __init__(self):
-        self.value = 0
+        self.depth = 0
+        self.stream = None
         
-    def __call__(self, value):
-        self.value = max(self.value, value)
+    def update(self, depth, stream):
+        if depth > self.depth or not self.stream:
+            self.depth = depth
+            self.stream = stream
         
-    def __int__(self):
-        return self.value
+    def get(self):
+        return self.stream
     
 
 class HashKey(object):

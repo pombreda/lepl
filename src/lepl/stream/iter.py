@@ -56,7 +56,7 @@ existing code where possible (in the use of the sub-helper).  It should even
 be possible to have iterables of iterables...
 '''
 
-from lepl.support.lib import add_defaults
+from lepl.support.lib import add_defaults, fmt
 from lepl.stream.simple import OFFSET, LINENO, BaseHelper
 from lepl.stream.core import s_delta, s_kargs, s_fmt, s_debug, s_next, \
     s_line, s_join, s_empty, s_eq, HashKey
@@ -111,8 +111,12 @@ def base_iterable_factory(state_to_line_stream, type_):
                 line_stream = state_to_line_stream(state)
                 offset = s_delta(line_stream)[OFFSET]
             except StopIteration:
+                self._warn('Default hash')
                 offset = -1
-            return HashKey(self.id ^ offset ^ hash(other), (self.id, other))
+            key = HashKey(self.id ^ offset ^ hash(other), (self.id, other))
+            self._debug(fmt('Hash at {0!r} ({1}): {2}', state, offset, hash(key)))
+            return key
+            
         
         def kargs(self, state, prefix='', kargs=None):
             line_stream = state_to_line_stream(state)
@@ -148,6 +152,9 @@ def base_iterable_factory(state_to_line_stream, type_):
             line_stream1 = state_to_line_stream(state1)
             line_stream2 = state_to_line_stream(state2)
             return s_eq(line_stream1, line_stream2)
+        
+        def deepest(self):
+            return self.max.get()
         
     return BaseIterableHelper
 
@@ -205,7 +212,4 @@ class IterableHelper(
                          global_kargs=self.global_kargs, 
                          delta=s_delta(line_stream))
         return ((cons, next_line_stream), self)
-    
-    def deepest(self):
-        raise TypeError
     

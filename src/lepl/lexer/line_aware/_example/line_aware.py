@@ -44,11 +44,11 @@ class LineAwareExamples(Example):
     
     def test_single_line(self):
         #basicConfig(level=DEBUG)
-        start = LineAwareSol()
+        start = LineStart()
         words = Token(Word())[:]
-        end = LineAwareEol()
+        end = LineEnd()
         line = start & words & end
-        line.config.default_line_aware().no_full_first_match()
+        line.config.lines().no_full_first_match()
         self.examples([
 (lambda: line.parse('  abc def'), "['abc', 'def']"),
 (lambda: line.parse('  abc def\n pqr'), "['abc', 'def']")
@@ -56,12 +56,12 @@ class LineAwareExamples(Example):
 
     def test_multiple_lines(self):
         #basicConfig(level=DEBUG)
-        start = LineAwareSol()
+        start = LineStart()
         words = Token(Word())[:] > list
-        end = LineAwareEol()
+        end = LineEnd()
         line = start & words & end
         lines = line[:]
-        lines.config.default_line_aware().no_full_first_match()
+        lines.config.lines().no_full_first_match()
         self.examples([
 (lambda: lines.parse('  abc def'), "[['abc', 'def']]"),
 (lambda: lines.parse('  abc def\n pqr'), "[['abc', 'def'], ['pqr']]")
@@ -80,7 +80,7 @@ class LineAwareExamples(Example):
         #basicConfig(level=DEBUG)
         words = Token(Word(Lower()))[:] > list
         line = Line(words)
-        line.config.default_line_aware(tabsize=4)
+        line.config.lines()
         parser = line.get_parse_string()
         self.examples([(lambda: parser('\tabc def'), 
                         "[['abc', 'def']]")])
@@ -90,7 +90,7 @@ class LineAwareExamples(Example):
         words = Token(Word(Lower()))[:] > list
         CLine = ContinuedLineFactory(r'\+')
         line = CLine(words)
-        line.config.default_line_aware()
+        line.config.lines()
         parser = line.get_parse_string()
         self.examples([(lambda: parser('''abc def +
 ghi'''), 

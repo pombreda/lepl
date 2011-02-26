@@ -30,7 +30,7 @@
 from lepl.lexer.lexer import Lexer
 from lepl.core.parser import tagged
 from lepl.stream.core import s_empty, s_line, s_debug, s_stream, s_fmt,\
-    s_factory
+    s_factory, s_next
 from lepl.lexer.support import RuntimeLexerError
 from lepl.support.lib import fmt
 from lepl.stream.simple import ListHelper
@@ -45,9 +45,6 @@ END = 'EOL'
 '''
 Name for end of line token.
 '''
-
-EMPTY = (0, ListHelper([]))
-'''An empty stream.'''
 
 
 class LineLexer(Lexer):
@@ -66,7 +63,7 @@ class LineLexer(Lexer):
                 while not s_empty(stream):
                     (line, next_stream) = s_line(stream, False)
                     line_stream = s_stream(stream, line)
-                    yield ([START], EMPTY)
+                    yield ((START,), s_stream(line_stream, ''))
                     while not s_empty(line_stream):
                         try:
                             (terminals, match, next_line_stream) = self.t_regexp.match(line_stream)
@@ -78,7 +75,7 @@ class LineLexer(Lexer):
                             self._debug(fmt('Space: {0!r} {1!s}',
                                                terminals, s_debug(line_stream)))
                         line_stream = next_line_stream
-                    yield ([END], EMPTY)
+                    yield ((END,), s_stream(line_stream, ''))
                     stream = next_stream
             except TypeError:
                 raise RuntimeLexerError(

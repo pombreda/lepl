@@ -319,6 +319,17 @@ class PerCallCache(LogMixin):
                                'the grammar contains a matcher that does not '
                                'consume input within a loop and is usually '
                                'an error.', self.__generator))
+                stream_in = self.__generator.stream
+                key_in = s_key(stream_in)
+                stream_out = result[1]
+                key_out = s_key(stream_out)
+                self._debug(fmt('{0}/{1} -> {2}/{3}', 
+                                self.__generator.stream, hash(key_in), 
+                                result, hash(key_out)))
+                if key_in == key_out:
+                    s_key(stream_in)
+                    s_key(stream_out)
+                    raise MemoException('Stream not consumed (or stream key broken)')
                 self.__cache.append(result)
                 self.__returned = True
                 yield result

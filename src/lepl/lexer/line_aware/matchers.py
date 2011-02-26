@@ -44,9 +44,6 @@ class LineStart(EmptyToken):
                                         compiled=compiled)
         
         
-LineAwareSol = lambda: ~LineStart()
-
-
 class LineEnd(EmptyToken):
     
     def __init__(self, regexp=None, content=None, id_=None, alphabet=None,
@@ -57,16 +54,13 @@ class LineEnd(EmptyToken):
         super(LineEnd, self).__init__(regexp=None, content=None, id_=END, 
                                       alphabet=None, complete=True, 
                                       compiled=compiled)
-        
-        
-LineAwareEol = lambda: ~LineEnd()
 
 
 def Line(matcher):
     '''
     Match the matcher within a line.
     '''
-    return LineAwareSol() & matcher & LineAwareEol()
+    return LineStart() & matcher & LineEnd()
 
 
 def ContinuedLineFactory(matcher):

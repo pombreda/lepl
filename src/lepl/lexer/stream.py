@@ -29,7 +29,7 @@
 
 
 from lepl.stream.iter import base_iterable_factory
-from lepl.stream.core import OFFSET, s_delta, s_line
+from lepl.stream.core import OFFSET, s_delta, s_line, HashKey
 from lepl.stream.facade import HelperFacade
 from lepl.support.lib import fmt, LogMixin
 
@@ -55,6 +55,18 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
                                           max=max, global_kargs=global_kargs, 
                                           delta=delta)
         self._len = len
+
+    def key(self, cons, other):
+        try:
+            (tokens, line_stream) = cons.head
+            offset = s_delta(line_stream)[OFFSET]
+        except StopIteration:
+            self._warn('Default hash')
+            offset = -1
+            tokens = ()
+        key = HashKey(self.id ^ offset ^ hash(other) ^ hash(tokens), (self.id, other))
+        self._debug(fmt('Hash at {0!r} ({1}): {2}', tokens, offset, hash(key)))
+        return key
 
     def next(self, cons, count=1):
         assert count == 1
