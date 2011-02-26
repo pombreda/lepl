@@ -175,7 +175,7 @@ class StreamHelper(_StreamHelper):
         '''
         raise NotImplementedError
     
-    def stream(self, state, value):
+    def stream(self, state, value, id_=None):
         '''
         Return a new stream that encapsulates the value given, starting at
         `state`.  IMPORTANT: the stream used is the one that corresponds to
@@ -242,7 +242,7 @@ s_line = lambda stream, empty_ok: stream[1].line(stream[0], empty_ok)
 s_len = lambda stream: stream[1].len(stream[0])
 '''Invoke helper.len(state)'''
 
-s_stream = lambda stream, value: stream[1].stream(stream[0], value)
+s_stream = lambda stream, value, id_=None: stream[1].stream(stream[0], value, id_=id_)
 '''Invoke helper.stream(state, value)'''
 
 s_deepest = lambda stream: stream[1].deepest()

@@ -60,6 +60,6 @@ class FullFirstMatchTest(Example):
             return str(e)
 
     def test_all(self):
-        self.examples([(self.run_sequence, "The match failed in <str> at '567' (offset 4, value '5')."),
-                       (self.run_string, "The match failed in <string> at '567' (line 1, character 5).")])
+        self.examples([(self.run_sequence, "The match failed in <str> at '67' (offset 5, value '6')."),
+                       (self.run_string, "The match failed in <string> at '67' (line 1, character 6).")])
     

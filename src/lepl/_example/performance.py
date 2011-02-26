@@ -139,8 +139,8 @@ for matcher in matchers:
 
 def run(matcher, cached, repeat):
     '''Time the given test.'''
-    stmt = 'tests[{0}][{1}][{2}]()'.fmt(matcher.__name__, cached, repeat)
-    setup = 'from __main__ import tests, {0}'.fmt(matcher.__name__)
+    stmt = 'tests[{0}][{1}][{2}]()'.format(matcher.__name__, cached, repeat)
+    setup = 'from __main__ import tests, {0}'.format(matcher.__name__)
     return timeit(stmt, setup, number=1)
 
 def analyse(matcher, t_uncached_base=None, t_cached_base=None):
@@ -162,12 +162,12 @@ def analyse(matcher, t_uncached_base=None, t_cached_base=None):
 
 def normalize(time, base):
     if base:
-        return '(x{0:5.2f})'.fmt(time / base)
+        return '(x{0:5.2f})'.format(time / base)
     else:
         return ''
 
 def main():
-    print('{0:d} iterations; time per iteration in ms (best of {1:d})\n'.fmt(
+    print('{0:d} iterations; time per iteration in ms (best of {1:d})\n'.format(
             NUMBER, REPEAT))
     print(fmt('{0:>35s}    {1:s}', 're-compiled', 'cached'))
     (t_uncached, t_cached) = analyse(default)

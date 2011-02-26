@@ -139,7 +139,7 @@ class TokenRewriteTest(TestCase):
             parser('abc defXghi')
             assert False, 'expected error'
         except RuntimeLexerError as err:
-            assert str(err) == "No lexer for 'Xghi' at offset 7, value 'X' of 'abc defXghi'.", str(err)
+            assert str(err) == "No token for 'Xghi' at offset 7, value 'X' of 'abc defXghi'.", str(err)
         
     def test_good_error_msg(self):
         '''
@@ -153,7 +153,7 @@ class TokenRewriteTest(TestCase):
             parser('abc defXghi')
             assert False, 'expected error'
         except RuntimeLexerError as err:
-            assert str(err) == "No lexer for 'Xghi' at line 1, character 8 of 'abc defXghi'.", str(err)
+            assert str(err) == "No token for 'Xghi' at line 1, character 8 of 'abc defXghi'.", str(err)
         
     def test_expr_with_functions(self):
         '''
@@ -320,7 +320,7 @@ class ErrorTest(TestCase):
             parser('c')
             assert False, 'expected failure'
         except RuntimeLexerError as err:
-            assert str(err) == "No lexer for 'c' at line 1, character 1 of 'c'.", str(err)
+            assert str(err) == "No token for 'c' at line 1, character 1 of 'c'.", str(err)
 
     def test_incomplete(self):
         '''

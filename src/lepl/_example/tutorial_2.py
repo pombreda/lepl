@@ -121,12 +121,12 @@ class Tutorial2Example(Example):
     def test_all(self):
         self.examples([
 (self.run_error,
-"""FullFirstMatchException: The match failed in <string> at ' + 30' (line 1, character 3).
+"""FullFirstMatchException: The match failed in <string> at '+ 30' (line 1, character 4).
 """),
 (self.run_explicit_space,
 """[42.0]"""),
 (self.run_space_error,
-"""FullFirstMatchException: The match failed in <string> at '+30' (line 1, character 3).
+"""FullFirstMatchException: The match failed in <string> at '30' (line 1, character 4).
 """),
 (lambda: self.run_star('12 + 30'),
 """[42.0]"""),
@@ -161,7 +161,7 @@ class Tutorial2Example(Example):
 (self.run_regexp,
 """[['aaa']]"""),
 (self.run_token_1,
-"""FullFirstMatchException: The match failed in <string> at '+30' (line 1, character 3).
+"""FullFirstMatchException: The match failed in <string> at '' (line 1, character 6).
 """),
 (lambda: self.run_token_2('12+30'),
 """[42.0]"""),

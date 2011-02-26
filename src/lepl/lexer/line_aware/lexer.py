@@ -30,7 +30,7 @@
 from lepl.lexer.lexer import Lexer
 from lepl.core.parser import tagged
 from lepl.stream.core import s_empty, s_line, s_debug, s_stream, s_fmt,\
-    s_factory, s_next
+    s_factory, s_next, s_id
 from lepl.lexer.support import RuntimeLexerError
 from lepl.support.lib import fmt
 from lepl.stream.simple import ListHelper
@@ -58,12 +58,13 @@ class LineLexer(Lexer):
         Implement matching - pass token stream to tokens.
         '''
         def tokens():
+            id_ = s_id(in_stream)
             stream = in_stream
             try:
                 while not s_empty(stream):
                     (line, next_stream) = s_line(stream, False)
                     line_stream = s_stream(stream, line)
-                    yield ((START,), s_stream(line_stream, ''))
+                    yield ((START,), s_stream(line_stream, '', id_=id_^hash(START)))
                     while not s_empty(line_stream):
                         try:
                             (terminals, match, next_line_stream) = self.t_regexp.match(line_stream)
@@ -75,7 +76,7 @@ class LineLexer(Lexer):
                             self._debug(fmt('Space: {0!r} {1!s}',
                                                terminals, s_debug(line_stream)))
                         line_stream = next_line_stream
-                    yield ((END,), s_stream(line_stream, ''))
+                    yield ((END,), s_stream(line_stream, '', id_=id_^hash(END)))
                     stream = next_stream
             except TypeError:
                 raise RuntimeLexerError(

@@ -244,6 +244,7 @@ class PerStreamCache(LogMixin):
         self.__matcher = matcher
         self.__counter = 0
         self.__first = None
+        self.foo = 0
         
     @staticmethod
     def __curtail(count_, stream):
@@ -327,9 +328,7 @@ class PerCallCache(LogMixin):
                                 self.__generator.stream, hash(key_in), 
                                 result, hash(key_out)))
                 if key_in == key_out:
-                    s_key(stream_in)
-                    s_key(stream_out)
-                    raise MemoException('Stream not consumed (or stream key broken)')
+                    self._warn('Stream not consumed (or stream key broken)')
                 self.__cache.append(result)
                 self.__returned = True
                 yield result

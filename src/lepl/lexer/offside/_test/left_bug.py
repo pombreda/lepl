@@ -41,6 +41,7 @@ from lepl._test.base import assert_str
 class LeftBugTest(TestCase):
     
     def test_right_no_lexer(self):
+        #basicConfig(level=DEBUG)
         word = Any()
         expr1 = Delayed()
         call = expr1 & word > List
@@ -55,7 +56,7 @@ class LeftBugTest(TestCase):
  `- 'c'""")
     
     def test_right(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         #CLine = ContinuedBLineFactory(Token(r'\\'))
         word = Token("[A-Za-z_][A-Za-z0-9_]*")
         expr1 = Delayed()

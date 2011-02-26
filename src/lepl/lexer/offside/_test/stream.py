@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-Tests for the lepl.offside.stream module.
+Tests for the lepl.lexer.offside.stream module.
 '''
 
 #from logging import basicConfig, DEBUG
@@ -36,7 +36,7 @@ from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.matchers.core import Regexp, Literal, Any
-from lepl.lexer.offside.matchers import BLine, Indent, LineEnd
+from lepl.lexer.offside.matchers import BLine, Indent, LineEnd, NO_BLOCKS
 from lepl.lexer.offside.support import OffsideError
 from lepl.regexp.matchers import DfaRegexp
 
@@ -91,7 +91,7 @@ class LineTest(TestCase):
         with a single monster token.
         '''
         line = Indent() & Token(Any()) & LineEnd()
-        line.config.blocks(tabsize=8, block_policy=0).trace(True)
+        line.config.blocks(tabsize=8, block_start=NO_BLOCKS, block_policy=0).trace(True)
         result = line.parse('a')
         assert result == ['', 'a'], result
         result = line.parse('\ta')

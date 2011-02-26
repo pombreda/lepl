@@ -42,7 +42,7 @@ def config_parser():
     section     = BLine(word) & Block(subsection[1:]) > list
     config_file = (section | ~Line(Empty()))[:] > list
     
-    config_file.config.default_line_aware(block_policy=rightmost)
+    config_file.config.blocks(block_policy=rightmost)
     return config_file.get_parse()
 
 class ConfigExample(Example):

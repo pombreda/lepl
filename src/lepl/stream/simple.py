@@ -190,8 +190,9 @@ class SequenceHelper(BaseHelper):
     def len(self, state):
         return len(self._sequence) - state
     
-    def stream(self, state, value):
-        return self.factory(value, id=self.id, factory=self.factory, 
+    def stream(self, state, value, id_=None):
+        id_ = self.id if id_ is None else id_
+        return self.factory(value, id=id_, factory=self.factory, 
                             max=self.max, global_kargs=self.global_kargs,
                             delta=self.delta(state))
         
@@ -265,8 +266,9 @@ class StringHelper(SequenceHelper):
         else:
             raise StopIteration
 
-    def stream(self, state, value):
-        return self.factory(value,  id=self.id, factory=self.factory, 
+    def stream(self, state, value, id_=None):
+        id_ = self.id if id_ is None else id_
+        return self.factory(value,  id=id_, factory=self.factory, 
                             max=self.max, global_kargs=self.global_kargs, 
                             delta=self.delta(state))
         

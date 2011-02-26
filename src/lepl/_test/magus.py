@@ -106,7 +106,7 @@ class DelayedCloneTest(TestCase):
         '''
         Check children are non-None.
         '''
-#        print('>>>{0!s}<<<'.fmt(b))
+#        print('>>>{0!s}<<<'.format(b))
         assert is_child(b, Or)
         for child in b.matchers:
             assert child

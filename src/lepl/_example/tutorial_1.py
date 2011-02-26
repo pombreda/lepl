@@ -82,7 +82,7 @@ class Tutorial1Example(Example):
 (self.run_parse,
 """['123']"""),
 (self.run_match_error,
-"""FullFirstMatchException: The match failed in <string> at 'cabbage' (line 1, character 1).
+"""FullFirstMatchException: The match failed in <string> at 'abbage' (line 1, character 2).
 """),
 # fails for python 2 (get a list) so exclude
 #(self.run_parse_all,
@@ -92,10 +92,10 @@ class Tutorial1Example(Example):
 (lambda: Integer().parse('1'),
 """['1']"""),
 (lambda: Integer().parse('1.2'),
-"""FullFirstMatchException: The match failed in <string> at '.2' (line 1, character 2).
+"""FullFirstMatchException: The match failed in <string> at '2' (line 1, character 3).
 """),
 (lambda: Float().parse('1'),
-"""FullFirstMatchException: The match failed in <string> at '1' (line 1, character 1).
+"""FullFirstMatchException: The match failed in <string> at '' (line 1, character 2).
 """),
 (lambda: Float().parse('1.2'),
 """['1.2']"""),

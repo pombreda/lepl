@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-Examples for the lepl.offside package.
+Examples for the lepl.lexer.offside package.
 '''
 
 

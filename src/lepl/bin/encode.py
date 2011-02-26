@@ -104,7 +104,7 @@ else:
             for key in table:
                 if isinstance(value, key):
                     return (type_, table[key](value))
-            raise TypeError('Cannot convert {0!r}:{1!r}'.fmt(value, type_))
+            raise TypeError('Cannot convert {0!r}:{1!r}'.format(value, type_))
         return converter
     
     

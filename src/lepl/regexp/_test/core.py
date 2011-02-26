@@ -50,32 +50,32 @@ class CompilerTest(TestCase):
     def test_compiler(self):
         #basicConfig(level=DEBUG)
         self.do_test('a', 'a', 
-                     (['label'], 'a', (1, DUMMY_HELPER)), 
+                     (('label',), 'a', (1, DUMMY_HELPER)), 
                      [('label', 'a', (1, DUMMY_HELPER))])
         self.do_test('ab', 'ab', 
-                     (['label'], 'ab', (2, DUMMY_HELPER)), 
+                     (('label',), 'ab', (2, DUMMY_HELPER)), 
                      [('label', 'ab', (2, DUMMY_HELPER))])
         self.do_test('a', 'ab', 
-                     (['label'], 'a', (1, DUMMY_HELPER)), 
+                     (('label',), 'a', (1, DUMMY_HELPER)), 
                      [('label', 'a', (1, DUMMY_HELPER))])
         self.do_test('a*', 'aab', 
-                     (['label'], 'aa', (2, DUMMY_HELPER)), 
+                     (('label',), 'aa', (2, DUMMY_HELPER)), 
                      [('label', 'aa', (2, DUMMY_HELPER)), 
                       ('label', 'a', (1, DUMMY_HELPER)), 
                       ('label', '', (0, DUMMY_HELPER))])
         self.do_test('(?:a|b)', 'a', 
-                     (['label'], 'a', (1, DUMMY_HELPER)), 
+                     (('label',), 'a', (1, DUMMY_HELPER)), 
                      [('label', 'a', (1, DUMMY_HELPER))])
         self.do_test('(?:a|b)', 'b', 
-                     (['label'], 'b', (1, DUMMY_HELPER)), 
+                     (('label',), 'b', (1, DUMMY_HELPER)), 
                      [('label', 'b', (1, DUMMY_HELPER))])
         # note how the DFA gives the longest match (only) here 
         self.do_test('(?:a|ab)', 'ab', 
-                     (['label'], 'ab', (2, DUMMY_HELPER)), 
+                     (('label',), 'ab', (2, DUMMY_HELPER)), 
                      [('label', 'a', (1, DUMMY_HELPER)), 
                       ('label', 'ab', (2, DUMMY_HELPER))])
         self.do_test('(?:ab|a)', 'ab', 
-                     (['label'], 'ab', (2, DUMMY_HELPER)),
+                     (('label',), 'ab', (2, DUMMY_HELPER)),
                      [('label', 'ab', (2, DUMMY_HELPER)), 
                       ('label', 'a', (1, DUMMY_HELPER))])
         

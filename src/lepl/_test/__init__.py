@@ -72,18 +72,18 @@ def all():
         print('Expect 3-5 failures + 2 errors in Python 2.6: {0:d}, {1:d} '
               '(lenient comparison, fmt variation from address size, '
               'unicode ranges, weird string difference; json unicode)'
-              .fmt(len(result.failures), len(result.errors)))
+              .format(len(result.failures), len(result.errors)))
         assert 3 <= len(result.failures) <= 5, len(result.failures)
         assert 2 <= len(result.errors) <= 2, len(result.errors)
         target = TOTAL - NOT_DISTRIBUTED - NOT_3
     else:
         print('Expect at most 1 failure + 0 errors in Python 3: {0:d}, {1:d} '
               '(fmt variations from address size?)'
-              .fmt(len(result.failures), len(result.errors)))
+              .format(len(result.failures), len(result.errors)))
         assert 0 <= len(result.failures) <= 1, len(result.failures)
         assert 0 <= len(result.errors) <= 0, len(result.errors)
         target = TOTAL - NOT_DISTRIBUTED
-    print('Expect {0:d} tests total: {1:d}'.fmt(target, result.testsRun))
+    print('Expect {0:d} tests total: {1:d}'.format(target, result.testsRun))
     assert result.testsRun == target, result.testsRun
     print('\nLooks OK to me!\n\n')
 
@@ -113,7 +113,7 @@ def ls_module(parent, children=None, include_parent=False):
     for child in children:
         try:
             # pylint: disable-msg=W0122
-            exec('import {0}.{1}'.fmt(parent.__name__, child))
+            exec('import {0}.{1}'.format(parent.__name__, child))
             module = getattr(parent, child, None)
             if isinstance(module, ModuleType):
                 yield module

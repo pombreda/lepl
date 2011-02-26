@@ -205,10 +205,11 @@ class IterableHelper(
     def len(self, state):
         raise TypeError
         
-    def stream(self, state, value):
+    def stream(self, state, value, id_=None):
         (cons, line_stream) = state
+        id_ = self.id if id_ is None else id_
         next_line_stream = \
-            self.factory(value, id=self.id, factory=self.factory, max=self.max, 
+            self.factory(value, id=id_, factory=self.factory, max=self.max, 
                          global_kargs=self.global_kargs, 
                          delta=s_delta(line_stream))
         return ((cons, next_line_stream), self)

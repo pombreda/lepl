@@ -205,7 +205,7 @@ class BaseToken(OperatorMatcher, NoMemo):
         cls.__count = 0
         
         
-class  Token(BaseToken):
+class Token(BaseToken):
     '''
     A token with a user-specified regexp.
     '''

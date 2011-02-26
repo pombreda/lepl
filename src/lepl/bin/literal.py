@@ -185,4 +185,4 @@ else:
         if result:
             return result[0]
         else:
-            raise ValueError('Cannot parse: {0!r}'.fmt(spec))
+            raise ValueError('Cannot parse: {0!r}'.format(spec))

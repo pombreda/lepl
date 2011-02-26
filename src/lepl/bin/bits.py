@@ -95,7 +95,7 @@ else:
             return self.__length
     
         def __repr__(self):
-            return 'Int({0},{1})'.fmt(super(Int, self).__str__(), 
+            return 'Int({0},{1})'.format(super(Int, self).__str__(), 
                                          self.__length)
     
     
@@ -150,17 +150,17 @@ else:
             if value is None:
                 value = bytes()
             if not isinstance(value, bytes):
-                raise TypeError('BitString wraps bytes: {0!r}'.fmt(value))
+                raise TypeError('BitString wraps bytes: {0!r}'.format(value))
             if length < 0:
-                raise ValueError('Negative length: {0!r}'.fmt(length))
+                raise ValueError('Negative length: {0!r}'.format(length))
             if not 0 <= offset < 8 :
-                raise ValueError('Non-byte offset: {0!r}'.fmt(offset))
+                raise ValueError('Non-byte offset: {0!r}'.format(offset))
             self.__bytes = value
             self.__length = unpack_length(length)
             self.__offset = offset
             if len(value) != bytes_for_bits(self.__length, self.__offset):
                 raise ValueError('Inconsistent length: {0!r}/{1!r}'
-                                 .fmt(value, length))
+                                 .format(value, length))
             
         def bytes(self, offset=0):
             '''
@@ -200,7 +200,7 @@ else:
             '''
             if self.__length > 64:
                 hex_ = ''.join(hex(x)[2:] for x in self.bytes())
-                return '{0}x0/{1}'.fmt(hex_, self.__length)
+                return '{0}x0/{1}'.format(hex_, self.__length)
             else:
                 chars = []
                 byte = []
@@ -217,14 +217,14 @@ else:
                         byte.append('1')
                     count += 1
                 chars.extend(byte)
-                return '{0}b0/{1}'.fmt(''.join(chars), self.__length)
+                return '{0}b0/{1}'.format(''.join(chars), self.__length)
         
         def __repr__(self):
             '''
             An explicit display of internal state, including padding and offset.
             '''
             return 'BitString({0!r}, {1!r}, {2!r})' \
-                .fmt(self.__bytes, self.__length, self.__offset)
+                .format(self.__bytes, self.__length, self.__offset)
             
         def __len__(self):
             return self.__length
@@ -281,7 +281,7 @@ else:
             if big_endian and self.__length % 8:
                 raise ValueError('Length is not a multiple of 8 bits, so big '
                                  'endian integer poorly defined: {0}'
-                                 .fmt(self.__length))
+                                 .format(self.__length))
             bbs = self.bytes()
             if not big_endian:
                 bbs = reversed(list(bbs))
@@ -415,7 +415,7 @@ else:
                 if len(value) > 1 and not value[1].isdigit() and length is None:
                     bits = {'b':1, 'o':3, 'x':4}.get(value[1].lower(), None)
                     if not bits:
-                        raise ValueError('Unexpected base: {0!r}'.fmt(value))
+                        raise ValueError('Unexpected base: {0!r}'.format(value))
                     length = bits * (len(value) - 2)
                 if big_endian and bits == 1:
                     # binary value is backwards!
@@ -433,7 +433,7 @@ else:
                 raise ValueError('A big-endian int with a length that '
                                  'is not an integer number of bytes cannot be '
                                  'encoded as a stream of bits: {0!r}/{1!r}'
-                                 .fmt(value,  length))
+                                 .format(value,  length))
             bbs, val = bytearray(), value
             for _index in range(bytes_for_bits(length)):
                 bbs.append(val & 0xff)

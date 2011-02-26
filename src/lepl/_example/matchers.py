@@ -137,12 +137,12 @@ class MatcherExample(Example):
 
     def test_apply_raw(self):
         
-        def fmt3(a, b, c):
-            return 'a: {0}; b: {1}; c: {2}'.fmt(a, b, c)
+        def format3(a, b, c):
+            return 'a: {0}; b: {1}; c: {2}'.format(a, b, c)
         
         self.examples([
-            (lambda: Apply(Any()[3], fmt3, args=True).parse('xyz'),
+            (lambda: Apply(Any()[3], format3, args=True).parse('xyz'),
               "['a: x; b: y; c: z']"),
-            (lambda: (Any()[3] > args(fmt3)).parse('xyz'),
+            (lambda: (Any()[3] > args(format3)).parse('xyz'),
               "['a: x; b: y; c: z']")])
         

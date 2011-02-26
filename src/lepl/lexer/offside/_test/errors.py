@@ -87,5 +87,5 @@ class ErrorTest(TestCase):
             assert False, 'no error'
         except Error:
             error = exc_info()[1]
-            assert str(error) == "BlockStart-OnlyName (str: 'foo\\n  int i', line 1)", str(error)
+            assert str(error) == "BlockStart-OnlyName (<string>, line 1)", str(error)
             

@@ -405,12 +405,12 @@ class TokenBugTest(TestCase):
     
     def test_token_word(self):
         tk = Token(Word())
-        tk.config.default_line_aware(block_policy=rightmost)
+        tk.config.blocks(block_policy=rightmost)
         tk.get_parse()
         
     def test_token_any(self):
         tk = Token(Any(ascii_letters)[1:,...])
-        tk.config.default_line_aware(block_policy=rightmost)
+        tk.config.blocks(block_policy=rightmost)
         tk.get_parse()
     
     def test_simple_word(self):

@@ -80,8 +80,8 @@ def print_titles(title, titles_):
     '''
     n_titles = len(titles_)
     width = W_STREAM + n_titles * (W_YES+1) * 4
-    print('+{0}+'.fmt('-' * width))
-    print('|{0:{1}}|'.fmt(title, width))
+    print('+{0}+'.format('-' * width))
+    print('|{0:{1}}|'.format(title, width))
     print_row(True, n_titles, 4)
     print_columns('', 1, 4, titles_)
     print_row(False,  n_titles*2, 2)
@@ -100,10 +100,10 @@ def print_row(left, count, width, line='-'):
     print('+')
 
 def print_columns(left, count, width, titles_):
-    _print('|{0:{1}}'.fmt(left, W_STREAM), end='')
+    _print('|{0:{1}}'.format(left, W_STREAM), end='')
     for _i in range(count):
         for title in titles_:
-            _print('|{0:{1}}'.fmt(title, width * W_YES + width - 1), end='')
+            _print('|{0:{1}}'.format(title, width * W_YES + width - 1), end='')
     _print('|')
     
 def build_parsers(base, separators_):
