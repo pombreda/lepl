@@ -39,7 +39,7 @@ from lepl.matchers.combine import Or
 from lepl.matchers.core import Delayed
 from lepl.matchers.derived import Letter, Digit
 from lepl.matchers.monitor import Trace
-from lepl.lexer.offside.matchers import Block, BLine, rightmost, \
+from lepl.lexer.blocks.matchers import Block, BLine, rightmost, \
     ContinuedBLineFactory
 
 

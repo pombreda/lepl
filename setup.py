@@ -73,7 +73,7 @@ Features
                 'lepl.core',     'lepl.core._test',
                 'lepl.lexer',    'lepl.lexer._test',    'lepl.lexer._example',
                 'lepl.matchers', 'lepl.matchers._test',
-                'lepl.offside',  'lepl.offside._test',  'lepl.offside._example',
+                'lepl.blocks',  'lepl.blocks._test',  'lepl.blocks._example',
                 'lepl.regexp',   'lepl.regexp._test',
                 'lepl.stream',   'lepl.stream._test',
                 'lepl.support',  'lepl.support._test',

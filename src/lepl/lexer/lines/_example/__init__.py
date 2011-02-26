@@ -28,7 +28,12 @@
 # MPL or the LGPL License.
 
 '''
-Tests for the lepl.cairo package. 
+Examples for the lepl.lexer.blocks package.
 '''
 
-import lepl.cairo._test.colour
+
+# we need to import all files used in the automated self-test
+
+# pylint: disable-msg=E0611
+#@PydevCodeAnalysisIgnore
+import lepl.lexer.lines._example.lines

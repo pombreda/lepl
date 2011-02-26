@@ -285,7 +285,7 @@ class ConfigBuilder(object):
 #        `default_line_aware` (and `line_aware`) if either `block_policy` 
 #        or `block_start` is specified.
 #        '''
-#        from lepl.offside.matchers import Block
+#        from lepl.blocks.matchers import Block
 #        return self.set_arguments(Block, policy=block_policy)
 #    
     def full_first_match(self, eos=True):
@@ -529,9 +529,9 @@ class ConfigBuilder(object):
         `default_line_aware`  if either `block_policy` or 
         `block_start` is specified.
         '''
-        from lepl.lexer.offside.lexer import make_offside_lexer
-        from lepl.lexer.offside.matchers import DEFAULT_POLICY, Block 
-        from lepl.lexer.offside.monitor import block_monitor
+        from lepl.lexer.blocks.lexer import make_offside_lexer
+        from lepl.lexer.blocks.matchers import DEFAULT_POLICY, Block 
+        from lepl.lexer.blocks.monitor import block_monitor
         if block_policy is None:
             block_policy = DEFAULT_POLICY
         if block_start is None:
@@ -577,11 +577,11 @@ class ConfigBuilder(object):
         `block_policy` and `block_start` must be given.
         `
         '''
-        from lepl.lexer.line_aware.lexer import LineLexer
-#        from lepl.offside.matchers import DEFAULT_TABSIZE
-#        from lepl.offside.regexp import LineAwareAlphabet, \
+        from lepl.lexer.lines.lexer import LineLexer
+#        from lepl.blocks.matchers import DEFAULT_TABSIZE
+#        from lepl.blocks.regexp import LineAwareAlphabet, \
 #            make_hide_sol_eol_parser
-#        from lepl.offside.stream import LineAwareStreamFactory, \
+#        from lepl.blocks.stream import LineAwareStreamFactory, \
 #            LineAwareTokenSource
 #        from lepl.regexp.unicode import UnicodeAlphabet
         

@@ -29,13 +29,13 @@
 
 
 from lepl.lexer.matchers import Token, RestrictTokensBy
-from lepl.lexer.offside.lexer import INDENT
-from lepl.lexer.offside.monitor import BlockMonitor
+from lepl.lexer.blocks.lexer import INDENT
+from lepl.lexer.blocks.monitor import BlockMonitor
 from lepl.core.parser import tagged
-from lepl.lexer.offside.support import OffsideError
+from lepl.lexer.blocks.support import OffsideError
 from lepl.matchers.support import OperatorMatcher, coerce_
 from lepl.matchers.combine import And
-from lepl.lexer.line_aware.matchers import LineEnd
+from lepl.lexer.lines.matchers import LineEnd
 from lepl.support.lib import fmt
 from lepl.stream.core import s_key
 

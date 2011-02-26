@@ -36,8 +36,8 @@ from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.matchers.derived import Word, Letter
-from lepl.lexer.offside.matchers import Indent, NO_BLOCKS
-from lepl.lexer.line_aware.matchers import LineEnd
+from lepl.lexer.blocks.matchers import Indent, NO_BLOCKS
+from lepl.lexer.lines.matchers import LineEnd
 
 
 # pylint: disable-msg=R0201
@@ -61,7 +61,7 @@ left
         line2 = indent('') & word('left') + LineEnd()
         line3 = indent('    ') & word('four') + LineEnd()
         expr = (line1 & line2 & line3)
-        expr.config.offside(block_start=NO_BLOCKS)
+        expr.config.blocks(block_start=NO_BLOCKS)
         parser = expr.get_parse_string()
         result = parser(text)
         assert result == ['', '', 'left', '    ', 'four'], result
@@ -86,7 +86,7 @@ class TabTest(TestCase):
         line2 = indent(' ') & word('onespace') & ~LineEnd()
         line3 = indent('     ') & word('spaceandtab') & ~LineEnd()
         expr = line1 & line2 & line3
-        expr.config.offside(tabsize=4, block_start=NO_BLOCKS).trace(True)
+        expr.config.blocks(tabsize=4, block_start=NO_BLOCKS).trace(True)
         parser = expr.get_parse_string()
         result = parser(text)
         #print(result)

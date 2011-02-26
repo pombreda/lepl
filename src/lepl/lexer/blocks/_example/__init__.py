@@ -27,13 +27,6 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
-'''
-Examples for the lepl.lexer.offside package.
-'''
 
-
-# we need to import all files used in the automated self-test
-
-# pylint: disable-msg=E0611
-#@PydevCodeAnalysisIgnore
-import lepl.lexer.line_aware._example.line_aware
+import lepl.lexer.blocks._example.offside
+import lepl.lexer.blocks._example.pithon

@@ -36,5 +36,5 @@ Tests for the lepl.apps package.
 
 # pylint: disable-msg=E0611
 #@PydevCodeAnalysisIgnore
-import lepl.apps._test.rfc3696
 import lepl.apps._test.json
+import lepl.apps._test.rfc3696

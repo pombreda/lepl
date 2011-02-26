@@ -27,50 +27,59 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
-from lepl.lexer.matchers import Token, RestrictTokensBy, EmptyToken
-from lepl.lexer.line_aware.lexer import START, END
-from lepl.matchers.support import coerce_
+'''
+Support the stack-scoped tracking of indent level blocks.
+'''
 
 
-class LineStart(EmptyToken):
-    
-    def __init__(self, regexp=None, content=None, id_=None, alphabet=None,
-                  complete=True, compiled=False):
-        '''
-        Arguments used only to support cloning.
-        '''
-        super(LineStart, self).__init__(regexp=None, content=None, id_=START, 
-                                        alphabet=None, complete=True, 
-                                        compiled=compiled)
-        
-        
-class LineEnd(EmptyToken):
-    
-    def __init__(self, regexp=None, content=None, id_=None, alphabet=None,
-                  complete=True, compiled=False):
-        '''
-        Arguments used only to support cloning.
-        '''
-        super(LineEnd, self).__init__(regexp=None, content=None, id_=END, 
-                                      alphabet=None, complete=True, 
-                                      compiled=compiled)
+from lepl.core.monitor import ActiveMonitor
+from lepl.lexer.blocks.support import OffsideError
+from lepl.support.state import State
+from lepl.support.lib import LogMixin, fmt
 
 
-def Line(matcher):
+class BlockMonitor(ActiveMonitor, LogMixin):
     '''
-    Match the matcher within a line.
+    This tracks the current indent level (in number of spaces).  It is
+    read by `Line` and updated by `Block`.
     '''
-    return LineStart() & matcher & LineEnd()
-
-
-def ContinuedLineFactory(matcher):
-    matcher = coerce_(matcher, lambda regexp: Token(regexp))
-    start = LineStart()
-    end = LineEnd()
-    restricted = RestrictTokensBy(matcher, end, start)
-    def factory(matcher):
-        line = ~start & matcher & ~end
-        return restricted(line)
-    return factory
-
+    
+    def __init__(self, start=0):
+        '''
+        start is the initial indent (in spaces).
+        '''
+        super(BlockMonitor, self).__init__()
+        self.__stack = [start]
+        self.__state = State.singleton()
         
+    def push_level(self, level):
+        '''
+        Add a new indent level.
+        '''
+        self.__stack.append(level)
+        self.__state[BlockMonitor] = level
+        self._debug(fmt('Indent -> {0:d}', level))
+        
+    def pop_level(self):
+        '''
+        Drop one level.
+        '''
+        self.__stack.pop()
+        if not self.__stack:
+            raise OffsideError('Closed an unopened indent.') 
+        self.__state[BlockMonitor] = self.indent
+        self._debug(fmt('Indent <- {0:d}', self.indent))
+       
+    @property
+    def indent(self):
+        '''
+        The current indent value (number of spaces).
+        '''
+        return self.__stack[-1]
+    
+
+def block_monitor(start=0):
+    '''
+    Add an extra lambda for the standard monitor interface.
+    '''
+    return lambda: BlockMonitor(start)

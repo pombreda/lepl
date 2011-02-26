@@ -27,8 +27,5 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
-'''
-Tests for the lepl.cairo package. 
-'''
 
-import lepl.cairo._test.colour
+import lepl.lexer.blocks._test

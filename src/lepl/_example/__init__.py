@@ -39,10 +39,12 @@ when the documentation needs to be updated.
 import lepl._example.args
 import lepl._example.columns
 import lepl._example.config
+import lepl._example.dynamic
 import lepl._example.error
 import lepl._example.expression
 import lepl._example.full_match
 import lepl._example.hello
+import lepl._example.hiren
 import lepl._example.lexer
 import lepl._example.manager
 import lepl._example.matchers
@@ -57,10 +59,12 @@ import lepl._example.search_syntax
 import lepl._example.search
 # no tests and 3.0-specific print syntax
 #import lepl._example.separators
+import lepl._example.spindrome
 #import lepl._example.support
 import lepl._example.trace
 import lepl._example.tutorial_1
 import lepl._example.tutorial_2
 import lepl._example.tutorial_3
 import lepl._example.tutorial_4
+#import lepl._example.web_script
 

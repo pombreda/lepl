@@ -37,3 +37,5 @@ Tests for the lepl.lexer package.
 # pylint: disable-msg=E0611
 #@PydevCodeAnalysisIgnore
 import lepl.lexer._test.matchers
+import lepl.lexer.lines._test
+import lepl.lexer.blocks._test

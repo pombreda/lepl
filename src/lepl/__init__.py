@@ -138,11 +138,11 @@ from lepl.matchers.transform import PostCondition
 from lepl.matchers.variables import TraceVariables
 from lepl.lexer.matchers import Token
 from lepl.lexer.support import LexerError, RuntimeLexerError
-from lepl.lexer.line_aware.matchers import LineStart, LineEnd, Line, \
+from lepl.lexer.lines.matchers import LineStart, LineEnd, Line, \
     ContinuedLineFactory
-from lepl.lexer.offside.matchers import Indent, Block, BLine, NO_BLOCKS, \
+from lepl.lexer.blocks.matchers import Indent, Block, BLine, NO_BLOCKS, \
     constant_indent, rightmost, to_right, ContinuedBLineFactory, Extend
-#from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
+#from lepl.blocks.matchers import Line, Block, BLine, ContinuedLineFactory, \
 #    ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent, \
 #    to_right
 from lepl.regexp.core import RegexpError
@@ -312,18 +312,18 @@ __all__ = [
         # lepl.stream.maxdepth
         'FullFirstMatchException',
         
-        # lepl.lexer.line_aware.matchers
+        # lepl.lexer.lines.matchers
         'LineStart',
         'LineEnd',
         'Line',
         'ContinuedLineFactory',
         
-#        # lepl.offside.lexer
+#        # lepl.blocks.lexer
 #        'LineAwareEol',
 #        'LineAwareSol',
 #        'BIndent',
         
-        # lepl.lexer.offside.matchers
+        # lepl.lexer.blocks.matchers
 #        'Line',
         'Block',
         'Indent',

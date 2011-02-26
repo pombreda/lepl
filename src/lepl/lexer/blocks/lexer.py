@@ -33,8 +33,8 @@ from lepl.stream.core import s_empty, s_line, s_debug, s_stream, s_fmt,\
     s_factory, s_next, s_delta, s_key, s_id
 from lepl.lexer.support import RuntimeLexerError
 from lepl.support.lib import fmt
-from lepl.lexer.line_aware.lexer import END
-from lepl.lexer.offside.support import OffsideError
+from lepl.lexer.lines.lexer import END
+from lepl.lexer.blocks.support import OffsideError
 
 
 

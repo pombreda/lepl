@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-Tests for the lepl.lexer.offside.stream module.
+Tests for the lepl.lexer.blocks.stream module.
 '''
 
 #from logging import basicConfig, DEBUG
@@ -36,8 +36,8 @@ from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.matchers.core import Regexp, Literal, Any
-from lepl.lexer.offside.matchers import BLine, Indent, LineEnd, NO_BLOCKS
-from lepl.lexer.offside.support import OffsideError
+from lepl.lexer.blocks.matchers import BLine, Indent, LineEnd, NO_BLOCKS
+from lepl.lexer.blocks.support import OffsideError
 from lepl.regexp.matchers import DfaRegexp
 
 class LineTest(TestCase):
