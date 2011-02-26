@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 
-from lepl.lexer.matchers import Token
+from lepl.lexer.matchers import Token, RestrictTokensBy
 from lepl.lexer.offside.lexer import INDENT
 from lepl.lexer.offside.monitor import BlockMonitor
 from lepl.core.parser import tagged
@@ -39,7 +39,7 @@ from lepl.lexer.line_aware.matchers import LineEnd
 from lepl.support.lib import fmt
 from lepl.stream.core import s_key
 
-NO_BLOCKS = -1
+NO_BLOCKS = object()
 '''
 Magic initial value for offset to disable indentation checks.
 '''
@@ -59,13 +59,13 @@ class Indent(Token):
                                      alphabet=None, complete=True, 
                                      compiled=compiled)
         self.monitor_class = BlockMonitor
-        self.__current_indent = None
+        self._current_indent = None
         
     def on_push(self, monitor):
         '''
         Read the global indentation level.
         '''
-        self.__current_indent = monitor.indent
+        self._current_indent = monitor.indent
         
     def on_pop(self, monitor):
         '''
@@ -77,7 +77,7 @@ class Indent(Token):
         '''
         Check that we match the current level
         '''
-        if self.__current_indent is None:
+        if self._current_indent is None:
             raise OffsideError('No initial indentation has been set. '
                                'You probably have not specified one of '
                                'block_policy or block_start in the '
@@ -88,13 +88,13 @@ class Indent(Token):
                 (indent, stream) = yield generator
                 self._debug(fmt('Indent {0!r}', indent))
                 if indent[0] and indent[0][-1] == '\n': indent[0] = indent[0][:-1]
-                if self.__current_indent == NO_BLOCKS or \
-                        len(indent[0]) == self.__current_indent:
+                if self._current_indent == NO_BLOCKS or \
+                        len(indent[0]) == self._current_indent:
                     yield (indent, stream)
                 else:
                     self._debug(
                         fmt('Incorrect indent ({0:d} != len({1!r}), {2:d})',
-                               self.__current_indent, indent[0], 
+                               self._current_indent, indent[0], 
                                len(indent[0])))
         except StopIteration:
             return
@@ -131,6 +131,15 @@ def to_right(current, indent):
     return new
 
 
+class UncheckedIndent(Indent):
+    
+    def on_push(self, monitor):
+        '''
+        Ignore the global indentation level.
+        '''
+        self._current_indent = NO_BLOCKS
+    
+
 
 # pylint: disable-msg=W0105
 # epydoc convention
@@ -166,7 +175,7 @@ class Block(OperatorMatcher):
     
     POLICY = 'policy'
     # class-wide default
-    __indent = Indent()
+    __indent = UncheckedIndent()
     
 # Python 2.6 does not support this syntax
 #    def __init__(self, *lines, policy=None, indent=None):
@@ -188,7 +197,7 @@ class Block(OperatorMatcher):
         if isinstance(policy, int):
             policy = constant_indent(policy)
         self._karg(policy=policy)
-        indent = kargs.get(self.INDENT, self.__indent)
+        indent = kargs.get('indent', self.__indent)
         self._karg(indent=indent)
         self.monitor_class = BlockMonitor
         self.__monitor = None
@@ -239,64 +248,85 @@ class Block(OperatorMatcher):
 
 # pylint: disable-msg=C0103
 # consistent interface
-def BLine(matcher):
+def BLine(matcher, indent=True):
     '''
     Match the matcher within a line with block indent.
     '''
-    return ~Indent() & matcher & ~LineEnd()
+    if indent:
+        return ~Indent() & matcher & ~LineEnd()
+    else:
+        return ~UncheckedIndent() & matcher & ~LineEnd()
 
 
-def only_token(token, item):
-    '''
-    Check whether the item (from a location stream of tokens) contains only
-    the token specified.
-    '''
-    (tokens, _contents) = item
-    return len(tokens) == 1 and tokens[0] == token.id_
+#def only_token(token, item):
+#    '''
+#    Check whether the item (from a location stream of tokens) contains only
+#    the token specified.
+#    '''
+#    (tokens, _contents) = item
+#    return len(tokens) == 1 and tokens[0] == token.id_
+#
+#
+#def any_token(token, item):
+#    '''
+#    Check whether the item (from a location stream of tokens) contains at least
+#    the token specified.
+#    '''
+#    (tokens, _contents) = item
+#    return token.id_ in tokens
 
 
-def any_token(token, item):
-    '''
-    Check whether the item (from a location stream of tokens) contains at least
-    the token specified.
-    '''
-    (tokens, _contents) = item
-    return token.id_ in tokens
+def ContinuedBLineFactory(matcher):
+    matcher = coerce_(matcher, lambda regexp: Token(regexp))
+    start = Indent()
+    end = LineEnd()
+    restricted = RestrictTokensBy(matcher, end, start)
+    def factory(matcher):
+        line = ~start & matcher & ~end
+        return restricted(line)
+    return factory
 
 
-def _ContinuedLineFactory(continuation, base):
-    '''
-    Return the base (line) matcher, modified so that it applies its contents 
-    to a stream which continues past line breaks if the given token is present.
-    '''
-    continuation = coerce_(continuation, Token)
-    
-    def ContinuedLine(matcher):
-        '''
-        Like `base`, but continues over multiple lines if the continuation 
-        token is found at the end of each line.
-        '''
-        multiple = ExcludeSequence(any_token, 
-                                   [continuation, LineAwareEol(), Indent()])
-        return base(multiple(matcher))
-    return ContinuedLine
+def Extend(matcher):
+    start = Indent()
+    end = LineEnd()
+    return RestrictTokensBy(end, start)(matcher)
 
 
-def ContinuedLineFactory(continuation):
-    '''
-    Construct a matcher like `Line`, but which extends over multiple lines if
-    the continuation token ends a line.
-    '''
-    return _ContinuedLineFactory(continuation, Line)
-    
 
-def ContinuedBLineFactory(continuation):
-    '''
-    Construct a matcher like `BLine`, but which extends over multiple lines if
-    the continuation token ends a line.
-    '''
-    return _ContinuedLineFactory(continuation, BLine)
-    
+#def _ContinuedLineFactory(continuation, base):
+#    '''
+#    Return the base (line) matcher, modified so that it applies its contents 
+#    to a stream which continues past line breaks if the given token is present.
+#    '''
+#    continuation = coerce_(continuation, Token)
+#    
+#    def ContinuedLine(matcher):
+#        '''
+#        Like `base`, but continues over multiple lines if the continuation 
+#        token is found at the end of each line.
+#        '''
+#        multiple = ExcludeSequence(any_token, 
+#                                   [continuation, LineAwareEol(), Indent()])
+#        return base(multiple(matcher))
+#    return ContinuedLine
+#
+#
+#def ContinuedLineFactory(continuation):
+#    '''
+#    Construct a matcher like `Line`, but which extends over multiple lines if
+#    the continuation token ends a line.
+#    '''
+#    return _ContinuedLineFactory(continuation, Line)
+#    
+#
+#def ContinuedBLineFactory(continuation):
+#    '''
+#    Construct a matcher like `BLine`, but which extends over multiple lines if
+#    the continuation token ends a line.
+#    '''
+#    return _ContinuedLineFactory(continuation, BLine)
+#    
 #Extend = ExcludeSequence(only_token, [LineAwareEol(), Indent()])
 '''
 Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 

@@ -29,6 +29,7 @@
 
 from lepl.lexer.matchers import Token, RestrictTokensBy, EmptyToken
 from lepl.lexer.line_aware.lexer import START, END
+from lepl.matchers.support import coerce_
 
 
 class LineStart(EmptyToken):
@@ -68,12 +69,13 @@ def Line(matcher):
     return LineAwareSol() & matcher & LineAwareEol()
 
 
-def ContinuedLineFactory(regexp):
+def ContinuedLineFactory(matcher):
+    matcher = coerce_(matcher, lambda regexp: Token(regexp))
     start = LineStart()
     end = LineEnd()
-    restricted = RestrictTokensBy(Token(regexp), end, start)
+    restricted = RestrictTokensBy(matcher, end, start)
     def factory(matcher):
-        line = start & matcher & end
+        line = ~start & matcher & ~end
         return restricted(line)
     return factory
 

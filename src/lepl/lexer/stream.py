@@ -58,7 +58,6 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
 
     def next(self, cons, count=1):
         assert count == 1
-        self._debug(fmt('Token {0}', cons.head[0]))
         return (cons.head, (cons.tail, self))
     
     def line(self, cons, empty_ok):

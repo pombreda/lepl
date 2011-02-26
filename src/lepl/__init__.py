@@ -140,7 +140,8 @@ from lepl.lexer.matchers import Token
 from lepl.lexer.support import LexerError, RuntimeLexerError
 from lepl.lexer.line_aware.matchers import LineAwareEol, LineAwareSol, Line, \
     ContinuedLineFactory
-#from lepl.offside.lexer import Indent, LineAwareEol, LineAwareSol, BIndent
+from lepl.lexer.offside.matchers import Indent, Block, BLine, NO_BLOCKS, \
+    constant_indent, rightmost, to_right, ContinuedBLineFactory, Extend
 #from lepl.offside.matchers import Line, Block, BLine, ContinuedLineFactory, \
 #    ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent, \
 #    to_right
@@ -318,23 +319,24 @@ __all__ = [
         'ContinuedLineFactory',
         
 #        # lepl.offside.lexer
-#        'Indent',
 #        'LineAwareEol',
 #        'LineAwareSol',
 #        'BIndent',
-#        
-#        # lepl.offside.matchers
+        
+        # lepl.lexer.offside.matchers
 #        'Line',
-#        'Block',
-#        'BLine',
+        'Block',
+        'Indent',
+        'BLine',
+        'NO_BLOCKS',
 #        'ContinuedLineFactory',
-#        'ContinuedBLineFactory',
-#        'Extend',
+        'ContinuedBLineFactory',
+        'Extend',
 #        'SOL',
 #        'EOL',
-#        'rightmost',
-#        'constant_indent',
-#        'to_right'
+        'rightmost',
+        'constant_indent',
+        'to_right'
        ]
 
 __version__ = '4.4.0'

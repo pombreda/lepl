@@ -74,7 +74,7 @@ class TextTest(TestCase):
         statement += (simple | empty | block) > list
         program = statement[:]
         
-        program.config.default_line_aware(block_policy=2)
+        program.config.blocks(block_policy=2)
         return program.get_parse_string()
         
     def do_parse(self, parser):

@@ -144,15 +144,15 @@ class BaseToken(OperatorMatcher, NoMemo):
         if isinstance(regexp, Matcher):
             rewriter = CompileRegexp(alphabet)
             rewrite = rewriter(regexp)
-            # one transfmtion is empty_adapter
+            # one transformation is empty_adapter
             if isinstance(rewrite, BaseRegexp) and \
                     len(rewrite.wrapper.functions) <= 1:
                 regexp = str(rewrite.regexp)
             else:
                 raise LexerError(
                     fmt('A Token was specified with a matcher, '
-                           'but the matcher could not be converted to '
-                           'a regular expression: {0}', rewrite))
+                        'but the matcher could not be converted to '
+                        'a regular expression: {0}', rewrite))
         return regexp
         
     def __call__(self, content, complete=None):

@@ -56,15 +56,15 @@ class PythonExample(Example):
         function = word[1:] & ~symbol('(') & args & ~symbol(')')
 
         block = Delayed()
-        blank = ~Line(Empty())
-        comment = ~Line(hash)
+        blank = ~BLine(Empty(), indent=False)
+        comment = ~BLine(hash, indent=False)
         line = Or((CLine(statement) | block) > list,
                   blank,
                   comment)
         block += CLine((function | statement) & introduce) & Block(line[1:])
         
         program = (line[:] & Eos())
-        program.config.default_line_aware(block_policy=rightmost)
+        program.config.blocks(block_policy=rightmost)
         parser = program.get_parse_string()
         
         result = parser('''

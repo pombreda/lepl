@@ -51,7 +51,7 @@ class OffsideExample(Example):
         line = (BLine(word[:] | Empty()) > list) | scope
         scope += BLine(word[:] & introduce) & Block(line[:]) > list
         program = line[:]
-        program.config.default_line_aware(block_policy=2)
+        program.config.blocks(block_policy=2)
         parser = program.get_parse_string()
         self.examples([(lambda: parser('''
 abc def
@@ -67,11 +67,11 @@ ghijk:
         word = Token(Word(Lower()))
         statement = Delayed()
         simple = BLine(word[:])
-        empty = Line(Empty())
+        empty = BLine(Empty(), indent=False)
         block = BLine(word[:] & introduce) & Block(statement[:])
         statement += (simple | empty | block) > list
         program = statement[:]
-        program.config.default_line_aware(block_policy=2)
+        program.config.blocks(block_policy=2)
         parser = program.get_parse_string()
         self.examples([(lambda: parser('''
 abc def
@@ -96,7 +96,7 @@ ghijk:
                 
         statement = Delayed()
 
-        empty = Line(Empty())
+        empty = BLine(Empty(), indent=False)
         simple = CLine(word[1:])
         ifblock = CLine(word[1:] & introduce) & Block(statement[1:])
 
@@ -107,7 +107,7 @@ ghijk:
         statement += (empty | simple | ifblock | function) > list
         program = statement[:]
         
-        program.config.default_line_aware(block_policy=2).no_full_first_match()
+        program.config.blocks(block_policy=2).no_full_first_match()
         parser = program.get_parse_string()
 
         self.examples([(lambda: parser('''
@@ -154,7 +154,7 @@ same for (argument,
         # this also tests left recursion and blocks
         line += BLine(word | Empty()) | block
         program = line[:]
-        program.config.default_line_aware(block_policy=4, block_start=3).no_full_first_match()
+        program.config.blocks(block_policy=4, block_start=3).no_full_first_match()
         parser = program.get_parse_string()
         result = parser('''
    foo

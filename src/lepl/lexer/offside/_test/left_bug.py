@@ -32,6 +32,7 @@ See http://groups.google.com/group/lepl/browse_thread/thread/79e39e03a03718cc?hl
 '''
 
 from unittest import TestCase
+from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._test.base import assert_str
@@ -39,12 +40,27 @@ from lepl._test.base import assert_str
 
 class LeftBugTest(TestCase):
     
-    def test_right(self):
-        #CLine = ContinuedBLineFactory(Token(r'\\'))
-        expr0 = Token("[A-Za-z_][A-Za-z0-9_]*")
+    def test_right_no_lexer(self):
+        word = Any()
         expr1 = Delayed()
-        call = expr1 & expr0 > List # Deliberately not expr0 & expr1
-        expr1 += call | Empty () | expr0
+        call = expr1 & word > List
+        expr1 +=  call | Empty() | word
+        program = expr1 & Eos()
+        parsed = program.parse("abc")
+        assert_str(parsed[0],
+"""List
+ +- List
+ |   +- 'a'
+ |   `- 'b'
+ `- 'c'""")
+    
+    def test_right(self):
+        basicConfig(level=DEBUG)
+        #CLine = ContinuedBLineFactory(Token(r'\\'))
+        word = Token("[A-Za-z_][A-Za-z0-9_]*")
+        expr1 = Delayed()
+        call = expr1 & word > List # Deliberately not expr0 & expr1
+        expr1 += call | Empty() | word
         program = expr1 & Eos()
         parsed = program.parse("a b c")
         assert_str(parsed[0],
@@ -55,13 +71,13 @@ class LeftBugTest(TestCase):
  `- 'c'""")
 
     def test_left(self):
-        CLine = ContinuedBLineFactory(Token(r'\\'))
+        CLine = ContinuedBLineFactory(r'\\')
         expr0 = Token("[A-Za-z_][A-Za-z0-9_]*")
         expr1 = Delayed()
         call = expr1 & expr0 > List # Deliberately not expr0 & expr1
         expr1 += call | Empty () | expr0
         program = (CLine(expr1) & Eos())
-        program.config.default_line_aware(block_policy=rightmost)
+        program.config.blocks(block_policy=rightmost)
         parsed = program.parse("a b c")
         assert_str(parsed[0],
 """List

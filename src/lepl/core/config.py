@@ -517,7 +517,7 @@ class ConfigBuilder(object):
         self.remove_all_rewriters(Memoize)
         return self.remove_all_rewriters(AutoMemoize)
         
-    def blocks(self, alphabet=None, discard=None, tabsize=None,
+    def blocks(self, alphabet=None, discard=None, tabsize=8,
                block_policy=None, block_start=None):
         '''
         Set the given `block_policy` on all block elements and add a 

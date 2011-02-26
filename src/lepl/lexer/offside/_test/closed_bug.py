@@ -8,28 +8,28 @@ from lepl import *
 class ClosedBugTest(TestCase):
     
     def test_as_given(self):
-        empty = ~Line(Empty())
+        empty = ~BLine(Empty(), indent=False)
         word = Token(Word())
-        comment = ~Line(Token('#.*'))
+        comment = ~BLine(Token('#.*'), indent=False)
         CLine = ContinuedBLineFactory(Token(r'\\'))
         token = word[1:]
         block = Delayed()
         line = ((CLine(token) | block) > list) | empty | comment
         block += CLine((token)) & Block(line[:])
         program = (line[:] & Eos())
-        program.config.default_line_aware(block_policy=rightmost)
+        program.config.blocks(block_policy=rightmost)
         self.run_test(program.get_parse(), False)
 
     def test_fixed(self):
         #basicConfig(level=DEBUG)
-        empty = ~Line(Empty())
+        empty = ~BLine(Empty(), indent=False)
         word = Token(Word())
         text = word[1:]
         block = Delayed()
         line = BLine(text) | block | empty
         block += Block(line[:]) > list
         program = block[:] & Eos()
-        program.config.default_line_aware(block_policy=to_right, block_start=-1)
+        program.config.blocks(block_policy=to_right, block_start=-1)
         self.run_test(program.get_parse(), True)
         
     def run_test(self, parser, ok):

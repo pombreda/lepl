@@ -31,7 +31,7 @@
 Tests for offside parsing.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl.lexer.matchers import Token
@@ -39,7 +39,8 @@ from lepl.matchers.combine import Or
 from lepl.matchers.core import Delayed
 from lepl.matchers.derived import Letter, Digit
 from lepl.matchers.monitor import Trace
-from lepl.offside.matchers import Block, BLine, rightmost, ContinuedBLineFactory
+from lepl.lexer.offside.matchers import Block, BLine, rightmost, \
+    ContinuedBLineFactory
 
 
 # pylint: disable-msg=R0201
@@ -49,7 +50,7 @@ class OffsideTest(TestCase):
     Test lines and blocks.
     '''
     
-    def test_bline(self):
+    def simple_grammar(self):
         '''
         Test a simple example: letters introduce numbers in an indented block.
         '''
@@ -68,7 +69,38 @@ class OffsideTest(TestCase):
         block += Block(line[1:])
         
         program = Trace(line[1:])
+        program.config.blocks(block_policy=1)
+        return program
         
+    def test_single_line(self):
+        program = self.simple_grammar()
+        text = '''1'''
+        parser = program.get_parse_string()
+        result = parser(text)
+        assert result == [['1']], result
+
+    def test_two_lines(self):
+        program = self.simple_grammar()
+        text = '''1
+2
+'''
+        parser = program.get_parse_string()
+        result = parser(text)
+        assert result == [['1'], 
+                          ['2']], result
+                                
+    def test_single_block(self):
+        #basicConfig(level=DEBUG)
+        program = self.simple_grammar()
+        text = '''a
+ 3
+'''
+        parser = program.get_parse_string()
+        result = parser(text)
+        assert result == [['a', ['3']]], result
+
+    def test_bline(self):
+        program = self.simple_grammar()
         text = '''1
 2
 a
@@ -78,7 +110,6 @@ a
   5
  6
 '''
-        program.config.default_line_aware(block_policy=1)
         parser = program.get_parse_string()
         result = parser(text)
         assert result == [['1'], 
@@ -108,7 +139,7 @@ a
   5
  6
 '''
-        program.config.default_line_aware(block_policy=rightmost)
+        program.config.blocks(block_policy=rightmost)
         parser = program.get_parse_string()
         result = parser(text)
         assert result == [['1'], 
@@ -139,7 +170,7 @@ a
   5
  6
 '''
-        program.config.default_line_aware(block_policy=rightmost)
+        program.config.blocks(block_policy=rightmost)
         parser = program.get_parse_string()
         result = parser(text)
         assert result == [['1'], 

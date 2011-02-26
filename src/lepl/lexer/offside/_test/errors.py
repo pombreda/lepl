@@ -65,7 +65,7 @@ class ErrorTest(TestCase):
             block += BlockStart & (Block(memberdef) > list)
             
             program = (line[:] & Eos()) >> sexpr_throw
-            program.config.default_line_aware(block_policy=rightmost)
+            program.config.blocks(block_policy=rightmost)
             
             return program.get_parse_string()
     

@@ -58,13 +58,13 @@ class PithonTest(TestCase):
         function = word[1:] & ~symbol('(') & args & ~symbol(')')
 
         block = Delayed()
-        blank = ~Line(Empty())
-        comment = ~Line(Token('#.*'))
+        blank = ~BLine(Empty(), indent=False)
+        comment = ~BLine(Token('#.*'), indent=False)
         line = (CLine(statement) | block | blank | comment) > list
         block += CLine((function | statement) & introduce) & Block(line[1:])
         
         program = (line[:] & Eos())
-        program.config.default_line_aware(block_policy=rightmost).trace(True)
+        program.config.blocks(block_policy=rightmost).trace(True)
         return program.get_parse_string()
     
     def test_blocks(self):
@@ -102,8 +102,8 @@ jiojio
             self.parser('123')
             assert False, 'expected exception'
         except LexerError as error:
-            assert str(error) == 'No lexer for \'123\' at ' \
-                'line 1 character 1 of str: \'123\'.', str(error)
+            assert str(error) == 'No token for \'123\' at ' \
+                'line 1, character 1 of \'123\'.', str(error)
                 
     def test_extend(self):
         #basicConfig(level=DEBUG)
