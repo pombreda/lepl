@@ -204,7 +204,7 @@ class Tutorial4Example(Example):
          +- '+'
          `- 7.0"""),
 (lambda: self.run_error_1().parse('1+2*(3-4)+5/6+7')[0], 
-"""FullFirstMatchException: The match failed in <string> at '+2*(3-4)+5/6+7' (line 1, character 2).
+"""FullFirstMatchException: The match failed in <string> at '2*(3-4)+5/6+7' (line 1, character 3).
 """),
 (lambda: len(list(self.unlimited_run_error_1().parse_all('1+2*(3-4)+5/6+7'))), 
 """6"""),
@@ -233,7 +233,7 @@ class Tutorial4Example(Example):
 (lambda: len(list((self.unlimited_run_error_1() & Eos()).parse_all('1+2*(3-4)+5/6+7'))), 
 """1"""),
 (lambda: self.run_error_2().parse('1+2*(3-4)+5/6+7')[0], 
-"""FullFirstMatchException: The match failed in <string> at '+2*(3-4)+5/6+7' (line 1, character 2).
+"""FullFirstMatchException: The match failed in <string> at '2*(3-4)+5/6+7' (line 1, character 3).
 """),
 (lambda: len(list(self.unlimited_run_error_2().parse_all('1+2*(3-4)+5/6+7'))), 
 """12"""),

@@ -91,7 +91,7 @@ else:
             assert b[0].zero()
         
         def test_single(self):
-            b = parse('''(123/8, foo=0x123/2.0,\nbar=1111100010001000b0)''')
+            b = parse('''(123/8, foo=0x123/2.0,\nbar = 1111100010001000b0)''')
             self.bassert(b[0], '0x7b') 
             self.bassert(b[1], '0x123', 16) 
             self.bassert(b.foo[0], '0x123', 16) 

@@ -96,10 +96,10 @@ class LineTest(TestCase):
         assert result == ['', 'a'], result
         result = line.parse('\ta')
         assert result == ['        ', 'a'], result
-        line.config.blocks(tabsize=None, block_policy=0)
+        line.config.blocks(tabsize=None, block_start=NO_BLOCKS, block_policy=0)
         result = line.parse('\ta')
         assert result == ['\t', 'a'], result
-        line.config.blocks(block_policy=0)
+        line.config.blocks(block_policy=0, block_start=NO_BLOCKS)
         result = line.parse('\ta')
         assert result == ['        ', 'a'], result
 

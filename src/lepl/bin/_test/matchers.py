@@ -42,6 +42,7 @@ else:
     from lepl.bin.literal import parse
     from lepl.bin.matchers import BEnd, Const
     from lepl.support.node import Node
+    from lepl.matchers.variables import TraceVariables
     
     
     # pylint: disable-msg=C0103, C0111, C0301
@@ -79,12 +80,13 @@ else:
             # this looks very like "normal" lepl because it is - there's 
             # nothing in lepl that forces the data being parsed to be text. 
             
-            preamble  = ~Const('0b10101010')[7]
-            start     = ~Const('0b10101011')
-            destn     = BEnd(6.0)                > 'destn'
-            source    = BEnd(6.0)                > 'source'
-            ethertype = ~Const('0800x0') 
-            header    = preamble & start & destn & source & ethertype > Node
+            with TraceVariables(False):
+                preamble  = ~Const('0b10101010')[7]
+                start     = ~Const('0b10101011')
+                destn     = BEnd(6.0)                > 'destn'
+                source    = BEnd(6.0)                > 'source'
+                ethertype = ~Const('0800x0') 
+                header    = preamble & start & destn & source & ethertype > Node
             
             # so, what do the test data look like?
 #            print(mac)

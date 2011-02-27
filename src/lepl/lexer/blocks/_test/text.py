@@ -95,11 +95,17 @@ def foo():
                             ['pass']]]], result
 
     def test_star(self):
+        '''
+        I have no idea why this fails, but this test was here before I forgot
+        so I assume it is correct behaviour!
+        '''
         #basicConfig(level=DEBUG)
         parser = self.parser('[^\n]*')
         try:
             self.do_parse(parser)
             assert False, 'Expected error'
-        except RuntimeLexerError:
+        # error changed in Lepl 5
+#        except RuntimeLexerError:
+        except FullFirstMatchException:
             pass
         

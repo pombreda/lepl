@@ -40,6 +40,7 @@ else:
     from lepl.bin.bits import unpack_length, BitString, STRICT
     from lepl.matchers.support import OperatorMatcher
     from lepl.core.parser import tagged
+    from lepl.stream.core import s_next
     
     
     # pylint: disable-msg=C0103, R0901, R0904
@@ -74,11 +75,9 @@ else:
             Need to be careful here to use only the restricted functionality
             provided by the stream interface.
             '''
-            try:
-                if self.value == stream[0:len(self.value)]:
-                    yield ([self.value], stream[len(self.value):])
-            except IndexError:
-                pass
+            (value, next_stream) = s_next(stream, count=len(self.value))
+            if self.value == value:
+                yield ([self.value], next_stream)
             
             
     class Const(_Constant):
@@ -113,11 +112,8 @@ else:
             Need to be careful here to use only the restricted functionality
             provided by the stream interface.
             '''
-            try:
-                yield ([self._convert(stream[0:self.length])], 
-                       stream[self.length:])
-            except IndexError:
-                pass
+            (value, next_stream) = s_next(stream, count=self.length)
+            yield ([self._convert(value)], next_stream)
     
         def _convert(self, bits):
             '''

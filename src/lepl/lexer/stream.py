@@ -99,9 +99,6 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
     def stream(self, state, value, id_=None):
         raise TypeError
     
-    def deepest(self):
-        raise TypeError
-
 
 
 class FilteredTokenHelper(LogMixin, HelperFacade):

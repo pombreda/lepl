@@ -210,3 +210,5 @@ else:
             assert table[0xff] == 0xff
             assert table[0] == 0
             assert table[10] == 80, table[10]
+            
+    
