@@ -29,6 +29,10 @@
 
 '''
 See http://groups.google.com/group/lepl/browse_thread/thread/79e39e03a03718cc?hl=en_US
+
+The different tree structures seen here seem to be related to the how the
+left-recursive memoisation fails.  In the case without lexer the string is
+shorter, which causes failure earlier.  I am not at all sure about this...
 '''
 
 from unittest import TestCase
@@ -44,10 +48,13 @@ class LeftBugTest(TestCase):
         #basicConfig(level=DEBUG)
         word = Any()
         expr1 = Delayed()
-        call = expr1 & word > List
-        expr1 +=  call | Empty() | word
-        program = expr1 & Eos()
-        parsed = program.parse("abc")
+        call = (expr1 & word) > List
+        expr1 += (call | Empty() | word)
+        program = Trace(expr1 & Eos())
+        program.config.trace()
+        parser = program.get_parse()
+        #print(parser.matcher.tree())
+        parsed = parser("abc")
         assert_str(parsed[0],
 """List
  +- List
@@ -60,14 +67,18 @@ class LeftBugTest(TestCase):
         #CLine = ContinuedBLineFactory(Token(r'\\'))
         word = Token("[A-Za-z_][A-Za-z0-9_]*")
         expr1 = Delayed()
-        call = expr1 & word > List # Deliberately not expr0 & expr1
-        expr1 += call | Empty() | word
-        program = expr1 & Eos()
-        parsed = program.parse("a b c")
+        call = (expr1 & word) > List
+        expr1 += (call | Empty() | word)
+        program = Trace(expr1 & Eos())
+        program.config.trace()
+        parser = program.get_parse()
+        #print(parser.matcher.tree())
+        parsed = parser("a b c")
         assert_str(parsed[0],
 """List
  +- List
- |   +- 'a'
+ |   +- List
+ |   |   `- 'a'
  |   `- 'b'
  `- 'c'""")
 
@@ -75,15 +86,16 @@ class LeftBugTest(TestCase):
         CLine = ContinuedBLineFactory(r'\\')
         expr0 = Token("[A-Za-z_][A-Za-z0-9_]*")
         expr1 = Delayed()
-        call = expr1 & expr0 > List # Deliberately not expr0 & expr1
-        expr1 += call | Empty () | expr0
+        call = (expr1 & expr0) > List # Deliberately not expr0 & expr1
+        expr1 += (call | Empty () | expr0)
         program = (CLine(expr1) & Eos())
         program.config.blocks(block_policy=rightmost)
         parsed = program.parse("a b c")
         assert_str(parsed[0],
 """List
  +- List
- |   +- 'a'
+ |   +- List
+ |   |   `- 'a'
  |   `- 'b'
  `- 'c'""")
         

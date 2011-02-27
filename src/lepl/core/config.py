@@ -384,9 +384,6 @@ class ConfigBuilder(object):
         
         `conservative` refers to the algorithm used to detect loops; False
         may classify some left--recursive loops as right--recursive.
-
-        This is part of the default configuration.  It can be removed with
-        `no_optimize_or`.        
         '''
         from lepl.core.rewriters import OptimizeOr
         return self.add_rewriter(OptimizeOr(conservative))
@@ -578,33 +575,6 @@ class ConfigBuilder(object):
         `
         '''
         from lepl.lexer.lines.lexer import LineLexer
-#        from lepl.blocks.matchers import DEFAULT_TABSIZE
-#        from lepl.blocks.regexp import LineAwareAlphabet, \
-#            make_hide_sol_eol_parser
-#        from lepl.blocks.stream import LineAwareStreamFactory, \
-#            LineAwareTokenSource
-#        from lepl.regexp.unicode import UnicodeAlphabet
-        
-#        self.clear()
-        
-#        use_blocks = block_policy is not None or block_start is not None
-#        if use_blocks:
-#            self.blocks(block_policy, block_start)
-            
-#        if tabsize and tabsize < 0:
-#            tabsize = DEFAULT_TABSIZE
-#        if alphabet is None:
-#            alphabet = UnicodeAlphabet.instance()
-#        if not parser_factory:
-#            parser_factory = make_hide_sol_eol_parser
-#        self.alphabet(LineAwareAlphabet(alphabet, parser_factory))
-#
-#        self.set_alphabet_arg()
-#        if use_blocks:
-#            self.set_block_policy_arg(block_policy)
-#        self.lexer(alphabet=self.__get_alphabet(), discard=discard, 
-#                   source=LineAwareTokenSource.factory(tabsize))
-#        self.stream_factory(LineAwareStreamFactory(self.__get_alphabet()))
         self.lexer(alphabet, discard, LineLexer)
         
         return self
@@ -634,62 +604,7 @@ class ConfigBuilder(object):
                 RecordDeepest(n_before, n_results_after, n_done_after))
     
     # packages
-    
-    def offside(self, alphabet=None, parser_factory=None,
-                discard=None, tabsize=-1, 
-                block_policy=None, block_start=None):
-        '''
-        Configure the parser for line aware behaviour.  This sets many 
-        different options and is intended to be the "normal" way to enable
-        line aware parsing (including "offside rule" support).
-        
-        Compared to `line_aware`, this also adds various "standard" options.
-        
-        Normally calling this method is all that is needed for configuration.
-        If you do need to "fine tune" the configuration for parsing should
-        consult the source for this method and then call other methods
-        as needed.
-        
-        `alphabet` is the alphabet used; by default it is assumed to be Unicode
-        and it will be extended to include start and end of line markers.
-        
-        `parser_factory` is used to generate a regexp parser.  If this is unset
-        then the parser used depends on whether blocks are being used.  If so,
-        then the HideSolEolParser is used (so that you can specify tokens 
-        without worrying about SOL and EOL); otherwise a normal parser is
-        used.
-        
-        `discard` is a regular expression which is matched against the stream
-        if lexing otherwise fails.  A successful match is discarded.  If None
-        then the usual token defaut is used (whitespace).  To disable, use
-        an empty string.
-        
-        `tabsize`, if not None, should be the number of spaces used to replace
-        tabs.
-        
-        `block_policy` should be the number of spaces in an indent, if blocks 
-        are used (or an appropriate function).  By default (ie if `block_start`
-        is given) it is taken to be DEFAULT_POLICY.
-        
-        `block_start` is the initial indentation, if blocks are used.  By 
-        default (ie if `block_policy` is given) 0 is used.
-        
-        To enable blocks ("offside rule" parsing), at least one of 
-        `block_policy` and `block_start` must be given.
-        `
-        '''
-        self.clear()
-        self.blocks(alphabet=alphabet, discard=discard, tabsize=tabsize, 
-                    block_policy=block_policy, block_start=block_start)
-        self.flatten()
-        self.compose_transforms()
-        self.auto_memoize()
-        self.optimize_or()
-        self.direct_eval()
-        self.compile_to_nfa()
-        self.full_first_match()
-        return self
-    
+   
     def clear(self):
         '''
         Delete any earlier configuration and disable the default (so no

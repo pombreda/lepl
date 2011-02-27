@@ -246,16 +246,6 @@ class PerStreamCache(LogMixin):
         self.__first = None
         self.foo = 0
         
-    @staticmethod
-    def __curtail(count_, stream):
-        '''
-        Do we stop at this point?
-        '''
-        if count_ == 1:
-            return False
-        else:
-            return count_ > s_len(stream) 
-        
     @tagged
     def _match(self, stream):
         '''
@@ -263,7 +253,7 @@ class PerStreamCache(LogMixin):
         '''
         if not self.__first:
             self.__counter += 1
-            if self.__curtail(self.__counter, stream):
+            if self.__counter > 1 and self.__counter > s_len(stream):
                 return empty()
             else:
                 cache = PerCallCache(self.__matcher._match(stream))
@@ -314,21 +304,11 @@ class PerCallCache(LogMixin):
             while True:
                 result = yield self.__generator
                 if self.__unstable:
-                    self._warn(
-                        fmt('A view completed before the cache was '
-                               'complete: {0!r}. This typically means that '
-                               'the grammar contains a matcher that does not '
-                               'consume input within a loop and is usually '
-                               'an error.', self.__generator))
-                stream_in = self.__generator.stream
-                key_in = s_key(stream_in)
-                stream_out = result[1]
-                key_out = s_key(stream_out)
-                self._debug(fmt('{0}/{1} -> {2}/{3}', 
-                                self.__generator.stream, hash(key_in), 
-                                result, hash(key_out)))
-                if key_in == key_out:
-                    self._warn('Stream not consumed (or stream key broken)')
+                    self._warn(fmt('A view completed before the cache was '
+                                   'complete: {0!r}. This typically means that '
+                                   'the grammar contains a matcher that does not '
+                                   'consume input within a loop and is usually '
+                                   'an error.', self.__generator))
                 self.__cache.append(result)
                 self.__returned = True
                 yield result

@@ -45,7 +45,7 @@ class HelloWorldExample(Example):
     
     pass
 
-# all needs rewriting to includ new full match errors
+# all needs rewriting to include new full match errors
 
 #    def test_hello(self):
 #        self.examples([(lambda: next(Literal('hello').match('hello world')),

@@ -32,6 +32,8 @@ An example config file fmt using blocks with three levels.
 '''
 
 from string import ascii_letters
+from logging import basicConfig, DEBUG
+
 from lepl._example.support import Example
 from lepl import *
 
@@ -40,14 +42,16 @@ def config_parser():
     key_value   = (word & ~Token(':') & word) > tuple
     subsection  = BLine(word) & (Block(BLine(key_value)[1:] > dict)) > list
     section     = BLine(word) & Block(subsection[1:]) > list
-    config_file = (section | ~Line(Empty()))[:] > list
+    config_file = (section | ~BLine(Empty(), indent=False))[:] > list
     
-    config_file.config.blocks(block_policy=rightmost)
+    #config_file = Trace(config_file)
+    config_file.config.blocks(block_policy=rightmost).no_full_first_match()
     return config_file.get_parse()
 
 class ConfigExample(Example):
     
     def test_config(self):
+        #basicConfig(level=DEBUG)
         parser = config_parser()
         parsed = parser('''
 one

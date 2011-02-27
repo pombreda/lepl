@@ -38,7 +38,9 @@ from lepl._test.base import BaseTest, assert_str
 from lepl.matchers.combine import And, Or
 from lepl.matchers.core import Any, Literal, Eof, Regexp, Delayed, Lookahead, \
     Consumer
-from lepl.matchers.derived import Word, Digit, Integer, Drop
+from lepl.matchers.complex import Columns, PostMatch
+from lepl.matchers.derived import Word, Digit, Integer, Drop, Space, AnyBut, \
+    Newline
 from lepl.matchers.monitor import Commit
 from lepl.support.node import Node
 
@@ -104,20 +106,20 @@ class OrTest(BaseTest):
         self.assert_direct('a', Any('x') | Any('a') | Any(), [['a'],['a']])
         
         
-#class FirstTest(BaseTest):
-#    
-#    def test_first(self):
-#        s = Space()
-#        aline = '#define' & ~s[1:] & Word() & ~s[1:] & Word() > list
-#        bline = AnyBut(s[0:] & Newline())[1:]
-#        line = aline % ~bline
-#        parser = line[0:,~(s[0:] & Newline())]
-#        parser.config.no_full_first_match()
-#        parser.config.clear()
-#        n = len(list(parser.match('#define A 1\ncrap n stuff\n#define B 22\n')))
-#        assert n == 16, n
-#        r = parser.parse('#define A 1\ncrap n stuff\n#define B 22\n')
-#        assert r == [['#define', 'A', '1'], ['#define', 'B', '22']], r
+class FirstTest(BaseTest):
+    
+    def test_first(self):
+        s = Space()
+        aline = '#define' & ~s[1:] & Word() & ~s[1:] & Word() > list
+        bline = AnyBut(s[0:] & Newline())[1:]
+        line = aline % ~bline
+        parser = line[0:,~(s[0:] & Newline())]
+        parser.config.no_full_first_match()
+        parser.config.clear()
+        n = len(list(parser.match('#define A 1\ncrap n stuff\n#define B 22\n')))
+        assert n == 16, n
+        r = parser.parse('#define A 1\ncrap n stuff\n#define B 22\n')
+        assert r == [['#define', 'A', '1'], ['#define', 'B', '22']], r
 
 
 class LookaheadTest(BaseTest):

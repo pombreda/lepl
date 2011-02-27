@@ -72,8 +72,6 @@ if bytes is str:
 else:
 
 
-    from lepl.stream.stream import SimpleStream
-    
     STRICT = 'strict'
     
     
@@ -476,9 +474,6 @@ else:
             else:
                 return BitString.from_bytearray(value.encode(errors=errors))
             
-    # pylint: disable-msg=E1101
-    # python 2.6 doesn't know about abcs
-    SimpleStream.register(BitString)
             
     def unpack_length(length):
         '''

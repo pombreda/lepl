@@ -107,12 +107,12 @@ class Lexer(NamespaceMixin, BaseMatcher):
                     try:
                         (terminals, match, next_stream) = self.t_regexp.match(stream)
                         self._debug(fmt('Token: {0!r} {1!r} {2!s}',
-                                           terminals, match, s_debug(stream)))
+                                        terminals, match, s_debug(stream)))
                         yield (terminals, s_stream(stream, match))
                     except TypeError:
                         (terminals, _size, next_stream) = self.s_regexp.size_match(stream)
                         self._debug(fmt('Space: {0!r} {1!s}',
-                                           terminals, s_debug(stream)))
+                                        terminals, s_debug(stream)))
                     stream = next_stream
             except TypeError:
                 raise RuntimeLexerError(

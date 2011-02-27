@@ -144,14 +144,14 @@ assert parse('pod') == ['pod']
 assert parse('pboQd') == ['pboqd']
 
 # Now let's run that against the contents of the dictionary:
-
-with open('/usr/share/dict/words', encoding='latin_1') as words:
-    for word in words:
-        word = word.strip()
-        try:
-            print(parse(word)[0]) # will be a list containing a single word
-        except:
-            pass
+if __name__ == '__main__':
+    with open('/usr/share/dict/words', encoding='latin_1') as words:
+        for word in words:
+            word = word.strip()
+            try:
+                print(parse(word)[0]) # will be a list containing a single word
+            except:
+                pass
 
 '''
 The results are less exciting than I had hoped:

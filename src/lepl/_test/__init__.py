@@ -46,7 +46,8 @@ import lepl._test.bug_stalled_parser
 import lepl._test.magus
 
 # Number of tests if running in IDE with Python 3
-TOTAL = 461
+#TOTAL = 461 # Lepl 4
+TOTAL = 414
 NOT_DISTRIBUTED = 18
 NOT_3 = 22
 
@@ -75,7 +76,6 @@ def all():
     runner = TextTestRunner(verbosity=4)
     for module in ls_modules(lepl, MODULES):
         log.debug(module.__name__)
-        log.debug(repr(dir(module)))
         suite.addTest(loader.loadTestsFromModule(module))
     result = runner.run(suite)
     print('\n\n\n----------------------------------------------------------'

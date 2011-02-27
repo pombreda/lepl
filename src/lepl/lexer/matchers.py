@@ -181,7 +181,7 @@ class BaseToken(OperatorMatcher, NoMemo):
         ((tokens, line_stream), next_stream) = s_next(stream)
         if self.id_ in tokens:
             if self.content is None:
-                # result contains all data (drop facade)
+                # result contains all data
                 (line, _) = s_line(line_stream, True)
                 yield ([line], next_stream)
             else:
