@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-Examples for the lepl.lexer.blocks package.
+Examples for the lepl.lexer.lines package.
 '''
 
 
@@ -36,4 +36,5 @@ Examples for the lepl.lexer.blocks package.
 
 # pylint: disable-msg=E0611
 #@PydevCodeAnalysisIgnore
-import lepl.lexer.lines._example.lines
+import lepl.lexer.lines._example.line_aware
+

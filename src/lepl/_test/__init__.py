@@ -31,7 +31,7 @@
 Tests for the lepl package.
 '''
 
-from logging import getLogger, basicConfig, DEBUG
+from logging import getLogger, basicConfig, DEBUG, WARN, ERROR
 from sys import version
 from types import ModuleType
 from unittest import TestSuite, TestLoader, TextTestRunner
@@ -50,6 +50,17 @@ TOTAL = 461
 NOT_DISTRIBUTED = 18
 NOT_3 = 22
 
+MODULES = [('apps', []), 
+           ('bin', []),
+           ('cairo', []),
+           ('contrib', []),
+           ('core', []),
+           ('lexer', [('lines', []), ('blocks', [])]), 
+           ('matchers', []),
+           ('regexp', []),
+           ('stream', []),
+           ('support', [])]
+
 def all():
     '''
     This runs all tests and examples.  It is something of a compromise - seems
@@ -57,13 +68,14 @@ def all():
     use the file system (since code may be in a zip file), and keeps the
     number of required imports to a minimum.
     '''
-    #basicConfig(level=DEBUG)
+    basicConfig(level=ERROR)
     log = getLogger('lepl._test.all.all')
     suite = TestSuite()
     loader = TestLoader()
-    runner = TextTestRunner(verbosity=2)
-    for module in ls_all_tests():
+    runner = TextTestRunner(verbosity=4)
+    for module in ls_modules(lepl, MODULES):
         log.debug(module.__name__)
+        log.debug(repr(dir(module)))
         suite.addTest(loader.loadTestsFromModule(module))
     result = runner.run(suite)
     print('\n\n\n----------------------------------------------------------'
@@ -88,38 +100,23 @@ def all():
     print('\nLooks OK to me!\n\n')
 
 
-def ls_all_tests():
-    '''
-    All test modules.
-    '''
-    for root in ls_module(lepl, 
-                          ['apps', 'bin', 'contrib', 'core', 'lexer', 
-                           'matchers', 'offside', 'regexp', 'stream', 
-                           'support'], 
-                          True):
-        for child in ls_module(root, ['_test', '_example']):
-            for module in ls_module(child):
-                yield module
-
-
-def ls_module(parent, children=None, include_parent=False):
-    '''
-    Expand and return child modules.
-    '''
-    if include_parent:
-        yield parent
-    if not children:
-        children = dir(parent)
-    for child in children:
+def ls_modules(parent, children):
+    known = set()
+    children += [('_test', []), ('_example', [])]
+    children += map(lambda module: (module, []), dir(parent))
+    for (child, unborn) in children:
+        name = parent.__name__ + '.' + child
         try:
-            # pylint: disable-msg=W0122
-            exec('import {0}.{1}'.format(parent.__name__, child))
-            module = getattr(parent, child, None)
-            if isinstance(module, ModuleType):
+            __import__(name)
+            module = getattr(parent, child)
+            if isinstance(module, ModuleType) and module not in known:
                 yield module
-        except ImportError:
-            pass
-
+                known.add(module)
+                for module in ls_modules(module, unborn):
+                    yield module
+        except ImportError as e:
+            if not str(e).startswith('No module named'):
+                raise
 
 if __name__ == '__main__':
     all()

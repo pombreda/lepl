@@ -127,7 +127,7 @@ class RegexpContainer(object):
         '''
         if use and not add_reqd:
             matcher = single(alphabet, node, regexp, regexp_type, wrapper)
-            # if matcher is a Transformable with a Transfmtion other than
+            # if matcher is a Transformable with a Transformation other than
             # the standard empty_adapter then we must stop
             if len(matcher.wrapper.functions) > 1:
                 cls.log.debug(fmt('Force matcher: {0}', matcher.wrapper))
@@ -147,13 +147,13 @@ def single(alphabet, node, regexp, regexp_type, wrapper=None):
     Create a matcher for the given regular expression.
     '''
     # avoid dependency loops
-    from lepl.matchers.transform import TransfmtionWrapper
+    from lepl.matchers.transform import TransformationWrapper
     matcher = regexp_type(regexp, alphabet)
-    matcher = matcher.compose(TransfmtionWrapper(empty_adapter))
+    matcher = matcher.compose(TransformationWrapper(empty_adapter))
     if wrapper is None:
         wrapper = node.wrapper
-    elif wrapper and not isinstance(wrapper, TransfmtionWrapper):
-        wrapper = TransfmtionWrapper(wrapper)
+    elif wrapper and not isinstance(wrapper, TransformationWrapper):
+        wrapper = TransformationWrapper(wrapper)
     if wrapper:
         wrapper.functions = \
                 list(filter(lambda x: x != empty_adapter, wrapper.functions))
@@ -286,7 +286,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
         
     def clone_transform(use, original, matcher, wrapper):
         '''
-        We can assume that wrapper is a transfmtion.  add joins into
+        We can assume that wrapper is a transformation.  add joins into
         a sequence.
         '''
         if original.wrapper:

@@ -75,7 +75,7 @@ class _RMemo(OperatorMatcher):
     fails with left recursion it's safer to always use LMemo.
     
     Making this class Transformable did not improve performance (it's better
-    to place the transfmtion on critical classes like Or and And). 
+    to place the transformation on critical classes like Or and And). 
     '''
     
     # pylint: disable-msg=E1101

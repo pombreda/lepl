@@ -79,7 +79,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         else:
             return prefix + repr(value)
         
-    def _fmt_repr(self, indent, key, contents):
+    def _format_repr(self, indent, key, contents):
         return fmt('{0}{1}{2}({3}{4})', 
                       ' ' * indent,
                       key + '=' if key else '',
@@ -94,7 +94,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         indent1 = 0 if self._fmt_compact else indent0 + 1 
         contents = [self._fmt_repr(indent1, arg, visited) for arg in args] + \
             [self._fmt_repr(indent1, kargs[key], visited, key) for key in kargs]
-        return self._fmt_repr(indent0, key, contents)
+        return self._format_repr(indent0, key, contents)
         
     @property
     def _fmt_compact(self):
@@ -174,23 +174,23 @@ class Transformable(OperatorMatcher):
     '''
 
     def __init__(self, function=None):
-        from lepl.matchers.transform import TransfmtionWrapper
+        from lepl.matchers.transform import TransformationWrapper
         super(Transformable, self).__init__()
-        if not isinstance(function, TransfmtionWrapper):
-            function = TransfmtionWrapper(function)
+        if not isinstance(function, TransformationWrapper):
+            function = TransformationWrapper(function)
         self.wrapper = function
 
     def compose(self, wrapper):
         '''
-        Combine with a transfmtion wrapper, returning a new instance.
+        Combine with a transformation wrapper, returning a new instance.
         
         We must return a new instance because the same Transformable may 
         occur more than once in a graph and we don't want to include the
-        transfmtion in other cases.
+        transformation in other cases.
         '''
         raise NotImplementedError()
 
-    def _fmt_repr(self, indent, key, contents):
+    def _format_repr(self, indent, key, contents):
         return fmt('{0}{1}{2}({3}{4})', 
                       ' ' * indent,
                       key + '=' if key else '',

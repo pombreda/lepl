@@ -73,8 +73,9 @@ def Caseless(letter):
     as the match.
     '''
     def matcher(support, stream):
-        if stream and stream[0].lower() == letter.lower():
-            return ([letter], stream[1:])
+        (char, next_stream) = s_next(stream)
+        if char.lower() == letter.lower():
+            return ([letter], next_stream)
     return matcher
 
 # And then we can use that to match and of the central letters:

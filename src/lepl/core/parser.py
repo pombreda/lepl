@@ -109,6 +109,7 @@ def trampoline(main, m_stack=None, m_value=None):
     Replacing stack append/pop with a manually allocated non-decreasing array
     and index made no significant difference (at around 1% level)
     '''
+    from lepl.stream.maxdepth import FullFirstMatchException
     stack = deque()
     push = stack.append
     pop = stack.pop
@@ -188,7 +189,8 @@ def trampoline(main, m_stack=None, m_value=None):
                     m_value.exception(value)
             except Exception as exception:
                 # do some logging etc before re-raising
-                log.error(fmt('Exception at epoch {0}, {1!s}: {2!s}',
+                if not isinstance(exception, FullFirstMatchException):
+                    log.warn(fmt('Exception at epoch {0}, {1!s}: {2!s}',
                                  epoch, value, exception))
                 if stack:
                     log.debug(fmt('Top of stack: {0}', stack[-1]))

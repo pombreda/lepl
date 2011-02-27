@@ -59,7 +59,7 @@ import lepl._example.search_syntax
 import lepl._example.search
 # no tests and 3.0-specific print syntax
 #import lepl._example.separators
-import lepl._example.spindrome
+#import lepl._example.spindrome # SLOW!
 #import lepl._example.support
 import lepl._example.trace
 import lepl._example.tutorial_1

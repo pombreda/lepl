@@ -142,12 +142,12 @@ from lepl.lexer.lines.matchers import LineStart, LineEnd, Line, \
     ContinuedLineFactory
 from lepl.lexer.blocks.matchers import Indent, Block, BLine, NO_BLOCKS, \
     constant_indent, rightmost, to_right, ContinuedBLineFactory, Extend
-#from lepl.blocks.matchers import Line, Block, BLine, ContinuedLineFactory, \
-#    ContinuedBLineFactory, Extend, SOL, EOL, rightmost, constant_indent, \
-#    to_right
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
+from lepl.stream.core import s_debug, s_deepest, s_delta, s_empty, s_eq, \
+    s_factory, s_fmt, s_global_kargs, s_id, s_join, s_kargs, s_key, \
+    s_len, s_line, s_max, s_next, s_stream
 from lepl.stream.maxdepth import FullFirstMatchException
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 from lepl.support.list import List, sexpr_fold, sexpr_throw
@@ -309,6 +309,25 @@ __all__ = [
         # lepl.regexp.unicode
         'UnicodeAlphabet',
         
+        # lepl.stream.core
+        's_debug', 
+        's_deepest', 
+        's_delta', 
+        's_empty', 
+        's_eq',
+        's_factory', 
+        's_fmt', 
+        's_global_kargs',
+        's_id', 
+        's_join', 
+        's_kargs', 
+        's_key',
+        's_len', 
+        's_line', 
+        's_max', 
+        's_next', 
+        's_stream',
+
         # lepl.stream.maxdepth
         'FullFirstMatchException',
         
@@ -318,22 +337,13 @@ __all__ = [
         'Line',
         'ContinuedLineFactory',
         
-#        # lepl.blocks.lexer
-#        'LineAwareEol',
-#        'LineAwareSol',
-#        'BIndent',
-        
         # lepl.lexer.blocks.matchers
-#        'Line',
         'Block',
         'Indent',
         'BLine',
         'NO_BLOCKS',
-#        'ContinuedLineFactory',
         'ContinuedBLineFactory',
         'Extend',
-#        'SOL',
-#        'EOL',
         'rightmost',
         'constant_indent',
         'to_right'

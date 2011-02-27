@@ -28,4 +28,12 @@
 # MPL or the LGPL License.
 
 
-import lepl.lexer.blocks._test
+import lepl.lexer.blocks._test.closed_bug
+import lepl.lexer.blocks._test.errors
+import lepl.lexer.blocks._test.indentation
+import lepl.lexer.blocks._test.left_bug
+import lepl.lexer.blocks._test.offside
+import lepl.lexer.blocks._test.pithon
+import lepl.lexer.blocks._test.stream
+import lepl.lexer.blocks._test.text
+import lepl.lexer.blocks._test.word_bug

@@ -260,7 +260,7 @@ class Flatten(Rewriter):
 
 class ComposeTransforms(Rewriter):
     '''
-    A rewriter that joins adjacent transfmtions into a single
+    A rewriter that joins adjacent transformations into a single
     operation, avoiding trampolining in some cases.
     '''
 

@@ -42,7 +42,7 @@ from lepl.matchers.core import Lookahead, Any, Eof, Literal, Regexp
 from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
     NON_GREEDY
 from lepl.matchers.support import OperatorMatcher, coerce_, trampoline_matcher
-from lepl.matchers.transform import TransfmtionWrapper, Transform, \
+from lepl.matchers.transform import TransformationWrapper, Transform, \
     ApplyArgs, ApplyRaw
 from lepl.regexp.matchers import NfaRegexp
 from lepl.support.lib import assert_type, lmap, fmt, basestring
@@ -114,8 +114,8 @@ def Apply(matcher, function, raw=False, args=False):
     (or ``>=`` to set ``raw=True``, or ``*`` to set ``args=True``) 
     to the right of a matcher.
 
-    If the function is a `TransfmtionWrapper` it is used directly.  
-    Otherwise a `TransfmtionWrapper` is constructed via the `raw` and 
+    If the function is a `TransformationWrapper` it is used directly.  
+    Otherwise a `TransformationWrapper` is constructed via the `raw` and 
     `args` parameters, as described below.
 
     **Note:** The creation of named pairs (when a string argument is
@@ -141,7 +141,7 @@ def Apply(matcher, function, raw=False, args=False):
       function
         The modification to apply.
         
-        If a `Transfmtion`, this is used directly.
+        If a `Transformation`, this is used directly.
         
         If a string is given, named pairs will be created (and raw and args
         ignored).
@@ -165,7 +165,7 @@ def Apply(matcher, function, raw=False, args=False):
     raw = raw or (type(function) is type and issubclass(function, ApplyRaw))
     args = args or (type(function) is type 
                       and issubclass(function, ApplyArgs))
-    if isinstance(function, TransfmtionWrapper):
+    if isinstance(function, TransformationWrapper):
         apply = function
     else:
         if isinstance(function, basestring):
@@ -311,7 +311,7 @@ def Map(matcher, function):
 
 def add(_stream, matcher):
     '''
-    The transfmtion used in `Add` - we carefully use "+" in as generic
+    The transformation used in `Add` - we carefully use "+" in as generic
     a manner as possible.
     '''
     (results, stream_out) = matcher()
@@ -336,7 +336,7 @@ def Add(matcher):
     Join tokens in the result using the "+" operator (**+**).
     This joins strings and merges lists.  
     '''
-    return Apply(matcher, TransfmtionWrapper(add))
+    return Apply(matcher, TransformationWrapper(add))
 
 
 def Join(*matchers):
