@@ -35,7 +35,7 @@ Performance related tests.
 #@PydevCodeAnalysisIgnore
 
 
-from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG, ERROR
 
 from lepl import *
 from lepl.core.trace import StreamMonitor
@@ -47,6 +47,7 @@ def natural_language():
     '''
     
     #basicConfig(level=DEBUG)
+    basicConfig(level=ERROR)
     
     class VerbPhrase(Node): pass
     class DetPhrase(Node): pass
@@ -68,12 +69,12 @@ def natural_language():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    sentence.config.auto_memoize().no_full_first_match()
-    sentence.config.add_monitor(StreamMonitor)
+    #sentence.config.auto_memoize().no_full_first_match()
+    #sentence.config.add_monitor(StreamMonitor)
     p = sentence.get_match_string()
     print(repr(p.matcher))
-    #for _i in range(100):
-    for _i in range(1):
+    for _i in range(100):
+    #for _i in range(1):
         assert len(list(p('every boy or some girl and helen and john or pat knows '
                           'and respects or loves every boy or some girl and pat or '
                           'john and helen'))) == 392  
@@ -85,6 +86,7 @@ def natural_language2():
     '''
     
     #basicConfig(level=DEBUG)
+    basicConfig(level=ERROR)
     
     class VerbPhrase(Node): pass
     class DetPhrase(Node): pass
@@ -108,7 +110,7 @@ def natural_language2():
     termphrase += simple_tp | (termphrase & join & termphrase) > TermPhrase
     sentence    = termphrase & verbphrase & termphrase & Eos() > Sentence
 
-    sentence.config.auto_memoize(full=True)
+    #sentence.config.auto_memoize(full=True)
     #sentence.config.add_monitor(StreamMonitor)
     p = sentence.get_match_string()
     print(repr(p.matcher))
@@ -122,34 +124,9 @@ def time():
     from timeit import Timer
     t = Timer("natural_language2()", "from __main__ import natural_language2")
     print(t.timeit(number=1))
-    # without compilation, and with smart dfa switch:
-    # with dfa: 12.4
-    # without dfa: 5.7
-    # default: 12.4
-    # with tokens: 13.3
-    
-    # all numbers below included compilation!
-    # using LMemo:
-    # 6.3, 6.6 for 2.0 on laptop
-    # 5.3 after simplifying generator wrapper
-    # using auto_memoize 48 -> 34 (44->31)
-    # Or as Transformable -> 24
-    # RMemo as Transformable -> 30
-    # Both as Transformable -> 27
-    # So not worth making RMemo transformable(!)
-    # Seem to be back at 27 for auto_memoize(False) after fixing bugs
-    # and slightly worse (28) for auto_memoize(True)
-    # DFA (and so NFA) makes things slower (40)
-    # (expected - converting literal to FSA)
-    
-    # new code (4.0), count reduced to 100
-    # stream - null 42, string 28, null full 2, string full 58
-    # tokens - null 14, string 25, null full 5, string full 22
-    #          null full no direct 5, string full no direct 30
-    #          back to 1000, null full 46 (so it's not caching the whole text)
-    # after revising hashes/eq
-    # stream - null 5, string 6, null full 3, string full 3
-    # tokens - null 12, string 32, null full 5, string full 5
+    # 4v5, no special config, x100, python 3.2 on laptop
+    # string     31.9,32.0 v 19.3,19.1
+    # tokens (2) 26.6,25.8 v 22.6,22.4
     
 
 def profile():

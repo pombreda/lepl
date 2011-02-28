@@ -118,62 +118,50 @@ def trampoline(main, m_stack=None, m_value=None):
         exception_being_raised = False
         epoch = 0
         log = getLogger('lepl.parser.trampoline')
-        last_exc = None
         while True:
             epoch += 1
             try:
-                if m_value:
-                    m_value.next_iteration(epoch, value, 
-                                           exception_being_raised, stack)
+                if m_value: m_value.next_iteration(epoch, value, 
+                                                   exception_being_raised, stack)
                 # is the value a coroutine that should be added to our stack
                 # and evaluated?
                 if type(value) is GeneratorWrapper:
-                    if m_stack:
-                        m_stack.push(value)
+                    if m_stack: m_stack.push(value)
                     # add to the stack
                     push(value)
-                    if m_value:
-                        m_value.before_next(value)
+                    if m_value: m_value.before_next(value)
                     # and evaluate
                     value = next(value.generator)
-                    if m_value:
-                        m_value.after_next(value)
+                    if m_value: m_value.after_next(value)
                 # if we don't have a coroutine then we have a result that
                 # must be passed up the stack.
                 else:
                     # drop top of the stack (which returned the value)
                     popped = pop()
-                    if m_stack:
-                        m_stack.pop(popped)
+                    if m_stack: m_stack.pop(popped)
                     # if we still have coroutines left, pass the value in
                     if stack:
                         # handle exceptions that are being raised
                         if exception_being_raised:
                             exception_being_raised = False
-                            if m_value:
-                                m_value.before_throw(stack[-1], value)
+                            if m_value: m_value.before_throw(stack[-1], value)
                             # raise it inside the coroutine
                             value = stack[-1].generator.throw(value)
-                            if m_value:
-                                m_value.after_throw(value)
+                            if m_value: m_value.after_throw(value)
                         # handle ordinary values
                         else:
-                            if m_value:
-                                m_value.before_send(stack[-1], value)
+                            if m_value: m_value.before_send(stack[-1], value)
                             # inject it into the coroutine
                             value = stack[-1].generator.send(value)
-                            if m_value:
-                                m_value.after_send(value)
+                            if m_value: m_value.after_send(value)
                     # otherwise, the stack is completely unwound so return
                     # to main caller 
                     else:
                         if exception_being_raised:
-                            if m_value:
-                                m_value.raise_(value)
+                            if m_value: m_value.raise_(value)
                             raise value
                         else:
-                            if m_value:
-                                m_value.yield_(value)
+                            if m_value: m_value.yield_(value)
                             yield value
                         # this allows us to restart with a new evaluation
                         # (backtracking) if called again.
@@ -185,8 +173,7 @@ def trampoline(main, m_stack=None, m_value=None):
                 # otherwise, we will propagate this value
                 value = exception
                 exception_being_raised = True
-                if m_value:
-                    m_value.exception(value)
+                if m_value: m_value.exception(value)
             except Exception as exception:
                 # do some logging etc before re-raising
                 if not isinstance(exception, FullFirstMatchException):

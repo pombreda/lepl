@@ -71,21 +71,15 @@ def time():
     from timeit import Timer
     t = Timer("floats()", "from __main__ import floats")
     print(t.timeit(number=1))
-    # 5.8 for default
-    # second values after improving rewrite
-    # 4.9,3.5,2.8,1.3 for dfa
-    # 5.0,3.7,2.9,3.1 for nfa
-    # wow - new code, with standard config, functions etc, 0.5
-    # increase to 300, avoids parser building bias: 2.2
-    # increase to 3000, improved memo: 20
-    # before changing GeneratorWrapper: 18.8,19.8,18.9; after: 17.8,18.3,18.1
+    # 4 v 5, no special config, python 3.2 on laptop
+    # 17.1,16.3,16.7 v 10.4,10.4,10.4
     
 
 def profile():
     '''
 import pstats
 p=pstats.Stats('floats.prof')
-#p.strip_dirs()
+p.strip_dirs()
 p.sort_stats('cumulative')
 p.sort_stats('time')
 p.print_stats(35)
@@ -94,8 +88,8 @@ p.print_stats(35)
     cProfile.run('floats()', 'floats.prof')
 
 if __name__ == '__main__':
-#    time()
-    profile()
+    time()
+#    profile()
 #    floats()
 
     

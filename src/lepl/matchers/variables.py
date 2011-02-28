@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-Display infmtion when matchers that are bound to variables are called.
+Display information when matchers that are bound to variables are called.
 
 This is possible thanks to a neat trick suggested by Carl Banks on c.l.p 
 '''

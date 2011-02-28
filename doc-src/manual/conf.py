@@ -40,7 +40,7 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'contents'
 
-# General infmtion about the project.
+# General information about the project.
 project = u'LEPL'
 copyright = u'2009-2011, Andrew Cooke'
 

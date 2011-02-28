@@ -43,7 +43,7 @@ stored in memory.  Unfortunately we cannot implement both because integer
 values do not contain any flag to say how the user specified them (hex or
 decimal).
 
-A very similar issue - that integers do not carry any infmtion to say
+A very similar issue - that integers do not carry any information to say
 how many leading zeroes were entered by the user - suggests a solution to
 this problem.  To solve the leading zeroes issue we accept integers as 
 strings and do the conversion ourselves.  Since we are dealing with strings 

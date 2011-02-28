@@ -196,7 +196,7 @@ def loops(node, type_):
 # interface
 class ConstructorGraphNode(object):
     '''
-    An interface that provides infmtion on constructor arguments.
+    An interface that provides information on constructor arguments.
     
     This is used by `ConstructorWalker` to provide the results of
     walking child nodes in the same fmt as those nodes were provided in
@@ -374,7 +374,7 @@ class ConstructorWalker(object):
     Tree walker (it handles cyclic graphs by ignoring repeated nodes).
     
     This is based directly on the catamorphism of the graph.  The visitor 
-    encodes the type infmtion.  It may help to see the constructor 
+    encodes the type information.  It may help to see the constructor 
     arguments as type constructors.
     
     Nodes should be subclasses of `ConstructorGraphNode`.

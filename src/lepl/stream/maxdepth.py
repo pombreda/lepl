@@ -39,7 +39,7 @@ def FullFirstMatch(matcher, eos=True):
     '''
     Raise an exception if the first match fails (if eos=False) or does not
     consume the entire input stream (eos=True).  The exception includes 
-    infmtion about the location of the deepest match.
+    information about the location of the deepest match.
     
     This only works for the first match because we cannot reset the stream
     facade for subsequent matches (also, if you want multiple matches you
@@ -68,7 +68,7 @@ def FullFirstMatch(matcher, eos=True):
 
 class FullFirstMatchException(Exception):
     '''
-    The exception raised by `FullFirstMatch`.  This includes infmtion
+    The exception raised by `FullFirstMatch`.  This includes information
     about the deepest point read in the stream. 
     '''
     

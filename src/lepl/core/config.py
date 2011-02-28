@@ -292,7 +292,7 @@ class ConfigBuilder(object):
         '''
         Raise an error if the first match fails.  If `eos` is True then this
         requires that the entire input is matched, otherwise it only requires
-        that the matcher succeed.  The exception includes infmtion about
+        that the matcher succeed.  The exception includes information about
         the deepest read to the stream (which is a good indication of where
         any error occurs).
         
