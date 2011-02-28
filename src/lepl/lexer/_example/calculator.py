@@ -109,5 +109,4 @@ class Calculator(Example):
                        (lambda: calculate('1 + 2*3'), '7.0'),
                        (lambda: calculate('-1 - 4 / (3 - 1)'), '-3.0'),
                        (lambda: calculate('1 -4 / (3 -1)'), '-1.0'),
-                       (lambda: calculate('1 + 2*sin(3+ 4) - 5'), 
-                        '-2.68602680256')])
+                       (lambda: str(calculate('1 + 2*sin(3+ 4) - 5'))[:5], '-2.68')])

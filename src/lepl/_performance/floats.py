@@ -85,7 +85,7 @@ def profile():
     '''
 import pstats
 p=pstats.Stats('floats.prof')
-p.strip_dirs()
+#p.strip_dirs()
 p.sort_stats('cumulative')
 p.sort_stats('time')
 p.print_stats(35)
@@ -94,8 +94,8 @@ p.print_stats(35)
     cProfile.run('floats()', 'floats.prof')
 
 if __name__ == '__main__':
-    time()
-#    profile()
+#    time()
+    profile()
 #    floats()
 
     

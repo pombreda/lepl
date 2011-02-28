@@ -289,8 +289,8 @@ class Tutorial4Example(Example):
          |   +- 5.0
          |   `- 6.0
          `- 7.0"""),
-(lambda: float(node_2().parse('1+2*(3-4)+5/6+7')[0]),
-"""6.83333333333"""),
+(lambda: str(float(node_2().parse('1+2*(3-4)+5/6+7')[0]))[:5],
+"""6.833"""),
 ])
 
 
