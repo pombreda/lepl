@@ -175,6 +175,8 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
             return (stream, depth, locn)
         except StopIteration:
             return ('', -1, '')
+        except AttributeError:
+            return (self.generator.stream, -2, '')
         
     def yield_(self, value):
         '''

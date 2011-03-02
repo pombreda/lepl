@@ -104,7 +104,7 @@ class GeneratorWrapper(object):
     def __init__(self, generator, matcher, stream):
         self.generator = generator
         self.matcher = matcher
-        self.stream = stream
+        self.stream = s_debug(stream)
         self.__cached_repr = None
         
     def __repr__(self):

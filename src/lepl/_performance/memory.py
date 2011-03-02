@@ -86,7 +86,7 @@ p.config.add_monitor(GeneratorManager(10)).no_direct_eval()
 p.config.no_memoize().no_full_first_match()
 pp = p.get_parse_iterable_all()
 print(pp.matcher.tree())
-r = pp(source(10**5)) # keep generators open by not expanding
+r = pp(source(10**7)) # keep generators open by not expanding
 print(next(r))
 print(get_count(), get_threshold())
 h = hpy()

@@ -85,30 +85,29 @@ def DepthFirst(first, start, stop, rest, reduce, clip):
     def match(support, stream):
         stack = deque()
         try:
-            stack.append((0, zero, first._match(stream)))
+            stack.append((0, zero, stream, first._match(stream)))
             stream = None
             while stack:
-                (count1, acc1, generator) = stack[-1]
+                (count1, acc1, stream1, generator) = stack[-1]
                 extended = False
                 if stop is None or count1 < stop:
                     count2 = count1 + 1
                     try:
                         (value, stream2) = yield generator
                         acc2 = join(acc1, value)
-                        stack.append((count2, acc2, rest._match(stream2)))
+                        stack.append((count2, acc2, stream2, rest._match(stream2)))
                         extended = True
                     except StopIteration:
                         pass
                 if not extended:
                     if count1 >= start and (stop is None or count1 <= stop):
-                        if generator.stream is not None:
-                            yield (acc1, generator.stream)
+                        yield (acc1, stream1)
                     stack.pop()
                 while clip and len(stack) > clip:
-                    stack.popleft()[2].generator.close()
+                    stack.popleft()[3].generator.close()
         finally:
             while stack:
-                stack.popleft()[2].generator.close()
+                stack.popleft()[3].generator.close()
             
     return match
 
@@ -174,7 +173,7 @@ def OrderByResultCount(matcher, ascending=True):
 
 @sequence_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
-def DepthNoTrampoline(first, start, stop, rest, reduce):
+def DepthNoTrampoline(first, start, stop, rest, reduce, clip):
     '''
     A more efficient search when all matchers are functions (so no need to
     trampoline).  Depth first (greedy).
@@ -201,6 +200,8 @@ def DepthNoTrampoline(first, start, stop, rest, reduce):
                     if count1 >= start and (stop is None or count1 <= stop):
                         yield (acc1, stream1)
                     stack.pop()
+                while clip and len(stack) > clip:
+                    stack.popleft()[3].generator.close()
         finally:
             for (_count, _acc, _stream, generator) in stack:
                 generator.close()
@@ -210,7 +211,7 @@ def DepthNoTrampoline(first, start, stop, rest, reduce):
             
 @sequence_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
-def BreadthNoTrampoline(first, start, stop, rest, reduce):
+def BreadthNoTrampoline(first, start, stop, rest, reduce, clip):
     '''
     A more efficient search when all matchers are functions (so no need to
     trampoline).  Breadth first (non-greedy).
@@ -230,6 +231,8 @@ def BreadthNoTrampoline(first, start, stop, rest, reduce):
                     if stop is None or count2 <= stop:
                         queue.append((count2, acc2, stream2, 
                                       rest._untagged_match(stream2)))
+                while clip and len(queue) > clip:
+                    queue.popleft()[3].generator.close()
         finally:
             for (_count, _acc, _stream, generator) in queue:
                 generator.close()
