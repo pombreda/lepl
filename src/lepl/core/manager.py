@@ -66,6 +66,9 @@ from lepl.core.monitor import StackMonitor, ValueMonitor
 from lepl.support.lib import LogMixin, fmt, str
 
 
+NS_STREAM = '<no-state>'
+
+
 # pylint: disable-msg=C0103
 def GeneratorManager(queue_len):
     '''
@@ -138,14 +141,19 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
             
     def __add_unlimited(self, reference):
         '''
-        Add the new reference and discard any GCed candidates that happen
+        Add the new reference and discard any unused candidates that happen
         to be on the top of the heap.
         '''
         self._debug(fmt('Free space, so add {0}', reference))
         candidate = heappushpop(self.__queue, reference)
+        # clean out any unused references and make sure ordering correct
         while candidate:
-            candidate.deletable(self.epoch)
-            if candidate.gced:
+            if candidate.deletable(self.epoch):
+                self._debug(fmt('Removing {0}', candidate))
+                generator = candidate.generator
+                if generator:
+                    del self.__known[generator]
+                candidate.close()
                 candidate = heappop(self.__queue)
             else:
                 heappush(self.__queue, candidate)
@@ -163,6 +171,9 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
                 break
             elif candidate.deletable(self.epoch):
                 self._debug(fmt('Closing {0}', candidate))
+                generator = candidate.generator
+                if generator:
+                    del self.__known[generator]
                 candidate.close()
                 return
             else:
@@ -176,18 +187,21 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         self._warn(fmt('Queue is too small - extending to {0}',
                           self.__queue_len))
             
-    def commit(self):
-        '''
-        Delete all non-active generators.
-        '''
-        if self.__queue:
-            for _retry in range(len(self.__queue)):
-                reference = heappop(self.__queue)
-                if reference.active():
-                    reference.update(self.epoch) # forces epoch update
-                    heappush(self.__queue, reference)
-                else:
-                    reference.close()
+#    def commit(self):
+#        '''
+#        Delete all non-active generators.
+#        '''
+#        if self.__queue:
+#            for _retry in range(len(self.__queue)):
+#                reference = heappop(self.__queue)
+#                if reference.active():
+#                    reference.update(self.epoch) # forces epoch update
+#                    heappush(self.__queue, reference)
+#                else:
+#                    generator = reference.generator
+#                    if generator:
+#                        del self.__known[generator]
+#                    reference.close()
             
 
 class GeneratorRef(object):
@@ -215,6 +229,10 @@ class GeneratorRef(object):
     def __hash__(self):
         return self.__hash
     
+    @property
+    def generator(self):
+        return self.__wrapper()
+    
     def pop(self, epoch):
         '''
         When no longer used, safe epoch and decrement count.
@@ -228,20 +246,6 @@ class GeneratorRef(object):
         '''
         self.__count += 1
         
-    def reusable(self, generator):
-        '''
-        Check we can re-use the wrapper.
-        '''
-        wrapped = self.__wrapper()
-        if not wrapped:
-            assert self.__count == 0, \
-                fmt('GCed but still on stack?! {0}', self.__describe)
-            return False
-        else:
-            assert wrapped is generator, \
-                fmt('Hash collision? {0}/{1}', generator, wrapped)
-            return True
-    
     def deletable(self, epoch):
         '''
         Check we can delete the wrapper.
@@ -250,6 +254,8 @@ class GeneratorRef(object):
             assert self.__count == 0, \
                 fmt('GCed but still on stack?! {0}', self.__describe)
             # already disposed by system
+            # this never happens because the monitor contains a reference
+            # in the value of the "known" dictionary
             self.gced = True
             return True
         else:
@@ -268,12 +274,13 @@ class GeneratorRef(object):
         '''
         This terminates the enclosed generator.
         '''
-        generator = self.__wrapper()
+        generator = self.generator
         if generator:
+            generator.stream = None
             generator.generator.close()
             
     def __str__(self):
-        generator = self.__wrapper()
+        generator = self.generator
         if generator:
             return fmt('{0} ({1:d}/{2:d})',
                           self.__describe, self.order_epoch, 

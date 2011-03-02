@@ -41,7 +41,6 @@ Matchers that embody fundamental, common actions.
 from re import compile as compile_
 
 from lepl.stream.core import s_next, s_eq, s_empty, s_line
-from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 from lepl.core.parser import tagged
 from lepl.matchers.support import OperatorMatcher, coerce_, \
     function_matcher, function_matcher_factory, trampoline_matcher_factory, \

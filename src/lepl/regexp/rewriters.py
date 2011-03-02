@@ -51,11 +51,12 @@ None).
 '''
 
 from logging import getLogger
+from operator import __add__
 
 from lepl.matchers.core import Regexp
 from lepl.matchers.matcher import Matcher, matcher_map
 from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
-    TrampolineWrapper
+    TrampolineWrapper, UntransformableTrampolineWrapper
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty, Option
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.interval import Character
@@ -137,7 +138,7 @@ class RegexpContainer(object):
             # the original matcher if it has transforms, or keep going in the
             # hope we can get more complex later
             matcher = node
-            if matcher.wrapper:
+            if hasattr(matcher, 'wrapper') and matcher.wrapper:
                 return matcher
         return RegexpContainer(matcher, regexp, use, add_reqd)
         
@@ -150,7 +151,7 @@ def single(alphabet, node, regexp, regexp_type, wrapper=None):
     from lepl.matchers.transform import TransformationWrapper
     matcher = regexp_type(regexp, alphabet)
     matcher = matcher.compose(TransformationWrapper(empty_adapter))
-    if wrapper is None:
+    if wrapper is None and hasattr(node, 'wrapper'):
         wrapper = node.wrapper
     elif wrapper and not isinstance(wrapper, TransformationWrapper):
         wrapper = TransformationWrapper(wrapper)
@@ -230,7 +231,10 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
         regular expressions, and even then we must tag the result unless
         an add transform is present.
         '''
-        wrapper = original.wrapper.functions
+        if hasattr(original, 'wrapper'):
+            wrapper = original.wrapper.functions
+        else:
+            wrapper = None
         add_reqd = True
         if wrapper:
             if wrapper[0] is add:
@@ -286,7 +290,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
         
     def clone_transform(use, original, matcher, wrapper):
         '''
-        We can assume that wrapper is a transformation.  add joins into
+        We can assume that wrapper is a transformation.  Add joins into
         a sequence.
         '''
         if original.wrapper:
@@ -328,15 +332,22 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
         return RegexpContainer.build(original, pattern, alphabet_, 
                                      regexp_type, use)
     
-    def clone_dfs(use, original, first, start, stop, rest=None):
+    def clone_dfs(use, original, first, start, stop, rest=None, reduce=None, clip=None):
         '''
         This forces use=True as it is likely that a regexp is a gain.
         '''
         if stop is not None and start > stop:
             raise Unsuitable
+        if reduce and not (isinstance(reduce, tuple) 
+                           and len(reduce) == 2
+                           and reduce[0] == [] 
+                           and reduce[1] == __add__):
+            raise Unsuitable
+        if clip:
+            raise Unsuitable
         add_reqd = stop is None or stop > 1
         wrapper = False
-        if original.wrapper:
+        if hasattr(original, 'wrapper') and original.wrapper:
             if original.wrapper.functions[0] is add:
                 add_reqd = False
                 wrapper = original.wrapper.functions[1:]
@@ -390,7 +401,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
                         FunctionWrapper: clone_wrapper,
                         SequenceWrapper: clone_wrapper,
                         TrampolineWrapper: clone_wrapper,
-                        TrampolineWrapper: clone_wrapper})
+                        UntransformableTrampolineWrapper: clone_wrapper})
     
     def clone_(node, args, kargs):
         '''

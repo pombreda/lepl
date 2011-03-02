@@ -228,7 +228,9 @@ class BaseFactoryMatcher(FactoryMatcher):
         '''
         try:
             # function wrapper, so we have two levels, and we must construct
-            # a new, empty function
+            # a new, empty function (ie this is a fake function that helps
+            # us use the code below, even though there's no arguments because
+            # factory is a dummy generated in make_factory below)
             def empty(): return
             document(empty, self.factory.factory)
             spec = getargspec(empty)
@@ -325,6 +327,7 @@ class TrampolineWrapper(TransformableWrapper):
         function = self.wrapper.function
         generator = GeneratorWrapper(self._cached_matcher(self, stream_in), 
                                      self, stream_in)
+        stream_in = None
         while True:
             try:
                 value = yield generator
@@ -335,6 +338,19 @@ class TrampolineWrapper(TransformableWrapper):
                     yield function(stream_in, lambda: raise_(StopIteration))
                 else:
                     raise e
+                
+    
+class UntransformableTrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
+    '''
+    A wrapper for source of generators that evaluate other matchers via
+    the trampoline (ie for generators that evaluate matchers via yield).
+    
+    Typically only used for advanced matchers.
+    '''
+    
+    @tagged
+    def _match(self, stream_in):
+        return self._cached_matcher(self, stream_in)
                 
     
 class NoTrampoline(object):
@@ -589,7 +605,9 @@ def trampoline_matcher_factory(gatekeeper_=None,
     '''
     keep_gate(gatekeeper_, 'trampoline_matcher_factory')
     def wrapper(factory):
-        return make_wrapper_factory(TrampolineWrapper, 
+#        return make_wrapper_factory(TrampolineWrapper, 
+#                                    factory, kargs, args_, kargs_)
+        return make_wrapper_factory(UntransformableTrampolineWrapper, 
                                     factory, kargs, args_, kargs_)
     return wrapper
 

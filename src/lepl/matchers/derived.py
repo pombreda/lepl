@@ -33,15 +33,14 @@ Matchers that are defined in terms of other matchers (ie the majority).
 
 from string import whitespace, digits, ascii_letters, \
     ascii_uppercase, ascii_lowercase, printable, punctuation
+from operator import __add__ 
 
-from lepl.stream.core import s_line, s_next, s_stream
-from lepl.core.parser import tagged
 from lepl.matchers.combine import And, DepthFirst, BreadthFirst, \
     OrderByResultCount, Or, Limit
 from lepl.matchers.core import Lookahead, Any, Eof, Literal, Regexp
 from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
     NON_GREEDY
-from lepl.matchers.support import OperatorMatcher, coerce_, trampoline_matcher
+from lepl.matchers.support import coerce_
 from lepl.matchers.transform import TransformationWrapper, Transform, \
     ApplyArgs, ApplyRaw
 from lepl.regexp.matchers import NfaRegexp
@@ -59,12 +58,24 @@ from lepl.support.warn import warn_on_use
 # (map)
 
 def Repeat(matcher, start=0, stop=None, limit=None, algorithm=DEPTH_FIRST, 
-            separator=None, add_=False):
+            separator=None, add_=False, reduce=None, clip=None):
     '''
     This is called by the [] operator.  It repeats the given matcher between
-    start and stop number of times (inclusive).  If ``add`` is true then the
-    results are joined with `Add`. If ``separator`` is given then each
-    repetition is separated by that matcher.
+    `start` and `stop` number of times (inclusive).
+    
+    If `limit` is given it is an upper limit on the number of different
+    results returned on backtracking.
+    
+    `algorithm` selects the repeat algorithm to use.
+    
+    If `separator` is given then each repetition is separated by that matcher.
+    
+    If `add` is true then the results are joined with `Add` (once all
+    results are obtained).
+    
+    If `reduce` is given it should be a pair (zero, join) where
+    `join(results, next)` is used to accumulate results and `zero` is the
+    initial value of `results`.  By default the value is `([], +)`.
     '''
     first = coerce_(matcher)
     if separator is None:
@@ -86,19 +97,22 @@ def Repeat(matcher, start=0, stop=None, limit=None, algorithm=DEPTH_FIRST,
         raise ValueError('Repeat or [...] must have a step (algorithm) '
                          'of d, b, g or n.')
     add_ = Add if add_ else Identity
+    reduce = reduce if reduce else ([], __add__)
     matcher = {DEPTH_FIRST:
-                add_(DepthFirst(first=first, start=start, 
-                                stop=stop, rest=rest)),
+                add_(DepthFirst(first=first, start=start, stop=stop, 
+                                rest=rest, reduce=reduce, clip=clip)),
                BREADTH_FIRST: 
-                add_(BreadthFirst(first=first, start=start, 
-                                  stop=stop, rest=rest)),
+                add_(BreadthFirst(first=first, start=start, stop=stop, 
+                                  rest=rest, reduce=reduce, clip=clip)),
                GREEDY:        
-                add_(OrderByResultCount(BreadthFirst(first=first, start=start, 
-                                                     stop=stop, rest=rest))),
+                add_(OrderByResultCount(
+                        BreadthFirst(first=first, start=start, stop=stop, 
+                                     rest=rest, reduce=reduce, clip=clip))),
                NON_GREEDY:
-                add_(OrderByResultCount(BreadthFirst(first=first, start=start, 
-                                                     stop=stop, rest=rest),
-                                       False))
+                add_(OrderByResultCount(
+                        BreadthFirst(first=first, start=start, stop=stop, 
+                                     rest=rest, reduce=reduce, clip=clip),
+                        False))
             }[algorithm]
     if limit is not None:
         matcher = Limit(matcher, count=limit)

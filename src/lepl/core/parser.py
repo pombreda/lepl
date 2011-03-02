@@ -40,10 +40,15 @@ rewritten beforehand.
 from collections import deque
 from logging import getLogger
 from traceback import format_exc
+try:
+    from itertools import imap
+except ImportError:
+    imap = map
 
 from lepl.stream.core import s_debug
 from lepl.core.monitor import prepare_monitors
 from lepl.support.lib import fmt
+from lepl.core.manager import NS_STREAM
 
     
 def tagged(method):
@@ -55,6 +60,21 @@ def tagged(method):
         Wrap the result.
         '''
         return GeneratorWrapper(method(matcher, stream), matcher, stream)
+    return tagged_method
+
+
+def tagged_no_state(method):
+    '''
+    Decorator for generators to add extra attributes.
+    '''
+    def tagged_method(matcher, stream):
+        '''
+        Wrap the result.
+        '''
+        wrapper = GeneratorWrapper(method(matcher, stream), matcher, stream)
+        wrapper.stream = NS_STREAM
+        stream = None
+        return wrapper
     return tagged_method
 
 
@@ -92,7 +112,11 @@ class GeneratorWrapper(object):
         Lazily evaluated for speed - saves 1/3 of time spent in constructor
         '''
         if not self.__cached_repr:
-            self.__cached_repr = fmt('{0}({1})', self.matcher, s_debug(self.stream))
+            try:
+                s = s_debug(self.stream)
+            except:
+                s = '<stream>'
+            self.__cached_repr = fmt('{0}({1})', self.matcher, s)
         return self.__cached_repr
     
     def __str__(self):
@@ -222,7 +246,7 @@ def make_multiple(raw):
         '''
         Adapt a raw parser to behave as expected for the matcher interface.
         '''
-        return map(lambda x: x[0], raw(arg, **kargs))
+        return imap(lambda x: x[0], raw(arg, **kargs))
     multiple.matcher = raw.matcher
     return multiple
 

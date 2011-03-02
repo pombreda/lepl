@@ -130,7 +130,7 @@ from lepl.matchers.derived import Apply, args, KApply, Join, \
 from lepl.matchers.error import Error, make_error, raise_error
 from lepl.matchers.memo import RMemo, LMemo, MemoException
 from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
-    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST, DroppedSpace
+    GREEDY, NON_GREEDY, DEPTH_FIRST, BREADTH_FIRST, DroppedSpace, REDUCE
 from lepl.matchers.support import function_matcher, function_matcher_factory, \
     sequence_matcher, sequence_matcher_factory, \
     trampoline_matcher, trampoline_matcher_factory
@@ -243,6 +243,7 @@ __all__ = [
         'NON_GREEDY',
         'DEPTH_FIRST',
         'BREADTH_FIRST',
+        'REDUCE',
         
         # lepl.matchers.complex
         'PostMatch',

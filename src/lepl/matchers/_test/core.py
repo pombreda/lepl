@@ -1,3 +1,4 @@
+from logging import basicConfig
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -31,7 +32,7 @@
 Tests for the lepl.matchers.core module.
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl._test.base import BaseTest, assert_str
@@ -155,6 +156,7 @@ class RegexpTest(BaseTest):
 class WordTest(BaseTest):
     
     def test_phone(self):
+        basicConfig(level=DEBUG)
         self.assert_direct('andrew, 3333253', Word() / ',' / Integer() / Eof(), 
                            [['andrew', ',', ' ', '3333253']])
         
@@ -234,6 +236,7 @@ class StrTest(TestCase):
        Transform:<add>(
         TrampolineWrapper<DepthFirst:<>>(
          start=1,
+         reduce=([], <built-in function __add__>),
          stop=None,
          rest=FunctionWrapper<Any:<>>('0123456789'),
          first=FunctionWrapper<Any:<>>('0123456789')),
@@ -245,6 +248,7 @@ class StrTest(TestCase):
         Transform:<add>(
          TrampolineWrapper<DepthFirst:<>>(
           start=0,
+          reduce=([], <built-in function __add__>),
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
           first=FunctionWrapper<Any:<>>(' \t')),
@@ -253,6 +257,7 @@ class StrTest(TestCase):
        Transform:<add>(
         TrampolineWrapper<DepthFirst:<>>(
          start=0,
+         reduce=([], <built-in function __add__>),
          stop=None,
          rest=FunctionWrapper<Any:<>>(' \t'),
          first=FunctionWrapper<Any:<>>(' \t')),
@@ -262,12 +267,14 @@ class StrTest(TestCase):
     Transform:<add>(
      TrampolineWrapper<DepthFirst:<>>(
       start=0,
+      reduce=([], <built-in function __add__>),
       stop=None,
       rest=FunctionWrapper<Any:<>>(' \t'),
       first=FunctionWrapper<Any:<>>(' \t')),
      TransformationWrapper(<add>)),
     TrampolineWrapper<DepthFirst:<>>(
      start=0,
+     reduce=([], <built-in function __add__>),
      stop=None,
      rest=TrampolineWrapper<And:<>>(
       Transform:<apply>(
@@ -276,6 +283,7 @@ class StrTest(TestCase):
       Transform:<add>(
        TrampolineWrapper<DepthFirst:<>>(
         start=0,
+        reduce=([], <built-in function __add__>),
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
         first=FunctionWrapper<Any:<>>(' \t')),
@@ -286,6 +294,7 @@ class StrTest(TestCase):
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
            start=1,
+           reduce=([], <built-in function __add__>),
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
            first=FunctionWrapper<Any:<>>('0123456789')),
@@ -297,6 +306,7 @@ class StrTest(TestCase):
           Transform:<add>(
            TrampolineWrapper<DepthFirst:<>>(
             start=0,
+            reduce=([], <built-in function __add__>),
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
             first=FunctionWrapper<Any:<>>(' \t')),
@@ -305,6 +315,7 @@ class StrTest(TestCase):
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
            start=0,
+           reduce=([], <built-in function __add__>),
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
@@ -318,6 +329,7 @@ class StrTest(TestCase):
       Transform:<add>(
        TrampolineWrapper<DepthFirst:<>>(
         start=0,
+        reduce=([], <built-in function __add__>),
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
         first=FunctionWrapper<Any:<>>(' \t')),
@@ -328,6 +340,7 @@ class StrTest(TestCase):
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
            start=1,
+           reduce=([], <built-in function __add__>),
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
            first=FunctionWrapper<Any:<>>('0123456789')),
@@ -339,6 +352,7 @@ class StrTest(TestCase):
           Transform:<add>(
            TrampolineWrapper<DepthFirst:<>>(
             start=0,
+            reduce=([], <built-in function __add__>),
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
             first=FunctionWrapper<Any:<>>(' \t')),
@@ -347,6 +361,7 @@ class StrTest(TestCase):
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
            start=0,
+           reduce=([], <built-in function __add__>),
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
@@ -357,12 +372,14 @@ class StrTest(TestCase):
   Transform:<add>(
    TrampolineWrapper<DepthFirst:<>>(
     start=0,
+    reduce=([], <built-in function __add__>),
     stop=None,
     rest=FunctionWrapper<Any:<>>(' \t'),
     first=FunctionWrapper<Any:<>>(' \t')),
    TransformationWrapper(<add>)),
   TrampolineWrapper<DepthFirst:<>>(
    start=0,
+   reduce=([], <built-in function __add__>),
    stop=None,
    rest=TrampolineWrapper<And:<>>(
     Transform:<apply>(
@@ -371,6 +388,7 @@ class StrTest(TestCase):
     Transform:<add>(
      TrampolineWrapper<DepthFirst:<>>(
       start=0,
+      reduce=([], <built-in function __add__>),
       stop=None,
       rest=FunctionWrapper<Any:<>>(' \t'),
       first=FunctionWrapper<Any:<>>(' \t')),
@@ -383,6 +401,7 @@ class StrTest(TestCase):
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
            start=1,
+           reduce=([], <built-in function __add__>),
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
            first=FunctionWrapper<Any:<>>('0123456789')),
@@ -394,6 +413,7 @@ class StrTest(TestCase):
           Transform:<add>(
            TrampolineWrapper<DepthFirst:<>>(
             start=0,
+            reduce=([], <built-in function __add__>),
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
             first=FunctionWrapper<Any:<>>(' \t')),
@@ -402,6 +422,7 @@ class StrTest(TestCase):
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
            start=0,
+           reduce=([], <built-in function __add__>),
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
@@ -411,12 +432,14 @@ class StrTest(TestCase):
       Transform:<add>(
        TrampolineWrapper<DepthFirst:<>>(
         start=0,
+        reduce=([], <built-in function __add__>),
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
         first=FunctionWrapper<Any:<>>(' \t')),
        TransformationWrapper(<add>)),
       TrampolineWrapper<DepthFirst:<>>(
        start=0,
+       reduce=([], <built-in function __add__>),
        stop=None,
        rest=TrampolineWrapper<And:<>>(
         Transform:<apply>(
@@ -425,6 +448,7 @@ class StrTest(TestCase):
         Transform:<add>(
          TrampolineWrapper<DepthFirst:<>>(
           start=0,
+          reduce=([], <built-in function __add__>),
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
           first=FunctionWrapper<Any:<>>(' \t')),
@@ -435,6 +459,7 @@ class StrTest(TestCase):
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
              start=1,
+             reduce=([], <built-in function __add__>),
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
              first=FunctionWrapper<Any:<>>('0123456789')),
@@ -446,6 +471,7 @@ class StrTest(TestCase):
             Transform:<add>(
              TrampolineWrapper<DepthFirst:<>>(
               start=0,
+              reduce=([], <built-in function __add__>),
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
               first=FunctionWrapper<Any:<>>(' \t')),
@@ -454,6 +480,7 @@ class StrTest(TestCase):
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
              start=0,
+             reduce=([], <built-in function __add__>),
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
@@ -467,6 +494,7 @@ class StrTest(TestCase):
         Transform:<add>(
          TrampolineWrapper<DepthFirst:<>>(
           start=0,
+          reduce=([], <built-in function __add__>),
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
           first=FunctionWrapper<Any:<>>(' \t')),
@@ -477,6 +505,7 @@ class StrTest(TestCase):
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
              start=1,
+             reduce=([], <built-in function __add__>),
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
              first=FunctionWrapper<Any:<>>('0123456789')),
@@ -488,6 +517,7 @@ class StrTest(TestCase):
             Transform:<add>(
              TrampolineWrapper<DepthFirst:<>>(
               start=0,
+              reduce=([], <built-in function __add__>),
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
               first=FunctionWrapper<Any:<>>(' \t')),
@@ -496,6 +526,7 @@ class StrTest(TestCase):
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
              start=0,
+             reduce=([], <built-in function __add__>),
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
@@ -510,6 +541,7 @@ class StrTest(TestCase):
     Transform:<add>(
      TrampolineWrapper<DepthFirst:<>>(
       start=0,
+      reduce=([], <built-in function __add__>),
       stop=None,
       rest=FunctionWrapper<Any:<>>(' \t'),
       first=FunctionWrapper<Any:<>>(' \t')),
@@ -522,6 +554,7 @@ class StrTest(TestCase):
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
            start=1,
+           reduce=([], <built-in function __add__>),
            stop=None,
            rest=FunctionWrapper<Any:<>>('0123456789'),
            first=FunctionWrapper<Any:<>>('0123456789')),
@@ -533,6 +566,7 @@ class StrTest(TestCase):
           Transform:<add>(
            TrampolineWrapper<DepthFirst:<>>(
             start=0,
+            reduce=([], <built-in function __add__>),
             stop=None,
             rest=FunctionWrapper<Any:<>>(' \t'),
             first=FunctionWrapper<Any:<>>(' \t')),
@@ -541,6 +575,7 @@ class StrTest(TestCase):
          Transform:<add>(
           TrampolineWrapper<DepthFirst:<>>(
            start=0,
+           reduce=([], <built-in function __add__>),
            stop=None,
            rest=FunctionWrapper<Any:<>>(' \t'),
            first=FunctionWrapper<Any:<>>(' \t')),
@@ -550,12 +585,14 @@ class StrTest(TestCase):
       Transform:<add>(
        TrampolineWrapper<DepthFirst:<>>(
         start=0,
+        reduce=([], <built-in function __add__>),
         stop=None,
         rest=FunctionWrapper<Any:<>>(' \t'),
         first=FunctionWrapper<Any:<>>(' \t')),
        TransformationWrapper(<add>)),
       TrampolineWrapper<DepthFirst:<>>(
        start=0,
+       reduce=([], <built-in function __add__>),
        stop=None,
        rest=TrampolineWrapper<And:<>>(
         Transform:<apply>(
@@ -564,6 +601,7 @@ class StrTest(TestCase):
         Transform:<add>(
          TrampolineWrapper<DepthFirst:<>>(
           start=0,
+          reduce=([], <built-in function __add__>),
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
           first=FunctionWrapper<Any:<>>(' \t')),
@@ -574,6 +612,7 @@ class StrTest(TestCase):
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
              start=1,
+             reduce=([], <built-in function __add__>),
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
              first=FunctionWrapper<Any:<>>('0123456789')),
@@ -585,6 +624,7 @@ class StrTest(TestCase):
             Transform:<add>(
              TrampolineWrapper<DepthFirst:<>>(
               start=0,
+              reduce=([], <built-in function __add__>),
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
               first=FunctionWrapper<Any:<>>(' \t')),
@@ -593,6 +633,7 @@ class StrTest(TestCase):
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
              start=0,
+             reduce=([], <built-in function __add__>),
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
@@ -606,6 +647,7 @@ class StrTest(TestCase):
         Transform:<add>(
          TrampolineWrapper<DepthFirst:<>>(
           start=0,
+          reduce=([], <built-in function __add__>),
           stop=None,
           rest=FunctionWrapper<Any:<>>(' \t'),
           first=FunctionWrapper<Any:<>>(' \t')),
@@ -616,6 +658,7 @@ class StrTest(TestCase):
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
              start=1,
+             reduce=([], <built-in function __add__>),
              stop=None,
              rest=FunctionWrapper<Any:<>>('0123456789'),
              first=FunctionWrapper<Any:<>>('0123456789')),
@@ -627,6 +670,7 @@ class StrTest(TestCase):
             Transform:<add>(
              TrampolineWrapper<DepthFirst:<>>(
               start=0,
+              reduce=([], <built-in function __add__>),
               stop=None,
               rest=FunctionWrapper<Any:<>>(' \t'),
               first=FunctionWrapper<Any:<>>(' \t')),
@@ -635,6 +679,7 @@ class StrTest(TestCase):
            Transform:<add>(
             TrampolineWrapper<DepthFirst:<>>(
              start=0,
+             reduce=([], <built-in function __add__>),
              stop=None,
              rest=FunctionWrapper<Any:<>>(' \t'),
              first=FunctionWrapper<Any:<>>(' \t')),
@@ -671,6 +716,7 @@ class StrTest(TestCase):
  |       |   |   `- alphabet <Unicode>
  |       |   `- TrampolineWrapper<DepthFirst:<>>
  |       |       +- start 0
+ |       |       +- reduce ([], <built-in function __add__>)
  |       |       +- stop None
  |       |       +- rest TrampolineWrapper<And:<>>
  |       |       |   +- FunctionWrapper<Any:<apply>>
@@ -723,6 +769,7 @@ class StrTest(TestCase):
  |       |   `- alphabet <Unicode>
  |       `- TrampolineWrapper<DepthFirst:<>>
  |           +- start 0
+ |           +- reduce ([], <built-in function __add__>)
  |           +- stop None
  |           +- rest TrampolineWrapper<And:<>>
  |           |   +- FunctionWrapper<Any:<apply>>
@@ -753,6 +800,7 @@ class StrTest(TestCase):
  |           |       |   `- alphabet <Unicode>
  |           |       `- TrampolineWrapper<DepthFirst:<>>
  |           |           +- start 0
+ |           |           +- reduce ([], <built-in function __add__>)
  |           |           +- stop None
  |           |           +- rest TrampolineWrapper<And:<>>
  |           |           |   +- FunctionWrapper<Any:<apply>>
@@ -829,6 +877,7 @@ class StrTest(TestCase):
  |                   |   `- alphabet <Unicode>
  |                   `- TrampolineWrapper<DepthFirst:<>>
  |                       +- start 0
+ |                       +- reduce ([], <built-in function __add__>)
  |                       +- stop None
  |                       +- rest TrampolineWrapper<And:<>>
  |                       |   +- FunctionWrapper<Any:<apply>>

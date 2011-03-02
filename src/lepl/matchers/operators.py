@@ -40,7 +40,7 @@ from lepl.support.lib import open_stop, fmt, basestring
 
 DIGITS = compile_('^(-?\d+)(.*)')
 
-def RepeatWrapper(matcher, start, stop, step, separator, add):
+def RepeatWrapper(matcher, start, stop, step, separator, add, reduce):
     '''Parse `step` if it is a string.'''
     # Handle circular dependencies
     from lepl.matchers.derived import Repeat
@@ -48,7 +48,6 @@ def RepeatWrapper(matcher, start, stop, step, separator, add):
         limit = step
         algorithm = DEPTH_FIRST
     elif (isinstance(step, basestring)):
-        save = step
         limit = None
         algorithm = None
         while step:
@@ -59,7 +58,7 @@ def RepeatWrapper(matcher, start, stop, step, separator, add):
                     step = match.group(2)
                 else:
                     raise TypeError(fmt('Cannot parse limit/algorithm for []: {}',
-                                           step))
+                                        step))
             else:
                 if algorithm is None:
                     algorithm = step[0]
@@ -68,7 +67,9 @@ def RepeatWrapper(matcher, start, stop, step, separator, add):
         raise TypeError('The step of [...] must be an integer limit, or a '
                         'string to select the algorithm, or both as a string '
                         'like "d1" for a single value, depth first')
-    return Repeat(matcher, start, stop, limit, algorithm, separator, add)
+    return Repeat(matcher, start=start, stop=stop, limit=limit, 
+                  algorithm=algorithm, separator=separator, add_=add,
+                  reduce=reduce)
 
 class OperatorNamespace(Namespace):
     '''
@@ -78,8 +79,7 @@ class OperatorNamespace(Namespace):
     def __init__(self):
         # Handle circular dependencies
         from lepl.matchers.error import raise_error
-        from lepl.matchers.derived import Space, Add, Apply, KApply, Drop, \
-            Repeat, Map
+        from lepl.matchers.derived import Space, Add, Apply, KApply, Drop, Map
         from lepl.matchers.combine import And, Or, First
         super(OperatorNamespace, self).__init__({
             SPACE_OPT: lambda a, b: And(a, Space()[0:,...], b),
@@ -94,7 +94,8 @@ class OperatorNamespace(Namespace):
             RAISE:     lambda a, b: KApply(a, raise_error(b)),
             REPEAT:    RepeatWrapper,
             FIRST:     First,
-            MAP:       Map
+            MAP:       Map,
+            REDUCE:    None,
         })
     
 
@@ -129,6 +130,8 @@ FIRST = '%'
 '''Name for % operator.'''
 MAP = '>>'
 '''Name for >> operator.'''
+REDUCE = '<reduce>'
+'''Name for accumulator of data during repetition.'''
 
 
 class Override(Scope):
@@ -140,12 +143,13 @@ class Override(Scope):
     def __init__(self, space_opt=None, space_req=None, repeat=None,
                   add=None, and_=None, or_=None, not_=None, 
                   apply_=None, apply_raw=None, kargs=None, 
-                  raise_=None, first=None, map_=None):
+                  raise_=None, first=None, map_=None, reduce=None):
         super(Override, self).__init__(OPERATORS, OperatorNamespace,
             {SPACE_OPT: space_opt, SPACE_REQ: space_req,
              REPEAT: repeat, ADD: add, AND: and_, OR: or_, 
              NOT: not_, APPLY: apply_, APPLY_RAW: apply_raw,
-             KARGS: kargs, RAISE: raise_, FIRST: first, MAP: map_})
+             KARGS: kargs, RAISE: raise_, FIRST: first, MAP: map_,
+             REDUCE: reduce})
 
 
 class _BaseSeparator(Override):
@@ -183,7 +187,7 @@ class _BaseSeparator(Override):
         A simple Repeat with separator.
         '''
         from lepl.matchers.combine import And
-        def repeat(m, st=0, sp=None, d=0, s=None, a=False):
+        def repeat(m, st=0, sp=None, d=0, s=None, a=False, r=None):
             '''
             Wrap `Repeat` to adapt the separator.
             '''
@@ -191,7 +195,7 @@ class _BaseSeparator(Override):
                 s = separator
             elif not a:
                 s = And(separator, s, separator)
-            return RepeatWrapper(m, st, sp, d, s, a)
+            return RepeatWrapper(m, st, sp, d, s, a, r)
         return repeat
     
 
@@ -608,7 +612,8 @@ class OperatorMixin(NamespaceMixin):
         # important for rewriting
         if stop == 1:
             add = False
-        return self._lookup(REPEAT)(self, start, stop, step, separator, add)
+        return self._lookup(REPEAT)(self, start, stop, step, separator, add,
+                                    self._lookup(REDUCE))
         
     def __gt__(self, function):
         '''

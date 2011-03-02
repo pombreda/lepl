@@ -29,7 +29,7 @@
 
 from lepl.support.context import Namespace
 from lepl.matchers.operators import ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
-    KARGS, RAISE, REPEAT, FIRST, MAP, RepeatWrapper
+    KARGS, RAISE, REPEAT, FIRST, MAP, RepeatWrapper, REDUCE
 from lepl.matchers.derived import Add, Apply, Drop, KApply, Map
 from lepl.matchers.combine import And, Or, First
 from lepl.matchers.error import raise_error
@@ -69,6 +69,7 @@ class TokenNamespace(Namespace):
             REPEAT:    RepeatWrapper,
             FIRST:     First,
             MAP:       Map,
+            REDUCE:    None,
         })
         
 

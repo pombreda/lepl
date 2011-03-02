@@ -145,7 +145,7 @@ class RewriteTest(TestCase):
                     (['abc'], (3, DUMMY_HELPER)), 
                     (['ab'], (2, DUMMY_HELPER)), 
                     (['a'], (1, DUMMY_HELPER)),
-                     ([], (0, DUMMY_HELPER))]
+                    ([], (0, DUMMY_HELPER))]
         rx = Any()[:, ...]
         
         # do un-rewritten to check whether [] or [''] is correct
@@ -159,6 +159,7 @@ class RewriteTest(TestCase):
         results = list(matcher('abcd'))
         assert results == expected, results
         
+        #basicConfig(level=DEBUG)
         rx.config.clear().compile_to_nfa()
         matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
@@ -414,6 +415,7 @@ class TokenBugTest(TestCase):
         tk.get_parse()
     
     def test_simple_word(self):
+        #basicConfig(level=DEBUG)
         rx = Word()
         matcher = rx.get_parse().matcher
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()

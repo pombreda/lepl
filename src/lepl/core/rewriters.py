@@ -246,9 +246,10 @@ class Flatten(Rewriter):
             if type_ in map(canonical_matcher_type, [And, Or]):
                 for arg in old_args:
                     if matcher_type(arg, fail=False) is type_ and \
-                            ((not arg.wrapper and not node.wrapper) or \
-                             (arg.wrapper.functions == node.wrapper.functions 
-                              and node.wrapper.functions == [add])):
+                        (not hasattr(arg, 'wrapper') or
+                         ((not arg.wrapper and not node.wrapper) or \
+                          (arg.wrapper.functions == node.wrapper.functions 
+                           and node.wrapper.functions == [add]))):
                         new_args.extend(arg.matchers)
                     else:
                         new_args.append(arg)

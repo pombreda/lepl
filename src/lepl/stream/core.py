@@ -267,18 +267,6 @@ s_global_kargs = lambda stream: stream[1].global_kargs
 '''Access the global_kargs attribute.'''
 
 
-#class MutableMax(object):
-#    
-#    def __init__(self):
-#        self.value = 0
-#        
-#    def __call__(self, value):
-#        self.value = max(self.value, value)
-#        
-#    def __int__(self):
-#        return self.value
-    
-
 class MutableMaxDepth(object):
     
     def __init__(self):
