@@ -332,7 +332,8 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
         return RegexpContainer.build(original, pattern, alphabet_, 
                                      regexp_type, use)
     
-    def clone_dfs(use, original, first, start, stop, rest=None, reduce=None, clip=None):
+    def clone_dfs(use, original, first, start, stop, rest=None, reduce=None, 
+                  generator_manager_queue_len=None):
         '''
         This forces use=True as it is likely that a regexp is a gain.
         '''
@@ -343,7 +344,8 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
                            and reduce[0] == [] 
                            and reduce[1] == __add__):
             raise Unsuitable
-        if clip:
+        if generator_manager_queue_len:
+            # this should only be set when running
             raise Unsuitable
         add_reqd = stop is None or stop > 1
         wrapper = False

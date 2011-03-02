@@ -165,7 +165,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
         Provide a standard fmt for location.
         '''
         try:
-            (offset, lineno, char) = s_delta(self.generator.stream)
+            (offset, lineno, char) = s_delta(self.generator.stream())
             locn = fmt('{0}/{1}.{2}', offset, lineno, char)
             depth = -s_len(self.generator.stream)
             try:
@@ -174,9 +174,9 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
                 stream = '<EOS>'
             return (stream, depth, locn)
         except StopIteration:
-            return ('', -1, '')
-        except AttributeError:
-            return (self.generator.stream, -2, '')
+            return ('<EOS>', -1, '')
+        except TypeError:
+            return ('<GC>', -1, '')
         
     def yield_(self, value):
         '''

@@ -42,7 +42,7 @@ from lepl.matchers.core import Any, Literal, Eof, Regexp, Delayed, Lookahead, \
 from lepl.matchers.complex import Columns, PostMatch
 from lepl.matchers.derived import Word, Digit, Integer, Drop, Space, AnyBut, \
     Newline
-from lepl.matchers.monitor import Commit
+#from lepl.matchers.monitor import Commit
 from lepl.support.node import Node
 
 
@@ -134,14 +134,14 @@ class LookaheadTest(BaseTest):
         self.assert_direct('ab', Any() + ~Lookahead('b') + Any(), [])
 
 
-class CommitTest(BaseTest):
-    
-    def test_commit(self):
-        self.assert_direct('abcd', 
-            (Any()[0::'b'] + (Literal('d') | 
-                              Literal('cd') + Commit() | 
-                              Literal('bcd')) + Eof()), 
-            [['abcd'], ['abcd']])
+#class CommitTest(BaseTest):
+#    
+#    def test_commit(self):
+#        self.assert_direct('abcd', 
+#            (Any()[0::'b'] + (Literal('d') | 
+#                              Literal('cd') + Commit() | 
+#                              Literal('bcd')) + Eof()), 
+#            [['abcd'], ['abcd']])
         
 
 class RegexpTest(BaseTest):
@@ -156,7 +156,7 @@ class RegexpTest(BaseTest):
 class WordTest(BaseTest):
     
     def test_phone(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         self.assert_direct('andrew, 3333253', Word() / ',' / Integer() / Eof(), 
                            [['andrew', ',', ' ', '3333253']])
         

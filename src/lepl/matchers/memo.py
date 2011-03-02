@@ -86,7 +86,8 @@ class _RMemo(OperatorMatcher):
         self._arg(matcher=matcher)
         self.__table = {}
         self.__state = State.singleton()
-        
+    
+    @tagged
     def _match(self, stream):
         '''
         Attempt to match the stream.
@@ -101,8 +102,7 @@ class _RMemo(OperatorMatcher):
             # means that we can return a table around this generator 
             # immediately.
             self.__table[key] = RTable(self.matcher._match(stream))
-        return GeneratorWrapper(self.__table[key].generator(self.matcher, stream),
-                                self, stream)
+        return self.__table[key].generator(self.matcher, stream)
         
     def _untagged_match(self, stream):
         '''

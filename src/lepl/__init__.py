@@ -118,7 +118,7 @@ from lepl.matchers.combine import And, Or, First, Difference, Limit
 from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
     Lookahead,  Regexp
 from lepl.matchers.complex import PostMatch, Columns
-from lepl.matchers.monitor import Trace, Commit
+from lepl.matchers.monitor import Trace #, Commit
 from lepl.matchers.derived import Apply, args, KApply, Join, \
     AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Repeat, Plus, \
     OneOrMore, Substitute, Name, Eof, Eos, Identity, Newline, Space, \
@@ -188,7 +188,7 @@ __all__ = [
         'args',
         'KApply',
         'Delayed', 
-        'Commit', 
+#        'Commit', 
         'Trace', 
         'AnyBut', 
         'Optional', 

@@ -37,38 +37,38 @@ from lepl.core.trace import _TraceResults
 from lepl.core.parser import tagged
 
 
-class Commit(OperatorMatcher):
-    '''
-    Commit to the current state - deletes all backtracking information.
-    This only works if the `GeneratorManager` monitor is present
-    (see `Configuration`) and the min_queue option is greater than zero.
-    '''
-    
-    def __init__(self):
-        super(Commit, self).__init__()
-        self.monitor_class = _GeneratorManager
-    
-    # pylint: disable-msg=R0201
-    # consistent for subclasses
-    @tagged
-    def _match(self, _stream):
-        '''
-        Attempt to match the stream.
-        '''
-        if False:
-            yield
-    
-    def on_push(self, monitor):
-        '''
-        Do nothing on entering matcher.
-        '''
-        pass
-    
-    def on_pop(self, monitor):
-        '''
-        On leaving, commit.
-        '''
-        monitor.commit()
+#class Commit(OperatorMatcher):
+#    '''
+#    Commit to the current state - deletes all backtracking information.
+#    This only works if the `GeneratorManager` monitor is present
+#    (see `Configuration`) and the min_queue option is greater than zero.
+#    '''
+#    
+#    def __init__(self):
+#        super(Commit, self).__init__()
+#        self.monitor_class = _GeneratorManager
+#    
+#    # pylint: disable-msg=R0201
+#    # consistent for subclasses
+#    @tagged
+#    def _match(self, _stream):
+#        '''
+#        Attempt to match the stream.
+#        '''
+#        if False:
+#            yield
+#    
+#    def on_push(self, monitor):
+#        '''
+#        Do nothing on entering matcher.
+#        '''
+#        pass
+#    
+#    def on_pop(self, monitor):
+#        '''
+#        On leaving, commit.
+#        '''
+#        monitor.commit()
     
     
 # pylint: disable-msg=E1101, W0212

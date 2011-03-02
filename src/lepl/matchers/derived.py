@@ -58,7 +58,7 @@ from lepl.support.warn import warn_on_use
 # (map)
 
 def Repeat(matcher, start=0, stop=None, limit=None, algorithm=DEPTH_FIRST, 
-            separator=None, add_=False, reduce=None, clip=None):
+            separator=None, add_=False, reduce=None):
     '''
     This is called by the [] operator.  It repeats the given matcher between
     `start` and `stop` number of times (inclusive).
@@ -100,18 +100,18 @@ def Repeat(matcher, start=0, stop=None, limit=None, algorithm=DEPTH_FIRST,
     reduce = reduce if reduce else ([], __add__)
     matcher = {DEPTH_FIRST:
                 add_(DepthFirst(first=first, start=start, stop=stop, 
-                                rest=rest, reduce=reduce, clip=clip)),
+                                rest=rest, reduce=reduce)),
                BREADTH_FIRST: 
                 add_(BreadthFirst(first=first, start=start, stop=stop, 
-                                  rest=rest, reduce=reduce, clip=clip)),
+                                  rest=rest, reduce=reduce)),
                GREEDY:        
                 add_(OrderByResultCount(
                         BreadthFirst(first=first, start=start, stop=stop, 
-                                     rest=rest, reduce=reduce, clip=clip))),
+                                     rest=rest, reduce=reduce))),
                NON_GREEDY:
                 add_(OrderByResultCount(
                         BreadthFirst(first=first, start=start, stop=stop, 
-                                     rest=rest, reduce=reduce, clip=clip),
+                                     rest=rest, reduce=reduce),
                         False))
             }[algorithm]
     if limit is not None:

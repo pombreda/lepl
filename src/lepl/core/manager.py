@@ -99,7 +99,8 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         '''
         super(_GeneratorManager, self).__init__()
         self.__queue = []
-        self.__queue_len = queue_len
+        self.__initial_queue_len = queue_len
+        self.queue_len = queue_len
         self.__known = WeakKeyDictionary() # map from generator to ref
         self.epoch = 0
         
@@ -113,8 +114,14 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         '''
         Add a generator if it is not already known, or increment it's ref count.
         '''
+        from lepl.matchers.combine import DepthFirst
         if generator not in self.__known:
             self.__add(generator)
+            # this sets the attribute on everything, but most instances simply
+            # don't care... (we can be "inefficient" here as the monitor is
+            # only used when memory use is more important than cpu)
+            generator.matcher.generator_manager_queue_len = self.__initial_queue_len
+            self._debug(fmt('Clipping search depth to {0}', self.__initial_queue_len))
         else:
             self.__known[generator].push()
             
@@ -132,9 +139,9 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         reference = GeneratorRef(generator, self.epoch)
         self.__known[generator] = reference
         self._debug(fmt('Queue size: {0}/{1}',
-                           len(self.__queue), self.__queue_len))
+                           len(self.__queue), self.queue_len))
         # if we have space, simply save with no expiry
-        if self.__queue_len == 0 or len(self.__queue) < self.__queue_len:
+        if self.queue_len == 0 or len(self.__queue) < self.queue_len:
             self.__add_unlimited(reference)
         else:
             self.__add_limited(reference)
@@ -183,9 +190,8 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         heappush(self.__queue, candidate)
         # this is currently 1 too small, and zero means unlimited, so
         # doubling should always be sufficient.
-        self.__queue_len = self.__queue_len * 2
-        self._warn(fmt('Queue is too small - extending to {0}',
-                          self.__queue_len))
+        self.queue_len = self.queue_len * 2
+        self._warn(fmt('Queue is too small - extending to {0}', self.queue_len))
             
 #    def commit(self):
 #        '''

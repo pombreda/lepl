@@ -74,19 +74,20 @@ def Digits(support, stream):
 
 def parser():
     sum = ([0], lambda a, b: [a[0] + b[0]])
-    total = NO_STATE(And(NO_STATE(Repeat(Digits(), reduce=sum, clip=10)), Eos()))
+    with Override(reduce=sum):
+        total = Digits()[:] & Eos()
     return total
 
 
 p = parser()
 from guppy import hpy
 from gc import get_count, get_threshold, set_threshold, collect, get_objects, get_referrers
-basicConfig(level=ERROR)
+basicConfig(level=DEBUG)
 p.config.add_monitor(GeneratorManager(10)).no_direct_eval()
 p.config.no_memoize().no_full_first_match()
 pp = p.get_parse_iterable_all()
 print(pp.matcher.tree())
-r = pp(source(10**7)) # keep generators open by not expanding
+r = pp(source(10**3)) # keep generators open by not expanding
 print(next(r))
 print(get_count(), get_threshold())
 h = hpy()

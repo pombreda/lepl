@@ -40,6 +40,7 @@ rewritten beforehand.
 from collections import deque
 from logging import getLogger
 from traceback import format_exc
+from weakref import ref
 try:
     from itertools import imap
 except ImportError:
@@ -104,7 +105,7 @@ class GeneratorWrapper(object):
     def __init__(self, generator, matcher, stream):
         self.generator = generator
         self.matcher = matcher
-        self.stream = s_debug(stream)
+        self.stream = ref(lambda: stream)
         self.__cached_repr = None
         
     def __repr__(self):
