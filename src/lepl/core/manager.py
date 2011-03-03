@@ -55,8 +55,6 @@ Note that the main aim here is to restrict resource consumption without
 damaging performance too much.  The aim is not to control parse results by 
 excluding certain matches.  For efficiency, the queue length is increased 
 (doubled) whenever the queue is filled by active generators.
-
-For the control of parse results see the `Commit()` matcher.
 '''
 
 from heapq import heappushpop, heappop, heappush
@@ -66,15 +64,13 @@ from lepl.core.monitor import StackMonitor, ValueMonitor
 from lepl.support.lib import LogMixin, fmt, str
 
 
-NS_STREAM = '<no-state>'
-
-
 # pylint: disable-msg=C0103
 def GeneratorManager(queue_len):
     '''
     A 'Monitor' (implements `MonitorInterface`, can be supplied
     to `Configuration`) that tracks (and can limit the number of)
-    generators.
+    generators.  It is also coupled to the size of stacks during search
+    (via the generator_manager_queue_len property).
 
     This is a helper function that "escapes" the main class via a function
     to simplify configuration.
@@ -94,8 +90,7 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         `queue_len` is the number of generators that can exist.  When the
         number is exceeded the oldest generators are closed, unless currently
         active (in which case the queue size is extended).  If zero then no
-        limit is applied (although generators are still tracked and can be
-        removed using `Commit()`.
+        limit is applied.
         '''
         super(_GeneratorManager, self).__init__()
         self.__queue = []
@@ -114,14 +109,15 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         '''
         Add a generator if it is not already known, or increment it's ref count.
         '''
-        from lepl.matchers.combine import DepthFirst
         if generator not in self.__known:
             self.__add(generator)
             # this sets the attribute on everything, but most instances simply
             # don't care... (we can be "inefficient" here as the monitor is
             # only used when memory use is more important than cpu)
-            generator.matcher.generator_manager_queue_len = self.__initial_queue_len
-            self._debug(fmt('Clipping search depth to {0}', self.__initial_queue_len))
+            generator.matcher.generator_manager_queue_len = \
+                                            self.__initial_queue_len
+            self._debug(fmt('Clipping search depth to {0}', 
+                            self.__initial_queue_len))
         else:
             self.__known[generator].push()
             
@@ -130,7 +126,7 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         Decrement a ref's count and update the epoch.
         '''
         self.__known[generator].pop(self.epoch)
-            
+
     def __add(self, generator):
         '''
         Add a generator, trying to keep the number of active generators to
@@ -193,22 +189,6 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         self.queue_len = self.queue_len * 2
         self._warn(fmt('Queue is too small - extending to {0}', self.queue_len))
             
-#    def commit(self):
-#        '''
-#        Delete all non-active generators.
-#        '''
-#        if self.__queue:
-#            for _retry in range(len(self.__queue)):
-#                reference = heappop(self.__queue)
-#                if reference.active():
-#                    reference.update(self.epoch) # forces epoch update
-#                    heappush(self.__queue, reference)
-#                else:
-#                    generator = reference.generator
-#                    if generator:
-#                        del self.__known[generator]
-#                    reference.close()
-            
 
 class GeneratorRef(object):
     '''
@@ -237,6 +217,9 @@ class GeneratorRef(object):
     
     @property
     def generator(self):
+        '''
+        Provide access to the generator (or None, if it has been GCed).
+        '''
         return self.__wrapper()
     
     def pop(self, epoch):

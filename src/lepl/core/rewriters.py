@@ -37,7 +37,7 @@ from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
 from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
     BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
     Or, OrNoTrampoline
-from lepl.matchers.core import Delayed
+from lepl.matchers.core import Delayed, Lookahead
 from lepl.matchers.derived import add
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
     matcher_type, MatcherTypeException, canonical_matcher_type
@@ -46,6 +46,9 @@ from lepl.support.lib import lmap, fmt, LogMixin
 
 
 class Rewriter(LogMixin):
+    '''
+    base class for rewriters, supporting a fixed ordering.
+    '''
     
     # ordering
     (SET_ARGUMENTS,
@@ -58,9 +61,9 @@ class Rewriter(LogMixin):
      MEMOIZE,
      FULL_FIRST_MATCH) = range(10, 100, 10)
        
-    def __init__(self, order, name=None, exclusive=True):
+    def __init__(self, order_, name=None, exclusive=True):
         super(Rewriter, self).__init__()
-        self.order = order
+        self.order = order_
         self.name = name if name else self.__class__.__name__
         self.exclusive = exclusive
         
@@ -117,13 +120,10 @@ def clone(node, args, kargs):
     return copy
 
 
-def copy_standard_attributes(node, copy, describe=True, transform=True):
+def copy_standard_attributes(node, copy):
     '''
     Handle the additional attributes that matchers may have.
     '''
-    from lepl.matchers.support import Transformable
-    if isinstance(node, Transformable) and transform:
-        copy.wrapper = node.wrapper
     if isinstance(node, FactoryMatcher):
         copy.factory = node.factory
 
@@ -147,8 +147,6 @@ class DelayedClone(Visitor):
         This is called for nodes that are involved in cycles when they are
         needed as arguments but have not themselves been cloned.
         '''
-        # delayed import to avoid dependency loops
-        from lepl.matchers.core import Delayed
         if node not in self._visited:
             self._visited[node] = Delayed()
             self._loops.add(node)
@@ -164,7 +162,6 @@ class DelayedClone(Visitor):
         '''
         Clone the node, taking care to handle loops.
         '''
-        # delayed import to avoid dependency loops
         if self._node not in self._visited:
             self._visited[self._node] = self.__clone_node(args, kargs)
         # if this is one of the loops we replaced with a delayed instance,
@@ -191,7 +188,6 @@ class DelayedClone(Visitor):
         defined and are nor transformed).
         '''
         # delayed import to avoid dependency loops
-        from lepl.matchers.core import Delayed
         from lepl.matchers.transform import Transformable
         if isinstance(node, Delayed) and node.matcher and \
                 not (isinstance(node, Transformable) and node.wrapper):
@@ -213,7 +209,6 @@ def post_clone(function):
     proxies and so have no functionality of their own) (so, when used with 
     `DelayedClone`, effectively performs a map on the graph).
     '''
-    from lepl.matchers.core import Delayed
     def new_clone(node, args, kargs):
         '''
         Apply function as well as clone.
@@ -236,7 +231,6 @@ class Flatten(Rewriter):
         super(Flatten, self).__init__(Rewriter.FLATTEN)
     
     def __call__(self, graph):
-        from lepl.matchers.combine import And, Or
         def new_clone(node, old_args, kargs):
             '''
             The flattening cloner.
@@ -274,8 +268,8 @@ class ComposeTransforms(Rewriter):
             '''
             The joining cloner.
             '''
-            # must always clone to expose the matcher (which was cloned earlier - 
-            # it is not node.matcher)
+            # must always clone to expose the matcher (which was cloned 
+            # earlier - it is not node.matcher)
             copy = clone(node, args, kargs)
             if isinstance(copy, Transform) \
                     and isinstance(copy.matcher, Transformable):
@@ -361,8 +355,6 @@ def left_loops(node):
     
     Each loop is a list that starts and ends with the given node.
     '''
-    from lepl.matchers.combine import Or
-    from lepl.matchers.core import Lookahead
     stack = [[node]]
     known = set([node]) # avoid getting lost in embedded loops
     while stack:
@@ -418,8 +410,6 @@ class OptimizeOr(Rewriter):
         self.conservative = conservative
 
     def __call__(self, graph):
-        from lepl.matchers.core import Delayed
-        from lepl.matchers.combine import Or
         for delayed in [x for x in preorder(graph, Matcher) 
                         if isinstance(x, Delayed)]:
             for loop in either_loops(delayed, self.conservative):

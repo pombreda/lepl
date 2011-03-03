@@ -128,6 +128,7 @@ def BreadthFirst(first, start, stop, rest, reduce, generator_manager_queue_len):
         queue = deque()
         try:
             queue.append((0, zero, stream, first._match(stream)))
+            stream = None
             while queue:
                 (count1, acc1, stream1, generator) = queue.popleft()
                 if count1 >= start and (stop is None or count1 <= stop):
@@ -189,6 +190,7 @@ def DepthNoTrampoline(first, start, stop, rest, reduce, generator_manager_queue_
         stack = deque()
         try:
             stack.append((0, zero, stream, first._untagged_match(stream)))
+            stream = None
             while stack:
                 (count1, acc1, stream1, generator) = stack[-1]
                 extended = False
@@ -208,10 +210,10 @@ def DepthNoTrampoline(first, start, stop, rest, reduce, generator_manager_queue_
                     stack.pop()
                 while support.generator_manager_queue_len \
                         and len(stack) > support.generator_manager_queue_len:
-                    stack.popleft()[3].generator.close()
+                    stack.popleft()[3].close()
         finally:
-            for (_count, _acc, _stream, generator) in stack:
-                generator.close()
+            while stack:
+                stack.popleft()[3].close()
             
     return matcher
             
@@ -228,6 +230,7 @@ def BreadthNoTrampoline(first, start, stop, rest, reduce, generator_manager_queu
         queue = deque()
         try:
             queue.append((0, zero, stream, first._untagged_match(stream)))
+            stream = None
             while queue:
                 (count1, acc1, stream1, generator) = queue.popleft()
                 if count1 >= start and (stop is None or count1 <= stop):
@@ -240,10 +243,10 @@ def BreadthNoTrampoline(first, start, stop, rest, reduce, generator_manager_queu
                                       rest._untagged_match(stream2)))
                 while support.generator_manager_queue_len \
                         and len(queue) > support.generator_manager_queue_len:
-                    queue.popleft()[3].generator.close()
+                    queue.popleft()[3].close()
         finally:
-            for (_count, _acc, _stream, generator) in queue:
-                generator.close()
+            while queue:
+                queue.popleft()[3].close()
             
     return matcher
 

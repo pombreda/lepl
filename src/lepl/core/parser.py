@@ -49,9 +49,8 @@ except ImportError:
 from lepl.stream.core import s_debug
 from lepl.core.monitor import prepare_monitors
 from lepl.support.lib import fmt
-from lepl.core.manager import NS_STREAM
 
-    
+
 def tagged(method):
     '''
     Decorator for generators to add extra attributes.
@@ -61,21 +60,6 @@ def tagged(method):
         Wrap the result.
         '''
         return GeneratorWrapper(method(matcher, stream), matcher, stream)
-    return tagged_method
-
-
-def tagged_no_state(method):
-    '''
-    Decorator for generators to add extra attributes.
-    '''
-    def tagged_method(matcher, stream):
-        '''
-        Wrap the result.
-        '''
-        wrapper = GeneratorWrapper(method(matcher, stream), matcher, stream)
-        wrapper.stream = NS_STREAM
-        stream = None
-        return wrapper
     return tagged_method
 
 
@@ -146,7 +130,7 @@ def trampoline(main, m_stack=None, m_value=None):
         while True:
             epoch += 1
             try:
-                if m_value: m_value.next_iteration(epoch, value, 
+                if m_value: m_value.next_iteration(epoch, value,
                                                    exception_being_raised, stack)
                 # is the value a coroutine that should be added to our stack
                 # and evaluated?
@@ -206,10 +190,12 @@ def trampoline(main, m_stack=None, m_value=None):
                                  epoch, value, exception))
                 if stack:
                     log.debug(fmt('Top of stack: {0}', stack[-1]))
+                    # going to raise original exception
+                    # pylint: disable-msg=W0702
                     try:
                         log.warn(format_exc())
                     except:
-                        log.warn('Exception cannot be fmtted!')
+                        log.warn('Exception cannot be formatted!')
                     for generator in stack:
                         log.debug(fmt('Stack: {0}', generator))
                 raise

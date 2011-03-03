@@ -1,5 +1,3 @@
-from lepl.lexer.operators import TOKENS, TokenNamespace
-from lepl.lexer.stream import FilteredTokenHelper
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -40,6 +38,8 @@ from abc import ABCMeta
 
 from lepl.stream.core import s_empty, s_line, s_next
 from lepl.lexer.support import LexerError
+from lepl.lexer.operators import TOKENS, TokenNamespace
+from lepl.lexer.stream import FilteredTokenHelper
 from lepl.matchers.core import OperatorMatcher, Any, Literal, Lookahead, Regexp
 from lepl.matchers.matcher import Matcher, add_children
 from lepl.matchers.memo import NoMemo
@@ -272,9 +272,29 @@ class EmptyToken(Token):
 
 
 def RestrictTokensBy(*tokens):
+    '''
+    A matcher factory that generates a new matcher that will transform the
+    stream passed to its arguments so that they do not see the given tokens.
+    
+    So, for example:
+      MyFactory = RestrictTokensBy(A(), B()):
+      RestrictedC = MyFactory(C())
+    will create a matcher, RestrictedC, that is like C, but which will not
+    see the tokens matced by A and B.
+    
+    In other words, this filters tokens from the input.   
+    '''
+    
     @trampoline_matcher_factory()
     def factory(matcher, *tokens):
+        '''
+        The factory that will be returned, with the tokens supplied above.
+        '''
         def match(support, in_stream):
+            '''
+            The final matcher - delegates to `matcher` with a restricted 
+            stream of tokens.
+            '''
             ids = [token.id_ for token in tokens]
             (state, helper) = in_stream
             filtered = (state, FilteredTokenHelper(helper, *ids))
@@ -284,6 +304,11 @@ def RestrictTokensBy(*tokens):
                 support._debug(fmt('Result {0}', result))
                 yield (result, (state, helper))
         return match
+    
     def pass_args(matcher):
+        '''
+        Dirty trick to pass tokens in to factory.
+        '''
         return factory(matcher, *tokens)
+
     return pass_args

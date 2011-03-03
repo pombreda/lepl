@@ -1,5 +1,4 @@
 
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -32,49 +31,30 @@
 The main configuration object and various standard configurations.
 '''
 
+# pylint bug?
+# pylint: disable-msg=W0404
+
+from collections import namedtuple
+
 from lepl.core.parser import make_raw_parser, make_single, make_multiple
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 
-# A major driver for this being separate is that it decouples dependency loops
 
+Configuration = namedtuple('Configuration', 'rewriters monitors stream_factory')
+'''Carrier for configuration.'''
 
+    
 class ConfigurationError(Exception):
+    '''
+    Error raised for problems with configuration.
+    '''
     pass
 
 
-class Configuration(object):
-    '''
-    Encapsulate various parameters that describe how the matchers are
-    rewritten and evaluated.
-    '''
-    
-    def __init__(self, rewriters=None, monitors=None, stream_factory=None):
-        '''
-        `rewriters` are functions that take and return a matcher tree.  They
-        can add memoisation, restructure the tree, etc.
-        
-        `monitors` are factories that return implementations of `ActiveMonitor`
-        or `PassiveMonitor` and will be invoked by `trampoline()`. 
-        
-        `stream_factory` constructs a stream from the given input.
-        '''
-        if rewriters is None:
-            rewriters = set()
-        self.__rewriters = rewriters
-        self.monitors = monitors
-        if stream_factory is None:
-            stream_factory = DEFAULT_STREAM_FACTORY
-        self.stream_factory = stream_factory
-        
-    @property
-    def rewriters(self):
-        rewriters = list(self.__rewriters)
-        rewriters.sort()
-        #print([str(m) for m in rewriters])
-        return rewriters
-        
-
 class ConfigBuilder(object):
+    '''
+    Accumulate configuration through chained methods.
+    '''
     
     def __init__(self):
         # we need to delay startup, to avoid loops
@@ -168,29 +148,12 @@ class ConfigBuilder(object):
     @property
     def configuration(self):
         '''
-        The current configuration.
-        
-        Adding or removing a rewriter means that the default configuration 
-        will be cleared (if no rewriters are added, the default configuration 
-        is used, but as soon as one rewriter is given explicitly the default 
-        is discarded, and only the rewriters explicitly added are used).
+        The current configuration (rewriters, monitors, stream_factory).
         '''
         self.__start()
         self.__changed = False
-        return Configuration(self.__rewriters, self.__monitors, 
+        return Configuration(self.__rewriters, self.__monitors,
                              self.__stream_factory)
-    
-    @configuration.setter
-    def configuration(self, configuration):
-        '''
-        Allow the configuration to be specified from a `Configuration`
-        instance.  No longer recommended - use the other methods here instead.
-        '''
-        self.__rewriters = list(configuration.raw_rewriters)
-        self.__monitors = list(configuration.monitors)
-        self.__stream_factory = configuration.stream_factory
-        self.__started = True
-        self.clear_cache()
     
     def __get_alphabet(self):
         '''
@@ -276,18 +239,6 @@ class ConfigBuilder(object):
         self.set_arguments(BaseToken, alphabet=alphabet)
         return self
 
-#    def set_block_policy_arg(self, block_policy):
-#        '''
-#        Set the block policy on all `Block` instances.
-#        
-#        Although this option is required for "offside rule" parsing,
-#        you normally do not need to call this because it is called by 
-#        `default_line_aware` (and `line_aware`) if either `block_policy` 
-#        or `block_start` is specified.
-#        '''
-#        from lepl.blocks.matchers import Block
-#        return self.set_arguments(Block, policy=block_policy)
-#    
     def full_first_match(self, eos=True):
         '''
         Raise an error if the first match fails.  If `eos` is True then this
@@ -362,7 +313,10 @@ class ConfigBuilder(object):
         '''
         from lepl.matchers.core import Regexp
         from lepl.regexp.rewriters import CompileRegexp
-        def regexp_wrapper(regexp, alphabet):
+        def regexp_wrapper(regexp, _alphabet):
+            '''
+            Adapt the Regexp matcher to the form needed (forcing Unicode).
+            '''
             return Regexp(str(regexp))
         self.alphabet(alphabet)
         return self.add_rewriter(
@@ -514,17 +468,26 @@ class ConfigBuilder(object):
         self.remove_all_rewriters(Memoize)
         return self.remove_all_rewriters(AutoMemoize)
         
-    def blocks(self, alphabet=None, discard=None, tabsize=8,
+    def blocks(self, discard=None, tabsize=8, 
                block_policy=None, block_start=None):
         '''
-        Set the given `block_policy` on all block elements and add a 
-        `block_monitor` with the given `block_start`.  If either is
-        not given, default values are used.
+        Configure "offside parsing".  This enables lexing and adds `Indent` 
+        and `LineEnd` tokens to the token stream.  These are used by the
+        `Block` and `BLine` matchers to handle indentation "automatically".
         
-        Although these options are required for "offside rule" parsing,
-        you normally do not need to call this because it is called by 
-        `default_line_aware`  if either `block_policy` or 
-        `block_start` is specified.
+        `discard` is the regular expression to use to identify spaces
+        between tokens (by default, spaces and tabs).
+        
+        `tabsize` is the number of spaces used to replace a tab (no
+        replacement if zero).
+        
+        `block_policy` decides how indentation if calculated.
+        See `rightmost` etc in lepl.lexer.blocks.matchers.
+        
+        `block_start` is the initial indentation (by default, zero).
+        If set to lepl.lexer.blocks.matchers.NO_BLOCKS then the lexing
+        will still be done, but indentation will not be checked (useful
+        for tests).
         '''
         from lepl.lexer.blocks.lexer import make_offside_lexer
         from lepl.lexer.blocks.matchers import DEFAULT_POLICY, Block 
@@ -535,48 +498,22 @@ class ConfigBuilder(object):
             block_start = 0
         self.add_monitor(block_monitor(block_start))
         self.set_arguments(Block, policy=block_policy)
-        self.lexer(alphabet, discard, make_offside_lexer(tabsize))
+        self.lexer(self.__get_alphabet(), discard, make_offside_lexer(tabsize))
         return self
     
-    def lines(self, alphabet=None, discard=None):
+    def lines(self, discard=None):
         '''
-        Configure the parser for line aware behaviour.  This clears the
-        current setting and sets many different options.
+        Configure "line aware" parsing.  This enables lexing and adds
+        `LineStart` and `LineEnd` tokens to the token stream.  It can be
+        a useful alternative to matching newlines by hand.
         
-        Although these options are required for "line aware" parsing,
-        you normally do not need to call this because it is called by 
-        `default_line_aware` .
+        For "offside parsing" you want `blocks()`, not this.
         
-        `alphabet` is the alphabet used; by default it is assumed to be Unicode
-        and it will be extended to include start and end of line markers.
-        
-        `parser_factory` is used to generate a regexp parser.  If this is unset
-        then HideSolEolParser is used (so that you can specify tokens 
-        without worrying about SOL and EOL).  If you want to explicitly
-        manage SOL and EOL yourself, provide `make_str_parser` here.
-        
-        `discard` is a regular expression which is matched against the stream
-        if lexing otherwise fails.  A successful match is discarded.  If None
-        then the usual token default is used (whitespace).  To disable, use
-        an empty string.
-        
-        `tabsize`, if not None, should be the number of spaces used to replace
-        tabs.
-        
-        `block_policy` should be the number of spaces in an indent, if blocks 
-        are used (or an appropriate function).  By default (ie if `block_start`
-        is given) it is taken to be DEFAULT_POLICY.
-        
-        `block_start` is the initial indentation, if blocks are used.  By 
-        default (ie if `block_policy` is given) 0 is used.
-        
-        To enable blocks ("offside rule" parsing), at least one of 
-        `block_policy` and `block_start` must be given.
-        `
+        `discard` is the regular expression to use to identify spaces
+        between tokens (by default, spaces and tabs).
         '''
         from lepl.lexer.lines.lexer import LineLexer
-        self.lexer(alphabet, discard, LineLexer)
-        
+        self.lexer(self.__get_alphabet(), discard, LineLexer)
         return self
         
     # monitors
@@ -588,9 +525,17 @@ class ConfigBuilder(object):
         from lepl.core.trace import TraceResults
         return self.add_monitor(TraceResults(enabled))
     
-    def manage(self, queue_len=0):
+    def manage(self, queue_len=100):
         '''
         Add a monitor to manage resources.  See `GeneratorManager()`.
+        
+        This reduces memory usage, but makes the parser less reliable.
+        Usually a value like 100 (the default) for the queue length will make 
+        memory use insignificant and still give a useful first parse.
+        
+        Note that, although the parser will use less memory, it may run
+        more slowly (as extra work needs to be done to "clean out" the 
+        stored values).
         '''
         from lepl.core.manager import GeneratorManager
         return self.add_monitor(GeneratorManager(queue_len))
@@ -644,17 +589,21 @@ class ParserMixin(object):
         super(ParserMixin, self).__init__(*args, **kargs)
         self.config = ConfigBuilder()
         self.__raw_parser_cache = None
-        self.__from = None
+        self.__from = None # needed to check cache is valid
 
     def _raw_parser(self, from_=None):
+        '''
+        Provide the parser.  This underlies the "fancy" methods below.
+        '''
         if self.config.changed or self.__raw_parser_cache is None \
                 or self.__from != from_:
             config = self.config.configuration
             self.__from = from_
             if from_:
-                stream_factory = getattr(config.stream_factory, 'from_' + from_)
+                stream_factory = \
+                    getattr(config.stream_factory, 'from_' + from_)
             else:
-                stream_factory = config.stream_factory
+                stream_factory = config.stream_factory # __call__
             self.__raw_parser_cache = \
                 make_raw_parser(self, stream_factory, config)
         return self.__raw_parser_cache
@@ -745,12 +694,12 @@ class ParserMixin(object):
         '''
         return self.get_match_sequence()(sequence, **kargs)
     
-    def match(self, input, **kargs):
+    def match(self, input_, **kargs):
         '''
         Parse input, returning a sequence of (results, stream) pairs.  
         The type of stream is inferred from the input.
         '''
-        return self.get_match()(input, **kargs)
+        return self.get_match()(input_, **kargs)
     
     
     def get_parse_file(self):
@@ -834,12 +783,12 @@ class ParserMixin(object):
         '''
         return self.get_parse_sequence()(sequence, **kargs)
     
-    def parse(self, input, **kargs):
+    def parse(self, input_, **kargs):
         '''
         Parse the input, returning a single match.  The type of stream is 
         inferred from the input.
         '''
-        return self.get_parse()(input, **kargs)
+        return self.get_parse()(input_, **kargs)
     
     
     def get_parse_file_all(self):
@@ -924,10 +873,10 @@ class ParserMixin(object):
         '''
         return self.get_parse_sequence_all()(sequence, **kargs)
 
-    def parse_all(self, input, **kargs):
+    def parse_all(self, input_, **kargs):
         '''
         Parse input, returning a sequence of 
         matches.  The type of stream is inferred from the input to the 
         parser.
         '''
-        return self.get_parse_all()(input, **kargs)
+        return self.get_parse_all()(input_, **kargs)

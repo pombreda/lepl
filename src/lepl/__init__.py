@@ -36,7 +36,7 @@ Lepl is a parser library written in Python.
   
 This is the API documentation; the module index is at the bottom of this page.  
 There is also a `manual <../index.html>`_ which gives a higher level
-overview. 
+overview.
 
 The home page for this package is the 
 `Lepl website <http://www.acooke.org/lepl>`_.
@@ -118,7 +118,7 @@ from lepl.matchers.combine import And, Or, First, Difference, Limit
 from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
     Lookahead,  Regexp
 from lepl.matchers.complex import PostMatch, Columns
-from lepl.matchers.monitor import Trace #, Commit
+from lepl.matchers.monitor import Trace
 from lepl.matchers.derived import Apply, args, KApply, Join, \
     AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Repeat, Plus, \
     OneOrMore, Substitute, Name, Eof, Eos, Identity, Newline, Space, \
@@ -154,6 +154,7 @@ from lepl.support.list import List, sexpr_fold, sexpr_throw
 from lepl.support.node import Node, make_dict, join_with, node_throw
 
 __all__ = [
+           
         # lepl.core.config
         'Configuration',
         'ConfigBuilder',
@@ -188,7 +189,6 @@ __all__ = [
         'args',
         'KApply',
         'Delayed', 
-#        'Commit', 
         'Trace', 
         'AnyBut', 
         'Optional', 

@@ -32,10 +32,9 @@ from lepl.regexp.matchers import DfaRegexp
 from lepl.matchers.support import to, trampoline_matcher_factory,\
     OperatorMatcher, trampoline_matcher
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
-from lepl.core.parser import tagged, tagged_no_state
 from lepl.stream.core import s_line, s_stream, s_next
 from lepl.support.lib import fmt
-from lepl.core.manager import NS_STREAM
+from lepl.core.parser import tagged
 
 
 @trampoline_matcher_factory(matcher=to(Literal), condition=to(DfaRegexp))
@@ -175,19 +174,3 @@ def Columns(*columns, **kargs):
     (indices, matchers) = zip(*columns)
     return _Columns(indices, *matchers)
 
-
-
-class NO_STATE(OperatorMatcher):
-    
-    def __init__(self, matcher):
-        super(NO_STATE, self).__init__()
-        self._karg(matcher=matcher)
-    
-    @tagged_no_state    
-    def _match(self, stream):
-        generator = self.matcher._match(stream)
-        stream = None
-        generator.stream = NS_STREAM
-        while True:
-            yield (yield generator)
-            

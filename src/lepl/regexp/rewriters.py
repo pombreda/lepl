@@ -56,7 +56,7 @@ from operator import __add__
 from lepl.matchers.core import Regexp
 from lepl.matchers.matcher import Matcher, matcher_map
 from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
-    TrampolineWrapper, UntransformableTrampolineWrapper
+    TrampolineWrapper, TransformableTrampolineWrapper
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty, Option
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.interval import Character
@@ -403,7 +403,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
                         FunctionWrapper: clone_wrapper,
                         SequenceWrapper: clone_wrapper,
                         TrampolineWrapper: clone_wrapper,
-                        UntransformableTrampolineWrapper: clone_wrapper})
+                        TransformableTrampolineWrapper: clone_wrapper})
     
     def clone_(node, args, kargs):
         '''

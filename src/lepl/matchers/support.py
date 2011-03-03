@@ -313,12 +313,14 @@ class TransformableWrapper(BaseFactoryMatcher, Transformable):
                       self.wrapper)
         
 
-class TrampolineWrapper(TransformableWrapper):
+class TransformableTrampolineWrapper(TransformableWrapper):
     '''
     A wrapper for source of generators that evaluate other matchers via
     the trampoline (ie for generators that evaluate matchers via yield).
     
     Typically only used for advanced matchers.
+    
+    NOTE: This is no longer used; the `TrampolineWrapper` is used instead.
     '''
     
     @tagged
@@ -340,12 +342,18 @@ class TrampolineWrapper(TransformableWrapper):
                     raise e
                 
     
-class UntransformableTrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
+class TrampolineWrapper(BaseFactoryMatcher, OperatorMatcher):
     '''
     A wrapper for source of generators that evaluate other matchers via
     the trampoline (ie for generators that evaluate matchers via yield).
     
     Typically only used for advanced matchers.
+    
+    This improves on `TransformableTrampolineWrapepr` because it does not add 
+    an extra layer of trampolining when no transform is needed.  When a 
+    transform is needed then a `Transform` matcher adds an extra layer anyway 
+    (the motivation for the original code was to allow the two to merge, but
+    there is no point if the unmerged version is just as slow).
     '''
     
     @tagged
@@ -605,9 +613,9 @@ def trampoline_matcher_factory(gatekeeper_=None,
     '''
     keep_gate(gatekeeper_, 'trampoline_matcher_factory')
     def wrapper(factory):
-#        return make_wrapper_factory(TrampolineWrapper, 
+#        return make_wrapper_factory(TransformableTrampolineWrapper, 
 #                                    factory, kargs, args_, kargs_)
-        return make_wrapper_factory(UntransformableTrampolineWrapper, 
+        return make_wrapper_factory(TrampolineWrapper, 
                                     factory, kargs, args_, kargs_)
     return wrapper
 

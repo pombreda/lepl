@@ -36,6 +36,8 @@ from lepl.stream.core import s_empty, s_debug, s_stream, s_fmt, s_factory
 from lepl.lexer.support import RuntimeLexerError
 from lepl.regexp.core import Compiler
 
+# pylint can't detect _kargs etc
+# pylint: disable-msg=E1101
 
 class Lexer(NamespaceMixin, BaseMatcher):
     '''
@@ -101,16 +103,21 @@ class Lexer(NamespaceMixin, BaseMatcher):
         Implement matching - pass token stream to tokens.
         '''
         def tokens():
+            '''
+            Generate tokens, on demand.
+            '''
             stream = in_stream
             try:
                 while not s_empty(stream):
                     try:
-                        (terminals, match, next_stream) = self.t_regexp.match(stream)
+                        (terminals, match, next_stream) = \
+                                            self.t_regexp.match(stream)
                         self._debug(fmt('Token: {0!r} {1!r} {2!s}',
                                         terminals, match, s_debug(stream)))
                         yield (terminals, s_stream(stream, match))
                     except TypeError:
-                        (terminals, _size, next_stream) = self.s_regexp.size_match(stream)
+                        (terminals, _size, next_stream) = \
+                                            self.s_regexp.size_match(stream)
                         self._debug(fmt('Space: {0!r} {1!s}',
                                         terminals, s_debug(stream)))
                     stream = next_stream

@@ -155,33 +155,33 @@ class CloneTest(TestCase):
         clone2 = ComposeTransforms()(clone1)
         desc2 = NodeStats(clone2)
         #print(desc2)
-        # compressed two transforms
+        # compressed a transform
         assert desc2.total == 16, desc2
         self.assert_count(desc2, And, 4)
         self.assert_count(desc2, Or, 1)
         self.assert_count(desc2, Delayed, 2)
-        self.assert_count(desc2, Transform, 2)
-        self.assert_count(desc2, TransformationWrapper, 2)
+        self.assert_count(desc2, Transform, 6)
+        self.assert_count(desc2, TransformationWrapper, 6)
         
         clone3 = Memoize(RMemo)(clone2)
         desc3 = NodeStats(clone3) 
         #print(desc3)
         assert desc3.total == 16, desc3
-        self.assert_count(desc3, _RMemo, 18)
+        self.assert_count(desc3, _RMemo, 22)
         self.assert_count(desc3, Delayed, 2)
 
         clone4 = Memoize(LMemo)(clone2)
         desc4 = NodeStats(clone4) 
         #print(desc4)
         assert desc4.total == 16, desc4
-        self.assert_count(desc4, _LMemo, 18)
+        self.assert_count(desc4, _LMemo, 22)
         self.assert_count(desc4, Delayed, 2)
         
         clone5 = AutoMemoize(left=LMemo, right=RMemo)(clone2)
         desc5 = NodeStats(clone5) 
         #print(desc5)
         assert desc5.total == 16, desc5
-        self.assert_count(desc5, _RMemo, 13)
+        self.assert_count(desc5, _RMemo, 17)
         self.assert_count(desc5, _LMemo, 5)
         self.assert_count(desc5, Delayed, 2)
         

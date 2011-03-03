@@ -183,16 +183,17 @@ class ComposeTransformsTest(TestCase):
         parser = matcher.get_parse()
         result = parser('a')[0]
         assert result == 'axy', result
-        # TODO - better test
         assert isinstance(parser.matcher, TransformableWrapper)
+        assert len(parser.matcher.wrapper.functions) == 2
     
-    def test_and(self):
-        matcher = (Any() & Optional(Any())) > append('x')
-        matcher.config.clear().compose_transforms()
-        parser = matcher.get_parse()
-        result = parser('a')[0]
-        assert result == 'ax', result
-        assert is_child(parser.matcher, And), type(parser.matcher)
+    # And is no longer transformable
+#    def test_and(self):
+#        matcher = (Any() & Optional(Any())) > append('x')
+#        matcher.config.clear().compose_transforms()
+#        parser = matcher.get_parse()
+#        result = parser('a')[0]
+#        assert result == 'ax', result
+#        assert is_child(parser.matcher, And), type(parser.matcher)
     
     def test_loop(self):
         matcher = Delayed()
