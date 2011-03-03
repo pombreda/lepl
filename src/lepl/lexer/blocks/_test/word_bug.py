@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-Tests related to a bug when Word() is specified inside Token() with
+Tests related to a bug when Word() was specified inside Token() with
 line-aware parsing.
 '''
 
@@ -85,24 +85,3 @@ class WordBugTest(TestCase):
         lines.config.lines()
         result = lines.parse('abc de f\n pqr\n')
         assert result == [['abc', 'de', 'f'], ['pqr']], result
-
-#    def test_line_word_explicit_no_tokens(self):
-#        with DroppedSpace():
-#            words = Word()[:]
-#            newline = ~Any('\n')
-#            line = (~SOL() & words & newline & ~EOL()) > list
-#            lines = line[:]
-#        lines.config.lines()
-#        result = lines.parse('abc de f\n pqr\n')
-#        assert result == [['abc', 'de', 'f'], ['pqr']], result
-
-#    def test_parse(self):
-#        unicode = UnicodeAlphabet()
-#        assert unicode.parse(r'[\\x00-\\x08\\x0e-\\x1f!-\\uffff](?:[\\x00-\\x08\\x0e-\\x1f!-\\uffff])*')
-#        assert unicode.parse('[\\x00-\\x08\\x0e-\\x1f!-\\uffff](?:[\\x00-\\x08\\x0e-\\x1f!-\\uffff])*')
-#        line_aware = LineAwareAlphabet(unicode, make_hide_sol_eol_parser)
-#        assert line_aware.parse(r'[(*SOL)-\\x08\\x0e-\\x1f!-(*EOL)](?:[(*SOL)-\\x08\\x0e-\\x1f!-(*EOL)])*')
-#        assert line_aware.parse('[(*SOL)-\\x08\\x0e-\\x1f!-(*EOL)](?:[(*SOL)-\\x08\\x0e-\\x1f!-(*EOL)])*')
-#        line_aware = LineAwareAlphabet(unicode, make_str_parser)
-#        assert line_aware.parse(r'[(*SOL)-\\x08\\x0e-\\x1f!-(*EOL)](?:[(*SOL)-\\x08\\x0e-\\x1f!-(*EOL)])*')
-#        assert line_aware.parse('[(*SOL)-\\x08\\x0e-\\x1f!-(*EOL)](?:[(*SOL)-\\x08\\x0e-\\x1f!-(*EOL)])*')

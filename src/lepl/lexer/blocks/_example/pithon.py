@@ -27,6 +27,10 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
+'''
+A simple Python-like language.
+'''
+
 
 # pylint: disable-msg=W0614, W0401, W0621, C0103, C0111, R0201, R0904
 #@PydevCodeAnalysisIgnore

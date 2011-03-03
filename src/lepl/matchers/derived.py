@@ -33,7 +33,7 @@ Matchers that are defined in terms of other matchers (ie the majority).
 
 from string import whitespace, digits, ascii_letters, \
     ascii_uppercase, ascii_lowercase, printable, punctuation
-from operator import __add__ 
+from operator import __add__
 
 from lepl.matchers.combine import And, DepthFirst, BreadthFirst, \
     OrderByResultCount, Or, Limit

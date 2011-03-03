@@ -168,6 +168,12 @@ def matcher_instance(matcher):
 
 
 class Relations(object):
+    '''
+    Some kind of parent/child management for wrapped classes that I no longer
+    understand, but which appears to be used and working (it doesn't look
+    like rocket science, but until it breaks I don't care enough to know
+    more...)
+    '''
     
     def __init__(self, base):
         self.base = base

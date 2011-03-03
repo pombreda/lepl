@@ -27,6 +27,9 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
+'''
+Examples using "offside parsing"
+'''
 
 import lepl.lexer.blocks._example.offside
 import lepl.lexer.blocks._example.pithon

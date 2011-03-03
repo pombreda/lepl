@@ -42,7 +42,7 @@ from lepl.stream.core import s_key
 
 NO_BLOCKS = object()
 '''
-Magic initial value for offset to disable indentation checks.
+Magic initial value for block_offset to disable indentation checks.
 '''
 
 
@@ -259,78 +259,31 @@ def BLine(matcher, indent=True):
         return ~UncheckedIndent() & matcher & ~LineEnd()
 
 
-#def only_token(token, item):
-#    '''
-#    Check whether the item (from a location stream of tokens) contains only
-#    the token specified.
-#    '''
-#    (tokens, _contents) = item
-#    return len(tokens) == 1 and tokens[0] == token.id_
-#
-#
-#def any_token(token, item):
-#    '''
-#    Check whether the item (from a location stream of tokens) contains at least
-#    the token specified.
-#    '''
-#    (tokens, _contents) = item
-#    return token.id_ in tokens
-
-
 def ContinuedBLineFactory(matcher):
+    '''
+    Create a `BLine` that extends over multiple lines.  The "line wrap"
+    token is matched by the matcher supplied.
+    '''
     matcher = coerce_(matcher, lambda regexp: Token(regexp))
     start = Indent()
     end = LineEnd()
     restricted = RestrictTokensBy(matcher, end, start)
+    
     def factory(matcher):
+        '''
+        The `BLine` replacement.
+        '''
         line = ~start & matcher & ~end
         return restricted(line)
+    
     return factory
 
 
 def Extend(matcher):
+    '''
+    Apply the give matcher to a token stream that ignores line endings and
+    starts (so it matches over multiple lines).
+    '''
     start = Indent()
     end = LineEnd()
     return RestrictTokensBy(end, start)(matcher)
-
-
-
-#def _ContinuedLineFactory(continuation, base):
-#    '''
-#    Return the base (line) matcher, modified so that it applies its contents 
-#    to a stream which continues past line breaks if the given token is present.
-#    '''
-#    continuation = coerce_(continuation, Token)
-#    
-#    def ContinuedLine(matcher):
-#        '''
-#        Like `base`, but continues over multiple lines if the continuation 
-#        token is found at the end of each line.
-#        '''
-#        multiple = ExcludeSequence(any_token, 
-#                                   [continuation, LineAwareEol(), Indent()])
-#        return base(multiple(matcher))
-#    return ContinuedLine
-#
-#
-#def ContinuedLineFactory(continuation):
-#    '''
-#    Construct a matcher like `Line`, but which extends over multiple lines if
-#    the continuation token ends a line.
-#    '''
-#    return _ContinuedLineFactory(continuation, Line)
-#    
-#
-#def ContinuedBLineFactory(continuation):
-#    '''
-#    Construct a matcher like `BLine`, but which extends over multiple lines if
-#    the continuation token ends a line.
-#    '''
-#    return _ContinuedLineFactory(continuation, BLine)
-#    
-#Extend = ExcludeSequence(only_token, [LineAwareEol(), Indent()])
-'''
-Provide a stream to the embedded matcher with `Indent` and `Eol` tokens 
-filtered out.  On matching, return the "outer" stream at the appropriate
-position (ie just after the last matched token in the filtered stream).
-'''

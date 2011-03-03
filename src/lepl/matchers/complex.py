@@ -27,6 +27,10 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
+'''
+Complex matchers that are rearely used.
+'''
+
 from lepl.matchers.core import Literal
 from lepl.regexp.matchers import DfaRegexp
 from lepl.matchers.support import to, trampoline_matcher_factory,\

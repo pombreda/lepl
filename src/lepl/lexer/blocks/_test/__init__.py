@@ -27,6 +27,10 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
+'''
+Tests for the lepl.lexer.blocks package.
+'''
+
 
 import lepl.lexer.blocks._test.closed_bug
 import lepl.lexer.blocks._test.errors

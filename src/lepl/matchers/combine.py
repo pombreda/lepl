@@ -61,7 +61,9 @@ Note that graph traversal assumes subclasses are hashable and iterable.
 '''
 
 class BaseSearch(_BaseSearch):
-    pass
+    '''
+    Common base class (used by smart separators).
+    '''
 
 
 def search_factory(factory):
@@ -137,7 +139,8 @@ def BreadthFirst(first, start, stop, rest, reduce, generator_manager_queue_len):
                         (value, stream2) = yield generator
                         acc2 = join(acc1, value)
                         if stop is None or count2 <= stop:
-                            queue.append((count2, acc2, stream2, rest._match(stream2)))
+                            queue.append((count2, acc2, stream2, 
+                                          rest._match(stream2)))
                 except StopIteration:
                     pass
                 while support.generator_manager_queue_len \
@@ -155,11 +158,7 @@ def OrderByResultCount(matcher, ascending=True):
     '''
     Modify a matcher to return results in length order.
     '''
-
     def match(support, stream):
-        '''
-        Attempt to match the stream.
-        '''
         generator = matcher._match(stream)
         results = []
         try:
@@ -172,13 +171,13 @@ def OrderByResultCount(matcher, ascending=True):
         for result in sorted(results,
                              key=lambda x: len(x[0]), reverse=ascending):
             yield result
-            
     return match
             
 
 @sequence_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
-def DepthNoTrampoline(first, start, stop, rest, reduce, generator_manager_queue_len):
+def DepthNoTrampoline(first, start, stop, rest, reduce, 
+                      generator_manager_queue_len):
     '''
     A more efficient search when all matchers are functions (so no need to
     trampoline).  Depth first (greedy).
@@ -218,7 +217,8 @@ def DepthNoTrampoline(first, start, stop, rest, reduce, generator_manager_queue_
             
 @sequence_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
-def BreadthNoTrampoline(first, start, stop, rest, reduce, generator_manager_queue_len):
+def BreadthNoTrampoline(first, start, stop, rest, reduce, 
+                        generator_manager_queue_len):
     '''
     A more efficient search when all matchers are functions (so no need to
     trampoline).  Breadth first (non-greedy).
@@ -277,8 +277,6 @@ def And(*matchers):
     Match one or more matchers in sequence (**&**).
     It can be used indirectly by placing ``&`` between matchers.
     '''
-#    matchers = lmap(coerce_, matchers)
-    
     def match(support, stream_in):
         if matchers:
             stack = deque([([], 
@@ -304,7 +302,6 @@ def And(*matchers):
             finally:
                 for (result, generator, queued) in stack:
                     generator.generator.close()
-                    
     return match
 
 
@@ -350,13 +347,7 @@ def Or(*matchers):
     continue to the right.  String arguments will be coerced to 
     literal matches.
     '''
-   
     def match(support, stream_in):
-        '''
-        Do the matching (return a generator that provides successive 
-        (result, stream) tuples).  The result will correspond to one of the
-        sub-matchers (starting from the left).
-        '''
         for matcher in matchers:
             generator = matcher._match(stream_in)
             try:
@@ -364,7 +355,6 @@ def Or(*matchers):
                     yield (yield generator)
             except StopIteration:
                 pass
-            
     return match
 
 
@@ -374,11 +364,6 @@ def OrNoTrampoline(*matchers):
     Used as an optimisation when sub-matchers do not require the trampoline.
     '''
     def match(support, stream_in):
-        '''
-        Do the matching (return a generator that provides successive 
-        (result, stream) tuples).  The result will correspond to one of the
-        sub-matchers (starting from the left).
-        '''
         for matcher in matchers:
             for result in matcher._untagged_match(stream_in):
                 yield result

@@ -35,6 +35,9 @@ from lepl.stream.core import StreamHelper
 
 
 class HelperFacade(StreamHelper):
+    '''
+    A facade that delegates all calls to the underlying delegate stream.
+    '''
     
     def __init__(self, delegate):
         self._delegate = delegate

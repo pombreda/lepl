@@ -28,7 +28,8 @@
 # MPL or the LGPL License.
 
 '''
-An example that avoids using tokens with the line aware parsing.
+An example that avoids using tokens with the line aware parsing (you'd have
+to be crazy to want to do this, but it's possible).
 '''
 
 #from logging import basicConfig, DEBUG

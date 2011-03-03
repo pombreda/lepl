@@ -63,6 +63,10 @@ from lepl.stream.core import s_delta, s_kargs, s_fmt, s_debug, s_next, \
 
 
 class Cons(object):
+    '''
+    A linked list cell that is a lazy wrapper around an iterable.  So "tail"
+    returns the next iterable on demand.
+    '''
     
     __slots__ = ['_iterable', '_head', '_tail', '_expanded']
     
@@ -163,6 +167,9 @@ def base_iterable_factory(state_to_line_stream, type_):
 
 class IterableHelper(
         base_iterable_factory(lambda state: state[1], '<iterable>')):
+    '''
+    Implement a stream over iterable values.
+    '''
     
     def _next_line(self, cons, empty_line_stream):
         delta = s_delta(empty_line_stream)
