@@ -39,6 +39,7 @@ from lepl.lexer.lines.matchers import LineEnd
 from lepl.support.lib import fmt
 from lepl.stream.core import s_key
 
+
 NO_BLOCKS = object()
 '''
 Magic initial value for offset to disable indentation checks.

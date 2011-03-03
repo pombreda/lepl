@@ -152,7 +152,9 @@ class ConfigBuilder(object):
         '''
         self.__start()
         self.__changed = False
-        return Configuration(self.__rewriters, self.__monitors,
+        rewriters = list(self.__rewriters)
+        rewriters.sort()
+        return Configuration(rewriters, list(self.__monitors),
                              self.__stream_factory)
     
     def __get_alphabet(self):
@@ -360,8 +362,8 @@ class ConfigBuilder(object):
         from lepl.lexer.rewriters import AddLexer
         self.alphabet(alphabet)
         return self.add_rewriter(
-            AddLexer(alphabet=self.__get_alphabet(), discard=discard, 
-                     lexer=lexer))
+            AddLexer(alphabet=self.__get_alphabet(), 
+                     discard=discard, lexer=lexer))
         
     def no_lexer(self):
         '''
@@ -479,7 +481,7 @@ class ConfigBuilder(object):
         between tokens (by default, spaces and tabs).
         
         `tabsize` is the number of spaces used to replace a tab (no
-        replacement if zero).
+        replacement if None).
         
         `block_policy` decides how indentation if calculated.
         See `rightmost` etc in lepl.lexer.blocks.matchers.

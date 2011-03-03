@@ -27,6 +27,10 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
+'''
+Stream support for lexers.
+'''
+
 
 from lepl.stream.iter import base_iterable_factory
 from lepl.stream.core import OFFSET, s_delta, s_line, HashKey, s_key
@@ -102,6 +106,13 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
 
 
 class FilteredTokenHelper(LogMixin, HelperFacade):
+    '''
+    Used by `RestrictTokensBy` to filter tokens from the delegate.
+    
+    This filters a list of token IDs in order.  If the entire list does
+    not match then then next token is returned (even if it appears in the
+    list).
+    '''
     
     def __init__(self, delegate, *ids):
         super(FilteredTokenHelper, self).__init__(delegate)
@@ -109,17 +120,24 @@ class FilteredTokenHelper(LogMixin, HelperFacade):
         self._debug(fmt('Filtering tokens {0}', ids))
         
     def next(self, state, count=1):
+        
         def add_self(response):
+            '''
+            Replace the previous helper with this one, which will then 
+            delegate to the previous when needed.
+            '''
             ((tokens, token), (state, _)) = response
             self._debug(fmt('Return {0}', tokens))
             return ((tokens, token), (state, self))
+        
         self._debug('Filtering')
         if count != 1:
             raise TypeError('Filtered tokens must be read singly')
         discard = list(reversed(self._ids))
         start = state
         while discard:
-            ((tokens, _), (state, _)) = super(FilteredTokenHelper, self).next(state)
+            ((tokens, _), (state, _)) = \
+                        super(FilteredTokenHelper, self).next(state)
             if discard[-1] in tokens:
                 self._debug(fmt('Discarding token {0}', discard[-1]))
                 discard.pop()

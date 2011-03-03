@@ -27,6 +27,11 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
+'''
+Operators for tokens.
+'''
+
+
 from lepl.support.context import Namespace
 from lepl.matchers.operators import ADD, AND, OR, APPLY, APPLY_RAW, NOT, \
     KARGS, RAISE, REPEAT, FIRST, MAP, RepeatWrapper, REDUCE

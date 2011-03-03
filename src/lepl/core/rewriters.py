@@ -120,10 +120,13 @@ def clone(node, args, kargs):
     return copy
 
 
-def copy_standard_attributes(node, copy):
+def copy_standard_attributes(node, copy, transform=True):
     '''
     Handle the additional attributes that matchers may have.
     '''
+    from lepl.matchers.support import Transformable
+    if isinstance(node, Transformable) and transform:
+        copy.wrapper = node.wrapper
     if isinstance(node, FactoryMatcher):
         copy.factory = node.factory
 

@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-Show how line aware alphabet can be used.
+Show how line aware parsing can be used.
 '''
 
 #@PydevCodeAnalysisIgnore

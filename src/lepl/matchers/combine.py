@@ -42,12 +42,10 @@ from abc import ABCMeta
 from collections import deque
 from operator import __add__
 
-from lepl.core.parser import tagged
-from lepl.core.manager import _GeneratorManager
 from lepl.matchers.core import Literal
 from lepl.matchers.matcher import add_children
 from lepl.matchers.support import coerce_, sequence_matcher_factory, \
-    trampoline_matcher_factory, to, OperatorMatcher
+    trampoline_matcher_factory, to
 from lepl.matchers.transform import Transformable
 from lepl.support.lib import lmap, fmt, document
 

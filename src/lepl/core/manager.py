@@ -114,10 +114,11 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
             # this sets the attribute on everything, but most instances simply
             # don't care... (we can be "inefficient" here as the monitor is
             # only used when memory use is more important than cpu)
-            generator.matcher.generator_manager_queue_len = \
-                                            self.__initial_queue_len
-            self._debug(fmt('Clipping search depth to {0}', 
-                            self.__initial_queue_len))
+            if self.__initial_queue_len:
+                generator.matcher.generator_manager_queue_len = \
+                                                self.__initial_queue_len
+                self._debug(fmt('Clipping search depth to {0}', 
+                                self.__initial_queue_len))
         else:
             self.__known[generator].push()
             
@@ -151,12 +152,8 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         candidate = heappushpop(self.__queue, reference)
         # clean out any unused references and make sure ordering correct
         while candidate:
-            if candidate.deletable(self.epoch):
-                self._debug(fmt('Removing {0}', candidate))
-                generator = candidate.generator
-                if generator:
-                    del self.__known[generator]
-                candidate.close()
+            candidate.deletable(self.epoch)
+            if candidate.gced:
                 candidate = heappop(self.__queue)
             else:
                 heappush(self.__queue, candidate)

@@ -1,3 +1,4 @@
+from lepl.matchers.combine import DepthNoTrampoline, AndNoTrampoline
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -394,12 +395,14 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
     map_ = matcher_map({Any: clone_any, 
                         Or: clone_or, 
                         And: clone_and,
+                        AndNoTrampoline: clone_and,
                         Transform: clone_transform,
                         Literal: clone_literal,
                         Regexp: clone_regexp,
                         NfaRegexp: clone_regexp,
                         DfaRegexp: clone_regexp,
                         DepthFirst: clone_dfs,
+                        DepthNoTrampoline: clone_dfs,
                         FunctionWrapper: clone_wrapper,
                         SequenceWrapper: clone_wrapper,
                         TrampolineWrapper: clone_wrapper,

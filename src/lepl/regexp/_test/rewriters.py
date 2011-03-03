@@ -130,12 +130,14 @@ class RewriteTest(TestCase):
         
         rx.config.clear().compile_to_nfa(force=True)
         matcher = rx.get_match_sequence()
+        print(matcher.matcher.tree())
         results = list(matcher('abcd'))
         assert results == [(['abce'], (3, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
         rx.config.clear().compile_to_nfa(force=True).compose_transforms()
         matcher = rx.get_match_sequence()
+        print(matcher.matcher.tree())
         results = list(matcher('abcd'))
         assert results == [(['abce'], (3, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
@@ -390,6 +392,7 @@ class WordBugTest(TestCase):
     '''
     
     def test_word(self):
+        #basicConfig(level=DEBUG)
         rx = Word()
         
         rx.config.compile_to_nfa().no_full_first_match()
