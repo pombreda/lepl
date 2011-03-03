@@ -89,12 +89,7 @@ if __name__ == '__main__':
             total = Digits()[:] & Eos()
         
         # configure for reduced memory use
-        # all the options below are needed:
-        # - manage() reduces stack use (less backtracking information)
-        # - no_direct_wval() makes sure matchers are not combined (which gives
-        #   more scope for the manage() to change the behaviour)
-        # - no_full_first_match() avoids storig the input for any error message 
-        total.config.manage().no_direct_eval().no_memoize().no_full_first_match()
+        total.config.low_memory()
             
         return total
     

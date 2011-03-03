@@ -525,9 +525,17 @@ class ConfigBuilder(object):
         from lepl.core.trace import TraceResults
         return self.add_monitor(TraceResults(enabled))
     
-    def manage(self, queue_len=100):
+    def low_memory(self, queue_len=100):
         '''
-        Add a monitor to manage resources.  See `GeneratorManager()`.
+        Reduce memory use (at the expense of backtracking).
+        
+        This will:
+        - Add a monitor to manage resources.  See `GeneratorManager()`.
+        - Disable direct evaluation (more trampolining gives more scope
+          for removing generators)
+        - Disable the full first match error (which requires a copy of the
+          input for the error message)
+        - Disable memoisation (which would keep input in memory)
         
         This reduces memory usage, but makes the parser less reliable.
         Usually a value like 100 (the default) for the queue length will make 
@@ -538,7 +546,11 @@ class ConfigBuilder(object):
         stored values).
         '''
         from lepl.core.manager import GeneratorManager
-        return self.add_monitor(GeneratorManager(queue_len))
+        self.add_monitor(GeneratorManager(queue_len))
+        self.no_direct_eval()
+        self.no_memoize()
+        self.no_full_first_match()
+        return self
     
     def record_deepest(self, n_before=6, n_results_after=2, n_done_after=2):
         '''
