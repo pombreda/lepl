@@ -64,7 +64,7 @@ class PithonTest(TestCase):
         block += CLine((function | statement) & introduce) & Block(line[1:])
         
         program = (line[:] & Eos())
-        program.config.blocks(block_policy=rightmost).trace(True)
+        program.config.blocks(block_policy=rightmost).trace_stack(True)
         return program.get_parse_string()
     
     def test_blocks(self):

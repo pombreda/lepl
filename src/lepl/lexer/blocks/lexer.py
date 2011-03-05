@@ -81,86 +81,45 @@ class _OffsideLexer(Lexer):
         else:
             self._tab = None
 
-    @tagged
-    def _match(self, in_stream):
+    def _tokens(self, stream, max):
         '''
-        Implement matching - pass token stream to tokens.
+        Generate tokens, on demand.
         '''
-        def tokens():
-            '''
-            Return a sequence of tokens.
-            '''
-            
-#            known = {}
-#            def check(result):
-#                (value, stream) = result
-#                key = s_key(stream)
-#                if key in known:
-#                    self._debug(fmt('Collision {0}/{1} {2}/{3} {4}/{5}', 
-#                                    value, known[key][0], 
-#                                    s_debug(known[key][1]), 
-#                                    s_delta(known[key][1]), s_debug(stream), 
-#                                    s_delta(stream)))
-#                    raise OffsideError()
-#                else:
-#                    known[key] = result
-#                    self._debug(fmt('OK {0} {1} {2} {3}', 
-#                                    value, s_debug(stream), hash(key), 
-#                                    s_delta(stream)))
-#                return result
-            
-            id_ = s_id(in_stream)
-            stream = in_stream
-            try:
-                while not s_empty(stream):
-                    
-                    # this section differs from token lexer
-                    (line, next_stream) = s_line(stream, False)
-                    line_stream = s_stream(stream, line)
+        id_ = s_id(stream)
+        try:
+            while not s_empty(stream):
+                
+                # this section differs from token lexer
+                (line, next_stream) = s_line(stream, False)
+                line_stream = s_stream(stream, line)
+                try:
+                    (terminals, size, _) = \
+                                self.s_regexp.size_match(line_stream)
+                except TypeError:
+                    (terminals, size) = ('<no initial space>', 0)
+                (indent, next_line_stream) = s_next(line_stream, count=size)
+                if '\t' in indent and self._tab is not None:
+                    indent = indent.replace('\t', self._tab)
+                yield ((INDENT,), 
+                       s_stream(line_stream, indent, id_=id_^hash(INDENT), max=max))
+                line_stream = next_line_stream
+                
+                # as line lexer
+                while not s_empty(line_stream):
                     try:
-                        (terminals, size, _) = \
-                                    self.s_regexp.size_match(line_stream)
+                        (terminals, match, next_line_stream) = \
+                                        self.t_regexp.match(line_stream)
+                        yield (terminals, s_stream(line_stream, match, max=max))
                     except TypeError:
-                        (terminals, size) = ('<no initial space>', 0)
-                    (indent, next_line_stream) = s_next(line_stream, count=size)
-                    if '\t' in indent and self._tab is not None:
-                        indent = indent.replace('\t', self._tab)
-#                    yield check(((INDENT,), 
-#                                 s_stream(line_stream, indent, 
-#                                          id_=id_^hash(INDENT))))
-                    yield ((INDENT,), 
-                           s_stream(line_stream, indent, id_=id_^hash(INDENT)))
+                        (terminals, _size, next_line_stream) = \
+                                    self.s_regexp.size_match(line_stream)
                     line_stream = next_line_stream
                     
-                    # from here on, as line lexer (share?)
-                    while not s_empty(line_stream):
-                        try:
-                            (terminals, match, next_line_stream) = \
-                                            self.t_regexp.match(line_stream)
-#                            self._debug(fmt('Token: {0!r} {1!r} {2!s} {3}',
-#                                               terminals, match, 
-#                                               s_debug(line_stream),
-#                                               s_delta(line_stream)))
-#                            yield check((terminals, s_stream(line_stream, 
-#                                         match)))
-                            yield (terminals, s_stream(line_stream, match))
-                        except TypeError:
-                            (terminals, _size, next_line_stream) = \
-                                        self.s_regexp.size_match(line_stream)
-#                            self._debug(fmt('Space: {0!r} {1!s}',
-#                                            terminals, s_debug(line_stream)))
-                        line_stream = next_line_stream
-                        
-                    # differs again
-#                    yield check(((END,), 
-#                                 s_stream(line_stream, '', id_=id_^hash(END))))
-                    yield ((END,), s_stream(line_stream, '', id_=id_^hash(END)))
-                    stream = next_stream
-            except TypeError:
-                raise RuntimeLexerError(
-                    s_fmt(stream, 
-                          'No token for {rest} at {location} of {text}.'))
-        token_stream = s_factory(in_stream).to_token(tokens(), in_stream)
-        generator = self.matcher._match(token_stream)
-        while True:
-            yield (yield generator)
+                # differs again
+                yield ((END,), s_stream(line_stream, '', id_=id_^hash(END), max=max))
+                stream = next_stream
+                
+        except TypeError:
+            raise RuntimeLexerError(
+                s_fmt(stream, 
+                      'No token for {rest} at {location} of {text}.'))

@@ -184,7 +184,7 @@ class TokenRewriteTest(TestCase):
         expr   += factor & (addsub & factor)[:]         > Expression
         line    = expr & Eos()
         
-        line.config.trace(True).lexer()
+        line.config.trace_stack(True).lexer()
         parser = line.get_parse_string()
         results = str26(parser('1 + 2*sin(3+ 4) - 5')[0])
         assert results == """Expression

@@ -218,11 +218,12 @@ class IterableHelper(
     def len(self, state):
         raise TypeError
         
-    def stream(self, state, value, id_=None):
+    def stream(self, state, value, id_=None, max=None):
         (cons, line_stream) = state
         id_ = self.id if id_ is None else id_
+        max = max if max else self.max
         next_line_stream = \
-            self.factory(value, id=id_, factory=self.factory, max=self.max, 
+            self.factory(value, id=id_, factory=self.factory, max=max, 
                          global_kargs=self.global_kargs, 
                          delta=s_delta(line_stream))
         return ((cons, next_line_stream), self)

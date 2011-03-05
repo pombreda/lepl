@@ -105,13 +105,6 @@ def name(name, show_failures=True, width=80, out=stderr):
     def namer(stream_in, matcher):
         try:
             (result, stream_out) = matcher()
-            stream = _adjust(fmt('stream = {rest}', **s_kargs(stream_out)), 
-                             right) 
-            str_name = _adjust(name, left // 4, True, True)
-            match = _adjust(fmt(' {0} = {1}', str_name, result), left, True)
-            # Python bug #4618
-            print(match + ' ' + stream, file=out, end=str('\n'))
-            return (result, stream_out)
         except StopIteration:
             if show_failures:
                 stream = \
@@ -122,7 +115,23 @@ def name(name, show_failures=True, width=80, out=stderr):
                 # Python bug #4618
                 print(match + ' ' + stream, file=out, end=str('\n'))
             raise StopIteration
-        
+        else:
+            try:
+                try:
+                    rest = fmt('{rest}', **s_kargs(stream_out))
+                except StopIteration:
+                    rest = '<EOS>'
+                stream = _adjust(fmt('stream = {0}', rest), right) 
+                str_name = _adjust(name, left // 4, True, True)
+                match = _adjust(fmt(' {0} = {1}', str_name, result), left, True)
+                # Python bug #4618
+                print(match + ' ' + stream, file=out, end=str('\n'))
+                return (result, stream_out)
+            except Exception as e:
+                print('Error in trace', file=out, end=str('\n'))
+                print(repr(e), file=out, end=str('\n'))
+                return (result, stream_out)
+                
     return namer
 
 

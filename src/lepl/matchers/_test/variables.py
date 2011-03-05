@@ -71,8 +71,8 @@ foo (4) = []
         repr(bar)
         list(bar.match('abc'))
         text = output.getvalue()
-        assert_str(text, '''         bar = ['a']                            stream = 1:'b'
-         bar failed                             stream = 0:'a'
+        assert_str(text, '''         bar = ['a']                            stream = 'bc'
+         bar failed                             stream = 'abc'
 ''')
 
         

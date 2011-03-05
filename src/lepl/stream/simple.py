@@ -190,10 +190,11 @@ class SequenceHelper(BaseHelper):
     def len(self, state):
         return len(self._sequence) - state
     
-    def stream(self, state, value, id_=None):
+    def stream(self, state, value, id_=None, max=None):
         id_ = self.id if id_ is None else id_
+        max = max if max else self.max
         return self.factory(value, id=id_, factory=self.factory, 
-                            max=self.max, global_kargs=self.global_kargs,
+                            max=max, global_kargs=self.global_kargs,
                             delta=self.delta(state))
         
     def deepest(self):

@@ -54,7 +54,7 @@ class ResourceExample(Example):
     def test_limit(self):
         expr = Literal('*')[:,...][2] & Eos()
         # clear is here because the original test didn't have such a complex config
-        expr.config.clear().manage(8) # changed from 3 in lepl 5
+        expr.config.clear().low_memory(8) # changed from 3 in lepl 5
         matcher = expr.get_parse_sequence_all()
 #        print(matcher.matcher.tree())
         results = matcher('*' * 4)

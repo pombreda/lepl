@@ -67,7 +67,7 @@ class LimitedDepthTest(LogMixin, TestCase):
         for index in range(len(results)):
             queue_len = index * multiplier
             expr = Literal('*')[::direcn,...][n_match] & Eos()
-            expr.config.clear().manage(queue_len)
+            expr.config.clear().low_memory(queue_len)
             matcher = expr.get_match_string()
             self.assert_count(matcher, queue_len, index, results[index])
             
@@ -79,7 +79,7 @@ class LimitedDepthTest(LogMixin, TestCase):
     def test_single(self):
         #basicConfig(level=DEBUG)
         expr = Literal('*')[:,...][3]
-        expr.config.clear().manage(5)
+        expr.config.clear().low_memory(5)
         match = expr.get_match_string()('*' * 4)
         list(match)
         

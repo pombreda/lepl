@@ -152,7 +152,7 @@ class Tutorial2Example(Example):
 (self.run_breadth,
 """[['a', 'a'], ['a', 'a', 'a'], ['a', 'a', 'a', 'a']]"""),
 (self.run_regexp_groups,
-"""['bb', 'dddd']"""),
+"""[['bb', 'dddd']]"""),
 (lambda: self.run_brackets('12 + 30'),
 """[42.0]"""),
 (lambda: self.run_brackets('12+30'),
@@ -166,7 +166,7 @@ class Tutorial2Example(Example):
 (self.run_regexp,
 """[['aaa']]"""),
 (self.run_token_1,
-"""FullFirstMatchException: The match failed in <string> at '' (line 1, character 6).
+"""FullFirstMatchException: The match failed in <string> at '+30' (line 1, character 3).
 """),
 (lambda: self.run_token_2('12+30'),
 """[42.0]"""),

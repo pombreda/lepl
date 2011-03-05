@@ -97,37 +97,38 @@ class Lexer(NamespaceMixin, BaseMatcher):
         for token in self.tokens:
             if token.id_ == id_:
                 return token
+            
+    def _tokens(self, stream, max):
+        '''
+        Generate tokens, on demand.
+        '''
+        try:
+            while not s_empty(stream):
+                try:
+                    (terminals, match, next_stream) = \
+                                        self.t_regexp.match(stream)
+                    self._debug(fmt('Token: {0!r} {1!r} {2!s}',
+                                    terminals, match, s_debug(stream)))
+                    yield (terminals, s_stream(stream, match, max=max))
+                except TypeError:
+                    (terminals, _size, next_stream) = \
+                                        self.s_regexp.size_match(stream)
+                    self._debug(fmt('Space: {0!r} {1!s}',
+                                    terminals, s_debug(stream)))
+                stream = next_stream
+        except TypeError:
+            raise RuntimeLexerError(
+                s_fmt(stream, 
+                      'No token for {rest} at {location} of {text}.'))
         
     @tagged
     def _match(self, in_stream):
         '''
         Implement matching - pass token stream to tokens.
         '''
-        def tokens(stream, max):
-            '''
-            Generate tokens, on demand.
-            '''
-            try:
-                while not s_empty(stream):
-                    try:
-                        (terminals, match, next_stream) = \
-                                            self.t_regexp.match(stream)
-                        self._debug(fmt('Token: {0!r} {1!r} {2!s}',
-                                        terminals, match, s_debug(stream)))
-                        yield (terminals, s_stream(stream, match, max=max))
-                    except TypeError:
-                        (terminals, _size, next_stream) = \
-                                            self.s_regexp.size_match(stream)
-                        self._debug(fmt('Space: {0!r} {1!s}',
-                                        terminals, s_debug(stream)))
-                    stream = next_stream
-            except TypeError:
-                raise RuntimeLexerError(
-                    s_fmt(stream, 
-                          'No token for {rest} at {location} of {text}.'))
         (max, clean_stream) = s_new_max(in_stream, MutableMaxDepth())
-        token_stream = s_factory(in_stream).to_token(iter(list(tokens(clean_stream, max))), 
-                                                     in_stream)
+        token_stream = s_factory(in_stream).to_token(
+                            self._tokens(clean_stream, max), in_stream)
         in_stream = None
         generator = self.matcher._match(token_stream)
         while True:

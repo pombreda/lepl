@@ -86,7 +86,7 @@ class PhoneExample(Example):
         matcher.config.clear().flatten()
         parser = matcher.get_parse_string()
         #print(repr(parser.matcher))
-        matcher.config.clear().flatten().compose_transforms().trace(True)
+        matcher.config.clear().flatten().compose_transforms().trace_stack(True)
         parser = matcher.get_parse_string()
         #print(repr(parser.matcher))
         self.examples([(lambda: parser('andrew, 3333253'),

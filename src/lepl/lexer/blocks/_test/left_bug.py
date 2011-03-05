@@ -51,7 +51,7 @@ class LeftBugTest(TestCase):
         call = (expr1 & word) > List
         expr1 += (call | Empty() | word)
         program = Trace(expr1 & Eos())
-        program.config.trace()
+        program.config.trace_stack()
         parser = program.get_parse()
         #print(parser.matcher.tree())
         parsed = parser("abc")
@@ -70,7 +70,7 @@ class LeftBugTest(TestCase):
         call = (expr1 & word) > List
         expr1 += (call | Empty() | word)
         program = Trace(expr1 & Eos())
-        program.config.trace()
+        program.config.trace_stack()
         parser = program.get_parse()
         #print(parser.matcher.tree())
         parsed = parser("a b c")

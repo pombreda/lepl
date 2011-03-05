@@ -52,37 +52,36 @@ class LineLexer(Lexer):
     An alternative lexer that adds SOL and EOL tokens.
     '''
     
-    @tagged
-    def _match(self, in_stream):
+    def _tokens(self, stream, max):
         '''
-        Implement matching - pass token stream to tokens.
+        Generate tokens, on demand.
         '''
-        def tokens():
-            id_ = s_id(in_stream)
-            stream = in_stream
-            try:
-                while not s_empty(stream):
-                    (line, next_stream) = s_line(stream, False)
-                    line_stream = s_stream(stream, line)
-                    yield ((START,), s_stream(line_stream, '', id_=id_^hash(START)))
-                    while not s_empty(line_stream):
-                        try:
-                            (terminals, match, next_line_stream) = self.t_regexp.match(line_stream)
-                            self._debug(fmt('Token: {0!r} {1!r} {2!s}',
-                                               terminals, match, s_debug(line_stream)))
-                            yield (terminals, s_stream(line_stream, match))
-                        except TypeError:
-                            (terminals, _size, next_line_stream) = self.s_regexp.size_match(line_stream)
-                            self._debug(fmt('Space: {0!r} {1!s}',
-                                               terminals, s_debug(line_stream)))
-                        line_stream = next_line_stream
-                    yield ((END,), s_stream(line_stream, '', id_=id_^hash(END)))
-                    stream = next_stream
-            except TypeError:
-                raise RuntimeLexerError(
-                    s_fmt(stream, 
-                             'No token for {rest} at {location} of {text}.'))
-        token_stream = s_factory(in_stream).to_token(tokens(), in_stream)
-        generator = self.matcher._match(token_stream)
-        while True:
-            yield (yield generator)
+        id_ = s_id(stream)
+        try:
+            while not s_empty(stream):
+                
+                (line, next_stream) = s_line(stream, False)
+                line_stream = s_stream(stream, line)
+                yield ((START,), s_stream(line_stream, '', id_=id_^hash(START)))
+                    
+                while not s_empty(line_stream):
+                    try:
+                        (terminals, match, next_line_stream) = \
+                                            self.t_regexp.match(line_stream)
+                        self._debug(fmt('Token: {0!r} {1!r} {2!s}',
+                                        terminals, match, s_debug(line_stream)))
+                        yield (terminals, s_stream(line_stream, match, max=max))
+                    except TypeError:
+                        (terminals, _size, next_line_stream) = \
+                                            self.s_regexp.size_match(line_stream)
+                        self._debug(fmt('Space: {0!r} {1!s}',
+                                        terminals, s_debug(line_stream)))
+                    line_stream = next_line_stream
+                    
+                yield ((END,), s_stream(line_stream, '', id_=id_^hash(END)))
+                stream = next_stream
+                
+        except TypeError:
+            raise RuntimeLexerError(
+                s_fmt(stream, 
+                      'No token for {rest} at {location} of {text}.'))

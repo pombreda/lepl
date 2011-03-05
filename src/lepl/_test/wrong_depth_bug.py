@@ -40,7 +40,7 @@ from lepl import *
 class DepthTest(TestCase):
     
     def test_depth(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         value = Token(Real())
         symbol = Token('[^0-9a-zA-Z \t\r\n]')
         number = value >> float
@@ -52,4 +52,3 @@ class DepthTest(TestCase):
             msg = str(e)
             assert '+30' in msg, msg
             assert 'character 3' in msg, msg
-            

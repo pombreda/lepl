@@ -91,7 +91,7 @@ class LineTest(TestCase):
         with a single monster token.
         '''
         line = Indent() & Token(Any()) & LineEnd()
-        line.config.blocks(tabsize=8, block_start=NO_BLOCKS, block_policy=0).trace(True)
+        line.config.blocks(tabsize=8, block_start=NO_BLOCKS, block_policy=0).trace_stack(True)
         result = line.parse('a')
         assert result == ['', 'a'], result
         result = line.parse('\ta')

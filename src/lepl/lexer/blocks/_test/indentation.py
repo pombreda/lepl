@@ -86,7 +86,7 @@ class TabTest(TestCase):
         line2 = indent(' ') & word('onespace') & ~LineEnd()
         line3 = indent('     ') & word('spaceandtab') & ~LineEnd()
         expr = line1 & line2 & line3
-        expr.config.blocks(tabsize=4, block_start=NO_BLOCKS).trace(True)
+        expr.config.blocks(tabsize=4, block_start=NO_BLOCKS).trace_stack(True)
         parser = expr.get_parse_string()
         result = parser(text)
         #print(result)

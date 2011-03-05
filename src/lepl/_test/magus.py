@@ -72,7 +72,7 @@ class MagusTest(TestCase):
         dotted_name = function & Eos()
 
         dotted_name.config.clear().flatten().compose_transforms().auto_memoize()
-        dotted_name.config.trace(False)
+        dotted_name.config.trace_stack(False)
         parser = dotted_name.get_parse_string()
         parser("1func()")
         

@@ -43,14 +43,16 @@ class RegexpTest(TestCase):
         matcher = Regexp('a*(b*)c*(d*)e*')
         matcher.config.clear()
         p = matcher.get_parse()
-        print('----------')
-        print(p.matcher.tree())
-        print('----------')
+        t = p.matcher.tree()
+        assert t == """FunctionWrapper<Regexp:<>>
+ `- 'a*(b*)c*(d*)e*'""", t
         matcher.config.default()
-        print('----------')
         p = matcher.get_parse()
-        print('----------')
-        print(p.matcher.tree())
+        t = p.matcher.tree()
+        assert t == """TrampolineWrapper<FullFirstMatch>
+ +- FunctionWrapper<Regexp:<>>
+ |   `- 'a*(b*)c*(d*)e*'
+ `- True""", t
         result = p('abbcccddddeeeeee')
         assert result == ['bb', 'dddd'], result
         
