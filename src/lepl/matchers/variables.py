@@ -37,7 +37,7 @@ from __future__ import generators, print_function
 from contextlib import contextmanager
 from sys import stderr, _getframe
 
-from lepl.stream.core import s_debug, s_line
+from lepl.stream.core import s_debug, s_line, s_kargs
 from lepl.matchers.support import trampoline_matcher_factory
 from lepl.support.lib import fmt, str
 
@@ -105,7 +105,8 @@ def name(name, show_failures=True, width=80, out=stderr):
     def namer(stream_in, matcher):
         try:
             (result, stream_out) = matcher()
-            stream = _adjust(fmt('stream = {0}', s_debug(stream_out)), right) 
+            stream = _adjust(fmt('stream = {rest}', **s_kargs(stream_out)), 
+                             right) 
             str_name = _adjust(name, left // 4, True, True)
             match = _adjust(fmt(' {0} = {1}', str_name, result), left, True)
             # Python bug #4618
@@ -113,7 +114,9 @@ def name(name, show_failures=True, width=80, out=stderr):
             return (result, stream_out)
         except StopIteration:
             if show_failures:
-                stream = _adjust(fmt('stream = {0}', s_debug(stream_in)), right) 
+                stream = \
+                    _adjust(fmt('stream = {rest}', **s_kargs(stream_in)), 
+                            right) 
                 str_name = _adjust(name, left // 4, True, True)
                 match = _adjust(fmt(' {0} failed', str_name), left, True)
                 # Python bug #4618
@@ -125,24 +128,34 @@ def name(name, show_failures=True, width=80, out=stderr):
 
 @contextmanager
 def TraceVariables(on=True, show_failures=True, width=80, out=stderr):
+    '''
+    Add this as a context (`with TraceVariables():`) and you will see 
+    debug logging indicating how variables are bound during matching.
+    '''
     if on:
         before = _getframe(2).f_locals.copy()
     yield None
     if on:
         after = _getframe(2).f_locals
-        warned = False
+        warned_1, warned_2 = False, False
         for key in after:
             value = after[key]
             if key not in before or value != before[key]:
                 try:
-                    value.wrapper.append(name(key, show_failures, width, out))
+                    try:
+                        value.wrapper.append(name(key, show_failures, width, out))
+                    except AttributeError:
+                        value.trace_variables = name(key, show_failures, width, out)
+                        if not warned_1:
+                            print('Use default config or add config.'
+                                  'trace_variables().', end=str('\n'))
+                            warned_1 = True
                 except:
-                    if not warned:
-                        # Python bug #4618
+                    raise
+                    if not warned_2:
                         print('Unfortunately the following matchers cannot '
                               'be tracked:', end=str('\n'))
-                        warned = True
-                    # Python bug #4618
+                        warned_2 = True
                     print(fmt('  {0} = {1}', key, value), end=str('\n'))
                     
 

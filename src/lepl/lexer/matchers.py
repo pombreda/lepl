@@ -36,7 +36,7 @@ expressions.
 
 from abc import ABCMeta
 
-from lepl.stream.core import s_empty, s_line, s_next
+from lepl.stream.core import s_empty, s_line, s_next, s_len
 from lepl.lexer.support import LexerError
 from lepl.lexer.operators import TOKENS, TokenNamespace
 from lepl.lexer.stream import FilteredTokenHelper
@@ -181,8 +181,8 @@ class BaseToken(OperatorMatcher, NoMemo):
         ((tokens, line_stream), next_stream) = s_next(stream)
         if self.id_ in tokens:
             if self.content is None:
-                # result contains all data
-                (line, _) = s_line(line_stream, True)
+                # result contains all data (use s_next not s_line to set max)
+                (line, _) = s_next(line_stream, count=s_len(line_stream))
                 yield ([line], next_stream)
             else:
                 generator = self.content._match(line_stream)

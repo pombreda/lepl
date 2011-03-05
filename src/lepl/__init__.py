@@ -113,10 +113,10 @@ Running this gives the result::
 from lepl.contrib.matchers import SmartSeparator2
 from lepl.core.config import Configuration, ConfigBuilder
 from lepl.core.manager import GeneratorManager
-from lepl.core.trace import RecordDeepest, TraceResults
+from lepl.core.trace import RecordDeepest, TraceStack
 from lepl.matchers.combine import And, Or, First, Difference, Limit
 from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
-    Lookahead,  Regexp
+    Lookahead, Regexp
 from lepl.matchers.complex import PostMatch, Columns
 from lepl.matchers.monitor import Trace
 from lepl.matchers.derived import Apply, args, KApply, Join, \
@@ -293,7 +293,7 @@ __all__ = [
         
         # lepl.core.trace
         'RecordDeepest',
-        'TraceResults',
+        'TraceStack',
         
         # lepl.core.memo,
         'RMemo',
@@ -350,7 +350,7 @@ __all__ = [
         'to_right'
        ]
 
-__version__ = '4.4.0'
+__version__ = '5.0.0'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

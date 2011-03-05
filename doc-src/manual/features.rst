@@ -15,7 +15,7 @@ left--recursive grammars, etc.
 * Friendly syntax using Python's :ref:`operators <operators>` allows grammars
   to be defined in a declarative style close to BNF.
 
-* Optional, integrated :ref:`Lexer <lexer>` simplifies handling whitespace.
+* Optional, integrated :ref:`lexer <lexer>` simplifies handling whitespace.
 
 * Built-in :ref:`AST support <trees>` with support for iteration, traversal
   and re--writing.
@@ -46,6 +46,6 @@ left--recursive grammars, etc.
 * Support for the ":ref:`offside rule <offside>`" (significant indentation
   levels) when using the lexer.
 
-* Pluggable trace and resource management, including :ref:`deepest match
+* Trace and resource management, including :ref:`deepest match
   <deepest_match>` diagnostics and the ability to :ref:`limit backtracking
   <resources>`.

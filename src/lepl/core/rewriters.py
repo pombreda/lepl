@@ -52,6 +52,7 @@ class Rewriter(LogMixin):
     
     # ordering
     (SET_ARGUMENTS,
+     TRACE_VARIABLES,
      COMPOSE_TRANSFORMS,
      FLATTEN,
      COMPILE_REGEXP,
@@ -59,7 +60,7 @@ class Rewriter(LogMixin):
      LEXER,
      DIRECT_EVALUATION,
      MEMOIZE,
-     FULL_FIRST_MATCH) = range(10, 100, 10)
+     FULL_FIRST_MATCH) = range(10, 110, 10)
        
     def __init__(self, order_, name=None, exclusive=True):
         super(Rewriter, self).__init__()
@@ -277,6 +278,31 @@ class ComposeTransforms(Rewriter):
             if isinstance(copy, Transform) \
                     and isinstance(copy.matcher, Transformable):
                 return copy.matcher.compose(copy.wrapper)
+            else:
+                return copy
+        return graph.postorder(DelayedClone(new_clone), Matcher)
+
+
+class TraceVariables(Rewriter):
+    '''
+    A rewriter needed for TraceVariables which adds the trace_variables
+    attribute to untransformable matchers that need a transform.
+    '''
+
+    def __init__(self):
+        super(TraceVariables, self).__init__(Rewriter.TRACE_VARIABLES)
+        
+    def __call__(self, graph):
+        from lepl.matchers.transform import Transform
+        def new_clone(node, args, kargs):
+            '''
+            The joining cloner.
+            '''
+            # must always clone to expose the matcher (which was cloned 
+            # earlier - it is not node.matcher)
+            copy = clone(node, args, kargs)
+            if hasattr(node, 'trace_variables') and node.trace_variables:
+                return Transform(copy, node.trace_variables)
             else:
                 return copy
         return graph.postorder(DelayedClone(new_clone), Matcher)

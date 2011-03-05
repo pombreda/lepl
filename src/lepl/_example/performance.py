@@ -88,7 +88,7 @@ def full_memo():
 
 def slow(): 
     matcher = default()
-    matcher.config.clear().trace().low_memory().auto_memoize(full=True)
+    matcher.config.clear().trace_stack().low_memory().auto_memoize(full=True)
     return matcher
 
 def nfa_regexp(): 

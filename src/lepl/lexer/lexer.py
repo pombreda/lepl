@@ -32,7 +32,8 @@ from lepl.support.context import NamespaceMixin
 from lepl.matchers.support import BaseMatcher
 from lepl.lexer.operators import TOKENS, TokenNamespace
 from lepl.core.parser import tagged
-from lepl.stream.core import s_empty, s_debug, s_stream, s_fmt, s_factory
+from lepl.stream.core import s_empty, s_debug, s_stream, s_fmt, s_factory, \
+    s_max, MutableMaxDepth, s_new_max
 from lepl.lexer.support import RuntimeLexerError
 from lepl.regexp.core import Compiler
 
@@ -102,11 +103,10 @@ class Lexer(NamespaceMixin, BaseMatcher):
         '''
         Implement matching - pass token stream to tokens.
         '''
-        def tokens():
+        def tokens(stream, max):
             '''
             Generate tokens, on demand.
             '''
-            stream = in_stream
             try:
                 while not s_empty(stream):
                     try:
@@ -114,7 +114,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
                                             self.t_regexp.match(stream)
                         self._debug(fmt('Token: {0!r} {1!r} {2!s}',
                                         terminals, match, s_debug(stream)))
-                        yield (terminals, s_stream(stream, match))
+                        yield (terminals, s_stream(stream, match, max=max))
                     except TypeError:
                         (terminals, _size, next_stream) = \
                                             self.s_regexp.size_match(stream)
@@ -124,8 +124,11 @@ class Lexer(NamespaceMixin, BaseMatcher):
             except TypeError:
                 raise RuntimeLexerError(
                     s_fmt(stream, 
-                             'No token for {rest} at {location} of {text}.'))
-        token_stream = s_factory(in_stream).to_token(tokens(), in_stream)
+                          'No token for {rest} at {location} of {text}.'))
+        (max, clean_stream) = s_new_max(in_stream, MutableMaxDepth())
+        token_stream = s_factory(in_stream).to_token(iter(list(tokens(clean_stream, max))), 
+                                                     in_stream)
+        in_stream = None
         generator = self.matcher._match(token_stream)
         while True:
             yield (yield generator)

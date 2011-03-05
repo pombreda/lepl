@@ -209,12 +209,28 @@ class SequenceHelper(BaseHelper):
         offset = state + self._delta[OFFSET]
         return (offset, 1, offset+1)
     
+    def new_max(self, state, max):
+        return (self.max,
+                (state, type(self)(self._sequence, id=self.id, 
+                                   factory=self.factory, max=max,
+                                   global_kargs=self.global_kargs, 
+                                   delta=self._delta)))
+
+    
     
 class StringHelper(SequenceHelper):
     '''
     String-specific fmtting and location.
     '''
     
+    def __init__(self, sequence, id=None, factory=None, max=None, 
+                 global_kargs=None, delta=None):
+        # avoid duplicating processing on known strings
+        if id is None:
+            id = hash(sequence)
+        super(StringHelper, self).__init__(sequence, id=id, factory=factory, 
+                            max=max, global_kargs=global_kargs, delta=delta)
+
     def _fmt(self, sequence, offset, maxlen=60, left="'", right="'", index=True):
         return super(StringHelper, self)._fmt(sequence, offset, maxlen=maxlen, 
                                               left=left, right=right, index=index)
@@ -266,16 +282,17 @@ class StringHelper(SequenceHelper):
         else:
             raise StopIteration
 
-    def stream(self, state, value, id_=None):
+    def stream(self, state, value, id_=None, max=None):
         id_ = self.id if id_ is None else id_
+        max = max if max else self.max
         return self.factory(value,  id=id_, factory=self.factory, 
-                            max=self.max, global_kargs=self.global_kargs, 
+                            max=max, global_kargs=self.global_kargs, 
                             delta=self.delta(state))
         
     
 class ListHelper(SequenceHelper):
     '''
-    List-specific fmtting
+    List-specific fprmatting
     '''
     
     def _fmt(self, sequence, offset, maxlen=60, left="[", right="]", index=True):

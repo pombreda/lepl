@@ -33,8 +33,16 @@ Tests for the lepl.core.config module.
 
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+    
 
-from lepl.matchers.core import Any
+from lepl.matchers.variables import TraceVariables
+from lepl.matchers.operators import DroppedSpace
+from lepl.matchers.derived import Drop, Word, String
+from lepl.matchers.core import Any, Lookahead
 from lepl._test.base import assert_str
 from lepl.stream.maxdepth import FullFirstMatchException
 from lepl.regexp.core import RegexpError
@@ -117,3 +125,39 @@ class BugTest(TestCase):
         matcher.config.clear()
         result = list(matcher.match_list(['b']))
         assert result == [], result
+
+
+class TraceVariablesTest(TestCase):
+    def test_trace(self):
+        buffer = StringIO()
+        with TraceVariables(out=buffer):
+            word = ~Lookahead('OR') & Word()
+            phrase = String()
+            with DroppedSpace():
+                text = (phrase | word)[1:] > list
+                query = text[:, Drop('OR')]
+        expected = '''      phrase failed                             stream = 'spicy meatballs OR...
+        word = ['spicy']                        stream = ' meatballs OR "el ...
+      phrase failed                             stream = 'meatballs OR "el b...
+        word = ['meatballs']                    stream = ' OR "el bulli rest...
+      phrase failed                             stream = 'OR "el bulli resta...
+        word failed                             stream = 'OR "el bulli resta...
+      phrase failed                             stream = ' OR "el bulli rest...
+        word failed                             stream = ' OR "el bulli rest...
+        text = [['spicy', 'meatballs']]         stream = ' OR "el bulli rest...
+      phrase = ['el bulli restaurant']          stream = ''
+      phrase failed                             stream = ''
+        word failed                             stream = ''
+        text = [['el bulli restaurant']]        stream = ''
+       query = [['spicy', 'meatballs'], ['el... stream = ''
+'''
+        query.config.auto_memoize(full=True)
+        query.parse('spicy meatballs OR "el bulli restaurant"')
+        trace = buffer.getvalue()
+        assert trace == expected, trace
+        # check caching works
+        query.parse('spicy meatballs OR "el bulli restaurant"')
+        trace = buffer.getvalue()
+        assert trace == expected, trace
+
+        

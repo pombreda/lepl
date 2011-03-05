@@ -1,5 +1,5 @@
-Python 3.1 (r31:73572, Oct 24 2009, 05:39:09) 
-[GCC 4.4.1 [gcc-4_4-branch revision 150839]] on linux2
+Python 3.2 (r32:88445, Feb 27 2011, 13:00:05) 
+[GCC 4.5.0 20100604 [gcc-4_5-branch revision 160292]] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
 >>> # Welcome to LEPL - a parser for Python 2.6+ (including 3!)
 ... 
@@ -32,8 +32,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 ...         text = (phrase | word)[1:] > list
 ...         query = text[:, Drop('OR')]
 ... 
-Unfortunately the following matchers cannot be tracked:
-  query = DepthFirst(0, None, rest=And, first=Transform)
+Use default config or add config.trace_variables().
 >>> query.config.auto_memoize(full=True)
 <lepl.core.config.ConfigBuilder object at 0xd23290>
 >>> query.parse('spicy meatballs OR "el bulli restaurant"')
@@ -50,6 +49,7 @@ Unfortunately the following matchers cannot be tracked:
       phrase failed                             stream = ''
         word failed                             stream = ''
         text = [['el bulli restaurant']]        stream = ''
+       query = [['spicy', 'meatballs'], ['el... stream = ''
 [['spicy', 'meatballs'], ['el bulli restaurant']]
 >>> # The display above shows the results for the different matchers as
 ... # the input stream is consumed.  This can be very useful for debugging.
@@ -70,10 +70,8 @@ Unfortunately the following matchers cannot be tracked:
 ... Any()[3:5].parse('1234')
 ['1', '2', '3', '4']
 >>> Any()[3:5].parse('123456')
-No handlers could be found for logger "lepl.parser.trampoline"
 [.. traceback ..]
-lepl.stream.maxdepth.FullFirstMatchException: The match failed at '6',
-Line 1, character 5 of str: '123456'.
+lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '6', (line 1, character 6).
 >>> # (the error above is expected - our grammar specified 3 to 5
 ... # characters, but the input contained 6.  This can be disabled 
 ... # using matcher.config.no_full_first_match())
@@ -109,8 +107,9 @@ Line 1, character 5 of str: '123456'.
 >>> 
 >>> @function_matcher
 ... def Capital(support, stream):
-...     if stream[0] in ascii_uppercase:
-...         return ([stream[0]], stream[1:])
+...     (char, next_stream) = s_next(stream)
+...     if char in ascii_uppercase:
+...         return ([char], next_stream)
 ... # As you can see, a matcher takes a stream and, if the start of the
 ... # stream matches, returns that (in a list) and the rest of the stream.
 ... 
@@ -119,8 +118,7 @@ Line 1, character 5 of str: '123456'.
 ['A']
 >>> Capital().parse('a')
 [.. traceback ..]
-lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'a',
-Line 1, character 0 of str: 'a'.
+lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '' (line 1, character 2).
 >>> # (again, this error is expected - we defined a matcher for capitals,
 ... # but the input was lower case).
 ... 
@@ -206,12 +204,11 @@ Alternative
 ...               '4': 'ghi',  '5': 'jkl',  '6': 'mno',
 ...               '7': 'pqrs', '8': 'tuv',  '9': 'wxyz',
 ...               '0': ''}
-...     if stream:
-...         digit, tail = stream[0], stream[1:]
-...         yield ([digit], tail)
-...         if digit in digits:
-...             for letter in digits[digit]:
-...                 yield ([letter], tail)
+...     (digit, next_stream) = s_next(stream)
+...     yield ([digit], next_stream)
+...     if digit in digits:
+...         for letter in digits[digit]:
+...             yield ([letter], next_stream)
 ... 
 >>> results = Digit()[13, ...].parse_all('1-800-7246837')
 >>> assert ['1-800-painter'] in results

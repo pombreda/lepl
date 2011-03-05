@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='LEPL',
-      version='4.4.0',
+      version='5.0.0',
       description='A Parser Library for Python 2.6+/3+: Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -15,12 +15,9 @@ grammars and it can also handle left-recursive grammars.
 The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
-`Release 4.0 <http://www.acooke.org/lepl/lepl4.0.html>`_ is a major revision,
-giving a library that's simpler, faster, and easier to use.  Release 4.4
-`changes the meaning of Float() slightly
-<http://www.acooke.org/lepl/intro-1.html#more-ambiguity-integers-and-floats>`_, 
-and `adds more control over search
-<http://www.acooke.org/lepl/advanced.html#restricting-search>`_.
+`Release 5.0 <http://www.acooke.org/lepl/lepl5.0.html>`_ has simpler stream
+(input) handling.  As a result, Lepl is faster and easier to maintain and 
+extend.
 
 Features
 --------
@@ -60,23 +57,24 @@ Features
   with LEPL's support for ambiguity this means that "any" grammar can be
   supported.
 
-* Pluggable trace and resource management, including **"deepest match"
-  diagnostics** and the ability to limit backtracking.
+* Trace and resource management, including **"deepest match" diagnostics** 
+  and the ability to limit backtracking.
 ''',
       author='Andrew Cooke',
       author_email='andrew@acooke.org',
       url='http://www.acooke.org/lepl/',
-      packages=['lepl',          'lepl._test',          'lepl._example',
-                'lepl.apps',     'lepl.apps._test',
-                'lepl.bin',      'lepl.bin._test',      'lepl.bin._example',
+      packages=['lepl',              'lepl._test',              'lepl._example',
+                'lepl.apps',         'lepl.apps._test',
+                'lepl.bin',          'lepl.bin._test',          'lepl.bin._example',
                 'lepl.contrib',
-                'lepl.core',     'lepl.core._test',
-                'lepl.lexer',    'lepl.lexer._test',    'lepl.lexer._example',
-                'lepl.matchers', 'lepl.matchers._test',
-                'lepl.blocks',  'lepl.blocks._test',  'lepl.blocks._example',
-                'lepl.regexp',   'lepl.regexp._test',
-                'lepl.stream',   'lepl.stream._test',
-                'lepl.support',  'lepl.support._test',
+                'lepl.core',         'lepl.core._test',
+                'lepl.lexer',        'lepl.lexer._test',        'lepl.lexer._example',
+                'lepl.lexer.blocks', 'lepl.lexer.blocks._test', 'lepl.lexer.blocks._example',
+                'lepl.lexer.lines',  'lepl.lexer.lines._test',  'lepl.lexer.lines._example',
+                'lepl.matchers',     'lepl.matchers._test',
+                'lepl.regexp',       'lepl.regexp._test',
+                'lepl.stream',       'lepl.stream._test',
+                'lepl.support',      'lepl.support._test',
                 ],
       package_dir = {'':'src'},
       keywords = "parser",

@@ -28,48 +28,29 @@
 # MPL or the LGPL License.
 
 '''
-Matchers that interact with monitors.
+The regexp example from the tutorial is returning an error indicating that
+Dfa or NfaRegexp is being called.
 '''
 
-from lepl.matchers.core import OperatorMatcher
-from lepl.core.trace import _TraceStack
-from lepl.core.parser import tagged
+from unittest import TestCase
+
+from lepl import *
 
 
-# pylint: disable-msg=E1101, W0212
-class Trace(OperatorMatcher):
-    '''
-    Enable trace logging for the sub-matcher.
-    '''
+class RegexpTest(TestCase):
     
-    def __init__(self, matcher, trace=True):
-        super(Trace, self).__init__()
-        self._arg(matcher=matcher)
-        self._karg(trace=trace)
-        self.monitor_class = _TraceStack
-
-    @tagged
-    def _match(self, stream):
-        '''
-        Attempt to match the stream.
-        '''
-        try:
-            generator = self.matcher._match(stream)
-            while True:
-                yield (yield generator)
-        except StopIteration:
-            pass
+    def test_groups(self):
+        matcher = Regexp('a*(b*)c*(d*)e*')
+        matcher.config.clear()
+        p = matcher.get_parse()
+        print('----------')
+        print(p.matcher.tree())
+        print('----------')
+        matcher.config.default()
+        print('----------')
+        p = matcher.get_parse()
+        print('----------')
+        print(p.matcher.tree())
+        result = p('abbcccddddeeeeee')
+        assert result == ['bb', 'dddd'], result
         
-    def on_push(self, monitor):
-        '''
-        On entering, switch monitor on.
-        '''
-        monitor.switch(1 if self.trace else -1)
-        
-    def on_pop(self, monitor):
-        '''
-        On leaving, switch monitor off.
-        '''
-        monitor.switch(-1 if self.trace else 1)
-        
-    

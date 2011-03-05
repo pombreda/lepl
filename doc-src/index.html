@@ -13,11 +13,12 @@
   <body>
     <script>
 var stopStart;
+var complete;
     </script>
 
     <div id="hd" class="yui-t3">
       <div id="hd-left" class="yui-b">
-<h1>Lepl 4.4</h1>
+<h1>Lepl 5.0</h1>
       </div>
       <div id="hd-right" class="yui-main">
         <div class="yui-b">
@@ -40,7 +41,7 @@ simple functions.</p>
 <h2>Resources</h2>
 
 <ul>
-<li><a href="lepl4.0.html">What's new in 4?</a></li>
+<li><a href="lepl5.0.html">What's new in 5?</a></li>
 <li><a href="features.html">Features</a></li>
 </ul>
 <ul>
@@ -66,7 +67,7 @@ simple functions.</p>
         <div class="yui-b">
 
 <div id="tt" onClick='stopStart();'></div>
-<div id="pause" onClick='stopStart();'></div>
+<div id="controls"><span id="complete" onClick='complete();'>Show all</span> | <span id="pause" onClick='stopStart();'></span></div>
 
 
         </div>
@@ -119,8 +120,10 @@ YUI().use('io', 'node-base', 'node', function(Y) {
 var lineIndex = -1;
 var paused = false;
 var tick = 10;
-var typeSpeed = 75 / tick;
-var linePause = 200 / tick;
+var typeSpeed0 = 75 / tick;
+var linePause0 = 200 / tick;
+var typeSpeed = typeSpeed0;
+var linePause = linePause0;
 
 var currentLine = '';
 
@@ -132,8 +135,13 @@ function startDisplay(tt) {
 
 stopStart = function() {
   paused = ! paused;
-  Y.one('div#pause').set('innerHTML', 
-                         paused ? 'Click to continue' : 'Click to pause');
+  Y.one('span#pause').set('innerHTML', 
+                          paused ? 'Click to continue' : 'Click to pause');
+}
+
+complete = function() {
+  typeSpeed = 0;
+  linePause = 0;  
 }
 
 function asynch(f) {
@@ -166,7 +174,11 @@ function isOutput(text) {
 
 displayNextLine = asynch(function(tt) {
   lineIndex++;
-  if (lineIndex >= text.length) {lineIndex = 0;}
+  if (lineIndex >= text.length) {
+    lineIndex = 0;
+    typeSpeed = typeSpeed0;
+    linePause = linePause0;
+  }
   currentLine = text[lineIndex];
   if (isComment(currentLine)) {
     displayComment(1, tt, currentLine);
@@ -218,8 +230,9 @@ charByChar = asynch(function(tt, text, speed, pause, nl) {
     } else {
       tt.get('lastChild').append(text.charAt(0));
       if (nl) {tt.set('scrollTop', tt.get('scrollHeight'));}
-      charByChar(speed / 2 + Math.random() * speed / 2, 
-                 tt, text.substring(1), speed, pause, false);
+      var s = 0      
+      if (typeSpeed) {s = speed / 2 + Math.random() * speed / 2;}
+      charByChar(s, tt, text.substring(1), speed, pause, false);
     }
   } else {
     tt.append('<br>');

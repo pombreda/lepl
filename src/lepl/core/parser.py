@@ -186,14 +186,14 @@ def trampoline(main, m_stack=None, m_value=None):
             except Exception as exception:
                 # do some logging etc before re-raising
                 if not isinstance(exception, FullFirstMatchException):
-                    log.warn(fmt('Exception at epoch {0}, {1!s}: {2!s}',
-                                 epoch, value, exception))
+                    log.debug(fmt('Exception at epoch {0}, {1!s}: {2!s}',
+                                  epoch, value, exception))
                 if stack:
                     log.debug(fmt('Top of stack: {0}', stack[-1]))
                     # going to raise original exception
                     # pylint: disable-msg=W0702
                     try:
-                        log.warn(format_exc())
+                        log.debug(format_exc())
                     except:
                         log.warn('Exception cannot be formatted!')
                     for generator in stack:

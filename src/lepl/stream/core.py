@@ -175,7 +175,7 @@ class StreamHelper(_StreamHelper):
         '''
         raise NotImplementedError
     
-    def stream(self, state, value, id_=None):
+    def stream(self, state, value, id_=None, max=None):
         '''
         Return a new stream that encapsulates the value given, starting at
         `state`.  IMPORTANT: the stream used is the one that corresponds to
@@ -210,7 +210,13 @@ class StreamHelper(_StreamHelper):
         Are the two states equal?
         '''
         return state1 == state2
-
+    
+    def new_max(self, state, max):
+        '''
+        Return a new stream, with a new helper, that uses the given max.
+        '''
+        raise NotImplementedError
+    
 
 # The following are helper functions that allow the methods above to be
 # called on (state, helper) tuples
@@ -242,7 +248,7 @@ s_line = lambda stream, empty_ok: stream[1].line(stream[0], empty_ok)
 s_len = lambda stream: stream[1].len(stream[0])
 '''Invoke helper.len(state)'''
 
-s_stream = lambda stream, value, id_=None: stream[1].stream(stream[0], value, id_=id_)
+s_stream = lambda stream, value, id_=None, max=None: stream[1].stream(stream[0], value, id_=id_, max=max)
 '''Invoke helper.stream(state, value)'''
 
 s_deepest = lambda stream: stream[1].deepest()
@@ -263,18 +269,27 @@ s_factory = lambda stream: stream[1].factory
 s_max = lambda stream: stream[1].max
 '''Access the max attribute.'''
 
+s_new_max = lambda stream, max: stream[1].new_max(stream[0], max)
+'''Invoke helper.new_max(state, max).'''
+
 s_global_kargs = lambda stream: stream[1].global_kargs
 '''Access the global_kargs attribute.'''
 
 
 class MutableMaxDepth(object):
+    '''
+    Track maximum depth (offset) reached and the associated stream.  Used to
+    generate error message for incomplete matches.
+    '''
     
     def __init__(self):
         self.depth = 0
         self.stream = None
         
     def update(self, depth, stream):
-        if depth > self.depth or not self.stream:
+        # the '=' here allows a token to nudge on to the next stream without
+        # changing the offset (when count=0 in s_next)
+        if depth >= self.depth or not self.stream:
             self.depth = depth
             self.stream = stream
         

@@ -1,4 +1,5 @@
 from lepl.matchers.combine import DepthNoTrampoline, AndNoTrampoline
+from lepl.matchers.error import Error
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -329,6 +330,8 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
             if isinstance(pattern, basestring):
                 pattern = Sequence(alphabet_, *alphabet_.parse(pattern))
         except TypeError:
+            raise Unsuitable
+        except Error: # cannot parse regexp
             raise Unsuitable
         return RegexpContainer.build(original, pattern, alphabet_, 
                                      regexp_type, use)

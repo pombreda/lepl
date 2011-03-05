@@ -467,7 +467,6 @@ def UnsignedReal(decimal='.'):
     return Or(Join(Optional(UnsignedInteger()), 
                    Any(decimal), UnsignedInteger()),
               Join(UnsignedInteger(), Optional(Any(decimal))))
-              
 
     
 def SignedReal(decimal='.'):

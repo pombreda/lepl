@@ -95,6 +95,9 @@ class Tutorial2Example(Example):
         add = number & spaces & ~Literal('+') & spaces & number > sum
         return add.parse(text)
     
+    def run_regexp_groups(self):
+        return list(Regexp('a*(b*)c*(d*)e*').parse_all('abbcccddddeeeeee'))
+    
     def run_nfa_regexp(self):
         return list(NfaRegexp('a*').parse_all('aaa'))
     
@@ -148,6 +151,8 @@ class Tutorial2Example(Example):
 """[['a', 'a', 'a', 'a', 'a'], ['a', 'a', 'a', 'a']]"""),
 (self.run_breadth,
 """[['a', 'a'], ['a', 'a', 'a'], ['a', 'a', 'a', 'a']]"""),
+(self.run_regexp_groups,
+"""['bb', 'dddd']"""),
 (lambda: self.run_brackets('12 + 30'),
 """[42.0]"""),
 (lambda: self.run_brackets('12+30'),

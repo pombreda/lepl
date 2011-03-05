@@ -36,9 +36,6 @@ Note that neither paper describes the extension to backtracking with
 generators implemented here. 
 '''
 
-# for some reason (parsing of yields?) pyulint cannot process this file
-# (but running from the command line gives partial data)
-
 from itertools import count
 
 from lepl.matchers.core import OperatorMatcher

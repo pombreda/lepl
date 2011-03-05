@@ -39,7 +39,7 @@ from lepl.core.monitor import ActiveMonitor, ValueMonitor, StackMonitor
 from lepl.support.lib import CircularFifo, LogMixin, sample, fmt, str
 
 
-def TraceResults(enabled=False):
+def TraceStack(enabled=False):
     '''
     A basic logger (implemented as a monitor - `MonitorInterface`)
     that records the flow of control during parsing.  It can be controlled by 
@@ -48,10 +48,10 @@ def TraceResults(enabled=False):
     This is a factory that "escapes" the main class via a function to simplify 
     configuration.
     '''
-    return lambda: _TraceResults(enabled)
+    return lambda: _TraceStack(enabled)
 
 
-class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
+class _TraceStack(ActiveMonitor, ValueMonitor, LogMixin):
     '''
     A basic logger (implemented as a monitor - `MonitorInterface`)
     that records the flow of control during parsing.  It can be controlled by 
@@ -59,7 +59,7 @@ class _TraceResults(ActiveMonitor, ValueMonitor, LogMixin):
     '''
     
     def __init__(self, enabled=False):
-        super(_TraceResults, self).__init__()
+        super(_TraceStack, self).__init__()
         self.generator = None
         self.depth = -1
         self.action = None
@@ -241,7 +241,7 @@ def RecordDeepest(n_before=6, n_results_after=2, n_done_after=2):
     return lambda: _RecordDeepest(n_before, n_results_after, n_done_after)
 
 
-class _RecordDeepest(_TraceResults):
+class _RecordDeepest(_TraceStack):
     '''
     A logger (implemented as a monitor - `MonitorInterface`)
     that records the deepest match found during a parse.
@@ -262,20 +262,20 @@ class _RecordDeepest(_TraceResults):
         
     def _log_result(self, value, text):
         '''
-        Modify `TraceResults` to record the data.
+        Modify `TraceStack` to record the data.
         '''
         if type(value) is tuple:
             self.record(True, text)
 
     def _log_error(self, text):
         '''
-        Modify `TraceResults` to record the data.
+        Modify `TraceStack` to record the data.
         '''
         self.record(True, text)
 
     def _log_done(self, text):
         '''
-        Modify `TraceResults` to record the data.
+        Modify `TraceStack` to record the data.
         '''
         self.record(False, text)
 

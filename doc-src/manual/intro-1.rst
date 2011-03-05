@@ -26,7 +26,7 @@ That example is a little ambitious for a simple introduction.  Here we will
 look at a simpler problem.  We will write a program that can take a simple
 mathematical expression, like "1+2*3", understand the structure, and work out
 the answer.  For example, when given "2+2" we want the result "4" (so we not
-only break the input into pieces, but do something useul with it to get a
+only break the input into pieces, but do something useful with it to get a
 final result).
 
 .. index:: Real(), import
@@ -44,9 +44,9 @@ the following at a Python prompt::
 What is happening here?
 
 The first line imports the contents of Lepl's main module.  Lepl is structured
-as a collection of different packages, but the most important functions and
-classes are collected together in the ``lepl`` module --- for most work this
-is all you will need.
+as a collection of different packages, but the important functions and classes
+are collected together in the ``lepl`` module --- for most work this is all
+you will need.
 
 In the rest of the examples below I will assume that you have already imported
 this module.
@@ -67,7 +67,7 @@ a number?  We can try it and see::
 
   >>> Real().parse('cabbage')
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'cabbage'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at 'abbage' (line 1, character 2).
 
 Which is reasonable enough --- "cabbage" is not a number.
 
@@ -80,10 +80,10 @@ Ambiguity
 ---------
 
 In fact, Lepl doesn't know that "123" is a single number.  Because of the way
-`Real() <api/redirect.html#lepl.matchers.derived.Real>`_ is
-defined internally, it gives the `longest` number it can find.  But that
-doesn't mean it is the only possibility.  We can see all the different
-possibilities by calling ``parse_all()`` instead of ``parse()``:
+`Real() <api/redirect.html#lepl.matchers.derived.Real>`_ is defined
+internally, it gives the `longest` number it can find.  But that doesn't mean
+it is the only result.  We can see all the different possibilities by calling
+``parse_all()`` instead of ``parse()``:
 
   >>> Real().parse_all('123')
   <map object at 0xdec950>
@@ -94,7 +94,7 @@ generator is something like a list that hasn't been built yet.  We can use it
 in a ``for`` loop just like a list, for example::
 
   >>> for result in Real().parse_all('123'):
-  ...   print(result)
+  ...     print(result)
   ...
   ['123']
   ['12']
@@ -115,7 +115,7 @@ with the first character.
 
    In the ``parse_all()`` examples we don't get an error, even though the
    second and third matches don't match the whole stream.  That's because only
-   the `first` match is checked to make sure that it consumes all the data
+   the *first* match is checked to make sure that it consumes all the data
    (this is both for technical reasons and also because it's usually what you
    want).
 
@@ -131,11 +131,9 @@ both of these using `Integer()` and `Float()`.
   >>> Integer().parse('1')
   ['1']
   >>> Integer().parse('1.2')
-  FullFirstMatchException: The match failed at '.2',
-  Line 1, character 1 of str: '1.2'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '2' (line 1, character 3).
   >>> Float().parse('1')
-  FullFirstMatchException: The match failed at '',
-  Line -1, character 0 of str: '1'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '' (line 1, character 2).
   >>> Float().parse('1.2')
   ['1.2']
   >>> Real().parse('1')
@@ -254,7 +252,7 @@ see what I mean, consider the two examples below::
 We want the first case, not the second.
 
 To do this we can define a new matcher, which takes the output from
-``Real`` (a list of strings) and passes each value in the list to the
+``Real()`` (a list of strings) and passes each value in the list to the
 Python built--in function, ``float()``::
 
   >>> number = Real() >> float

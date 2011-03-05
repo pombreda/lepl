@@ -520,12 +520,28 @@ class ConfigBuilder(object):
         
     # monitors
     
-    def trace(self, enabled=False):
+    def trace_stack(self, enabled=False):
         '''
-        Add a monitor to trace results.  See `TraceResults()`.
+        Add a monitor to trace results using `TraceStack()`.
+        
+        This is not used by default as it has a cost at runtime.
         '''
-        from lepl.core.trace import TraceResults
-        return self.add_monitor(TraceResults(enabled))
+        from lepl.core.trace import TraceStack
+        return self.add_monitor(TraceStack(enabled))
+    
+    def trace_variables(self):
+        '''
+        Add a monitor to correctly insert the transforms needed when using 
+        the `TraceVariables()` context:
+        
+          with TraceVariables():
+            ...
+        
+        This is used by default as it has no runtime cost (once the parser
+        is created).
+        '''
+        from lepl.core.rewriters import TraceVariables
+        return self.add_rewriter(TraceVariables())
     
     def low_memory(self, queue_len=100):
         '''
@@ -585,6 +601,7 @@ class ConfigBuilder(object):
         '''
         self.clear()
         self.flatten()
+        self.trace_variables()
         self.compose_transforms()
         self.lexer()
         self.auto_memoize()

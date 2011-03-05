@@ -33,7 +33,7 @@ Stream support for lexers.
 
 
 from lepl.stream.iter import base_iterable_factory
-from lepl.stream.core import OFFSET, s_delta, s_line, HashKey, s_key
+from lepl.stream.core import OFFSET, s_delta, s_line, HashKey, s_key, s_next
 from lepl.stream.facade import HelperFacade
 from lepl.support.lib import fmt, LogMixin
 
@@ -73,6 +73,7 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
 
     def next(self, cons, count=1):
         assert count == 1
+        s_next(cons.head[1], count=0) # ping max
         return (cons.head, (cons.tail, self))
     
     def line(self, cons, empty_ok):
