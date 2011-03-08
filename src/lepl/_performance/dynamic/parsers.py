@@ -37,6 +37,7 @@ def base():
     end = line(~Literal(':e') & Word())
     contents = nested | line(Word()[:,~Space()[:]])
     nested += make_pair(start, end, contents)
+    nested.config.no_memoize()
     return nested
 
 def restricted():
@@ -47,6 +48,7 @@ def restricted():
     anything = AnyBut('\n')[:, ...] & ~Literal('\n')
     contents = nested | anything
     nested += make_pair(start, end, contents)
+    nested.config.no_memoize()
     return nested
 
 
@@ -62,4 +64,5 @@ def restricted_with_tokens():
     nested = Delayed()
     contents = nested | tok_line
     nested += make_pair(start, end, contents)
+    nested.config.no_memoize()
     return nested

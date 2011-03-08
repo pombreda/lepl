@@ -138,10 +138,8 @@ different result::
   >>> sub = group2 & symbol('-') & group3b > List
   >>> group3b += group2 | add | sub     # changed!
   >>> ast = group3b.parse('1+2*(3-4)+5/6+7')[0]
-  >>> print(ast)
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+',
-  Line 1, character 1 of str: '1+2*(3-4)+5/6+7'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '+' (line 1, character 2).
 
 This isn't as bad as it looks.  Lepl does find the result we are expecting,
 it's just not the first result found, which is what ``parse()`` returns.  We
@@ -181,22 +179,15 @@ You can understand what has happened by tracing out how the text is matched:
 .. warning::
 
    The exercise above, while useful, is not always completely accurate,
-   because Lepl may modify the matchers before using them.  You are most
-   likely to see this when using a grammar with left--recursion (see below)
-   --- Lepl may re-arrange the order of matchers inside `Or()
-   <api/redirect.html#lepl.matchers.combine.Or>`_ so that the left--recursive
-   case comes last.
+   because Lepl may re--order the matchers if you use the configuration option
+   ``config.optimize_or()``.
 
-   With the default configuration Lepl should always maintain the basic logic
-   of the grammar --- the result will be consistent with the parser given ---
-   but the order of the matches may not be what is expected from the arguments
-   above.
+   However, since Lepl 4, that option is not included in the default
+   configuration, so this warning is not as important as it was in earlier
+   versions of the parser.
 
-   If the order is critical you can control Lepl's optimisations by giving an
-   explicit :ref:`configuration <configuration>`.
-
-There's an easy fix for this (but see comments on efficiency below), which is
-to explicitly say that the parser must match the entire output (`Eos()
+An easy (but see comments on efficiency below) fix for avoiding short results
+is to explicitly say that the parser must match the entire output (`Eos()
 <api/redirect.html#lepl.matchers.derived.Eos>`_ matches "end of string" or
 "end of stream").  This works because the sequence described above fails (as
 some input remains), so the next alternative is tried (which in this case
@@ -253,93 +244,34 @@ operator.  So below, for example, we have ``add = group3c...`` instead of
   >>> sub = group3c & symbol('-') & group3c > List   # changed
   >>> group3c += add | sub | group2
   >>> ast = group3c.parse('1+2*(3-4)+5/6+7')[0]
-  >>> print(ast)
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+',
-  Line 1, character 1 of str: '1+2*(3-4)+5/6+7'.
+  lepl.matchers.memo.MemoException: Left recursion was detected.
+  You can try .config.auto_memoize() or similar, but it is more efficient to
+  re-write the parser to remove left-recursive definitions.
+  >>> group3c.config.auto_memoize()
+  >>> ast = group3c.parse('1+2*(3-4)+5/6+7')[0]
+  [...]
+  Alternatives are being re-ordered to improve stability with left-recursion.
+  This will change the ordering of results.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '' (line 1, character 3).
   >>> group3c.config.no_full_first_match()
   >>> len(list(group3c.parse_all('1+2*(3-4)+5/6+7')))
+  Alternatives are being re-ordered to improve stability with left-recursion.
+  This will change the ordering of results.
+  [...]
   12
   >>> expr = group3c & Eos()
+  >>> expr.config.auto_memoize()
   >>> len(list(expr.parse_all('1+2*(3-4)+5/6+7')))
   5
 
-Here, not only do we get a short match first, but we also get 5 different
-matches when we force the entire input to be matched.  If you look at those
-matches in detail you'll see that they are all logically equivalent,
-corresponding to the different ways you can divide up an expression like
-"1+2+3" --- as "(1+2)+3" or "1+(2+3)".
+Here, not only do we need to mess around with the configuration to extract any
+results at all, but we also get 5 different matches even when we force the
+entire input to be matched.  If you look at those matches in detail you'll see
+that they are all logically equivalent, corresponding to the different ways
+you can divide up an expression like "1+2+3" --- as "(1+2)+3" or "1+(2+3)".
 
-A rough rule of thumb to help avoid this case is to avoid expressions where
-two matchers do the same job and only one is needed --- the symmetry in the
-problematic definitions above is a good hint that something is wrong.
-
-.. index:: efficiency, timing
-
-Efficiency
-----------
-
-The issues above do not result in incorrect results (once we add `Eos()
-<api/redirect.html#lepl.matchers.derived.Eos>`_), but they do make the parser less
-efficient.  To see this we first need to separate the parsing process into two
-separate stages.
-
-When a parser is used, via the ``parse()``, ``parse_all()`` and ``match()``
-methods, Lepl must first do some preparatory work (compiling regular
-expressions, for example) before actually parsing the input data.  
-
-For any particular configuration this work is done once, and then the result
-is cached for re-use.  This gives an efficient system, but for timing tests we
-often want to focus only on the parsing time (since this will dominate if the
-same parser is re-used many times).  So Lepl provides methods that allow the
-prepared code (the parser) to be saved --- these are ``get_parse()``, etc.::
-
-  >>> parser = group3.get_parse()
-  >>> timeit('parser("1+2*(3-4)+5/6+7")',
-  ...     'from __main__ import parser', number=100)
-  3.31537699699
-
-  >>> parser = (group3b & Eos()).get_parse()
-  >>> timeit('parser("1+2*(3-4)+5/6+7")',
-  ...     'from __main__ import parser', number=100)
-  4.10263490677
-
-  >>> parser = (group3c & Eos()).get_parse()
-  >>> timeit('parser("1+2*(3-4)+5/6+7")',
-  ...     'from __main__ import parser', number=100)
-  3.10528898239
-
-The results above are for the three parsers in the same order as the text
-(correct; doesn't produce longest first; ambiguous).  The differences appear
-to be significant: the second parser is slower because it has to work through
-more variations; the third is actually faster, probably because, although it
-also has to work through some variations, the ambiguity allows a full match to
-be found earlier.
-
-Understanding speed variations in detail requires an in--depth understanding
-of Lepl's implementation but two good rules of thumb are:
-
-* Try to get the best (longest) parse as the first result, without needing to
-  add `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_ (but then add
-  `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_ anyway, in case
-  there's some corner case you didn't expect).
-
-* Avoid ambiguity.  This helps with debugging and usually improves performance
-  (the third example above is a "lucky break" --- until Lepl 4's improved
-  memoisation and handling of left-recursive grammars, that solution was
-  slower).
-
-One final tip: avoid left--recursion.  In the parser above, we have recursion
-where, for example, ``add = group2 & symbol('+') & group3``, because that can
-lead back to ``group3`` (which is where we found ``add``...).  That is
-right--recursion, because ``group3`` is on the right.  Left recursion would be
-``add = group3 & symbol('+') & group2``, with ``group3`` on the left.  This is
-particularly nasty because the parser can "go round in circles" without doing
-any matching (if this isn't clear, trace out how Lepl will try to match
-``group3``).  Lepl includes checks and corrections for this, but they use
-memory and slow the parser down (the third case above, which *is* left
-recursive, should get significantly slower as the amount of text to parse
-increases).
+The lesson here is to avoid left-recursion.
 
 .. index:: List()
 
@@ -479,7 +411,8 @@ What have we learnt in this section?
 
 * Operator precedence can be handled by careful design of the grammar.
 
-* For efficient parsing, we should be aware of ambiguity and left--recursion.
+* For efficient parsing, we should be aware of (and avoid) ambiguity and
+  left--recursion.
 
 * We can subclass `List() <api/redirect.html#lepl.support.list.List>`_ to add
   functionality to AST nodes.

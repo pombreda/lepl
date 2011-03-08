@@ -50,10 +50,10 @@ class LeftBugTest(TestCase):
         expr1 = Delayed()
         call = (expr1 & word) > List
         expr1 += (call | Empty() | word)
-        program = Trace(expr1 & Eos())
-        program.config.trace_stack()
+        program = expr1 & Eos()
+        #program.config.trace_stack()
         parser = program.get_parse()
-        #print(parser.matcher.tree())
+        print(parser.matcher.tree())
         parsed = parser("abc")
         assert_str(parsed[0],
 """List

@@ -218,9 +218,9 @@ def make_raw_parser(matcher, stream_factory, config):
     # pylint: disable-msg=W0212, E0601
     # (_match is meant to be hidden)
     # pylint: disable-msg=W0142
-    parser = lambda arg, **kargs: \
-        trampoline(matcher._match(stream_factory(arg, **kargs)), 
-                   m_stack=m_stack, m_value=m_value)
+    def parser(arg, **kargs):
+        return trampoline(matcher._match(stream_factory(arg, **kargs)), 
+                          m_stack=m_stack, m_value=m_value)
     parser.matcher = matcher
     return parser
 

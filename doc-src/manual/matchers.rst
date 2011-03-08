@@ -212,17 +212,14 @@ matcher is equivalent to using `Literal()
   ['234']
   >>> matcher.parse('123')
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at '123',
-  Line 1, character 0 of str: '123'.
-
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '23' (line 1, character 2).
 
 When preceded by a ``~`` the logic is reversed::
 
   >>> matcher = ~Lookahead('2') & Integer()
   >>> matcher.parse('234')
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at '34',
-  Line 1, character 1 of str: '234'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '34' (line 1, character 2).
   >>> matcher.parse('123')
   ['123']
 
@@ -257,8 +254,7 @@ and so this example will fail::
 
   >>> (Lookahead('hello') / 'world').parse('hello world')
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at ' world',
-  Line 1, character 5 of str: 'hello world'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at ' world' (line 1, character 6).
 
 .. note::
 

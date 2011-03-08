@@ -15,7 +15,7 @@ It is unfortunate, but realistic, that the chapter on operators should start
 with some warnings to the user.
 
 Operators --- things like ``&`` and ``|``, used to join matchers --- can help
-produce grammars that are easy to read, easier to understand, and so less
+produce grammars that are easier to read, easier to understand, and so less
 likely to contain errors.  But their implementation pushes Python's
 boundaries, giving problems with precedence and applicability.  This is
 exacerbated by the automatic coercion of strings to `Literal()
@@ -57,7 +57,9 @@ Binary Operators Between Matchers
 ========  ===========
 Operator  Description
 ========  ===========
-``&``     Joins matchers in sequence.  The result is a single list containing the results from all functions.  Identical (without separators) to `And() <api/redirect.html#lepl.matchers.combine.And>`_.
+``&``     Joins matchers in sequence.  The result is a single list containing 
+          the results from all functions.  Identical (without separators) to 
+          `And() <api/redirect.html#lepl.matchers.combine.And>`_.
 --------  -----------
 ``+``     As ``&``, but the results are then joined together with the standard
           Python ``+`` operator.
@@ -74,7 +76,8 @@ Operator  Description
           `Or() <api/redirect.html#lepl.matchers.combine.And>`_.
 --------  -----------
 ``%``     As ``|``, but without backtracking between functions.  
-          Identical to `First() <api/redirect.html#lepl.matchers.combine.First>`_.
+          Identical to 
+          `First() <api/redirect.html#lepl.matchers.combine.First>`_.
 ========  ===========
 
 For a discussion of backtracking see :ref:`backtracking`.
@@ -93,13 +96,15 @@ Operator  Description
 
 --------  -----------
 ``[]``    Repeats the matcher, with optional concatenation and separator.
-          Identical to (without separators) `Repeat() <api/redirect.html#lepl.matchers.derived.Repeat>`_ (see :ref:`previous section <repeat>`).
+          Identical to (without separators) 
+          `Repeat() <api/redirect.html#lepl.matchers.derived.Repeat>`_ 
+          (see :ref:`previous section <repeat>`).
 ========  ===========
 
 .. note:
 
-  `Lookahead() <api/redirect.html#lepl.matchers.combine.And>`_ is an exception for
-  ``~`` (see :ref:`lookahead`).
+  `Lookahead() <api/redirect.html#lepl.matchers.combine.And>`_ is an exception
+  for ``~`` (see :ref:`lookahead`).
 
 
 .. index:: >=, >, >>, **, ^, args()
@@ -111,13 +116,16 @@ Operators That Apply Functions To Results
 ========  ===========
 Operator  Description
 ========  ===========
-``>=``    Pass the results of the matcher (left) to the given function (right) and use the result as the new result.  Identical to `Apply(raw=True) <api/redirect.html#lepl.matchers.derived.Apply>`_.
+``>=``    Pass the results of the matcher (left) to the given function (right)
+          and use the result as the new result.  Identical to `Apply(raw=True) 
+          <api/redirect.html#lepl.matchers.derived.Apply>`_.
 --------  -----------
 ``>``     Pass the results of the matcher (left) to the given function 
           (right) and use the result, *within a new list*,  as the result.
           If the function is a string a ``(string, result)`` pair is 
           generated instead.  
-          Identical to `Apply() <api/redirect.html#lepl.matchers.derived.Apply>`_.
+          Identical to 
+          `Apply() <api/redirect.html#lepl.matchers.derived.Apply>`_.
 --------  -----------
 ``args``  Not an operator, but used with ``>`` to expand the list of results
           to be arguments (like Python's ``*args`` convention).  For
@@ -131,7 +139,8 @@ Operator  Description
           *results*.  Additional keyword arguments are *stream_in* (the
           stream passed to the matcher), *stream_out* (the stream returned
           from the matcher) and *core* (see :ref:`resources`).  
-          Identical to `KApply() <api/redirect.html#lepl.matchers.derived.KApply>`_.
+          Identical to 
+          `KApply() <api/redirect.html#lepl.matchers.derived.KApply>`_.
 --------  -----------
 ``^``     Raise a Syntax error.  The argument to the right is a string that
           is treated as a format template for the same named arguments as 
@@ -149,12 +158,11 @@ Operators can be replaced inside a ``with`` context using `Override()
 
   >>> with Override(or_=And, and_=Or):
   >>>     abcd = (Literal('a') & Literal('b')) | ( Literal('c') & Literal('d'))
-  >>>     print(abcd.parse('ac'))
+  >>> print(abcd.parse('ac'))
   ['a', 'c']
-  >>>     print(abcd.parse('ab'))
+  >>> print(abcd.parse('ab'))
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'b',
-  Line 1, character 1 of str: 'ab'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '' (line 1, character 3).
 
 (think about it).
 

@@ -196,7 +196,7 @@ def safe_in(value, container, default=False):
         return value in container
     except TypeError:
         log = getLogger('lepl.support.safe_in')
-        log.warn(fmt('Cannot test for {0!r} in collection', value))
+        log.debug(fmt('Cannot test for {0!r} in collection', value))
         return default
     
     
@@ -209,6 +209,26 @@ def safe_add(container, value):
     except TypeError:
         log = getLogger('lepl.support.safe_add')
         log.warn(fmt('Cannot add {0!r} to collection', value))
+
+
+def fallback_add(container, value):
+    '''
+    Add items to a container.  Call initially with a set, but accept the
+    returned collection, which will fallback to a list of necessary (if the
+    contents are unhashable).
+    '''
+    try:
+        container.add(value)
+        return container
+    except AttributeError:
+        container.append(value)
+        return container
+    except TypeError:
+        if isinstance(container, list):
+            raise
+        else:
+            container = list(container)
+            return fallback_add(container, value)
 
 
 def fold(fun, start, sequence):

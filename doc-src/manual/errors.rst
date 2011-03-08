@@ -54,8 +54,8 @@ Here is an example of the second and third approaches in use::
 
   >>> with DroppedSpace():
 
-  >>>     unopen   = number ** make_error('no ( before {stream_out}') & ')'
-  >>>     unclosed = ('(' & expr & Eos()) ** make_error('no ) for {stream_in}')
+  >>>     unopen   = number ** make_error('no ( before {out_rest!s}') & ')'
+  >>>     unclosed = ('(' & expr & Eos()) ** make_error('no ) for {in_rest!s}')
 
   >>>     term    = Or(
   >>>                  (number | '(' & expr & ')')      > Term,
@@ -67,30 +67,31 @@ Here is an example of the second and third approaches in use::
   >>>     factor  = (term & (muldiv & term)[:])         > Factor
   >>>     addsub  = Any('+-')
   >>>     expr   += (factor & (addsub & factor)[:])     > Expression
-  >>>     line    = Empty() & Trace(expr) & Eos()       >> sexpr_throw
+  >>>     line    = (Empty() & expr & Eos())            >> sexpr_throw
 
   >>> parser = line.get_parse()
 
   >>> parser('1 + 2 * (3 + 4 - 5')[0]
-    File "str: '1 + 2 * (3 + 4 - 5'", line 1
+  [...]
+    File "<string>", line 1
       1 + 2 * (3 + 4 - 5
 	      ^
-  lepl.matchers.error.Error: no ) for '(3 + 4...'
+  lepl.matchers.error.Error: no ) for '(3 + 4 - 5'
 
   >>> parser('1 + 2 * 3 + 4 - 5)')[0]
-    File "str: '1 + 2 * 3 + 4 - 5)'", line 1
+    File "<string>", line 1
       1 + 2 * 3 + 4 - 5)
 		      ^
   lepl.matchers.error.Error: no ( before ')'
 
   >>> parser('1 + 2 * (3 + four - 5)')[0]
-    File "str: '1 + 2 * (3 + four - 5)'", line 1
+    File "<string>", line 1
       1 + 2 * (3 + four - 5)
 		   ^
   lepl.matchers.error.Error: unexpected text: four
 
   >>> parser('1 + 2 ** (3 + 4 - 5)')[0]
-    File "str: '1 + 2 ** (3 + 4 - 5)'", line 1
+    File "<string>", line 1
       1 + 2 ** (3 + 4 - 5)
 	     ^
   lepl.matchers.error.Error: unexpected text: *
@@ -99,6 +100,9 @@ Here is an example of the second and third approaches in use::
 .. note::
 
   This example follows the :ref:`applycase` and :ref:`complexor` patterns.
+
+  Also, the parentheses around expressions that are sent to ``>>`` are
+  critical.
 
 .. warning::
 

@@ -28,32 +28,51 @@
 # MPL or the LGPL License.
 
 '''
-The regexp example from the tutorial is returning an error indicating that
-Dfa or NfaRegexp is being called.
+Example returning less results than before.
 '''
 
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import *
 
-
-class RegexpTest(TestCase):
+class CacheTest(TestCase):
     
-    def test_groups(self):
-        matcher = Regexp('a*(b*)c*(d*)e*')
-        matcher.config.clear()
-        p = matcher.get_parse()
-        t = p.matcher.tree()
-        assert t == """FunctionWrapper<Regexp:<>>
- `- 'a*(b*)c*(d*)e*'""", t
-        matcher.config.default()
-        p = matcher.get_parse()
-        t = p.matcher.tree()
-        assert t == """TrampolineWrapper<FullFirstMatch>
- +- _RMemo
- |   `- FunctionWrapper<Regexp:<>>
- |       `- 'a*(b*)c*(d*)e*'
- `- True""", t
-        result = p('abbcccddddeeeeee')
-        assert result == ['bb', 'dddd'], result
+    def test_cache(self):
+        #basicConfig(level=DEBUG)
+        
+        value = Token(UnsignedReal())
+        symbol = Token('[^0-9a-zA-Z \t\r\n]')
+        number = Optional(symbol('-')) + value >> float
+        group2, group3c = Delayed(), Delayed()
+
+        parens = symbol('(') & group3c & symbol(')')
+        group1 = parens | number
+
+        mul = group2 & symbol('*') & group2 > List     # changed
+        div = group2 & symbol('/') & group2 > List     # changed
+        group2 += mul | div | group1
+
+        add = group3c & symbol('+') & group3c > List   # changed
+        sub = group3c & symbol('-') & group3c > List   # changed
+        group3c += add | sub | group2
+    
+        group3c.config.no_full_first_match().auto_memoize()
+        p = group3c.get_parse_all()
+        #print(p.matcher.tree())
+        results = list(p('1+2*(3-4)+5/6+7'))
+#        for r in results:
+#            print(r[0])
+        assert len(results) == 12, results
+
+    def test_left(self):
+        #basicConfig(level=DEBUG)
+        a = Delayed()
+        a += Optional(a) & (a | 'b' | 'c')
+        a.config.no_full_first_match().auto_memoize()
+        p = a.get_parse_all()
+        #print(p.matcher.tree())
+        r = list(p('bcb'))
+        assert r == [['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c'], ['b', 'c'], ['b']], r
+        
         

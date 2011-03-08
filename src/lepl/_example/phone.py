@@ -79,7 +79,7 @@ class PhoneExample(Example):
     
     def test_fragment4(self):
         
-        #basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         
         name    = Word()              > 'name'
         matcher = name / ','          > make_dict

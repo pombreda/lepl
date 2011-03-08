@@ -58,6 +58,7 @@ Use default config or add config.trace_variables().
 ... # This means that each matcher records previous matches and so avoids
 ... # earlier work.  The (lack of a) trace on a second call reflects this:
 ... query.parse('spicy meatballs OR "el bulli restaurant"')
+       query = [['spicy', 'meatballs'], ['el... stream = ''
 [['spicy', 'meatballs'], ['el bulli restaurant']]
 >>> # (the response appeared without calling any more matchers)
 ... 

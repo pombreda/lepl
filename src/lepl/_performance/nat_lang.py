@@ -70,7 +70,6 @@ def natural_language():
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
     #sentence.config.auto_memoize().no_full_first_match()
-    #sentence.config.add_monitor(StreamMonitor)
     p = sentence.get_match_string()
     print(repr(p.matcher))
     for _i in range(100):
@@ -111,7 +110,6 @@ def natural_language2():
     sentence    = termphrase & verbphrase & termphrase & Eos() > Sentence
 
     #sentence.config.auto_memoize(full=True)
-    #sentence.config.add_monitor(StreamMonitor)
     p = sentence.get_match_string()
     print(repr(p.matcher))
     for _i in range(100):

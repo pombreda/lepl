@@ -35,7 +35,7 @@
 Examples from the documentation.
 '''
 
-from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG, ERROR
 
 from gc import collect
 from random import random
@@ -44,6 +44,7 @@ from timeit import timeit
 from lepl import *
 from lepl._example.support import Example
 from lepl.support.lib import fmt
+
 
 NUMBER = 10
 REPEAT = 3
@@ -68,7 +69,6 @@ def default():
     
     return line
 
-
 # These create a matcher for the parser above with different configurations
 
 def clear():
@@ -83,12 +83,12 @@ def no_memo():
 
 def full_memo():
     matcher = default()
-    matcher.config.auto_memoize(full=True)
+    matcher.config.auto_memoize()
     return matcher
 
 def slow(): 
     matcher = default()
-    matcher.config.clear().trace_stack().low_memory().auto_memoize(full=True)
+    matcher.config.clear().trace_stack().low_memory().auto_memoize()
     return matcher
 
 def nfa_regexp(): 
@@ -100,73 +100,73 @@ def dfa_regexp():
     matcher = default()
     matcher.config.clear().compile_to_dfa(force=True)
     return matcher
+    
 
+def main(tests):
 
-# Next, build all the tests, making sure that we pre-compile parsers where
-# necessary and (important!) we avoid reusing a parser with a cache
+    # Next, build all the tests, making sure that we pre-compile parsers where
+    # necessary and (important!) we avoid reusing a parser with a cache
+        
+    data = [fmt('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
+                   random(), random(), random(), random(), random())
+            for i in range(NUMBER)]
+    
+    matchers = [default, clear, no_memo, full_memo, slow, nfa_regexp, dfa_regexp]
+    
+    def build_cached(factory):
+        matcher = factory()
+        matcher.config.clear_cache()
+        parser = matcher.get_parse()
+        def test():
+            for line in data:
+                parser(line)[0]
+        return test
+                
+    def build_uncached(factory):
+        matcher = factory()
+        def test():
+            for line in data:
+                matcher.config.clear_cache()
+                matcher.parse(line)[0]
+        return test
+        
+    for matcher in matchers:
+        tests[matcher] = {True: [], False: []}
+        for i in range(REPEAT):
+             tests[matcher][True].append(build_cached(matcher))
+             tests[matcher][False].append(build_uncached(matcher))
+    
+    def run(matcher, cached, repeat):
+        '''Time the given test.'''
+        stmt = 'tests[{0}][{1}][{2}]()'.format(matcher.__name__, cached, repeat)
+        setup = 'from __main__ import tests, {0}'.format(matcher.__name__)
+        #print(setup)
+        #print(stmt)
+        return timeit(stmt, setup, number=1)
+    
+    def analyse(matcher, t_uncached_base=None, t_cached_base=None):
+        '''We do our own repeating so we can GC between attempts.'''
+        (t_uncached, t_cached) = ([], [])
+        for repeat in range(REPEAT):
+            collect()
+            t_uncached.append(run(matcher, False, repeat))
+            collect()
+            t_cached.append(run(matcher, True, repeat))
+        (t_uncached, t_cached) = (min(t_uncached), min(t_cached))
+        t_uncached = 1000.0 * t_uncached / NUMBER
+        t_cached = 1000.0 * t_cached / NUMBER 
+        print(fmt('{0:>20s} {1:5.1f} {2:8s}  {3:5.1f} {4:8s}',
+                     matcher.__name__, 
+                     t_uncached, normalize(t_uncached, t_uncached_base), 
+                     t_cached, normalize(t_cached, t_cached_base)))
+        return (t_uncached, t_cached)
+    
+    def normalize(time, base):
+        if base:
+            return '(x{0:5.2f})'.format(time / base)
+        else:
+            return ''
 
-data = [fmt('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
-               random(), random(), random(), random(), random())
-        for i in range(NUMBER)]
-
-matchers = [default, clear, no_memo, full_memo, slow, nfa_regexp, dfa_regexp]
-
-def build_cached(factory):
-    matcher = factory()
-    matcher.config.clear_cache()
-    parser = matcher.get_parse()
-    def test():
-        for line in data:
-            parser(line)[0]
-    return test
-            
-def build_uncached(factory):
-    matcher = factory()
-    def test():
-        for line in data:
-            matcher.config.clear_cache()
-            matcher.parse(line)[0]
-    return test
-
-tests = {}
-
-for matcher in matchers:
-    tests[matcher] = {True: [], False: []}
-    for i in range(REPEAT):
-         tests[matcher][True].append(build_cached(matcher))
-         tests[matcher][False].append(build_uncached(matcher))
-
-
-def run(matcher, cached, repeat):
-    '''Time the given test.'''
-    stmt = 'tests[{0}][{1}][{2}]()'.format(matcher.__name__, cached, repeat)
-    setup = 'from __main__ import tests, {0}'.format(matcher.__name__)
-    return timeit(stmt, setup, number=1)
-
-def analyse(matcher, t_uncached_base=None, t_cached_base=None):
-    '''We do our own repeating so we can GC between attempts.'''
-    (t_uncached, t_cached) = ([], [])
-    for repeat in range(REPEAT):
-        collect()
-        t_uncached.append(run(matcher, False, repeat))
-        collect()
-        t_cached.append(run(matcher, True, repeat))
-    (t_uncached, t_cached) = (min(t_uncached), min(t_cached))
-    t_uncached = 1000.0 * t_uncached / NUMBER
-    t_cached = 1000.0 * t_cached / NUMBER 
-    print(fmt('{0:>20s} {1:5.1f} {2:8s}  {3:5.1f} {4:8s}',
-                 matcher.__name__, 
-                 t_uncached, normalize(t_uncached, t_uncached_base), 
-                 t_cached, normalize(t_cached, t_cached_base)))
-    return (t_uncached, t_cached)
-
-def normalize(time, base):
-    if base:
-        return '(x{0:5.2f})'.format(time / base)
-    else:
-        return ''
-
-def main():
     print('{0:d} iterations; time per iteration in ms (best of {1:d})\n'.format(
             NUMBER, REPEAT))
     print(fmt('{0:>35s}    {1:s}', 're-compiled', 'cached'))
@@ -175,8 +175,12 @@ def main():
         if matcher is not default:
             analyse(matcher, t_uncached, t_cached)
 
+
 if __name__ == '__main__':
-    main()
+    basicConfig(level=ERROR)
+    tests = {}
+    main(tests)
+
 
 # pylint: disable-msg=E0601
 # (pylint parsing bug?)        

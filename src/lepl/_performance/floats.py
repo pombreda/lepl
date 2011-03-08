@@ -58,10 +58,11 @@ def floats():
     
     #basicConfig(level=DEBUG)
     #line.config.compile_to_re()
+    line.config.no_memoize()
     parser = line.get_parse_string()
     
     print(parser.matcher.tree())
-    for _i in range(3000): # increased from 30 to 3000 for new code
+    for _i in range(3000):
         results = parser('1.2e3 + 2.3e4 * (3.4e5 + 4.5e6 - 5.6e7)')
         assert isinstance(results[0], Expression)
     print(results[0])
@@ -72,8 +73,9 @@ def time():
     t = Timer("floats()", "from __main__ import floats")
     print(t.timeit(number=1))
     # 4 v 5, no special config, python 3.2 on laptop
-    # 17.1,16.3,16.7 v 10.4,10.4,10.4
-    
+    # 17.1,16.3,16.7 v 10.4,10.4,10.4 
+    # after making TrampolineWrapper non-transformable
+    # 9.7,9.4,9.5
 
 def profile():
     '''

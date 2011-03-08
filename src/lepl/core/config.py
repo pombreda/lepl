@@ -67,6 +67,7 @@ class ConfigBuilder(object):
         self.__monitors = []
         self.__stream_factory = DEFAULT_STREAM_FACTORY
         self.__alphabet = None
+        self.__stream_kargs = {}
         
     def __start(self):
         '''
@@ -144,6 +145,20 @@ class ConfigBuilder(object):
         self.clear_cache()
         self.__stream_factory = stream_factory
         return self
+    
+    def add_stream_kargs(self, ** kargs):
+        '''
+        Add a value for passing to the stream factory.
+        '''
+        for name in kargs:
+            self.__stream_kargs[name] = kargs[name]
+        return self
+    
+    def remove_all_stream_kargs(self):
+        '''
+        Remove all values passed to the stream factory.
+        '''
+        self.__stream_kargs = {}
 
     @property
     def configuration(self):
@@ -409,41 +424,44 @@ class ConfigBuilder(object):
         from lepl.core.rewriters import ComposeTransforms
         return self.remove_all_rewriters(ComposeTransforms)
         
-    def auto_memoize(self, conservative=False, full=False):
+    def auto_memoize(self, full=True):
         '''
-        LEPL can add memoization so that (1) complex matching is more 
-        efficient and (2) left recursive grammars do not loop indefinitely.  
-        However, in many common cases memoization decreases performance.
-        This matcher therefore, by default, only adds memoization if it
-        appears necessary for stability (case 2 above, when left recursion
-        is possible).
+        Lepl contains two memoizers - one for right- and one for left-recursive
+        grammars.  These can be applied to all matchers with 
+        ``config.right_memoize()`` and ``config.left_memoize()``.
         
-        The ``conservative`` parameter controls how left-recursive loops are
-        detected.  If False (default) then matchers are assumed to "consume"
-        input.  This may be incorrect, in which case some left-recursive loops
-        may be missed.  If True then all loops are considered left-recursive.
-        This is safer, but results in much more expensive (slower) memoisation. 
+        This configuration attempts to detect which memoizer is most effective
+        for each matcher.  It also calls ``config.optimize_or()``.  As such
+        it is a general "fix" for left-recursive grammars and is suggested
+        in the warning shown when the right-only memoizer detects left
+        recursion.
         
-        The `full` parameter can be used (set to True) to add memoization
-        for case (1) above, in addition to case (2).  In other words, when
-        True, all nodes are memozied; when False (the default) only 
-        left-recursive nodes are memoized.
+        Lepl does not guarantee that all left-recursive grammars are handled 
+        correctly.  The corrections applied are incomplete and can be
+        inefficient.  It is always better to re-write a grammar to avoid
+        left-recursion.
         
-        This is part of the default configuration.
-        
-        See also `no_memoize()`.
         '''
         from lepl.core.rewriters import AutoMemoize
         from lepl.matchers.memo import LMemo, RMemo
         self.no_memoize()
-        return self.add_rewriter(AutoMemoize(conservative, LMemo,
+        self.optimize_or()
+        return self.add_rewriter(AutoMemoize(True, LMemo,
                                              RMemo if full else None))
     
     def left_memoize(self):
         '''
-        Add memoization that can detect and stabilise left-recursion.  This
+        Add memoization that may detect and stabilise left-recursion.  This
         makes the parser more robust (so it can handle more grammars) but
-        also significantly slower.
+        also more complex (and possibly slower).
+        
+        ``config.auto_memoize()`` will also add memoization, but will select
+        left/right memoization depending on the path through the parser.
+        
+        Lepl does not guarantee that all left-recursive grammars are handled 
+        correctly.  The corrections applied are incomplete and can be
+        inefficient.  It is always better to re-write a grammar to avoid
+        left-recursion.
         '''
         from lepl.core.rewriters import Memoize
         from lepl.matchers.memo import LMemo
@@ -453,8 +471,12 @@ class ConfigBuilder(object):
     def right_memoize(self):
         '''
         Add memoization that can make some complex parsers (with a lot of
-        backtracking) more efficient.  In most cases, however, it makes
-        the parser slower.
+        backtracking) more efficient.  This also detects left-recursive
+        grammars and displays a suitable warning.
+        
+        This is included in the default configuration.  For simple grammars 
+        it may make things slower; it can be disabled by 
+        ``config.no_memoize()``. 
         '''      
         from lepl.core.rewriters import Memoize
         from lepl.matchers.memo import RMemo
@@ -464,7 +486,8 @@ class ConfigBuilder(object):
     def no_memoize(self):
         '''
         Remove memoization.  To use the default configuration without
-        memoization, specify `config.no_memoize()`.
+        memoization (which may be faster in some cases), specify 
+        `config.no_memoize()`.
         '''
         from lepl.core.rewriters import AutoMemoize, Memoize
         self.remove_all_rewriters(Memoize)
@@ -604,7 +627,7 @@ class ConfigBuilder(object):
         self.trace_variables()
         self.compose_transforms()
         self.lexer()
-        self.auto_memoize()
+        self.right_memoize()
         self.direct_eval()
         self.compile_to_nfa()
         self.full_first_match()

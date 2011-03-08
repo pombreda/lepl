@@ -32,22 +32,39 @@
 
 '''
 Examples from the documentation.
+
+(The WithVariables() example is covered in a test for config)
 '''
 
 
 from logging import basicConfig, INFO, DEBUG
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from lepl import *
+from lepl._example.support import Example
 
-#basicConfig(level=INFO)
-#
-#spaces  = Space()[0:]
-#name    = Word()              > 'name'
-#phone   = Integer()           > 'phone'
-#line    = name / ',' / phone  > make_dict
-#matcher = line[0:,~Newline()]
-#matcher.config.clear().record_deepest()
-#matcher.parse('andrew, 3333253\n bob, 12345')
+
+class NodeErrorTest(Example):
+    
+    def test_deepest(self):
+
+        buffer = StringIO()
+
+        basicConfig(level=INFO, stream=buffer)
+        
+        name    = Word()              > 'name'
+        phone   = Integer()           > 'phone'
+        line    = name / ',' / phone  > make_dict
+        matcher = line[0:,~Newline()]
+        matcher.config.clear().record_deepest()
+        matcher.parse('andrew, 3333253\n bob, 12345')
+        
+        trace = buffer.getvalue()
+        assert trace == 'poop', trace
+        
 #
 #
 #spaces  = Space()[0:]
@@ -58,3 +75,6 @@ from lepl import *
 #matcher.config.clear().trace()
 #parsed = matcher.parse('andrew, 3333253\n bob, 12345')
 #print(parsed)
+
+
+

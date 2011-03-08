@@ -49,13 +49,13 @@ class RewriteTest(TestCase):
         #basicConfig(level=DEBUG)
         char = Any()
         
-        char.config.clear().compile_to_nfa(force=True)
+        char.config.clear().compile_to_nfa(force=True).no_memoize()
         matcher = char.get_match_sequence()
         results = list(matcher('abc'))
         assert results == [(['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp)
         
-        char.config.clear().compile_to_nfa(force=True).compose_transforms()
+        char.config.clear().compile_to_nfa(force=True).compose_transforms().no_memoize()
         matcher = char.get_match_sequence()
         results = list(matcher('abc'))
         assert results == [(['a'], (1, DUMMY_HELPER))], results
@@ -65,7 +65,7 @@ class RewriteTest(TestCase):
         #basicConfig(level=DEBUG)
         rx = Any('a') | Any('b') 
         
-        rx.config.clear().compile_to_nfa(force=True)
+        rx.config.clear().compile_to_nfa(force=True).no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('bq'))
         assert results == [(['b'], (1, DUMMY_HELPER))], results
@@ -73,7 +73,7 @@ class RewriteTest(TestCase):
         assert results == [(['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp)
         
-        rx.config.clear().compile_to_nfa(force=True).compose_transforms()
+        rx.config.clear().compile_to_nfa(force=True).compose_transforms().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('bq'))
         assert results == [(['b'], (1, DUMMY_HELPER))], results
@@ -84,7 +84,7 @@ class RewriteTest(TestCase):
     def test_plus(self):
         rx = Any('a') + Any('b') 
         
-        rx.config.clear().compile_to_nfa(force=True)
+        rx.config.clear().compile_to_nfa(force=True).no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('abq'))
         assert results == [(['ab'], (2, DUMMY_HELPER))], results
@@ -99,7 +99,7 @@ class RewriteTest(TestCase):
     def test_add(self):
         rx = Add(And(Any('a'), Any('b'))) 
         
-        rx.config.clear().compile_to_nfa(force=True)
+        rx.config.clear().compile_to_nfa(force=True).no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('abq'))
         assert results == [(['ab'], (2, DUMMY_HELPER))], results
@@ -114,13 +114,13 @@ class RewriteTest(TestCase):
     def test_literal(self):
         rx = Literal('abc')
         
-        rx.config.clear().compile_to_nfa(force=True)
+        rx.config.clear().compile_to_nfa(force=True).no_memoize()
         matcher = rx.get_match_sequence()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         results = list(matcher('abcd'))
         assert results == [(['abc'], (3, DUMMY_HELPER))], results
         
-        rx.config.clear().compile_to_nfa(force=True).compose_transforms()
+        rx.config.clear().compile_to_nfa(force=True).compose_transforms().no_memoize()
         matcher = rx.get_match_sequence()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         results = list(matcher('abcd'))
@@ -128,14 +128,14 @@ class RewriteTest(TestCase):
         
         rx = Literal('abc') >> (lambda x: x+'e')
         
-        rx.config.clear().compile_to_nfa(force=True)
+        rx.config.clear().compile_to_nfa(force=True).no_memoize()
         matcher = rx.get_match_sequence()
         print(matcher.matcher.tree())
         results = list(matcher('abcd'))
         assert results == [(['abce'], (3, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
-        rx.config.clear().compile_to_nfa(force=True).compose_transforms()
+        rx.config.clear().compile_to_nfa(force=True).compose_transforms().no_memoize()
         matcher = rx.get_match_sequence()
         print(matcher.matcher.tree())
         results = list(matcher('abcd'))
@@ -151,24 +151,24 @@ class RewriteTest(TestCase):
         rx = Any()[:, ...]
         
         # do un-rewritten to check whether [] or [''] is correct
-        rx.config.clear()
+        rx.config.clear().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
         assert results == expected, results
         
-        rx.config.clear().compose_transforms()
+        rx.config.clear().compose_transforms().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
         assert results == expected, results
         
         #basicConfig(level=DEBUG)
-        rx.config.clear().compile_to_nfa()
+        rx.config.clear().compile_to_nfa().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
         assert results == expected, results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
-        rx.config.clear().compile_to_nfa().compose_transforms()
+        rx.config.clear().compile_to_nfa().compose_transforms().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('abcd'))
         assert results == expected, results
@@ -178,7 +178,7 @@ class RewriteTest(TestCase):
         #basicConfig(level=DEBUG)
         rx = Literal('foo') | (Literal('ba') + Any('a')[1:,...])
         
-        rx.config.compile_to_nfa().no_full_first_match()
+        rx.config.compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         results = list(matcher('foo'))
@@ -191,7 +191,7 @@ class RewriteTest(TestCase):
         results = list(matcher('ba'))
         assert results == [], results
         
-        rx.config.clear().compile_to_nfa().no_full_first_match()
+        rx.config.clear().compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         results = list(matcher('foo'))
@@ -204,7 +204,7 @@ class RewriteTest(TestCase):
         results = list(matcher('ba'))
         assert results == [], results
         
-        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
+        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms().no_memoize()
         matcher = rx.get_match_sequence()
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         results = list(matcher('foo'))
@@ -220,19 +220,19 @@ class RewriteTest(TestCase):
     def test_integer(self):
         rx = Integer()
         
-        rx.config.compile_to_nfa().no_full_first_match()
+        rx.config.compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('12x'))
         assert results == [(['12'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
-        rx.config.clear().compile_to_nfa().no_full_first_match()
+        rx.config.clear().compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('12x'))
         assert results == [(['12'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
-        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
+        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('12x'))
         assert results == [(['12'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
@@ -241,19 +241,19 @@ class RewriteTest(TestCase):
     def test_real(self):
         rx = Real()
         
-        rx.config.compile_to_nfa().no_full_first_match()
+        rx.config.compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
         assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
-        rx.config.clear().compile_to_nfa().no_full_first_match()
+        rx.config.clear().compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
         assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
-        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
+        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
         assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER)), (['1'], (1, DUMMY_HELPER))], results
@@ -262,40 +262,40 @@ class RewriteTest(TestCase):
     def test_float(self):
         rx = Float()
         
-        rx.config.compile_to_nfa().no_full_first_match()
+        rx.config.compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
         assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
 
-        rx.config.clear().compile_to_nfa().no_full_first_match()
+        rx.config.clear().compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
         assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER))], results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree().no_memoize()
 
         rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
         matcher = rx.get_match_sequence()
         results = list(matcher('1.2x'))
         assert results == [(['1.2'], (3, DUMMY_HELPER)), (['1.'], (2, DUMMY_HELPER))], results
-        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
+        assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree().no_memoize()
         
     def test_star(self):
         rx = Add(Star('a')) 
         
-        rx.config.compile_to_nfa().no_full_first_match()
+        rx.config.compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
         assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER)), ([], (0, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
-        rx.config.clear().compile_to_nfa().no_full_first_match()
+        rx.config.clear().compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
         assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER)), ([], (0, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
-        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
+        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
         assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER)), ([], (0, DUMMY_HELPER))], results
@@ -305,19 +305,19 @@ class RewriteTest(TestCase):
         #basicConfig(level=DEBUG)
         rx = Word('a')
         
-        rx.config.compile_to_nfa().no_full_first_match()
+        rx.config.compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
         assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
-        rx.config.clear().compile_to_nfa().no_full_first_match()
+        rx.config.clear().compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
         assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER))], results
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
-        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms()
+        rx.config.clear().compile_to_nfa().no_full_first_match().compose_transforms().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
         assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER))], results
@@ -395,7 +395,7 @@ class WordBugTest(TestCase):
         #basicConfig(level=DEBUG)
         rx = Word()
         
-        rx.config.compile_to_nfa().no_full_first_match()
+        rx.config.compile_to_nfa().no_full_first_match().no_memoize()
         matcher = rx.get_match_sequence()
         results = list(matcher('aa'))
         assert results == [(['aa'], (2, DUMMY_HELPER)), (['a'], (1, DUMMY_HELPER))], results
@@ -420,12 +420,13 @@ class TokenBugTest(TestCase):
     def test_simple_word(self):
         #basicConfig(level=DEBUG)
         rx = Word()
+        rx.config.no_memoize()
         matcher = rx.get_parse().matcher
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         
     def test_simple_any(self):
         rx = Any(ascii_letters)[1:,...]
-        rx.config.compile_to_nfa()
+        rx.config.compile_to_nfa().no_memoize()
         matcher = rx.get_parse().matcher
         assert isinstance(matcher.matcher, NfaRegexp), matcher.matcher.tree()
         

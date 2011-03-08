@@ -72,8 +72,9 @@ Extended List Support
 
 Lepl includes additional classes to smplify working with nested lists.
 
-First, the `List() <api/redirect.html#lepl.support.list.List>`_ class (which subclasses Python's ``list``) and
-sub-classes can be used to identify nodes and display a tree::
+First, the `List() <api/redirect.html#lepl.support.list.List>`_ class (which
+subclasses Python's ``list``) and sub-classes can be used to identify nodes
+and display a tree::
 
   >>> class Factor(List): pass
   >>> class Expression(List): pass
@@ -113,8 +114,9 @@ sub-classes can be used to identify nodes and display a tree::
   >>> print(ast[2][0][0])
   2
 
-Second, we can use `sexpr_fold() <api/redirect.html#lepl.support.list.sexpr_fold>`_ to manipulate this structure in various
-ways::
+Second, we can use `sexpr_fold()
+<api/redirect.html#lepl.support.list.sexpr_fold>`_ to manipulate this
+structure in various ways::
 
   >>> def per_list(type_, list_):
   >>>     return str(eval(''.join(list_)))
@@ -216,8 +218,9 @@ returned as lists, since sub--node types and names need not be unique::
   >>> ast.Factor[1].Term[0].number[0]
   '2'
 
-As you can see, `Node() <api/redirect.html#lepl.support.node.Node>`_ combines aspects of ``list`` and ``dict``.  This
-makes it very powerful, but also complicates the API considerably.  For
-example, no single method describes the contents completely, so iteration over
-Nodes is via the constructor arguments exposed by `ConstructorGraphNode()
+As you can see, `Node() <api/redirect.html#lepl.support.node.Node>`_ combines
+aspects of ``list`` and ``dict``.  This makes it very powerful, but also
+complicates the API considerably.  For example, no single method describes the
+contents completely, so iteration over Nodes is via the constructor arguments
+exposed by `ConstructorGraphNode()
 <api/redirect.html#lepl.support.graph.ConstructorGraphNode>`_.

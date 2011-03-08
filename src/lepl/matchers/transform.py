@@ -56,7 +56,7 @@ receives:
 from abc import ABCMeta
 
 from lepl.core.parser import tagged
-from lepl.matchers.support import Transformable, coerce_
+from lepl.matchers.support import Transformable, coerce_, NoMemo
 from lepl.support.lib import fmt, str
 from lepl.support.node import Node
 
@@ -166,7 +166,7 @@ def raise_(e):
     raise e
         
 
-class Transform(Transformable):
+class Transform(Transformable, NoMemo):
     '''
     Apply a function to (stream_in, matcher)
 

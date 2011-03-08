@@ -99,31 +99,34 @@ We can see how this works with the simple generators `Word()
   >>> matcher = Word()
   >>> matcher.config.no_full_first_match()
   >>> next(matcher.match('hello world') )
-  (['hello'], 'hello world'[5:])
+  (['hello'], (5, <helper>))
 
-You can see the result and the remaining stream.  We needed to call
-`.config.no_full_first_match()
+You can see the result and the remaining stream (for strings this is an
+offset, here ``5``, and a "helper" object that contains the original input and
+additional useful information like the deepest match).
+
+We needed to call `.config.no_full_first_match()
 <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_
 otherwise we would have triggered an error due to incomplete matching (in case
 you are wondering, that error is from the parser that was automatically
 created when we called ``match()``; individual matchers don't check for a
 complete parse).
 
-We can join together matchers with `And()
+Matchers can be joined together with `And()
 <api/redirect.html#lepl.matchers.combine.And>`_::
 
   >>> next( And(Word(), Space(), Integer()).match('hello 123') )
-  (['hello', ' ', '123'], ''[0:])
+  (['hello', ' ', '123'], (9, <helper>))
 
 which can also be written as::
 
   >>> next( (Word() & Space() & Integer()).match('hello 123') )
-  (['hello', ' ', '123'], ''[0:])
+  (['hello', ' ', '123'], (9, <helper>))
 
 or even::
 
   >>> next( (Word() / Integer()).match('hello 123') )
-  (['hello', ' ', '123'], ''[0:])
+  (['hello', ' ', '123'], (9, <helper>))
 
 because ``&`` is shorthand for `And()
 <api/redirect.html#lepl.matchers.combine.And>`_, while ``/`` is similar, but
@@ -136,6 +139,29 @@ allows a matcher to return more than one result (or none at all) and the new
 stream can be used by another matcher to continue the work on the rest of the
 input data.
 
+.. note::
+
+  There are three groups of commands used to evaluate parsers.  These are:
+
+  * ``parser.parse(...)`` - Returns a single result.  Useful for simple
+    parsing.
+
+  * ``parser.parse_all(...)`` - Returns a generator of results.  Useful for
+    parsing ambiguous data.
+
+  * ``parser.match(...)`` - Returns a generator of (result, stream) pairs.
+    Useful for seeing "how Lepl works" in a little more detail.
+
+  In addition there are modifications of these methods for particular input
+  types, like ``parser.match_string(...)``.  The generic calls above will use
+  the type of teh argument to figure out which more specific method should be
+  used.
+
+  Finally, there are also ``get_...`` versions of these methods, which return
+  the parser as a standalone function.  This is somethimes useful if you want
+  to generate multiple versions of a parser with different configurations.
+
+
 .. index:: /, >, make_dict()
 
 More Detail
@@ -147,7 +173,7 @@ Let's look at the initial example in more detail::
   >>> phone   = Integer()           > 'phone'
   >>> matcher = name / ',' / phone  > make_dict
   
-  >>> matcher.parse_string('andrew, 3333253')[0]
+  >>> matcher.parse('andrew, 3333253')[0]
   {'phone': '3333253', 'name': 'andrew'}
 
 The ``','`` is converted into a matcher that recognises a comma.  And the
@@ -160,10 +186,10 @@ string a *named pair* is generated.
 Since the ``>`` produces a matcher, we can test this at the command line::
 
   >>> next( (Word() > 'name').match('andrew') )
-  ([('name', 'andrew')], ''[0:])
+  ([('name', 'andrew')], (6, <helper>))
 
   >>> next( (Integer() > 'phone').match('3333253') )
-  ([('phone', '3333253')], ''[0:])
+  ([('phone', '3333253')], (7, <helper>))
 
 This makes `make_dict <api/redirect.html#lepl.support.node.make_dict>`_ easier
 to understand.  Python's standard ``dict()`` will construct a dictionary from
@@ -175,7 +201,7 @@ named pairs::
 And the results from ``name / ',' / phone`` include named pairs::
 
   >>> next( (name / ',' / phone).match('andrew, 3333253') )
-  ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], ''[0:])
+  ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], (15, <helper>))
 
 Now we know that ``>`` passes results to a function, so it looks like
 `make_dict <api/redirect.html#lepl.make_dict>`_ is almost identical to the
@@ -206,7 +232,7 @@ This matches 0 or more spaces.  In general, adding ``[start:stop]`` to a
 matcher will repeat it for between *start* and *stop* times (the defaults for
 missing values is 0 and "as many as possible").
 
-.. note:
+.. note::
 
   *stop* is *inclusive*, so ``Space()[2:3]`` would match 2 or 3 spaces.  This
   is subtly different from Python's normal array behaviour.

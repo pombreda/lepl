@@ -97,7 +97,7 @@ The problem is that ``expr`` is used before it is defined.  So either it won't
 compile or (worse!) it will use a definition of ``expr`` from an earlier
 example that you had typed into Python.  There's no simple fix, because if you
 put ``expr`` before the ``add``, for example, then the ``add`` in the
-definition of ``expr`` won't have been defined!
+definition of ``expr`` won't have been defined...
 
 More generally, the problem is that we have a circular set of references,
 because we have a recursive grammar.
@@ -194,10 +194,11 @@ subclass of Python's ``list``.  That makes it easy to understand and use.
 
 Lepl includes tools that simplify working with nested lists, including
 `sexpr_fold() <api/redirect.html#lepl.support.list.sexpr_fold>`_,
-`sexpr_flatten() <api/redirect.html#lepl.support.list.sexpr_flatten>`_ and `sexpr_to_tree() <api/redirect.html#lepl.support.list.sexpr_to_tree>`_.  These all work with any kind of
-nested iterable (except strings, which are treated as single values rather than
-sequences of characters).  That means that you can also use tuples, plain old
-Python lists, and even sub--classes of `List()
+`sexpr_flatten() <api/redirect.html#lepl.support.list.sexpr_flatten>`_ and
+`sexpr_to_tree() <api/redirect.html#lepl.support.list.sexpr_to_tree>`_.  These
+all work with any kind of nested iterable (except strings, which are treated
+as single values rather than sequences of characters).  That means that you
+can also use tuples, plain old Python lists, and even sub--classes of `List()
 <api/redirect.html#lepl.support.list.List>`_ to structure your AST (the next
 section will use sub--classes to identify different kinds of values).
 
@@ -206,7 +207,7 @@ For more complex cases, Lepl also includes a `Node()
 examples; `List() <api/redirect.html#lepl.support.list.List>`_ is new in Lepl
 4).  `Node() <api/redirect.html#lepl.support.node.Node>`_ tries to combine
 Python's ``list`` and ``dict`` classes into one type, which sounds incredibly
-useful, but ends up being confusingly complex.
+useful, but ends up being a little too complex.
 
 If you use `Node() <api/redirect.html#lepl.support.node.Node>`_, your code
 will continue to work, but I would encourage you to consider switching to

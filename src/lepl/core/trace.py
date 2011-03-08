@@ -283,11 +283,16 @@ class _RecordDeepest(_TraceStack):
         '''
         Record the data.
         '''
-        stream = self.generator.stream
+        stream = self.generator.stream()
+        if stream:
+            stream = stream()
         try:
             depth = stream.depth()
         except AttributeError: # no .depth()
-            depth = -s_len(stream)
+            if stream:
+                depth = -s_len(stream)
+            else:
+                depth = 0
         if depth >= self._deepest and is_result:
             self._deepest = depth
             self._countdown_result = self.n_results_after
@@ -342,34 +347,4 @@ class _RecordDeepest(_TraceStack):
             self.n_results_after, '\n'.join(self._results_after))
 
 
-class StreamMonitor(StackMonitor):
-    '''
-    This prints (not logs) data about streams.  It is intended for debugging,
-    not normal use.
-    '''
-    
-    def __init__(self):
-        self._streams = {}
-    
-    def push(self, generator):
-        '''
-        Called before adding a generator to the stack.
-        '''
-        stream = generator.stream
-        type_ = type(stream)
-        new = False
-        if type_ not in self._streams:
-            print(fmt('Found new stream type: {0}', type_))
-            self._streams[type_] = set()
-        streams = self._streams[type_]
-        if stream not in streams:
-            streams.add(stream)
-            if stream in streams:
-                new = True
-        if new:
-            print(fmt('Found new stream: {2} {0} ({1})', 
-                         stream, type_, hash(stream)))
-            print(fmt(' source {1} ({0})', 
-                         stream.source, type(stream.source)))
-            
     

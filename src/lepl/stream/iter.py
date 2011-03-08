@@ -102,11 +102,10 @@ def base_iterable_factory(state_to_line_stream, type_):
     class BaseIterableHelper(BaseHelper):
     
         def __init__(self, id=None, factory=None, max=None, global_kargs=None, 
-                     delta=None):
+                     cache_level=None, delta=None):
             super(BaseIterableHelper, self).__init__(id=id, factory=factory, 
-                                                     max=max,
-                                                     global_kargs=global_kargs, 
-                                                     delta=delta)
+                    max=max, global_kargs=global_kargs, 
+                    cache_level=cache_level, delta=delta)
             add_defaults(self.global_kargs, {
                 'global_type': type_,
                 'filename': type_})
@@ -121,7 +120,7 @@ def base_iterable_factory(state_to_line_stream, type_):
                 self._warn('Default hash')
                 offset = -1
             key = HashKey(self.id ^ offset ^ hash(other), (self.id, other))
-            self._debug(fmt('Hash at {0!r} ({1}): {2}', state, offset, hash(key)))
+            #self._debug(fmt('Hash at {0!r} ({1}): {2}', state, offset, hash(key)))
             return key
         
         def kargs(self, state, prefix='', kargs=None):
@@ -216,6 +215,7 @@ class IterableHelper(
                 raise
     
     def len(self, state):
+        self._error('len(iter)')
         raise TypeError
         
     def stream(self, state, value, id_=None, max=None):
@@ -225,6 +225,7 @@ class IterableHelper(
         next_line_stream = \
             self.factory(value, id=id_, factory=self.factory, max=max, 
                          global_kargs=self.global_kargs, 
+                         cache_level=self.cache_level+1,
                          delta=s_delta(line_stream))
         return ((cons, next_line_stream), self)
     

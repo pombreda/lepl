@@ -21,7 +21,7 @@ An obvious problem with this parser is that it does not handle spaces::
 
   >>> add.parse('12 + 30')
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at ' + 30'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '+ 30' (line 1, character 4).
 
 So in this section we'll look at the various ways we can handle spaces (and
 learn more about other features of Lepl along the way).
@@ -45,7 +45,7 @@ But now our parser won't work without spaces!
 
   >>> add.parse('12+30')
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+30'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '30' (line 1, character 4).
 
 .. index:: Star()
 
@@ -124,9 +124,9 @@ Finally, we can get the shortest number of matches first by specifying an
 array index "step" of ``'b'`` (short for "breadth--first search"; the default
 is ``'d'`` for "depth--first")::
 
-  >>> a = Literal('a')[2:4:'b']
-  >>> a.config.no_full_first_match()
-  >>> list(a.parse_all('aaaa'))
+  >>> a24 = Literal('a')[2:4:'b']
+  >>> a24.config.no_full_first_match()
+  >>> list(a24.parse_all('aaaa'))
   [['a', 'a'], ['a', 'a', 'a'], ['a', 'a', 'a', 'a']]
 
 Putting all that together, `Star()
@@ -197,39 +197,40 @@ added wherever there is a ``&``.  Luckily, we can do that in Lepl::
 
 Which works as before, but can save some typing in longer programs.
 
-`Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ is implemented as
-by redefining the ``&`` and ``[]`` operators to include spaces.  The matcher
+`Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_
+redefines the ``&`` and ``[]`` operators to include spaces.  The matcher
 associated with any operator can be redefined in Lepl, but doing so is pretty
 advanced and outside the scope of this tutorial.
 
-Because `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ changes
-everything "inside" the "with" it's usually best to define matchers that
-`don't` need spaces beforehand.
+Because `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_
+changes everything "inside" the "with" it's usually best to define matchers
+that *don't* need spaces beforehand.
 
 .. warning::
 
-   `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ only modifies
-   ``&`` and ``[]``, which can lead to (at least) two surprising results.
+   `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ only
+   modifies ``&`` and ``[]``, which can lead to (at least) two surprising
+   results.
 
    First, there's nothing added before or after any pattern that's defined.
    For that, you still need to explicitly add spaces as described earlier.
    `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ only
-   adds spaces `between` items joined with ``&``.
+   adds spaces *between* items joined with ``&``.
 
-   Second, if you specify `at least one` space (rather than `zero or more`)
-   then `every` ``&`` in the separator's context `must` have a space.  This
+   Second, if you specify *at least one* space (rather than *zero or more*)
+   then *every* ``&`` in the separator's context *must* have a space.  This
    can be surprising if you have, for example, ``& Eos()`` because it means
-   that there `must` be a space before the end of the stream.
+   that there *must* be a space before the end of the stream.
 
    You can avoid spaces in two ways.  Either define matchers that don't need
    spaces *before* you use `Separator()
    <api/redirect.html#lepl.matchers.operators.Separator>`_, or use `And()
    <api/redirect.html#lepl.matchers.combine.And>`_ instead.
 
-Finally, because this is so common, `DroppedSpace() <api/redirect.html#lepl.matchers.operators.DroppedSpace>`_, is pre--defined::
+Finally, because this is so common, `DroppedSpace()
+<api/redirect.html#lepl.matchers.operators.DroppedSpace>`_, is pre--defined::
 
   >>> number = Real() >> float
-  >>> spaces = ~Space()[:]
   >>> with DroppedSpace():
   ...   add = number & ~Literal('+') & number > sum
   ...
@@ -250,10 +251,10 @@ Regular expressions are like "mini-parsers".  They are used in a variety of
 languages, and Python has a `module
 <http://docs.python.org/3.0/library/re.html>`_ that supports them.  I don't
 have space here (or the time and energy) to explain them in detail, but the
-basic idea is that you can write a string (an "expression") that describes a
-sequence of letters to be matched.  This expression can contain things like
-"." which matches any letter, or "[a-m]" which matches any letter between "a"
-and "m", for example.
+basic idea is that you can write description (an "expression") for a sequence
+of letters to be matched.  This expression can contain things like "." which
+matches any letter, or "[a-m]" which matches any letter between "a" and "m",
+for example.
 
 So regular expressions are very like a parser.  But a parser can usually
 (exact details depend on the language and parser) describe more complicated
@@ -271,8 +272,9 @@ expressions.
 Regexp()
 --------
 
-The `Regexp() <api/redirect.html#lepl.matchers.core.Regexp>`_ matcher calls the Python regular expression library.  So if
-you are experienced at using that you may find it useful.
+The `Regexp() <api/redirect.html#lepl.matchers.core.Regexp>`_ matcher calls
+the Python regular expression library.  So if you are experienced at using
+that you may find it useful.
 
 However, there are some limitations.  First, the interface exposed by Lepl
 doesn't include all Python's options (it would make things too complicated and
@@ -292,15 +294,15 @@ which expect all the data to be in a single string.
 Here are some examples showing what is possible::
 
   >>> matcher = Regexp('a+')
-  >>> matcher.no_full_first_match()
+  >>> matcher.config.no_full_first_match()
   >>> matcher.parse('aaabb')
   ['aaa']
   >>> matcher = Regexp(r'\w+')
-  >>> matcher.no_full_first_match()
+  >>> matcher.config.no_full_first_match()
   >>> matcher.parse('abc def')
   ['abc']
   >>> matcher = Regexp('a*(b*)c*(d*)e*')
-  >>> matcher.no_full_first_match()
+  >>> matcher.config.no_full_first_match()
   >>> matcher.parse('abbcccddddeeeeee')
   ['bb', 'dddd']
 
@@ -313,11 +315,10 @@ DfaRegexp()
 
 The `DfaRegexp() <api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_ matcher
 calls Lepl's own regular expression library.  It understands simple regular
-expressions and is not limited in the amount of data it can match.  However,
-it does not support grouping, references, etc.
+expressions, but it does not support grouping, references, etc.
 
   >>> matcher = DfaRegexp('a*b')
-  >>> matcher.no_full_first_match()
+  >>> matcher.config.no_full_first_match()
   >>> matcher.parse('aabbcc')
   ['aab']
 
@@ -327,8 +328,8 @@ NfaRegexp()
 -----------
 
 This is implemented by Lepl's own regular expression library and, like
-`DfaRegexp() <api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_, is not
-limited in the amount of data it can access.
+`DfaRegexp() <api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_, is limited
+in what it supports.
 
 `NfaRegexp() <api/redirect.html#lepl.regexp.matchers.NfaRegexp>`_ differs from
 "normal" regular expressions in that it can return multiple matches (usually a
@@ -388,17 +389,16 @@ With those tokens we can now try to rewrite our parser::
 
   >>> number = value >> float
   >>> add = number & ~symbol('+') & number > sum
-  >>> parse('12+30')
+  >>> add.parse('12+30')
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+30',
-  Line 1, character 2 of str: '12+30'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '+30' (line 1, character 3).
 
 Ooops.  That is not what we wanted!
 
 Before we fix the problem, though, I need to explain a detail above.
 
 The matcher, ``symbol('+')`` is the same as ``symbol(Literal('+'))`` and means
-that we require a symbol token `and` that the text in that token matches "+"
+that we require a symbol token *and* that the text in that token matches "+"
 (this is what I was referring to when I said that we match both the *type* of
 token and it's *contents*).  A token used like this can contain any Lepl
 matcher as a constraint (well, anything except `Token()
@@ -414,8 +414,7 @@ What went wrong in the example above?
 There is a clue in the error message --- when we use tokens the "match failed
 at" message shows the token::
 
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at '+30',
-  Line 1, character 2 of str: '12+30'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '+30' (line 1, character 3).
 
 That means that we have a token whose value is "+30", which is not what we
 were expecting.  We expected that the tokens would be "12", "+", and "30".
@@ -461,7 +460,8 @@ the "-" case (negative numbers) below::
 
 The important changes here are:
 
-* ``value`` is changed to an `UnsignedReal() <api/redirect.html#lepl.matchers.derived.UnsignedReal>`_
+* ``value`` is changed to an `UnsignedReal()
+  <api/redirect.html#lepl.matchers.derived.UnsignedReal>`_
 
 * number has an `Optional()
   <api/redirect.html#lepl.matchers.derived.Optional>`_ minus (we could also
@@ -486,7 +486,8 @@ Lepl works is as follows:
 
 The spaces matched in step 2 are defined via a regular expression, which can
 be passed to the :ref:`configuration` (the ``discard`` parameter to
-`.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_).  If no value value is given, "\\r\\n\\t " is used.
+`.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_).
+If no value value is given, "[\\r\\n\\t ]+" is used.
 
 Summary
 -------

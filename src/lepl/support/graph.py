@@ -61,7 +61,8 @@ calls it in a way that replicates the original calls to the node constructors.
 
 from collections import Sequence, deque
 
-from lepl.support.lib import compose, safe_in, safe_add, empty, fmt
+from lepl.support.lib import compose, safe_in, safe_add, empty, fmt,\
+    fallback_add
 
 
 FORWARD = 1    # forward edge
@@ -92,7 +93,7 @@ def dfs_edges(node, type_):
             stack = [(node, iter(node), ROOT)]
             yield node, node, FORWARD | ROOT
             visited = set()
-            safe_add(visited, node) # cannot track loops in unhashable objects
+            visited = fallback_add(visited, node)
             while stack:
                 parent, children, ptype = stack[-1]
                 try:
@@ -103,7 +104,7 @@ def dfs_edges(node, type_):
                         else:
                             stack.append((child, iter(child), NODE))
                             yield parent, child, FORWARD | NODE
-                            safe_add(visited, child)
+                            visited = fallback_add(visited, child)
                     else:
                         stack.append((child, empty(), LEAF))
                         yield parent, child, FORWARD | LEAF
@@ -189,7 +190,7 @@ def loops(node, type_):
                 else:
                     if not safe_in(child, known):
                         stack.append(family)
-                        safe_add(known, child)
+                        known = fallback_add(known, child)
 
 
 # pylint: disable-msg=R0903

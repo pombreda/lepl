@@ -62,12 +62,14 @@ class StreamHelper(_StreamHelper):
     The interface that all helpers should implement.
     '''
     
-    def __init__(self, id=None, factory=None, max=None, global_kargs=None):
+    def __init__(self, id=None, factory=None, max=None, global_kargs=None,
+                 cache_level=None):
         from lepl.stream.factory import DEFAULT_STREAM_FACTORY
         self.id = id if id is not None else hash(self)
         self.factory = factory if factory else DEFAULT_STREAM_FACTORY
         self.max = max if max else MutableMaxDepth()
         self.global_kargs = global_kargs if global_kargs else {}
+        self.cache_level = -9 if cache_level is None else cache_level
     
     def __repr__(self):
         '''Simplify for comparison in tests'''
@@ -217,6 +219,12 @@ class StreamHelper(_StreamHelper):
         '''
         raise NotImplementedError
     
+    def cacheable(self):
+        '''
+        Is this stream cacheable?
+        '''
+        return self.cache_level > 0
+    
 
 # The following are helper functions that allow the methods above to be
 # called on (state, helper) tuples
@@ -274,6 +282,12 @@ s_new_max = lambda stream, max: stream[1].new_max(stream[0], max)
 
 s_global_kargs = lambda stream: stream[1].global_kargs
 '''Access the global_kargs attribute.'''
+
+s_cache_level = lambda stream: stream[1].cache_level
+'''Access the cache_level attribute.'''
+
+s_cacheable = lambda stream: stream[1].cacheable
+'''Is the stream cacheable?'''
 
 
 class MutableMaxDepth(object):

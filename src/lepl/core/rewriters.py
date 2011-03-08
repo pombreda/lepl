@@ -439,6 +439,9 @@ class OptimizeOr(Rewriter):
         self.conservative = conservative
 
     def __call__(self, graph):
+        self._warn('Alternatives are being re-ordered to improve stability with left-recursion.\n'
+                   'This will change the ordering of results.')
+        #raise Exception('wtf')
         for delayed in [x for x in preorder(graph, Matcher) 
                         if isinstance(x, Delayed)]:
             for loop in either_loops(delayed, self.conservative):

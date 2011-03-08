@@ -54,10 +54,10 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
     '''
     
     def __init__(self, id=None, factory=None, max=None, global_kargs=None, 
-                 delta=None, len=None):
+                 cache_level=None, delta=None, len=None):
         super(TokenHelper, self).__init__(id=id, factory=factory, 
                                           max=max, global_kargs=global_kargs, 
-                                          delta=delta)
+                                          cache_level=cache_level, delta=delta)
         self._len = len
 
     def key(self, cons, other):
@@ -68,7 +68,7 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
             self._warn('Default hash')
             tokens = '<EOS>'
             key = HashKey(-1, other)
-        self._debug(fmt('Hash at {0!r} {1}', tokens, hash(key)))
+        #self._debug(fmt('Hash at {0!r} {1}', tokens, hash(key)))
         return key
 
     def next(self, cons, count=1):
@@ -93,6 +93,7 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
     
     def len(self, cons):
         if self._len is None:
+            self._error('len(tokens)')
             raise TypeError
         else:
             try:

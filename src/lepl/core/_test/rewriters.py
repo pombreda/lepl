@@ -132,7 +132,7 @@ class DelayedCloneTest(TestCase):
     def test_full_config_loop(self):
         matcher = Delayed()
         matcher += Any() & matcher
-        matcher.config.no_full_first_match()
+        matcher.config.no_full_first_match().no_memoize()
         copy = matcher.get_parse_string().matcher
         self._assert_clone(matcher, copy)
                 
@@ -153,7 +153,7 @@ class DelayedCloneTest(TestCase):
         self.assert_relative(expression)
         expression.config.no_full_first_match().no_compile_to_regexp()
         expression.config.no_compose_transforms().no_direct_eval()
-        expression.config.no_flatten()
+        expression.config.no_flatten().no_memoize()
         copy = expression.get_parse_string().matcher
         self._assert_clone(expression, copy)
                 

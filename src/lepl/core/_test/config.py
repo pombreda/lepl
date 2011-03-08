@@ -128,6 +128,7 @@ class BugTest(TestCase):
 
 
 class TraceVariablesTest(TestCase):
+    
     def test_trace(self):
         buffer = StringIO()
         with TraceVariables(out=buffer):
@@ -154,10 +155,12 @@ class TraceVariablesTest(TestCase):
         query.config.auto_memoize(full=True)
         query.parse('spicy meatballs OR "el bulli restaurant"')
         trace = buffer.getvalue()
-        assert trace == expected, trace
+        assert trace == expected, '"""' + trace + '"""'
         # check caching works
         query.parse('spicy meatballs OR "el bulli restaurant"')
         trace = buffer.getvalue()
-        assert trace == expected, trace
+        expected += '''       query = [['spicy', 'meatballs'], ['el... stream = ''
+'''
+        assert trace == expected, '"""' + trace + '"""'
 
         

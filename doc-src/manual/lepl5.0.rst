@@ -10,9 +10,11 @@ break your code.  I'm sorry!  But hopefully it should be easy to fix (see
 below) and, once running again, should be a little faster.
 
 In the longer term these changes help me maintain Lepl and continue to expand
-it.  Future changes will include improved regular expression support and
-better handling of left-recursive grammars.  Without the changes in 5 those
-would not be possible.
+it.
+
+As part of the stream work I also revisited how Lepl handles left-recursive
+grammars.  This resulted in me being less confident of the approach used and
+led to additional changes.
 
 The Big Picture
 ---------------
@@ -69,7 +71,7 @@ constructing a new, heavyweight object at every step.
 Changes
 -------
 
-OK, so what has changed?  Here is a list:
+OK, so what has changed?  Here is a list of the non-left-recursive changes:
 
 * Some ``parse()`` methods have changed.  ``parse_null()`` no longer exists
   (see above; ``parse_sequence()`` might be the best replacement) and instead
@@ -134,6 +136,11 @@ OK, so what has changed?  Here is a list:
   with ``(char, next_stream) = s_next(stream)``.  The full set of functions is
   documented at LINK and the source is full of examples.
 
+* `TraceResults() <api/redirect.html#lepl.core.trace.TraceResults>`_,
+  configured by ``config.trace()``, is now ``TraceStack()``, configured by
+  ``config.trace_stack()``.
+  
+
 * Repetition joins values using a "repeat" operator.  By default this joins
   lists, as before, but you can redefine it to define a fold over results.  I
   use this in the large memory example (ADD LINK) which explains the idea in a
@@ -146,7 +153,77 @@ OK, so what has changed?  Here is a list:
   nothing but call another generator - something anyone who has watched Lelp
   in a debugger cannot fail to have wondered about...)
 
-More here...
+
+Left Recursion
+--------------
+
+As I modified the stream code I extended checks related to memoisation and
+caching.  This, together with reading a paper ("Memoization in Top Down
+Parsing" by Mark Johnson - http://citeseer.ist.psu.edu/580468.html) convinced
+me that Lepl's support for left recursion has never been complete (in fact,
+Lepl 4 was broken quite seriously).
+
+I will describe Lepl's memoisation algorithm in detail below, but first a
+summary of the changes:
+
+* The default configuration now *includes* memoisation for right-recursive
+  grammars.  This can be removed with ``config.no_memoize()``.  It is added by
+  default because it detects left-recursive grammars (which would otherwise
+  loop indefinitely) and raises an error with helpful text.
+
+* To enable handling of (some) left-recursive grammars, the simplest option is
+  to use ``config.auto_memoize()`` which will add `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_ caches where
+  required and also call ``config.optimize_or()`` to reduce immediate
+  left-recursive calls.
+
+* For more detailed control, you can also use:
+
+  * ``config.left_memoize()`` -  add `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_ everywhere
+
+  * ``config.auto_memoize(full=True)`` - add `RMemo() <api/redirect.html#lepl.matchers.memo.RMemo>`_ in addition to
+    `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_.
+
+  * ``config.no_optimize_or()`` - don't re-arrange `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ contents.
+
+  * ``config.optimize_or(conservative=True)`` - re-arrange `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ contents
+    even on non-critical loops.
+
+The memoisation code does the following:
+
+* Wrappers (LMemo class) are added to critical points in the matcher DAG.  By
+  default only the loops that pass through the leftmost matchers are adjusted
+  (other paths will presumably consume input in other matchers on each loop),
+  but specifying left_memoisation() in the configuration will instrument all
+  loops.
+
+* When the parser is invoked, LMemo wrappers create "per-stream caches"
+  (PerStreamCache class) for each input stream.  Repeated calls to a
+  particular wrapper with the same input will be delegated to the same
+  per-stream cache (Note that "per-stream cache" is a misnomer as there is
+  another layer of indirection to come).
+
+* The per-stream cache has two states.  In the initial state, on each call, it
+  generates a new "per-call cache" that delegates to the underlying matcher
+  and caches the results.  At this point results are cached but the cache is
+  not used to restrict calls.  The intuition here is that these are recursive
+  instances of the call "already being handled".
+
+* In this state it is possible for a left-recursive call to repeatedly
+  generate per-call caches as it loops without consuming input.  The
+  per-stream cache detects this and restricts the number of possible loops to
+  the length of the available input stream.  This is based on the approach
+  described in Frost and Hafiz 2006.  Calls after this limit immediately fail
+  to match.
+
+* When the *first* per-call cache completes (ie the cache contains all
+  available results) the per-stream cache transitions to the second state.  In
+  this state new calls receive values from the completed per-call cache.
+
+* In the second state, the limiting on stream length is no longer necessary.
+
+Note that the above is *not* guaranteed to work in all circumstances; even
+when it does work it may be inefficient.  The only safe way to parse with Lepl
+is to use a right-recursive grammar.
 
 
 

@@ -42,7 +42,7 @@ from lepl.matchers.core import OperatorMatcher
 from lepl.matchers.matcher import is_child
 from lepl.matchers.support import NoMemo
 from lepl.core.parser import tagged, GeneratorWrapper
-from lepl.stream.core import s_key, s_fmt, s_len
+from lepl.stream.core import s_key, s_len
 from lepl.support.state import State
 from lepl.support.lib import LogMixin, empty, fmt
 
@@ -67,6 +67,202 @@ def RMemo(matcher):
 
 
 class _RMemo(OperatorMatcher):
+    '''
+    A simple memoizer for grammars that do not have left recursion.
+    
+    Making this class Transformable did not improve performance (it's better
+    to place the transformation on critical classes like Or and And). 
+    '''
+    
+    # pylint: disable-msg=E1101
+    # (using _args to define attributes)
+    
+    def __init__(self, matcher):
+        super(_RMemo, self).__init__()
+        self._arg(matcher=matcher)
+        self.__table = {} # s_key(stream) -> [lock, table, generator] 
+        self.__state = State.singleton()
+    
+    @tagged
+    def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
+        key = s_key(stream, self.__state)
+        if key not in self.__table:
+            self.__table[key] = [False, [], self.matcher._match(stream)]
+        descriptor = self.__table[key]
+        for i in count():
+            if descriptor[0]:
+                raise MemoException('''Left recursion was detected.
+You can try .config.auto_memoize() or similar, but it is better to re-write 
+the parser to remove left-recursive definitions.''')
+            if i == len(descriptor[1]):
+                try:
+                    descriptor[0] = True
+                    result = yield descriptor[2]
+                finally:
+                    descriptor[0] = False
+                descriptor[1].append(result)
+            yield descriptor[1][i]
+                    
+    def _untagged_match(self, stream):
+        '''
+        Match the stream without trampolining.
+        '''
+        key = s_key(stream, self.__state)
+        if key not in self.__table:
+            self.__table[key] = [False, [], self.matcher._match(stream)]
+        descriptor = self.__table[key]
+        for i in count():
+            if descriptor[0]:
+                raise MemoException('''Left recursion was detected.
+You can try .config.auto_memoize() or similar, but it is better to re-write 
+the parser to remove left-recursive definitions.''')
+            if i == len(descriptor[1]):
+                result = next(descriptor[2])
+                descriptor[1].append(result)
+            yield descriptor[1][i]
+
+
+class _RMemo4(OperatorMatcher):
+    '''
+    A simple memoizer for grammars that do not have left recursion.
+    
+    Making this class Transformable did not improve performance (it's better
+    to place the transformation on critical classes like Or and And). 
+    '''
+    
+    # pylint: disable-msg=E1101
+    # (using _args to define attributes)
+    
+    def __init__(self, matcher):
+        super(_RMemo, self).__init__()
+        self._arg(matcher=matcher)
+        self.__table = {} # s_key(stream) -> [lock, table, generator] 
+        self.__state = State.singleton()
+    
+    @tagged
+    def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
+        key = s_key(stream, self.__state)
+        if key not in self.__table:
+            self.__table[key] = [False, [], self.matcher._match(stream)]
+        descriptor = self.__table[key]
+        for result in descriptor[1]:
+            if descriptor[0]:
+                raise MemoException('''Left recursion was detected.
+You can try .config.auto_memoize() or similar, but it is better to re-write 
+the parser to remove left-recursive definitions.''')
+            else:
+                yield result
+        while True:
+            descriptor[0] = True
+            try:
+                result = yield descriptor[2]
+            finally:
+                descriptor[0] = False
+            descriptor[1].append(result)
+            yield result
+                    
+    def _untagged_match(self, stream):
+        '''
+        Match the stream without trampolining (we don't need to worry about
+        recursion).
+        '''
+        key = s_key(stream, self.__state)
+        if key not in self.__table:
+            self.__table[key] = [False, [], self.matcher._match(stream)]
+        descriptor = self.__table[key]
+        for result in descriptor[1]:
+            if descriptor[0]:
+                raise MemoException('''Left recursion was detected.
+You can try .config.auto_memoize() or similar, but it is better to re-write 
+the parser to remove left-recursive definitions.''')
+            else:
+                yield result
+        while True:
+            try:
+                result = next(descriptor[2])
+            except TypeError:
+                result = next(descriptor[2].generator)
+            descriptor[1].append(result)
+            yield result
+
+
+class _RMemo3(OperatorMatcher):
+    '''
+    A simple memoizer for grammars that do not have left recursion.
+    
+    Making this class Transformable did not improve performance (it's better
+    to place the transformation on critical classes like Or and And). 
+    '''
+    
+    # pylint: disable-msg=E1101
+    # (using _args to define attributes)
+    
+    def __init__(self, matcher):
+        super(_RMemo, self).__init__()
+        self._arg(matcher=matcher)
+        self.__g_table = {}
+        self.__d_table = {}
+        self.__state = State.singleton()
+    
+    @tagged
+    def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
+        key = s_key(stream, self.__state)
+        if key not in self.__g_table:
+            descriptor = [True, []]
+            self.__g_table[key] = descriptor
+            generator = self.matcher._match(stream) 
+            try:
+                while True:
+                    result = yield generator
+                    descriptor[1].append(result)
+                    yield result
+            finally:
+                descriptor[0] = False
+        else:
+            (lock, results) = self.__g_table[key]
+            if lock:
+                raise MemoException('''Left recursion was detected.
+You can try .config.auto_memoize() or similar, but it is better to re-write 
+the parser to remove left-recursive definitions.''')
+            else:
+                for result in results:
+                    yield result
+                    
+    def _untagged_match(self, stream):
+        '''
+        Match the stream without trampolining (we don't need to worry about
+        recursion).
+        '''
+        key = s_key(stream, self.__state)
+        if key not in self.__d_table:
+            descriptor = [True, []]
+            self.__d_table[key] = descriptor
+            generator = self.matcher._untagged_match(stream)
+            for result in generator:
+                descriptor[1].append(result)
+                yield result
+            descriptor[0] = False
+        else:
+            (lock, results) = self.__d_table[key]
+            if lock:
+                raise MemoException('''Left recursion was detected.
+You can try .config.auto_memoize() or similar, but it is better to re-write 
+the parser to remove left-recursive definitions.''')
+            else:
+                for result in results:
+                    yield result
+
+
+class _RMemo2(OperatorMatcher):
     '''
     A simple memoizer for grammars that do not have left recursion.  Since this
     fails with left recursion it's safer to always use LMemo.
@@ -136,14 +332,9 @@ class RTable(LogMixin):
         embedded generator to get the next value (and then store it).
         '''
         if self.__active:
-            raise MemoException(s_fmt(stream, '''Left recursion with RMemo?
-i: {i}
-table: {table!r}
-stream: {repr}/{type}
-matcher: {matcher!s}''', kargs = {
-                'i': i,
-                'table': self.__table,
-                'matcher': matcher}))
+            raise MemoException('''Left recursion was detected.
+You can try .config.auto_memoize() or similar, but it is better to re-write 
+the parser to remove left-recursive definitions.''')
         try:
             while i >= len(self.__table) and not self.__stopped:
                 try:
@@ -209,7 +400,7 @@ class _LMemo(OperatorMatcher):
         self._arg(matcher=matcher)
         self.__caches = {}
         self.__state = State.singleton()
-        
+    
     def _match(self, stream):
         '''
         Attempt to match the stream.
@@ -241,7 +432,15 @@ class PerStreamCache(LogMixin):
         self.__matcher = matcher
         self.__counter = 0
         self.__first = None
-        self.foo = 0
+        
+    def __curtail(self, count, stream):
+        '''
+        Do we stop at this point?
+        '''
+        if count == 1:
+            return False
+        else:
+            return count > s_len(stream) 
         
     @tagged
     def _match(self, stream):
@@ -250,7 +449,8 @@ class PerStreamCache(LogMixin):
         '''
         if not self.__first:
             self.__counter += 1
-            if self.__counter > 1 and self.__counter > s_len(stream):
+            if self.__curtail(self.__counter, stream):
+                self._warn('Curtailing excess looping before first result (left recursion).')
                 return empty()
             else:
                 cache = PerCallCache(self.__matcher._match(stream))
@@ -301,11 +501,7 @@ class PerCallCache(LogMixin):
             while True:
                 result = yield self.__generator
                 if self.__unstable:
-                    self._warn(fmt('A view completed before the cache was '
-                                   'complete: {0!r}. This typically means that '
-                                   'the grammar contains a matcher that does not '
-                                   'consume input within a loop and is usually '
-                                   'an error.', self.__generator))
+                    self._warn('A view completed before the cache was complete.')
                 self.__cache.append(result)
                 self.__returned = True
                 yield result

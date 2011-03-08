@@ -252,7 +252,7 @@ see what I mean, consider the two examples below::
 We want the first case, not the second.
 
 To do this we can define a new matcher, which takes the output from
-``Real()`` (a list of strings) and passes each value in the list to the
+`Real() <api/redirect.html#lepl.matchers.derived.Real>`_ (a list of strings) and passes each value in the list to the
 Python built--in function, ``float()``::
 
   >>> number = Real() >> float

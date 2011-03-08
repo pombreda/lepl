@@ -43,7 +43,9 @@ class BaseTest(TestCase):
     
     def assert_direct(self, stream, match, target):
         match.config.no_full_first_match()
-        result = list(match.parse_all(stream))
+        parser = match.get_parse_all()
+        #print(parser.matcher.tree())
+        result = list(parser(stream))
         assert target == result, result
     
     def assert_fail(self, stream, match):

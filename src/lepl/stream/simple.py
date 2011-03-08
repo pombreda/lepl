@@ -42,18 +42,19 @@ from lepl.stream.core import StreamHelper, OFFSET, LINENO, CHAR, HashKey
 
 class BaseHelper(LogMixin, StreamHelper):
     
-    def __init__(self, id=None, factory=None, max=None, global_kargs=None, delta=None):
+    def __init__(self, id=None, factory=None, max=None, global_kargs=None, 
+                 cache_level=None, delta=None):
         super(BaseHelper, self).__init__(id=id, factory=factory, max=max, 
-                                         global_kargs=global_kargs)
+                global_kargs=global_kargs, cache_level=cache_level)
         self._delta = delta if delta else (0,1,1)
 
 
 class SequenceHelper(BaseHelper):
     
     def __init__(self, sequence, id=None, factory=None, max=None, 
-                 global_kargs=None, delta=None):
+                 global_kargs=None, cache_level=None, delta=None):
         super(SequenceHelper, self).__init__(id=id, factory=factory, max=max,
-                                global_kargs=global_kargs, delta=delta)
+                global_kargs=global_kargs, cache_level=cache_level, delta=delta)
         self._sequence = sequence
         type_ = self._typename(sequence)
         add_defaults(self.global_kargs, {
@@ -65,7 +66,7 @@ class SequenceHelper(BaseHelper):
     def key(self, state, other):
         offset = state + self._delta[OFFSET]
         key = HashKey(self.id ^ offset ^ hash(other), (self.id, hash(other)))
-        self._debug(fmt('Hash at offset {0}: {1}', offset, hash(key)))
+        #self._debug(fmt('Hash at offset {0}: {1}', offset, hash(key)))
         return key
     
     def _fmt(self, sequence, offset, maxlen=60, left='', right='', index=True):
@@ -193,8 +194,10 @@ class SequenceHelper(BaseHelper):
     def stream(self, state, value, id_=None, max=None):
         id_ = self.id if id_ is None else id_
         max = max if max else self.max
+        # increment the cache level to expose lower level streams
         return self.factory(value, id=id_, factory=self.factory, 
                             max=max, global_kargs=self.global_kargs,
+                            cache_level=self.cache_level+1,
                             delta=self.delta(state))
         
     def deepest(self):
@@ -225,16 +228,17 @@ class StringHelper(SequenceHelper):
     '''
     
     def __init__(self, sequence, id=None, factory=None, max=None, 
-                 global_kargs=None, delta=None):
+                 global_kargs=None, cache_level=None, delta=None):
         # avoid duplicating processing on known strings
         if id is None:
             id = hash(sequence)
         super(StringHelper, self).__init__(sequence, id=id, factory=factory, 
-                            max=max, global_kargs=global_kargs, delta=delta)
+                max=max, global_kargs=global_kargs, cache_level=cache_level, 
+                delta=delta)
 
     def _fmt(self, sequence, offset, maxlen=60, left="'", right="'", index=True):
         return super(StringHelper, self)._fmt(sequence, offset, maxlen=maxlen, 
-                                              left=left, right=right, index=index)
+                                        left=left, right=right, index=index)
         
     def _location(self, kargs, prefix):
         return fmt('line {' + prefix + 'lineno:d}, character {' + prefix + 'char:d}', **kargs)

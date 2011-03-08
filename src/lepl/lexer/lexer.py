@@ -33,7 +33,8 @@ from lepl.matchers.support import BaseMatcher
 from lepl.lexer.operators import TOKENS, TokenNamespace
 from lepl.core.parser import tagged
 from lepl.stream.core import s_empty, s_debug, s_stream, s_fmt, s_factory, \
-    s_max, MutableMaxDepth, s_new_max
+    s_max, MutableMaxDepth, s_new_max, s_id, s_global_kargs, s_delta, s_len, \
+    s_cache_level
 from lepl.lexer.support import RuntimeLexerError
 from lepl.regexp.core import Compiler
 
@@ -127,8 +128,17 @@ class Lexer(NamespaceMixin, BaseMatcher):
         Implement matching - pass token stream to tokens.
         '''
         (max, clean_stream) = s_new_max(in_stream, MutableMaxDepth())
+        try:
+            length = s_len(in_stream)
+        except TypeError:
+            length = None
         token_stream = s_factory(in_stream).to_token(
-                            self._tokens(clean_stream, max), in_stream)
+                            self._tokens(clean_stream, max), 
+                            id=s_id(in_stream), factory=s_factory(in_stream), 
+                            max=s_max(in_stream), 
+                            global_kargs=s_global_kargs(in_stream),
+                            delta=s_delta(in_stream), len=length,
+                            cache_level=s_cache_level(in_stream)+1) 
         in_stream = None
         generator = self.matcher._match(token_stream)
         while True:
