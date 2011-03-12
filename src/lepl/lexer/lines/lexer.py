@@ -60,17 +60,20 @@ class LineLexer(Lexer):
         try:
             while not s_empty(stream):
                 
+                id_ += 1
                 (line, next_stream) = s_line(stream, False)
                 line_stream = s_stream(stream, line)
-                yield ((START,), s_stream(line_stream, '', id_=id_^hash(START)))
+                yield ((START,), s_stream(line_stream, '', id_=id_))
                     
                 while not s_empty(line_stream):
+                    id_ += 1
                     try:
                         (terminals, match, next_line_stream) = \
                                             self.t_regexp.match(line_stream)
                         self._debug(fmt('Token: {0!r} {1!r} {2!s}',
                                         terminals, match, s_debug(line_stream)))
-                        yield (terminals, s_stream(line_stream, match, max=max))
+                        yield (terminals, 
+                               s_stream(line_stream, match, max=max, id_=id_))
                     except TypeError:
                         (terminals, _size, next_line_stream) = \
                                             self.s_regexp.size_match(line_stream)
@@ -78,7 +81,8 @@ class LineLexer(Lexer):
                                         terminals, s_debug(line_stream)))
                     line_stream = next_line_stream
                     
-                yield ((END,), s_stream(line_stream, '', id_=id_^hash(END)))
+                id_ += 1
+                yield ((END,), s_stream(line_stream, '', id_=id_))
                 stream = next_stream
                 
         except TypeError:

@@ -424,7 +424,7 @@ class ConfigBuilder(object):
         from lepl.core.rewriters import ComposeTransforms
         return self.remove_all_rewriters(ComposeTransforms)
         
-    def auto_memoize(self, full=True):
+    def auto_memoize(self, conservative=None, full=True, d=0):
         '''
         Lepl contains two memoizers - one for right- and one for left-recursive
         grammars.  These can be applied to all matchers with 
@@ -445,9 +445,10 @@ class ConfigBuilder(object):
         from lepl.core.rewriters import AutoMemoize
         from lepl.matchers.memo import LMemo, RMemo
         self.no_memoize()
-        self.optimize_or()
-        return self.add_rewriter(AutoMemoize(True, LMemo,
-                                             RMemo if full else None))
+        #self.optimize_or()
+        return self.add_rewriter(
+            AutoMemoize(conservative=conservative, left=LMemo,
+                        right=RMemo if full else None, d=d))
     
     def left_memoize(self):
         '''

@@ -62,6 +62,8 @@ def add_sub_node():
     add = group2 & symbol('+') & group3 > List
     sub = group2 & symbol('-') & group3 > List
     group3 += add | sub | group2
+    
+    group3.config.auto_memoize()
     return group3
 
 def error_1():
@@ -83,6 +85,8 @@ def error_1():
     add = group2 & symbol('+') & group3 > List
     sub = group2 & symbol('-') & group3 > List
     group3 += group2 | add | sub
+    
+    group3.config.auto_memoize()
     return group3
 
 def error_2():
@@ -104,6 +108,8 @@ def error_2():
     add = group3 & symbol('+') & group3 > List
     sub = group3 & symbol('-') & group3 > List
     group3 += group2 | add | sub
+    
+    group3.config.auto_memoize()
     return group3
 
 def node_1():
@@ -129,6 +135,8 @@ def node_1():
     add = group2 & ~symbol('+') & group3 > Add
     sub = group2 & ~symbol('-') & group3 > Sub
     group3 += add | sub | group2
+    
+    group3.config.auto_memoize()
     return group3
 
 def node_2():
@@ -154,6 +162,8 @@ def node_2():
     add_ = group2 & ~symbol('+') & group3 > Add
     sub_ = group2 & ~symbol('-') & group3 > Sub
     group3 += add_ | sub_ | group2
+    
+    group3.config.auto_memoize()
     return group3
 
 
@@ -232,12 +242,11 @@ class Tutorial4Example(Example):
          `- 7.0"""),
 (lambda: len(list((self.unlimited_run_error_1() & Eos()).parse_all('1+2*(3-4)+5/6+7'))), 
 """1"""),
-# this is the left-recursive issue
-#(lambda: self.run_error_2().parse('1+2*(3-4)+5/6+7')[0], 
-#"""FullFirstMatchException: The match failed in <string> at '+' (line 1, character 2).
-#"""),
-#(lambda: len(list(self.unlimited_run_error_2().parse_all('1+2*(3-4)+5/6+7'))), 
-#"""12"""),
+(lambda: self.run_error_2().parse('1+2*(3-4)+5/6+7')[0], 
+"""FullFirstMatchException: The match failed in <string> at '+' (line 1, character 2).
+"""),
+(lambda: len(list(self.unlimited_run_error_2().parse_all('1+2*(3-4)+5/6+7'))), 
+"""12"""),
 #(lambda: (self.run_error_2() & Eos()).parse('1+2*(3-4)+5/6+7')[0], 
 #"""List
 # +- 1.0

@@ -735,7 +735,8 @@ def make_proxy():
 
 def clone(node, args, kargs):
     '''
-    The basic clone function that is supplied to `Clone`.
+    The basic clone function that is supplied to `Clone`.  This recreates
+    an instance based on its type and arguments.
     '''
     try:
         # pylint: disable-msg=W0142

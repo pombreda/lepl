@@ -58,7 +58,8 @@ class LeftBugTest(TestCase):
         assert_str(parsed[0],
 """List
  +- List
- |   +- 'a'
+ |   +- List
+ |   |   `- 'a'
  |   `- 'b'
  `- 'c'""")
     
@@ -77,7 +78,8 @@ class LeftBugTest(TestCase):
         assert_str(parsed[0],
 """List
  +- List
- |   +- 'a'
+ |   +- List
+ |   |   `- 'a'
  |   `- 'b'
  `- 'c'""")
 
@@ -93,7 +95,8 @@ class LeftBugTest(TestCase):
         assert_str(parsed[0],
 """List
  +- List
- |   +- 'a'
+ |   +- List
+ |   |   `- 'a'
  |   `- 'b'
  `- 'c'""")
         

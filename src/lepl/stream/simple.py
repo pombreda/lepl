@@ -64,7 +64,8 @@ class SequenceHelper(BaseHelper):
         add_defaults(self._kargs, {'type': type_})
 
     def key(self, state, other):
-        offset = state + self._delta[OFFSET]
+        # avoid confusion with incremental ids 
+        offset = (state + self._delta[OFFSET]) << 16
         key = HashKey(self.id ^ offset ^ hash(other), (self.id, hash(other)))
         #self._debug(fmt('Hash at offset {0}: {1}', offset, hash(key)))
         return key

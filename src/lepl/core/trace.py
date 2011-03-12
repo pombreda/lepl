@@ -165,18 +165,17 @@ class _TraceStack(ActiveMonitor, ValueMonitor, LogMixin):
         Provide a standard fmt for location.
         '''
         try:
-            (offset, lineno, char) = s_delta(self.generator.stream())
+            (offset, lineno, char) = s_delta(self.generator.stream)
             locn = fmt('{0}/{1}.{2}', offset, lineno, char)
-            depth = -s_len(self.generator.stream)
             try:
                 stream = sample('', s_line(self.generator.stream, False)[0], 9)
             except StopIteration:
                 stream = '<EOS>'
-            return (stream, depth, locn)
+            return (stream, offset, locn)
         except StopIteration:
             return ('<EOS>', -1, '')
         except TypeError:
-            return ('<GC>', -1, '')
+            return (self.generator.stream, -1, '')
         
     def yield_(self, value):
         '''
@@ -283,16 +282,11 @@ class _RecordDeepest(_TraceStack):
         '''
         Record the data.
         '''
-        stream = self.generator.stream()
-        if stream:
-            stream = stream()
+        stream = self.generator.stream
         try:
-            depth = stream.depth()
+            depth = s_delta(stream)[0]
         except AttributeError: # no .depth()
-            if stream:
-                depth = -s_len(stream)
-            else:
-                depth = 0
+            depth = -1
         if depth >= self._deepest and is_result:
             self._deepest = depth
             self._countdown_result = self.n_results_after

@@ -45,7 +45,7 @@ from lepl._example.support import Example
 class ColumnExample(Example):
     
     def test_columns(self):
-        basicConfig(level=DEBUG)
+        #basicConfig(level=DEBUG)
         
         # http://www.swivel.com/data_sets/spreadsheet/1002196
         table = '''
@@ -68,11 +68,16 @@ Year            Iraq          Israel           Egypt
         # by default, Columns consumes a whole line (see skip argument), so
         # for the whole table we only need to (1) drop the text and (2) put
         # each row in a separate list.
-        parser = ~SkipTo(Digit(), include=False) & (cols > list)[:]
+        matcher = ~SkipTo(Digit(), include=False) & (cols > list)[:]
+        matcher.config#.no_memoize()
+        matcher.config#.no_full_first_match()
+        matcher.config#.record_deepest()
+        parser = matcher.get_parse()
+        print(parser.matcher.tree())
         
         # L included below to check that it's ignored in comparison
         # (appears in windows?)
-        self.examples([(lambda: parser.parse(table),
+        self.examples([(lambda: parser(table),
                         '[[2005, 6981200000L, 2684100000, 1541900000], ' 
                         '[2004, 8333400000, 2782400000, 2010600000], ' 
                         '[2003, 4150000000, 3878300000, 1849600000], ' 

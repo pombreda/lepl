@@ -104,13 +104,16 @@ class Lexer(NamespaceMixin, BaseMatcher):
         Generate tokens, on demand.
         '''
         try:
+            id_ = s_id(stream)
             while not s_empty(stream):
+                # avoid conflicts between tokens
+                id_ += 1
                 try:
                     (terminals, match, next_stream) = \
                                         self.t_regexp.match(stream)
                     self._debug(fmt('Token: {0!r} {1!r} {2!s}',
                                     terminals, match, s_debug(stream)))
-                    yield (terminals, s_stream(stream, match, max=max))
+                    yield (terminals, s_stream(stream, match, max=max, id_=id_))
                 except TypeError:
                     (terminals, _size, next_stream) = \
                                         self.s_regexp.size_match(stream)

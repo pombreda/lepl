@@ -90,6 +90,7 @@ class _OffsideLexer(Lexer):
             while not s_empty(stream):
                 
                 # this section differs from token lexer
+                id_ += 1
                 (line, next_stream) = s_line(stream, False)
                 line_stream = s_stream(stream, line)
                 try:
@@ -101,22 +102,26 @@ class _OffsideLexer(Lexer):
                 if '\t' in indent and self._tab is not None:
                     indent = indent.replace('\t', self._tab)
                 yield ((INDENT,), 
-                       s_stream(line_stream, indent, id_=id_^hash(INDENT), max=max))
+                       s_stream(line_stream, indent, id_=id_, max=max))
                 line_stream = next_line_stream
                 
                 # as line lexer
                 while not s_empty(line_stream):
+                    id_ += 1
                     try:
                         (terminals, match, next_line_stream) = \
                                         self.t_regexp.match(line_stream)
-                        yield (terminals, s_stream(line_stream, match, max=max))
+                        yield (terminals, s_stream(line_stream, match, 
+                                                   max=max, id_=id_))
                     except TypeError:
                         (terminals, _size, next_line_stream) = \
                                     self.s_regexp.size_match(line_stream)
                     line_stream = next_line_stream
                     
                 # differs again
-                yield ((END,), s_stream(line_stream, '', id_=id_^hash(END), max=max))
+                id_ += 1
+                yield ((END,), 
+                       s_stream(line_stream, '', max=max, id_=id_))
                 stream = next_stream
                 
         except TypeError:

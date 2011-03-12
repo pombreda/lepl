@@ -1,4 +1,3 @@
-from lepl.core.rewriters import LeftMemoize
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -61,20 +60,41 @@ class CacheTest(TestCase):
     
         group3c.config.clear().lexer().auto_memoize().trace_variables()
         p = group3c.get_parse_all()
-        print(p.matcher.tree())
+        #print(p.matcher.tree())
         results = list(p('1+2*(3-4)+5/6+7'))
         for result in results:
-            print(result[0])
+            #print(result[0])
+            pass
         assert len(results) == 12, results
 
     def test_left(self):
         #basicConfig(level=DEBUG)
         a = Delayed()
         a += Optional(a) & (a | 'b' | 'c')
+        for (conservative, full, d, n) in [(None, True, 0, 104),
+                                           (None, True, 1, 38),
+                                           (False, False, 1, 38)]:
+            a.config.clear().no_full_first_match().auto_memoize(
+                        conservative=conservative, full=full, d=d)
+            p = a.get_parse_all()
+            #print(p.matcher.tree())
+            r = list(p('bcb'))
+            assert len(r) == n, (n, len(r), r)
+            
+    def test_trace_variables(self):
+        # for comparison
+        a = Delayed()
+        a += Optional(a) & (a | 'b' | 'c')
         a.config.no_full_first_match().auto_memoize()
         p = a.get_parse_all()
         #print(p.matcher.tree())
+
+        with TraceVariables():
+            a = Delayed()
+            a += Optional(a) & (a | 'b' | 'c')
+        a.config.no_full_first_match().auto_memoize().trace_variables()
+        p = a.get_parse_all()
+        #print(p.matcher.tree())
         r = list(p('bcb'))
-        assert r == [['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c'], ['b', 'c'], ['b']], r
-        
+        assert len(r) == 104, (len(r), r)
         

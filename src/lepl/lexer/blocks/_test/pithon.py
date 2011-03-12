@@ -34,7 +34,7 @@ Test a Python-like grammar.
 # pylint: disable-msg=W0614, W0401, W0621, C0103, C0111, R0201, R0904
 #@PydevCodeAnalysisIgnore
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 from unittest import TestCase
 
 from lepl import *

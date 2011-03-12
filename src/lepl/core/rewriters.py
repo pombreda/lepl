@@ -55,7 +55,6 @@ class Rewriter(LogMixin):
     
     # ordering
     (SET_ARGUMENTS,
-     TRACE_VARIABLES,
      COMPOSE_TRANSFORMS,
      FLATTEN,
      COMPILE_REGEXP,
@@ -63,6 +62,7 @@ class Rewriter(LogMixin):
      LEXER,
      DIRECT_EVALUATION,
      MEMOIZE,
+     TRACE_VARIABLES, # this must come after MEMOIZE
      FULL_FIRST_MATCH) = range(10, 110, 10)
        
     def __init__(self, order_, name=None, exclusive=True):
@@ -116,7 +116,7 @@ class Rewriter(LogMixin):
 
 def clone(i, j, node, args, kargs):
     '''
-    Clone including matcher-specific attributes.
+    Clone a single node, including matcher-specific attributes.
     '''
     from lepl.support.graph import clone as old_clone
     copy = old_clone(node, args, kargs)
@@ -141,11 +141,17 @@ def linearise_matcher(node):
     Return `[(head, reversed), ...]` where each tuple describes  a tree of 
     matchers without loops.  The first head is the root node.  The reversed
     list contains nodes ordered children-first (except for `Delayed()`
-    instances, whose children are other `head` elements. 
+    instances, whose children are other `head` elements). 
     
     This allows us to clone a DAG of matchers in the same way as it was first
     created - by creating linear trees and then connecting the `Delayed()`
     instances.
+    
+    The postorder ordering is used to match the ordering in the more general
+    iteration over matchers based on the graph support classes and helps
+    keep things consistent (there was a strange issue where the `.tree()`
+    display of a cloned graph differed from the original that, I think, was
+    due to a different ordering).
     '''
     linear = []
     pending = [node]
@@ -175,7 +181,30 @@ def linearise_matcher(node):
     return linear
 
 
-def clone_tree(i, head, reversed, mapping, delayed, clone):
+def clone_tree(i, head, reversed, mapping, delayed, clone, duplicate=False):
+    '''
+    Clone a tree of matchers.  This clones all the matchers in a linearised
+    set, except for the `Delayed()` instances, which are re-created without
+    their contents (these are set later, to connect the trees into the 
+    final matcher DAG).
+    
+    `i` is the index of the tree (0 for the first tree, which cannot be part
+    of a loop itself).  It is passed to the clone function.
+    
+    `head` is the root of the tree.
+    
+    `reversed` are the tree nodes in postorder
+    
+    `mapping` is a map from old to new node of all the nodes created.  For 
+    `Delayed()` instances, if `duplicate=True`, then the new node is just
+    one of possibly many copies.
+    
+    `clone` is the function used to create a new node instance.
+    
+    `duplicate` controls how `Delayed()` instances are handled.  If true then
+    a new instance is created for each one.  This does not preserve the 
+    graph, but is used by memoisation.
+    '''
     def rewrite(value):
         try:
             if value in mapping:
@@ -186,7 +215,7 @@ def clone_tree(i, head, reversed, mapping, delayed, clone):
     n = len(reversed)
     for (j, node) in zip(count(n, -1), reversed):
         if isinstance(node, Delayed):
-            if node not in mapping or True:
+            if duplicate or node not in mapping:
                 mapping[node] = clone(i, -j, node, (), {})
                 delayed.append((node, mapping[node]))
         else:
@@ -198,13 +227,31 @@ def clone_tree(i, head, reversed, mapping, delayed, clone):
                 mapping[node] = copy
 
 
-def clone_matcher(node, clone=clone):
+def clone_matcher(node, clone=clone, duplicate=False):
+    '''
+    This used to be implemented using the graph support classes 
+    (`ConstructorWalker()` etc).  But the left-recursive handling was
+    unreliable and that was too opaque to debug easily.  It's possible this
+    code could now be moved back to that approach, as not everything
+    here is used (the `j` index turned out not to be useful, for example).
+    But this approach is easier to understand and I am not 100% sure that
+    the code is correct, so I may need to continue working on this.
+    
+    `node` is the root of the matcher graph.
+    
+    `clone` is a function used to create new instances.
+    
+    `duplicate` controls how `Delayed()` instances are handled.  If true then
+    a new instance is created for each one.  This does not preserve the 
+    graph, but is used by memoisation.
+    '''
     from lepl.regexp.rewriters import RegexpContainer
     trees = linearise_matcher(node)
     all_nodes = {}
     all_delayed = []
     for (i, (head, reversed)) in enumerate(trees):
-        clone_tree(i, head, reversed, all_nodes, all_delayed, clone)
+        clone_tree(i, head, reversed, all_nodes, all_delayed, clone, 
+                   duplicate=duplicate)
     for (delayed, clone) in all_delayed:
         # we had bugs where this ended up being delegated to +
         assert hasattr(clone, '__iadd__'), clone
@@ -328,22 +375,6 @@ class Memoize(Rewriter):
         
     def __call__(self, graph):
         return clone_matcher(graph, post_clone(self.memoizer))
-    
-    
-def memoize(i, j, d, copy):
-    if j > 0:
-        def open(depth, length):
-            return False
-        curtail = open
-    elif d:
-        def fixed(depth, length):
-            return depth >  i * d
-        curtail = fixed
-    else:
-        def slen(depth, length):
-            return depth > i * length
-        curtail = slen
-    return LMemo(copy, curtail)
 
     
 class LeftMemoize(Rewriter):
@@ -355,8 +386,25 @@ class LeftMemoize(Rewriter):
     def __call__(self, graph):
         def new_clone(i, j, node, args, kargs):
             copy = clone(i, j, node, args, kargs)
-            return memoize(i, j, self.d, copy)
-        return clone_matcher(graph, new_clone)
+            return self.memoize(i, j, self.d, copy, LMemo)
+        return clone_matcher(graph, new_clone, duplicate=True)
+    
+    @staticmethod
+    def memoize(i, j, d, copy, memo):
+        if j > 0:
+            def open(depth, length):
+                return False
+            curtail = open
+        elif d:
+            def fixed(depth, length):
+                return depth >  i * d
+            curtail = fixed
+        else:
+            def slen(depth, length):
+                return depth > i * length
+            curtail = slen
+        return memo(copy, curtail)
+    
 
 
 class AutoMemoize(Rewriter):
@@ -364,16 +412,24 @@ class AutoMemoize(Rewriter):
     Apply two different memoizers, one to left recursive loops and the
     other elsewhere (either can be omitted).
     
-    `conservative` refers to the algorithm used to detect loops; False
-    may classify some left--recursive loops as right--recursive.
+    `conservative` refers to the algorithm used to detect loops:
+      `None` will use the left memoizer on all nodes except the initial tree
+      `True` will detect all possible loops (should be very similar to `None`)
+      `False` detects only left-most loops and may miss some loops.
+      
+    `d` is a parameter that controls the depth to which repeated left-recursion
+    may occur.  If `None` then the length of the remaining input is used.
+    If set, parsers are more efficient, but less likely to match input
+    correctly.
     '''
     
-    def __init__(self, conservative=False, left=None, right=None):
+    def __init__(self, conservative=None, left=None, right=None, d=0):
         super(AutoMemoize, self).__init__(Rewriter.MEMOIZE,
             fmt('AutoMemoize({0}, {1}, {2})', conservative, left, right))
         self.conservative = conservative
         self.left = left
         self.right = right
+        self.d = d
 
     def __call__(self, graph):
         dangerous = set()
@@ -381,16 +437,23 @@ class AutoMemoize(Rewriter):
             for loop in either_loops(head, self.conservative):
                 for node in loop:
                     dangerous.add(node)
-        def mkclone(left):
-            def new_clone(i, j, node, args, kargs):
-                '''
-                Clone with the appropriate memoizer 
-                (cannot use post_clone as need to test original)
-                '''
-                copy = clone(i, j, node, args, kargs)
-                return memoize(i, j, 1, copy)
-            return new_clone
-        return clone_matcher(graph, mkclone(self.left))
+        def new_clone(i, j, node, args, kargs):
+            '''
+            Clone with the appropriate memoizer 
+            (cannot use post_clone as need to test original)
+            '''
+            copy = clone(i, j, node, args, kargs)
+            if (self.conservative is None and i) or node in dangerous:
+                if self.left:
+                    return LeftMemoize.memoize(i, j, self.d, copy, self.left)
+                else:
+                    return copy
+            else:
+                if self.right:
+                    return self.right(copy)
+                else:
+                    return copy
+        return clone_matcher(graph, new_clone, duplicate=True)
 
 
 def left_loops(node):

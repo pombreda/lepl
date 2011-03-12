@@ -65,9 +65,9 @@ class TokenHelper(base_iterable_factory(lambda cons: cons.head[1], '<token>')):
             (tokens, line_stream) = cons.head
             key = s_key(line_stream, other)
         except StopIteration:
-            self._warn('Default hash')
+            self._debug('Default hash (EOS)')
             tokens = '<EOS>'
-            key = HashKey(-1, other)
+            key = HashKey(self.id, other)
         #self._debug(fmt('Hash at {0!r} {1}', tokens, hash(key)))
         return key
 

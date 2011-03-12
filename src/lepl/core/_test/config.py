@@ -159,8 +159,6 @@ class TraceVariablesTest(TestCase):
         # check caching works
         query.parse('spicy meatballs OR "el bulli restaurant"')
         trace = buffer.getvalue()
-        expected += '''       query = [['spicy', 'meatballs'], ['el... stream = ''
-'''
         assert trace == expected, '"""' + trace + '"""'
 
         

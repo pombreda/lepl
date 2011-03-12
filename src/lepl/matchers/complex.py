@@ -33,12 +33,10 @@ Complex matchers that are rearely used.
 
 from lepl.matchers.core import Literal
 from lepl.regexp.matchers import DfaRegexp
-from lepl.matchers.support import to, trampoline_matcher_factory,\
-    OperatorMatcher, trampoline_matcher
+from lepl.matchers.support import to, trampoline_matcher_factory
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
-from lepl.stream.core import s_line, s_stream, s_next
+from lepl.stream.core import s_line, s_stream, s_next, s_fmt, s_id
 from lepl.support.lib import fmt
-from lepl.core.parser import tagged
 
 
 @trampoline_matcher_factory(matcher=to(Literal), condition=to(DfaRegexp))
@@ -91,63 +89,36 @@ def PostMatch(matcher, condition, not_=False, equals=True, stream_factory=None):
     return match
 
 
-# pylint: disable-msg=E1101
-class _Columns(OperatorMatcher):
- 
-    def __init__(self, indices, *matchers):
-        super(_Columns, self).__init__()
-        self._arg(indices=indices)
-        self._args(matchers=matchers)
-        
-    @tagged
-    def _match(self, stream_in):
-        '''
-        Build the generator from standard components and then evaluate it.
-        '''
-        matcher = self.__build_matcher(stream_in)
-        generator = matcher._match(stream_in)
-        yield (yield generator)
-        
-    def __build_matcher(self, stream_in):
-        '''
-        Build a matcher that, when it is evaluated, will return the 
-        matcher results for the columns.  We base this on `And`, but need
-        to force the correct streams.
-        '''
-        def clean():
-            right = 0
-            for (col, matcher) in zip(self.indices, self.matchers):
-                try:
-                    (left, right) = col
-                except TypeError:
-                    left = right
-                    right = right + col
-                yield (left, right, matcher)
-        cleaned = list(clean())
-        
-        @trampoline_matcher
-        def LineMatcher(support, stream):
-            # extract a line
-            (line, next_stream) = s_line(stream, False)
-            line_stream = s_stream(stream, line)
-            results = []
-            for (left, right, matcher) in cleaned:
-                # extract the location in the line
-                (_, left_aligned_line_stream) = s_next(line_stream, count=left)
-                (word, _) = s_next(left_aligned_line_stream, count=right-left)
-                support._debug(fmt('Columns {0}-{1} {2!r}', left, right, word))
-                word_stream = s_stream(left_aligned_line_stream, word)
-                # do the match
-                (result, _) = yield matcher._match(word_stream)
-                results.extend(result)
-            support._debug(repr(results))
-            yield (results, next_stream)
-            
-        return LineMatcher()
+@trampoline_matcher_factory()
+def _Columns(indices, *matchers):
 
-
-# Python 2.6 doesn't support named arg after *args
-#def Columns(*columns, stream_factory=None):
+    def match(support, stream):
+        # we increment id so that different strings (which might overlap or
+        # be contiguous) don't affect each other's memoisation (the hash key
+        # is based on offset and ('one past the') end of one column can have
+        # the same offset as the start of the next).
+        id_ = s_id(stream)
+        # extract a line
+        (line, next_stream) = s_line(stream, False)
+        line_stream = s_stream(stream, line)
+        results = []
+        for ((left, right), matcher) in zip(indices, matchers):
+            id_ += 1
+            # extract the location in the line
+            (_, left_aligned_line_stream) = s_next(line_stream, count=left)
+            (word, _) = s_next(left_aligned_line_stream, count=right-left)
+            support._debug(fmt('Columns {0}-{1} {2!r}', left, right, word))
+            word_stream = s_stream(left_aligned_line_stream, word, id_=id_)
+            # do the match
+            support._debug(s_fmt(word_stream, 'matching {rest}'))
+            (result, _) = yield matcher._match(word_stream)
+            results.extend(result)
+        support._debug(repr(results))
+        yield (results, next_stream)
+        
+    return match
+    
+    
 def Columns(*columns, **kargs):
     '''
     Match data in a set of columns.
@@ -174,7 +145,17 @@ def Columns(*columns, **kargs):
     Note: This does not support backtracking over the columns.
     '''
     # Note - this is the public-facing wrapper that pre-process the arguments  
-    # so that matchers are handled correctly.  The work is done by `_Columns`.
-    (indices, matchers) = zip(*columns)
+    # so that matchers are handled correctly during cloning.  The work is done 
+    # by `_Columns`.
+    def clean():
+        right = 0
+        for (col, matcher) in columns:
+            try:
+                (left, right) = col
+            except TypeError:
+                left = right
+                right = right + col
+            yield ((left, right), matcher)
+    (indices, matchers) = zip(*clean())
     return _Columns(indices, *matchers)
 

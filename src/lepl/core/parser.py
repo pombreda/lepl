@@ -46,7 +46,7 @@ try:
 except ImportError:
     imap = map
 
-from lepl.stream.core import s_debug
+from lepl.stream.core import s_debug, s_cacheable
 from lepl.core.monitor import prepare_monitors
 from lepl.support.lib import fmt
 
@@ -89,7 +89,10 @@ class GeneratorWrapper(object):
     def __init__(self, generator, matcher, stream):
         self.generator = generator
         self.matcher = matcher
-        self.stream = ref(lambda: stream)
+        if s_cacheable(stream):
+            self.stream = stream
+        else:
+            self.stream = '<stream>'
         self.__cached_repr = None
         
     def __repr__(self):
@@ -99,7 +102,7 @@ class GeneratorWrapper(object):
         if not self.__cached_repr:
             try:
                 s = s_debug(self.stream)
-            except:
+            except AttributeError:
                 s = '<stream>'
             self.__cached_repr = fmt('{0}({1})', self.matcher, s)
         return self.__cached_repr

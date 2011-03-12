@@ -741,267 +741,366 @@ class StrTest(TestCase):
         self.assert_same(description, r"""TrampolineWrapper<FullFirstMatch>
  +- Delayed
  |   `- matcher Transform:<apply>
- |       +- TrampolineWrapper<And>
- |       |   +- Transform:<apply>
- |       |   |   +- TrampolineWrapper<And>
- |       |   |   |   +- Transform:<apply>
- |       |   |   |   |   +- TrampolineWrapper<Or>
- |       |   |   |   |   |   +- NfaRegexp:<empty_adapter,apply>
- |       |   |   |   |   |   |   +- Sequence(...)
- |       |   |   |   |   |   |   `- alphabet <Unicode>
- |       |   |   |   |   |   `- TrampolineWrapper<And>
- |       |   |   |   |   |       +- FunctionWrapper<Literal:<>>
- |       |   |   |   |   |       |   `- '('
- |       |   |   |   |   |       +- NfaRegexp:<empty_adapter>
- |       |   |   |   |   |       |   +- Sequence(...)
- |       |   |   |   |   |       |   `- alphabet <Unicode>
- |       |   |   |   |   |       +- Delayed
- |       |   |   |   |   |       |   `- matcher <loop>
- |       |   |   |   |   |       +- NfaRegexp:<empty_adapter>
- |       |   |   |   |   |       |   +- Sequence(...)
- |       |   |   |   |   |       |   `- alphabet <Unicode>
- |       |   |   |   |   |       `- FunctionWrapper<Literal:<>>
- |       |   |   |   |   |           `- ')'
- |       |   |   |   |   `- TransformationWrapper(<apply>)
- |       |   |   |   +- NfaRegexp:<empty_adapter>
- |       |   |   |   |   +- Sequence(...)
- |       |   |   |   |   `- alphabet <Unicode>
- |       |   |   |   `- TrampolineWrapper<DepthFirst>
- |       |   |   |       +- generator_manager_queue_len None
- |       |   |   |       +- stop None
- |       |   |   |       +- reduce ([], <built-in function __add__>)
- |       |   |   |       +- rest TrampolineWrapper<And>
- |       |   |   |       |   +- FunctionWrapper<Any:<apply>>
- |       |   |   |       |   |   `- '*/'
- |       |   |   |       |   +- NfaRegexp:<empty_adapter>
- |       |   |   |       |   |   +- Sequence(...)
- |       |   |   |       |   |   `- alphabet <Unicode>
- |       |   |   |       |   `- Transform:<apply>
- |       |   |   |       |       +- TrampolineWrapper<Or>
- |       |   |   |       |       |   +- NfaRegexp:<empty_adapter,apply>
- |       |   |   |       |       |   |   +- Sequence(...)
- |       |   |   |       |       |   |   `- alphabet <Unicode>
- |       |   |   |       |       |   `- TrampolineWrapper<And>
- |       |   |   |       |       |       +- FunctionWrapper<Literal:<>>
- |       |   |   |       |       |       |   `- '('
- |       |   |   |       |       |       +- NfaRegexp:<empty_adapter>
- |       |   |   |       |       |       |   +- Sequence(...)
- |       |   |   |       |       |       |   `- alphabet <Unicode>
- |       |   |   |       |       |       +- Delayed
- |       |   |   |       |       |       |   `- matcher <loop>
- |       |   |   |       |       |       +- NfaRegexp:<empty_adapter>
- |       |   |   |       |       |       |   +- Sequence(...)
- |       |   |   |       |       |       |   `- alphabet <Unicode>
- |       |   |   |       |       |       `- FunctionWrapper<Literal:<>>
- |       |   |   |       |       |           `- ')'
- |       |   |   |       |       `- TransformationWrapper(<apply>)
- |       |   |   |       +- start 0
- |       |   |   |       `- first TrampolineWrapper<And>
- |       |   |   |           +- FunctionWrapper<Any:<apply>>
- |       |   |   |           |   `- '*/'
- |       |   |   |           +- NfaRegexp:<empty_adapter>
- |       |   |   |           |   +- Sequence(...)
- |       |   |   |           |   `- alphabet <Unicode>
- |       |   |   |           `- Transform:<apply>
- |       |   |   |               +- TrampolineWrapper<Or>
- |       |   |   |               |   +- NfaRegexp:<empty_adapter,apply>
- |       |   |   |               |   |   +- Sequence(...)
- |       |   |   |               |   |   `- alphabet <Unicode>
- |       |   |   |               |   `- TrampolineWrapper<And>
- |       |   |   |               |       +- FunctionWrapper<Literal:<>>
- |       |   |   |               |       |   `- '('
- |       |   |   |               |       +- NfaRegexp:<empty_adapter>
- |       |   |   |               |       |   +- Sequence(...)
- |       |   |   |               |       |   `- alphabet <Unicode>
- |       |   |   |               |       +- Delayed
- |       |   |   |               |       |   `- matcher <loop>
- |       |   |   |               |       +- NfaRegexp:<empty_adapter>
- |       |   |   |               |       |   +- Sequence(...)
- |       |   |   |               |       |   `- alphabet <Unicode>
- |       |   |   |               |       `- FunctionWrapper<Literal:<>>
- |       |   |   |               |           `- ')'
- |       |   |   |               `- TransformationWrapper(<apply>)
- |       |   |   `- TransformationWrapper(<apply>)
- |       |   +- NfaRegexp:<empty_adapter>
- |       |   |   +- Sequence(...)
- |       |   |   `- alphabet <Unicode>
- |       |   `- TrampolineWrapper<DepthFirst>
- |       |       +- generator_manager_queue_len None
- |       |       +- stop None
- |       |       +- reduce ([], <built-in function __add__>)
- |       |       +- rest TrampolineWrapper<And>
- |       |       |   +- FunctionWrapper<Any:<apply>>
- |       |       |   |   `- '+-'
- |       |       |   +- NfaRegexp:<empty_adapter>
- |       |       |   |   +- Sequence(...)
- |       |       |   |   `- alphabet <Unicode>
- |       |       |   `- Transform:<apply>
- |       |       |       +- TrampolineWrapper<And>
- |       |       |       |   +- Transform:<apply>
- |       |       |       |   |   +- TrampolineWrapper<Or>
- |       |       |       |   |   |   +- NfaRegexp:<empty_adapter,apply>
- |       |       |       |   |   |   |   +- Sequence(...)
- |       |       |       |   |   |   |   `- alphabet <Unicode>
- |       |       |       |   |   |   `- TrampolineWrapper<And>
- |       |       |       |   |   |       +- FunctionWrapper<Literal:<>>
- |       |       |       |   |   |       |   `- '('
- |       |       |       |   |   |       +- NfaRegexp:<empty_adapter>
- |       |       |       |   |   |       |   +- Sequence(...)
- |       |       |       |   |   |       |   `- alphabet <Unicode>
- |       |       |       |   |   |       +- Delayed
- |       |       |       |   |   |       |   `- matcher <loop>
- |       |       |       |   |   |       +- NfaRegexp:<empty_adapter>
- |       |       |       |   |   |       |   +- Sequence(...)
- |       |       |       |   |   |       |   `- alphabet <Unicode>
- |       |       |       |   |   |       `- FunctionWrapper<Literal:<>>
- |       |       |       |   |   |           `- ')'
- |       |       |       |   |   `- TransformationWrapper(<apply>)
- |       |       |       |   +- NfaRegexp:<empty_adapter>
- |       |       |       |   |   +- Sequence(...)
- |       |       |       |   |   `- alphabet <Unicode>
- |       |       |       |   `- TrampolineWrapper<DepthFirst>
- |       |       |       |       +- generator_manager_queue_len None
- |       |       |       |       +- stop None
- |       |       |       |       +- reduce ([], <built-in function __add__>)
- |       |       |       |       +- rest TrampolineWrapper<And>
- |       |       |       |       |   +- FunctionWrapper<Any:<apply>>
- |       |       |       |       |   |   `- '*/'
- |       |       |       |       |   +- NfaRegexp:<empty_adapter>
- |       |       |       |       |   |   +- Sequence(...)
- |       |       |       |       |   |   `- alphabet <Unicode>
- |       |       |       |       |   `- Transform:<apply>
- |       |       |       |       |       +- TrampolineWrapper<Or>
- |       |       |       |       |       |   +- NfaRegexp:<empty_adapter,apply>
- |       |       |       |       |       |   |   +- Sequence(...)
- |       |       |       |       |       |   |   `- alphabet <Unicode>
- |       |       |       |       |       |   `- TrampolineWrapper<And>
- |       |       |       |       |       |       +- FunctionWrapper<Literal:<>>
- |       |       |       |       |       |       |   `- '('
- |       |       |       |       |       |       +- NfaRegexp:<empty_adapter>
- |       |       |       |       |       |       |   +- Sequence(...)
- |       |       |       |       |       |       |   `- alphabet <Unicode>
- |       |       |       |       |       |       +- Delayed
- |       |       |       |       |       |       |   `- matcher <loop>
- |       |       |       |       |       |       +- NfaRegexp:<empty_adapter>
- |       |       |       |       |       |       |   +- Sequence(...)
- |       |       |       |       |       |       |   `- alphabet <Unicode>
- |       |       |       |       |       |       `- FunctionWrapper<Literal:<>>
- |       |       |       |       |       |           `- ')'
- |       |       |       |       |       `- TransformationWrapper(<apply>)
- |       |       |       |       +- start 0
- |       |       |       |       `- first TrampolineWrapper<And>
- |       |       |       |           +- FunctionWrapper<Any:<apply>>
- |       |       |       |           |   `- '*/'
- |       |       |       |           +- NfaRegexp:<empty_adapter>
- |       |       |       |           |   +- Sequence(...)
- |       |       |       |           |   `- alphabet <Unicode>
- |       |       |       |           `- Transform:<apply>
- |       |       |       |               +- TrampolineWrapper<Or>
- |       |       |       |               |   +- NfaRegexp:<empty_adapter,apply>
- |       |       |       |               |   |   +- Sequence(...)
- |       |       |       |               |   |   `- alphabet <Unicode>
- |       |       |       |               |   `- TrampolineWrapper<And>
- |       |       |       |               |       +- FunctionWrapper<Literal:<>>
- |       |       |       |               |       |   `- '('
- |       |       |       |               |       +- NfaRegexp:<empty_adapter>
- |       |       |       |               |       |   +- Sequence(...)
- |       |       |       |               |       |   `- alphabet <Unicode>
- |       |       |       |               |       +- Delayed
- |       |       |       |               |       |   `- matcher <loop>
- |       |       |       |               |       +- NfaRegexp:<empty_adapter>
- |       |       |       |               |       |   +- Sequence(...)
- |       |       |       |               |       |   `- alphabet <Unicode>
- |       |       |       |               |       `- FunctionWrapper<Literal:<>>
- |       |       |       |               |           `- ')'
- |       |       |       |               `- TransformationWrapper(<apply>)
- |       |       |       `- TransformationWrapper(<apply>)
- |       |       +- start 0
- |       |       `- first TrampolineWrapper<And>
- |       |           +- FunctionWrapper<Any:<apply>>
- |       |           |   `- '+-'
- |       |           +- NfaRegexp:<empty_adapter>
- |       |           |   +- Sequence(...)
- |       |           |   `- alphabet <Unicode>
- |       |           `- Transform:<apply>
- |       |               +- TrampolineWrapper<And>
- |       |               |   +- Transform:<apply>
- |       |               |   |   +- TrampolineWrapper<Or>
- |       |               |   |   |   +- NfaRegexp:<empty_adapter,apply>
- |       |               |   |   |   |   +- Sequence(...)
- |       |               |   |   |   |   `- alphabet <Unicode>
- |       |               |   |   |   `- TrampolineWrapper<And>
- |       |               |   |   |       +- FunctionWrapper<Literal:<>>
- |       |               |   |   |       |   `- '('
- |       |               |   |   |       +- NfaRegexp:<empty_adapter>
- |       |               |   |   |       |   +- Sequence(...)
- |       |               |   |   |       |   `- alphabet <Unicode>
- |       |               |   |   |       +- Delayed
- |       |               |   |   |       |   `- matcher <loop>
- |       |               |   |   |       +- NfaRegexp:<empty_adapter>
- |       |               |   |   |       |   +- Sequence(...)
- |       |               |   |   |       |   `- alphabet <Unicode>
- |       |               |   |   |       `- FunctionWrapper<Literal:<>>
- |       |               |   |   |           `- ')'
- |       |               |   |   `- TransformationWrapper(<apply>)
- |       |               |   +- NfaRegexp:<empty_adapter>
- |       |               |   |   +- Sequence(...)
- |       |               |   |   `- alphabet <Unicode>
- |       |               |   `- TrampolineWrapper<DepthFirst>
- |       |               |       +- generator_manager_queue_len None
- |       |               |       +- stop None
- |       |               |       +- reduce ([], <built-in function __add__>)
- |       |               |       +- rest TrampolineWrapper<And>
- |       |               |       |   +- FunctionWrapper<Any:<apply>>
- |       |               |       |   |   `- '*/'
- |       |               |       |   +- NfaRegexp:<empty_adapter>
- |       |               |       |   |   +- Sequence(...)
- |       |               |       |   |   `- alphabet <Unicode>
- |       |               |       |   `- Transform:<apply>
- |       |               |       |       +- TrampolineWrapper<Or>
- |       |               |       |       |   +- NfaRegexp:<empty_adapter,apply>
- |       |               |       |       |   |   +- Sequence(...)
- |       |               |       |       |   |   `- alphabet <Unicode>
- |       |               |       |       |   `- TrampolineWrapper<And>
- |       |               |       |       |       +- FunctionWrapper<Literal:<>>
- |       |               |       |       |       |   `- '('
- |       |               |       |       |       +- NfaRegexp:<empty_adapter>
- |       |               |       |       |       |   +- Sequence(...)
- |       |               |       |       |       |   `- alphabet <Unicode>
- |       |               |       |       |       +- Delayed
- |       |               |       |       |       |   `- matcher <loop>
- |       |               |       |       |       +- NfaRegexp:<empty_adapter>
- |       |               |       |       |       |   +- Sequence(...)
- |       |               |       |       |       |   `- alphabet <Unicode>
- |       |               |       |       |       `- FunctionWrapper<Literal:<>>
- |       |               |       |       |           `- ')'
- |       |               |       |       `- TransformationWrapper(<apply>)
- |       |               |       +- start 0
- |       |               |       `- first TrampolineWrapper<And>
- |       |               |           +- FunctionWrapper<Any:<apply>>
- |       |               |           |   `- '*/'
- |       |               |           +- NfaRegexp:<empty_adapter>
- |       |               |           |   +- Sequence(...)
- |       |               |           |   `- alphabet <Unicode>
- |       |               |           `- Transform:<apply>
- |       |               |               +- TrampolineWrapper<Or>
- |       |               |               |   +- NfaRegexp:<empty_adapter,apply>
- |       |               |               |   |   +- Sequence(...)
- |       |               |               |   |   `- alphabet <Unicode>
- |       |               |               |   `- TrampolineWrapper<And>
- |       |               |               |       +- FunctionWrapper<Literal:<>>
- |       |               |               |       |   `- '('
- |       |               |               |       +- NfaRegexp:<empty_adapter>
- |       |               |               |       |   +- Sequence(...)
- |       |               |               |       |   `- alphabet <Unicode>
- |       |               |               |       +- Delayed
- |       |               |               |       |   `- matcher <loop>
- |       |               |               |       +- NfaRegexp:<empty_adapter>
- |       |               |               |       |   +- Sequence(...)
- |       |               |               |       |   `- alphabet <Unicode>
- |       |               |               |       `- FunctionWrapper<Literal:<>>
- |       |               |               |           `- ')'
- |       |               |               `- TransformationWrapper(<apply>)
- |       |               `- TransformationWrapper(<apply>)
+ |       +- _RMemo
+ |       |   `- TrampolineWrapper<And>
+ |       |       +- Transform:<apply>
+ |       |       |   +- _RMemo
+ |       |       |   |   `- TrampolineWrapper<And>
+ |       |       |   |       +- Transform:<apply>
+ |       |       |   |       |   +- _RMemo
+ |       |       |   |       |   |   `- TrampolineWrapper<Or>
+ |       |       |   |       |   |       +- _RMemo
+ |       |       |   |       |   |       |   `- NfaRegexp:<empty_adapter,apply>
+ |       |       |   |       |   |       |       +- Sequence(...)
+ |       |       |   |       |   |       |       `- alphabet <Unicode>
+ |       |       |   |       |   |       `- _RMemo
+ |       |       |   |       |   |           `- TrampolineWrapper<And>
+ |       |       |   |       |   |               +- _RMemo
+ |       |       |   |       |   |               |   `- FunctionWrapper<Literal:<>>
+ |       |       |   |       |   |               |       `- '('
+ |       |       |   |       |   |               +- _RMemo
+ |       |       |   |       |   |               |   `- NfaRegexp:<empty_adapter>
+ |       |       |   |       |   |               |       +- Sequence(...)
+ |       |       |   |       |   |               |       `- alphabet <Unicode>
+ |       |       |   |       |   |               +- Delayed
+ |       |       |   |       |   |               |   `- matcher <loop>
+ |       |       |   |       |   |               +- _RMemo
+ |       |       |   |       |   |               |   `- NfaRegexp:<empty_adapter>
+ |       |       |   |       |   |               |       +- Sequence(...)
+ |       |       |   |       |   |               |       `- alphabet <Unicode>
+ |       |       |   |       |   |               `- _RMemo
+ |       |       |   |       |   |                   `- FunctionWrapper<Literal:<>>
+ |       |       |   |       |   |                       `- ')'
+ |       |       |   |       |   `- TransformationWrapper(<apply>)
+ |       |       |   |       +- _RMemo
+ |       |       |   |       |   `- NfaRegexp:<empty_adapter>
+ |       |       |   |       |       +- Sequence(...)
+ |       |       |   |       |       `- alphabet <Unicode>
+ |       |       |   |       `- _RMemo
+ |       |       |   |           `- TrampolineWrapper<DepthFirst>
+ |       |       |   |               +- generator_manager_queue_len None
+ |       |       |   |               +- stop None
+ |       |       |   |               +- reduce ([], <built-in function __add__>)
+ |       |       |   |               +- rest _RMemo
+ |       |       |   |               |   `- TrampolineWrapper<And>
+ |       |       |   |               |       +- _RMemo
+ |       |       |   |               |       |   `- FunctionWrapper<Any:<apply>>
+ |       |       |   |               |       |       `- '*/'
+ |       |       |   |               |       +- _RMemo
+ |       |       |   |               |       |   `- NfaRegexp:<empty_adapter>
+ |       |       |   |               |       |       +- Sequence(...)
+ |       |       |   |               |       |       `- alphabet <Unicode>
+ |       |       |   |               |       `- Transform:<apply>
+ |       |       |   |               |           +- _RMemo
+ |       |       |   |               |           |   `- TrampolineWrapper<Or>
+ |       |       |   |               |           |       +- _RMemo
+ |       |       |   |               |           |       |   `- NfaRegexp:<empty_adapter,apply>
+ |       |       |   |               |           |       |       +- Sequence(...)
+ |       |       |   |               |           |       |       `- alphabet <Unicode>
+ |       |       |   |               |           |       `- _RMemo
+ |       |       |   |               |           |           `- TrampolineWrapper<And>
+ |       |       |   |               |           |               +- _RMemo
+ |       |       |   |               |           |               |   `- FunctionWrapper<Literal:<>>
+ |       |       |   |               |           |               |       `- '('
+ |       |       |   |               |           |               +- _RMemo
+ |       |       |   |               |           |               |   `- NfaRegexp:<empty_adapter>
+ |       |       |   |               |           |               |       +- Sequence(...)
+ |       |       |   |               |           |               |       `- alphabet <Unicode>
+ |       |       |   |               |           |               +- Delayed
+ |       |       |   |               |           |               |   `- matcher <loop>
+ |       |       |   |               |           |               +- _RMemo
+ |       |       |   |               |           |               |   `- NfaRegexp:<empty_adapter>
+ |       |       |   |               |           |               |       +- Sequence(...)
+ |       |       |   |               |           |               |       `- alphabet <Unicode>
+ |       |       |   |               |           |               `- _RMemo
+ |       |       |   |               |           |                   `- FunctionWrapper<Literal:<>>
+ |       |       |   |               |           |                       `- ')'
+ |       |       |   |               |           `- TransformationWrapper(<apply>)
+ |       |       |   |               +- start 0
+ |       |       |   |               `- first _RMemo
+ |       |       |   |                   `- TrampolineWrapper<And>
+ |       |       |   |                       +- _RMemo
+ |       |       |   |                       |   `- FunctionWrapper<Any:<apply>>
+ |       |       |   |                       |       `- '*/'
+ |       |       |   |                       +- _RMemo
+ |       |       |   |                       |   `- NfaRegexp:<empty_adapter>
+ |       |       |   |                       |       +- Sequence(...)
+ |       |       |   |                       |       `- alphabet <Unicode>
+ |       |       |   |                       `- Transform:<apply>
+ |       |       |   |                           +- _RMemo
+ |       |       |   |                           |   `- TrampolineWrapper<Or>
+ |       |       |   |                           |       +- _RMemo
+ |       |       |   |                           |       |   `- NfaRegexp:<empty_adapter,apply>
+ |       |       |   |                           |       |       +- Sequence(...)
+ |       |       |   |                           |       |       `- alphabet <Unicode>
+ |       |       |   |                           |       `- _RMemo
+ |       |       |   |                           |           `- TrampolineWrapper<And>
+ |       |       |   |                           |               +- _RMemo
+ |       |       |   |                           |               |   `- FunctionWrapper<Literal:<>>
+ |       |       |   |                           |               |       `- '('
+ |       |       |   |                           |               +- _RMemo
+ |       |       |   |                           |               |   `- NfaRegexp:<empty_adapter>
+ |       |       |   |                           |               |       +- Sequence(...)
+ |       |       |   |                           |               |       `- alphabet <Unicode>
+ |       |       |   |                           |               +- Delayed
+ |       |       |   |                           |               |   `- matcher <loop>
+ |       |       |   |                           |               +- _RMemo
+ |       |       |   |                           |               |   `- NfaRegexp:<empty_adapter>
+ |       |       |   |                           |               |       +- Sequence(...)
+ |       |       |   |                           |               |       `- alphabet <Unicode>
+ |       |       |   |                           |               `- _RMemo
+ |       |       |   |                           |                   `- FunctionWrapper<Literal:<>>
+ |       |       |   |                           |                       `- ')'
+ |       |       |   |                           `- TransformationWrapper(<apply>)
+ |       |       |   `- TransformationWrapper(<apply>)
+ |       |       +- _RMemo
+ |       |       |   `- NfaRegexp:<empty_adapter>
+ |       |       |       +- Sequence(...)
+ |       |       |       `- alphabet <Unicode>
+ |       |       `- _RMemo
+ |       |           `- TrampolineWrapper<DepthFirst>
+ |       |               +- generator_manager_queue_len None
+ |       |               +- stop None
+ |       |               +- reduce ([], <built-in function __add__>)
+ |       |               +- rest _RMemo
+ |       |               |   `- TrampolineWrapper<And>
+ |       |               |       +- _RMemo
+ |       |               |       |   `- FunctionWrapper<Any:<apply>>
+ |       |               |       |       `- '+-'
+ |       |               |       +- _RMemo
+ |       |               |       |   `- NfaRegexp:<empty_adapter>
+ |       |               |       |       +- Sequence(...)
+ |       |               |       |       `- alphabet <Unicode>
+ |       |               |       `- Transform:<apply>
+ |       |               |           +- _RMemo
+ |       |               |           |   `- TrampolineWrapper<And>
+ |       |               |           |       +- Transform:<apply>
+ |       |               |           |       |   +- _RMemo
+ |       |               |           |       |   |   `- TrampolineWrapper<Or>
+ |       |               |           |       |   |       +- _RMemo
+ |       |               |           |       |   |       |   `- NfaRegexp:<empty_adapter,apply>
+ |       |               |           |       |   |       |       +- Sequence(...)
+ |       |               |           |       |   |       |       `- alphabet <Unicode>
+ |       |               |           |       |   |       `- _RMemo
+ |       |               |           |       |   |           `- TrampolineWrapper<And>
+ |       |               |           |       |   |               +- _RMemo
+ |       |               |           |       |   |               |   `- FunctionWrapper<Literal:<>>
+ |       |               |           |       |   |               |       `- '('
+ |       |               |           |       |   |               +- _RMemo
+ |       |               |           |       |   |               |   `- NfaRegexp:<empty_adapter>
+ |       |               |           |       |   |               |       +- Sequence(...)
+ |       |               |           |       |   |               |       `- alphabet <Unicode>
+ |       |               |           |       |   |               +- Delayed
+ |       |               |           |       |   |               |   `- matcher <loop>
+ |       |               |           |       |   |               +- _RMemo
+ |       |               |           |       |   |               |   `- NfaRegexp:<empty_adapter>
+ |       |               |           |       |   |               |       +- Sequence(...)
+ |       |               |           |       |   |               |       `- alphabet <Unicode>
+ |       |               |           |       |   |               `- _RMemo
+ |       |               |           |       |   |                   `- FunctionWrapper<Literal:<>>
+ |       |               |           |       |   |                       `- ')'
+ |       |               |           |       |   `- TransformationWrapper(<apply>)
+ |       |               |           |       +- _RMemo
+ |       |               |           |       |   `- NfaRegexp:<empty_adapter>
+ |       |               |           |       |       +- Sequence(...)
+ |       |               |           |       |       `- alphabet <Unicode>
+ |       |               |           |       `- _RMemo
+ |       |               |           |           `- TrampolineWrapper<DepthFirst>
+ |       |               |           |               +- generator_manager_queue_len None
+ |       |               |           |               +- stop None
+ |       |               |           |               +- reduce ([], <built-in function __add__>)
+ |       |               |           |               +- rest _RMemo
+ |       |               |           |               |   `- TrampolineWrapper<And>
+ |       |               |           |               |       +- _RMemo
+ |       |               |           |               |       |   `- FunctionWrapper<Any:<apply>>
+ |       |               |           |               |       |       `- '*/'
+ |       |               |           |               |       +- _RMemo
+ |       |               |           |               |       |   `- NfaRegexp:<empty_adapter>
+ |       |               |           |               |       |       +- Sequence(...)
+ |       |               |           |               |       |       `- alphabet <Unicode>
+ |       |               |           |               |       `- Transform:<apply>
+ |       |               |           |               |           +- _RMemo
+ |       |               |           |               |           |   `- TrampolineWrapper<Or>
+ |       |               |           |               |           |       +- _RMemo
+ |       |               |           |               |           |       |   `- NfaRegexp:<empty_adapter,apply>
+ |       |               |           |               |           |       |       +- Sequence(...)
+ |       |               |           |               |           |       |       `- alphabet <Unicode>
+ |       |               |           |               |           |       `- _RMemo
+ |       |               |           |               |           |           `- TrampolineWrapper<And>
+ |       |               |           |               |           |               +- _RMemo
+ |       |               |           |               |           |               |   `- FunctionWrapper<Literal:<>>
+ |       |               |           |               |           |               |       `- '('
+ |       |               |           |               |           |               +- _RMemo
+ |       |               |           |               |           |               |   `- NfaRegexp:<empty_adapter>
+ |       |               |           |               |           |               |       +- Sequence(...)
+ |       |               |           |               |           |               |       `- alphabet <Unicode>
+ |       |               |           |               |           |               +- Delayed
+ |       |               |           |               |           |               |   `- matcher <loop>
+ |       |               |           |               |           |               +- _RMemo
+ |       |               |           |               |           |               |   `- NfaRegexp:<empty_adapter>
+ |       |               |           |               |           |               |       +- Sequence(...)
+ |       |               |           |               |           |               |       `- alphabet <Unicode>
+ |       |               |           |               |           |               `- _RMemo
+ |       |               |           |               |           |                   `- FunctionWrapper<Literal:<>>
+ |       |               |           |               |           |                       `- ')'
+ |       |               |           |               |           `- TransformationWrapper(<apply>)
+ |       |               |           |               +- start 0
+ |       |               |           |               `- first _RMemo
+ |       |               |           |                   `- TrampolineWrapper<And>
+ |       |               |           |                       +- _RMemo
+ |       |               |           |                       |   `- FunctionWrapper<Any:<apply>>
+ |       |               |           |                       |       `- '*/'
+ |       |               |           |                       +- _RMemo
+ |       |               |           |                       |   `- NfaRegexp:<empty_adapter>
+ |       |               |           |                       |       +- Sequence(...)
+ |       |               |           |                       |       `- alphabet <Unicode>
+ |       |               |           |                       `- Transform:<apply>
+ |       |               |           |                           +- _RMemo
+ |       |               |           |                           |   `- TrampolineWrapper<Or>
+ |       |               |           |                           |       +- _RMemo
+ |       |               |           |                           |       |   `- NfaRegexp:<empty_adapter,apply>
+ |       |               |           |                           |       |       +- Sequence(...)
+ |       |               |           |                           |       |       `- alphabet <Unicode>
+ |       |               |           |                           |       `- _RMemo
+ |       |               |           |                           |           `- TrampolineWrapper<And>
+ |       |               |           |                           |               +- _RMemo
+ |       |               |           |                           |               |   `- FunctionWrapper<Literal:<>>
+ |       |               |           |                           |               |       `- '('
+ |       |               |           |                           |               +- _RMemo
+ |       |               |           |                           |               |   `- NfaRegexp:<empty_adapter>
+ |       |               |           |                           |               |       +- Sequence(...)
+ |       |               |           |                           |               |       `- alphabet <Unicode>
+ |       |               |           |                           |               +- Delayed
+ |       |               |           |                           |               |   `- matcher <loop>
+ |       |               |           |                           |               +- _RMemo
+ |       |               |           |                           |               |   `- NfaRegexp:<empty_adapter>
+ |       |               |           |                           |               |       +- Sequence(...)
+ |       |               |           |                           |               |       `- alphabet <Unicode>
+ |       |               |           |                           |               `- _RMemo
+ |       |               |           |                           |                   `- FunctionWrapper<Literal:<>>
+ |       |               |           |                           |                       `- ')'
+ |       |               |           |                           `- TransformationWrapper(<apply>)
+ |       |               |           `- TransformationWrapper(<apply>)
+ |       |               +- start 0
+ |       |               `- first _RMemo
+ |       |                   `- TrampolineWrapper<And>
+ |       |                       +- _RMemo
+ |       |                       |   `- FunctionWrapper<Any:<apply>>
+ |       |                       |       `- '+-'
+ |       |                       +- _RMemo
+ |       |                       |   `- NfaRegexp:<empty_adapter>
+ |       |                       |       +- Sequence(...)
+ |       |                       |       `- alphabet <Unicode>
+ |       |                       `- Transform:<apply>
+ |       |                           +- _RMemo
+ |       |                           |   `- TrampolineWrapper<And>
+ |       |                           |       +- Transform:<apply>
+ |       |                           |       |   +- _RMemo
+ |       |                           |       |   |   `- TrampolineWrapper<Or>
+ |       |                           |       |   |       +- _RMemo
+ |       |                           |       |   |       |   `- NfaRegexp:<empty_adapter,apply>
+ |       |                           |       |   |       |       +- Sequence(...)
+ |       |                           |       |   |       |       `- alphabet <Unicode>
+ |       |                           |       |   |       `- _RMemo
+ |       |                           |       |   |           `- TrampolineWrapper<And>
+ |       |                           |       |   |               +- _RMemo
+ |       |                           |       |   |               |   `- FunctionWrapper<Literal:<>>
+ |       |                           |       |   |               |       `- '('
+ |       |                           |       |   |               +- _RMemo
+ |       |                           |       |   |               |   `- NfaRegexp:<empty_adapter>
+ |       |                           |       |   |               |       +- Sequence(...)
+ |       |                           |       |   |               |       `- alphabet <Unicode>
+ |       |                           |       |   |               +- Delayed
+ |       |                           |       |   |               |   `- matcher <loop>
+ |       |                           |       |   |               +- _RMemo
+ |       |                           |       |   |               |   `- NfaRegexp:<empty_adapter>
+ |       |                           |       |   |               |       +- Sequence(...)
+ |       |                           |       |   |               |       `- alphabet <Unicode>
+ |       |                           |       |   |               `- _RMemo
+ |       |                           |       |   |                   `- FunctionWrapper<Literal:<>>
+ |       |                           |       |   |                       `- ')'
+ |       |                           |       |   `- TransformationWrapper(<apply>)
+ |       |                           |       +- _RMemo
+ |       |                           |       |   `- NfaRegexp:<empty_adapter>
+ |       |                           |       |       +- Sequence(...)
+ |       |                           |       |       `- alphabet <Unicode>
+ |       |                           |       `- _RMemo
+ |       |                           |           `- TrampolineWrapper<DepthFirst>
+ |       |                           |               +- generator_manager_queue_len None
+ |       |                           |               +- stop None
+ |       |                           |               +- reduce ([], <built-in function __add__>)
+ |       |                           |               +- rest _RMemo
+ |       |                           |               |   `- TrampolineWrapper<And>
+ |       |                           |               |       +- _RMemo
+ |       |                           |               |       |   `- FunctionWrapper<Any:<apply>>
+ |       |                           |               |       |       `- '*/'
+ |       |                           |               |       +- _RMemo
+ |       |                           |               |       |   `- NfaRegexp:<empty_adapter>
+ |       |                           |               |       |       +- Sequence(...)
+ |       |                           |               |       |       `- alphabet <Unicode>
+ |       |                           |               |       `- Transform:<apply>
+ |       |                           |               |           +- _RMemo
+ |       |                           |               |           |   `- TrampolineWrapper<Or>
+ |       |                           |               |           |       +- _RMemo
+ |       |                           |               |           |       |   `- NfaRegexp:<empty_adapter,apply>
+ |       |                           |               |           |       |       +- Sequence(...)
+ |       |                           |               |           |       |       `- alphabet <Unicode>
+ |       |                           |               |           |       `- _RMemo
+ |       |                           |               |           |           `- TrampolineWrapper<And>
+ |       |                           |               |           |               +- _RMemo
+ |       |                           |               |           |               |   `- FunctionWrapper<Literal:<>>
+ |       |                           |               |           |               |       `- '('
+ |       |                           |               |           |               +- _RMemo
+ |       |                           |               |           |               |   `- NfaRegexp:<empty_adapter>
+ |       |                           |               |           |               |       +- Sequence(...)
+ |       |                           |               |           |               |       `- alphabet <Unicode>
+ |       |                           |               |           |               +- Delayed
+ |       |                           |               |           |               |   `- matcher <loop>
+ |       |                           |               |           |               +- _RMemo
+ |       |                           |               |           |               |   `- NfaRegexp:<empty_adapter>
+ |       |                           |               |           |               |       +- Sequence(...)
+ |       |                           |               |           |               |       `- alphabet <Unicode>
+ |       |                           |               |           |               `- _RMemo
+ |       |                           |               |           |                   `- FunctionWrapper<Literal:<>>
+ |       |                           |               |           |                       `- ')'
+ |       |                           |               |           `- TransformationWrapper(<apply>)
+ |       |                           |               +- start 0
+ |       |                           |               `- first _RMemo
+ |       |                           |                   `- TrampolineWrapper<And>
+ |       |                           |                       +- _RMemo
+ |       |                           |                       |   `- FunctionWrapper<Any:<apply>>
+ |       |                           |                       |       `- '*/'
+ |       |                           |                       +- _RMemo
+ |       |                           |                       |   `- NfaRegexp:<empty_adapter>
+ |       |                           |                       |       +- Sequence(...)
+ |       |                           |                       |       `- alphabet <Unicode>
+ |       |                           |                       `- Transform:<apply>
+ |       |                           |                           +- _RMemo
+ |       |                           |                           |   `- TrampolineWrapper<Or>
+ |       |                           |                           |       +- _RMemo
+ |       |                           |                           |       |   `- NfaRegexp:<empty_adapter,apply>
+ |       |                           |                           |       |       +- Sequence(...)
+ |       |                           |                           |       |       `- alphabet <Unicode>
+ |       |                           |                           |       `- _RMemo
+ |       |                           |                           |           `- TrampolineWrapper<And>
+ |       |                           |                           |               +- _RMemo
+ |       |                           |                           |               |   `- FunctionWrapper<Literal:<>>
+ |       |                           |                           |               |       `- '('
+ |       |                           |                           |               +- _RMemo
+ |       |                           |                           |               |   `- NfaRegexp:<empty_adapter>
+ |       |                           |                           |               |       +- Sequence(...)
+ |       |                           |                           |               |       `- alphabet <Unicode>
+ |       |                           |                           |               +- Delayed
+ |       |                           |                           |               |   `- matcher <loop>
+ |       |                           |                           |               +- _RMemo
+ |       |                           |                           |               |   `- NfaRegexp:<empty_adapter>
+ |       |                           |                           |               |       +- Sequence(...)
+ |       |                           |                           |               |       `- alphabet <Unicode>
+ |       |                           |                           |               `- _RMemo
+ |       |                           |                           |                   `- FunctionWrapper<Literal:<>>
+ |       |                           |                           |                       `- ')'
+ |       |                           |                           `- TransformationWrapper(<apply>)
+ |       |                           `- TransformationWrapper(<apply>)
  |       `- TransformationWrapper(<apply>)
  `- True""")
 
