@@ -212,6 +212,13 @@ class Transform(Transformable, NoMemo):
         Create a new Transform that includes the extra processing. 
         '''
         return Transform(self.matcher, self.wrapper.compose(function))
+    
+    def __iadd__(self, other):
+        '''
+        Allow transforms to wrap Delayed in rewriting.
+        '''
+        self.matcher += other
+        return self
 
 
 def PostCondition(matcher, predicate):

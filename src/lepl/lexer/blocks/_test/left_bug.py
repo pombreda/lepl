@@ -51,7 +51,7 @@ class LeftBugTest(TestCase):
         call = (expr1 & word) > List
         expr1 += (call | Empty() | word)
         program = expr1 & Eos()
-        #program.config.trace_stack()
+        program.config.trace_stack().auto_memoize()
         parser = program.get_parse()
         print(parser.matcher.tree())
         parsed = parser("abc")
@@ -70,15 +70,14 @@ class LeftBugTest(TestCase):
         call = (expr1 & word) > List
         expr1 += (call | Empty() | word)
         program = Trace(expr1 & Eos())
-        program.config.trace_stack()
+        program.config.trace_stack().auto_memoize()
         parser = program.get_parse()
         #print(parser.matcher.tree())
         parsed = parser("a b c")
         assert_str(parsed[0],
 """List
  +- List
- |   +- List
- |   |   `- 'a'
+ |   +- 'a'
  |   `- 'b'
  `- 'c'""")
 
@@ -89,13 +88,12 @@ class LeftBugTest(TestCase):
         call = (expr1 & expr0) > List # Deliberately not expr0 & expr1
         expr1 += (call | Empty () | expr0)
         program = (CLine(expr1) & Eos())
-        program.config.blocks(block_policy=rightmost)
+        program.config.blocks(block_policy=rightmost).auto_memoize()
         parsed = program.parse("a b c")
         assert_str(parsed[0],
 """List
  +- List
- |   +- List
- |   |   `- 'a'
+ |   +- 'a'
  |   `- 'b'
  `- 'c'""")
         

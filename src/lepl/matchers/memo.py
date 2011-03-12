@@ -92,11 +92,12 @@ class _RMemo(OperatorMatcher):
         if key not in self.__table:
             self.__table[key] = [False, [], self.matcher._match(stream)]
         descriptor = self.__table[key]
-        for i in count():
-            if descriptor[0]:
-                raise MemoException('''Left recursion was detected.
+        if descriptor[0]:
+            raise MemoException('''Left recursion was detected.
 You can try .config.auto_memoize() or similar, but it is better to re-write 
 the parser to remove left-recursive definitions.''')
+        for i in count():
+            assert not descriptor[0]
             if i == len(descriptor[1]):
                 try:
                     descriptor[0] = True
@@ -114,15 +115,23 @@ the parser to remove left-recursive definitions.''')
         if key not in self.__table:
             self.__table[key] = [False, [], self.matcher._match(stream)]
         descriptor = self.__table[key]
-        for i in count():
-            if descriptor[0]:
-                raise MemoException('''Left recursion was detected.
+        if descriptor[0]:
+            raise MemoException('''Left recursion was detected.
 You can try .config.auto_memoize() or similar, but it is better to re-write 
 the parser to remove left-recursive definitions.''')
+        for i in count():
+            assert not descriptor[0]
             if i == len(descriptor[1]):
-                result = next(descriptor[2])
+                result = next(descriptor[2].generator)
                 descriptor[1].append(result)
             yield descriptor[1][i]
+            
+    def __iadd__(self, other):
+        '''
+        Allow memos to wrap Delayed in rewriting.
+        '''
+        self.matcher += other
+        return self
 
 
 class _RMemo4(OperatorMatcher):
@@ -377,17 +386,82 @@ class _DummyMatcher(object):
         return self.__cached_repr
         
         
-def LMemo(matcher):
+def LMemo(matcher, curtail=None):
     '''
     Wrap in the _LMemo cache if required.
     '''
     if is_child(matcher, NoMemo, fail=False):
         return matcher
     else:
-        return _LMemo(matcher)
+        if curtail is None:
+            curtail = lambda depth, length: depth > length
+        return _LMemo(matcher, curtail)
 
 
 class _LMemo(OperatorMatcher):
+    
+    def __init__(self, matcher, curtail):
+        super(_LMemo, self).__init__()
+        self._arg(matcher=matcher)
+        self._karg(curtail=curtail)
+        self.__depth = {} # s_key(stream) -> [depth] 
+        self.__table = {} # (s_key(stream), depth) -> [table, generator] 
+        self.__state = State.singleton()
+    
+    @tagged
+    def _match(self, stream):
+        '''
+        Attempt to match the stream.
+        '''
+        key = s_key(stream, self.__state)
+        if key not in self.__depth:
+            self.__depth[key] = 0
+        depth = self.__depth[key]
+        if self.curtail(depth, s_len(stream)):
+            return
+        if (key, depth) not in self.__table:
+            self.__table[(key, depth)] = [[], self.matcher._match(stream)]
+        descriptor = self.__table[(key, depth)]
+        for i in count():
+            assert depth == self.__depth[key]
+            if i == len(descriptor[0]):
+                try:
+                    self.__depth[key] += 1
+                    result = yield descriptor[1]
+                finally:
+                    self.__depth[key] -= 1
+                descriptor[0].append(result)
+            yield descriptor[0][i]
+                    
+    def _untagged_match(self, stream):
+        '''
+        Match the stream without trampolining.
+        '''
+        key = s_key(stream, self.__state)
+        if key not in self.__depth:
+            self.__depth[key] = 0
+        depth = self.__depth[key]
+        if self.curtail(depth, s_len(stream)):
+            return
+        if (key, depth) not in self.__table:
+            self.__table[(key, depth)] = [[], self.matcher._match(stream)]
+        descriptor = self.__table[(key, depth)]
+        for i in count():
+            assert depth == self.__depth[key]
+            if i == len(descriptor[0]):
+                result = next(descriptor[1].generator)
+                descriptor[0].append(result)
+            yield descriptor[0][i]
+
+    def __iadd__(self, other):
+        '''
+        Allow memos to wrap Delayed in rewriting.
+        '''
+        self.matcher += other
+        return self
+
+
+class _LMemo2(OperatorMatcher):
     '''
     A memoizer for grammars that do have left recursion.
     '''

@@ -48,15 +48,15 @@ class LeftRecursiveTest(TestCase):
 #        This stalls because Lookahead consumes nothing.  Can we detect this 
 #        case?
 #        '''
-        #basicConfig(level=DEBUG)
+#        #basicConfig(level=DEBUG)
 #        
 #        item     = Delayed()
-#        item    += item[1:3] | ~Lookahead('\\')
+#        item    += item[1:3] | ~Lookahead('x')
 #    
 #        expr     = item[:2] & Drop(Eos())
-##        parser = expr.string_parser(Configuration(rewriters=[memoize(LMemo)]))
+#        expr.config.left_memoize()
 #        parser = expr.get_parse_string()
-#        print(parser.matcher)
+#        print(parser.matcher.tree())
 #
 #        parser('abc')
 
@@ -65,14 +65,15 @@ class LeftRecursiveTest(TestCase):
 #        This stalls because Lookahead consumes nothing.  Can we detect this 
 #        case?
 #        '''
-        #basicConfig(level=DEBUG)
+#        #basicConfig(level=DEBUG)
 #        
 #        item     = Delayed()
 #        item    += item[1:] | ~Lookahead('\\')
 #    
 #        expr     = item & Drop(Eos())
+#        expr.config.left_memoize()
 #        parser = expr.get_parse_string()
-#        print(parser.matcher)
+#        print(parser.matcher.tree())
 #
 #        parser('abc')
 
@@ -84,5 +85,11 @@ class LeftRecursiveTest(TestCase):
 
         expr.config.no_full_first_match()
         parser = expr.get_parse_string()
-#        print(parser.matcher)
+        try:
+            parser('abc')
+            assert False, 'expcted left recursion error'
+        except MemoException:
+            pass
+        expr.config.left_memoize()
+        parser = expr.get_parse_string()
         parser('abc')

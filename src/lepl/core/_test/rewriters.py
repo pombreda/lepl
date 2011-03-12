@@ -42,7 +42,6 @@ from lepl.matchers.combine import Or
 from lepl.support.graph import preorder
 from lepl.matchers.matcher import Matcher, is_child
 from lepl.matchers.support import TransformableWrapper
-from lepl.core.rewriters import DelayedClone
 
 
 # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324, C0321
@@ -57,105 +56,105 @@ def str26(value):
     return string.replace("u'", "'")
 
 
-class DelayedCloneTest(TestCase):
-    
-    def assert_clone(self, matcher):
-        _copy = matcher.postorder(DelayedClone(), Matcher)
-    
-    def _assert_clone(self, matcher, copy):
-        original = preorder(matcher, Matcher)
-        duplicate = preorder(copy, Matcher)
-        try:
-            while True:
-                o = next(original)
-                d = next(duplicate)
-                assert type(o) == type(d), (str(o), str(d), o, d)
-                if isinstance(o, Matcher):
-                    assert o is not d, (str(o), str(d), o, d)
-                else:
-                    assert o is d, (str(o), str(d), o, d)
-        except StopIteration:
-            self.assert_empty(original, 'original')
-            self.assert_empty(duplicate, 'duplicate')
-    
-    def assert_relative(self, matcher):
-        copy = matcher.postorder(DelayedClone(), Matcher)
-        def pairs(matcher):
-            for a in preorder(matcher, Matcher):
-                for b in preorder(matcher, Matcher):
-                    yield (a, b)
-        for ((a,b), (c,d)) in zip(pairs(matcher), pairs(copy)):
-            if a is b:
-                assert c is d
-            else:
-                assert c is not d
-            if type(a) is type(b):
-                assert type(c) is type(d)
-            else:
-                assert type(c) is not type(d)
-            
-    def assert_empty(self, generator, name):
-        try:
-            next(generator)
-            assert False, name + ' not empty'
-        except StopIteration:
-            pass
-            
-    def test_no_delayed(self):
-        matcher = Any('a') | Any('b')[1:2,...]
-        self.assert_clone(matcher)
-        self.assert_relative(matcher)
-        
-    def test_simple_loop(self):
-        delayed = Delayed()
-        matcher = Any('a') | Any('b')[1:2,...] | delayed
-        self.assert_clone(matcher)
-        self.assert_relative(matcher)
-       
-    def test_complex_loop(self):
-        delayed1 = Delayed()
-        delayed2 = Delayed()
-        line1 = Any('a') | Any('b')[1:2,...] | delayed1
-        line2 = delayed1 & delayed2
-        matcher = line1 | line2 | delayed1 | delayed2 > 'foo'
-        self.assert_clone(matcher)
-        self.assert_relative(matcher)
-
-    def test_common_child(self):
-        a = Any('a')
-        b = a | Any('b')
-        c = a | b | Any('c')
-        matcher = a | b | c
-        self.assert_clone(matcher)
-        self.assert_relative(matcher)
-        
-    def test_full_config_loop(self):
-        matcher = Delayed()
-        matcher += Any() & matcher
-        matcher.config.no_full_first_match().no_memoize()
-        copy = matcher.get_parse_string().matcher
-        self._assert_clone(matcher, copy)
-                
-    def test_transformed_etc(self):
-        class Term(Node): pass
-        class Factor(Node): pass
-        class Expression(Node): pass
-
-        expression  = Delayed()
-        number      = Digit()[1:,...]                      > 'number'
-        term        = (number | '(' / expression / ')')    > Term
-        muldiv      = Any('*/')                            > 'operator'
-        factor      = (term / (muldiv / term)[0::])        > Factor
-        addsub      = Any('+-')                            > 'operator'
-        expression += (factor / (addsub / factor)[0::])    > Expression
-
-        self.assert_clone(expression)
-        self.assert_relative(expression)
-        expression.config.no_full_first_match().no_compile_to_regexp()
-        expression.config.no_compose_transforms().no_direct_eval()
-        expression.config.no_flatten().no_memoize()
-        copy = expression.get_parse_string().matcher
-        self._assert_clone(expression, copy)
+#class DelayedCloneTest(TestCase):
+#    
+#    def assert_clone(self, matcher):
+#        _copy = matcher.postorder(DelayedClone(), Matcher)
+#    
+#    def _assert_clone(self, matcher, copy):
+#        original = preorder(matcher, Matcher)
+#        duplicate = preorder(copy, Matcher)
+#        try:
+#            while True:
+#                o = next(original)
+#                d = next(duplicate)
+#                assert type(o) == type(d), (str(o), str(d), o, d)
+#                if isinstance(o, Matcher):
+#                    assert o is not d, (str(o), str(d), o, d)
+#                else:
+#                    assert o is d, (str(o), str(d), o, d)
+#        except StopIteration:
+#            self.assert_empty(original, 'original')
+#            self.assert_empty(duplicate, 'duplicate')
+#    
+#    def assert_relative(self, matcher):
+#        copy = matcher.postorder(DelayedClone(), Matcher)
+#        def pairs(matcher):
+#            for a in preorder(matcher, Matcher):
+#                for b in preorder(matcher, Matcher):
+#                    yield (a, b)
+#        for ((a,b), (c,d)) in zip(pairs(matcher), pairs(copy)):
+#            if a is b:
+#                assert c is d
+#            else:
+#                assert c is not d
+#            if type(a) is type(b):
+#                assert type(c) is type(d)
+#            else:
+#                assert type(c) is not type(d)
+#            
+#    def assert_empty(self, generator, name):
+#        try:
+#            next(generator)
+#            assert False, name + ' not empty'
+#        except StopIteration:
+#            pass
+#            
+#    def test_no_delayed(self):
+#        matcher = Any('a') | Any('b')[1:2,...]
+#        self.assert_clone(matcher)
+#        self.assert_relative(matcher)
+#        
+#    def test_simple_loop(self):
+#        delayed = Delayed()
+#        matcher = Any('a') | Any('b')[1:2,...] | delayed
+#        self.assert_clone(matcher)
+#        self.assert_relative(matcher)
+#       
+#    def test_complex_loop(self):
+#        delayed1 = Delayed()
+#        delayed2 = Delayed()
+#        line1 = Any('a') | Any('b')[1:2,...] | delayed1
+#        line2 = delayed1 & delayed2
+#        matcher = line1 | line2 | delayed1 | delayed2 > 'foo'
+#        self.assert_clone(matcher)
+#        self.assert_relative(matcher)
+#
+#    def test_common_child(self):
+#        a = Any('a')
+#        b = a | Any('b')
+#        c = a | b | Any('c')
+#        matcher = a | b | c
+#        self.assert_clone(matcher)
+#        self.assert_relative(matcher)
+#        
+#    def test_full_config_loop(self):
+#        matcher = Delayed()
+#        matcher += Any() & matcher
+#        matcher.config.no_full_first_match().no_memoize()
+#        copy = matcher.get_parse_string().matcher
+#        self._assert_clone(matcher, copy)
+#                
+#    def test_transformed_etc(self):
+#        class Term(Node): pass
+#        class Factor(Node): pass
+#        class Expression(Node): pass
+#
+#        expression  = Delayed()
+#        number      = Digit()[1:,...]                      > 'number'
+#        term        = (number | '(' / expression / ')')    > Term
+#        muldiv      = Any('*/')                            > 'operator'
+#        factor      = (term / (muldiv / term)[0::])        > Factor
+#        addsub      = Any('+-')                            > 'operator'
+#        expression += (factor / (addsub / factor)[0::])    > Expression
+#
+#        self.assert_clone(expression)
+#        self.assert_relative(expression)
+#        expression.config.no_full_first_match().no_compile_to_regexp()
+#        expression.config.no_compose_transforms().no_direct_eval()
+#        expression.config.no_flatten().no_memoize()
+#        copy = expression.get_parse_string().matcher
+#        self._assert_clone(expression, copy)
                 
 
 def append(x):

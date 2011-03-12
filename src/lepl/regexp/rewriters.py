@@ -1,5 +1,3 @@
-from lepl.matchers.combine import DepthNoTrampoline, AndNoTrampoline
-from lepl.matchers.error import Error
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -63,8 +61,10 @@ from lepl.regexp.core import Choice, Sequence, Repeat, Empty, Option
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.interval import Character
 from lepl.regexp.unicode import UnicodeAlphabet
-from lepl.core.rewriters import clone, DelayedClone, Rewriter
+from lepl.core.rewriters import clone, Rewriter, clone_matcher
 from lepl.support.lib import fmt, str, basestring
+from lepl.matchers.combine import DepthNoTrampoline, AndNoTrampoline
+from lepl.matchers.error import Error
 
 
 class RegexpContainer(object):
@@ -411,14 +411,14 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
                         TrampolineWrapper: clone_wrapper,
                         TransformableTrampolineWrapper: clone_wrapper})
     
-    def clone_(node, args, kargs):
+    def clone_(i, j, node, args, kargs):
         '''
         Do the cloning, dispatching by type to the methods above.
         '''
         original_args = [RegexpContainer.to_matcher(arg) for arg in args]
         original_kargs = dict((name, RegexpContainer.to_matcher(kargs[name]))
                               for name in kargs)
-        original = old_clone(node, original_args, original_kargs)
+        original = old_clone(i, j, node, original_args, original_kargs)
         type_ = type(node)
         if type_ in map_:
             # pylint: disable-msg=W0142
@@ -454,7 +454,6 @@ class CompileRegexp(Rewriter):
         
     def __call__(self, graph):
         new_clone = make_clone(self.alphabet, clone, self.matcher, self.use)
-        graph = graph.postorder(DelayedClone(new_clone), Matcher)
-        if isinstance(graph, RegexpContainer):
-            graph = graph.matcher
+        graph = clone_matcher(graph, new_clone)
+        graph = RegexpContainer.to_matcher(graph)
         return graph 

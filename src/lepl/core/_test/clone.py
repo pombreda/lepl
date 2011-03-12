@@ -1,4 +1,6 @@
-from lepl.core.rewriters import LeftMemoize
+from lepl.matchers.variables import TraceVariables
+from lepl.lexer.matchers import Token
+from lepl.support.list import List
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -29,19 +31,50 @@ from lepl.core.rewriters import LeftMemoize
 # MPL or the LGPL License.
 
 '''
-Example returning less results than before.
+Tests for cloning matchers.
 '''
 
-from logging import basicConfig, DEBUG
 from unittest import TestCase
+from difflib import Differ
 
-from lepl import *
+from lepl.matchers.core import Literal, Delayed
+from lepl.matchers.derived import Drop, UnsignedReal, Optional
+from lepl.core.rewriters import clone_matcher
 
-class CacheTest(TestCase):
+
+class CloneTest(TestCase):
     
-    def test_cache(self):
-        #basicConfig(level=DEBUG)
+    def assert_clone_ok(self, matcher):
+        copy = clone_matcher(matcher)
+        mtree = matcher.tree()
+        ctree = copy.tree()
+        if mtree != ctree:
+            print(mtree)
+            print(ctree)
+            diff = Differ()
+            print('\n'.join(diff.compare(mtree.split('\n'), ctree.split('\n'))))
+        assert mtree == ctree
+        assert matcher is not copy
+
+    def test_single(self):
+        self.assert_clone_ok(Literal('foo'))
+
+    def test_no_loop(self):
+        self.assert_clone_ok(Literal('a') | 'b' & Drop('c'))
         
+    def test_delayed(self):
+        d = Delayed()
+        d += Literal('foo')
+        self.assert_clone_ok(d)
+        self.assert_clone_ok(Literal('bar') & d)
+    
+    def test_loop(self):
+        d = Delayed()
+        a = d | 'b'
+        d += a
+        self.assert_clone_ok(d)
+        
+    def test_loops(self):
         with TraceVariables():
             value = Token(UnsignedReal())
             symbol = Token('[^0-9a-zA-Z \t\r\n]')
@@ -58,23 +91,6 @@ class CacheTest(TestCase):
             add = (group3c & symbol('+') & group3c) > List   # changed
             sub = (group3c & symbol('-') & group3c) > List   # changed
             group3c += (add | sub | group2)
-    
-        group3c.config.clear().lexer().auto_memoize().trace_variables()
-        p = group3c.get_parse_all()
-        print(p.matcher.tree())
-        results = list(p('1+2*(3-4)+5/6+7'))
-        for result in results:
-            print(result[0])
-        assert len(results) == 12, results
-
-    def test_left(self):
-        #basicConfig(level=DEBUG)
-        a = Delayed()
-        a += Optional(a) & (a | 'b' | 'c')
-        a.config.no_full_first_match().auto_memoize()
-        p = a.get_parse_all()
-        #print(p.matcher.tree())
-        r = list(p('bcb'))
-        assert r == [['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c', 'b'], ['b', 'c'], ['b', 'c'], ['b']], r
+        self.assert_clone_ok(group3c)
         
         

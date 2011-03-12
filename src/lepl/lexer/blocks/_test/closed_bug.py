@@ -59,7 +59,7 @@ class ClosedBugTest(TestCase):
         text = word[1:]
         block = Delayed()
         line = BLine(text) | block | empty
-        block += Block(line[:]) > list
+        block += Block(line[1:]) > list
         program = Trace(block[:] & Eos())
         program.config.blocks(block_policy=to_right, block_start=-1)
         self.run_test(program.get_parse(), True)

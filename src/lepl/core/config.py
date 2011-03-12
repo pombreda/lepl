@@ -463,10 +463,10 @@ class ConfigBuilder(object):
         inefficient.  It is always better to re-write a grammar to avoid
         left-recursion.
         '''
-        from lepl.core.rewriters import Memoize
+        from lepl.core.rewriters import Memoize, LeftMemoize
         from lepl.matchers.memo import LMemo
         self.no_memoize()
-        return self.add_rewriter(Memoize(LMemo))
+        return self.add_rewriter(LeftMemoize())
     
     def right_memoize(self):
         '''

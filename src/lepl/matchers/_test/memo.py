@@ -138,8 +138,9 @@ class MemoTest(TestCase):
         termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
         sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
     
-        sentence.config.clear().left_memoize().trace_stack()
+        sentence.config.clear().left_memoize()
         p = sentence.get_match_string()
+        print(p.matcher.tree())
         
         text = 'every boy or some girl and helen and john or pat knows ' \
                'and respects or loves every boy or some girl and pat or ' \

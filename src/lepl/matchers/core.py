@@ -217,16 +217,20 @@ class Delayed(OperatorMatcher):
         '''
         super(Delayed, self).__init__()
         self._karg(matcher=matcher)
-    
+        if matcher:
+            self._match = matcher._match
+            
+    def assert_matcher(self):
+        if not self.matcher:
+            raise ValueError('Delayed matcher still unbound.')
+            
     def _match(self, stream):
         '''
         Do the matching (return a generator that provides successive 
-        (result, stream) tuples).
+        (result, stream) tuples).  This is overwritten when a matcher is
+        defined.
         '''
-        if self.matcher:
-            return self.matcher._match(stream)
-        else:
-            raise ValueError('Delayed matcher still unbound.')
+        self.assert_matcher()
         
     # pylint: disable-msg=E0203, W0201
     # _karg defined this in constructor
@@ -235,6 +239,7 @@ class Delayed(OperatorMatcher):
             raise ValueError('Delayed matcher already bound.')
         else:
             self.matcher = coerce_(matcher)
+            self._match = matcher._match
             return self
         
 

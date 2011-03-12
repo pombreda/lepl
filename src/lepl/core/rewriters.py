@@ -32,6 +32,9 @@ Rewriters modify the graph of matchers before it is used to generate a
 parser.
 '''
 
+from itertools import count
+
+from lepl.matchers.memo import LMemo, RMemo
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
 from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
@@ -41,8 +44,8 @@ from lepl.matchers.core import Delayed, Lookahead
 from lepl.matchers.derived import add
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
     matcher_type, MatcherTypeException, canonical_matcher_type
-from lepl.matchers.support import NoTrampoline
-from lepl.support.lib import lmap, fmt, LogMixin
+from lepl.matchers.support import NoTrampoline, Transformable
+from lepl.support.lib import lmap, fmt, LogMixin, empty
 
 
 class Rewriter(LogMixin):
@@ -110,8 +113,8 @@ class Rewriter(LogMixin):
     def __str__(self):
         return self.name
     
-    
-def clone(node, args, kargs):
+
+def clone(i, j, node, args, kargs):
     '''
     Clone including matcher-specific attributes.
     '''
@@ -121,90 +124,94 @@ def clone(node, args, kargs):
     return copy
 
 
-def copy_standard_attributes(node, copy, transform=True):
+def copy_standard_attributes(node, copy):
     '''
     Handle the additional attributes that matchers may have.
     '''
-    from lepl.matchers.support import Transformable
-    if isinstance(node, Transformable) and transform:
+    if isinstance(node, Transformable):
         copy.wrapper = node.wrapper
     if isinstance(node, FactoryMatcher):
         copy.factory = node.factory
+    if hasattr(node, 'trace_variables'):
+        copy.trace_variables = node.trace_variables
 
 
-class DelayedClone(Visitor):    
+def linearise_matcher(node):
     '''
-    A version of `Clone()` that uses `Delayed()` rather
-    that `Proxy()` to handle circular references.  Also caches results to
-    avoid duplications.
+    Return `[(head, reversed), ...]` where each tuple describes  a tree of 
+    matchers without loops.  The first head is the root node.  The reversed
+    list contains nodes ordered children-first (except for `Delayed()`
+    instances, whose children are other `head` elements. 
+    
+    This allows us to clone a DAG of matchers in the same way as it was first
+    created - by creating linear trees and then connecting the `Delayed()`
+    instances.
     '''
-    
-    def __init__(self, clone_=clone):
-        super(DelayedClone, self).__init__()
-        self._clone = clone_
-        self._visited = {}
-        self._loops = set()
-        self._node = None
-    
-    def loop(self, node):
-        '''
-        This is called for nodes that are involved in cycles when they are
-        needed as arguments but have not themselves been cloned.
-        '''
-        if node not in self._visited:
-            self._visited[node] = Delayed()
-            self._loops.add(node)
-        return self._visited[node]
-    
-    def node(self, node):
-        '''
-        Store the current node.
-        '''
-        self._node = node
-        
-    def constructor(self, *args, **kargs):
-        '''
-        Clone the node, taking care to handle loops.
-        '''
-        if self._node not in self._visited:
-            self._visited[self._node] = self.__clone_node(args, kargs)
-        # if this is one of the loops we replaced with a delayed instance,
-        # then we need to patch the delayed matcher
-        elif self._node in self._loops and \
-                not self._visited[self._node].matcher:
-            self._visited[self._node] += self.__clone_node(args, kargs)
-        return self._visited[self._node]
-    
-    def __clone_node(self, args, kargs):
-        '''
-        Before cloning, drop any Delayed from args and kargs.  Afterwards,
-        check if this is a Delaed instance and, if so, return the contents.
-        This helps keep the number of Delayed instances from exploding.
-        '''
-        args = lmap(self.__drop, args)
-        kargs = dict((key, self.__drop(kargs[key])) for key in kargs)
-        return self.__drop(self._clone(self._node, args, kargs))
-    
-    @staticmethod
-    def __drop(node):
-        '''
-        Filter `Delayed` instances where possible (if they have the matcher
-        defined and are nor transformed).
-        '''
-        # delayed import to avoid dependency loops
-        from lepl.matchers.transform import Transformable
-        if isinstance(node, Delayed) and node.matcher and \
-                not (isinstance(node, Transformable) and node.wrapper):
-            return node.matcher
-        else:
-            return node
-    
-    def leaf(self, value):
-        '''
-        Leaf values are unchanged.
-        '''
+    linear = []
+    pending = [node]
+    heads = set()
+    while pending:
+        node = pending.pop()
+        if node not in heads:
+            stack = []
+            def append(child):
+                if isinstance(child, Matcher):
+                    if isinstance(child, Delayed):
+                        child.assert_matcher()
+                        pending.append(child.matcher)
+                        stack.append((child, empty()))
+                    else:
+                        stack.append((child, iter(child)))
+            heads.add(node)
+            append(node) # init stack
+            def postorder():
+                while stack:
+                    (node, children) = stack[-1]
+                    try:
+                        append(next(children))
+                    except StopIteration:
+                        yield stack.pop()[0]
+            linear.append((node, list(postorder())))
+    return linear
+
+
+def clone_tree(i, head, reversed, mapping, delayed, clone):
+    def rewrite(value):
+        try:
+            if value in mapping:
+                return mapping[value]
+        except TypeError:
+            pass
         return value
-    
+    n = len(reversed)
+    for (j, node) in zip(count(n, -1), reversed):
+        if isinstance(node, Delayed):
+            if node not in mapping or True:
+                mapping[node] = clone(i, -j, node, (), {})
+                delayed.append((node, mapping[node]))
+        else:
+            if node not in mapping:
+                (args, kargs) = node._constructor_args()
+                args = lmap(rewrite, args)
+                kargs = dict((name, rewrite(value)) for (name, value) in kargs.items())
+                copy = clone(i, j, node, args, kargs)
+                mapping[node] = copy
+
+
+def clone_matcher(node, clone=clone):
+    from lepl.regexp.rewriters import RegexpContainer
+    trees = linearise_matcher(node)
+    all_nodes = {}
+    all_delayed = []
+    for (i, (head, reversed)) in enumerate(trees):
+        clone_tree(i, head, reversed, all_nodes, all_delayed, clone)
+    for (delayed, clone) in all_delayed:
+        # we had bugs where this ended up being delegated to +
+        assert hasattr(clone, '__iadd__'), clone
+        # this lets us delay forcing to matcher until last moment
+        clone += RegexpContainer.to_matcher(all_nodes[delayed.matcher])
+    return RegexpContainer.to_matcher(all_nodes[node])
+        
     
 def post_clone(function):
     '''
@@ -213,11 +220,11 @@ def post_clone(function):
     proxies and so have no functionality of their own) (so, when used with 
     `DelayedClone`, effectively performs a map on the graph).
     '''
-    def new_clone(node, args, kargs):
+    def new_clone(i, j, node, args, kargs):
         '''
         Apply function as well as clone.
         '''
-        copy = clone(node, args, kargs)
+        copy = clone(i, j, node, args, kargs)
         # ignore Delayed since that would (1) effectively duplicate the
         # action and (2) they come and go with each cloning.
         if not isinstance(node, Delayed):
@@ -235,7 +242,7 @@ class Flatten(Rewriter):
         super(Flatten, self).__init__(Rewriter.FLATTEN)
     
     def __call__(self, graph):
-        def new_clone(node, old_args, kargs):
+        def new_clone(i, j, node, old_args, kargs):
             '''
             The flattening cloner.
             '''
@@ -253,8 +260,8 @@ class Flatten(Rewriter):
                         new_args.append(arg)
             if not new_args:
                 new_args = old_args
-            return clone(node, new_args, kargs)
-        return graph.postorder(DelayedClone(new_clone), Matcher)
+            return clone(i, j, node, new_args, kargs)
+        return clone_matcher(graph, new_clone)
    
 
 class ComposeTransforms(Rewriter):
@@ -268,19 +275,19 @@ class ComposeTransforms(Rewriter):
         
     def __call__(self, graph):
         from lepl.matchers.transform import Transform, Transformable
-        def new_clone(node, args, kargs):
+        def new_clone(i, j, node, args, kargs):
             '''
             The joining cloner.
             '''
             # must always clone to expose the matcher (which was cloned 
             # earlier - it is not node.matcher)
-            copy = clone(node, args, kargs)
+            copy = clone(i, j, node, args, kargs)
             if isinstance(copy, Transform) \
                     and isinstance(copy.matcher, Transformable):
                 return copy.matcher.compose(copy.wrapper)
             else:
                 return copy
-        return graph.postorder(DelayedClone(new_clone), Matcher)
+        return clone_matcher(graph, new_clone)
 
 
 class TraceVariables(Rewriter):
@@ -294,18 +301,18 @@ class TraceVariables(Rewriter):
         
     def __call__(self, graph):
         from lepl.matchers.transform import Transform
-        def new_clone(node, args, kargs):
+        def new_clone(i, j, node, args, kargs):
             '''
             The joining cloner.
             '''
             # must always clone to expose the matcher (which was cloned 
             # earlier - it is not node.matcher)
-            copy = clone(node, args, kargs)
+            copy = clone(i, j, node, args, kargs)
             if hasattr(node, 'trace_variables') and node.trace_variables:
                 return Transform(copy, node.trace_variables)
             else:
                 return copy
-        return graph.postorder(DelayedClone(new_clone), Matcher)
+        return clone_matcher(graph, new_clone)
 
 
 class Memoize(Rewriter):
@@ -320,7 +327,36 @@ class Memoize(Rewriter):
         self.memoizer = memoizer
         
     def __call__(self, graph):
-        return graph.postorder(DelayedClone(post_clone(self.memoizer)), Matcher)
+        return clone_matcher(graph, post_clone(self.memoizer))
+    
+    
+def memoize(i, j, d, copy):
+    if j > 0:
+        def open(depth, length):
+            return False
+        curtail = open
+    elif d:
+        def fixed(depth, length):
+            return depth >  i * d
+        curtail = fixed
+    else:
+        def slen(depth, length):
+            return depth > i * length
+        curtail = slen
+    return LMemo(copy, curtail)
+
+    
+class LeftMemoize(Rewriter):
+    
+    def __init__(self, d=0):
+        super(LeftMemoize, self).__init__(Rewriter.MEMOIZE, 'Memoize')
+        self.d = d
+        
+    def __call__(self, graph):
+        def new_clone(i, j, node, args, kargs):
+            copy = clone(i, j, node, args, kargs)
+            return memoize(i, j, self.d, copy)
+        return clone_matcher(graph, new_clone)
 
 
 class AutoMemoize(Rewriter):
@@ -345,27 +381,16 @@ class AutoMemoize(Rewriter):
             for loop in either_loops(head, self.conservative):
                 for node in loop:
                     dangerous.add(node)
-        def new_clone(node, args, kargs):
-            '''
-            Clone with the appropriate memoizer 
-            (cannot use post_clone as need to test original)
-            '''
-            copy = clone(node, args, kargs)
-            if isinstance(node, Delayed):
-                # no need to memoize the proxy (if we do, we also break 
-                # rewriting, since we "hide" the Delayed instance)
-                return copy
-            elif node in dangerous:
-                if self.left:
-                    return self.left(copy)
-                else:
-                    return copy
-            else:
-                if self.right:
-                    return self.right(copy)
-                else:
-                    return copy
-        return graph.postorder(DelayedClone(new_clone), Matcher)
+        def mkclone(left):
+            def new_clone(i, j, node, args, kargs):
+                '''
+                Clone with the appropriate memoizer 
+                (cannot use post_clone as need to test original)
+                '''
+                copy = clone(i, j, node, args, kargs)
+                return memoize(i, j, 1, copy)
+            return new_clone
+        return clone_matcher(graph, mkclone(self.left))
 
 
 def left_loops(node):
@@ -475,7 +500,7 @@ class SetArguments(Rewriter):
         self.extra_kargs = extra_kargs
         
     def __call__(self, graph):
-        def new_clone(node, args, kargs):
+        def new_clone(i, j, node, args, kargs):
             '''
             As clone, but add in any extra kargs if the node is an instance
             of the given type.
@@ -483,8 +508,8 @@ class SetArguments(Rewriter):
             if isinstance(node, self.type):
                 for key in self.extra_kargs:
                     kargs[key] = self.extra_kargs[key]
-            return clone(node, args, kargs)
-        return graph.postorder(DelayedClone(new_clone), Matcher)
+            return clone(i, j, node, args, kargs)
+        return clone_matcher(graph, new_clone)
 
 
 class DirectEvaluation(Rewriter):
@@ -506,7 +531,7 @@ class DirectEvaluation(Rewriter):
         self.spec = spec
 
     def __call__(self, graph):
-        def new_clone(node, args, kargs):
+        def new_clone(i, j, node, args, kargs):
             type_, ok = None, False
             for parent in self.spec:
                 if is_child(node, parent):
@@ -531,7 +556,7 @@ class DirectEvaluation(Rewriter):
             except TypeError as err:
                 raise TypeError(fmt('Error cloning {0} with ({1}, {2}): {3}',
                                        type_, args, kargs, err))
-        return graph.postorder(DelayedClone(new_clone), Matcher)
+        return clone_matcher(graph, new_clone)
     
     
 class FullFirstMatch(Rewriter):
@@ -615,3 +640,88 @@ class NodeStats(object):
         types = '\n'.join([fmt('{0:40s}: {1:3d}', key, len(self.types[key]))
                            for key in keys])
         return counts + types
+    
+    def __eq__(self, other):
+        '''
+        Quick and dirty equality
+        '''
+        return str(self) == str(other)
+
+
+#class DelayedClone(Visitor):    
+#    '''
+#    A version of `Clone()` that uses `Delayed()` rather
+#    that `Proxy()` to handle circular references.  Also caches results to
+#    avoid duplications.
+#    '''
+#    
+#    def __init__(self, clone_=clone):
+#        super(DelayedClone, self).__init__()
+#        self._clone = clone_
+#        self._visited = {}
+#        self._loops = set()
+#        self._node = None
+#    
+#    def loop(self, node):
+#        '''
+#        This is called for nodes that are involved in cycles when they are
+#        needed as arguments but have not themselves been cloned.
+#        '''
+#        if node not in self._visited:
+#            self._visited[node] = Delayed()
+#            self._loops.add(node)
+#        return self._visited[node]
+#    
+#    def node(self, node):
+#        '''
+#        Store the current node.
+#        '''
+#        self._node = node
+#        
+#    def constructor(self, *args, **kargs):
+#        '''
+#        Clone the node, taking care to handle loops.
+#        '''
+#        if self._node not in self._visited:
+#            self._visited[self._node] = self.__clone_node(args, kargs)
+#        # if this is one of the loops we replaced with a delayed instance,
+#        # then we need to patch the delayed matcher
+#        elif self._node in self._loops and \
+#                not self._visited[self._node].matcher:
+#            self._visited[self._node] += self.__clone_node(args, kargs)
+#        return self._visited[self._node]
+#    
+#    def __clone_node(self, args, kargs):
+#        '''
+#        Before cloning, drop any Delayed from args and kargs.  Afterwards,
+#        check if this is a Delaed instance and, if so, return the contents.
+#        This helps keep the number of Delayed instances from exploding.
+#        '''
+##        args = lmap(self.__drop, args)
+##        kargs = dict((key, self.__drop(kargs[key])) for key in kargs)
+##        return self.__drop(self._clone(self._node, args, kargs))
+#        return self._clone(self._node, args, kargs)
+#    
+#    # not needed now Delayed dynamically sets _match()
+#    # also, will break new cloning
+##    @staticmethod
+##    def __drop(node):
+##        '''
+##        Filter `Delayed` instances where possible (if they have the matcher
+##        defined and are nor transformed).
+##        '''
+##        # delayed import to avoid dependency loops
+##        from lepl.matchers.transform import Transformable
+##        if isinstance(node, Delayed) and node.matcher and \
+##                not (isinstance(node, Transformable) and node.wrapper):
+##            return node.matcher
+##        else:
+##            return node
+#    
+#    def leaf(self, value):
+#        '''
+#        Leaf values are unchanged.
+#        '''
+#        return value
+    
+    

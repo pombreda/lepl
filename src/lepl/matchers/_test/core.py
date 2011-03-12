@@ -54,7 +54,24 @@ class AnyTest(TestCase):
         matcher = Any()
         result = matcher.parse('a')
         assert result, result
-
+        
+        
+class DelayedTest(TestCase):
+    
+    def test_delayed(self):
+        matcher = Delayed()
+        matcher += Literal('abc')
+        result = matcher.parse('abc')
+        assert result == ['abc'], result
+        
+    def test_missing(self):
+        matcher = Delayed()
+        try:
+            matcher.parse('abc')
+            assert False, 'expected error'
+        except ValueError as e:
+            assert 'unbound' in str(e)
+        
 
 class AndTest(BaseTest):
 

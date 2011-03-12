@@ -38,6 +38,7 @@ Tests for a bug reported for 3.2, 3.2.1
 
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
+from difflib import Differ
 
 from lepl import *
 from lepl.support.graph import ConstructorWalker
@@ -45,8 +46,8 @@ from lepl.matchers.matcher import Matcher, canonical_matcher_type,\
     MatcherTypeException, is_child
 from lepl.matchers.memo import _LMemo, _RMemo, LMemo, RMemo
 from lepl.matchers.transform import Transform, TransformationWrapper
-from lepl.core.rewriters import DelayedClone, NodeStats, Flatten, Memoize, \
-    ComposeTransforms, AutoMemoize
+from lepl.core.rewriters import NodeStats, Flatten, Memoize, \
+    ComposeTransforms, AutoMemoize, clone_matcher
 
 
 class MagusTest(TestCase):
@@ -71,45 +72,50 @@ class MagusTest(TestCase):
 
         dotted_name = function & Eos()
 
-        dotted_name.config.clear().flatten().compose_transforms().auto_memoize()
-        dotted_name.config.trace_stack(False)
+        parser = dotted_name.get_parse_string()
+        try:
+            parser("1func()")
+            assert False, 'expected left recursion'
+        except MemoException:
+            pass
+        dotted_name.config.auto_memoize().no_full_first_match()
         parser = dotted_name.get_parse_string()
         parser("1func()")
         
 
-class DelayedCloneTest(TestCase):
-    '''
-    The original problem for 3.2 was related to clones losing children.
-    '''
-    
-    def test_clone(self):
-        '''
-        Clone and check children.
-        '''
-        a = Delayed()
-        b = (a | 'c')
-        a += b
-        
-        def simple_clone(node):
-            '''
-            Clone the node.
-            '''
-            walker = ConstructorWalker(node, Matcher)
-            return walker(DelayedClone())
-            
-        self.assert_children(b)
-        bb = simple_clone(b)
-        self.assert_children(bb)
-        
-        
-    def assert_children(self, b):
-        '''
-        Check children are non-None.
-        '''
-#        print('>>>{0!s}<<<'.format(b))
-        assert is_child(b, Or)
-        for child in b.matchers:
-            assert child
+#class DelayedCloneTest(TestCase):
+#    '''
+#    The original problem for 3.2 was related to clones losing children.
+#    '''
+#    
+#    def test_clone(self):
+#        '''
+#        Clone and check children.
+#        '''
+#        a = Delayed()
+#        b = (a | 'c')
+#        a += b
+#        
+#        def simple_clone(node):
+#            '''
+#            Clone the node.
+#            '''
+#            walker = ConstructorWalker(node, Matcher)
+#            return walker(DelayedClone())
+#            
+#        self.assert_children(b)
+#        bb = simple_clone(b)
+#        self.assert_children(bb)
+#        
+#        
+#    def assert_children(self, b):
+#        '''
+#        Check children are non-None.
+#        '''
+##        print('>>>{0!s}<<<'.format(b))
+#        assert is_child(b, Or)
+#        for child in b.matchers:
+#            assert child
             
 
 
@@ -134,16 +140,28 @@ class CloneTest(TestCase):
         variable += (name | expression / '.' / name)
 
         dotted_name = function & Eos()
+        base = dotted_name.tree()
+#        print(base)
         desc0 = NodeStats(dotted_name)
-        #print(desc0)
+        print(desc0)
         assert desc0.total == 18, desc0
         self.assert_count(desc0, And, 5)
         self.assert_count(desc0, Or, 2)
         self.assert_count(desc0, Delayed, 2)
         
+        clone0 = clone_matcher(dotted_name)
+#        print(clone0.tree())
+        diff = Differ()
+        diff_text = '\n'.join(diff.compare(base.split('\n'), clone0.tree().split('\n')))
+        #print(diff_text)
+        descx = NodeStats(clone0)
+        print(descx)
+        assert descx == desc0
+        
         clone1 = Flatten()(dotted_name)
+        print(clone1.tree())
         desc1 = NodeStats(clone1)
-        #print(desc1)
+        print(desc1)
         # flattened two matchers - one each of And and Or
         assert desc1.total == 16, desc1
         self.assert_count(desc1, And, 4)

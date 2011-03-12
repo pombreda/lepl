@@ -33,7 +33,7 @@ from lepl.lexer.blocks.lexer import INDENT
 from lepl.lexer.blocks.monitor import BlockMonitor
 from lepl.core.parser import tagged
 from lepl.lexer.blocks.support import OffsideError
-from lepl.matchers.support import OperatorMatcher, coerce_
+from lepl.matchers.support import OperatorMatcher, coerce_, NoMemo
 from lepl.matchers.combine import And
 from lepl.lexer.lines.matchers import LineEnd
 from lepl.support.lib import fmt
@@ -156,7 +156,7 @@ By default, expect an indent equivalent to a tab.
 
 # pylint: disable-msg=E1101, W0212, R0901, R0904
 # pylint conventions
-class Block(OperatorMatcher):
+class Block(OperatorMatcher, NoMemo):
     '''
     Set a new indent level for the enclosed matchers (typically `BLine` and
     `Block` instances).

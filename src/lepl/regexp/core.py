@@ -760,6 +760,9 @@ class NfaPattern(LogMixin):
                 if terminal:
                     yield (terminal, self.__alphabet.join(match), stream)
 
+    def __repr__(self):
+        return '<NFA>'
+    
 
 class DfaGraph(BaseGraph):
     '''
@@ -961,3 +964,7 @@ class DfaPattern(LogMixin):
                 except StopIteration:
                     pass
         return longest
+    
+    def __repr__(self):
+        return '<DFA>'
+    

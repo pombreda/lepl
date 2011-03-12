@@ -36,7 +36,7 @@ Process a table of data based on values from
 http://www.swivel.com/data_sets/spreadsheet/1002196
 '''
 
-#from logging import basicConfig, DEBUG
+from logging import basicConfig, DEBUG
 
 from lepl import *
 from lepl._example.support import Example
@@ -45,7 +45,7 @@ from lepl._example.support import Example
 class ColumnExample(Example):
     
     def test_columns(self):
-        #basicConfig(level=DEBUG)
+        basicConfig(level=DEBUG)
         
         # http://www.swivel.com/data_sets/spreadsheet/1002196
         table = '''

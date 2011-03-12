@@ -212,6 +212,8 @@ def make_raw_parser(matcher, stream_factory, config):
     sequence of matches (ie (results, stream) pairs).
     '''
     for rewriter in config.rewriters:
+        #print(rewriter)
+        #print(matcher.tree())
         matcher = rewriter(matcher)
     (m_stack, m_value) = prepare_monitors(config.monitors)
     # pylint bug here? (E0601)
