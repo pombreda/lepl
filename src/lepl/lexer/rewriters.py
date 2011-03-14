@@ -69,7 +69,7 @@ def find_tokens(matcher):
     if tokens and non_tokens:
         raise LexerError(
             fmt('The grammar contains a mix of Tokens and non-Token '
-                   'matchers at the top level. If Tokens are used then '
+                   'matchers at the top level.  If Tokens are used then '
                    'non-token matchers that consume input must only '
                    'appear "inside" Tokens.  The non-Token matchers '
                    'include: {0}.',

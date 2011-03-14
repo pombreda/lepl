@@ -26,7 +26,7 @@ tokens (ignoring :ref:`backtracking`).  For example::
   >>>     expr   += factor & (addsub & factor)[:]
   >>>     line    = expr & Eos()
   >>> line.parse('1 + 2 * (3 + 4 - 5)')
-  ['1', ' ', '', '+', ' ', '2', ' ', '*', ' ', '(', '', '3', ' ', '', '+', ' ', '4', ' ', '', '-', ' ', '5', '', '', ')']
+  ['1', ' ', '', '+', ' ', '2', ' ', '*', ' ', '(', '', '3', ' ', '', '+', ' ', '4', ' ', '', '-', ' ', '5', '', '', ')', '']
 
 .. index:: Drop()
 .. note::
@@ -213,7 +213,7 @@ Nodes also provide attribute access to child nodes and named pairs.  These are
 returned as lists, since sub--node types and names need not be unique::
 
   >>> [(name, getattr(ast, name)) for name in dir(ast)]
-  [('operator', ['+']), ('Factor', [Factor(...), Factor(...)])]
+  [('Factor', [Factor(...), Factor(...)]), ('operator', ['+'])]
 
   >>> ast.Factor[1].Term[0].number[0]
   '2'

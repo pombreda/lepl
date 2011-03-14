@@ -40,7 +40,8 @@ from lepl.core.parser import make_raw_parser, make_single, make_multiple
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 
 
-Configuration = namedtuple('Configuration', 'rewriters monitors stream_factory')
+Configuration = namedtuple('Configuration', 
+                           'rewriters monitors stream_factory stream_kargs')
 '''Carrier for configuration.'''
 
     
@@ -170,7 +171,7 @@ class ConfigBuilder(object):
         rewriters = list(self.__rewriters)
         rewriters.sort()
         return Configuration(rewriters, list(self.__monitors),
-                             self.__stream_factory)
+                             self.__stream_factory, dict(self.__stream_kargs))
     
     def __get_alphabet(self):
         '''
@@ -426,48 +427,49 @@ class ConfigBuilder(object):
         
     def auto_memoize(self, conservative=None, full=True, d=0):
         '''
-        Lepl contains two memoizers - one for right- and one for left-recursive
-        grammars.  These can be applied to all matchers with 
-        ``config.right_memoize()`` and ``config.left_memoize()``.
-        
         This configuration attempts to detect which memoizer is most effective
-        for each matcher.  It also calls ``config.optimize_or()``.  As such
-        it is a general "fix" for left-recursive grammars and is suggested
-        in the warning shown when the right-only memoizer detects left
-        recursion.
+        for each matcher.  As such it is a general "fix" for left-recursive 
+        grammars and is suggested in the warning shown when the right-only 
+        memoizer detects left recursion.
         
         Lepl does not guarantee that all left-recursive grammars are handled 
-        correctly.  The corrections applied are incomplete and can be
+        correctly.  The corrections applied may be incomplete and can be
         inefficient.  It is always better to re-write a grammar to avoid
-        left-recursion.
+        left-recursion.  One way to improve efficiency, at the cost of less
+        accurate matching, is to specify a non-zero ``d`` parameter - this 
+        is the maximum iteration depth that will be used (by default, when
+        ``d`` is zero, it is the length of the remaining input, which can
+        be very large).
         
         '''
         from lepl.core.rewriters import AutoMemoize
         from lepl.matchers.memo import LMemo, RMemo
         self.no_memoize()
-        #self.optimize_or()
         return self.add_rewriter(
             AutoMemoize(conservative=conservative, left=LMemo,
                         right=RMemo if full else None, d=d))
     
-    def left_memoize(self):
+    def left_memoize(self, d=0):
         '''
         Add memoization that may detect and stabilise left-recursion.  This
         makes the parser more robust (so it can handle more grammars) but
-        also more complex (and possibly slower).
+        also more complex (and probably slower).
         
         ``config.auto_memoize()`` will also add memoization, but will select
         left/right memoization depending on the path through the parser.
         
         Lepl does not guarantee that all left-recursive grammars are handled 
-        correctly.  The corrections applied are incomplete and can be
+        correctly.  The corrections applied may be incomplete and can be
         inefficient.  It is always better to re-write a grammar to avoid
-        left-recursion.
+        left-recursion.  One way to improve efficiency, at the cost of less
+        accurate matching, is to specify a non-zero ``d`` parameter - this 
+        is the maximum iteration depth that will be used (by default, when
+        ``d`` is zero, it is the length of the remaining input, which can
+        be very large).
         '''
-        from lepl.core.rewriters import Memoize, LeftMemoize
-        from lepl.matchers.memo import LMemo
+        from lepl.core.rewriters import LeftMemoize
         self.no_memoize()
-        return self.add_rewriter(LeftMemoize())
+        return self.add_rewriter(LeftMemoize(d))
     
     def right_memoize(self):
         '''
@@ -479,10 +481,9 @@ class ConfigBuilder(object):
         it may make things slower; it can be disabled by 
         ``config.no_memoize()``. 
         '''      
-        from lepl.core.rewriters import Memoize
-        from lepl.matchers.memo import RMemo
+        from lepl.core.rewriters import RightMemoize
         self.no_memoize()
-        return self.add_rewriter(Memoize(RMemo))
+        return self.add_rewriter(RightMemoize())
     
     def no_memoize(self):
         '''
@@ -490,8 +491,9 @@ class ConfigBuilder(object):
         memoization (which may be faster in some cases), specify 
         `config.no_memoize()`.
         '''
-        from lepl.core.rewriters import AutoMemoize, Memoize
-        self.remove_all_rewriters(Memoize)
+        from lepl.core.rewriters import AutoMemoize, LeftMemoize, RightMemoize
+        self.remove_all_rewriters(LeftMemoize)
+        self.remove_all_rewriters(RightMemoize)
         return self.remove_all_rewriters(AutoMemoize)
         
     def blocks(self, discard=None, tabsize=8, 
@@ -592,7 +594,21 @@ class ConfigBuilder(object):
         self.no_direct_eval()
         self.no_memoize()
         self.no_full_first_match()
+        self.cache_level(-9)
         return self
+    
+    def cache_level(self, level=1):
+        '''
+        Control when the stream can be cached internally (this is used for
+        debugging and error messages) - streams are cached for debugging when 
+        the value is greater than zero.  The value is incremented each time
+        a new stream is constructed (eg when constructing tokens).
+        
+        A value of 1 implies that a stream would be always cached.  A value of 
+        0 might be used when iterating over a file with the lexer - the 
+        iteration is not cached, but individual tokens will be.
+        '''
+        self.add_stream_kargs(cache_level=level)
     
     def record_deepest(self, n_before=6, n_results_after=2, n_done_after=2):
         '''

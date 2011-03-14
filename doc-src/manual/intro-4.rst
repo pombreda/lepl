@@ -176,16 +176,6 @@ You can understand what has happened by tracing out how the text is matched:
 * so the "successful" parse is ``1.0``, but that hasn't consumed all the
   input, so we get the error.
 
-.. warning::
-
-   The exercise above, while useful, is not always completely accurate,
-   because Lepl may re--order the matchers if you use the configuration option
-   ``config.optimize_or()``.
-
-   However, since Lepl 4, that option is not included in the default
-   configuration, so this warning is not as important as it was in earlier
-   versions of the parser.
-
 An easy (but see comments on efficiency below) fix for avoiding short results
 is to explicitly say that the parser must match the entire output (`Eos()
 <api/redirect.html#lepl.matchers.derived.Eos>`_ matches "end of string" or
@@ -250,15 +240,29 @@ operator.  So below, for example, we have ``add = group3c...`` instead of
   re-write the parser to remove left-recursive definitions.
   >>> group3c.config.auto_memoize()
   >>> ast = group3c.parse('1+2*(3-4)+5/6+7')[0]
-  [...]
-  Alternatives are being re-ordered to improve stability with left-recursion.
-  This will change the ordering of results.
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '' (line 1, character 3).
-  >>> group3c.config.no_full_first_match()
+  >>> print(ast)
+  List
+   +- List
+   |   +- List
+   |   |   +- 1.0
+   |   |   +- '+'
+   |   |   `- List
+   |   |       +- 2.0
+   |   |       +- '*'
+   |   |       +- '('
+   |   |       +- List
+   |   |       |   +- 3.0
+   |   |       |   +- '-'
+   |   |       |   `- 4.0
+   |   |       `- ')'
+   |   +- '+'
+   |   `- List
+   |       +- 5.0
+   |       +- '/'
+   |       `- 6.0
+   +- '+'
+   `- 7.0
   >>> len(list(group3c.parse_all('1+2*(3-4)+5/6+7')))
-  Alternatives are being re-ordered to improve stability with left-recursion.
-  This will change the ordering of results.
-  [...]
   12
   >>> expr = group3c & Eos()
   >>> expr.config.auto_memoize()

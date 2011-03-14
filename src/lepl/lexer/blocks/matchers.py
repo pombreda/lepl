@@ -279,7 +279,7 @@ def ContinuedBLineFactory(matcher):
     return factory
 
 
-def Extend(matcher):
+def BExtend(matcher):
     '''
     Apply the give matcher to a token stream that ignores line endings and
     starts (so it matches over multiple lines).

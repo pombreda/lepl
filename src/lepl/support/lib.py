@@ -172,6 +172,15 @@ def empty():
     '''
     if False:
         yield None
+        
+        
+def count(value=0, step=1):
+    '''
+    Identical to itertools.count for recent Python, but 2.6 lacks the step.
+    '''
+    while True:
+        yield value
+        value += step
     
     
 class LogMixin(object):

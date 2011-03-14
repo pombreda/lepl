@@ -69,7 +69,7 @@ class StreamHelper(_StreamHelper):
         self.factory = factory if factory else DEFAULT_STREAM_FACTORY
         self.max = max if max else MutableMaxDepth()
         self.global_kargs = global_kargs if global_kargs else {}
-        self.cache_level = -9 if cache_level is None else cache_level
+        self.cache_level = 1 if cache_level is None else cache_level
     
     def __repr__(self):
         '''Simplify for comparison in tests'''
@@ -286,7 +286,7 @@ s_global_kargs = lambda stream: stream[1].global_kargs
 s_cache_level = lambda stream: stream[1].cache_level
 '''Access the cache_level attribute.'''
 
-s_cacheable = lambda stream: stream[1].cacheable
+s_cacheable = lambda stream: stream[1].cacheable()
 '''Is the stream cacheable?'''
 
 

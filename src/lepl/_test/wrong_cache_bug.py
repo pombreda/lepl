@@ -1,3 +1,5 @@
+from lepl.support._test.node import NodeTest
+from lepl.core.rewriters import NodeStats, NodeStats2
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -83,18 +85,36 @@ class CacheTest(TestCase):
             
     def test_trace_variables(self):
         # for comparison
-        a = Delayed()
-        a += Optional(a) & (a | 'b' | 'c')
-        a.config.no_full_first_match().auto_memoize()
-        p = a.get_parse_all()
-        #print(p.matcher.tree())
-
         with TraceVariables():
             a = Delayed()
             a += Optional(a) & (a | 'b' | 'c')
-        a.config.no_full_first_match().auto_memoize().trace_variables()
+
+        #print('\n*** clear')
+        a.config.clear().no_full_first_match()
         p = a.get_parse_all()
         #print(p.matcher.tree())
+        #print(NodeStats2(p.matcher))
+
+        #print('*** trace_variables')
+        a.config.clear().no_full_first_match().trace_variables()
+        p = a.get_parse_all()
+        #print(p.matcher.tree())
+        #print(NodeStats2(p.matcher))
+
+        #print('*** auto_memoize')
+        a.config.clear().no_full_first_match().auto_memoize()
+        p = a.get_parse_all()
+        #print(p.matcher.tree())
+        #print(NodeStats2(p.matcher))
+        r = list(p('bcb'))
+        assert len(r) == 104, (len(r), r)
+
+        #basicConfig(level=DEBUG)
+        a.config.clear().no_full_first_match().auto_memoize().trace_variables()
+        p = a.get_parse_all()
+        #print('*** trace_variables and memoize')
+        #print(p.matcher.tree())
+        #print(NodeStats2(p.matcher))
         r = list(p('bcb'))
         assert len(r) == 104, (len(r), r)
         

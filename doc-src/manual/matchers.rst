@@ -76,14 +76,18 @@ All matchers must succeed for `And()
   >>> matcher = And(Any('a'), Any('b'))
   >>> matcher.parse('pq')
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'pq',
-  Line 1, character 0 of str: 'pq'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at 'q' (line 1, character 2).
   >>> matcher.parse('ax')
   [...]
-  lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'x',
-  Line 1, character 1 of str: 'ax'.
+  lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '' (line 1, character 3).
   >>> matcher.parse('ab')
   ['a', 'b']
+
+  .. note::
+
+  It's worth noting that because the error message is based on the deepest
+  match it can sometimes be "off by one" if a character was read but failed to
+  match.
 
 The ``&`` operator is equivalent unless a :ref:`separator <spaces>` is being
 used::
@@ -407,11 +411,11 @@ each sub--match in turn (in practice some sub-matchers may return generators
 that themselves return many values, while others may fail immediately, so it
 is not a direct 1--to--1 correspondence).
 
-(It is probably obvious if you have used combinator libraries before, but
-worth mentioning anyway: all matchers implement this same interface, whether
-they are "fundamental" --- do the real work of matching against the stream ---
-or delegate work to other sub--matchers, or modify results.  This consistency
-is a source of great expressive power.)
+(It is probably obvious if you have used combinator libraries before, but all
+matchers implement this same interface, whether they are "fundamental" --- do
+the real work of matching against the stream --- or delegate work to other
+sub--matchers, or modify results.  This consistency is the source of their
+expressive power.)
 
 Lepl includes several function decorators that help simplify the creation of
 new matchers.  See :ref:`new_matchers` and following sections.

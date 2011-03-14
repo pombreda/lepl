@@ -104,17 +104,6 @@ Here is an example of the second and third approaches in use::
   Also, the parentheses around expressions that are sent to ``>>`` are
   critical.
 
-.. warning::
-
-  The *order* of expressions is important in the example above.  The default
-  :ref:`configuration` will *change the order* of some expressions if the
-  grammar is left--recursive.  So if you have a left--recursive grammar and
-  want to use the approach shown to error handling then you must call
-  `.config.no_optimize_or()
-  <api/redirect.html#lepl.core.config.ConfigBuilder.no_optimize_or>`_.  For
-  more information see :ref:`memoisation`.
-
-
 .. index:: ^, Error(), SyntaxError()
 
 Operators, Functions and Classes

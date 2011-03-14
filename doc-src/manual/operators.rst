@@ -195,7 +195,7 @@ Spaces
 
 There's a wide variety of ways to handle spaces in Lepl.  A large part of the
 :ref:`Tutorial <tutorial>` is spent discussing this, and it's probably the
-first place to look for a basic understanding.
+best place to look for a basic understanding.
 
 The main conclusion of the :ref:`Tutorial <tutorial>` is that the :ref:`lexer`
 (ie using `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_) is the
@@ -218,8 +218,8 @@ grammar --- it makes the parsing more complex (and more fragile, even to
 "good" input), and typically doesn't help the end user much.  But even so, it
 is sometimes necessary.
 
-In such cases, the only real solution is to specify all the spaces.  One
-option is to use the ``/`` and ``//`` operators (which match zero-- and
+In such cases, the only real solution is to specify all the spaces by hand.
+One option is to use the ``/`` and ``//`` operators (which match zero-- and
 one--or--more spaces respectively).  Alternatively, to save typing, Lepl
 includes various *separators* (`DroppedSpace()
 <api/redirect.html#lepl.matchers.operators.DroppedSpace>`_, above, is a

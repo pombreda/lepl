@@ -64,6 +64,10 @@ def Line(matcher):
 
 
 def ContinuedLineFactory(matcher):
+    '''
+    Create a replacement for ``Line()`` that can match multiple lines if they
+    end in the given character/matcher.
+    '''
     matcher = coerce_(matcher, lambda regexp: Token(regexp))
     start = LineStart()
     end = LineEnd()
@@ -73,4 +77,12 @@ def ContinuedLineFactory(matcher):
         return restricted(line)
     return factory
 
-        
+
+def Extend(matcher):
+    '''
+    Apply the given matcher to a token stream that ignores line endings and
+    starts (so it matches over multiple lines).
+    '''
+    start = LineStart()
+    end = LineEnd()
+    return RestrictTokensBy(end, start)(matcher)

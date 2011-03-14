@@ -87,19 +87,20 @@ variables are defined inside a ``with TraceVariables()`` scope::
   ...         query = text[:, Drop('OR')]
   ...
   >>> query.parse('spicy meatballs OR "el bulli restaurant"')
-        phrase failed                             stream = 'spicy meatballs OR...
-          word = ['spicy']                        stream = ' meatballs OR "el ...
-        phrase failed                             stream = 'meatballs OR "el b...
-          word = ['meatballs']                    stream = ' OR "el bulli rest...
-        phrase failed                             stream = 'OR "el bulli resta...
-          word failed                             stream = 'OR "el bulli resta...
-        phrase failed                             stream = ' OR "el bulli rest...
-          word failed                             stream = ' OR "el bulli rest...
-          text = [['spicy', 'meatballs']]         stream = ' OR "el bulli rest...
-        phrase = ['el bulli restaurant']          stream = ''
-        phrase failed                             stream = ''
-          word failed                             stream = ''
-          text = [['el bulli restaurant']]        stream = ''
+	phrase failed                             stream = 'spicy meatballs OR...
+	  word = ['spicy']                        stream = ' meatballs OR "el ...
+	phrase failed                             stream = 'meatballs OR "el b...
+	  word = ['meatballs']                    stream = ' OR "el bulli rest...
+	phrase failed                             stream = 'OR "el bulli resta...
+	  word failed                             stream = 'OR "el bulli resta...
+	phrase failed                             stream = ' OR "el bulli rest...
+	  word failed                             stream = ' OR "el bulli rest...
+	  text = [['spicy', 'meatballs']]         stream = ' OR "el bulli rest...
+	phrase = ['el bulli restaurant']          stream = ''
+	phrase failed                             stream = ''
+	  word failed                             stream = ''
+	  text = [['el bulli restaurant']]        stream = ''
+	 query = [['spicy', 'meatballs'], ['el... stream = ''
   [['spicy', 'meatballs'], ['el bulli restaurant']]
 
 The display above shows, on the left, the current match.  On the right is the
@@ -112,17 +113,18 @@ head of the stream (what is left after being matched).
 Deepest Matches
 ---------------
 
-The `.config.full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.full_first_match>`_ option, enabled by default, gives a simple
-error indicating the deepest match within the stream.  A more detailed report
-is also possible via `.config.record_deepest() <api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_.
+The `.config.full_first_match()
+<api/redirect.html#lepl.core.config.ConfigBuilder.full_first_match>`_ option,
+enabled by default, gives a simple error indicating the deepest match within
+the stream.  A more detailed report is also possible via
+`.config.record_deepest()
+<api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_.
 
 The following code is similar to that used in :ref:`getting-started`, but
 fails to match the given input.  It has been modified to print information
 about the longest match::
 
-  >>> from lepl.match import *
   >>> from logging import basicConfig, INFO
-  
   >>> basicConfig(level=INFO)
 
   >>> name    = Word()              > 'name'
@@ -133,39 +135,47 @@ about the longest match::
   >>> matcher.parse('andrew, 3333253\n bob, 12345')
   INFO:lepl.core.trace._RecordDeepest:
   Up to 6 matches before and including longest match:
-  00204 'andrew...'   1.0   (0000) 005 ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], 'andrew, 3333253\n'[15:])  ->  And(And, Transform, Transform)('andrew, 3333253\n'[0:])  ->  ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], 'andrew, 3333253\n'[15:])
-  00205 'andrew...'   1.0   (0000) 004 ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], 'andrew, 3333253\n'[15:])  ->  Transform(And, TransformationWrapper(<apply>))('andrew, 3333253\n'[0:])  ->  ([{'phone': '3333253', 'name': 'andrew'}], 'andrew, 3333253\n'[15:])
-  00212 '\n'          1.15  (0015) 007 next(Literal('\n')('andrew, 3333253\n'[15:]))  ->  (['\n'], ' bob, 12345'[0:])
-  00213 '\n'          1.15  (0015) 008 (['\n'], ' bob, 12345'[0:])  ->  Or(Literal, Literal)('andrew, 3333253\n'[15:])  ->  (['\n'], ' bob, 12345'[0:])
-  00214 '\n'          1.15  (0015) 007 (['\n'], ' bob, 12345'[0:])  ->  Or(Literal, Literal)('andrew, 3333253\n'[15:])  ->  (['\n'], ' bob, 12345'[0:])
-  00215 '\n'          1.15  (0015) 006 (['\n'], ' bob, 12345'[0:])  ->  Transform(Or, TransformationWrapper(<apply>))('andrew, 3333253\n'[15:])  ->  ([], ' bob, 12345'[0:])
+  00105 '3333253\n' 8/1.9 (0008) 006 (['3333253'], (15, <helper>))  ->  Transform(And, TransformationWrapper(<add>))(8:'3')  ->  (['3333253'], (15, <helper>))
+  00106 '3333253\n' 8/1.9 (0008) 005 (['3333253'], (15, <helper>))  ->  Transform(Transform, TransformationWrapper(<apply>))(8:'3')  ->  ([('phone', '3333253')], (15, <helper>))
+  00107 'andrew...' 0/1.1 (0000) 004 ([('phone', '3333253')], (15, <helper>))  ->  And(And, Transform, Transform)(0:'a')  ->  ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], (15, <helper>))
+  00108 'andrew...' 0/1.1 (0000) 003 ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], (15, <helper>))  ->  Transform(And, TransformationWrapper(<apply>))(0:'a')  ->  ([{'phone': '3333253', 'name': 'andrew'}], (15, <helper>))
+  00113 '\n'        15/1.16 (0015) 004 next(Literal('\n')(15:'\n'))  ->  (['\n'], (16, <helper>))
+  00114 '\n'        15/1.16 (0015) 005 (['\n'], (16, <helper>))  ->  Or(Literal, Literal)(15:'\n')  ->  (['\n'], (16, <helper>))
   Up to 2 failures following longest match:
-  00230 ' bob, ...'   2.0   (0016) 017 ([' '], ' bob, 12345'[1:])  ->  Lookahead(Any, True)(' bob, 12345'[0:])  ->  stop
-  00231 ' bob, ...'   2.0   (0016) 016 stop  ->  And(Lookahead, Any)(' bob, 12345'[0:])  ->  stop
+  00123 ' bob, ...' 16/2.1 (0016) 008 next(NfaRegexp('[^ \t\n\r\x0b\x0c]', <Unicode>)(16:' '))  ->  stop
+  00124 ' bob, ...' 16/2.1 (0016) 009 stop  ->  And(NfaRegexp, DepthFirst)(16:' ')  ->  stop
   Up to 2 successful matches following longest match:
-  00254 'andrew...'   1.0   (0000) 003 stop  ->  DepthFirst(0, None, rest=And, first=Transform)('andrew, 3333253\n'[0:])  ->  ([{'phone': '3333253', 'name': 'andrew'}], 'andrew, 3333253\n'[15:])
-  00255 'andrew...'   1.0   (0000) 002 ([{'phone': '3333253', 'name': 'andrew'}], 'andrew, 3333253\n'[15:])  ->  DepthFirst(0, None, rest=And, first=Transform)('andrew, 3333253\n'[0:])  ->  ([{'phone': '3333253', 'name': 'andrew'}], 'andrew, 3333253\n'[15:])
+  00139 'andrew...' 0/1.1 (0000) 002 stop  ->  DepthFirst(None, None, ([], <built-in function __add__>), rest=And, 0, first=Transform)(0:'a')  ->  ([{'phone': '3333253', 'name': 'andrew'}], (15, <helper>))
+
+This looks a little daunting, but is extremely useful once you understand it.
 
 The left column is a counter that increases with time.  The next column is the
 stream, with offset information (line.character and total characters in
 parentheses).  After that is the current stack depth.  Finally, there is a
 description of the current action.
 
-Lines are generated *after* of matching, so the innermost of a set of nested
+Lines are generated *after* matching, so the innermost of a set of nested
 matchers is shown first.
 
 The number of entries displayed is controlled by optional parameters supplied
-to `.config.record_deepest() <api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_.
+to `.config.record_deepest()
+<api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_.
 
 Looking at the output we can see that the first failure after the deepest
 match was a `Lookahead() <api/redirect.html#lepl.match.Lookahead>`_ on the
-input ``' bob, ...'``, after matching a newline, `Literal('\\n')
+input ``' bob, ...'``, after matching a newline, `Literal('\n')
 <api/redirect.html#lepl.matchers.core.Literal>`_.  So we are failing to match a
 space after the newline that separates lines --- this is why the original (see
 :ref:`repetition`) had::
 
   >>> newline = spaces & Newline() & spaces
   >>> matcher = line[0:,~newline]
+
+.. note::
+
+   If you have a matcher that is failing you will need to use
+   ``.config.no_full_first_match()`` to disable the error message, or you will
+   not see the expected output.
 
 
 .. index:: execution trace, Trace(), logging
@@ -178,16 +188,14 @@ The same data can also be displayed to the logs with the `Trace()
 matcher as an argument --- tracing is enabled when the selected matcher is
 called::
 
-  >>> from lepl.match import *
   >>> from logging import basicConfig, INFO
-  
   >>> basicConfig(level=INFO)
 
   >>> name    = Word()                   > 'name'
-  >>> phone   = Trace(Integer(), 'here') > 'phone'
+  >>> phone   = Trace(Integer())         > 'phone'
   >>> line    = name / ',' / phone       > make_dict
   >>> matcher = line[0:,~Newline()]
-  >>> matcher.config.clear().trace()
+  >>> matcher.config.clear().trace_stack()
   >>> matcher.parse('andrew, 3333253\n bob, 12345')
   INFO:lepl.core.trace._TraceResults:00176 '3333253\n'   1.8   (0008) 013 stop  ->  DepthFirst(0, 1, rest=Any, first=Any)('andrew, 3333253\n'[8:])  ->  ([], 'andrew, 3333253\n'[8:])
   INFO:lepl.core.trace._TraceResults:00177 '3333253\n'   1.8   (0008) 012 ([], 'andrew, 3333253\n'[8:])  ->  DepthFirst(0, 1, rest=Any, first=Any)('andrew, 3333253\n'[8:])  ->  ([], 'andrew, 3333253\n'[8:])
@@ -206,6 +214,8 @@ called::
   INFO:lepl.core.trace._TraceResults:00202 '3333253\n'   1.8   (0008) 009 (['3333253'], 'andrew, 3333253\n'[15:])  ->  Transform(And, TransformationWrapper(<add>))('andrew, 3333253\n'[8:])  ->  (['3333253'], 'andrew, 3333253\n'[15:])
   INFO:lepl.core.trace._TraceResults:00203 '3333253\n'   1.8   (0008) 008 (['3333253'], 'andrew, 3333253\n'[15:])  ->  Trace(Transform, True)('andrew, 3333253\n'[8:])  ->  (['3333253'], 'andrew, 3333253\n'[15:])
 
+Unlike the deepest match output, I don't find this very useful in most cases.
+
 .. note::
 
   `Trace() <api/redirect.html#lepl.matchers.monitor.Trace>`_ expects the
@@ -219,25 +229,10 @@ called::
 Common Errors
 -------------
 
-.. index:: hash, Cannot test for ... in collection, Cannot add ... to collection
-
-Hashable Streams
-~~~~~~~~~~~~~~~~
-
-Lepl will parse a wide variety of data structures.  Unfortunately, not all
-Python's data structures (lists in particular) support hashing.  This means
-that some of Lepl's more advanced features, like memoisation, will not work
-when a list of data is parsed directly.  Instead you will see warnings
-(assusing that logging is enabled - see above) like::
-
-  Cannot add ... to collection
-  Cannot test for ... in collection
-
-Fortunately, there is a workround for these issues.  Instead of using the
-`matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ and `matcher.match() <api/redirect.html#lepl.core.config.ParserMixin.match>`_ methods, use
-`matcher.parse_items() <api/redirect.html#lepl.core.config.ParserMixin.parse_items>`_ and `matcher.match_items() <api/redirect.html#lepl.core.config.ParserMixin.match_items>`_.  These wrap the list
-in a separate stream that does support hashing.
-
+This section is smaller than it was, because I have changed Lepl to
+automatically avoid some common problems that occurred in earlier versions.
+But please suggest new entries via the `mailing list / discussion group
+<http://groups.google.com/group/lepl>`_.
 
 .. index:: Lexer rewriter used but no tokens found
 
@@ -251,14 +246,4 @@ lexers.  If no lexers are present, this message is logged::
   Lexer rewriter used, but no tokens found.
 
 This is not a problem (assuming you didn't intend to use lexing, of course).
-
-
-.. index:: A Token was specified with a matcher but
-
-Rewriter Order
-~~~~~~~~~~~~~~
-
-Before Lepl 4 it was possible to specify the order of rewriters; the new
-configuration interface automatically places them in the correct order.  So
-hopefully this error will no longer occur.
 

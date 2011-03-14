@@ -48,6 +48,7 @@ However, to use tokens correctly, it is necessary to understand how they work
 in a little more detail.
 
 Tokens are used in two ways.
+
 First, they work like matchers (with the exceptions noted below) for the
 regular expression given as their argument.  For example::
 
@@ -107,10 +108,11 @@ The first limitation means that the regular expressions associated with tokens
 only match text once.  The lexer divides the input into fixed blocks that
 match the largest possible fragment; no alternatives are considered.
 
-This does not mean that a particular `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ is only called once, or that
-it will return only a single result.  Backtracking is still possible, but the
+This does not mean that a particular `Token()
+<api/redirect.html#lepl.lexer.matchers.Token>`_ is only called once, or that
+it will return only a single result.  *Backtracking is still possible, but the
 parser is restricted to exploring different interpretations of a single,
-unchanging token stream.
+unchanging token stream.*
 
 For example, consider "1-2", which might be parsed as two integers (1 and -2),
 or as a subtraction expression (1 minus 2).  An appropriate matcher will give
@@ -178,8 +180,7 @@ Completeness
     >>> incomplete = abc(Literal('ab'))
     >>> incomplete.parse('abc')
     [...]
-    lepl.stream.maxdepth.FullFirstMatchException: The match failed at 'abc',
-    Line 1, character 0 of str: 'abc'.
+    lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at 'c' (line 1, character 3).
 
   However, this constraint can be relaxed, in which case the matched portion is
   returned as a result::

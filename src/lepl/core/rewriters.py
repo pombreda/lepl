@@ -32,8 +32,6 @@ Rewriters modify the graph of matchers before it is used to generate a
 parser.
 '''
 
-from itertools import count
-
 from lepl.matchers.memo import LMemo, RMemo
 from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
     dfs_edges, LEAF
@@ -45,7 +43,7 @@ from lepl.matchers.derived import add
 from lepl.matchers.matcher import Matcher, is_child, FactoryMatcher, \
     matcher_type, MatcherTypeException, canonical_matcher_type
 from lepl.matchers.support import NoTrampoline, Transformable
-from lepl.support.lib import lmap, fmt, LogMixin, empty
+from lepl.support.lib import lmap, fmt, LogMixin, empty, count
 
 
 class Rewriter(LogMixin):
@@ -61,8 +59,13 @@ class Rewriter(LogMixin):
      OPTIMIZE_OR,
      LEXER,
      DIRECT_EVALUATION,
+     # memoize must come before anything that wraps a delayed node.  this is
+     # because the left-recursive memoizer uses delayed() instances as markers
+     # for where to duplicate state for different paths through the call
+     # graph; if these are wrapped or replaced then the assumptions made there
+     # fail (and left-recursive parsers fail to match).
      MEMOIZE,
-     TRACE_VARIABLES, # this must come after MEMOIZE
+     TRACE_VARIABLES,
      FULL_FIRST_MATCH) = range(10, 110, 10)
        
     def __init__(self, order_, name=None, exclusive=True):
@@ -253,10 +256,9 @@ def clone_matcher(node, clone=clone, duplicate=False):
         clone_tree(i, head, reversed, all_nodes, all_delayed, clone, 
                    duplicate=duplicate)
     for (delayed, clone) in all_delayed:
-        # we had bugs where this ended up being delegated to +
-        assert hasattr(clone, '__iadd__'), clone
         # this lets us delay forcing to matcher until last moment
-        clone += RegexpContainer.to_matcher(all_nodes[delayed.matcher])
+        # we had bugs where this ended up being delegated to +
+        clone.__iadd__(RegexpContainer.to_matcher(all_nodes[delayed.matcher]))
     return RegexpContainer.to_matcher(all_nodes[node])
         
     
@@ -362,25 +364,25 @@ class TraceVariables(Rewriter):
         return clone_matcher(graph, new_clone)
 
 
-class Memoize(Rewriter):
+class RightMemoize(Rewriter):
     '''
-    A rewriter that adds the given memoizer to all nodes in the matcher
-    graph.
+    A rewriter that adds RMemo to all nodes in the matcher graph.
     '''
     
-    def __init__(self, memoizer):
-        super(Memoize, self).__init__(Rewriter.MEMOIZE,
-                                      fmt('Memoize({0})', memoizer.__name__))
-        self.memoizer = memoizer
+    def __init__(self):
+        super(RightMemoize, self).__init__(Rewriter.MEMOIZE, 'Right memoize')
         
     def __call__(self, graph):
-        return clone_matcher(graph, post_clone(self.memoizer))
+        return clone_matcher(graph, post_clone(RMemo))
 
     
 class LeftMemoize(Rewriter):
+    '''
+    A rewriter that adds LMemo to all nodes in the matcher graph.
+    '''
     
     def __init__(self, d=0):
-        super(LeftMemoize, self).__init__(Rewriter.MEMOIZE, 'Memoize')
+        super(LeftMemoize, self).__init__(Rewriter.MEMOIZE, 'Left memoize')
         self.d = d
         
     def __call__(self, graph):
@@ -404,7 +406,6 @@ class LeftMemoize(Rewriter):
                 return depth > i * length
             curtail = slen
         return memo(copy, curtail)
-    
 
 
 class AutoMemoize(Rewriter):
@@ -701,6 +702,53 @@ class NodeStats(object):
         keys = list(self.types.keys())
         keys.sort(key=repr)
         types = '\n'.join([fmt('{0:40s}: {1:3d}', key, len(self.types[key]))
+                           for key in keys])
+        return counts + types
+    
+    def __eq__(self, other):
+        '''
+        Quick and dirty equality
+        '''
+        return str(self) == str(other)
+
+
+class NodeStats2(object):
+    '''
+    Avoid using graph code (so we can check that...)
+    '''
+    
+    def __init__(self, node):
+        self.total = 0
+        self.leaves = 0
+        self.duplicates = 0
+        self.types = {}
+
+        known = set()
+        stack = [node]
+        while stack:
+            node = stack.pop()
+            if node in known:
+                self.duplicates += 1
+            else:
+                known.add(node)
+                self.total += 1
+                type_ = type(node)
+                if type_ not in self.types:
+                    self.types[type_] = 0
+                self.types[type_] += 1
+                children = [child for child in node if isinstance(child, Matcher)]
+                if not children:
+                    self.leaves += 1
+                else:
+                    stack.extend(children)
+        
+    def __str__(self):
+        counts = fmt('total:      {total:3d}\n'
+                     'leaves:     {leaves:3d}\n'
+                     'duplicates: {duplicates:3d}\n', **self.__dict__)
+        keys = list(self.types.keys())
+        keys.sort(key=repr)
+        types = '\n'.join([fmt('{0:40s}: {1:3d}', key, self.types[key])
                            for key in keys])
         return counts + types
     

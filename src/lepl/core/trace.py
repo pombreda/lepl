@@ -282,31 +282,32 @@ class _RecordDeepest(_TraceStack):
         '''
         Record the data.
         '''
-        stream = self.generator.stream
         try:
-            depth = s_delta(stream)[0]
-        except AttributeError: # no .depth()
-            depth = -1
-        if depth >= self._deepest and is_result:
-            self._deepest = depth
-            self._countdown_result = self.n_results_after
-            self._countdown_done = self.n_done_after
-            self._before = list(self._limited)
-            self._results_after = []
-            self._done_after = []
-        elif is_result and self._countdown_result:
-            self._countdown_result -= 1
-            self._results_after.append(text)
-        elif not is_result and self._countdown_done:
-            self._countdown_done -= 1
-            self._done_after.append(text)
-        self._limited.append(text)
+            stream = self.generator.stream
+            try:
+                depth = s_delta(stream)[0]
+            except AttributeError: # no .depth()
+                depth = -1
+            if depth >= self._deepest and is_result:
+                self._deepest = depth
+                self._countdown_result = self.n_results_after
+                self._countdown_done = self.n_done_after
+                self._before = list(self._limited)
+                self._results_after = []
+                self._done_after = []
+            elif is_result and self._countdown_result:
+                self._countdown_result -= 1
+                self._results_after.append(text)
+            elif not is_result and self._countdown_done:
+                self._countdown_done -= 1
+                self._done_after.append(text)
+            self._limited.append(text)
+        except StopIteration: # end of iterator stream
+            pass
         
     def yield_(self, value):
         '''
-        Display the result.
-        
-        (As I document this code later, it is no longer clear why this does so)
+        Display the result and reset.
         '''
         self._deepest = 0
         self._limited.clear()
@@ -314,9 +315,7 @@ class _RecordDeepest(_TraceStack):
         
     def raise_(self, value):
         '''
-        Display the result.
-        
-        (As I document this code later, it is no longer clear why this does so)
+        Display the result and reset.
         '''
         self._deepest = 0
         self._limited.clear()

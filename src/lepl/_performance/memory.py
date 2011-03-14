@@ -97,13 +97,14 @@ if __name__ == '__main__':
     l = list(source(9))
     assert l == ['1', '2', '3', '4', '5', '6', '7', '8', '9'], l
     p = parser()
+    print(p.tree())
     
     r = list(p.parse_iterable_all(source(9)))
     # the sum of digits 1-9 is 45
     assert r == [[45]], r
     
     r = list(p.parse_iterable_all(source(10)))
-    # the digits in 1-10 can sum to 45 ot 46 depending on whether we use the
+    # the digits in 1-10 can sum to 45 or 46 depending on whether we use the
     # '1' or the '0' from 10.
     assert r == [[46],[45]], r
     
@@ -127,7 +128,8 @@ if __name__ == '__main__':
     #basicConfig(level=DEBUG)
     basicConfig(level=ERROR)
     
-    r = p.parse_iterable_all(source(10**7))
+#    r = p.parse_iterable_all(source(10**7))
+    r = p.parse_iterable_all(source(10**4))
     next(r) # force the parser to run once, but keep the parser in memory
     h = hpy()
     print(h.heap())

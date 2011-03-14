@@ -98,7 +98,7 @@ We can see how this works with the simple generators `Word()
 
   >>> matcher = Word()
   >>> matcher.config.no_full_first_match()
-  >>> next(matcher.match('hello world') )
+  >>> next(matcher.match('hello world'))
   (['hello'], (5, <helper>))
 
 You can see the result and the remaining stream (for strings this is an
@@ -154,12 +154,12 @@ input data.
 
   In addition there are modifications of these methods for particular input
   types, like ``parser.match_string(...)``.  The generic calls above will use
-  the type of teh argument to figure out which more specific method should be
+  the type of the argument to figure out which more specific method should be
   used.
 
   Finally, there are also ``get_...`` versions of these methods, which return
-  the parser as a standalone function.  This is somethimes useful if you want
-  to generate multiple versions of a parser with different configurations.
+  the parser as a standalone function.  This is useful if you want to generate
+  multiple versions of a parser with different configurations.
 
 
 .. index:: /, >, make_dict()

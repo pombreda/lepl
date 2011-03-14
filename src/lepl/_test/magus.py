@@ -46,7 +46,7 @@ from lepl.matchers.matcher import Matcher, canonical_matcher_type,\
     MatcherTypeException, is_child
 from lepl.matchers.memo import _LMemo, _RMemo, LMemo, RMemo
 from lepl.matchers.transform import Transform, TransformationWrapper
-from lepl.core.rewriters import NodeStats, Flatten, Memoize, \
+from lepl.core.rewriters import NodeStats, Flatten, \
     ComposeTransforms, AutoMemoize, clone_matcher
 
 

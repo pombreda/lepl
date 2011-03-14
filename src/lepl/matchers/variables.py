@@ -146,7 +146,6 @@ def TraceVariables(on=True, show_failures=True, width=80, out=stderr):
     yield None
     if on:
         after = _getframe(2).f_locals
-        warned_1, warned_2 = False, False
         for key in after:
             value = after[key]
             if key not in before or value != before[key]:
@@ -155,16 +154,9 @@ def TraceVariables(on=True, show_failures=True, width=80, out=stderr):
                         value.wrapper.append(name(key, show_failures, width, out))
                     except AttributeError:
                         value.trace_variables = name(key, show_failures, width, out)
-                        if not warned_1:
-                            print('Use default config or add config.'
-                                  'trace_variables().', end=str('\n'))
-                            warned_1 = True
-                except:
-                    raise
-                    if not warned_2:
-                        print('Unfortunately the following matchers cannot '
-                              'be tracked:', end=str('\n'))
-                        warned_2 = True
+                except: # what exception?
+                    print('Unfortunately the following matchers cannot '
+                          'be tracked:', end=str('\n'))
                     print(fmt('  {0} = {1}', key, value), end=str('\n'))
                     
 
