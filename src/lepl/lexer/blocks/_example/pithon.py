@@ -56,7 +56,7 @@ class PythonExample(Example):
         CLine = ContinuedBLineFactory(continuation)
         
         statement = word[1:]
-        args = Extend(word[:, comma]) > tuple
+        args = BExtend(word[:, comma]) > tuple
         function = word[1:] & ~symbol('(') & args & ~symbol(')')
 
         block = Delayed()
@@ -68,7 +68,7 @@ class PythonExample(Example):
         block += CLine((function | statement) & introduce) & Block(line[1:])
         
         program = (line[:] & Eos())
-        program.config.blocks(block_policy=rightmost)
+        program.config.blocks(block_policy=explicit)
         parser = program.get_parse_string()
         
         result = parser('''

@@ -39,12 +39,13 @@ allows you to simply match lines.  The second allows lines to be grouped into
 blocks whose relative indentation is significant.  Both require the use of
 tokens.
 
-.. index:: LineStart(), LineEnd(), Line()
+.. _lines:
+.. index:: lines(), LineStart(), LineEnd(), Line()
 
 Simple Line--Aware Parsing (Lines Only)
 ---------------------------------------
 
-This is configured with ``.config.lines()``.  The ``LineStart()`` and
+This is configured with `.config.lines() <api/redirect.html#lepl.core.config.ConfigBuilder.lines>`_.  The ``LineStart()`` and
 ``LineEnd()`` tokens are added to the token stream so that you can match wen
 lines start and end.
 
@@ -82,33 +83,37 @@ You can do this by combining ``Line()`` matchers, but there is also a matcher
 for the common case of a "continuation character".  For example, if ``'\'`` is
 used to mark a line that continues on then::
 
-  >>> contents = Token('[a-z ]+')[:,...] > list
+  >>> contents = Token('[a-z]+')[:] > list
   >>> CLine = ContinuedLineFactory(r'\\')
   >>> line = CLine(contents)
   >>> lines = line[:]
   >>> lines.config.lines()
   >>> lines.parse('line one \\\nline two\nline three')
-  [['line one line two'], ['line three']]
+  [['line', 'one', 'line', 'two'], ['line', 'three']]
 
 The idea is that you make your own replacement for ``Line()`` that works
-just the same, but can be continued if it ends in the right character.
+similarly, but can be continued if it ends in the right character.
 
-Another common use case is that some matching should ignore lines.  In this
-case, you can use ``Extend()``:
+Another common use case is that some matching should ignore lines.  For this
+you can use ``Extend()``:
 
-  >>> contents = Token('[a-z ]+')[:,...] > list
-  >>> parens = Token('(') & contents & Token(')') > list
-  >>> line = Line(contents | Extend(parens))
+  >>> contents = Token('[a-z]+')[:] > list
+  >>> parens = Token('\(') & contents & Token('\)') > list
+  >>> line = Line(contents & Optional(Extend(parens)))
   >>> lines = line[:]
   >>> lines.config.lines()
   >>> lines.parse('line one (this\n extends to line two)\nline three')
+  [['line', 'one'], ['(', ['this', 'extends', 'to', 'line', 'two'], ')'], ['line', 'three']]
+
+.. _blocks:
+.. index:: blocks(), BLine(), Indent()
 
 Offside Parsing (Blocks of Lines)
 ---------------------------------
 
 This is similar to the line--aware parsing above, but adds the tokens
 ``Indent()`` (instead of ``LineStart()``) and ``LineEnd()`` to the token
-stream.  It is configured with ``.config.blocks()``.
+stream.  It is configured with `.config.blocks() <api/redirect.html#lepl.core.config.ConfigBuilder.blocks>`_.
 
 The ``Indent()`` token consumes initial spaces on the line and is used by two
 new matchers, ``BLine()`` and ``Block()`` to define how blocks of lines are
@@ -179,180 +184,32 @@ together lines that are indented relative to whatever came just before.  This
 works with `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_ which
 matches a line if it is indented at the correct level.
 
-The ``block_policy`` parameter in `.config.blocks()
-<api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_
-indicates how many spaces are required for a single level of indentation.
-Alternatively, `rightmost()
-<api/redirect.html#lepl.offside.matchers.rightmost>`_ will use whatever
-indentation appears in the source.  The ``block_start`` parameter gives the
-initial indentation level (zero by default).
-
 .. index:: ContinuedBLineFactory()
+.. _python_example:  
 
-Continued Lines in Blocks
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Continued and Extended Lines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As with simple line--aware parsing, we sometimes would like a line to continue
+As with simple line--aware parsing, we would sometimes like a line to continue
 over several lines if it ends with a certain matcher.  We can make a similar
 matcher to `BLine() <api/redirect.html#lepl.offside.matchers.Line>`_ that
 continues over multiple lines using `ContinuedBLineFactory()
 <api/redirect.html#lepl.offside.matchers.ContinuedLineFactory>`_.
 
+It is also possible to use ``BExtend()`` to allow some matchers to ignore line
+breaks.
 
-*************
-
-A similar matcher is `Extend()
-<api/redirect.html#lepl.offside.matchers.Extend>`_ which allows some content
-within a line to continue onto another line.  Note that, unlike `Line()
-<api/redirect.html#lepl.offside.matchers.Line>`_, this does not match an
-entire line --- it just skips line breaks.  For an example that uses `Extend()
-<api/redirect.html#lepl.offside.matchers.Extend>`_ see the very end of this
-section.
-
-
-.. index:: Block(), BLine(), block_policy, rightmost(), block_start, make_str_parser()
-
-Offside Rule and Blocks
------------------------
-
-In addition to the above, Lepl simplifies offside rule parsing with the
-concept of "blocks", which allow text to be described in terms of nested
-sections.  Again, this is most simply configured via
-`.config.default_line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_ (either the ``block_policy`` or the
-``block_start`` option must be given to trigger the correct behaviour --- see
-below).
-
-The nested structure is described using `BLine()
-<api/redirect.html#lepl.offside.matchers.BLine>`_ and `Block()
-<api/redirect.html#lepl.offside.matchers.Block>`_.  They work together as
-shown in the following "picture"::
-
-  BLine()
-  BLine()
-  Block(BLine()
-        BLine()
-        Block(BLine()
-              BLine())
-        BLine()
-        Block(BLine()))
-  BLine()
-
-In other words: each line is in a separate `BLine()
-<api/redirect.html#lepl.offside.matchers.BLine>`_ and groups of indented lines
-are collected inside `Block()
-<api/redirect.html#lepl.offside.matchers.Block>`_ elements.  Each `Block()
-<api/redirect.html#lepl.offside.matchers.Block>`_ sets the indent required for
-the `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_ elements it
-contains.
-
-In a little more detail: `Block()
-<api/redirect.html#lepl.offside.matchers.Block>`_ and `BLine()
-<api/redirect.html#lepl.offside.matchers.BLine>`_ collaborate with a monitor
-(an advanced feature of Lepl that allows matchers to share data as they are
-added to or leave the call stack) to share the "current indentation level".
-
-Because blocks can be nested we typically have a recursive grammar.  For
-example::
-
-  >>> introduce = ~Token(':')
-  >>> word = Token(Word(Lower()))
-
-  >>> statement = Delayed()
-
-  >>> simple = BLine(word[:])
-  >>> empty = Line(Empty())
-  >>> block = BLine(word[:] & introduce) & Block(statement[:])
-
-  >>> statement += (simple | empty | block) > list
-
-  >>> program.config.default_line_aware(block_policy=2)
-  >>> parser = program.get_parse_string()
-
-  >>> parser('''
-  ... abc def
-  ... ghijk:
-  ...   mno pqr:
-  ...     stu
-  ...   vwx yz
-  ... '''
-  [[], 
-   ['abc', 'def'], 
-   ['ghijk', 
-    ['mno', 'pqr', 
-     ['stu']], 
-    ['vwx', 'yz']]]
-
-The core of the parser above is the three uses of `BLine()
-<api/redirect.html#lepl.offside.matchers.BLine>`_ and `Line()
-<api/redirect.html#lepl.offside.matchers.Line>`_.  The first, ``simple``, is a
-statement that fits in a single line.  The next, ``empty``, is an empty
-statement (this uses `Line() <api/redirect.html#lepl.offside.matchers.Line>`_
-because we don't care about the indentation of blank lines.  Finally,
-``block`` defines a block statement as one that is introduced by a line that
-ends in ":" and then contains a series of statements that are indented
-relative to the first line.
-
-So you can see that the `Block()
-<api/redirect.html#lepl.offside.matchers.Block>`_ matcher's job is to collect
-together lines that are indented relative to whatever came just before.  This
-works with `BLine() <api/redirect.html#lepl.offside.matchers.BLine>`_ which
-matches a line if it is indented at the correct level.
-
-The ``block_policy`` parameter in `.config.default_line_aware() <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_ indicates
-how many spaces are required for a single level of indentation.
-Alternatively, `rightmost() <api/redirect.html#lepl.offside.matchers.rightmost>`_ will use whatever indentation appears in the
-source.  The ``block_start`` gives the initial indentation level (zero by
-default).
-
-.. note::
-
-  When blocks are used regular expressions are automatically modified to
-  exclude ``(*SOL)`` and ``(*EOL)``.  In general this means that Lepl simply
-  "does the right thing" and you don't to worry about modifying regular
-  expressions to match or exclude the line markers.
-  
-  However, if you do need to explicitly match markers, this behaviour can be
-  disabled by providing `make_str_parser()
-  <api/redirect.html#lepl.regexp.str.make_str_parser>`_ as the
-  ``parser_factory`` option in `.config.default_line_aware()
-  <api/redirect.html#lepl.core.config.ConfigBuilder.default_line_aware>`_.
-
-
-.. index:: ContinuedBLineFactory()
-
-Further Matchers
-----------------
-
-The other line--aware matchers can also be used with blocks.  For example, a
-line for which indentation is not important (a comment, perhaps), can be
-matched with `Line() <api/redirect.html#lepl.offside.matchers.Line>`_.
-
-`ContinuedBLineFactory()
-<api/redirect.html#lepl.offside.matchers.ContinuedBLineFactory>`_ adds
-continuation support for `BLine()
-<api/redirect.html#lepl.offside.matchers.BLine>`_ in exactly the same way as
-`ContinuedLineFactory()
-<api/redirect.html#lepl.offside.matchers.ContinuedLineFactory>`_ described
-earlier.
-
-
-.. index:: Python
-.. _python_example:
-
-Python-Like Indentation
------------------------
-
-This parser recognizes indentation in a similar way to Python:
+Using these two matchers we can write a simple, Python--like language:
 
   * Blocks are defined by relative indentation
-  * The `\\` marker indicates that a line extends past a line break
+  * The `\` marker indicates that a line extends past a line break
   * Some constructions (like parentheses) automatically allow a line
     to extend past a line break
   * Comments can have any indentation
   
 (To keep the example simple there's only minimal parsing apart from the
 basic structure - a useful Python parser would obviously need much more work).
-  
+
 ::
 
     word = Token(Word(Lower()))
@@ -361,24 +218,24 @@ basic structure - a useful Python parser would obviously need much more work).
     introduce = ~Token(':')
     comma = ~Token(',')
     hash = Token('#.*')
-    
+
     CLine = ContinuedBLineFactory(continuation)
-    
+
     statement = word[1:]
-    args = Extend(word[:, comma]) > tuple
+    args = BExtend(word[:, comma]) > tuple
     function = word[1:] & ~symbol('(') & args & ~symbol(')')
 
     block = Delayed()
-    blank = ~Line(Empty())
-    comment = ~Line(hash)
+    blank = ~BLine(Empty(), indent=False)
+    comment = ~BLine(hash, indent=False)
     line = Or((CLine(statement) | block) > list,
-              blank,
-              comment)
+	      blank,
+	      comment)
     block += CLine((function | statement) & introduce) & Block(line[1:])
-    
+
     program = (line[:] & Eos())
-    program.config.default_line_aware(block_policy=rightmost)
-    parser = program.get_parse()
+    program.config.blocks(block_policy=explicit)
+    parser = program.get_parse_string()
   
 When applied to input like::
 
@@ -436,3 +293,29 @@ The following structure is generated::
 
 The important thing to notice here is that the nesting of lists in the final
 result matches the indentation of the original source.
+
+Configuration
+~~~~~~~~~~~~~
+
+Various parameters can be passed to the `.config.blocks() <api/redirect.html#lepl.core.config.ConfigBuilder.blocks>`_ configuration:
+
+ * `block_policy` defines how indentations are detected:
+
+   * A simple integer gives the number of spaces by which a new block should
+     be indented.  This uses the ``constant_indent()`` policy.
+
+   * Alternatively, an explicit "policy" function can be given:
+
+     * ``to_right()`` allows any size indent, as long as it moves to the
+       right.
+
+     * ``explicit()`` allows any size indent (blocks must be introduced by
+       some explicit means in the grammar --- for example, by using Python's
+       ":" marker).
+
+ * `block_start` is the initial indentation level (0 by default).
+
+ * `discard` defines the regular expression used to match whitespace.
+
+ * `tabsize` defines the number of spaces used to replace a tab (`None` to
+   disable).

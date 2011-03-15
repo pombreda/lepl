@@ -73,7 +73,8 @@ the compilation and parsing times::
 
   from lepl import *
   from lepl._example.support import Example
-  from lepl.support.lib import format
+  from lepl.support.lib import fmt
+
 
   NUMBER = 10
   REPEAT = 3
@@ -89,15 +90,14 @@ the compilation and parsing times::
       number = Float()                                >> float
 
       with DroppedSpace():
-          term    = number | '(' & expr & ')'         > Term
-          muldiv  = Any('*/')
-          factor  = term & (muldiv & term)[:]         > Factor
-          addsub  = Any('+-')
-          expr   += factor & (addsub & factor)[:]     > Expression
-          line    = expr & Eos()
+	  term    = number | '(' & expr & ')'         > Term
+	  muldiv  = Any('*/')
+	  factor  = term & (muldiv & term)[:]         > Factor
+	  addsub  = Any('+-')
+	  expr   += factor & (addsub & factor)[:]     > Expression
+	  line    = expr & Eos()
 
       return line
-
 
   # These create a matcher for the parser above with different configurations
 
@@ -111,115 +111,116 @@ the compilation and parsing times::
       matcher.config.no_memoize()
       return matcher
 
-  def full_memo():
+  def low_memory(): 
       matcher = default()
-      matcher.config.auto_memoize(full=True)
-      return matcher
-
-  def slow(): 
-      matcher = default()
-      matcher.config.clear().trace().manage().auto_memoize(full=True)
+      matcher.config.low_memory()
       return matcher
 
   def nfa_regexp(): 
       matcher = default()
-      matcher.config.clear().compile_to_nfa(force=True)
+      matcher.config.clear().compile_to_nfa()
       return matcher
 
   def dfa_regexp(): 
       matcher = default()
-      matcher.config.clear().compile_to_dfa(force=True)
+      matcher.config.clear().compile_to_dfa()
+      return matcher
+
+  def re_regexp(): 
+      matcher = default()
+      matcher.config.clear().compile_to_re(force=True)
       return matcher
 
 
-  # Next, build all the tests, making sure that we pre-compile parsers where
-  # necessary and (important!) we avoid reusing a parser with a cache
+  def main(tests):
 
-  data = [format('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
-                 random(), random(), random(), random(), random())
-          for i in range(NUMBER)]
+      # Next, build all the tests, making sure that we pre-compile parsers where
+      # necessary and (important!) we avoid reusing a parser with a cache
 
-  matchers = [default, clear, no_memo, full_memo, slow, nfa_regexp, dfa_regexp]
+      data = [fmt('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
+		     random(), random(), random(), random(), random())
+	      for i in range(NUMBER)]
 
-  def build_cached(factory):
-      matcher = factory()
-      matcher.config.clear_cache()
-      parser = matcher.get_parse()
-      def test():
-          for line in data:
-              parser(line)[0]
-      return test
+      matchers = [default, clear, no_memo, low_memory, nfa_regexp, dfa_regexp, re_regexp]
 
-  def build_uncached(factory):
-      matcher = factory()
-      def test():
-          for line in data:
-              matcher.config.clear_cache()
-              matcher.parse(line)[0]
-      return test
+      def build_cached(factory):
+	  matcher = factory()
+	  matcher.config.clear_cache()
+	  parser = matcher.get_parse()
+	  def test():
+	      for line in data:
+		  parser(line)[0]
+	  return test
 
-  tests = {}
+      def build_uncached(factory):
+	  matcher = factory()
+	  def test():
+	      for line in data:
+		  matcher.config.clear_cache()
+		  matcher.parse(line)[0]
+	  return test
 
-  for matcher in matchers:
-      tests[matcher] = {True: [], False: []}
-      for i in range(REPEAT):
-           tests[matcher][True].append(build_cached(matcher))
-           tests[matcher][False].append(build_uncached(matcher))
+      for matcher in matchers:
+	  tests[matcher] = {True: [], False: []}
+	  for i in range(REPEAT):
+	       tests[matcher][True].append(build_cached(matcher))
+	       tests[matcher][False].append(build_uncached(matcher))
 
+      def run(matcher, cached, repeat):
+	  '''Time the given test.'''
+	  stmt = 'tests[{0}][{1}][{2}]()'.format(matcher.__name__, cached, repeat)
+	  setup = 'from __main__ import tests, {0}'.format(matcher.__name__)
+	  #print(setup)
+	  #print(stmt)
+	  return timeit(stmt, setup, number=1)
 
-  def run(matcher, cached, repeat):
-      '''Time the given test.'''
-      stmt = 'tests[{0}][{1}][{2}]()'.format(matcher.__name__, cached, repeat)
-      setup = 'from __main__ import tests, {0}'.format(matcher.__name__)
-      return timeit(stmt, setup, number=1)
+      def analyse(matcher, t_uncached_base=None, t_cached_base=None):
+	  '''We do our own repeating so we can GC between attempts.'''
+	  (t_uncached, t_cached) = ([], [])
+	  for repeat in range(REPEAT):
+	      collect()
+	      t_uncached.append(run(matcher, False, repeat))
+	      collect()
+	      t_cached.append(run(matcher, True, repeat))
+	  (t_uncached, t_cached) = (min(t_uncached), min(t_cached))
+	  t_uncached = 1000.0 * t_uncached / NUMBER
+	  t_cached = 1000.0 * t_cached / NUMBER 
+	  print(fmt('{0:>20s} {1:5.1f} {2:8s}  {3:5.1f} {4:8s}',
+		       matcher.__name__, 
+		       t_uncached, normalize(t_uncached, t_uncached_base), 
+		       t_cached, normalize(t_cached, t_cached_base)))
+	  return (t_uncached, t_cached)
 
-  def analyse(matcher, t_uncached_base=None, t_cached_base=None):
-      '''We do our own repeating so we can GC between attempts.'''
-      (t_uncached, t_cached) = ([], [])
-      for repeat in range(REPEAT):
-          collect()
-          t_uncached.append(run(matcher, False, repeat))
-          collect()
-          t_cached.append(run(matcher, True, repeat))
-      (t_uncached, t_cached) = (min(t_uncached), min(t_cached))
-      t_uncached = 1000.0 * t_uncached / NUMBER
-      t_cached = 1000.0 * t_cached / NUMBER 
-      print(format('{0:>20s} {1:5.1f} {2:8s}  {3:5.1f} {4:8s}',
-                   matcher.__name__, 
-                   t_uncached, normalize(t_uncached, t_uncached_base), 
-                   t_cached, normalize(t_cached, t_cached_base)))
-      return (t_uncached, t_cached)
+      def normalize(time, base):
+	  if base:
+	      return '(x{0:5.2f})'.format(time / base)
+	  else:
+	      return ''
 
-  def normalize(time, base):
-      if base:
-          return '(x{0:5.2f})'.format(time / base)
-      else:
-          return ''
-
-  def main():
       print('{0:d} iterations; time per iteration in ms (best of {1:d})\n'.format(
-              NUMBER, REPEAT))
-      print(format('{0:>35s}    {1:s}', 're-compiled', 'cached'))
+	      NUMBER, REPEAT))
+      print(fmt('{0:>35s}    {1:s}', 're-compiled', 'cached'))
       (t_uncached, t_cached) = analyse(default)
       for matcher in matchers:
-          if matcher is not default:
-              analyse(matcher, t_uncached, t_cached)
+	  if matcher is not default:
+	      analyse(matcher, t_uncached, t_cached)
+
 
   if __name__ == '__main__':
-      main()
+      main({})
 
 Running ``main()`` gives::
 
   10 iterations; time per iteration in ms (best of 3)
 
-                          re-compiled    cached
-               default  78.4             4.2         
-                 clear   6.0 (x 0.08)    5.9 (x 1.39)
-               no_memo  68.6 (x 0.88)    4.1 (x 0.97)
-             full_memo  89.1 (x 1.14)   13.5 (x 3.19)
-                  slow 157.1 (x 2.00)  133.3 (x31.55)
-            nfa_regexp  35.3 (x 0.45)    4.3 (x 1.01)
-            dfa_regexp  38.4 (x 0.49)    5.5 (x 1.30)
+			  re-compiled    cached
+	       default 158.9             5.2         
+		 clear   8.0 (x 0.05)    8.0 (x 1.53)
+	       no_memo 138.8 (x 0.87)    3.7 (x 0.71)
+	    low_memory 148.2 (x 0.93)   22.2 (x 4.26)
+	    nfa_regexp  56.2 (x 0.35)    3.8 (x 0.73)
+	    dfa_regexp  57.5 (x 0.36)    3.0 (x 0.58)
+	     re_regexp  61.2 (x 0.39)    2.7 (x 0.51)
 
 The first column describes the configuration --- you can check the code to see
 exactly what was used in the function of the same name.
@@ -236,8 +237,8 @@ matcher many times (in which case the compilation time is relatively
 unimportant).
 
 Note that you don't need to worry about caching parsers yourself --- a matcher
-will automatically cache the parser when it is used.  The test code is much
-more complex because it is trying to *disable* caching in various places.
+will automatically cache the parser when it is used.  The test code is complex
+because it is trying to *disable* caching in various places.
 
 What can we learn from these results?
 
@@ -247,22 +248,24 @@ What can we learn from these results?
    `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
 
 #. But compilation isn't hugely expensive either.  If you're using a matcher
-   more than about 20 times, it's worth compiling to get better peformance.
+   more than about 20 times, it's worth using the default configuration
+   (rather than `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_) to get better peformance.
 
-#. It's hard to beat the default configuration.  The compilation time isn't
-   too great and, once cached, it generates one of the fastest parsers around.
+#. Disabling memoisation made the cached parser faster, but you should only do
+   this once (1) you are sure you don't have a left-recursive grammar (if you
+   do, the default configuration, with caching, will warn you) and (2) you've
+   tested it for your particular case.
 
-#. Disabling memoisation makes a cached parser *slightly* faster, but is
-   generally not worth the risk (without the minimal minimisation in the
-   default parser a left recursive gammar can crash your program).
-
-#. Full memoisation and resource management are slow, but these are very
-   specialised configurations that you won't need in normal use.
+#. Low memory use is slow, but this is a specialised configuration that you
+   won't need in normal use.
 
 For anyone interested in absolute speed, the values above are milliseconds
 required per iteration on a Dual Core laptop (a Lenovo X60, a couple of years
 old), with sufficient memory to avoid paging.
 
+It would be interesting to compare this with different versions.
+Unfortunately the table wasn't updated regularly in previous manuals, but when
+I re-ran the Lepl 4 code I found that Lepl 5 was typically around 20% faster.
 
 .. index:: tables, columns, tabular data, Columns()
 .. _table_example:
@@ -318,36 +321,35 @@ Here's a simpler example of how to use offside parsing, as described in
 :ref:`offside`.  The idea is that we have a configuration file format with
 named sections and subsections; in the subsections are name/value pairs::
 
-    from string import ascii_letters
-    from lepl import *
+  from string import ascii_letters
+  from lepl import *
 
-    def config_parser():
-        word        = Token(Any(ascii_letters)[1:, ...])
-        key_value   = (word & ~Token(':') & word) > tuple
-        subsection  = BLine(word) & (Block(BLine(key_value)[1:] > dict)) > list
-        section     = BLine(word) & Block(subsection[1:]) > list
-        config_file = (section | ~Line(Empty()))[:] > list
+  def config_parser():
+      word        = Token(Any(ascii_letters)[1:, ...])
+      key_value   = (word & ~Token(':') & word) > tuple
+      subsection  = BLine(word) & (Block(BLine(key_value)[1:] > dict)) > list
+      section     = BLine(word) & Block(subsection[1:]) > list
+      config_file = (section | ~BLine(Empty(), indent=False))[:] > list
+      config_file.config.blocks(block_policy=explicit)
+      return config_file.get_parse()
 
-        config_file.config.default_line_aware(block_policy=rightmost)
-        return config_file.get_parse()
+  parser = config_parser()
+  parser('''
+  one
+     a
+	foo: bar
+	baz: poop
+     b
+	snozzle: berry
 
-    parser = config_parser()
-    parser('''
-    one
-       a
-          foo: bar
-          baz: poop
-       b
-          snozzle: berry
-
-    two
-       c
-          apple: orange
-    ''')[0]
+  two
+     c
+	apple: orange
+  ''')[0]
 
 Which prints::
 
-    [['one', ['a', {'foo': 'bar', 'baz': 'poop'}], ['b', {'snozzle': 'berry'}]], ['two', ['c', {'apple': 'orange'}]]]
+  [['one', ['a', {'foo': 'bar', 'baz': 'poop'}], ['b', {'snozzle': 'berry'}]], ['two', ['c', {'apple': 'orange'}]]]
 
 Note that the name/value pairs are in dictionaries; this is because we passed
 a list of tuples to ``dict()``.
@@ -378,43 +380,136 @@ Next, we use tokens (and spaces are handled automatically)::
   >>> lines.parse('abc de f\n pqr\n')
   [['abc', 'de', 'f'], ['pqr']]
 
-.. warning::
-
-  The next matchers use line-aware parsing.  This is not necessary to solve
-  this problem (this feature is intended for "offside rule" or "significant
-  whitespace" parsing) and I recommend using the matchers above.  I am
-  including these examples only because they help clarify how the line-aware
-  parsing works.
-
-  The final matcher (with ``SOL`` etc) requires version 4.3.1; all the other
-  line-aware matchers require version 4.3 (or greater).
-
 We can also use line-aware parsing with tokens to handle the newline::
-
-  >>> word = Token(Word())
-  >>> line = (~LineAwareSol() & word[:] & ~LineAwareEol()) > list
-  >>> lines = line[:]
-  >>> lines.config.default_line_aware()
-  >>> lines.parse('abc de f\n pqr\n')
-  [['abc', 'de', 'f'], ['pqr']]
-
-or, (almost) equivalently::
 
   >>> word = Token(Word())
   >>> line = Line(word[:]) > list
   >>> lines = line[:]
-  >>> lines.config.default_line_aware()
+  >>> lines.config.lines()
   >>> lines.parse('abc de f\n pqr\n')
   [['abc', 'de', 'f'], ['pqr']]
 
-And we can also match the line-aware symbols directly (without using tokens)::
+.. index:: low_memory(), Override()
 
-  >>> with DroppedSpace():
-  >>>     words = Word()[:]
-  >>>     newline = ~Any('\n')
-  >>>     line = (~SOL() & words & newline & ~EOL()) > list
-  >>>     lines = line[:]
-  >>> lines.config.default_line_aware()
-  >>> lines.parse('abc de f\n pqr\n')
-  [['abc', 'de', 'f'], ['pqr']]
+Low Memory Use
+--------------
 
+This next example shows how data larger than the available memory can be
+parsed by Lepl.  Since Lepl is written in Python this is an unusual
+requirement (if a task is that large Lepl will probably be too slow), but it
+may be useful in some cases::
+
+  from sys import getsizeof
+  from logging import basicConfig, DEBUG, ERROR
+  from itertools import count, takewhile
+  try:
+      from itertools import imap
+  except ImportError:
+      imap = map
+
+  from lepl import *
+  from lepl.support.lib import fmt
+  from lepl.stream.iter import Cons
+
+
+  if __name__ == '__main__':
+
+      def source(n_max):
+	  '''
+	  A source of integers from 1 to n_max inclusive.
+	  '''
+	  return imap(str, takewhile(lambda n: n <= n_max, count(1)))
+
+
+      @sequence_matcher
+      def Digits(support, stream):
+	  '''
+	  A matcher that returns each digit (as an int) in turn.
+	  '''
+	  (number, next_stream) = s_line(stream, False)
+	  for digit in number:
+	      yield ([int(digit)], next_stream)
+
+
+      def parser():
+
+	  # a reduce function and the associated zero - this will sum the values
+	  # returned by Digit() instead of appending them to a list.  this is
+	  # to avoid generating a large result that may confuse measurements of
+	  # how much memory the parser is using.
+	  sum = ([0], lambda a, b: [a[0] + b[0]])
+
+	  with Override(reduce=sum):
+	      total = Digits()[:] & Eos()
+
+	  # configure for reduced memory use
+	  total.config.low_memory()
+
+	  return total
+
+      # some basic tests to make sure everything works
+      l = list(source(9))
+      assert l == ['1', '2', '3', '4', '5', '6', '7', '8', '9'], l
+      p = parser()
+      print(p.tree())
+
+      r = list(p.parse_iterable_all(source(9)))
+      # the sum of digits 1-9 is 45
+      assert r == [[45]], r
+
+      r = list(p.parse_iterable_all(source(10)))
+      # the digits in 1-10 can sum to 45 or 46 depending on whether we use the
+      # '1' or the '0' from 10.
+      assert r == [[46],[45]], r
+
+      # if we have 10^n numbers then we have about 10^n * n characters which
+      # is 2 * 10^n * n bytes for UTF16
+      def size(n):
+	  gb = 10**n * (n * 2 + getsizeof(Cons(None))) / 1024**3.0
+	  return fmt('{0:4.2f}', gb)
+      s = size(8)
+      assert s == '8.94', s
+      s = size(7)
+      assert s == '0.88', s
+
+      # we'll test with 10**7 - just under a GB of data, according to the above
+      # (on python2.6)
+
+      # guppy only works for python 2 afaict
+      # and it's broken for 2.7
+      from guppy import hpy
+      from gc import get_count, get_threshold, set_threshold, collect
+      #basicConfig(level=DEBUG)
+      basicConfig(level=ERROR)
+
+      r = p.parse_iterable_all(source(10**7))
+      next(r) # force the parser to run once, but keep the parser in memory
+      h = hpy()
+      print(h.heap())
+
+This generates the following output::
+
+  Partition of a set of 50077 objects. Total size = 6924832 bytes.
+   Index  Count   %     Size   % Cumulative  % Kind (class / dict of class)
+       0  19758  39  1790456  26   1790456  26 str
+       1  11926  24   958744  14   2749200  40 tuple
+       2    149   0   444152   6   3193352  46 dict of module
+       3   3011   6   361320   5   3554672  51 types.CodeType
+       4    604   1   359584   5   3914256  57 dict (no owner)
+       5   2918   6   350160   5   4264416  62 function
+       6    334   1   303568   4   4567984  66 dict of type
+       7    334   1   299256   4   4867240  70 type
+       8    150   0   157200   2   5024440  73 dict of lepl.core.config.ConfigBuilder
+       9    140   0   149792   2   5174232  75 dict of class
+  <178 more rows. Type e.g. '_.more' to view.>
+
+The output is generated by the Guppy library and shows memory use.  The
+simplest thing to note is that there are no objects with a count of 10,000,000
+even though that many values were parsed.  That means that parsed data are
+garbage-collected as they are processed, which is critical for parsing large
+data sets.
+
+For a longer discussion of this work see the `notes I made during development
+<http://www.acooke.org/cute/Processing1.html>`_ (the syntax improved since
+that was written, but the motivation and general details for the test are
+still very relevant).

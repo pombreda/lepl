@@ -81,27 +81,27 @@ def no_memo():
     matcher.config.no_memoize()
     return matcher
 
-def full_memo():
+def low_memory(): 
     matcher = default()
-    matcher.config.auto_memoize()
-    return matcher
-
-def slow(): 
-    matcher = default()
-    matcher.config.clear().trace_stack().low_memory().auto_memoize()
+    matcher.config.low_memory()
     return matcher
 
 def nfa_regexp(): 
     matcher = default()
-    matcher.config.clear().compile_to_nfa(force=True)
+    matcher.config.clear().compile_to_nfa()
     return matcher
 
 def dfa_regexp(): 
     matcher = default()
-    matcher.config.clear().compile_to_dfa(force=True)
+    matcher.config.clear().compile_to_dfa()
     return matcher
     
-
+def re_regexp(): 
+    matcher = default()
+    matcher.config.clear().compile_to_re(force=True)
+    return matcher
+    
+    
 def main(tests):
 
     # Next, build all the tests, making sure that we pre-compile parsers where
@@ -111,7 +111,7 @@ def main(tests):
                    random(), random(), random(), random(), random())
             for i in range(NUMBER)]
     
-    matchers = [default, clear, no_memo, full_memo, slow, nfa_regexp, dfa_regexp]
+    matchers = [default, clear, no_memo, low_memory, nfa_regexp, dfa_regexp, re_regexp]
     
     def build_cached(factory):
         matcher = factory()

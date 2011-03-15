@@ -49,7 +49,7 @@ class ClosedBugTest(TestCase):
         line = ((CLine(token) | block) > list) | empty | comment
         block += CLine((token)) & Block(line[:])
         program = (line[:] & Eos())
-        program.config.blocks(block_policy=rightmost)
+        program.config.blocks(block_policy=explicit)
         self.run_test(program.get_parse(), False)
 
     def test_fixed(self):

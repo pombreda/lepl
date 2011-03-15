@@ -38,13 +38,9 @@ Performance related tests.
 from logging import basicConfig, DEBUG, ERROR
 
 from lepl import *
-from lepl.core.trace import StreamMonitor
 
 
-def natural_language():
-    '''
-    This focuses on the LMemo cache.  It does not use any monitor or stream.
-    '''
+def natural_language_parser_1():
     
     #basicConfig(level=DEBUG)
     basicConfig(level=ERROR)
@@ -69,20 +65,18 @@ def natural_language():
     termphrase += simple_tp | (termphrase // join // termphrase) > TermPhrase
     sentence    = termphrase // verbphrase // termphrase & Eos() > Sentence
 
-    #sentence.config.auto_memoize().no_full_first_match()
-    p = sentence.get_match_string()
-    print(repr(p.matcher))
-    for _i in range(100):
-    #for _i in range(1):
-        assert len(list(p('every boy or some girl and helen and john or pat knows '
-                          'and respects or loves every boy or some girl and pat or '
-                          'john and helen'))) == 392  
+    sentence.config.auto_memoize()
+    return sentence.get_match_string()
+
+P1 = natural_language_parser_1()
+
+def natural_language_1():
+    assert len(list(P1('every boy or some girl and helen and john or pat knows '
+                       'and respects or loves every boy or some girl and pat or '
+                       'john and helen'))) == 392  
 
 
-def natural_language2():
-    '''
-    This focuses on the LMemo cache.  It does not use any monitor or stream.
-    '''
+def natural_language_parser_2():
     
     #basicConfig(level=DEBUG)
     basicConfig(level=ERROR)
@@ -109,22 +103,24 @@ def natural_language2():
     termphrase += simple_tp | (termphrase & join & termphrase) > TermPhrase
     sentence    = termphrase & verbphrase & termphrase & Eos() > Sentence
 
-    #sentence.config.auto_memoize(full=True)
-    p = sentence.get_match_string()
-    print(repr(p.matcher))
-    for _i in range(100):
-        assert len(list(p('every boy or some girl and helen and john or pat knows '
-                          'and respects or loves every boy or some girl and pat or '
-                          'john and helen'))) == 392  
+    sentence.config.auto_memoize()
+    return sentence.get_match_string()
+
+P2 = natural_language_parser_2()
+
+def natural_language_2():
+    assert len(list(P2('every boy or some girl and helen and john or pat knows '
+                       'and respects or loves every boy or some girl and pat or '
+                       'john and helen'))) == 392  
 
 
 def time():
     from timeit import Timer
-    t = Timer("natural_language2()", "from __main__ import natural_language2")
+    t = Timer("natural_language_1()", "from __main__ import natural_language_1")
     print(t.timeit(number=1))
-    # 4v5, no special config, x100, python 3.2 on laptop
-    # string     31.9,32.0 v 19.3,19.1
-    # tokens (2) 26.6,25.8 v 22.6,22.4
+    # timing for parsing only:
+    # 1: 2.1
+    # 2: 1.9
     
 
 def profile():
@@ -142,4 +138,4 @@ p.print_stats(35)
 if __name__ == '__main__':
     time()
 #    profile()
-#    natural_language()
+#    natural_language_1()

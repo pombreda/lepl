@@ -174,7 +174,7 @@ space after the newline that separates lines --- this is why the original (see
 .. note::
 
    If you have a matcher that is failing you will need to use
-   ``.config.no_full_first_match()`` to disable the error message, or you will
+   `.config.no_full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_ to disable the error message, or you will
    not see the expected output.
 
 

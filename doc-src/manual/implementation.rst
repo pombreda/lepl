@@ -49,23 +49,22 @@ using ``yield`` to return the match (rather than ``return``).
 
 .. index:: direct_eval(), no_direct_eval()
 
-Optimisation
-~~~~~~~~~~~~
+Optimisations
+~~~~~~~~~~~~~
 
 The overhead of the trampolining is quite small (expensive operations in
 Python appear to involve accessing attributes and calling functions; the time
 spent in the logic of the trampoline loop is relatively unimportant).
 
 However, in an attempt to improve performance wherever possible, I have
-experimented with using simple function calls instead of trampolining for
-non--recursive matchers.  This is relatively safe (the Python stack is not
-that small!) and slightly quicker.  It is also easy to implement through the
-decorator functions described below, because suitable matchers can be
-identified by the decorator chosen.
+experimented with various approaches to reducing the number of "bounces"
+made.  These include calling function--based (those that do not need to
+evaluate other matcher) directly; flattening nested `And() <api/redirect.html#lepl.matchers.combine.And>`_ and `Or() <api/redirect.html#lepl.matchers.combine.Or>`_
+matchers; compiling simple leaf matchers to regular expressions; combining
+nested transformations.
 
-This optimisation is controlled by `.config.direct_eval()
-<api/redirect.html#lepl.core.config.ConfigBuilder.direct_eval>`_ and enabled
-by default.
+These are all relatively easy to implement using introspection of the matcher
+DAG (see below).
 
 .. index:: @function_matcher, @function_matcher_factory, function_matcher, function_matcher_factory
 .. _new_matchers:
@@ -78,10 +77,10 @@ single character::
 
   >>> @function_matcher
   >>> def char(support, stream):
-  >>>     if stream:
-  >>>         return ([stream[0]], stream[1:])
-  >>> char()[:,...].parse('ab')
-  ['ab']
+  >>>     (char, next_stream) = s_next(stream)
+  >>>     return ([char], next_stream)
+  >>> char()[:].parse('ab')
+  ['a', 'b']
 
 The `@function_matcher
 <api/redirect.html#lepl.matchers.support.function_matcher>`_ decorator does
@@ -89,6 +88,10 @@ the necessary work to place the given logic within an `OperatorMatcher()
 <api/redirect.html#lepl.matchers.support.OperatorMatcher>`_ instance, so the
 resulting matcher includes all the usual Lepl functionality (configuration,
 operators, etc).
+
+``s_next()`` is part of the stream API (see below) --- it returns the next
+character and the associated stream.  It automatically handles the
+end--of--stream case by raising ``StopIteration()``.
 
 This can extended to include configuration::
 
@@ -179,13 +182,20 @@ the same stream, but within different contexts (eg. consider ``a = Optional(a)
 `Frost and Hafiz 2006 <http://www.cs.uwindsor.ca/~hafiz/p46-frost.pdf>`_
 observed that there is a natural limit to the number of times left recursion
 can be meaningful, which is the length of the remaining input (since you have
-to consumer `something` each time round).  They therefore recommended
+to consumer *something* each time round).  They therefore recommended
 extending the simple cache with a counter that blocks recursion past that
 depth.
 
 This approach is implemented in `LMemo()
 <api/redirect.html#lepl.matchers.memo.LMemo>`_ which makes Lepl robust to
 left--recursive grammars.
+
+However, the implementation is non-trivial.  In particular, each occurrence of
+a matcher in the DAG needs to be curtailed separately.  Since matchers are
+pure they are often references in multiple places; this conflicts with the
+need to treat each location as a distinct entity and so some care is needed to
+duplicate appropriate nodes when rewriting (the end--user does not need to
+worry about this, but it makes implementation and testing more difficult).
 
 
 .. index:: rewriting, graph, flattening
@@ -219,15 +229,11 @@ for `Node() <api/redirect.html#lepl.support.node.Node>`_--based ASTs).
 Streams
 -------
 
-Lepl can process simple strings and lists, but it can also use its own stream
-abstraction, which implements the `LocationStream()
-<api/redirect.html#lepl.stream.LocationStream>`_ interface.  This tracks the
-position of each character within the source (useful for errors and, in the
-future, parsing with the "offside rule").
+Since Lepl 5 all input is wrapped within a "stream" abstraction.  This is a
+tuple containing state and a helper: the state changes at each position, but
+the helper remains the same.  So for strings the state is an index, while the
+helper wraps the original input.
 
-Streams are created automatically by methods like `matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ and
-`matcher.parse_string() <api/redirect.html#lepl.core.config.ParserMixin.parse_string>`_.  To avoid this use `matcher.parse_null() <api/redirect.html#lepl.core.config.ParserMixin.parse_null>`_.
-
-The streams are created by a `StreamFactory()
-<api/redirect.html#lepl.stream.stream.StreamFactory>`_, which can be set via
-`.config.stream_factory() <api/redirect.html#lepl.core.config.ConfigBuilder.stream_factory>`_.
+Helpers provide additional functionality, like recording the deepest match,
+formatting, and calculating hash keys.  Access to these functions is provided
+through the generic ``s_xxx`` functions defined in ``lepl.stream.core``.

@@ -39,7 +39,7 @@ from lepl.matchers.combine import Or
 from lepl.matchers.core import Delayed
 from lepl.matchers.derived import Letter, Digit
 from lepl.matchers.monitor import Trace
-from lepl.lexer.blocks.matchers import Block, BLine, rightmost, \
+from lepl.lexer.blocks.matchers import Block, BLine, explicit, \
     ContinuedBLineFactory
 
 
@@ -119,7 +119,7 @@ a
                                       ['5']], 
                                 ['6']]], result
                                 
-    def test_rightmost(self):
+    def test_explicit(self):
         number = Token(Digit())
         letter = Token(Letter())
         
@@ -139,7 +139,7 @@ a
   5
  6
 '''
-        program.config.blocks(block_policy=rightmost)
+        program.config.blocks(block_policy=explicit)
         parser = program.get_parse_string()
         result = parser(text)
         assert result == [['1'], 
@@ -149,7 +149,7 @@ a
                                       ['5']], 
                                 ['6']]], result
                                 
-    def test_continued_rightmost(self):
+    def test_continued_explicit(self):
         number = Token(Digit())
         letter = Token(Letter())
         
@@ -170,7 +170,7 @@ a
   5
  6
 '''
-        program.config.blocks(block_policy=rightmost)
+        program.config.blocks(block_policy=explicit)
         parser = program.get_parse_string()
         result = parser(text)
         assert result == [['1'], 

@@ -106,23 +106,17 @@ I'll explain those and, hopefully, that will shed some light on this.
     >>> matcher.match("ab")
     <generator object trampoline at 0x916640>
     >>> list(matcher.match("ab"))
-    [([u'a'], u'ab'[1:]), (['ab'], ''[0:])]
+    [([u'a'], (1, <helper>)), (['ab'], (2, <helper>))]
 
-   Here you can see, in detail, what Lepl is doing.  And, given the non-greedy
-   behaviour of `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ described
-   above, it `does` make sense.
+   Here you can see, in detail, what Lepl is doing.  The ``(n, <helper>)``
+   values are the remaining input, from index 1 and 2 respectively.
 
-   If you `want` to match the whole input you can add `Eos()
+   If you *want* to match the whole input you can add `Eos()
    <api/redirect.html#lepl.matchers.derived.Eos>`_ to the matcher::
 
     >>> matcher = (Letter() | "ab") & Eos()
     >>> list(matcher.match("ab"))
     [(['ab'], ''[0:])]
-
-   (`matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_
-   and `matcher.parse_all()
-   <api/redirect.html#lepl.core.config.ParserMixin.parse_all>`_ are just
-   wrappers around that, which return less of the information).
 
 #. The "full first match" implementation is very simple.  It checks the
    remaining stream (see above) for the first match.  If it is not empty, then
@@ -130,11 +124,11 @@ I'll explain those and, hopefully, that will shed some light on this.
 
    Why didn't I make this also add `Eos()
    <api/redirect.html#lepl.matchers.derived.Eos>`_?  I could have done so, and
-   then I wouldn't have had to write this explanation, and you wouldn't have
-   had to read it, but it would have meant adding more "magic" to the
-   configuration system.  I did start to do this, but then I realised that
-   `disabling the error could change the parse results`.  And I think that's a
-   worse problem than the current (imperfect) compromise.
+   then I wouldn't have had to write this explanation, but it would have meant
+   adding more "magic" to the configuration system.  I did start to do this,
+   but then I realised that *disabling the check could change the parse
+   results*.  And I think that's a worse problem than the current (imperfect)
+   compromise.
 
 In summary then, this is a consequence of the way `Or()
 <api/redirect.html#lepl.matchers.combine.Or>`_ works (for efficiency), and
@@ -152,8 +146,14 @@ How do I parse an entire file?
 
 *I understand how to parse a string, but how do I parse an entire file?*
 
-Instead of `matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ or `matcher.parse_string() <api/redirect.html#lepl.core.config.ParserMixin.parse_string>`_ use
-`matcher.parse_file() <api/redirect.html#lepl.core.config.ParserMixin.parse_file>`_ or `matcher.parse_path() <api/redirect.html#lepl.core.config.ParserMixin.parse_path>`_.
+Instead of `matcher.parse()
+<api/redirect.html#lepl.core.config.ParserMixin.parse>`_ or
+`matcher.parse_string()
+<api/redirect.html#lepl.core.config.ParserMixin.parse_string>`_ use
+`matcher.parse_file()
+<api/redirect.html#lepl.core.config.ParserMixin.parse_file>`_ or
+`matcher.parse_path()
+<api/redirect.html#lepl.core.config.ParserMixin.parse_path>`_.
 
 Matchers extend `ParserMixin()
 <api/redirect.html#lepl.core.config.ParserMixin>`_, which provides these

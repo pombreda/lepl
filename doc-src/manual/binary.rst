@@ -6,12 +6,8 @@ Binary Data
 
 .. warning::
 
-   This package does not work with Python 2.6 (and never will do - the
-   ``bytes()`` type is not usable until version 3.0).
-
-   The ``bin`` package is very new and still under active development.  The 
-   API may change significantly (even between minor releases).  And the
-   code is more likely to contain bugs than other parts of Lepl.
+   This package does not work with Python 2.6 or 2.7 (and never will do so -
+   the ``bytes()`` type is not usable until version 3.0).
 
    This documentation is rather short and incomplete; it will be extended as
    the package is developed further.
@@ -175,10 +171,11 @@ bits (3x8+4).
 BitString
 ---------
 
-The `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ class is an implementation of Lepl's abstract model
-described above.  It has similar semantics to Python's strings, in that a
-single entry (a bit - the equivalent of a character in a string) is still a
-`BitString() <api/redirect.html#lepl.bin.bits.BitString>`_::
+The `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ class is an
+implementation of Lepl's abstract model described above.  It has similar
+semantics to Python's strings, in that a single entry (a bit - the equivalent
+of a character in a string) is still a `BitString()
+<api/redirect.html#lepl.bin.bits.BitString>`_::
 
   >>> from lepl.bin.bits import BitString
   >>> b = BitString.from_int('00110101b0')

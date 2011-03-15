@@ -114,7 +114,7 @@ def constant_indent(n_spaces):
     return policy
 
 
-def rightmost(_current, indent):
+def explicit(_current, indent):
     '''
     Another simple policy that matches whatever indent is used.
     '''

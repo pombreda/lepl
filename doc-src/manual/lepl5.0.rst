@@ -235,7 +235,7 @@ The left-memoisation code does the following:
     (according to either the length of the remaining input or the ``d``
     parameter described earlier).
 
-* In addition, ``Delayed()`` instances (and the `LMemo()
+* In addition, `Delayed() <api/redirect.html#lepl.matchers.core.Delayed>`_ instances (and the `LMemo()
   <api/redirect.html#lepl.matchers.memo.LMemo>`_ wrappers) are duplicated when
   multiple references exist.  This is necessary so that the "curtailment" is
   not duplicated at multiple points in the matcher graph (in general it doe

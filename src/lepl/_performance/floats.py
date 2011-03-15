@@ -57,8 +57,8 @@ def floats():
         line    = Trace(expr) & Eos()
     
     #basicConfig(level=DEBUG)
-    #line.config.compile_to_re()
-    line.config.no_memoize()
+#    line.config.no_memoize()
+    line.config.clear()
     parser = line.get_parse_string()
     
     print(parser.matcher.tree())
@@ -90,8 +90,8 @@ p.print_stats(35)
     cProfile.run('floats()', 'floats.prof')
 
 if __name__ == '__main__':
-    time()
-#    profile()
+#    time()
+    profile()
 #    floats()
 
     

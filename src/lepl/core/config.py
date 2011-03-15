@@ -240,10 +240,6 @@ class ConfigBuilder(object):
         unusual alphabet (most often when using line-aware parsing), as
         it saves having to specify it on each matcher when creating the
         grammar.
-        
-        Although this option is often required for line aware parsing,
-        you normally do not need to call this because it is called by 
-        `default_line_aware` (and `line_aware`).
         '''
         from lepl.regexp.matchers import BaseRegexp
         from lepl.lexer.matchers import BaseToken
@@ -510,7 +506,7 @@ class ConfigBuilder(object):
         replacement if None).
         
         `block_policy` decides how indentation if calculated.
-        See `rightmost` etc in lepl.lexer.blocks.matchers.
+        See `explicit` etc in lepl.lexer.blocks.matchers.
         
         `block_start` is the initial indentation (by default, zero).
         If set to lepl.lexer.blocks.matchers.NO_BLOCKS then the lexing

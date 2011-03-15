@@ -141,7 +141,7 @@ from lepl.lexer.support import LexerError, RuntimeLexerError
 from lepl.lexer.lines.matchers import LineStart, LineEnd, Line, \
     ContinuedLineFactory, Extend
 from lepl.lexer.blocks.matchers import Indent, Block, BLine, NO_BLOCKS, \
-    constant_indent, rightmost, to_right, ContinuedBLineFactory, BExtend
+    constant_indent, explicit, to_right, ContinuedBLineFactory, BExtend
 from lepl.regexp.core import RegexpError
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.regexp.unicode import UnicodeAlphabet
@@ -346,7 +346,7 @@ __all__ = [
         'NO_BLOCKS',
         'ContinuedBLineFactory',
         'BExtend',
-        'rightmost',
+        'explicit',
         'constant_indent',
         'to_right'
        ]
