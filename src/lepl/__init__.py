@@ -152,6 +152,7 @@ from lepl.stream.maxdepth import FullFirstMatchException
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 from lepl.support.list import List, sexpr_fold, sexpr_throw
 from lepl.support.node import Node, make_dict, join_with, node_throw
+from lepl.support.timer import print_timing
 
 __all__ = [
            
@@ -348,7 +349,10 @@ __all__ = [
         'BExtend',
         'explicit',
         'constant_indent',
-        'to_right'
+        'to_right',
+        
+        # lepl.support.timer
+        'print_timing'
        ]
 
 __version__ = '5.0.0'

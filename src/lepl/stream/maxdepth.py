@@ -30,7 +30,7 @@
 Raise an exception if the stream is not consumed entirely.
 '''
 
-from lepl.stream.core import s_empty, s_fmt, s_deepest
+from lepl.stream.core import s_empty, s_fmt, s_deepest, s_next
 from lepl.matchers.support import trampoline_matcher_factory
 
 
@@ -47,6 +47,8 @@ def FullFirstMatch(matcher, eos=True):
     '''
     
     def _matcher(support, stream1):
+        # set default maxdepth
+        s_next(stream1, count=0)
         # first match
         generator = matcher._match(stream1)
         try:

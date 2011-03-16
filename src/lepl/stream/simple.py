@@ -214,10 +214,10 @@ class SequenceHelper(BaseHelper):
         offset = state + self._delta[OFFSET]
         return (offset, 1, offset+1)
     
-    def new_max(self, state, max):
+    def new_max(self, state):
         return (self.max,
                 (state, type(self)(self._sequence, id=self.id, 
-                                   factory=self.factory, max=max,
+                                   factory=self.factory, max=None,
                                    global_kargs=self.global_kargs, 
                                    delta=self._delta)))
 

@@ -33,10 +33,6 @@ Tests for the lepl.core.config module.
 
 #from logging import basicConfig, DEBUG
 from unittest import TestCase
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
     
 
 from lepl.matchers.variables import TraceVariables
@@ -46,6 +42,7 @@ from lepl.matchers.core import Any, Lookahead
 from lepl._test.base import assert_str
 from lepl.stream.maxdepth import FullFirstMatchException
 from lepl.regexp.core import RegexpError
+from lepl.support.lib import StringIO
 
 
 class ParseTest(TestCase):

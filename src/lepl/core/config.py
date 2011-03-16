@@ -57,7 +57,7 @@ class ConfigBuilder(object):
     Accumulate configuration through chained methods.
     '''
     
-    def __init__(self):
+    def __init__(self, matcher):
         # we need to delay startup, to avoid loops
         self.__started = False
         # this is set whenever any config is changed.  it is cleared when
@@ -69,6 +69,10 @@ class ConfigBuilder(object):
         self.__stream_factory = DEFAULT_STREAM_FACTORY
         self.__alphabet = None
         self.__stream_kargs = {}
+        # this is set from the matcher.  it gives a memory loop, but not a 
+        # very serious one, and allows single line configuration which is 
+        # useful for timing.
+        self.matcher = matcher
         
     def __start(self):
         '''
@@ -77,6 +81,7 @@ class ConfigBuilder(object):
         if not self.__started:
             self.__started = True
             self.default()
+            
         
     # raw access to basic components
         
@@ -654,10 +659,10 @@ class ParserMixin(object):
     
     def __init__(self, *args, **kargs):
         super(ParserMixin, self).__init__(*args, **kargs)
-        self.config = ConfigBuilder()
+        self.config = ConfigBuilder(self)
         self.__raw_parser_cache = None
         self.__from = None # needed to check cache is valid
-
+        
     def _raw_parser(self, from_=None):
         '''
         Provide the parser.  This underlies the "fancy" methods below.

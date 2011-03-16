@@ -10,6 +10,7 @@ Frequently Asked Questions
  * :ref:`How do I parse an entire file? <faq_file>`
  * :ref:`When I change from > to >> my function isn't called <faq_precedence>`
  * :ref:`How do I choose between > and >> ? <faq_apply>`
+ * :ref:`Why am I seeing "No handlers could be found..." messages? <faq_logging>`
 
 
 .. _faq_regexp:
@@ -288,3 +289,23 @@ Usually, if you are calling a *constructor* (`Node()
 <api/redirect.html#lepl.support.node.Node>`_, ``tuple()`` etc.) you want to
 use ``>``.
 
+.. _faq_logging:
+
+Why am I seeing "No handlers could be found..." messages?
+---------------------------------------------------------
+
+*Why do I see this warning printed to stderr?*
+
+::
+
+  No handlers could be found for logger "lepl.parser.trampoline"
+
+This is because Lepl is sending messages to the Python logging system (usually
+debug information), but you don't have logging configured.
+
+You can suppress the warning by adding the following somewhere in your code::
+
+  from logging import basicConfig, ERROR
+  basicConfig(level=ERROR)
+
+but only do this if you are not using the logging package!

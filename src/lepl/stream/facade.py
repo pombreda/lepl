@@ -90,8 +90,8 @@ class HelperFacade(StreamHelper):
     def eq(self, state1, state2):
         return self._delegate.eq(state1, state2)
     
-    def new_max(self, state, max):
-        return self._delegate.new_max(state, max)
+    def new_max(self, state):
+        return self._delegate.new_max(state)
     
     def cacheable(self):
         return self._delegate.cacheable()

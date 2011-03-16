@@ -144,6 +144,14 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         '''
         return self.__class__.__name__
     
+    def clone(self):
+        '''
+        Clone this matcher (and associated graph).  This is currently only used
+        when we want to test different configurations.
+        '''
+        from lepl.core.rewriters import clone_matcher
+        return clone_matcher(self)
+    
 
 class TreeStr(GraphStr):
     

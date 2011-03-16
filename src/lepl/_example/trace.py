@@ -38,13 +38,10 @@ Examples from the documentation.
 
 
 from logging import basicConfig, INFO, DEBUG
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 from lepl import *
 from lepl._example.support import Example
+from lepl.support.lib import StringIO
 
 
 class NodeErrorTest(Example):

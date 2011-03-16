@@ -39,8 +39,9 @@ try:
     str = unicode
     basestring = basestring
     file = file
+    from StringIO import StringIO
 except NameError:
-    from io import IOBase
+    from io import IOBase, StringIO
     chr = chr
     str = str
     basestring = str

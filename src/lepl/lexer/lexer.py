@@ -130,7 +130,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
         '''
         Implement matching - pass token stream to tokens.
         '''
-        (max, clean_stream) = s_new_max(in_stream, MutableMaxDepth())
+        (max, clean_stream) = s_new_max(in_stream)
         try:
             length = s_len(in_stream)
         except TypeError:

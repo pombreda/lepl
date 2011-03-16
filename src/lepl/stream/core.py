@@ -213,9 +213,9 @@ class StreamHelper(_StreamHelper):
         '''
         return state1 == state2
     
-    def new_max(self, state, max):
+    def new_max(self, state):
         '''
-        Return a new stream, with a new helper, that uses the given max.
+        Return a new stream, with a new helper, that uses a new max.
         '''
         raise NotImplementedError
     
@@ -277,8 +277,8 @@ s_factory = lambda stream: stream[1].factory
 s_max = lambda stream: stream[1].max
 '''Access the max attribute.'''
 
-s_new_max = lambda stream, max: stream[1].new_max(stream[0], max)
-'''Invoke helper.new_max(state, max).'''
+s_new_max = lambda stream: stream[1].new_max(stream[0])
+'''Invoke helper.new_max(state).'''
 
 s_global_kargs = lambda stream: stream[1].global_kargs
 '''Access the global_kargs attribute.'''

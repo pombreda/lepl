@@ -57,4 +57,15 @@ They are *not* available directly in the ``lepl`` package.
    `MailToUrl() <api/redirect.html#lepl.apps.rfc3696.MailToUrl>`_: Generate a
    `validator` for "mailto" URLs.
 
+.. note::
 
+   A warning like::
+
+     No handlers could be found for logger "lepl.parser.trampoline"
+
+  means that you do not have Python's logging configured.  If you are not
+  using the logging package elsewhere then you can do the following to
+  suppress the error::
+
+     from logging import basicConfig, ERROR
+     basicConfig(level=ERROR)

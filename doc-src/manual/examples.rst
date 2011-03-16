@@ -65,21 +65,10 @@ Configuration and Efficiency
 ----------------------------
 
 This example shows how different choices of :ref:`configuration` can change
-the compilation and parsing times::
+the compilation and parsing times.  Lepl 5 introduces ``print_timing()`` which
+makes this example much simpler than in previous versions::
 
-  from gc import collect
-  from random import random
-  from timeit import timeit
-
-  from lepl import *
-  from lepl._example.support import Example
-  from lepl.support.lib import fmt
-
-
-  NUMBER = 10
-  REPEAT = 3
-
-  def default():
+  def matcher():
       '''A simple parser we'll use as an example.'''
 
       class Term(List): pass
@@ -99,131 +88,41 @@ the compilation and parsing times::
 
       return line
 
-  # These create a matcher for the parser above with different configurations
-
-  def clear():
-      matcher = default()
-      matcher.config.clear()
-      return matcher
-
-  def no_memo():
-      matcher = default()
-      matcher.config.no_memoize()
-      return matcher
-
-  def low_memory(): 
-      matcher = default()
-      matcher.config.low_memory()
-      return matcher
-
-  def nfa_regexp(): 
-      matcher = default()
-      matcher.config.clear().compile_to_nfa()
-      return matcher
-
-  def dfa_regexp(): 
-      matcher = default()
-      matcher.config.clear().compile_to_dfa()
-      return matcher
-
-  def re_regexp(): 
-      matcher = default()
-      matcher.config.clear().compile_to_re(force=True)
-      return matcher
-
-
-  def main(tests):
-
-      # Next, build all the tests, making sure that we pre-compile parsers where
-      # necessary and (important!) we avoid reusing a parser with a cache
-
-      data = [fmt('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
-		     random(), random(), random(), random(), random())
-	      for i in range(NUMBER)]
-
-      matchers = [default, clear, no_memo, low_memory, nfa_regexp, dfa_regexp, re_regexp]
-
-      def build_cached(factory):
-	  matcher = factory()
-	  matcher.config.clear_cache()
-	  parser = matcher.get_parse()
-	  def test():
-	      for line in data:
-		  parser(line)[0]
-	  return test
-
-      def build_uncached(factory):
-	  matcher = factory()
-	  def test():
-	      for line in data:
-		  matcher.config.clear_cache()
-		  matcher.parse(line)[0]
-	  return test
-
-      for matcher in matchers:
-	  tests[matcher] = {True: [], False: []}
-	  for i in range(REPEAT):
-	       tests[matcher][True].append(build_cached(matcher))
-	       tests[matcher][False].append(build_uncached(matcher))
-
-      def run(matcher, cached, repeat):
-	  '''Time the given test.'''
-	  stmt = 'tests[{0}][{1}][{2}]()'.format(matcher.__name__, cached, repeat)
-	  setup = 'from __main__ import tests, {0}'.format(matcher.__name__)
-	  #print(setup)
-	  #print(stmt)
-	  return timeit(stmt, setup, number=1)
-
-      def analyse(matcher, t_uncached_base=None, t_cached_base=None):
-	  '''We do our own repeating so we can GC between attempts.'''
-	  (t_uncached, t_cached) = ([], [])
-	  for repeat in range(REPEAT):
-	      collect()
-	      t_uncached.append(run(matcher, False, repeat))
-	      collect()
-	      t_cached.append(run(matcher, True, repeat))
-	  (t_uncached, t_cached) = (min(t_uncached), min(t_cached))
-	  t_uncached = 1000.0 * t_uncached / NUMBER
-	  t_cached = 1000.0 * t_cached / NUMBER 
-	  print(fmt('{0:>20s} {1:5.1f} {2:8s}  {3:5.1f} {4:8s}',
-		       matcher.__name__, 
-		       t_uncached, normalize(t_uncached, t_uncached_base), 
-		       t_cached, normalize(t_cached, t_cached_base)))
-	  return (t_uncached, t_cached)
-
-      def normalize(time, base):
-	  if base:
-	      return '(x{0:5.2f})'.format(time / base)
-	  else:
-	      return ''
-
-      print('{0:d} iterations; time per iteration in ms (best of {1:d})\n'.format(
-	      NUMBER, REPEAT))
-      print(fmt('{0:>35s}    {1:s}', 're-compiled', 'cached'))
-      (t_uncached, t_cached) = analyse(default)
-      for matcher in matchers:
-	  if matcher is not default:
-	      analyse(matcher, t_uncached, t_cached)
-
-
   if __name__ == '__main__':
-      main({})
+      basicConfig(level=ERROR)
+      m = matcher()
+      print_timing(lambda: fmt('{0:4.2f} + {1:4.2f} * ({2:4.2f} + {3:4.2f} - {4:4.2f})',
+			       random(), random(), random(), random(), random()),
+		   {'default': m.clone(),
+		    'clear': m.clone().config.clear().matcher,
+		    'no memo': m.clone().config.no_memoize().matcher,
+		    'low memory': m.clone().config.low_memory().matcher,
+		    'nfa': m.clone().config.clear().compile_to_nfa().matcher,
+		    'dfa': m.clone().config.clear().compile_to_dfa().matcher,
+		    're': m.clone().config.clear().compile_to_re().matcher})
 
-Running ``main()`` gives::
+Running that program gives::
 
-  10 iterations; time per iteration in ms (best of 3)
+  Timing Results (ms)
+  -------------------
 
-			  re-compiled    cached
-	       default 158.9             5.2         
-		 clear   8.0 (x 0.05)    8.0 (x 1.53)
-	       no_memo 138.8 (x 0.87)    3.7 (x 0.71)
-	    low_memory 148.2 (x 0.93)   22.2 (x 4.26)
-	    nfa_regexp  56.2 (x 0.35)    3.8 (x 0.73)
-	    dfa_regexp  57.5 (x 0.36)    3.0 (x 0.58)
-	     re_regexp  61.2 (x 0.39)    2.7 (x 0.51)
+  Compiling:  best of 3 averages over 10 repetition(s)
+  Parse only: best of 3 averages over 10 repetition(s)
+
+	       Matcher           Compiling | Parse only
+  -----------------------------------------+------------------
+	       default   167.30            |   5.86           
+		 clear     7.84  (x   0.0) |   7.80  (x   1.3)
+		   dfa    59.27  (x   0.4) |   2.39  (x   0.4)
+	    low memory   151.84  (x   0.9) |  22.82  (x   3.9)
+		   nfa    59.25  (x   0.4) |   3.55  (x   0.6)
+	       no memo   143.76  (x   0.9) |   3.46  (x   0.6)
+		    re    58.21  (x   0.3) |   2.32  (x   0.4)
 
 The first column describes the configuration --- you can check the code to see
-exactly what was used in the function of the same name.
+exactly what was used.  Note that we use a function to generate the input from
+random data; that makes sure that memoisation does not artificially improve
+the speeds when tests are repeated.
 
 The second two columns are the time (and the ratio of that time relative to
 the default) for using a parser that is re--compiled for each parse.  The time

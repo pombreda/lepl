@@ -28,51 +28,19 @@
 # MPL or the LGPL License.
 
 '''
-Tests for the lepl.matchers.variables module.
+A matcher that makes data available as a pipe source.
 '''
 
-#from logging import basicConfig, DEBUG
-from unittest import TestCase
-
-from lepl._test.base import assert_str
-from lepl.matchers.core import Any
-from lepl.matchers.variables import NamedResult, TraceVariables
-from lepl.support.lib import StringIO
+from lepl.matchers.support import trampoline_matcher_factory
 
 
-class ExplicitTest(TestCase):
-    
-    def test_wrapper(self):
-        output = StringIO()
-        matcher = NamedResult('foo', Any()[:], out=output)
-        repr(matcher)
-        matcher.config.clear()
-        parser = matcher.get_match_string()
-        list(parser('abc'))
-        text = output.getvalue()
-        assert_str(text, '''foo = ['a', 'b', 'c']
-    'abc' -> <EOS>
-foo (2) = ['a', 'b']
-    'abc' -> 'c'
-foo (3) = ['a']
-    'abc' -> 'bc'
-foo (4) = []
-    'abc' -> 'abc'
-! foo (after 4 matches)
-    'abc'
-''')
-        
-    def test_context(self):
-        #basicConfig(level=DEBUG)
-        output = StringIO()
-        with TraceVariables(out=output):
-            bar = Any()
-        bar.config.no_full_first_match()
-        repr(bar)
-        list(bar.match('abc'))
-        text = output.getvalue()
-        assert_str(text, '''         bar = ['a']                            stream = 'bc'
-         bar failed                             stream = 'abc'
-''')
-
-        
+@trampoline_matcher_factory()
+def Lines(matcher):
+    '''
+    Repeatedly evaluate the given matcher, yielding each result as a separate
+    line.  This acts as a source of lines.  No backtracking is supported.
+    '''
+    def match(support, stream):
+        while True:
+            (result, stream) = yield matcher._match(stream)
+            yield result
