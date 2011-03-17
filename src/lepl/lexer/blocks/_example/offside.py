@@ -100,7 +100,7 @@ ghijk:
         simple = CLine(word[1:])
         ifblock = CLine(word[1:] & introduce) & Block(statement[1:])
 
-        args = Extend(word[:, comma]) > tuple
+        args = BExtend(word[:, comma]) > tuple
         fundef = word[1:] & ~symbol('(') & args & ~symbol(')')
         function = CLine(fundef & introduce) & Block(statement[1:])
         

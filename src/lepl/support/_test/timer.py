@@ -48,11 +48,7 @@ class TimerTest(TestCase):
         real = Token(Real()) >> float 
         data_line = Line(integer & uletter & real[6]) 
         table = data_line[1:] 
-
-        real2 = Token(r'\-?[0-9]+\.[0-9]+(?:E\-?[0-9]+)?') >> float
-        data_line2 = Line(integer & uletter & real2[6])
-        table2 = data_line2[1:]
-
+        
         source = '''1      G      0.0            0.0 0.0            0.0            0.0            0.0 
 2      G      0.0            0.0 0.0            0.0            0.0            0.0 
 3      G      0.0            0.0 0.0            0.0            0.0            0.0 
@@ -77,13 +73,10 @@ class TimerTest(TestCase):
 
         out = StringIO()
         print_timing(source, 
-            {'float': table.clone().config.lines().matcher,
-             'float no memoize': table.clone().config.lines().no_memoize().matcher,
-             'regexp': table2.clone().config.lines().matcher,
-             'regexp no memoize': table2.clone().config.lines().no_memoize().matcher},
+            {'Real()': table.clone().config.lines().matcher,
+             'Real() no memoize': table.clone().config.lines().no_memoize().matcher},
              count_compile=1, out=out)
         table = out.getvalue()
         print(table)
         assert 'Timing Results' in table, table
-        assert 'regexp no memoize' in table, table
         

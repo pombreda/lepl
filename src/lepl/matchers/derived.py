@@ -43,7 +43,7 @@ from lepl.matchers.operators import BREADTH_FIRST, DEPTH_FIRST, GREEDY, \
 from lepl.matchers.support import coerce_
 from lepl.matchers.transform import TransformationWrapper, Transform, \
     ApplyArgs, ApplyRaw
-from lepl.regexp.matchers import NfaRegexp
+from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.support.lib import assert_type, lmap, fmt, basestring
 from lepl.support.warn import warn_on_use
 
@@ -491,8 +491,12 @@ def SignedEReal(decimal='.', exponent='eE'):
     Match a `SignedReal` followed by an optional exponent 
     (e+02 etc).  This will match both integer and float values.
     '''
-    return Join(SignedReal(decimal), 
-                Optional(Join(Any(exponent), SignedInteger())))
+    if decimal == '.' and exponent == 'eE':
+        # hack to faster direct implementation for now
+        return NfaRegexp(r'[\+\-]?(?:[0-9]*\.[0-9]+|[0-9]+\.|[0-9]+)(?:[eE][\+\-]?[0-9]+)?')
+    else:
+        return Join(SignedReal(decimal), 
+                    Optional(Join(Any(exponent), SignedInteger())))
 
     
 Real = SignedEReal
@@ -536,11 +540,15 @@ def UnsignedEFloat(decimal='.', exponent='eE'):
 @warn_on_use(_FLOAT_WARN)
 def SignedEFloat(decimal='.', exponent='eE'):
     '''
-    As `SignedEReal`, but must containt a decimal or exponent.  This
+    As `SignedEReal`, but must contain a decimal or exponent.  This
     will match real values that are not integers.
     '''
-    return Or(Join(SignedReal(decimal), Any(exponent), SignedInteger()),
-              SignedFloat(decimal))
+    if decimal == '.' and exponent == 'eE':
+        # hack to faster direct implementation for now
+        return NfaRegexp(r'[\+\-]?(?:[0-9]*\.[0-9]+(?:[eE][\+\-]?[0-9]+)?|[0-9]+\.(?:[eE][\+\-]?[0-9]+)?|[0-9]+[eE][\+\-]?[0-9]+)')
+    else:
+        return Or(Join(SignedReal(decimal), Any(exponent), SignedInteger()),
+                  SignedFloat(decimal))
 
     
 Float = SignedEFloat

@@ -47,7 +47,7 @@ from lepl.matchers.matcher import Matcher, canonical_matcher_type,\
 from lepl.matchers.memo import _LMemo, _RMemo, LMemo, RMemo
 from lepl.matchers.transform import Transform, TransformationWrapper
 from lepl.core.rewriters import NodeStats, Flatten, \
-    ComposeTransforms, AutoMemoize, clone_matcher
+    ComposeTransforms, AutoMemoize, clone_matcher, RightMemoize, LeftMemoize
 
 
 class MagusTest(TestCase):
@@ -181,19 +181,20 @@ class CloneTest(TestCase):
         self.assert_count(desc2, Transform, 6)
         self.assert_count(desc2, TransformationWrapper, 6)
         
-        clone3 = Memoize(RMemo)(clone2)
+        clone3 = RightMemoize()(clone2)
         desc3 = NodeStats(clone3) 
         #print(desc3)
         assert desc3.total == 17, desc3
         self.assert_count(desc3, _RMemo, 17)
         self.assert_count(desc3, Delayed, 2)
 
-        clone4 = Memoize(LMemo)(clone2)
+        clone4 = LeftMemoize()(clone2)
         desc4 = NodeStats(clone4) 
         #print(desc4)
         assert desc4.total == 17, desc4
-        self.assert_count(desc4, _LMemo, 17)
-        self.assert_count(desc4, Delayed, 2)
+        self.assert_count(desc4, _LMemo, 20)
+        # left memo duplicates delayed
+        self.assert_count(desc4, Delayed, 3)
         
         clone5 = AutoMemoize(left=LMemo, right=RMemo)(clone2)
         desc5 = NodeStats(clone5) 
@@ -201,6 +202,7 @@ class CloneTest(TestCase):
         assert desc5.total == 17, desc5
         self.assert_count(desc5, _RMemo, 5)
         self.assert_count(desc5, _LMemo, 15)
+        # left memo duplicates delayed
         self.assert_count(desc5, Delayed, 3)
         
         try:

@@ -167,6 +167,9 @@ class StreamHelper(_StreamHelper):
         Return (values, stream) where `values` correspond to something
         like "the rest of the line" from the current point and `stream`
         is advanced to the point after the line ends.
+        
+        If `empty_ok` is true and we are at the end of a line, return an
+        empty line, otherwise advance (and maybe raise a StopIteration).
         '''
         raise NotImplementedError
     

@@ -83,7 +83,7 @@ class RegexpCompilationTest(TestCase):
         '''
         A real is more complex, but still compiles.
         '''
-        token = Token(Real())
+        token = Token(Real(exponent='Ee'))
         token.compile()
         assert token.regexp == \
             '(?:[\\+\\-])?(?:(?:[0-9](?:[0-9])*)?\\.[0-9](?:[0-9])*|[0-9](?:[0-9])*(?:\\.)?)(?:[Ee](?:[\\+\\-])?[0-9](?:[0-9])*)?', \

@@ -33,7 +33,7 @@ from lepl.matchers.support import BaseMatcher
 from lepl.lexer.operators import TOKENS, TokenNamespace
 from lepl.core.parser import tagged
 from lepl.stream.core import s_empty, s_debug, s_stream, s_fmt, s_factory, \
-    s_max, MutableMaxDepth, s_new_max, s_id, s_global_kargs, s_delta, s_len, \
+    s_max, s_new_max, s_id, s_global_kargs, s_delta, s_len, \
     s_cache_level
 from lepl.lexer.support import RuntimeLexerError
 from lepl.regexp.core import Compiler

@@ -11,6 +11,7 @@ Frequently Asked Questions
  * :ref:`When I change from > to >> my function isn't called <faq_precedence>`
  * :ref:`How do I choose between > and >> ? <faq_apply>`
  * :ref:`Why am I seeing "No handlers could be found..." messages? <faq_logging>`
+ * :ref:`Why does my matcher take so long to compile? <faq_slowregexp>`
 
 
 .. _faq_regexp:
@@ -309,3 +310,35 @@ You can suppress the warning by adding the following somewhere in your code::
   basicConfig(level=ERROR)
 
 but only do this if you are not using the logging package!
+
+.. _faq_slowregexp:
+
+Why does my matcher take so long to compile?
+--------------------------------------------
+
+*Why is the matcher taking several seconds just to compile?*
+
+You are probably using `Float() <api/redirect.html#lepl.matchers.derived.Float>`_ or `Real() <api/redirect.html#lepl.matchers.derived.Real>`_ which are being compiled
+internally to regular expressions.  The current regexp implementation is very
+ineffecient when compiling such values.
+
+In the future Lepl will move to a new regular expression engine.  For now, if
+you don't need backtracking within the number and you are using a simple
+parser without tokens (ie. no lexer), you can use these replacements (which
+delegate to the system ``re`` library)::
+
+  Real = lambda: Regexp(r'[\+\-]?(?:[0-9]*\.[0-9]+|[0-9]+\.|[0-9]+)(?:[eE][\+\-]?[0-9]+)?')
+  Float = lambda: Regexp(r'[\+\-]?(?:[0-9]*\.[0-9]+(?:[eE][\+\-]?[0-9]+)?|[0-9]+\.(?:[eE][\+\-]?[0-9]+)?|[0-9]+[eE][\+\-]?[0-9]+)')
+
+However, those will not improve the speed of the lexer (which will convert
+them back to the the internal DFA implementation).
+
+Another alternative is to use `.config.no_compile_regexp() <api/redirect.html#lepl.core.config.ConfigBuilder.no_compile_regexp>`_ which will avoid
+the compilation in some circumstances.  Again, this won't help when the lexer
+is used.
+
+Finally, remember that you can avoid recompiling your parser by making your
+matcher just once and then re-using it.  It may be worth, for example,
+creating a matcher in a global variable (or during set-up for the entire
+suite) to re-use in a series of unit tests.
+

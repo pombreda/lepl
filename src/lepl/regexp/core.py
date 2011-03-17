@@ -457,6 +457,12 @@ class Compiler(LogMixin):
         self._debug(fmt('dfa graph: {0}', dgraph))
         return DfaPattern(dgraph, self.alphabet)
     
+    def re(self):
+        '''
+        Generate a matcher that wraps the standard "re" package. 
+        '''
+        return RePattern(str(self), self.alphabet)
+    
     def __str__(self):
         '''
         Show the expression itself.
@@ -939,9 +945,6 @@ class DfaPattern(LogMixin):
     def size_match(self, stream):
         '''
         Match against the stream, but return the length of the match.
-        
-        TODO - don't store streams, just offsets, then generate stream at end.
-        (is stream used at all - it isn't used above!)
         '''
         state = 0
         size = 0

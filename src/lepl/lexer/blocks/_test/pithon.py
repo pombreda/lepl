@@ -1,3 +1,4 @@
+from lepl.matchers.variables import TraceVariables
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -54,7 +55,7 @@ class PithonTest(TestCase):
         CLine = ContinuedBLineFactory(continuation)
         
         statement = word[1:]
-        args = Extend(word[:, comma]) > tuple
+        args = BExtend(word[:, comma]) > tuple
         function = word[1:] & ~symbol('(') & args & ~symbol(')')
 
         block = Delayed()
@@ -65,6 +66,7 @@ class PithonTest(TestCase):
         
         program = (line[:] & Eos())
         program.config.blocks(block_policy=explicit).trace_stack(True)
+#        program.config.clear().blocks(block_policy=explicit)
         return program.get_parse_string()
     
     def test_blocks(self):

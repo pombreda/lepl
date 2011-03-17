@@ -206,20 +206,12 @@ class Block(OperatorMatcher, NoMemo):
         
     def on_push(self, monitor):
         '''
-        Store a reference to the monitor which we will update when _match
-        is invoked (ie immediately).
+        Store a reference to the monitor which we will update inside _match
         '''
         self.__monitor = monitor
         
     def on_pop(self, monitor):
-        '''
-        Remove the indent we added.
-        '''
-        # only if we pushed a value to monitor (see below)
-        if self.__monitor:
-            self.__monitor = None
-        else:
-            monitor.pop_level()
+        pass
         
     @tagged
     def _match(self, stream_in):
@@ -236,13 +228,16 @@ class Block(OperatorMatcher, NoMemo):
         try:
             (indent, _stream) = yield self.indent._match(stream_in)
             current = self.__monitor.indent
-            self.__monitor.push_level(self.policy(current, indent))
-            # this flags we have pushed and need to pop
-            self.__monitor = None
+            policy = self.policy(current, indent)
             
             generator = And(*self.lines)._match(stream_in)
             while True:
-                yield (yield generator)
+                self.__monitor.push_level(policy)
+                try:
+                    results = yield generator
+                finally:
+                    self.__monitor.pop_level()
+                yield results
         finally:
             self.__streams.remove(key)
 

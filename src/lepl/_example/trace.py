@@ -49,8 +49,10 @@ class NodeErrorTest(Example):
     def test_deepest(self):
 
         buffer = StringIO()
-
+        # this test fails when run in a batch because logs are configured 
+        # differently beforehand!
         basicConfig(level=INFO, stream=buffer)
+#        basicConfig(level=INFO)
         
         name    = Word()              > 'name'
         phone   = Integer()           > 'phone'
@@ -75,17 +77,5 @@ Up to 2 successful matches following longest match:
 00139 'andrew...' 0/1.1 (0000) 002 stop  ->  DepthFirst(None, None, ([], <built-in function __add__>), rest=And, 0, first=Transform)(0:'a')  ->  ([{'phone': '3333253', 'name': 'andrew'}], (15, <helper>))
 
 """, 'r"""'+trace+'"""'
-        
-#
-#
-#spaces  = Space()[0:]
-#name    = Word()              > 'name'
-#phone   = Trace(Integer())    > 'phone'
-#line    = name / ',' / phone  > make_dict
-#matcher = line[0:,~Newline()]
-#matcher.config.clear().trace()
-#parsed = matcher.parse('andrew, 3333253\n bob, 12345')
-#print(parsed)
-
 
 

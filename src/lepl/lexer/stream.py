@@ -122,6 +122,8 @@ class FilteredTokenHelper(LogMixin, HelperFacade):
         self._debug(fmt('Filtering tokens {0}', ids))
         
     def next(self, state, count=1):
+        from lepl.lexer.lines.lexer import START
+        from lepl.lexer.blocks.lexer import INDENT
         
         def add_self(response):
             '''
@@ -132,7 +134,6 @@ class FilteredTokenHelper(LogMixin, HelperFacade):
             self._debug(fmt('Return {0}', tokens))
             return ((tokens, token), (state, self))
         
-        self._debug('Filtering')
         if count != 1:
             raise TypeError('Filtered tokens must be read singly')
         discard = list(reversed(self._ids))
@@ -146,6 +147,8 @@ class FilteredTokenHelper(LogMixin, HelperFacade):
             else:
                 self._debug(fmt('Failed to discard token {0}: {1}', 
                                    discard[-1], tokens))
+                if START in discard[-1] and INDENT in tokens:
+                    self._warn("Detected SOL with INDENT.  Use BExtend, BLine etc with blocks.") 
                 return add_self(super(FilteredTokenHelper, self).next(start))
         return add_self(super(FilteredTokenHelper, self).next(state))
             
