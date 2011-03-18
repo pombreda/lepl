@@ -5,7 +5,6 @@
 Examples
 ========
 
-
 Parsing a Python Argument List
 ------------------------------
 
@@ -226,10 +225,10 @@ named sections and subsections; in the subsections are name/value pairs::
   def config_parser():
       word        = Token(Any(ascii_letters)[1:, ...])
       key_value   = (word & ~Token(':') & word) > tuple
-      subsection  = BLine(word) & (Block(BLine(key_value)[1:] > dict)) > list
-      section     = BLine(word) & Block(subsection[1:]) > list
-      config_file = (section | ~BLine(Empty(), indent=False))[:] > list
-      config_file.config.blocks(block_policy=explicit)
+      subsection  = Line(word) & (Block(Line(key_value)[1:] > dict)) > list
+      section     = Line(word) & Block(subsection[1:]) > list
+      config_file = (section | ~Line(Empty(), indent=False))[:] > list
+      config_file.config.lines(block_policy=explicit)
       return config_file.get_parse()
 
   parser = config_parser()

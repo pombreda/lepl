@@ -15,18 +15,17 @@ via some IDEs).
 For example::
 
   >>> dir(matcher.config)
-  [..., 'add_monitor', 'add_rewriter', 'add_stream_kargs', 'alphabet', 
-   'auto_memoize', 'blocks', 'cache_level', 'changed', 'clear', 
-   'clear_cache', 'compile_to_dfa', 'compile_to_nfa', 'compile_to_re', 
-   'compose_transforms', 'configuration', 'default', 'direct_eval', 
-   'flatten', 'full_first_match', 'left_memoize', 'lexer', 'lines', 
-   'low_memory', 'no_compile_to_regexp', 'no_compose_transforms', 
-   'no_direct_eval', 'no_flatten', 'no_full_first_match', 'no_lexer', 
-   'no_memoize', 'no_optimize_or', 'no_set_arguments', 'optimize_or', 
-   'record_deepest', 'remove_all_monitors', 'remove_all_rewriters', 
-   'remove_all_stream_kargs', 'remove_rewriter', 'right_memoize', 
-   'set_alphabet_arg', 'set_arguments', 'stream_factory', 'trace_stack', 
-   'trace_variables']
+  [..., 'add_monitor', 'add_rewriter', 'add_stream_kargs', 'alphabet',
+  'auto_memoize', 'cache_level', 'changed', 'clear', 'clear_cache',
+  'compile_to_dfa', 'compile_to_nfa', 'compile_to_re', 'compose_transforms',
+  'configuration', 'default', 'direct_eval', 'flatten', 'full_first_match',
+  'left_memoize', 'lexer', 'lines', 'low_memory', 'matcher',
+  'no_compile_to_regexp', 'no_compose_transforms', 'no_direct_eval',
+  'no_flatten', 'no_full_first_match', 'no_lexer', 'no_memoize',
+  'no_optimize_or', 'no_set_arguments', 'optimize_or', 'record_deepest',
+  'remove_all_monitors', 'remove_all_rewriters', 'remove_all_stream_kargs',
+  'remove_rewriter', 'right_memoize', 'set_alphabet_arg', 'set_arguments',
+  'stream_factory', 'trace_stack', 'trace_variables']
   >>> help(matcher.config.compile_to_dfa)
   Help on method compile_to_dfa in module lepl.core.config:
   compile_to_dfa(self, force=False, alphabet=None) method of lepl.core.config.ConfigBuilder instance
@@ -43,7 +42,7 @@ The main options available are described in the following sections.  In
 addition, :ref:`this example <config_example>` shows the effect of different
 options on parsing times.
 
-.. index:: default(), clear()
+.. index:: default(), clear(), lines(), lexer()
 
 Common, Packaged Actions
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,10 +62,10 @@ Common, Packaged Actions
   settings).  If this is *not* used then any alterations are *relative* to the
   default settings.
 
-.. index:: lexer(), lines(), blocks()
+`.config.lines() <api/redirect.html#lepl.core.config.ConfigBuilder.lines>`_
 
-Other Packaged Actions
-~~~~~~~~~~~~~~~~~~~~~~
+  Enable line aware parsing.  This adds tokens that indicate line start and
+  end points. See :ref:`offside`.
 
 `.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_ `.config.no_lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.no_lexer>`_
 
@@ -74,16 +73,6 @@ Other Packaged Actions
   and modify the parser to use the lexer. Typically this is called indirectly
   via `.config.default()
   <api/redirect.html#lepl.core.config.ConfigBuilder.default>`_ (above).
-
-`.config.lines() <api/redirect.html#lepl.core.config.ConfigBuilder.lines>`_
-
-  Enable line aware parsing.  This adds tokens that indicate line start and
-  end points. See `lines`.
-
-`.config.blocks() <api/redirect.html#lepl.core.config.ConfigBuilder.blocks>`_
-
-  Enable offisde rule parsing.  This allows grouping of lines by indentation.
-  See `blocks`.
 
 .. index:: full_first_match(), no_full_first_match(), trace_stack(),
 .. record_deepest()
@@ -545,6 +534,7 @@ parsed with no problems.
 
 Because left--recursive grammars can be very inefficient, and because Lepl's
 support for them has historically been unreliable (buggy), they are no longer
-(since Lepl 5) supported by default.  Instead, `RMemo() <api/redirect.html#lepl.matchers.memo.RMemo>`_ is added, which can
-detect left--recursion and print a suitable warning.
+(since Lepl 5) supported by default.  Instead, `RMemo()
+<api/redirect.html#lepl.matchers.memo.RMemo>`_ is added, which can detect
+left--recursion and print a suitable warning.
 

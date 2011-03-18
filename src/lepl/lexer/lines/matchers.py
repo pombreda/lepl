@@ -28,8 +28,8 @@
 # MPL or the LGPL License.
 
 from lepl.lexer.matchers import Token, RestrictTokensBy, EmptyToken
-from lepl.lexer.offside.lexer import START, END
-from lepl.lexer.offside.monitor import BlockMonitor
+from lepl.lexer.lines.lexer import START, END
+from lepl.lexer.lines.monitor import BlockMonitor
 from lepl.matchers.support import coerce_, OperatorMatcher, NoMemo
 from lepl.core.parser import tagged
 from lepl.support.lib import fmt

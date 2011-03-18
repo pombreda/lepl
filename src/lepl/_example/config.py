@@ -45,7 +45,7 @@ def config_parser():
     config_file = (section | ~Line(Empty(), indent=False))[:] > list
     
     #config_file = Trace(config_file)
-    config_file.config.offside(block_policy=explicit)
+    config_file.config.lines(block_policy=explicit)
     return config_file.get_parse()
 
 

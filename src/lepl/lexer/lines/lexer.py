@@ -69,7 +69,7 @@ class _OffsideLexer(Lexer):
     
     Note that because of the extend argument list this must be used in
     the config via `make_offside_lexer()` (although in normal use it is
-    supplied by simply calling `config.offside()` so you don't need to refer
+    supplied by simply calling `config.lines()` so you don't need to refer
     to this class at all)
     '''
     

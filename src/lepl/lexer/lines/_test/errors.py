@@ -65,7 +65,7 @@ class ErrorTest(TestCase):
             block += BlockStart & (Block(memberdef) > list)
             
             program = (line[:] & Eos()) >> sexpr_throw
-            program.config.offside(block_policy=explicit)
+            program.config.lines(block_policy=explicit)
             
             return program.get_parse_string()
     

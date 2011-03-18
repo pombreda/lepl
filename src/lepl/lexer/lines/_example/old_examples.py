@@ -48,7 +48,7 @@ class LineAwareExamples(Example):
         words = Token(Word())[:]
         end = LineEnd()
         line = start & words & end
-        line.config.offside().no_full_first_match()
+        line.config.lines().no_full_first_match()
         self.examples([
 (lambda: line.parse('  abc def'), "['abc', 'def']"),
 (lambda: line.parse('  abc def\n pqr'), "['abc', 'def']")
@@ -61,7 +61,7 @@ class LineAwareExamples(Example):
         end = LineEnd()
         line = start & words & end
         lines = line[:]
-        lines.config.offside().no_full_first_match()
+        lines.config.lines().no_full_first_match()
         self.examples([
 (lambda: lines.parse('  abc def'), "[['abc', 'def']]"),
 (lambda: lines.parse('  abc def\n pqr'), "[['abc', 'def'], ['pqr']]")
@@ -80,7 +80,7 @@ class LineAwareExamples(Example):
         #basicConfig(level=DEBUG)
         words = Token(Word(Lower()))[:] > list
         line = Line(words)
-        line.config.offside()
+        line.config.lines()
         parser = line.get_parse_string()
         self.examples([(lambda: parser('\tabc def'), 
                         "[['abc', 'def']]")])
@@ -90,7 +90,7 @@ class LineAwareExamples(Example):
         words = Token(Word(Lower()))[:] > list
         CLine = ContinuedLineFactory(r'\+')
         line = CLine(words)
-        line.config.offside()
+        line.config.lines()
         parser = line.get_parse_string()
         self.examples([(lambda: parser('''abc def +
 ghi'''), 

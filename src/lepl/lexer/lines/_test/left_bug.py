@@ -90,7 +90,7 @@ class LeftBugTest(TestCase):
         call = (expr1 & expr0) > List # Deliberately not expr0 & expr1
         expr1 += (call | Empty () | expr0)
         program = (CLine(expr1) & Eos())
-        program.config.offside(block_policy=explicit).auto_memoize()
+        program.config.lines(block_policy=explicit).auto_memoize()
         parsed = program.parse("a b c")
         assert_str(parsed[0],
 """List

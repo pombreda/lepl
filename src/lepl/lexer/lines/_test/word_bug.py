@@ -58,7 +58,7 @@ class WordBugTest(TestCase):
         word = Token('[a-z]+')
         line = Line(word[:]) > list
         lines = line[:]
-        lines.config.offside()
+        lines.config.lines()
         result = lines.parse('abc de f\n pqr\n')
         assert result == [['abc', 'de', 'f'], ['pqr']], result
 
@@ -66,7 +66,7 @@ class WordBugTest(TestCase):
         word = Token(Word())
         line = Line(word[:]) > list
         lines = line[:]
-        lines.config.offside()
+        lines.config.lines()
         result = lines.parse('abc de f\n pqr\n')
         assert result == [['abc', 'de', 'f'], ['pqr']], result
 
@@ -74,7 +74,7 @@ class WordBugTest(TestCase):
         word = Token('[^\n ]+')
         line = Line(word[:]) > list
         lines = line[:]
-        lines.config.offside()
+        lines.config.lines()
         result = lines.parse('abc de f\n pqr\n')
         assert result == [['abc', 'de', 'f'], ['pqr']], result
         
@@ -82,6 +82,6 @@ class WordBugTest(TestCase):
         word = Token(Word())
         line = (LineStart() & word[:] & LineEnd()) > list
         lines = line[:]
-        lines.config.offside()
+        lines.config.lines()
         result = lines.parse('abc de f\n pqr\n')
         assert result == [['abc', 'de', 'f'], ['pqr']], result

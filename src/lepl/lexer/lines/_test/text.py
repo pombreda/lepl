@@ -75,7 +75,7 @@ class TextTest(TestCase):
         statement += (simple | empty | block) > list
         program = statement[:]
         
-        program.config.offside(block_policy=2)
+        program.config.lines(block_policy=2)
         return program.get_parse_string()
         
     def do_parse(self, parser):

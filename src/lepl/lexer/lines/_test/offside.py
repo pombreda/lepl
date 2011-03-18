@@ -39,7 +39,7 @@ from lepl.matchers.combine import Or
 from lepl.matchers.core import Delayed
 from lepl.matchers.derived import Letter, Digit
 from lepl.matchers.monitor import Trace
-from lepl.lexer.offside.matchers import Block, Line, explicit, \
+from lepl.lexer.lines.matchers import Block, Line, explicit, \
     ContinuedLineFactory
 
 
@@ -69,7 +69,7 @@ class OffsideTest(TestCase):
         block += Block(line[1:])
         
         program = Trace(line[1:])
-        program.config.offside(block_policy=1)
+        program.config.lines(block_policy=1)
         return program
         
     def test_single_line(self):
@@ -140,7 +140,7 @@ a
   5
  6
 '''
-        program.config.offside(block_policy=explicit)
+        program.config.lines(block_policy=explicit)
         parser = program.get_parse_string()
         result = parser(text)
         assert result == [['1'], 
@@ -171,7 +171,7 @@ a
   5
  6
 '''
-        program.config.offside(block_policy=explicit)
+        program.config.lines(block_policy=explicit)
         parser = program.get_parse_string()
         result = parser(text)
         assert result == [['1'], 

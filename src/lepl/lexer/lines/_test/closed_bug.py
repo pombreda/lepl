@@ -49,7 +49,7 @@ class ClosedBugTest(TestCase):
         line = ((CLine(token) | block) > list) | empty | comment
         block += CLine((token)) & Block(line[:])
         program = (line[:] & Eos())
-        program.config.offside(block_policy=explicit)
+        program.config.lines(block_policy=explicit)
         self.run_test(program.get_parse(), False)
 
     def test_fixed(self):
@@ -61,7 +61,7 @@ class ClosedBugTest(TestCase):
         line = Line(text) | block | empty
         block += empty | (Block(line[1:]) > list)
         program = Trace(block[:] & Eos())
-        program.config.offside(block_policy=to_right, block_start=-1)
+        program.config.lines(block_policy=to_right, block_start=-1)
         self.run_test(program.get_parse(), True)
         
     def run_test(self, parser, ok):

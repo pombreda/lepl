@@ -28,7 +28,7 @@
 # MPL or the LGPL License.
 
 '''
-Tests for the lepl.lexer.offside.stream module.
+Tests for the lepl.lexer.lines.stream module.
 '''
 
 #from logging import basicConfig, DEBUG
@@ -36,7 +36,7 @@ from unittest import TestCase
 
 from lepl.lexer.matchers import Token
 from lepl.matchers.core import Regexp, Literal, Any
-from lepl.lexer.offside.matchers import Line, LineStart, LineEnd, NO_BLOCKS
+from lepl.lexer.lines.matchers import Line, LineStart, LineEnd, NO_BLOCKS
 
 class LineTest(TestCase):
     
@@ -46,7 +46,7 @@ class LineTest(TestCase):
         text = Token('[^\n\r]+')
         quoted = Regexp("'[^']'")
         line = Line(text(quoted))
-        line.config.offside()
+        line.config.lines()
         parser = line.get_parse_string()
         assert parser("'a'") == ["'a'"]
             
@@ -55,7 +55,7 @@ class LineTest(TestCase):
         text = Token('[^\n\r]+')
         quoted = Regexp("'[^']'")
         line = Line(text(quoted))
-        line.config.offside(block_start=0)
+        line.config.lines(block_start=0)
         parser = line.get_parse_string()
         assert parser("'a'") == ["'a'"]
         
@@ -63,7 +63,7 @@ class LineTest(TestCase):
         #basicConfig(level=DEBUG)
         text = Token('[^\n\r]+')
         line = Line(text(~Literal('aa') & Regexp('.*')))
-        line.config.offside(block_start=0)
+        line.config.lines(block_start=0)
         parser = line.get_parse_string()
         assert parser('aabc') == ['bc']
         # what happens with an empty match?
@@ -75,7 +75,7 @@ class LineTest(TestCase):
 #    def test_single_line(self):
 #        #basicConfig(level=DEBUG)
 #        line = DfaRegexp('(*SOL)[a-z]*(*EOL)')
-#        line.config.offside()
+#        line.config.lines()
 #        parser = line.get_parse_string()
 #        assert parser('abc') == ['abc']
         
@@ -86,15 +86,15 @@ class LineTest(TestCase):
         with a single monster token.
         '''
         line = LineStart() & Token(Any()) & LineEnd()
-        line.config.offside(tabsize=8, block_start=NO_BLOCKS, block_policy=0).trace_stack(True)
+        line.config.lines(tabsize=8, block_start=NO_BLOCKS, block_policy=0).trace_stack(True)
         result = line.parse('a')
         assert result == ['', 'a'], result
         result = line.parse('\ta')
         assert result == ['        ', 'a'], result
-        line.config.offside(tabsize=None, block_start=NO_BLOCKS, block_policy=0)
+        line.config.lines(tabsize=None, block_start=NO_BLOCKS, block_policy=0)
         result = line.parse('\ta')
         assert result == ['\t', 'a'], result
-        line.config.offside(block_policy=0, block_start=NO_BLOCKS)
+        line.config.lines(block_policy=0, block_start=NO_BLOCKS)
         result = line.parse('\ta')
         assert result == ['        ', 'a'], result
 

@@ -142,7 +142,7 @@ from lepl.lexer.support import LexerError, RuntimeLexerError
 #    ContinuedLineFactory, Extend
 #from lepl.lexer.blocks.matchers import Indent, Block, BLine, NO_BLOCKS, \
 #    constant_indent, explicit, to_right, ContinuedBLineFactory, BExtend
-from lepl.lexer.offside.matchers import Block, Line, LineStart, LineEnd, \
+from lepl.lexer.lines.matchers import Block, Line, LineStart, LineEnd, \
     constant_indent, explicit, to_right, ContinuedLineFactory, Extend, \
     NO_BLOCKS, DEFAULT_POLICY
 from lepl.regexp.core import RegexpError
@@ -354,7 +354,7 @@ __all__ = [
 #        'constant_indent',
 #        'to_right',
         
-        # lepl.lexer.offside.matchers
+        # lepl.lexer.lines.matchers
         'LineStart',
         'LineEnd',
         'Line',

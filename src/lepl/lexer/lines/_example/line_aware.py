@@ -44,7 +44,7 @@ class LineAwareTest(TestCase):
         contents = Token(Any()[:,...]) > list
         line = LineStart() & contents & LineEnd()
         lines = line[:]
-        lines.config.offside()
+        lines.config.lines()
         result = lines.parse('line one\nline two\nline three')
         assert result == [['line one\n'], ['line two\n'], ['line three']], result
 
@@ -52,7 +52,7 @@ class LineAwareTest(TestCase):
         contents = Token(Any()[:,...]) > list
         line = Line(contents)
         lines = line[:]
-        lines.config.offside()
+        lines.config.lines()
         result = lines.parse('line one\nline two\nline three')
         assert result == [['line one\n'], ['line two\n'], ['line three']], result
 
@@ -61,7 +61,7 @@ class LineAwareTest(TestCase):
         CLine = ContinuedLineFactory(r'\\')
         line = CLine(contents)
         lines = line[:]
-        lines.config.offside()
+        lines.config.lines()
         result = lines.parse('line one \\\nline two\nline three')
         assert result == [['line', 'one', 'line', 'two'], ['line', 'three']], result
         
@@ -71,7 +71,7 @@ class LineAwareTest(TestCase):
         parens = Token('\(') & contents & Token('\)') > list
         line = Line(contents & Optional(Extend(parens)))
         lines = line[:]
-        lines.config.offside()
+        lines.config.lines()
         result = lines.parse('line one (this\n extends to line two)\nline three')
         assert result == [['line', 'one'], ['(', ['this', 'extends', 'to', 'line', 'two'], ')'], ['line', 'three']], result
         
@@ -84,7 +84,7 @@ class LineAwareTest(TestCase):
         parens = Token('\(') & contents & Token('\)') > list
         line = Line(contents & Optional(Extend(parens)))
         lines = line[:]
-        lines.config.offside().record_deepest()
+        lines.config.lines().record_deepest()
         result = lines.parse('line one (this\n extends to line two)\nline three')
         assert result == [['line', 'one'], ['(', ['this', 'extends', 'to', 'line', 'two'], ')'], ['line', 'three']], result
         
