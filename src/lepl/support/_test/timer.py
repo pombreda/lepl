@@ -73,8 +73,8 @@ class TimerTest(TestCase):
 
         out = StringIO()
         print_timing(source, 
-            {'Real()': table.clone().config.lines().matcher,
-             'Real() no memoize': table.clone().config.lines().no_memoize().matcher},
+            {'Real()': table.clone().config.offside().matcher,
+             'Real() no memoize': table.clone().config.offside().no_memoize().matcher},
              count_compile=1, out=out)
         table = out.getvalue()
         print(table)

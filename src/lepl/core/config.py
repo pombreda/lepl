@@ -497,53 +497,95 @@ class ConfigBuilder(object):
         self.remove_all_rewriters(RightMemoize)
         return self.remove_all_rewriters(AutoMemoize)
         
-    def blocks(self, discard=None, tabsize=8, 
-               block_policy=None, block_start=None):
+    def offside(self, discard=None, tabsize=8, 
+                block_policy=None, block_start=None):
         '''
-        Configure "offside parsing".  This enables lexing and adds `Indent` 
-        and `LineEnd` tokens to the token stream.  These are used by the
-        `Block` and `BLine` matchers to handle indentation "automatically".
+        Configure "offside parsing".  This enables lexing and adds extra
+        tokens to mark the start and end of lines.  If block_policy is 
+        specified then the line start token will also include spaces
+        which can be used by the ``Block()`` and ``BLine()`` matchers
+        to do offside (whitespace-aware) parsing.
         
         `discard` is the regular expression to use to identify spaces
         between tokens (by default, spaces and tabs).
         
-        `tabsize` is the number of spaces used to replace a tab (no
-        replacement if None).
+        The remaining parameters are used only if at least one of 
+        `block_policy` and `block_start` is given.
         
         `block_policy` decides how indentation if calculated.
         See `explicit` etc in lepl.lexer.blocks.matchers.
         
-        `block_start` is the initial indentation (by default, zero).
-        If set to lepl.lexer.blocks.matchers.NO_BLOCKS then the lexing
-        will still be done, but indentation will not be checked (useful
-        for tests).
+        `block_start` is the initial indentation (by default, zero).  If set 
+        to lepl.lexer.offside.matchers.NO_BLOCKS indentation will not 
+        be checked (useful for tests).
+
+        `tabsize` is used only if `block_policy` is given.  It is the number 
+        of spaces used to replace a leading tab (no replacement if None).
         '''
-        from lepl.lexer.blocks.lexer import make_offside_lexer
-        from lepl.lexer.blocks.matchers import DEFAULT_POLICY, Block 
-        from lepl.lexer.blocks.monitor import block_monitor
-        if block_policy is None:
-            block_policy = DEFAULT_POLICY
-        if block_start is None:
-            block_start = 0
-        self.add_monitor(block_monitor(block_start))
-        self.set_arguments(Block, policy=block_policy)
-        self.lexer(self.__get_alphabet(), discard, make_offside_lexer(tabsize))
+        from lepl.lexer.offside.lexer import make_offside_lexer
+        from lepl.lexer.offside.matchers import Block, DEFAULT_POLICY, LineStart
+        from lepl.lexer.offside.monitor import block_monitor
+        blocks = block_policy is not None or block_start is not None
+        if blocks:
+            if block_start is None:
+                block_start = 0
+            if block_policy is None:
+                block_policy = DEFAULT_POLICY
+            self.add_monitor(block_monitor(block_start))
+            self.set_arguments(Block, policy=block_policy)
+        else:
+            self.set_arguments(LineStart, indent=False)
+        self.lexer(self.__get_alphabet(), discard, 
+                   make_offside_lexer(tabsize, blocks))
         return self
     
-    def lines(self, discard=None):
-        '''
-        Configure "line aware" parsing.  This enables lexing and adds
-        `LineStart` and `LineEnd` tokens to the token stream.  It can be
-        a useful alternative to matching newlines by hand.
-        
-        For "offside parsing" you want `blocks()`, not this.
-        
-        `discard` is the regular expression to use to identify spaces
-        between tokens (by default, spaces and tabs).
-        '''
-        from lepl.lexer.lines.lexer import LineLexer
-        self.lexer(self.__get_alphabet(), discard, LineLexer)
-        return self
+#    def blocks(self, discard=None, tabsize=8, 
+#               block_policy=None, block_start=None):
+#        '''
+#        Configure "offside parsing".  This enables lexing and adds `Indent` 
+#        and `LineEnd` tokens to the token stream.  These are used by the
+#        `Block` and `BLine` matchers to handle indentation "automatically".
+#        
+#        `discard` is the regular expression to use to identify spaces
+#        between tokens (by default, spaces and tabs).
+#        
+#        `tabsize` is the number of spaces used to replace a tab (no
+#        replacement if None).
+#        
+#        `block_policy` decides how indentation if calculated.
+#        See `explicit` etc in lepl.lexer.blocks.matchers.
+#        
+#        `block_start` is the initial indentation (by default, zero).
+#        If set to lepl.lexer.blocks.matchers.NO_BLOCKS then the lexing
+#        will still be done, but indentation will not be checked (useful
+#        for tests).
+#        '''
+#        from lepl.lexer.blocks.lexer import make_offside_lexer
+#        from lepl.lexer.blocks.matchers import DEFAULT_POLICY, Block 
+#        from lepl.lexer.blocks.monitor import block_monitor
+#        if block_policy is None:
+#            block_policy = DEFAULT_POLICY
+#        if block_start is None:
+#            block_start = 0
+#        self.add_monitor(block_monitor(block_start))
+#        self.set_arguments(Block, policy=block_policy)
+#        self.lexer(self.__get_alphabet(), discard, make_offside_lexer(tabsize))
+#        return self
+#    
+#    def lines(self, discard=None):
+#        '''
+#        Configure "line aware" parsing.  This enables lexing and adds
+#        `LineStart` and `LineEnd` tokens to the token stream.  It can be
+#        a useful alternative to matching newlines by hand.
+#        
+#        For "offside parsing" you want `blocks()`, not this.
+#        
+#        `discard` is the regular expression to use to identify spaces
+#        between tokens (by default, spaces and tabs).
+#        '''
+#        from lepl.lexer.lines.lexer import LineLexer
+#        self.lexer(self.__get_alphabet(), discard, LineLexer)
+#        return self
         
     # monitors
     

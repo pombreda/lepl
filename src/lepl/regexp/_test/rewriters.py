@@ -409,12 +409,12 @@ class TokenBugTest(TestCase):
     
     def test_token_word(self):
         tk = Token(Word())
-        tk.config.blocks(block_policy=explicit)
+        tk.config.offside(block_policy=explicit)
         tk.get_parse()
         
     def test_token_any(self):
         tk = Token(Any(ascii_letters)[1:,...])
-        tk.config.blocks(block_policy=explicit)
+        tk.config.offside(block_policy=explicit)
         tk.get_parse()
     
     def test_simple_word(self):

@@ -40,13 +40,14 @@ from lepl import *
 def config_parser():
     word        = Token(Any(ascii_letters)[1:, ...])
     key_value   = (word & ~Token(':') & word) > tuple
-    subsection  = BLine(word) & (Block(BLine(key_value)[1:] > dict)) > list
-    section     = BLine(word) & Block(subsection[1:]) > list
-    config_file = (section | ~BLine(Empty(), indent=False))[:] > list
+    subsection  = Line(word) & (Block(Line(key_value)[1:] > dict)) > list
+    section     = Line(word) & Block(subsection[1:]) > list
+    config_file = (section | ~Line(Empty(), indent=False))[:] > list
     
     #config_file = Trace(config_file)
-    config_file.config.blocks(block_policy=explicit)
+    config_file.config.offside(block_policy=explicit)
     return config_file.get_parse()
+
 
 class ConfigExample(Example):
     
