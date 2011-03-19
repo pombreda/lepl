@@ -56,7 +56,8 @@ receives:
 from abc import ABCMeta
 
 from lepl.core.parser import tagged
-from lepl.matchers.support import Transformable, coerce_, NoMemo
+from lepl.matchers.support import Transformable, coerce_, NoMemo,\
+    trampoline_matcher_factory
 from lepl.support.lib import fmt, str
 from lepl.support.node import Node
 
@@ -219,6 +220,23 @@ class Transform(Transformable, NoMemo):
         '''
         self.matcher += other
         return self
+    
+
+@trampoline_matcher_factory()
+def Assert(matcher):
+    '''
+    Raise `StopIteration` if the matcher returns an empty result.
+    
+    This can be useful when using a transform that raise a `StopIteration`
+    because that only "vetoes" the answer, which might leave an empty list. 
+    '''
+    def match(support, stream):
+        generator = matcher._match(stream)
+        while True:
+            results = yield generator
+            if results[0]:
+                yield results
+    return match
 
 
 def PostCondition(matcher, predicate):

@@ -134,14 +134,10 @@ from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
 from lepl.matchers.support import function_matcher, function_matcher_factory, \
     sequence_matcher, sequence_matcher_factory, \
     trampoline_matcher, trampoline_matcher_factory
-from lepl.matchers.transform import PostCondition
+from lepl.matchers.transform import PostCondition, Transform
 from lepl.matchers.variables import TraceVariables
 from lepl.lexer.matchers import Token
 from lepl.lexer.support import LexerError, RuntimeLexerError
-#from lepl.lexer.lines.matchers import LineStart, LineEnd, Line, \
-#    ContinuedLineFactory, Extend
-#from lepl.lexer.blocks.matchers import Indent, Block, BLine, NO_BLOCKS, \
-#    constant_indent, explicit, to_right, ContinuedBLineFactory, BExtend
 from lepl.lexer.lines.matchers import Block, Line, LineStart, LineEnd, \
     constant_indent, explicit, to_right, ContinuedLineFactory, Extend, \
     NO_BLOCKS, DEFAULT_POLICY
@@ -264,6 +260,7 @@ __all__ = [
         
         # lepl.matchers.transform
         'PostCondition',
+        'Transform',
         
         # lepl.matchers.variables
         'TraceVariables',
@@ -336,24 +333,6 @@ __all__ = [
 
         # lepl.stream.maxdepth
         'FullFirstMatchException',
-        
-#        # lepl.lexer.lines.matchers
-#        'LineStart',
-#        'LineEnd',
-#        'Line',
-#        'ContinuedLineFactory',
-#        'Extend',
-#        
-#        # lepl.lexer.blocks.matchers
-#        'Block',
-#        'Indent',
-#        'BLine',
-#        'NO_BLOCKS',
-#        'ContinuedBLineFactory',
-#        'BExtend',
-#        'explicit',
-#        'constant_indent',
-#        'to_right',
         
         # lepl.lexer.lines.matchers
         'LineStart',

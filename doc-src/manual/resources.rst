@@ -89,7 +89,7 @@ To configure this limit use the ``queue_len`` parameter::
    (['*', '***'], ''), 
    (['****'],     '')]
   
-  >>> matcher.config.mnager(queue_len=1)
+  >>> matcher.config.manager(queue_len=1)
   >>> list(matcher.parse_all('*' * 4))
   [(['****'],     '')]
 
@@ -102,26 +102,4 @@ available.  When the ``queue_len`` is set to a very low level generators are
 discarded whenever possible, making backtracking impossible and providing just
 a single match.
 
-
-.. index:: cut, prolog, queue_len, Commit()
-.. _committing:
-
-Committing
-----------
-
-An alternative to the above, automatic management of generators, is to
-explicitly remove non--active generators as part of the search process.  This
-is similar to Prolog's *cut*, I believe.
-
-The ``Commit()`` matcher does
-this: it discards all non--active generators.
-
-For ``Commit()`` to work the
-``GeneratorManager()`` must
-maintain references to generators.  This occurs when the ``queue_len`` value
-is 0, which stores references but does not cause :ref:`limiting`.
-
-See also ``First()``.
-
-If this is useful, I'd really appreciate a good, short example to put here.
 

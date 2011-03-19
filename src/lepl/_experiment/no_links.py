@@ -1,5 +1,3 @@
-from string import ascii_uppercase, ascii_lowercase, digits
-from tempfile import mkstemp
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -41,6 +39,8 @@ with
 
 from os import walk, rename, remove, fdopen
 from os.path import join, exists
+from string import ascii_uppercase, ascii_lowercase, digits
+from tempfile import mkstemp
 
 from lepl import *
 
@@ -54,7 +54,7 @@ def matcher():
     
     backquote = Literal(BQ) >> (lambda x: BQ2)
     spaces = Whitespace()[1:,...]
-    function = Any(ascii_uppercase + ascii_lowercase + digits + '.')[1:,...] + Optional('()')
+    function = Any(ascii_uppercase + ascii_lowercase + digits + '_.')[1:,...] + Optional('()')
     api_ref = '<api/redirect' + AnyBut('>')[:,...] + '>'
     link = backquote + function + Drop(spaces + api_ref) + backquote + Drop('_')
     

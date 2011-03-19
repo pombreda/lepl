@@ -145,12 +145,9 @@ How do I parse an entire file?
 *I understand how to parse a string, but how do I parse an entire file?*
 
 Instead of ``matcher.parse()`` or
-`matcher.parse_string()
-<api/redirect.html#lepl.core.config.ParserMixin.parse_string>`_ use
-`matcher.parse_file()
-<api/redirect.html#lepl.core.config.ParserMixin.parse_file>`_ or
-`matcher.parse_path()
-<api/redirect.html#lepl.core.config.ParserMixin.parse_path>`_.
+``matcher.parse_string()`` use
+``matcher.parse_file()`` or
+``matcher.parse_path()``.
 
 Matchers extend ``ParserMixin()``, which provides these
 methods.
@@ -326,7 +323,7 @@ delegate to the system ``re`` library)::
 However, those will not improve the speed of the lexer (which will convert
 them back to the the internal DFA implementation).
 
-Another alternative is to use `.config.no_compile_regexp() <api/redirect.html#lepl.core.config.ConfigBuilder.no_compile_regexp>`_ which will avoid
+Another alternative is to use ``.config.no_compile_regexp()`` which will avoid
 the compilation in some circumstances.  Again, this won't help when the lexer
 is used.
 

@@ -106,8 +106,7 @@ uses introspection to ensure that the final matcher takes the correct
 arguments, and is associated with any given documentation.
 
 Matchers of this kind may avoid trampolining when used with
-`.config.direct_eval()
-<api/redirect.html#lepl.core.config.ConfigBuilder.direct_eval>`_.
+``.config.direct_eval()``.
 
 .. index:: @sequence_matcher, @sequence_matcher_factory, sequence_matcher, sequence_matcher_factory
 
@@ -136,8 +135,7 @@ support backtracking)::
 successive possibilities).
 
 Again, matchers of this kind may avoid trampolining when used with
-`.config.direct_eval()
-<api/redirect.html#lepl.core.config.ConfigBuilder.direct_eval>`_.
+``.config.direct_eval()``.
 
 .. index:: @trampoline_matcher, @trampoline_matcher_factory, trampoline_matcher, trampoline_matcher_factory
 

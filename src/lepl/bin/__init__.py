@@ -33,3 +33,28 @@ Parse (and construct) binary data.
 Only Python 3.0+ is supported. 
 '''
 
+if bytes is str:
+    print('Binary parsing unsupported in this Python version')
+else:
+    from lepl.bin.bits import Int, unpack_length, BitString, swap_table
+    from lepl.bin.literal import parse
+    from lepl.bin.encode import dispatch_table, simple_serialiser
+    from lepl.bin.matchers import BEnd, Const
+
+    __all__ = [
+           
+           'Int',
+           'BitString',
+           'unpack_length',
+           'swap_table',
+           
+           'parse',
+           
+           'dispatch_table',
+           'simple_serialiser',
+           
+           'BEnd',
+           'Const'
+    ]
+
+    

@@ -573,6 +573,8 @@ def make_wrapper_factory(wrapper, factory, modifiers,
     add_child(Matcher, wrapper_factory)
     if not memo:
         add_child(NoMemo, wrapper_factory)
+    # module used in auto-linking for docs
+    wrapper_factory.__module__ = factory.__module__
     return wrapper_factory
 
 

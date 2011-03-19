@@ -102,8 +102,7 @@ You can see the result and the remaining stream (for strings this is an
 offset, here ``5``, and a "helper" object that contains the original input and
 additional useful information like the deepest match).
 
-We needed to call `.config.no_full_first_match()
-<api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_
+We needed to call ``.config.no_full_first_match()``
 otherwise we would have triggered an error due to incomplete matching (in case
 you are wondering, that error is from the parser that was automatically
 created when we called ``match()``; individual matchers don't check for a
@@ -186,7 +185,7 @@ Since the ``>`` produces a matcher, we can test this at the command line::
   >>> next( (Integer() > 'phone').match('3333253') )
   ([('phone', '3333253')], (7, <helper>))
 
-This makes `make_dict <api/redirect.html#lepl.support.node.make_dict>`_ easier
+This makes ``make_dict`` easier
 to understand.  Python's standard ``dict()`` will construct a dictionary from
 named pairs::
 
@@ -199,7 +198,7 @@ And the results from ``name / ',' / phone`` include named pairs::
   ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], (15, <helper>))
 
 Now we know that ``>`` passes results to a function, so it looks like
-`make_dict <api/redirect.html#lepl.make_dict>`_ is almost identical to the
+``make_dict`` is almost identical to the
 Python builtin ``dict``.  In fact, the only difference is that it strips out
 results that are not named pairs (in this case, the comma and space).
 

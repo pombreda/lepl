@@ -297,6 +297,8 @@ def document(destn, source, text=None):
     else:
         destn.__name__ = source.__name__
     destn.__doc__ = source.__doc__
+    # module used in auto-linking for docs
+    destn.__module__ = source.__module__
     return destn
 
 

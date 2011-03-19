@@ -35,8 +35,7 @@ if bytes is str:
     print('Binary parsing unsupported in this Python version')
 else:
     
-    from lepl.bin.bits import BitString
-    from lepl.bin.literal import parse
+    from lepl.bin import *
     from lepl._example.support import Example
     
     

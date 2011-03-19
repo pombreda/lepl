@@ -38,8 +38,7 @@ else:
     #from logging import basicConfig, DEBUG
     from unittest import TestCase
     
-    from lepl.bin.bits import Int, unpack_length, BitString, swap_table
-    
+    from lepl.bin import *
     
     # pylint: disable-msg=C0103, C0111, C0301, W0702, C0324
     # (dude this is just a test)

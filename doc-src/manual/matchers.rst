@@ -14,8 +14,7 @@ The final section gives some `implementation details`_.
 .. note::
    
    The examples here are fragments that illustrate some small detail.  They
-   often include `.config.no_full_first_match()
-   <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_ so
+   often include ``.config.no_full_first_match()`` so
    that a partial match can be displayed instead of an error message.
 
 .. index:: Literal()
@@ -124,8 +123,7 @@ several times before a result is found that "fits" with the rest of the
 grammar.  All matchers upport this behaviour, but it is easiest to see with
 ``Or()``.
 
-The `matcher.parse_all()
-<api/redirect.html#lepl.core.config.ParserMixin.parse_all>`_ method is similar
+The ``matcher.parse_all()`` method is similar
 to ``matcher.match()``
 introduced in the previous section, but returns only the results (it discards
 the remaining streams).  Using ``list()`` converts the iterator returned by

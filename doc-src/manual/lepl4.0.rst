@@ -7,8 +7,7 @@ Lepl 4 - Simpler, Faster, Easier
 I've made Lepl simpler to use.  For example, if a parser fails then an
 exception shows which part of the input could not be matched --- but if that's
 not what you want, it can be disabled by calling
-`.config.no_full_first_match()
-<api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_ on
+``.config.no_full_first_match()`` on
 the matcher (configuration got simpler too!).
 
 Another example: it's easier to add new matchers.  Before, you had to subclass
@@ -97,8 +96,7 @@ In Lepl 4 you get all that by default::
   The match failed at '67',
   Line 1, character 5 of str: '1234567'.
 
-Of course, you can disable this with `.config.no_full_first_match()
-<api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_.
+Of course, you can disable this with ``.config.no_full_first_match()``.
 
 For more details, see :ref:`configuration`.
 
@@ -106,16 +104,13 @@ For more details, see :ref:`configuration`.
 Multiple Matches, Parsers
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The new `matcher.parse_all()
-<api/redirect.html#lepl.core.config.ParserMixin.parse_all>`_ method (and
-related `matcher.parse_string_all()
-<api/redirect.html#lepl.core.config.ParserMixin.parse_string_all>`_, etc)
+The new ``matcher.parse_all()`` method (and
+related ``matcher.parse_string_all()``, etc)
 returns a generator of all possible matches.  This is similar to the old
 ``matcher.match()``
 method (which still exists), but without the remaining streams (which were
 usually not interesting).  If you need multiple matches you'll probably find
-that `matcher.parse_all()
-<api/redirect.html#lepl.core.config.ParserMixin.parse_all>`_ simplifies your
+that ``matcher.parse_all()`` simplifies your
 code.
 
 Also, parsers are now cached (this isn't strictly new - it was also present in
@@ -125,8 +120,7 @@ repeatedly without worrying about wasting time re-compiling the parser.
 Cached parsers and configuration interact like you would expect --- changing
 the configuration clears the cache so that a new parser is compiled with the
 new settings.  If you want to keep a copy of the parser with the old settings
-(useful in tests) then try `matcher.get_parser()
-<api/redirect.html#lepl.core.config.ParserMixin.get_parser>`_.
+(useful in tests) then try ``matcher.get_parser()``.
 
 
 Upgrading from Lepl 3
@@ -270,8 +264,7 @@ possible.
 
 The end result is that trampoling is removed when the grammar is unlikely to
 need it.  If you disagree you add it back through the configuration
-(`.config.no_direct_eval()
-<api/redirect.html#lepl.core.config.ConfigBuilder.no_direct_eval>`_).
+(``.config.no_direct_eval()``).
 
 
 Better Memoisation

@@ -251,8 +251,7 @@ a Python program uses the Lepl parser, with the lexer, to parse some text.
 
 #. Lexer rewriting
 
-   The `lexer_rewriter()
-   <api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_ uses the matcher
+   The ``lexer_rewriter()`` uses the matcher
    graph to construct a ``Lexer()`` instance:
 
    * ``Token()`` instances are

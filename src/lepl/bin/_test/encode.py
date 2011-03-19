@@ -37,9 +37,7 @@ else:
 
     from unittest import TestCase
     
-    from lepl.bin.bits import BitString
-    from lepl.bin.encode import dispatch_table, simple_serialiser
-    from lepl.bin.literal import parse
+    from lepl.bin import *
     
     
     # pylint: disable-msg=C0103, C0111, C0301

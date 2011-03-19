@@ -38,9 +38,7 @@ else:
     #from logging import basicConfig, DEBUG
     from unittest import TestCase
     
-    from lepl.bin.encode import dispatch_table, simple_serialiser
-    from lepl.bin.literal import parse
-    from lepl.bin.matchers import BEnd, Const
+    from lepl.bin import *
     from lepl.support.node import Node
     from lepl.matchers.variables import TraceVariables
     

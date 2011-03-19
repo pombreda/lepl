@@ -38,8 +38,7 @@ else:
     #from logging import basicConfig, DEBUG
     from unittest import TestCase
     
-    from lepl.bin.bits import BitString
-    from lepl.bin.literal import parse
+    from lepl.bin import *
     from lepl.support.node import Node
     
     

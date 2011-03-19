@@ -1,3 +1,4 @@
+from lepl.matchers.transform import Assert
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -36,32 +37,91 @@ with
  ``.config.lexer()``
 '''
 
-
 from os import walk, rename, remove, fdopen
 from os.path import join, exists
 from string import ascii_uppercase, ascii_lowercase, digits
 from tempfile import mkstemp
 
+import lepl.matchers.support, lepl.bin, lepl, lepl.contrib.json, lepl.apps.rfc3696
+from lepl.support.lib import fmt
 from lepl import *
 
 
 def print_unknown(name):
-    print('No link for: {0}', name)
+    print('No link for:', name)
     return name
 
+
+def lookup_function(name):
+    short = name
+    if short.endswith('()'):
+        short = short[:-2]
+    for module in [lepl, lepl.bin, lepl.matchers.support, lepl.contrib.json, lepl.apps.rfc3696]:
+        if hasattr(module, short):
+            found = getattr(module, short)
+            if hasattr(found, '__module__'):
+                link = fmt('`{0} <api/redirect.html#{1}.{2}>`_', name, found.__module__, short)
+                #print(name, link)
+                return link
+    raise StopIteration
+
+
+def lookup_config(name):
+    # fix 'config...' to be '.config...'
+    if not name.startswith('.'):
+        name = '.' + name
+    short = name
+    if short.endswith('()'):
+        short = short[:-2]
+    short = short[len('.config.'):]
+    if short in ['trace', 'blocks', 'offside']:
+        raise StopIteration
+    link = fmt('`{0} <api/redirect.html#lepl.core.config.ConfigBuilder.{1}>`_', name, short)
+    #print(name, link)
+    return link
+        
+
+def lookup_parse(name):
+    short = name
+    # allow prefixes like "matcher."
+    index = short.rfind('.')
+    if index > -1:
+        short = short[index+1:]
+    if short.endswith('()'):
+        short = short[:-2]
+    link = fmt('`{0} <api/redirect.html#lepl.core.config.ParserMixin.{1}>`_', name, short)
+    #print(name, link)
+    return link
+
+
+def lookup_module(name):
+    try:
+        __import__(name)
+        link = fmt('`{0} <api/redirect.html#{1}>`_', name, name)
+        print(name, link)
+        return link
+    except:
+        raise StopIteration()
+        
 
 def matcher():
     
     BQ = '`'
     BQ2 = BQ + BQ
+    unquote = Literal(BQ2) >> (lambda x: BQ)
     
     junk = AnyBut(BQ)[1:,...]
     
-    unknown = BQ2 + Any(ascii_uppercase + ascii_lowercase + digits + '.')[1:,...] + Optional('()') + BQ2 >> print_unknown
+    function = Assert(Drop(BQ2) + Any(ascii_uppercase + ascii_lowercase + digits + '_.')[1:,...] + Optional('()') + Drop(BQ2) >> lookup_function)
+    config = Assert(Drop(BQ2) + Optional('.') + 'config.' + Any(ascii_uppercase + ascii_lowercase + digits + '_.')[1:,...] + Optional('()') + Drop(BQ2) >> lookup_config)
+    parse = Assert(Drop(BQ2) + Optional(Any(ascii_lowercase)[1:,...] + '.') + Optional('get_') + Or('parse', 'match') + Optional('_' + Or('string', 'file', 'list', 'iterable', 'sequence')) + Optional('_all') + Optional('()') + Drop(BQ2) >> lookup_parse)
+    module = Assert(Drop(BQ2) + 'lepl' + Optional('.' + Any(ascii_lowercase)[1:,...][1:,'.',...]) + Drop(BQ2) >> lookup_module)
+    
+    unknown = BQ2 + Any(ascii_uppercase + ascii_lowercase + digits + '_.')[1:,...] + Optional('()') + BQ2 >> print_unknown
     
     other = Or(BQ + junk + BQ, BQ2 + junk + BQ2)
     
-    return Iterate(junk | unknown | other)
+    return Iterate(junk | config | parse | module | function | unknown | other)
 
 
 def rst_files():
@@ -71,23 +131,26 @@ def rst_files():
                 yield (join(root, file), root)
 
 
-def rewrite(matcher, path, dir=None, backup='.old'):
+def rewrite(matcher, path, dir=None, backup='.old', update=True):
     matcher.config.no_full_first_match().low_memory()
     parser = matcher.get_parse_file_all()
-    (fd, temp) = mkstemp(dir=dir)
-    output = fdopen(fd, 'w')
+    if update:
+        (fd, temp) = mkstemp(dir=dir)
+        output = fdopen(fd, 'w')
     with open(path) as input:
         for line in parser(input):
-            output.write(line[0])
-    output.close()
-    if backup:
-        prev = path+backup
-        if exists(prev):
-            remove(prev)
-        rename(path, prev)
-    else:
-        remove(path)
-    rename(temp, path)
+            if update:
+                output.write(line[0])
+    if update:
+        output.close()
+        if backup:
+            prev = path+backup
+            if exists(prev):
+                remove(prev)
+            rename(path, prev)
+        else:
+            remove(path)
+        rename(temp, path)
 
 
 def main():
@@ -97,7 +160,7 @@ def main():
             print('!', path)
         else:
             print(path)
-            rewrite(singleton, path, dir=dir)
+            rewrite(singleton, path, dir=dir, update=False)
         
         
 if __name__ == '__main__':
