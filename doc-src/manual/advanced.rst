@@ -178,8 +178,7 @@ Optimisation Actions
   modify the final results --- the effects of adjacent instances can be
   combined into a single operation.  In some cases they can also be merged
   into the operation of another matcher.  This is done by the
-  ``compose_transforms``
-  rewriter.
+  ``ComposeTransforms()`` rewriter.
 
   These operations should not change the "meaning" of the grammar or the
   results returned, but should improve performance by reducing the amount of
@@ -240,9 +239,9 @@ level" actions described above.
 ``.config.stream_factory()``
 
   Set the stream factory.  This changes the class used to generate the stream
-  for the parser, given some input (for example, ``matcher.parse_string()`` will call
-  the ``from_string()`` method on this factory, to convert the string into a
-  suitable stream).
+  for the parser, given some input (for example, ``matcher.parse_string()``
+  will call the ``from_string()`` method on this factory, to convert the
+  string into a suitable stream).
 
 ``.config.add_stream_kargs()`` ``.config.remove_all_stream_kargs()``
 

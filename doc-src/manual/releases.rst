@@ -115,6 +115,14 @@ Date        Version  Description
 2011-01-30  4.4      Rename ``Float()``, ``Real()``; add ``Limit()``.
 ==========  =======  ===========
 
+5.0
+---
+
+See :ref:`lepl4`.
+
+Stream handling and line--aware parsing were simplified.  Resource management
+was improved.
+
 
 .. release_4_4:
 
@@ -154,7 +162,7 @@ Includes a new module for validating email addresses and URLs according to
 4.0, 4.1
 --------
 
-See :ref:`Lepl 4 - Simpler, Faster, Easier <lepl4>`.
+See :ref:`lepl4`.
 
 4.1 addresses a significant error which could cause problems during
 optimisation of the parser (even with the default configuration).

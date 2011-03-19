@@ -134,7 +134,7 @@ from lepl.matchers.operators import Override, Separator, SmartSeparator1, \
 from lepl.matchers.support import function_matcher, function_matcher_factory, \
     sequence_matcher, sequence_matcher_factory, \
     trampoline_matcher, trampoline_matcher_factory
-from lepl.matchers.transform import PostCondition, Transform
+from lepl.matchers.transform import PostCondition, Transform, Assert
 from lepl.matchers.variables import TraceVariables
 from lepl.lexer.matchers import Token
 from lepl.lexer.support import LexerError, RuntimeLexerError
@@ -149,7 +149,8 @@ from lepl.stream.core import s_debug, s_deepest, s_delta, s_empty, s_eq, \
     s_len, s_line, s_max, s_next, s_stream
 from lepl.stream.maxdepth import FullFirstMatchException
 from lepl.stream.factory import DEFAULT_STREAM_FACTORY
-from lepl.support.list import List, sexpr_fold, sexpr_throw
+from lepl.support.list import List, sexpr_fold, sexpr_throw, sexpr_flatten, \
+    sexpr_to_tree
 from lepl.support.node import Node, make_dict, join_with, node_throw
 from lepl.support.timer import print_timing
 
@@ -261,6 +262,7 @@ __all__ = [
         # lepl.matchers.transform
         'PostCondition',
         'Transform',
+        'Assert',
         
         # lepl.matchers.variables
         'TraceVariables',
@@ -284,6 +286,8 @@ __all__ = [
         'List',
         'sexpr_fold',
         'sexpr_throw',
+        'sexpr_flatten',
+        'sexpr_to_tree',
         
         # lepl.lexer.matchers
         'Token',

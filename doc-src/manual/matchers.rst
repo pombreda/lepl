@@ -329,7 +329,7 @@ this names the arguments as follows:
     A list of the results returned.
 
 
-.. index:: First(), Empty(), Regexp(), Delayed(), Commit(), Trace(), AnyBut(), Optional(), Star(), ZeroOrMore(), Plus(), OneOrMore(), Map(), Add(), Substitute(), Name(), Eof(), Eos(), Identity(), Newline(), Space(), Whitespace(), Digit(), Letter(), Upper(), Lower(), Printable(), Punctuation(), UnsignedInteger(), SignedInteger(), Integer(), UnsignedFloat(), SignedFloat(), SignedEFloat(), Float(), Word(), String().
+.. index:: First(), Empty(), Regexp(), Delayed(), Trace(), AnyBut(), Optional(), Star(), ZeroOrMore(), Plus(), OneOrMore(), Map(), Add(), Substitute(), Name(), Eof(), Eos(), Identity(), Newline(), Space(), Whitespace(), Digit(), Letter(), Upper(), Lower(), Printable(), Punctuation(), UnsignedInteger(), SignedInteger(), Integer(), UnsignedFloat(), SignedFloat(), SignedEFloat(), Float(), Word(), String().
 
 More
 ----
@@ -339,7 +339,6 @@ Many more matchers are described in the `API Documentation
 ``Add()``,
 ``AnyBut()``,
 ``Columns()``,
-``Commit()``,
 ``Delayed()``,
 ``Digit()``,
 ``Empty()``,

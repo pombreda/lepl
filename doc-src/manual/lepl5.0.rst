@@ -136,18 +136,25 @@ Streams
 * Line-aware and offside parsing have changed.  These should make things
   simpler and more consistent:
 
-  * For configuration, use ``config.lines()`` or ``config.blocks()``.
+  * Both offside parsing (where the indentation is significant) and simpler
+    line--aware parsing (which has lines, but doesn't care about indentation)
+    use the same matchers.  So ``BLine()`` no longer exists, for example ---
+    use ``Line()`` instead.
+
+  * For configuration, use ``config.lines()``.
+
+  * If you have specified ``block_policy`` or ``block_indent`` in
+    ``config.lines()`` then the ``LineStart()`` token will include leading
+    white spaces and Lepl will automatically check that the indentation is
+    consistent with the ``Block()``.  To disable this, use ``indent=False`` as
+    a parameter in ``Line()`` or ``LineStart()``.  So, for example, to match a
+    blank line with any indentation, use ``Line(Empty(), indent=False)``.
 
   * Lines are now handled by adding extra tokens (before, the lexer added
     *extra characters* which were then matched by special tokens).  That means
     *that you can no longer match ``(*SOL*)`` and ``(*EOL*)`` in regular
     *expressions (more generally, you must use tokens with line aware and
     *offside parsing - before it was technically possible to not do so).
-
-  * In offside parsing (ie. when you are using ``Block()``), you should
-    *never* use ``Line()``.  Always use ``BLine()``.  If you want to ignore
-    indentation (eg. for empty lines) then use ``Bline(indent=False)``.  So
-    replace ``Line(Empty())`` with ``BLine(Empty(), indent=False)``.
 
 * The values available when generating an error message inside the parser have
   changed.  The value names are LINK, and typically are prefixed by ``in_``
@@ -157,7 +164,8 @@ Streams
   ``config.manage()`` to ``config.low_memory()``.  This also adds some
   additional settings that are needed to reduce memory use and restricts the
   size of "secondary" stacks used in search / repetition.  The result is that
-  Lepl really can handle inputs larger than available memory - ADD LINK.
+  Lepl really can handle inputs larger than available memory - see
+  :ref:`resources`.
 
 * If you define your own matchers you will need to use ``s_next()`` and
   friends instead of accessing the "string".  So replace::

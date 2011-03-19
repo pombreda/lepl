@@ -214,9 +214,8 @@ Unlike the deepest match output, I don't find this very useful in most cases.
 
 .. note::
 
-  ``Trace()`` expects the
-  parser to be configured with the ``TraceResults`` monitor.  This is done with
-  ``.config.trace()``.
+  ``Trace()`` expects the parser to be configured with the ``TraceStack()``
+  monitor.  This is done with ``.config.trace_stack()``.
 
 
 .. index:: common errors

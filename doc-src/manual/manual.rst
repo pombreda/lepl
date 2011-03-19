@@ -21,6 +21,7 @@ parser in considerable detail.  New users may want to start there.
    advanced
    style
    implementation
+   resources
    binary
    examples
    closing

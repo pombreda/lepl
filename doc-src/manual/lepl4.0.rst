@@ -120,7 +120,7 @@ repeatedly without worrying about wasting time re-compiling the parser.
 Cached parsers and configuration interact like you would expect --- changing
 the configuration clears the cache so that a new parser is compiled with the
 new settings.  If you want to keep a copy of the parser with the old settings
-(useful in tests) then try ``matcher.get_parser()``.
+(useful in tests) then try ``matcher.get_parse()``.
 
 
 Upgrading from Lepl 3

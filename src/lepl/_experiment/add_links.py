@@ -1,4 +1,3 @@
-from lepl.matchers.transform import Assert
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -42,7 +41,9 @@ from os.path import join, exists
 from string import ascii_uppercase, ascii_lowercase, digits
 from tempfile import mkstemp
 
-import lepl.matchers.support, lepl.bin, lepl, lepl.contrib.json, lepl.apps.rfc3696
+import lepl.matchers.support, lepl.bin, lepl, lepl.contrib.json, \
+    lepl.apps.rfc3696, lepl.lexer.lexer, lepl.support.graph, \
+    lepl.core.rewriters
 from lepl.support.lib import fmt
 from lepl import *
 
@@ -56,7 +57,14 @@ def lookup_function(name):
     short = name
     if short.endswith('()'):
         short = short[:-2]
-    for module in [lepl, lepl.bin, lepl.matchers.support, lepl.contrib.json, lepl.apps.rfc3696]:
+    # handle constants directly
+    if short in ['BREADTH_FIRST', 'DEPTH_FIRST', 'GREEDY', 'NON_GREEDY']:
+        link = fmt('`{0} <api/redirect.html#lepl.matchers.operators.{1}>`_', name, short)
+        #print(name, link)
+        return link
+    for module in [lepl, lepl.bin, lepl.matchers.support, lepl.contrib.json, 
+                   lepl.apps.rfc3696, lepl.lexer.lexer, lepl.support.graph,
+                   lepl.core.rewriters]:
         if hasattr(module, short):
             found = getattr(module, short)
             if hasattr(found, '__module__'):
@@ -127,7 +135,7 @@ def matcher():
 def rst_files():
     for root, dirs, files in walk('/home/andrew/projects/personal/lepl/lepl-hg/doc-src'):
         for file in files:
-            if file.endswith('.rst'):
+            if file.endswith('.rst') and '#' not in file:
                 yield (join(root, file), root)
 
 
@@ -160,7 +168,7 @@ def main():
             print('!', path)
         else:
             print(path)
-            rewrite(singleton, path, dir=dir, update=False)
+            rewrite(singleton, path, dir=dir)
         
         
 if __name__ == '__main__':

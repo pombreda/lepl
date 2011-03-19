@@ -146,8 +146,10 @@ How do I parse an entire file?
 
 Instead of ``matcher.parse()`` or
 ``matcher.parse_string()`` use
-``matcher.parse_file()`` or
-``matcher.parse_path()``.
+``matcher.parse_file()``.  For example:
+
+  >>> with open('myfile') as input:
+  ...     return matcher.parse_file(input)
 
 Matchers extend ``ParserMixin()``, which provides these
 methods.

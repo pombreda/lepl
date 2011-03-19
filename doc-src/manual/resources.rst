@@ -5,101 +5,103 @@
 Resource Management
 ===================
 
-.. warning::
-
-   This is no longer included in the manual (is linked to only from the
-   features page).  It was dropped because it is not used, may be unreliable,
-   and is not well supported.  However, tests still exist and continue to be
-   maintained, and further support and development may be possible if there is
-   a clear need.
-
 .. index:: GeneratorWrapper, backtracking, generators
 
-Generator Management
---------------------
-
-.. note::
-
-  To use the techniques described in this section the ``GeneratorManager()`` monitor must be added to
-  the :ref:`configuration` using ``.config.manage()``.
+The Input Problem
+-----------------
 
 :ref:`backtracking` within Lepl is implemented using generators.  These are
 semi--autonomous *loop--like* blocks of code that can be paused and restarted.
-Each matcher (in simple terms) has, at its core, a generator that provides
-successive matches.  Backtracking means saving these generators for future use
---- if the current match fails then a new start can be made using the next
-value from a stored generator.
+Each matcher has, at its core, one of these generators.  Backtracking is
+achieved by calling the generator to continue searching the input for
+alternative matches.
 
-Because generators may be long--lived they can be a resource sink.  For
-example, they maintain references to "old" parts of the input that might
-otherwise be reclaimed by garbage collection.
+This can be a problem, particularly when parsing input from files.  The
+``parse_file()`` method calls ``parse_iterable()`` which iterates over the
+lines in the file.  The streams created by ``parse_iterable()`` are lazy
+linked lists that only reference later parts of the input.  That means that
+Python can reclaim (garbage--collect) the memory used by earlier input while
+the parser is still matching later input.  However, this cannot happen (memory
+cannot be freed) if a generator keeps a reference to earlier input (which it
+needs in case it is called to backtrack and provide a new match).
 
-It is possible to configure the system with a ``GeneratorManager()`` that maintains a (weak)
-reference to the generators [#]_ used in a parse.  A generator is registered
-when it is first used.
+So the generators used in Lepl to provide backtracking frustrate Python's
+garbage collection and lead to parsers consuming much more memory than would
+otherwise be necessary.
 
-Registered generators may be active or inactive.  An active generator is one
-which is participating in the current match.  This means that the program's
-thread of control is "inside" the generator.  An inactive generator is one
-that is not currently in use.  Inactive generators may have been discarded
-(for example, if they have returned all possible matches), or they may be
-stored in some way for later use (for example, to implement backtracking).
+The Output Problem
+------------------
 
-Generators also have a *last--used* date.
+As a parser consumes input it also constructs the output.  In Lepl the output
+is a list of data held in memory.  This output list is built by the parser
+until all the input has been consumed, and then returned as a result.
 
-Given all this, it is possible to modify the generators and so change the
-behaviour of the parser.  In particular, it is possible to close non--active
-generators, either implicitly or explicitly.
+A large input often implies a large output.  So even if we solve the "input
+problem" above, a parser will still use a lot of memory to store the output.
 
-.. [#] The discussion here omits some details from the implementation.  The
-       ``GeneratorManager()``
-       actually stores ``GeneratorWrapper()`` instances, which
-       are added to generators via the ``tagged`` decorator.
+The Input Solution
+------------------
 
+To solve the "input problem" we need to discard generators, but we need
+generators while parsing because the parser needs to backtrack when it fails
+to match something.  The solution to this apparent contradiction is to discard
+only the generators that we will not need.
 
-.. index:: resources, queue_len
-.. _limiting:
+In general we cannot find an exact solution (I believe; finding which
+generators we do not need is probably related to the halting problem), but we
+can implement a simple heuristic that works well in practice: we discard
+generators that have not been used "for a long time".
 
-Resource Limiting
------------------
+To do this, Lepl maintains a list of generators, sorted by last access time.
+When the list exceeds some size the least-used generator is deleted.  This
+reduces memory use while allowing a reasonable amount of backtracking.
 
-The ``GeneratorManager()``
-can be configured to store only a limited number of generators.  When this
-number is exceeded, by the addition of a new generator, the oldest (ie. least
-recently used) non--active generator is closed.
+The list of generators is maintained by a ``GeneratorManager()``, but you do
+not need to use this class directly.  Instead, call ``.config.low_memory()``.
+That configuration method takes a parameter ``queue_len`` which controls the
+size of the list of "valid" generators.
 
-.. note::
+The Output Solution
+-------------------
 
-  A closed generator is not available for backtracking, so prematurely closing
-  generators may mean that an otherwise valid grammar fails to match
-  successfully.
+We could reduce the amount of memory needed to hold the output if there were
+some way of returning the output incrementally.  In normal use this is not
+possible with Lepl, but there is a "neat hack" that works quite well.
 
-If all the current generators are active then no generator is discarded and
-the upper limit on the number of generators increases to accommodate this.
-Currently no attempt is made to later reduce the number back to the original
-level.
+Remember that a Lepl parser can produce a series of matches.  These are
+alternative ways of parsing the input, given the parser.  But in most cases we
+are only interested in the first match --- this is particularly true when
+using ``.config.low_memory()`` as described above, because the alternatives
+will be unavailable.
 
-To configure this limit use the ``queue_len`` parameter::
+The hack is to return fragments of the output as alternative matches.  This
+means:
 
-  >>> matcher = (Literal('*')[:,...][2] & Eos())
-  >>> list(matcher.parse_all('*' * 4))
-  [(['****'],     ''), 
-   (['***', '*'], ''), 
-   (['**', '**'], ''), 
-   (['*', '***'], ''), 
-   (['****'],     '')]
-  
-  >>> matcher.config.manager(queue_len=1)
-  >>> list(matcher.parse_all('*' * 4))
-  [(['****'],     '')]
+ * Adding a matcher at the "top level" of the parser that can return each
+   fragment in turn.
 
-It may not be clear what the rather compact expressions are doing above.  In
-both cases two matchers, each of which can match zero or more "*" characters,
-are followed by the end of string test.  They are applied to a string
-containing "\****".  With full backtracking all the different solutions
-(different ways of splitting the "*" characters between the two matchers) are
-available.  When the ``queue_len`` is set to a very low level generators are
-discarded whenever possible, making backtracking impossible and providing just
-a single match.
+ * Calling ``parse_all()`` and then treating the generator as a sequence of
+   fragments, rather than a sequence of complete matches.
 
+An example will make this clear.  Here is a matcher that simply matches every
+line::
 
+  >>> all_lines = Line(Token(AnyBut('\n')[:,...]))[:]
+
+and here is the equivalent matcher than returns each line as a separate
+fragment:
+
+  >>> each_line = Iterate(Line(Token(AnyBut('\n')[:,...])))
+
+We can use ``each_line`` as follows::
+
+  >>> input = '''line one
+  ... line two
+  ... line three'''
+  >>> each_line.config.no_full_first_match().lines()
+  >>> parser = each_line.get_parse_all()
+  >>> for line in parser(input):
+  >>>     print(line)
+  ['line one\n']
+  ['line two\n']
+  ['line three']
