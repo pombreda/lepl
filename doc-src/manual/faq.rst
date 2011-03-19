@@ -21,7 +21,7 @@ Why do I get "Cannot parse regexp..."?
 
 *Why do I get "Cannot parse regexp '(' using ..." for Token('(')?*
 
-String arguments to ``Token()``
+String arguments to `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_
 are treated as regular expressions.  Because ``(`` has a special meaning in a
 regular expression you must escape it, like this: ``Token('\\(')``, or like
 this: ``Token(r'\(')``
@@ -42,13 +42,13 @@ Why isn't my parser matching the full expression?
 *why does expression.parse('hello(world)') match just 'hello'*?
 
 In general Lepl is greedy (it tries to matches the longest possible string), 
-but for ``Or()`` it will try alternatives left-to-right.  So in this case you 
+but for `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ it will try alternatives left-to-right.  So in this case you 
 should rewrite the parser as::
 
     expression = (word & lpar & word & rpar) | word
     
 Alternatively, you can force the parser to match the entire input by ending
-with ``Eos()``::
+with `Eos() <api/redirect.html#lepl.matchers.core.Eos>`_::
 
     expression = word | (word & lpar & word & rpar)
     complete = expression & Eos()   
@@ -75,14 +75,14 @@ OK, so this behaviour does seem odd, I agree.  But it's a logical consequence
 of some other design decisions, all of which seem individually reasonable.  So
 I'll explain those and, hopefully, that will shed some light on this.
 
-#. ``Or()`` is not greedy
+#. `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ is not greedy
 
    Repetition in Lepl is greedy by default, but Or() isn't.  If it can match
    the first option, it will do so.  But it will try other possibilities if
    that fails, or if all possible parses are requested.
 
    This is because there is no way to predict which option will return "most".
-   So if ``Or()`` were greedy it
+   So if `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ were greedy it
    would need to evaluate every possible option, measure them, and return the
    "largest".  This could require a lot of memory and time.  Instead, it
    returns the first match it finds, but then supports backtracking.
@@ -95,7 +95,7 @@ I'll explain those and, hopefully, that will shed some light on this.
 
 #. Lepl doesn't force you to match the entire input
 
-   The "fundamental" parsing operation in Lepl is ``matcher.match()``.  This returns a
+   The "fundamental" parsing operation in Lepl is `matcher.match() <api/redirect.html#lepl.core.config.ParserMixin.match>`_.  This returns a
    list of pairs.  Each pair combines a result list with `the remaining
    input`.  There's nothing in that that says you need to match the entire
    input, because that's not the most general behaviour.
@@ -112,7 +112,7 @@ I'll explain those and, hopefully, that will shed some light on this.
    Here you can see, in detail, what Lepl is doing.  The ``(n, <helper>)``
    values are the remaining input, from index 1 and 2 respectively.
 
-   If you *want* to match the whole input you can add ``Eos()`` to the matcher::
+   If you *want* to match the whole input you can add `Eos() <api/redirect.html#lepl.matchers.core.Eos>`_ to the matcher::
 
     >>> matcher = (Letter() | "ab") & Eos()
     >>> list(matcher.match("ab"))
@@ -122,14 +122,14 @@ I'll explain those and, hopefully, that will shed some light on this.
    remaining stream (see above) for the first match.  If it is not empty, then
    the error is raised.
 
-   Why didn't I make this also add ``Eos()``?  I could have done so, and
+   Why didn't I make this also add `Eos() <api/redirect.html#lepl.matchers.core.Eos>`_?  I could have done so, and
    then I wouldn't have had to write this explanation, but it would have meant
    adding more "magic" to the configuration system.  I did start to do this,
    but then I realised that *disabling the check could change the parse
    results*.  And I think that's a worse problem than the current (imperfect)
    compromise.
 
-In summary then, this is a consequence of the way ``Or()`` works (for efficiency), and
+In summary then, this is a consequence of the way `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ works (for efficiency), and
 the way that Lepl does backtracking (for generality) and a desire to keep the
 "full first match" code separate from "what the parser matches".  I know it's
 a little confusing at first, but I don't see a better solution.  Sorry!
@@ -144,14 +144,14 @@ How do I parse an entire file?
 
 *I understand how to parse a string, but how do I parse an entire file?*
 
-Instead of ``matcher.parse()`` or
-``matcher.parse_string()`` use
-``matcher.parse_file()``.  For example:
+Instead of `matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ or
+`matcher.parse_string() <api/redirect.html#lepl.core.config.ParserMixin.parse_string>`_ use
+`matcher.parse_file() <api/redirect.html#lepl.core.config.ParserMixin.parse_file>`_.  For example:
 
   >>> with open('myfile') as input:
   ...     return matcher.parse_file(input)
 
-Matchers extend ``ParserMixin()``, which provides these
+Matchers extend `ParserMixin() <api/redirect.html#lepl.core.config.ParserMixin>`_, which provides these
 methods.
 
 
@@ -173,7 +173,7 @@ When I change from > to >> my function isn't called
 This is because of operator precedence.  ``>>`` binds more tightly than ``>``,
 so ``>>`` is applied only to the result from `Drop(']')
 <api/redirect.html#lepl.matchers.derived.Drop>`_, which is an empty list
-(because ``Drop()`` discards the
+(because `Drop() <api/redirect.html#lepl.matchers.derived.Drop>`_ discards the
 results).  Since the list is empty, the function ``invert`` is not called.
 
 To fix this place the entire expression in parentheses::
@@ -187,7 +187,7 @@ How do I choose between > and >> ?
 ----------------------------------
 
 To understand > and >> it's important that you first see that Lepl is designed
-to work with lists of results.  For example, ``Any()``, the most basic
+to work with lists of results.  For example, `Any() <api/redirect.html#lepl.matchers.core.Any>`_, the most basic
 matcher, places the matched character in a list::
 
   >>> Any().parse('a')
@@ -198,7 +198,7 @@ Similarly, repetition returns a list of results::
   >>> Any()[:].parse('ab')
   ['a', 'b']
 
-as does ``And()``::
+as does `And() <api/redirect.html#lepl.matchers.combine.And>`_::
 
   >>> (Any() & Any()).parse('ab')
   ['a', 'b']
@@ -279,7 +279,7 @@ So ``>`` is useful when:
 
 * You want to build data structures around the results.
 
-Usually, if you are calling a *constructor* (``Node()``, ``tuple()`` etc.) you want to
+Usually, if you are calling a *constructor* (`Node() <api/redirect.html#lepl.support.node.Node>`_, ``tuple()`` etc.) you want to
 use ``>``.
 
 .. _faq_logging:
@@ -310,7 +310,7 @@ Why does my matcher take so long to compile?
 
 *Why is the matcher taking several seconds just to compile?*
 
-You are probably using ``Float()`` or ``Real()`` which are being compiled
+You are probably using `Float() <api/redirect.html#lepl.support.warn.Float>`_ or `Real() <api/redirect.html#lepl.matchers.derived.Real>`_ which are being compiled
 internally to regular expressions.  The current regexp implementation is very
 ineffecient when compiling such values.
 
@@ -325,7 +325,7 @@ delegate to the system ``re`` library)::
 However, those will not improve the speed of the lexer (which will convert
 them back to the the internal DFA implementation).
 
-Another alternative is to use ``.config.no_compile_regexp()`` which will avoid
+Another alternative is to use `.config.no_compile_regexp() <api/redirect.html#lepl.core.config.ConfigBuilder.no_compile_regexp>`_ which will avoid
 the compilation in some circumstances.  Again, this won't help when the lexer
 is used.
 

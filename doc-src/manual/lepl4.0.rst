@@ -7,7 +7,7 @@ Lepl 4 - Simpler, Faster, Easier
 I've made Lepl simpler to use.  For example, if a parser fails then an
 exception shows which part of the input could not be matched --- but if that's
 not what you want, it can be disabled by calling
-``.config.no_full_first_match()`` on
+`.config.no_full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_ on
 the matcher (configuration got simpler too!).
 
 Another example: it's easier to add new matchers.  Before, you had to subclass
@@ -21,8 +21,8 @@ tracebacks are now clearer (you no longer get something that has been mangled
 by the trampolining).
 
 Generating ASTs is simpler too.  There is extra support for using nested
-lists, with the new ``List()``
-class, which means that the more complex ``Node()`` classes are often not needed (the
+lists, with the new `List() <api/redirect.html#lepl.support.list.List>`_
+class, which means that the more complex `Node() <api/redirect.html#lepl.support.node.Node>`_ classes are often not needed (the
 examples in the documentation have been updated to reflect this).
 
 Sometimes, when software is made simpler, it becomes slower.  The reverse is
@@ -63,7 +63,7 @@ everything is right at your fingertips::
 
 Each configuration option has two methods --- one to turn it on, and one to
 turn it off.  These changes are relative to the default :ref:`configuration
-<configuration>` unless you first call ``.config.clear()`` (which removes all
+<configuration>` unless you first call `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_ (which removes all
 options).
 
 So, for example::
@@ -96,7 +96,7 @@ In Lepl 4 you get all that by default::
   The match failed at '67',
   Line 1, character 5 of str: '1234567'.
 
-Of course, you can disable this with ``.config.no_full_first_match()``.
+Of course, you can disable this with `.config.no_full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_.
 
 For more details, see :ref:`configuration`.
 
@@ -104,23 +104,23 @@ For more details, see :ref:`configuration`.
 Multiple Matches, Parsers
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The new ``matcher.parse_all()`` method (and
-related ``matcher.parse_string_all()``, etc)
+The new `matcher.parse_all() <api/redirect.html#lepl.core.config.ParserMixin.parse_all>`_ method (and
+related `matcher.parse_string_all() <api/redirect.html#lepl.core.config.ParserMixin.parse_string_all>`_, etc)
 returns a generator of all possible matches.  This is similar to the old
-``matcher.match()``
+`matcher.match() <api/redirect.html#lepl.core.config.ParserMixin.match>`_
 method (which still exists), but without the remaining streams (which were
 usually not interesting).  If you need multiple matches you'll probably find
-that ``matcher.parse_all()`` simplifies your
+that `matcher.parse_all() <api/redirect.html#lepl.core.config.ParserMixin.parse_all>`_ simplifies your
 code.
 
 Also, parsers are now cached (this isn't strictly new - it was also present in
-later Lepl 3 versions).  This means that you can call ``matcher.parse()``
+later Lepl 3 versions).  This means that you can call `matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_
 repeatedly without worrying about wasting time re-compiling the parser.
 
 Cached parsers and configuration interact like you would expect --- changing
 the configuration clears the cache so that a new parser is compiled with the
 new settings.  If you want to keep a copy of the parser with the old settings
-(useful in tests) then try ``matcher.get_parse()``.
+(useful in tests) then try `matcher.get_parse() <api/redirect.html#lepl.core.config.ParserMixin.get_parse>`_.
 
 
 Upgrading from Lepl 3
@@ -194,7 +194,7 @@ cool new features easier.
 Easier Debugging
 ----------------
 
-The ``Trace()`` functionality in Lepl has never been easy to understand, for
+The `Trace() <api/redirect.html#lepl.matchers.monitor.Trace>`_ functionality in Lepl has never been easy to understand, for
 two reasons.  First, it tracks *every* matcher.  Second, it's unclear which
 matcher corresponds to which part of the grammar.
 
@@ -264,7 +264,7 @@ possible.
 
 The end result is that trampoling is removed when the grammar is unlikely to
 need it.  If you disagree you add it back through the configuration
-(``.config.no_direct_eval()``).
+(`.config.no_direct_eval() <api/redirect.html#lepl.core.config.ConfigBuilder.no_direct_eval>`_).
 
 
 Better Memoisation

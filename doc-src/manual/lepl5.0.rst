@@ -32,9 +32,10 @@ regular expression code to be used with general sequences.
 
 In practice, however, this approach wasn't so useful.  For example, there was
 no way to tell how far you are through the data.  So in most cases (ie. using
-``parse()``) Lepl constructed a wrapper that carried the string and the extra
-location information together, but which still looked sufficiently string-like
-for the matchers to work correctly.
+`parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_) Lepl
+constructed a wrapper that carried the string and the extra location
+information together, but which still looked sufficiently string-like for the
+matchers to work correctly.
 
 This solved the problem of knowing where you were, but made the code more
 complicated.  To avoid duplicating that complex code I used the same wrapper
@@ -48,8 +49,9 @@ input data" might complicate matchers a little, but made everything else too
 brittle.
 
 Hence Lepl 5, in which I dropped the pretence that the input is "just" a
-string.  Instead, matchers work with a "stream" using functions like
-``s_next()`` to get the next character, or ``s_line()`` to read a line.
+string.  Instead, matchers work with a "stream" using functions like `s_next()
+<api/redirect.html#lepl.stream.core.s_next>`_ to get the next character, or
+`s_line() <api/redirect.html#lepl.stream.core.s_line>`_ to read a line.
 
 You may be surprised to hear that those are functions, and not methods, so I
 will take a moment to sketch the implementation.  A stream is now implemented
@@ -97,41 +99,66 @@ happening.  It now appears to be working, but I am still not convinced that I
 understand everything, so I have changed the default configuration to more
 actively discourage left-recursion.  These changes are described below.
 
+Resource Management
+~~~~~~~~~~~~~~~~~~~
+
+While working on the above I also needed to check how the new streams
+interacted with Python's garbage collection.  It turned out that, despite the
+intention of the original design, Lepl had never been able to parse input
+larger than the available memory.  So I added additional tests for this and
+fixed things as necessary.
+
+I also added support for avoiding consuming too much memory with the output.
+See :ref:`resources` for more details.
+
 Changes
 -------
 
 Streams
 ~~~~~~~
 
-* Some ``parse()`` methods have changed.  ``parse_null()`` no longer exists
-  (see above; ``parse_sequence()`` might be the best replacement) and instead
-  of ``parse_items()`` you will probably want either ``parse_list()`` (for
-  lists) or ``parse_iterable()`` (for iterables).  This is because the new
-  helpers (see above) divide the input in slightly different ways to before.
+* Some `parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_
+  methods have changed:
+
+  * ``parse_null()`` no longer exists.  `parse_sequence()
+    <api/redirect.html#lepl.core.config.ParserMixin.parse_sequence>`_ might be
+    the best replacement (see above).
+
+  * ``parse_items()`` no longer exists.  You will probably want either
+    `parse_list()
+    <api/redirect.html#lepl.core.config.ParserMixin.parse_list>`_ (for lists)
+    or `parse_iterable()
+    <api/redirect.html#lepl.core.config.ParserMixin.parse_iterable>`_ (for
+    iterables).
 
 * The idea of a *line* is more clearly defined.  This has two effects:
 
-  * You may need to care more about which ``parse()`` method to use.  A list
-    or sequence (the only difference between those is that the formatting for
-    displaying lists is a little prettier) treats all the data as one line,
-    but a string uses the newline (``'\n'``) character to define lines.  And
-    an iterable assumes that each value is a new line (which matches the way
-    iterating over files works).  In most cases the generic ``parse()`` will
-    do the right thing for you by dispatching on type.
+  * You may need to care more about which `parse()
+    <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ method to use.  A
+    list or sequence (the only difference between those is that the formatting
+    for displaying lists is a little prettier) treats all the data as one
+    line, but a string uses the newline (``'\n'``) character to define lines.
+    And an iterable assumes that each value is a new line (which matches the
+    way iterating over files works).  In most cases the generic `parse()
+    <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ will do the right
+    thing for you by dispatching on type.
 
   * Regular expressions don't match across lines.  There is no way to pass a
     general "stream" to regular expressions, so I pass a "line" instead.  If
     you really want to match multiple lines in a string then use
-    ``parse_sequence()`` which, as I just explained, treats the entire input
-    as a single line.
+    `parse_sequence()
+    <api/redirect.html#lepl.core.config.ParserMixin.parse_sequence>`_ which,
+    as I just explained, treats the entire input as a single line.
 
 * ``parse_items()`` had an option to add an extra list around each value.
-  This is not present in ``parse_list()`` because the way that a character is
-  accessed has changed.  In Lepl 4 the first character was ``stream[0]``, but
-  in Lepl 5 it is ``stream[0:1]``.  This has no impact on strings, but for
-  lists it fixes a subtle bug (the problem was a confusion between "first
-  character" and "a sub-section of the input stream containing the first
-  character" - the latter approach makes lists and strings consistent).
+  This is not present in `parse_list()
+  <api/redirect.html#lepl.core.config.ParserMixin.parse_list>`_ because the
+  way that a character is accessed has changed.  In Lepl 4 the first character
+  was ``stream[0]``, but in Lepl 5 it is ``stream[0:1]``.  This has no impact
+  on strings, but for lists it fixes a subtle bug (the problem was a confusion
+  between "first character" and "a sub-section of the input stream containing
+  the first character" - the latter approach makes lists and strings
+  consistent).
 
 * Line-aware and offside parsing have changed.  These should make things
   simpler and more consistent:
@@ -139,46 +166,59 @@ Streams
   * Both offside parsing (where the indentation is significant) and simpler
     line--aware parsing (which has lines, but doesn't care about indentation)
     use the same matchers.  So ``BLine()`` no longer exists, for example ---
-    use ``Line()`` instead.
+    use `Line() <api/redirect.html#lepl.lexer.lines.matchers.Line>`_ instead.
 
-  * For configuration, use ``config.lines()``.
+  * For configuration, use `.config.lines()
+    <api/redirect.html#lepl.core.config.ConfigBuilder.lines>`_.
 
   * If you have specified ``block_policy`` or ``block_indent`` in
-    ``config.lines()`` then the ``LineStart()`` token will include leading
-    white spaces and Lepl will automatically check that the indentation is
-    consistent with the ``Block()``.  To disable this, use ``indent=False`` as
-    a parameter in ``Line()`` or ``LineStart()``.  So, for example, to match a
-    blank line with any indentation, use ``Line(Empty(), indent=False)``.
+    `.config.lines()
+    <api/redirect.html#lepl.core.config.ConfigBuilder.lines>`_ then the
+    `LineStart() <api/redirect.html#lepl.lexer.lines.matchers.LineStart>`_
+    token will include leading white spaces and Lepl will automatically check
+    that the indentation is consistent with the `Block()
+    <api/redirect.html#lepl.lexer.lines.matchers.Block>`_.  To disable this,
+    use ``indent=False`` as a parameter in `Line()
+    <api/redirect.html#lepl.lexer.lines.matchers.Line>`_ or `LineStart()
+    <api/redirect.html#lepl.lexer.lines.matchers.LineStart>`_.  So, for
+    example, to match a blank line with any indentation, use ``Line(Empty(),
+    indent=False)``.
 
   * Lines are now handled by adding extra tokens (before, the lexer added
-    *extra characters* which were then matched by special tokens).  That means
-    *that you can no longer match ``(*SOL*)`` and ``(*EOL*)`` in regular
-    *expressions (more generally, you must use tokens with line aware and
-    *offside parsing - before it was technically possible to not do so).
+    extra "characters" which were then matched by special tokens).  That means
+    that you can no longer match ``(\*SOL\*)`` and ``(\*EOL\*)`` in regular
+    expressions (more generally, you must use tokens with line aware and
+    offside parsing - before it was technically possible to not do so).
 
 * The values available when generating an error message inside the parser have
   changed.  The value names are LINK, and typically are prefixed by ``in_``
   and ``out_`` for the input and output streams.
 
 * The configuration for "managed generators" has changed from
-  ``config.manage()`` to ``config.low_memory()``.  This also adds some
-  additional settings that are needed to reduce memory use and restricts the
-  size of "secondary" stacks used in search / repetition.  The result is that
-  Lepl really can handle inputs larger than available memory - see
-  :ref:`resources`.
+  `.config.manage()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.manage>`_ to
+  `.config.low_memory()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.low_memory>`_.  This also
+  adds some additional settings that are needed to reduce memory use and
+  restricts the size of "secondary" stacks used in search / repetition.  The
+  result is that Lepl really can handle inputs larger than available memory -
+  see :ref:`resources`.
 
-* If you define your own matchers you will need to use ``s_next()`` and
-  friends instead of accessing the "string".  So replace::
-      char = stream[0]
-      next_stream = stream[1:]
-  with ``(char, next_stream) = s_next(stream)``.  The full set of functions is
-  documented at LINK and the source is full of examples.
+* If you define your own matchers you will need to use `s_next()
+  <api/redirect.html#lepl.stream.core.s_next>`_ and friends instead of
+  accessing the "string".  So replace:: char = stream[0] next_stream =
+  stream[1:] with ``(char, next_stream) = s_next(stream)``.  The full set of
+  functions is documented at LINK and the source is full of examples.
 
-* ``TraceResults()``,
-  configured by ``config.trace()``, is now ``TraceStack()``, configured by
-  ``config.trace_stack()``.  The output will not show the stream when
-  ``config.low_memory()`` has been called because retaining the streams for
-  debug display introduces a memory "leak".
+* `TraceResults() <api/redirect.html#lepl.core.trace.TraceResults>`_,
+  configured by ``config.trace()``, is now `TraceStack()
+  <api/redirect.html#lepl.core.trace.TraceStack>`_, configured by
+  `.config.trace_stack()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.trace_stack>`_.  The
+  output will not show the stream when `.config.low_memory()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.low_memory>`_ has been
+  called because retaining the streams for debug display introduces a memory
+  "leak".
 
 * Repetition joins values using a "repeat" operator.  By default this joins
   lists, as before, but you can redefine it to define a fold over results.  I
@@ -197,51 +237,68 @@ Memoisation
 
 * The default configuration now *includes* memoisation for right-recursive
   grammars.  For many problems this will make the parser slower.  It can be
-  removed with ``config.no_memoize()``, but is included by default because it
-  detects left-recursive grammars (which would otherwise loop indefinitely)
-  and raises an error with helpful text.
+  removed with `.config.no_memoize()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.no_memoize>`_, but is
+  included by default because it detects left-recursive grammars (which would
+  otherwise loop indefinitely) and raises an error with helpful text.
 
   * **To repeat, the first thing to try when optimising your code is**
-    ``config.no_memoize()``.
+    `.config.no_memoize()
+    <api/redirect.html#lepl.core.config.ConfigBuilder.no_memoize>`_.
 
 * To enable handling of (some) left-recursive grammars, the simplest option is
-  to use ``config.auto_memoize()`` which will add ``LMemo()`` caches where required.
+  to use `.config.auto_memoize()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.auto_memoize>`_ which will
+  add `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_ caches where
+  required.
 
 * For more detailed control, you can also use:
 
-  * ``config.left_memoize()`` - add ``LMemo()`` everywhere
+  * `.config.left_memoize()
+    <api/redirect.html#lepl.core.config.ConfigBuilder.left_memoize>`_ - add
+    `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_ everywhere
 
-  * ``config.auto_memoize(full=True)`` - add ``RMemo()`` in addition to ``LMemo()``.
+  * ``config.auto_memoize(full=True)`` - add `RMemo()
+    <api/redirect.html#lepl.matchers.memo.RMemo>`_ in addition to `LMemo()
+    <api/redirect.html#lepl.matchers.memo.LMemo>`_.
 
-  * ``config.optimize_or()`` - re-arrange ``Or()`` contents.  This has the
-    potential to make left-recursive parsers much faster (it will change the
-    order of multiple results - generally for the better).
+  * `.config.optimize_or()
+    <api/redirect.html#lepl.core.config.ConfigBuilder.optimize_or>`_ -
+    re-arrange `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ contents.
+    This has the potential to make left-recursive parsers much faster (it will
+    change the order of multiple results - generally for the better).
 
-* Both ``config.left_memoize()`` and ``config.auto_memoize()`` take a ``d``
-  parameter that can be used to specify a maximum recursion depth.  If this is
-  not given the length of the remaining input is used - generally this is much
-  too large, so ``d`` can significantly reduce time spent exploring incorrect
-  matches.  However, if too small, it has the potential to exclude a correct
-  match.
+* Both `.config.left_memoize()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.left_memoize>`_ and
+  `.config.auto_memoize()
+  <api/redirect.html#lepl.core.config.ConfigBuilder.auto_memoize>`_ take a
+  ``d`` parameter that can be used to specify a maximum recursion depth.  If
+  this is not given the length of the remaining input is used - generally this
+  is much too large, so ``d`` can significantly reduce time spent exploring
+  incorrect matches.  However, if too small, it has the potential to exclude a
+  correct match.
 
 The left-memoisation code does the following:
 
-* Wrappers (``LMemo()`` instances)
+* Wrappers (`LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_ instances)
   are added to the matcher DAG.  These are do two things:
 
   * Most simply cache values.  Cached values are stored by input and call
     depth.
 
-  * Wrappers around ``Delayed()`` instances, which
+  * Wrappers around `Delayed()
+    <api/redirect.html#lepl.matchers.core.Delayed>`_ instances, which
     represent "entry points" into loops, curtail the number of calls
     (according to either the length of the remaining input or the ``d``
     parameter described earlier).
 
-* In addition, ``Delayed()`` instances (and the ``LMemo()`` wrappers) are duplicated when
-  multiple references exist.  This is necessary so that the "curtailment" is
-  not duplicated at multiple points in the matcher graph (in general it doe
-  snot matter of the same node is used at various point in the parser, because
-  the parser is "pure", but memoisation adds state).
+* In addition, `Delayed() <api/redirect.html#lepl.matchers.core.Delayed>`_
+  instances (and the `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_
+  wrappers) are duplicated when multiple references exist.  This is necessary
+  so that the "curtailment" is not duplicated at multiple points in the
+  matcher graph (in general it doe snot matter of the same node is used at
+  various point in the parser, because the parser is "pure", but memoisation
+  adds state).
 
 This is my interpretation of the approach described in Frost and Hafiz 2006.
 However, the extra complexity implied by the generated / objects based

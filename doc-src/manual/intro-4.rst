@@ -142,7 +142,7 @@ different result::
   lepl.stream.maxdepth.FullFirstMatchException: The match failed in <string> at '+' (line 1, character 2).
 
 This isn't as bad as it looks.  Lepl does find the result we are expecting,
-it's just not the first result found, which is what ``parse()`` returns.  We
+it's just not the first result found, which is what `parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ returns.  We
 can see how many results are found::
 
   >>> group3b.config.no_full_first_match()
@@ -154,7 +154,7 @@ and it turns out the result we expect is the last one.
 You can understand what has happened by tracing out how the text is matched:
 
 * ``group3b`` is defined as ``group2 | add | sub``, so ``group2`` is tried
-  first (``Or()`` evaluates from
+  first (`Or() <api/redirect.html#lepl.matchers.combine.Or>`_ evaluates from
   left to right)
 
 * ``group2`` is defined as ``group1 | mul | div``, so ``group1`` is tried
@@ -164,7 +164,7 @@ You can understand what has happened by tracing out how the text is matched:
 
 * ``parens`` fails to match, because the input does not start with "("
 
-* so the next alternative in the ``Or()`` for ``group1`` is tried,
+* so the next alternative in the `Or() <api/redirect.html#lepl.matchers.combine.Or>`_ for ``group1`` is tried,
   which is ``number``
 
 * ``number`` succeeds and has nothing following it
@@ -176,7 +176,7 @@ You can understand what has happened by tracing out how the text is matched:
   input, so we get the error.
 
 An easy (but see comments on efficiency below) fix for avoiding short results
-is to explicitly say that the parser must match the entire output (``Eos()`` matches "end of string" or
+is to explicitly say that the parser must match the entire output (`Eos() <api/redirect.html#lepl.matchers.core.Eos>`_ matches "end of string" or
 "end of stream").  This works because the sequence described above fails (as
 some input remains), so the next alternative is tried (which in this case
 would be the ``mul`` in ``group2``, since ``group1`` has run out of
@@ -416,7 +416,7 @@ What have we learnt in this section?
 * For efficient parsing, we should be aware of (and avoid) ambiguity and
   left--recursion.
 
-* We can subclass ``List()`` to add
+* We can subclass `List() <api/redirect.html#lepl.support.list.List>`_ to add
   functionality to AST nodes.
 
 Thanks for reading!

@@ -28,8 +28,9 @@ recursive call to a matcher.  Unfortunately, the default Python stack is
 rather small and there is no optimisation of tail--recursive calls.  So the
 degree of recursion is limited.  This problem is exacerbated by a "clean",
 orthogonal design that constructs matchers in a hierarchical manner
-(eg. ``Word()`` calls ``Any()`` to handle character matching; memoisation uses
-nested matchers to manage caches).
+(eg. `Word() <api/redirect.html#lepl.matchers.derived.Word>`_ calls `Any()
+<api/redirect.html#lepl.matchers.core.Any>`_ to handle character matching;
+memoisation uses nested matchers to manage caches).
 
 Trampolining removes this limitation by moving evaluation to a separate
 function, which manages the evaluation sequence separately from the program
@@ -56,11 +57,12 @@ Python appear to involve accessing attributes and calling functions; the time
 spent in the logic of the trampoline loop is relatively unimportant).
 
 However, in an attempt to improve performance wherever possible, I have
-experimented with various approaches to reducing the number of "bounces"
-made.  These include calling function--based (those that do not need to
-evaluate other matcher) directly; flattening nested ``And()`` and ``Or()``
-matchers; compiling simple leaf matchers to regular expressions; combining
-nested transformations.
+experimented with various approaches to reducing the number of "bounces" made.
+These include calling function--based (those that do not need to evaluate
+other matcher) directly; flattening nested `And()
+<api/redirect.html#lepl.matchers.combine.And>`_ and `Or()
+<api/redirect.html#lepl.matchers.combine.Or>`_ matchers; compiling simple leaf
+matchers to regular expressions; combining nested transformations.
 
 These are all relatively easy to implement using introspection of the matcher
 DAG (see below).
@@ -83,11 +85,12 @@ single character::
 
 The `@function_matcher
 <api/redirect.html#lepl.matchers.support.function_matcher>`_ decorator does
-the necessary work to place the given logic within an ``OperatorMatcher()`` instance, so the
+the necessary work to place the given logic within an `OperatorMatcher()
+<api/redirect.html#lepl.matchers.support.OperatorMatcher>`_ instance, so the
 resulting matcher includes all the usual Lepl functionality (configuration,
 operators, etc).
 
-``s_next()`` is part of the stream API (see below) --- it returns the next
+`s_next() <api/redirect.html#lepl.stream.core.s_next>`_ is part of the stream API (see below) --- it returns the next
 character and the associated stream.  It automatically handles the
 end--of--stream case by raising ``StopIteration()``.
 
@@ -106,7 +109,8 @@ uses introspection to ensure that the final matcher takes the correct
 arguments, and is associated with any given documentation.
 
 Matchers of this kind may avoid trampolining when used with
-``.config.direct_eval()``.
+`.config.direct_eval()
+<api/redirect.html#lepl.core.config.ConfigBuilder.direct_eval>`_.
 
 .. index:: @sequence_matcher, @sequence_matcher_factory, sequence_matcher, sequence_matcher_factory
 
@@ -135,7 +139,8 @@ support backtracking)::
 successive possibilities).
 
 Again, matchers of this kind may avoid trampolining when used with
-``.config.direct_eval()``.
+`.config.direct_eval()
+<api/redirect.html#lepl.core.config.ConfigBuilder.direct_eval>`_.
 
 .. index:: @trampoline_matcher, @trampoline_matcher_factory, trampoline_matcher, trampoline_matcher_factory
 
@@ -144,7 +149,8 @@ Trampoline Matchers
 
 The most general matchers evaluate other matchers.  It is difficult to think
 of a simple example to add here, but the curious can check the implementation
-of ``And()`` and ``Or()`` (the API documentation includes
+of `And() <api/redirect.html#lepl.matchers.combine.And>`_ and `Or()
+<api/redirect.html#lepl.matchers.combine.Or>`_ (the API documentation includes
 source).
 
 These matchers are defined using `@trampoline_matcher
@@ -159,11 +165,9 @@ cannot avoid trampolining.
 Memoisation
 -----------
 
-The simple memoizer, ``RMemo()``, is
-equivalent to the approach described by `Norvig 1991
-<http://acl.ldc.upenn.edu/J/J91/J91-1004.pdf>`_ (I may be mistaken, because it
-seems odd that something so simple is so famous, but perhaps life was simpler
-back then).
+The simple memoizer, `RMemo() <api/redirect.html#lepl.matchers.memo.RMemo>`_,
+is equivalent to the approach described by `Norvig 1991
+<http://acl.ldc.upenn.edu/J/J91/J91-1004.pdf>`_.
 
 During the application of left--recursive grammars a matcher may be called with
 the same stream, but within different contexts (eg. consider ``a = Optional(a)
@@ -181,7 +185,8 @@ to consumer *something* each time round).  They therefore recommended
 extending the simple cache with a counter that blocks recursion past that
 depth.
 
-This approach is implemented in ``LMemo()`` which makes Lepl robust to
+This approach is implemented in `LMemo()
+<api/redirect.html#lepl.matchers.memo.LMemo>`_ which makes Lepl robust to
 left--recursive grammars.
 
 However, the implementation is non-trivial.  In particular, each occurrence of
@@ -212,7 +217,7 @@ for example.
 
 Tree traversal (without rewriting) is also useful; it is used to generate
 various textual representations of the matchers (and the pretty ASCII trees
-for ``Node()``--based ASTs).
+for `Node() <api/redirect.html#lepl.support.node.Node>`_--based ASTs).
 
 
 .. index:: streams, SimpleStream(), LocationStream(), StreamFactory()
@@ -228,4 +233,5 @@ helper wraps the original input.
 
 Helpers provide additional functionality, like recording the deepest match,
 formatting, and calculating hash keys.  Access to these functions is provided
-through the generic ``s_xxx`` functions defined in ``lepl.stream.core``.
+through the generic ``s_xxx`` functions defined in `lepl.stream.core
+<api/redirect.html#lepl.stream.core>`_.

@@ -72,7 +72,7 @@ Extended List Support
 
 Lepl includes additional classes to smplify working with nested lists.
 
-First, the ``List()`` class (which
+First, the `List() <api/redirect.html#lepl.support.list.List>`_ class (which
 subclasses Python's ``list``) and sub-classes can be used to identify nodes
 and display a tree::
 
@@ -195,7 +195,7 @@ construct trees::
            +- ''
            `- ')
 
-The ``Node()`` class functions like
+The `Node() <api/redirect.html#lepl.support.node.Node>`_ class functions like
 an array of the original results (including spaces)::
 
   >>> [child for child in ast]
@@ -218,8 +218,8 @@ returned as lists, since sub--node types and names need not be unique::
   >>> ast.Factor[1].Term[0].number[0]
   '2'
 
-As you can see, ``Node()`` combines
+As you can see, `Node() <api/redirect.html#lepl.support.node.Node>`_ combines
 aspects of ``list`` and ``dict``.  This makes it very powerful, but also
 complicates the API considerably.  For example, no single method describes the
 contents completely, so iteration over Nodes is via the constructor arguments
-exposed by ``ConstructorGraphNode()``.
+exposed by `ConstructorGraphNode() <api/redirect.html#lepl.support.graph.ConstructorGraphNode>`_.

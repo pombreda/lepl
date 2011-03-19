@@ -64,7 +64,7 @@ Configuration and Efficiency
 ----------------------------
 
 This example shows how different choices of :ref:`configuration` can change
-the compilation and parsing times.  Lepl 5 introduces ``print_timing()`` which
+the compilation and parsing times.  Lepl 5 introduces `print_timing() <api/redirect.html#lepl.support.timer.print_timing>`_ which
 makes this example much simpler than in previous versions::
 
   def matcher():
@@ -143,11 +143,11 @@ What can we learn from these results?
 #. Compilation isn't cheap.  The "re-compiled" times are, except for "clear",
    much larger than the "cached" times.  So if you are dynamically generating
    matchers and using each one just once, you might want to use
-   ``.config.clear()``.
+   `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_.
 
 #. But compilation isn't hugely expensive either.  If you're using a matcher
    more than about 20 times, it's worth using the default configuration
-   (rather than ``.config.clear()``) to get better peformance.
+   (rather than `.config.clear() <api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_) to get better peformance.
 
 #. Disabling memoisation made the cached parser faster, but you should only do
    this once (1) you are sure you don't have a left-recursive grammar (if you
@@ -172,7 +172,7 @@ Tabular Data
 ------------
 
 This is a simple example that shows how to parse data in a fixed, tabular
-format using the ``Columns()`` matcher::
+format using the `Columns() <api/redirect.html#lepl.matchers.complex.Columns>`_ matcher::
 
     def columns_example():
         # http://www.swivel.com/data_sets/spreadsheet/1002196

@@ -32,7 +32,7 @@ Explicit Spaces
 ---------------
 
 The simplest way to handle spaces is to add them to the parser.  Lepl includes
-the ``Space()`` matcher which
+the `Space() <api/redirect.html#lepl.matchers.derived.Space>`_ matcher which
 recognises a single space::
 
   >>> number = Real() >> float
@@ -57,7 +57,7 @@ would like to match any number of spaces.  There are various ways of doing
 this.  If you are used to using regular expressions you may realise that this
 is what the "*" symbol does.  And in Lepl we have something similar.
 
-The ``Star()`` matcher repeats its
+The `Star() <api/redirect.html#lepl.matchers.derived.Star>`_ matcher repeats its
 argument as many times as necessary (including none at all).  This is what we
 need for our spaces::
 
@@ -79,7 +79,7 @@ dropped from the results.
 Repetition
 ----------
 
-As well as ``Star()``, Lepl
+As well as `Star() <api/redirect.html#lepl.matchers.derived.Star>`_, Lepl
 supports a more general way of specifying repetitions.  This uses Python's
 array syntax, which looks a bit odd at first, but turns out to be a really
 neat, compact, powerful way of describing what we want.
@@ -101,9 +101,9 @@ and here's how we specify that 2 to 4 should be matched:
   >>> list(a[2:4].parse_all('aaaa'))
   [['a', 'a', 'a', 'a'], ['a', 'a', 'a'], ['a', 'a']]
 
-As we saw earlier ``parse_all()`` returns a generator (which we convert to a
+As we saw earlier `parse_all() <api/redirect.html#lepl.core.config.ParserMixin.parse_all>`_ returns a generator (which we convert to a
 list) that contains all the different possible combinations: 2, 3 and 4
-letters, while ``parse()`` returns just the first result (repetition with
+letters, while `parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_ returns just the first result (repetition with
 ``[]`` returns the largest number of matches first).
 
 If we give a range with a missing start value then the minimum number of
@@ -129,7 +129,7 @@ is ``'d'`` for "depth--first")::
   >>> list(a24.parse_all('aaaa'))
   [['a', 'a'], ['a', 'a', 'a'], ['a', 'a', 'a', 'a']]
 
-Putting all that together, ``Star()`` is the same as ``[:]`` (which
+Putting all that together, `Star() <api/redirect.html#lepl.matchers.derived.Star>`_ is the same as ``[:]`` (which
 starts at zero, takes as many as possible, and returns the longest match
 first).
 
@@ -145,7 +145,7 @@ So we can write our parser like this::
   >>> add.parse('12+     30')
   [42.0]
 
-That's perhaps not as clear as using ``Star()``, but personally I prefer this
+That's perhaps not as clear as using `Star() <api/redirect.html#lepl.matchers.derived.Star>`_, but personally I prefer this
 approach so I'll continue to use it below.
 
 .. index:: ...
@@ -195,24 +195,24 @@ added wherever there is a ``&``.  Luckily, we can do that in Lepl::
 
 Which works as before, but can save some typing in longer programs.
 
-``Separator()``
+`Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_
 redefines the ``&`` and ``[]`` operators to include spaces.  The matcher
 associated with any operator can be redefined in Lepl, but doing so is pretty
 advanced and outside the scope of this tutorial.
 
-Because ``Separator()``
+Because `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_
 changes everything "inside" the "with" it's usually best to define matchers
 that *don't* need spaces beforehand.
 
 .. warning::
 
-   ``Separator()`` only
+   `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ only
    modifies ``&`` and ``[]``, which can lead to (at least) two surprising
    results.
 
    First, there's nothing added before or after any pattern that's defined.
    For that, you still need to explicitly add spaces as described earlier.
-   ``Separator()`` only
+   `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ only
    adds spaces *between* items joined with ``&``.
 
    Second, if you specify *at least one* space (rather than *zero or more*)
@@ -221,9 +221,9 @@ that *don't* need spaces beforehand.
    that there *must* be a space before the end of the stream.
 
    You can avoid spaces in two ways.  Either define matchers that don't need
-   spaces *before* you use ``Separator()``, or use ``And()`` instead.
+   spaces *before* you use `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_, or use `And() <api/redirect.html#lepl.matchers.combine.And>`_ instead.
 
-Finally, because this is so common, ``DroppedSpace()``, is pre--defined::
+Finally, because this is so common, `DroppedSpace() <api/redirect.html#lepl.matchers.operators.DroppedSpace>`_, is pre--defined::
 
   >>> number = Real() >> float
   >>> with DroppedSpace():
@@ -267,7 +267,7 @@ expressions.
 Regexp()
 --------
 
-The ``Regexp()`` matcher calls
+The `Regexp() <api/redirect.html#lepl.matchers.core.Regexp>`_ matcher calls
 the Python regular expression library.  So if you are experienced at using
 that you may find it useful.
 
@@ -308,7 +308,7 @@ The last example above shows how groups can be used to define results.
 DfaRegexp()
 -----------
 
-The ``DfaRegexp()`` matcher
+The `DfaRegexp() <api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_ matcher
 calls Lepl's own regular expression library.  It understands simple regular
 expressions, but it does not support grouping, references, etc.
 
@@ -323,10 +323,10 @@ NfaRegexp()
 -----------
 
 This is implemented by Lepl's own regular expression library and, like
-``DfaRegexp()``, is limited
+`DfaRegexp() <api/redirect.html#lepl.regexp.matchers.DfaRegexp>`_, is limited
 in what it supports.
 
-``NfaRegexp()`` differs from
+`NfaRegexp() <api/redirect.html#lepl.regexp.matchers.NfaRegexp>`_ differs from
 "normal" regular expressions in that it can return multiple matches (usually a
 regular expression returns only the "longest match")::
 
@@ -367,7 +367,7 @@ symbols::
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
 
 I said that we defined tokens with regular expressions, but the definition of
-``value`` above seems to use the matcher ``Real()``.  This is because Lepl
+``value`` above seems to use the matcher `Real() <api/redirect.html#lepl.matchers.derived.Real>`_.  This is because Lepl
 can automatically convert some matchers into regular expressions, saving us
 the work (it really does convert them, piece by piece, so it is not limited to
 the built--in matchers, but it is limited by how the matcher is constructed --
@@ -395,7 +395,7 @@ The matcher, ``symbol('+')`` is the same as ``symbol(Literal('+'))`` and means
 that we require a symbol token *and* that the text in that token matches "+"
 (this is what I was referring to when I said that we match both the *type* of
 token and it's *contents*).  A token used like this can contain any Lepl
-matcher as a constraint (well, anything except ``Token()`` itself).
+matcher as a constraint (well, anything except `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ itself).
 
 .. index:: debugging
 
@@ -414,7 +414,7 @@ were expecting.  We expected that the tokens would be "12", "+", and "30".
 Instead, it seems that the tokens generated are "12" and "+30".
 
 So we can see that the lexer (the part of Lepl that generates the tokens) is
-identifying two ``Real()`` matches.  Matching "+"
+identifying two `Real() <api/redirect.html#lepl.matchers.derived.Real>`_ matches.  Matching "+"
 as a ``symbol`` is ignored because `the lexer chooses the token with the
 longest match` and "+30" is longer than "+".
 
@@ -452,9 +452,9 @@ the "-" case (negative numbers) below::
 
 The important changes here are:
 
-* ``value`` is changed to an ``UnsignedReal()``
+* ``value`` is changed to an `UnsignedReal() <api/redirect.html#lepl.matchers.derived.UnsignedReal>`_
 
-* number has an ``Optional()`` minus (we could also
+* number has an `Optional() <api/redirect.html#lepl.matchers.derived.Optional>`_ minus (we could also
   have written this ``symbol('-')[0:1]``)
 
 * the ``+`` joins the optional ``-`` and ``value`` together into a single
@@ -476,7 +476,7 @@ Lepl works is as follows:
 
 The spaces matched in step 2 are defined via a regular expression, which can
 be passed to the :ref:`configuration` (the ``discard`` parameter to
-``.config.lexer()``).
+`.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_).
 If no value value is given, "[\\r\\n\\t ]+" is used.
 
 Summary
@@ -488,7 +488,7 @@ What more have we learnt?
 
 * The ``[]`` syntax for repetition is compact and powerful.
 
-* ``Separator()`` can
+* `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ can
   automate the addition of spaces wherever we use ``&`` or ``[]``.
 
 * Regular expressions are supported, in various different ways.

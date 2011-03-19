@@ -61,7 +61,7 @@ We can shorten the last two lines to::
 
 There's a lot going on here, some of which I will explain in later sections,
 but the most important thing to notice is that ``matcher`` was constructed
-from two simpler matchers [#]_ --- ``Word()`` and ``Integer()`` [#]_.  It is those two
+from two simpler matchers [#]_ --- `Word() <api/redirect.html#lepl.matchers.derived.Word>`_ and `Integer() <api/redirect.html#lepl.matchers.derived.Integer>`_ [#]_.  It is those two
 matchers that identify the values 'andrew' (a word) and '3333253' (an
 integer).
 
@@ -90,8 +90,8 @@ Generators are a fairly new part of Python, rather like lists.  All you need
 to know to use them is that, to read the value, you use the function
 ``next()``.
 
-We can see how this works with the simple generators ``Word()`` by calling the
-``matcher.match()`` method::
+We can see how this works with the simple generators `Word() <api/redirect.html#lepl.matchers.derived.Word>`_ by calling the
+`matcher.match() <api/redirect.html#lepl.core.config.ParserMixin.match>`_ method::
 
   >>> matcher = Word()
   >>> matcher.config.no_full_first_match()
@@ -102,13 +102,13 @@ You can see the result and the remaining stream (for strings this is an
 offset, here ``5``, and a "helper" object that contains the original input and
 additional useful information like the deepest match).
 
-We needed to call ``.config.no_full_first_match()``
+We needed to call `.config.no_full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.no_full_first_match>`_
 otherwise we would have triggered an error due to incomplete matching (in case
 you are wondering, that error is from the parser that was automatically
-created when we called ``match()``; individual matchers don't check for a
+created when we called `match() <api/redirect.html#lepl.core.config.ParserMixin.match>`_; individual matchers don't check for a
 complete parse).
 
-Matchers can be joined together with ``And()``::
+Matchers can be joined together with `And() <api/redirect.html#lepl.matchers.combine.And>`_::
 
   >>> next( And(Word(), Space(), Integer()).match('hello 123') )
   (['hello', ' ', '123'], (9, <helper>))
@@ -123,7 +123,7 @@ or even::
   >>> next( (Word() / Integer()).match('hello 123') )
   (['hello', ' ', '123'], (9, <helper>))
 
-because ``&`` is shorthand for ``And()``, while ``/`` is similar, but
+because ``&`` is shorthand for `And() <api/redirect.html#lepl.matchers.combine.And>`_, while ``/`` is similar, but
 allows optional spaces.
 
 We can get an idea of how Lepl works internally by looking at the output
@@ -185,7 +185,7 @@ Since the ``>`` produces a matcher, we can test this at the command line::
   >>> next( (Integer() > 'phone').match('3333253') )
   ([('phone', '3333253')], (7, <helper>))
 
-This makes ``make_dict`` easier
+This makes `make_dict <api/redirect.html#lepl.support.node.make_dict>`_ easier
 to understand.  Python's standard ``dict()`` will construct a dictionary from
 named pairs::
 
@@ -198,7 +198,7 @@ And the results from ``name / ',' / phone`` include named pairs::
   ([('name', 'andrew'), ',', ' ', ('phone', '3333253')], (15, <helper>))
 
 Now we know that ``>`` passes results to a function, so it looks like
-``make_dict`` is almost identical to the
+`make_dict <api/redirect.html#lepl.support.node.make_dict>`_ is almost identical to the
 Python builtin ``dict``.  In fact, the only difference is that it strips out
 results that are not named pairs (in this case, the comma and space).
 

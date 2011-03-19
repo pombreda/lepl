@@ -36,9 +36,9 @@ make a variety of different syntaxes possible.
 Simple Line--Aware Parsing (Lines Only)
 ---------------------------------------
 
-If line-aware parsing is enabled using ``.config.lines()`` (with no
-parameters) then two tokens will be added to each line: ``LineStart()`` at the
-beginning and ``LineEnd()`` at the end.  Neither token will return any result,
+If line-aware parsing is enabled using `.config.lines() <api/redirect.html#lepl.core.config.ConfigBuilder.lines>`_ (with no
+parameters) then two tokens will be added to each line: `LineStart() <api/redirect.html#lepl.lexer.lines.matchers.LineStart>`_ at the
+beginning and `LineEnd() <api/redirect.html#lepl.lexer.lines.matchers.LineEnd>`_ at the end.  Neither token will return any result,
 but they must both be matched for the line as a whole to parse correctly.
 
 For example, to split input into lines you might use::
@@ -50,7 +50,7 @@ For example, to split input into lines you might use::
   >>> lines.parse('line one\nline two\nline three')
   [['line one\n'], ['line two\n'], ['line three']]
 
-Since you will often want to define lines, the ``Line()`` matcher simplifies
+Since you will often want to define lines, the `Line() <api/redirect.html#lepl.lexer.lines.matchers.Line>`_ matcher simplifies
 this a little::
 
   >>> contents = Token(Any()[:,...]) > list
@@ -62,7 +62,7 @@ this a little::
 
 .. note::
 
-   The contents of the ``Line()`` matcher should be tokens (they can, of
+   The contents of the `Line() <api/redirect.html#lepl.lexer.lines.matchers.Line>`_ matcher should be tokens (they can, of
    course, be specialised, as described in :ref:`lexer`).
 
 .. index:: ContinuedLineFactory(), Extend()
@@ -71,7 +71,7 @@ Continued and Extended Lines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sometimes you may want to have a matcher that continues over multiple lines.
-You can do this by combining ``Line()`` matchers, but there is also a matcher
+You can do this by combining `Line() <api/redirect.html#lepl.lexer.lines.matchers.Line>`_ matchers, but there is also a matcher
 for the common case of a "continuation character".  For example, if ``\`` is
 used to mark a line that continues then::
 
@@ -83,13 +83,13 @@ used to mark a line that continues then::
   >>> lines.parse('line one \\\nline two\nline three')
   [['line', 'one', 'line', 'two'], ['line', 'three']]
 
-The idea is that you make your own replacement for ``Line()`` that works
+The idea is that you make your own replacement for `Line() <api/redirect.html#lepl.lexer.lines.matchers.Line>`_ that works
 similarly, but can be continued if it ends in the right character (the
 continuation character is actually a regular expression which is why it's
 written as ``r'\\'`` --- the backslash must be escaped).
 
 Another common use case is that some matching should ignore lines.  For this
-you can use ``Extend()``:
+you can use `Extend() <api/redirect.html#lepl.lexer.lines.matchers.Extend>`_:
 
   >>> contents = Token('[a-z]+')[:] > list
   >>> parens = Token('\(') & contents & Token('\)') > list
@@ -107,22 +107,22 @@ Offside Parsing (Blocks of Lines)
 
 This extends the line--aware parsing above.  In broad terms:
 
- * Any space at the start of the line is included in the ``LineStart()``
+ * Any space at the start of the line is included in the `LineStart() <api/redirect.html#lepl.lexer.lines.matchers.LineStart>`_
    token.
 
- * The ``Block()`` matcher will check the start of the first line and set a
+ * The `Block() <api/redirect.html#lepl.lexer.lines.matchers.Block>`_ matcher will check the start of the first line and set a
    "global" variable to that indentation level.
 
- * Each ``LineStart()`` will check the variable set by ``Block()`` and only
+ * Each `LineStart() <api/redirect.html#lepl.lexer.lines.matchers.LineStart>`_ will check the variable set by `Block() <api/redirect.html#lepl.lexer.lines.matchers.Block>`_ and only
    match if the indentation level agrees with the space at the start of that
    line.
 
-Together these modifications mean that all the ``LineStart()`` tokens in a
+Together these modifications mean that all the `LineStart() <api/redirect.html#lepl.lexer.lines.matchers.LineStart>`_ tokens in a
 single block must have the same indentation.  In other words, all lines in
-a ``Block()`` are indented the same.
+a `Block() <api/redirect.html#lepl.lexer.lines.matchers.Block>`_ are indented the same.
 
-Since ``Line()`` continues to work as before, using the modified
-``LineStart()`` described above, we can think of the text as being structured
+Since `Line() <api/redirect.html#lepl.lexer.lines.matchers.Line>`_ continues to work as before, using the modified
+`LineStart() <api/redirect.html#lepl.lexer.lines.matchers.LineStart>`_ described above, we can think of the text as being structured
 like this::
 
   Block(Line()
@@ -135,24 +135,24 @@ like this::
 	      Block(Line()))
 	Line())
 
-Each line is a separate ``Line()`` and groups of indented lines are collected
-inside ``Block()``.
+Each line is a separate `Line() <api/redirect.html#lepl.lexer.lines.matchers.Line>`_ and groups of indented lines are collected
+inside `Block() <api/redirect.html#lepl.lexer.lines.matchers.Block>`_.
 
 Configuration
 ~~~~~~~~~~~~~
 
 To enable the block--based parsing specify the ``block_policy`` or
-``block_indent`` parameters in ``.config.lines()``.
+``block_indent`` parameters in `.config.lines() <api/redirect.html#lepl.core.config.ConfigBuilder.lines>`_.
 
 The ``block_policy`` decides what indentations are acceptable.  The default,
-``constant_indent()`` expects each block to be indented an additional, fixed
+`constant_indent() <api/redirect.html#lepl.lexer.lines.matchers.constant_indent>`_ expects each block to be indented an additional, fixed
 number of spaces relative to previous lines.  Other options include
-``explicit()``, which will accept any indent (and so is typically used
+`explicit() <api/redirect.html#lepl.lexer.lines.matchers.explicit>`_, which will accept any indent (and so is typically used
 following a line with a special syntax, like ending in ``":"``) and
-``to_right()`` which will accept any indent as long as it is larger than what
+`to_right() <api/redirect.html#lepl.lexer.lines.matchers.to_right>`_ which will accept any indent as long as it is larger than what
 went before.
 
-The ``block_indent`` is used with the default ``constant_indent()`` policy and
+The ``block_indent`` is used with the default `constant_indent() <api/redirect.html#lepl.lexer.lines.matchers.constant_indent>`_ policy and
 sets the indentation amount.
 
 A ``tabsize`` parameter can also be specified --- any tab at the start of the
@@ -193,16 +193,16 @@ example::
      ['stu']], 
     ['vwx', 'yz']]]
 
-The core of the parser above is the three uses of ``Line()``.  The first,
-``simple``, is a statement that fits in a single line.  The next, ``empty``,
+The core of the parser above is the three uses of `Line() <api/redirect.html#lepl.lexer.lines.matchers.Line>`_.  The first,
+``simple``, is a statement that fits in a single line.  The next, `empty <api/redirect.html#lepl.support.lib.empty>`_,
 is an empty statement (this has ``indent=False`` because we don't care about
 the indentation of empty lines).  Finally, ``block`` defines a block statement
 as one that is introduced by a line that ends in ":" and then contains a
 series of statements that are indented relative to the first line.
 
-So you can see that the ``Block()`` matcher's job is to collect
+So you can see that the `Block() <api/redirect.html#lepl.lexer.lines.matchers.Block>`_ matcher's job is to collect
 together lines that are indented relative to whatever came just before.  This
-works with ``Line()`` which matches a line if it is indented at the correct
+works with `Line() <api/redirect.html#lepl.lexer.lines.matchers.Line>`_ which matches a line if it is indented at the correct
 level.
 
 .. _python_example:  
@@ -212,10 +212,10 @@ Continued and Extended Lines
 
 As with simple line--aware parsing, we would sometimes like a line to continue
 over several lines if it ends with a certain matcher.  We can make a similar
-matcher to ``Line()`` that
-continues over multiple lines using ``ContinuedLineFactory()``.
+matcher to `Line() <api/redirect.html#lepl.lexer.lines.matchers.Line>`_ that
+continues over multiple lines using `ContinuedLineFactory() <api/redirect.html#lepl.lexer.lines.matchers.ContinuedLineFactory>`_.
 
-It is also possible to use ``Extend()`` to allow some matchers to ignore line
+It is also possible to use `Extend() <api/redirect.html#lepl.lexer.lines.matchers.Extend>`_ to allow some matchers to ignore line
 breaks.
 
 Using these two matchers we can write a simple, Python--like language:

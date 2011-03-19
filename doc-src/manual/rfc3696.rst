@@ -40,21 +40,21 @@ All (public) functions can be imported with::
 
   from lepl.apps.rfc3696 import *
 
-They are *not* available directly in the ``lepl`` package.
+They are *not* available directly in the `lepl <api/redirect.html#lepl>`_ package.
 
 .. function:: Email() -> validator
 
-   ``Email()``: Generate a
+   `Email() <api/redirect.html#lepl.apps.rfc3696.Email>`_: Generate a
    `validator` for email addresses.
 
 .. function:: HttpUrl() -> validator
 
-   ``HttpUrl()``: Generate a
+   `HttpUrl() <api/redirect.html#lepl.apps.rfc3696.HttpUrl>`_: Generate a
    `validator` for HTTP URLs.
 
 .. function:: MailToUrl() -> validator
 
-   ``MailToUrl()``: Generate a
+   `MailToUrl() <api/redirect.html#lepl.apps.rfc3696.MailToUrl>`_: Generate a
    `validator` for "mailto" URLs.
 
 .. note::

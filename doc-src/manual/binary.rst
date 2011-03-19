@@ -171,10 +171,10 @@ bits (3x8+4).
 BitString
 ---------
 
-The ``BitString()`` class is an
+The `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ class is an
 implementation of Lepl's abstract model described above.  It has similar
 semantics to Python's strings, in that a single entry (a bit - the equivalent
-of a character in a string) is still a ``BitString()``::
+of a character in a string) is still a `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_::
 
   >>> from lepl.bin.bits import BitString
   >>> b = BitString.from_int('00110101b0')
@@ -203,15 +203,15 @@ described earlier.
 Matching
 --------
 
-A ``BitString()`` can be passed to a Lepl matcher in the same way as a Python
+A `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ can be passed to a Lepl matcher in the same way as a Python
 string.  The matchers will "automatically" match and construct the binary data.
 
-The ``lepl.bin.matchers`` package defines some additional matchers to help
-match literal binary values.  These include ``Const()`` for matching a
+The `lepl.bin.matchers <api/redirect.html#lepl.bin.matchers>`_ package defines some additional matchers to help
+match literal binary values.  These include `Const() <api/redirect.html#lepl.bin.matchers.Const>`_ for matching a
 constant value, and ``BEnd(length)`` for matching a big-endian value of a
 certain length (``LEnd(length)`` is similar for little-endian values).
 
-The example below is rather detailed, but it shows ``Const()`` and ``BEnd()``
+The example below is rather detailed, but it shows `Const() <api/redirect.html#lepl.bin.matchers.Const>`_ and `BEnd() <api/redirect.html#lepl.bin.matchers.BEnd>`_
 in use::
 
   from lepl.bin.bits import BitString

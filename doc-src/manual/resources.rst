@@ -11,14 +11,16 @@ The Input Problem
 -----------------
 
 :ref:`backtracking` within Lepl is implemented using generators.  These are
-semi--autonomous *loop--like* blocks of code that can be paused and restarted.
-Each matcher has, at its core, one of these generators.  Backtracking is
-achieved by calling the generator to continue searching the input for
-alternative matches.
+blocks of code that can be paused and restarted.  Each matcher has, at its
+core, one of these generators.  Backtracking is achieved by calling the
+generator to continue searching the input for alternative matches.
 
 This can be a problem, particularly when parsing input from files.  The
-``parse_file()`` method calls ``parse_iterable()`` which iterates over the
-lines in the file.  The streams created by ``parse_iterable()`` are lazy
+`parse_file() <api/redirect.html#lepl.core.config.ParserMixin.parse_file>`_
+method calls `parse_iterable()
+<api/redirect.html#lepl.core.config.ParserMixin.parse_iterable>`_ which
+iterates over the lines in the file.  The streams created by `parse_iterable()
+<api/redirect.html#lepl.core.config.ParserMixin.parse_iterable>`_ are lazy
 linked lists that only reference later parts of the input.  That means that
 Python can reclaim (garbage--collect) the memory used by earlier input while
 the parser is still matching later input.  However, this cannot happen (memory
@@ -56,10 +58,12 @@ To do this, Lepl maintains a list of generators, sorted by last access time.
 When the list exceeds some size the least-used generator is deleted.  This
 reduces memory use while allowing a reasonable amount of backtracking.
 
-The list of generators is maintained by a ``GeneratorManager()``, but you do
-not need to use this class directly.  Instead, call ``.config.low_memory()``.
-That configuration method takes a parameter ``queue_len`` which controls the
-size of the list of "valid" generators.
+The list of generators is maintained by a `GeneratorManager()
+<api/redirect.html#lepl.core.manager.GeneratorManager>`_, but you do not need
+to use this class directly.  Instead, call `.config.low_memory()
+<api/redirect.html#lepl.core.config.ConfigBuilder.low_memory>`_.  That
+configuration method takes a parameter ``queue_len`` which controls the size
+of the list of "valid" generators.
 
 The Output Solution
 -------------------
@@ -71,27 +75,30 @@ possible with Lepl, but there is a "neat hack" that works quite well.
 Remember that a Lepl parser can produce a series of matches.  These are
 alternative ways of parsing the input, given the parser.  But in most cases we
 are only interested in the first match --- this is particularly true when
-using ``.config.low_memory()`` as described above, because the alternatives
-will be unavailable.
+using `.config.low_memory()
+<api/redirect.html#lepl.core.config.ConfigBuilder.low_memory>`_ as described
+above, because the alternatives will be unavailable.
 
 The hack is to return fragments of the output as alternative matches.  This
 means:
 
- * Adding a matcher at the "top level" of the parser that can return each
-   fragment in turn.
+ * Adding the matcher ``Iterate()`` at the "top level" of the parser.  This
+   will return each fragment in turn.
 
- * Calling ``parse_all()`` and then treating the generator as a sequence of
-   fragments, rather than a sequence of complete matches.
+ * Calling `parse_all()
+   <api/redirect.html#lepl.core.config.ParserMixin.parse_all>`_ and then
+   treating the generator as a sequence of fragments, rather than a sequence
+   of complete matches.
 
 An example will make this clear.  Here is a matcher that simply matches every
 line::
 
-  >>> all_lines = Line(Token(AnyBut('\n')[:,...]))[:]
+  >>> all_lines = Line(Token(Any()[:,...]))[:]
 
 and here is the equivalent matcher than returns each line as a separate
-fragment:
+fragment.  Note how the final ``[:]`` is replaced by ``Iterate()``::
 
-  >>> each_line = Iterate(Line(Token(AnyBut('\n')[:,...])))
+  >>> each_line = Iterate(Line(Token(Any()[:,...])))
 
 We can use ``each_line`` as follows::
 

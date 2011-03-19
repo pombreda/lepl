@@ -25,7 +25,7 @@ Lepl provides support for reporting errors in the input in three ways.
    nodes can then be used, later, to raise exceptions.
 
 The first approach is often the best compromise and is used by default (see
-``.config.full_first_match()``,
+`.config.full_first_match() <api/redirect.html#lepl.core.config.ConfigBuilder.full_first_match>`_,
 :ref:`configuration <configuration>`).  However, it is limited to a single
 match and gives little information about the underlying problem.
 
@@ -111,15 +111,15 @@ Operators, Functions and Classes
 =============================================================================  ========  ========
 Name                                                                           Type      Action
 =============================================================================  ========  ========
-``^``                                                                          Operator  Raises an exception, given a format string.  Formatting has the same named parameters as the ``KApply()`` matcher (results, stream_in, stream_out); implemented as KApply(``raise_error``)
+``^``                                                                          Operator  Raises an exception, given a format string.  Formatting has the same named parameters as the `KApply() <api/redirect.html#lepl.matchers.derived.KApply>`_ matcher (results, stream_in, stream_out); implemented as KApply(`raise_error <api/redirect.html#lepl.matchers.error.raise_error>`_)
 -----------------------------------------------------------------------------  --------  --------
-``raise_error()``           Function  See above.
+`raise_error() <api/redirect.html#lepl.matchers.error.raise_error>`_           Function  See above.
 -----------------------------------------------------------------------------  --------  --------
-``Error()``                       Class     Creates a parse tree node that can be used to trigger a later exception (``Error`` is a subclass of both ``Node`` and ``SyntaxError``).
+`Error() <api/redirect.html#lepl.matchers.error.Error>`_                       Class     Creates a parse tree node that can be used to trigger a later exception (`Error <api/redirect.html#lepl.matchers.error.Error>`_ is a subclass of both `Node <api/redirect.html#lepl.support.node.Node>`_ and ``SyntaxError``).
 -----------------------------------------------------------------------------  --------  --------
-``sexpr_throw()``             Function  Walks a ``List()``--based parse tree and raises the first ``Error`` found.
+`sexpr_throw() <api/redirect.html#lepl.support.list.sexpr_throw>`_             Function  Walks a `List() <api/redirect.html#lepl.support.list.List>`_--based parse tree and raises the first `Error <api/redirect.html#lepl.matchers.error.Error>`_ found.
 -----------------------------------------------------------------------------  --------  --------
-``node_throw()``               Function  Walks a ``Node()``--based parse tree and raises the first ``Error`` found.
+`node_throw() <api/redirect.html#lepl.support.node.node_throw>`_               Function  Walks a `Node() <api/redirect.html#lepl.support.node.Node>`_--based parse tree and raises the first `Error <api/redirect.html#lepl.matchers.error.Error>`_ found.
 -----------------------------------------------------------------------------  --------  --------
-``make_error()``             Function  Creates an ``Error`` node, given a format string.
+`make_error() <api/redirect.html#lepl.matchers.error.make_error>`_             Function  Creates an `Error <api/redirect.html#lepl.matchers.error.Error>`_ node, given a format string.
 =============================================================================  ========  ========
