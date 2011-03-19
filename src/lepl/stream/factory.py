@@ -83,7 +83,9 @@ class StreamFactory(object):
         which will close the file after parsing.
         '''
         try:
-            add_defaults(kargs, {'filename': file_.name})
+            gkargs = kargs.get('global_kargs', {})
+            add_defaults(gkargs, {'filename': file_.name})
+            add_defaults(kargs, {'global_kargs': gkargs})
         except AttributeError:
             pass
         return self.from_iterable(file_, **kargs)
@@ -95,14 +97,6 @@ class StreamFactory(object):
         matched within the token.
         '''
         return (Cons(iterable), TokenHelper(**kargs))
-#        try:
-#            length = s_len(stream)
-#        except TypeError:
-#            length = None
-#        return (Cons(iterable), TokenHelper(id=s_id(stream), factory=self, 
-#                                            max=s_max(stream),
-#                                            global_kargs=s_global_kargs(stream),
-#                                            delta=s_delta(stream), len=length))
             
     def __call__(self, sequence, **kargs):
         '''

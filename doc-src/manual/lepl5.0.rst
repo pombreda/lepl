@@ -166,7 +166,7 @@ Streams
   with ``(char, next_stream) = s_next(stream)``.  The full set of functions is
   documented at LINK and the source is full of examples.
 
-* `TraceResults() <api/redirect.html#lepl.core.trace.TraceResults>`_,
+* ``TraceResults()``,
   configured by ``config.trace()``, is now ``TraceStack()``, configured by
   ``config.trace_stack()``.  The output will not show the stream when
   ``config.low_memory()`` has been called because retaining the streams for
@@ -197,20 +197,15 @@ Memoisation
     ``config.no_memoize()``.
 
 * To enable handling of (some) left-recursive grammars, the simplest option is
-  to use ``config.auto_memoize()`` which will add `LMemo()
-  <api/redirect.html#lepl.matchers.memo.LMemo>`_ caches where required.
+  to use ``config.auto_memoize()`` which will add ``LMemo()`` caches where required.
 
 * For more detailed control, you can also use:
 
-  * ``config.left_memoize()`` - add `LMemo()
-    <api/redirect.html#lepl.matchers.memo.LMemo>`_ everywhere
+  * ``config.left_memoize()`` - add ``LMemo()`` everywhere
 
-  * ``config.auto_memoize(full=True)`` - add `RMemo()
-    <api/redirect.html#lepl.matchers.memo.RMemo>`_ in addition to `LMemo()
-    <api/redirect.html#lepl.matchers.memo.LMemo>`_.
+  * ``config.auto_memoize(full=True)`` - add ``RMemo()`` in addition to ``LMemo()``.
 
-  * ``config.optimize_or()`` - re-arrange `Or()
-    <api/redirect.html#lepl.matchers.combine.Or>`_ contents.  This has the
+  * ``config.optimize_or()`` - re-arrange ``Or()`` contents.  This has the
     potential to make left-recursive parsers much faster (it will change the
     order of multiple results - generally for the better).
 
@@ -223,20 +218,18 @@ Memoisation
 
 The left-memoisation code does the following:
 
-* Wrappers (`LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_ instances)
+* Wrappers (``LMemo()`` instances)
   are added to the matcher DAG.  These are do two things:
 
   * Most simply cache values.  Cached values are stored by input and call
     depth.
 
-  * Wrappers around `Delayed()
-    <api/redirect.html#lepl.matchers.core.Delayed>`_ instances, which
+  * Wrappers around ``Delayed()`` instances, which
     represent "entry points" into loops, curtail the number of calls
     (according to either the length of the remaining input or the ``d``
     parameter described earlier).
 
-* In addition, `Delayed() <api/redirect.html#lepl.matchers.core.Delayed>`_ instances (and the `LMemo()
-  <api/redirect.html#lepl.matchers.memo.LMemo>`_ wrappers) are duplicated when
+* In addition, ``Delayed()`` instances (and the ``LMemo()`` wrappers) are duplicated when
   multiple references exist.  This is necessary so that the "curtailment" is
   not duplicated at multiple points in the matcher graph (in general it doe
   snot matter of the same node is used at various point in the parser, because

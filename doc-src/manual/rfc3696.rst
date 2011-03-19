@@ -44,17 +44,17 @@ They are *not* available directly in the ``lepl`` package.
 
 .. function:: Email() -> validator
 
-   `Email() <api/redirect.html#lepl.apps.rfc3696.Email>`_: Generate a
+   ``Email()``: Generate a
    `validator` for email addresses.
 
 .. function:: HttpUrl() -> validator
 
-   `HttpUrl() <api/redirect.html#lepl.apps.rfc3696.HttpUrl>`_: Generate a
+   ``HttpUrl()``: Generate a
    `validator` for HTTP URLs.
 
 .. function:: MailToUrl() -> validator
 
-   `MailToUrl() <api/redirect.html#lepl.apps.rfc3696.MailToUrl>`_: Generate a
+   ``MailToUrl()``: Generate a
    `validator` for "mailto" URLs.
 
 .. note::

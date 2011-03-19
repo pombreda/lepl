@@ -36,8 +36,7 @@ make a variety of different syntaxes possible.
 Simple Line--Aware Parsing (Lines Only)
 ---------------------------------------
 
-If line-aware parsing is enabled using `.config.lines()
-<api/redirect.html#lepl.core.config.ConfigBuilder.lines>`_ (with no
+If line-aware parsing is enabled using ``.config.lines()`` (with no
 parameters) then two tokens will be added to each line: ``LineStart()`` at the
 beginning and ``LineEnd()`` at the end.  Neither token will return any result,
 but they must both be matched for the line as a whole to parse correctly.
@@ -143,7 +142,7 @@ Configuration
 ~~~~~~~~~~~~~
 
 To enable the block--based parsing specify the ``block_policy`` or
-``block_indent`` parameters in `.config.lines() <api/redirect.html#lepl.core.config.ConfigBuilder.lines>`_.
+``block_indent`` parameters in ``.config.lines()``.
 
 The ``block_policy`` decides what indentations are acceptable.  The default,
 ``constant_indent()`` expects each block to be indented an additional, fixed
@@ -201,8 +200,7 @@ the indentation of empty lines).  Finally, ``block`` defines a block statement
 as one that is introduced by a line that ends in ":" and then contains a
 series of statements that are indented relative to the first line.
 
-So you can see that the `Block()
-<api/redirect.html#lepl.offside.matchers.Block>`_ matcher's job is to collect
+So you can see that the ``Block()`` matcher's job is to collect
 together lines that are indented relative to whatever came just before.  This
 works with ``Line()`` which matches a line if it is indented at the correct
 level.
@@ -214,9 +212,8 @@ Continued and Extended Lines
 
 As with simple line--aware parsing, we would sometimes like a line to continue
 over several lines if it ends with a certain matcher.  We can make a similar
-matcher to `Line() <api/redirect.html#lepl.offside.matchers.Line>`_ that
-continues over multiple lines using `ContinuedLineFactory()
-<api/redirect.html#lepl.offside.matchers.ContinuedLineFactory>`_.
+matcher to ``Line()`` that
+continues over multiple lines using ``ContinuedLineFactory()``.
 
 It is also possible to use ``Extend()`` to allow some matchers to ignore line
 breaks.

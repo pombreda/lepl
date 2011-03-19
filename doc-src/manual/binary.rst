@@ -171,11 +171,10 @@ bits (3x8+4).
 BitString
 ---------
 
-The `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ class is an
+The ``BitString()`` class is an
 implementation of Lepl's abstract model described above.  It has similar
 semantics to Python's strings, in that a single entry (a bit - the equivalent
-of a character in a string) is still a `BitString()
-<api/redirect.html#lepl.bin.bits.BitString>`_::
+of a character in a string) is still a ``BitString()``::
 
   >>> from lepl.bin.bits import BitString
   >>> b = BitString.from_int('00110101b0')
@@ -204,15 +203,15 @@ described earlier.
 Matching
 --------
 
-A `BitString() <api/redirect.html#lepl.bin.bits.BitString>`_ can be passed to a Lepl matcher in the same way as a Python
+A ``BitString()`` can be passed to a Lepl matcher in the same way as a Python
 string.  The matchers will "automatically" match and construct the binary data.
 
 The ``lepl.bin.matchers`` package defines some additional matchers to help
-match literal binary values.  These include `Const() <api/redirect.html#lepl.bin.functions.Const>`_ for matching a
+match literal binary values.  These include ``Const()`` for matching a
 constant value, and ``BEnd(length)`` for matching a big-endian value of a
 certain length (``LEnd(length)`` is similar for little-endian values).
 
-The example below is rather detailed, but it shows `Const() <api/redirect.html#lepl.bin.functions.Const>`_ and `BEnd() <api/redirect.html#lepl.bin.functions.BEnd>`_
+The example below is rather detailed, but it shows ``Const()`` and ``BEnd()``
 in use::
 
   from lepl.bin.bits import BitString
@@ -302,6 +301,4 @@ Sized Integers
 --------------
 
 The results of the parsing are sized integers (`Int() <api/redirect.html#lepl.bin.bits.Int>`_).  These include both
-an integer value and a bit count.  They are subclasses of Python's ``int``
-type and so can be used in normal code (length information is not propagated
-through calculations).
+an integer value and a bit count.  They are subclasses of Python's ``int`

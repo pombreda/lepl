@@ -112,7 +112,7 @@ Date        Version  Description
 2011-01-25  4.3.5    Bugfix for NFA regexps with multiple choices;
                      add ``Rational()`` matchers.
 ----------  -------  -----------
-2011-01-30  4.4      Rename `Float() <api/redirect.html#lepl.matchers.derived.Float>`_, `Real() <api/redirect.html#lepl.matchers.derived.Real>`_; add `Limit() <api/redirect.html#lepl.matchers.combine.Limit>`_.
+2011-01-30  4.4      Rename ``Float()``, ``Real()``; add ``Limit()``.
 ==========  =======  ===========
 
 
@@ -121,9 +121,9 @@ Date        Version  Description
 4.4
 ---
 
-The `Float() <api/redirect.html#lepl.matchers.derived.Float>`_ matcher now excludes integers.  For the old behaviour, which
-included them, use `Real() <api/redirect.html#lepl.matchers.derived.Real>`_.  More control over search has been added with
-`Limit() <api/redirect.html#lepl.matchers.combine.Limit>`_.
+The ``Float()`` matcher now excludes integers.  For the old behaviour, which
+included them, use ``Real()``.  More control over search has been added with
+``Limit()``.
 
 
 .. release_4_3:
@@ -201,7 +201,7 @@ hope) support handling the "offside rule" in a later release.
   that it is for sequences of "characters" (in contrast, for example, to parse
   a list of "lines", use `parse_lines()
   <api/redirect.html#lepl.matchers.OperatorMatcher.parse_lines>`_; characters
-  and lines refer to whether `Any() <api/redirect.html#lepl.matchers.Any>`_
+  and lines refer to whether ``Any()``
   should match all or part of an entity, respectively).
 
 
@@ -233,4 +233,4 @@ for significant expansion in future releases).
 
 While writing the binary parser I needed to revisit and revise core routines
 related to graphs.  Various internal interfaces have been simplified; the most
-visible being the `Node() <api/redirect.html#lepl.support.node.Node>`_ class, which is now more "Pythonesque".
+visible being the ``Node()`` class, which is now more "Pythonesque".

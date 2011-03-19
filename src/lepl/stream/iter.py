@@ -197,7 +197,7 @@ class IterableHelper(
                 next_line_stream = self._next_line(cons, end_line_stream)
                 next_stream = ((cons, next_line_stream), self)
                 (extra, final_stream) = s_next(next_stream, count=count-len(line))
-                value = line_stream.join(line, extra)
+                value = s_join(line_stream, line, extra)
                 return (value, final_stream)
     
     def line(self, state, empty_ok):

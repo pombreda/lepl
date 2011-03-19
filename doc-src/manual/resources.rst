@@ -20,9 +20,8 @@ Generator Management
 
 .. note::
 
-  To use the techniques described in this section the `GeneratorManager()
-  <api/redirect.html#lepl.manager.GeneratorManager>`_ monitor must be added to
-  the :ref:`configuration` using `.config.manage() <api/redirect.html#lepl.core.config.ConfigBuilder.manage>`_.
+  To use the techniques described in this section the ``GeneratorManager()`` monitor must be added to
+  the :ref:`configuration` using ``.config.manage()``.
 
 :ref:`backtracking` within Lepl is implemented using generators.  These are
 semi--autonomous *loop--like* blocks of code that can be paused and restarted.
@@ -35,8 +34,7 @@ Because generators may be long--lived they can be a resource sink.  For
 example, they maintain references to "old" parts of the input that might
 otherwise be reclaimed by garbage collection.
 
-It is possible to configure the system with a `GeneratorManager()
-<api/redirect.html#lepl.manager.GeneratorManager>`_ that maintains a (weak)
+It is possible to configure the system with a ``GeneratorManager()`` that maintains a (weak)
 reference to the generators [#]_ used in a parse.  A generator is registered
 when it is first used.
 
@@ -54,11 +52,9 @@ behaviour of the parser.  In particular, it is possible to close non--active
 generators, either implicitly or explicitly.
 
 .. [#] The discussion here omits some details from the implementation.  The
-       `GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_
-       actually stores `GeneratorWrapper()
-       <api/redirect.html#lepl.resources.GeneratorWrapper>`_ instances, which
-       are added to generators via the `tagged
-       <api/redirect.html#lepl.resources.tagged>`_ decorator.
+       ``GeneratorManager()``
+       actually stores ``GeneratorWrapper()`` instances, which
+       are added to generators via the ``tagged`` decorator.
 
 
 .. index:: resources, queue_len
@@ -67,7 +63,7 @@ generators, either implicitly or explicitly.
 Resource Limiting
 -----------------
 
-The `GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_
+The ``GeneratorManager()``
 can be configured to store only a limited number of generators.  When this
 number is exceeded, by the addition of a new generator, the oldest (ie. least
 recently used) non--active generator is closed.
@@ -117,15 +113,15 @@ An alternative to the above, automatic management of generators, is to
 explicitly remove non--active generators as part of the search process.  This
 is similar to Prolog's *cut*, I believe.
 
-The `Commit() <api/redirect.html#lepl.matchers.monitor.Commit>`_ matcher does
+The ``Commit()`` matcher does
 this: it discards all non--active generators.
 
-For `Commit() <api/redirect.html#lepl.matchers.monitor.Commit>`_ to work the
-`GeneratorManager() <api/redirect.html#lepl.manager.GeneratorManager>`_ must
+For ``Commit()`` to work the
+``GeneratorManager()`` must
 maintain references to generators.  This occurs when the ``queue_len`` value
 is 0, which stores references but does not cause :ref:`limiting`.
 
-See also `First() <api/redirect.html#lepl.matchers.combine.First>`_.
+See also ``First()``.
 
 If this is useful, I'd really appreciate a good, short example to put here.
 

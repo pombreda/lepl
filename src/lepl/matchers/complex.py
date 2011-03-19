@@ -159,3 +159,25 @@ def Columns(*columns, **kargs):
     (indices, matchers) = zip(*clean())
     return _Columns(indices, *matchers)
 
+
+@trampoline_matcher_factory()
+def Iterate(matcher):
+    '''
+    This isn't complex to implement, but conceptually is rather odd.  It takes
+    a single matcher and returns a result for each match as it consumes the
+    input.
+    
+    This means `parse_all()` is needed to retrieve the entire result (and there
+    is no backtracking).
+    
+    In practice this means that if you have a matcher whose top level is a
+    repeating element (for example, lines in a file) then you can treat the 
+    entire parser as a lazy iterator over the input.   The obvious application
+    is with `.config.low_memory()` as this allows for large output to be 
+    generated without consuming a large amount of memory.
+    '''
+    def match(support, stream):
+        while True:
+            (result, stream) = yield matcher._match(stream)
+            yield (result, stream)
+    return match

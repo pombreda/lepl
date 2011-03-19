@@ -61,9 +61,7 @@ We can shorten the last two lines to::
 
 There's a lot going on here, some of which I will explain in later sections,
 but the most important thing to notice is that ``matcher`` was constructed
-from two simpler matchers [#]_ --- `Word()
-<api/redirect.html#lepl.matchers.derived.Word>`_ and `Integer()
-<api/redirect.html#lepl.matchers.derived.Integer>`_ [#]_.  It is those two
+from two simpler matchers [#]_ --- ``Word()`` and ``Integer()`` [#]_.  It is those two
 matchers that identify the values 'andrew' (a word) and '3333253' (an
 integer).
 
@@ -92,9 +90,8 @@ Generators are a fairly new part of Python, rather like lists.  All you need
 to know to use them is that, to read the value, you use the function
 ``next()``.
 
-We can see how this works with the simple generators `Word()
-<api/redirect.html#lepl.matchers.derived.Word>`_ by calling the
-``matcher.match() method::
+We can see how this works with the simple generators ``Word()`` by calling the
+``matcher.match()`` method::
 
   >>> matcher = Word()
   >>> matcher.config.no_full_first_match()
@@ -112,8 +109,7 @@ you are wondering, that error is from the parser that was automatically
 created when we called ``match()``; individual matchers don't check for a
 complete parse).
 
-Matchers can be joined together with `And()
-<api/redirect.html#lepl.matchers.combine.And>`_::
+Matchers can be joined together with ``And()``::
 
   >>> next( And(Word(), Space(), Integer()).match('hello 123') )
   (['hello', ' ', '123'], (9, <helper>))
@@ -128,8 +124,7 @@ or even::
   >>> next( (Word() / Integer()).match('hello 123') )
   (['hello', ' ', '123'], (9, <helper>))
 
-because ``&`` is shorthand for `And()
-<api/redirect.html#lepl.matchers.combine.And>`_, while ``/`` is similar, but
+because ``&`` is shorthand for ``And()``, while ``/`` is similar, but
 allows optional spaces.
 
 We can get an idea of how Lepl works internally by looking at the output

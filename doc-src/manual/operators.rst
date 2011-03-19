@@ -18,8 +18,7 @@ Operators --- things like ``&`` and ``|``, used to join matchers --- can help
 produce grammars that are easier to read, easier to understand, and so less
 likely to contain errors.  But their implementation pushes Python's
 boundaries, giving problems with precedence and applicability.  This is
-exacerbated by the automatic coercion of strings to `Literal()
-<api/redirect.html#lepl.matchers.core.Literal>`_ matchers wherever possible.
+exacerbated by the automatic coercion of strings to ``Literal()`` matchers wherever possible.
 
 For example, because operators are effectively methods on *neighbouring
 objects*, the following will fail::
@@ -28,8 +27,7 @@ objects*, the following will fail::
   [...]
   TypeError: unsupported operand type(s) for |: 'str' and 'str'
 
-This is because neither ``'Mr'`` nor ``'Ms'`` subclass `OperatorMatcher()
-<api/redirect.html#lepl.matchers.support.OperatorMatcher>`_ (which is where
+This is because neither ``'Mr'`` nor ``'Ms'`` subclass ``OperatorMatcher()`` (which is where
 ``|`` is defined, via ``__or__`` and ``__ror__``).
 
 Another example, where precedence is not as we might hope::
@@ -59,7 +57,7 @@ Operator  Description
 ========  ===========
 ``&``     Joins matchers in sequence.  The result is a single list containing 
           the results from all functions.  Identical (without separators) to 
-          `And() <api/redirect.html#lepl.matchers.combine.And>`_.
+          ``And()``.
 --------  -----------
 ``+``     As ``&``, but the results are then joined together with the standard
           Python ``+`` operator.
@@ -73,11 +71,11 @@ Operator  Description
 --------  -----------
 ``|``     Matches one matcher from a list.  The result is the result of the
           chosen matcher.  Identical to 
-          `Or() <api/redirect.html#lepl.matchers.combine.And>`_.
+          ``Or()``.
 --------  -----------
 ``%``     As ``|``, but without backtracking between functions.  
           Identical to 
-          `First() <api/redirect.html#lepl.matchers.combine.First>`_.
+          ``First()``.
 ========  ===========
 
 For a discussion of backtracking see :ref:`backtracking`.
@@ -92,18 +90,18 @@ Prefix And Postfix Operators On Matchers
 Operator  Description
 ========  ===========
 ``~``     Discards the result from the matcher. 
-          Identical to `Drop() <api/redirect.html#lepl.matchers.combine.And>`_.
+          Identical to ``Drop()``.
 
 --------  -----------
 ``[]``    Repeats the matcher, with optional concatenation and separator.
           Identical to (without separators) 
-          `Repeat() <api/redirect.html#lepl.matchers.derived.Repeat>`_ 
+          ``Repeat()`` 
           (see :ref:`previous section <repeat>`).
 ========  ===========
 
 .. note:
 
-  `Lookahead() <api/redirect.html#lepl.matchers.combine.And>`_ is an exception
+  ``Lookahead()`` is an exception
   for ``~`` (see :ref:`lookahead`).
 
 
@@ -125,7 +123,7 @@ Operator  Description
           If the function is a string a ``(string, result)`` pair is 
           generated instead.  
           Identical to 
-          `Apply() <api/redirect.html#lepl.matchers.derived.Apply>`_.
+          ``Apply()``.
 --------  -----------
 ``args``  Not an operator, but used with ``>`` to expand the list of results
           to be arguments (like Python's ``*args`` convention).  For
@@ -133,14 +131,14 @@ Operator  Description
 --------  -----------
 ``>>``    As ``>``, but the function is applied to each result in turn 
           (instead of all results being supplied in a single list argument).
-          Identical to `Map() <api/redirect.html#lepl.matchers.derived.Map>`_.
+          Identical to ``Map()``.
 --------  -----------
 ``**``    As ``>``, but the results are passed as the named parameter 
           *results*.  Additional keyword arguments are *stream_in* (the
           stream passed to the matcher), *stream_out* (the stream returned
           from the matcher) and *core* (see :ref:`resources`).  
           Identical to 
-          `KApply() <api/redirect.html#lepl.matchers.derived.KApply>`_.
+          ``KApply()``.
 --------  -----------
 ``^``     Raise a Syntax error.  The argument to the right is a string that
           is treated as a format template for the same named arguments as 
@@ -153,8 +151,7 @@ Operator  Description
 Replacement
 -----------
 
-Operators can be replaced inside a ``with`` context using `Override()
-<api/redirect.html#lepl.custom.Override>`_::
+Operators can be replaced inside a ``with`` context using ``Override()``::
 
   >>> with Override(or_=And, and_=Or):
   >>>     abcd = (Literal('a') & Literal('b')) | ( Literal('c') & Literal('d'))
@@ -178,11 +175,8 @@ space--separated words in a transparent manner:
   ['hello', ' ', 'world']
 
 Note that there was no need to specify a separator in ``word[1:]``, and that
-this the argument of `Separator()
-<api/redirect.html#lepl.matchers.operators.Separator>`_ is a rare example of a
-string being coerced to something other than a `Literal()
-<api/redirect.html#lepl.matchers.core.Literal>`_ (here `Regexp()
-<api/redirect.html#lepl.matchers.core.Regexp>`_ is used).
+this the argument of ``Separator()`` is a rare example of a
+string being coerced to something other than a ``Literal()`` (here ``Regexp()`` is used).
 
 The use of separators to handle spaces is discussed in more detail below.
 
@@ -198,19 +192,18 @@ There's a wide variety of ways to handle spaces in Lepl.  A large part of the
 best place to look for a basic understanding.
 
 The main conclusion of the :ref:`Tutorial <tutorial>` is that the :ref:`lexer`
-(ie using `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_) is the
+(ie using ``Token()``) is the
 best approach in most circumstances.  It usually hits the sweet spot between
 flexibility and simplicity.
 
 Alternatively, to handle optional spaces (zero or more), without tokens, use
-`DroppedSpace() <api/redirect.html#lepl.matchers.operators.DroppedSpace>`_::
+``DroppedSpace()``::
 
   with DroppedSpace():
       addition = value & "+" & value
 
 But sometimes these are not the right solution.  One case is
-:ref:`table_example`, when the `Columns()
-<api/redirect.html#lepl.matchers.derived.matchers>`_ matcher is a good fit.
+:ref:`table_example`, when the ``Columns()`` matcher is a good fit.
 Another is when spaces are *required*.
 
 It is something of a "beginner's mistake" to enforce the use of spaces in the
@@ -221,10 +214,9 @@ is sometimes necessary.
 In such cases, the only real solution is to specify all the spaces by hand.
 One option is to use the ``/`` and ``//`` operators (which match zero-- and
 one--or--more spaces respectively).  Alternatively, to save typing, Lepl
-includes various *separators* (`DroppedSpace()
-<api/redirect.html#lepl.matchers.operators.DroppedSpace>`_, above, is a
+includes various *separators* (``DroppedSpace()``, above, is a
 separator).  The :ref:`Tutorial <separators>` introduced the basic
-`Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ (as
+``Separator()`` (as
 described in the previous section, above), which requires a user--specified
 space wherever `&` is used (and also in `[]` repetition).
 
@@ -233,12 +225,10 @@ the spaces remain even when the optional matcher is ignored.
 
 So, to help automate the (rare) case of *required* spaces, *automatic*
 addition of spaces for each `&`, and *optional* matchers, two "smart"
-separators are also available.  The first, `SmartSeparator1()
-<api/redirect.html#lepl.matchers.operators.SmartSeparator1>`_, checks whether
+separators are also available.  The first, ``SmartSeparator1()``, checks whether
 a matcher is used by seeing whether it consumes input; spaces are only added
 when `&` is between two matchers that both "move along" the input stream.  The
-second, `SmartSeparator2()
-<api/redirect.html#lepl.contrib.matchers.SmartSeparator2>`_, takes a more
+second, ``SmartSeparator2()``, takes a more
 pro--active approach and examines the matchers to see whether they inherit
 from the base class used in Lepl to implement "optionality".
 
@@ -253,10 +243,8 @@ present, or whether you can do what you want more simply and reliably with the
 
 The following tables show the results of some simple tests for different
 separators, spaces, and functions.  They also illustrate two separate, but
-related, issues: the difference between `And()
-<api/redirect.html#lepl.matchers.combine.And>`_ and ``&`` when separators are
-present; and how matchers like `Eos()
-<api/redirect.html#lepl.matchers.derived.Eos>`_ function (which is not
+related, issues: the difference between ``And()`` and ``&`` when separators are
+present; and how matchers like ``Eos()`` function (which is not
 optional, but consumes no input).
 
 
@@ -294,8 +282,8 @@ input stream (on the left).  Pay careful attention to spaces in the input.
 
 Different columns of results correspond to the different spearators, whether
 they are matching a single space or "zero or more" spaces, and whether the
-final `Eos() <api/redirect.html#lepl.matchers.derived.Eos>`_ matcher is added with ``&`` (which will include the spaces
-from the separator) or `And() <api/redirect.html#lepl.matchers.combine.And>`_ (which won't).
+final ``Eos()`` matcher is added with ``&`` (which will include the spaces
+from the separator) or ``And()`` (which won't).
 
 So, for example, the final column on the right, below, has results for this
 parser::

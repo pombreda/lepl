@@ -276,7 +276,7 @@ class StringHelper(SequenceHelper):
         return super(StringHelper, self).kargs(state, prefix=prefix, kargs=kargs)
     
     def join(self, state, *values):
-        return str().join(*values)
+        return str().join(values)
     
     def line(self, state, empty_ok):
         '''Returns up to, and including then next \n'''

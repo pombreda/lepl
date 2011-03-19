@@ -59,7 +59,7 @@ to go with::
   [12.0, '-', 30.0]
 
 That should be clear enough, I hope.  Remember that ``|`` is another way of
-writing `Or() <api/redirect.html#lepl.matchers.combine.Or>`_.
+writing ``Or()``.
 
 .. index:: recursion
 
@@ -111,8 +111,7 @@ in Lepl.
 Delayed Matchers
 ----------------
 
-The solution to our problem is to use the `Delayed()
-<api/redirect.html#lepl.matchers.core.Delayed>`_ matcher.  This lets us
+The solution to our problem is to use the ``Delayed()`` matcher.  This lets us
 introduce something, so that we can use it, and then add a definition later.
 That might sound odd, but it's really simple to use::
 
@@ -141,8 +140,7 @@ course) is that we needed something complicated enough for this to be
 worthwhile.
 
 The simplest way of building a tree is almost trivial.  We just send the
-results for the addition and subtraction to `List()
-<api/redirect.html#lepl.support.list.List>`_::
+results for the addition and subtraction to ``List()``::
 
   >>> value = Token(UnsignedReal())
   >>> symbol = Token('[^0-9a-zA-Z \t\r\n]')
@@ -189,7 +187,7 @@ There's a long tradition of using nested lists to represent trees of data ---
 it is fundamental to the Lisp programming language, for example.  Lists used
 in this way are often called "S-Expressions".
 
-The `List() <api/redirect.html#lepl.support.list.List>`_ class is a simple
+The ``List()`` class is a simple
 subclass of Python's ``list``.  That makes it easy to understand and use.
 
 Lepl includes tools that simplify working with nested lists, including
@@ -198,36 +196,33 @@ Lepl includes tools that simplify working with nested lists, including
 `sexpr_to_tree() <api/redirect.html#lepl.support.list.sexpr_to_tree>`_.  These
 all work with any kind of nested iterable (except strings, which are treated
 as single values rather than sequences of characters).  That means that you
-can also use tuples, plain old Python lists, and even sub--classes of `List()
-<api/redirect.html#lepl.support.list.List>`_ to structure your AST (the next
+can also use tuples, plain old Python lists, and even sub--classes of ``List()`` to structure your AST (the next
 section will use sub--classes to identify different kinds of values).
 
-For more complex cases, Lepl also includes a `Node()
-<api/redirect.html#lepl.support.node.Node>`_ class (this used to appear in the
-examples; `List() <api/redirect.html#lepl.support.list.List>`_ is new in Lepl
-4).  `Node() <api/redirect.html#lepl.support.node.Node>`_ tries to combine
+For more complex cases, Lepl also includes a ``Node()`` class (this used to appear in the
+examples; ``List()`` is new in Lepl
+4).  ``Node()`` tries to combine
 Python's ``list`` and ``dict`` classes into one type, which sounds incredibly
 useful, but ends up being a little too complex.
 
-If you use `Node() <api/redirect.html#lepl.support.node.Node>`_, your code
+If you use ``Node()``, your code
 will continue to work, but I would encourage you to consider switching to
-`List() <api/redirect.html#lepl.support.list.List>`_.
+``List()``.
 
 Summary
 -------
 
 What more have we learnt?
 
-* Recursive grammars are supported with `Delayed()
-  <api/redirect.html#lepl.matchers.core.Delayed>`_.
+* Recursive grammars are supported with ``Delayed()``.
 
 * The results of parsing are stored in trees of data, called Abstract Syntax
   Trees (ASTs).
 
-* The simples way to build an AST is with nested lists; the `List() <api/redirect.html#lepl.support.list.List>`_ class
+* The simples way to build an AST is with nested lists; the ``List()`` class
   subclasses Python's list to add the ability to display the tree in a text
   diagram.
 
-* A `Node() <api/redirect.html#lepl.support.node.Node>`_ combines list and
+* A ``Node()`` combines list and
   dict behaviour.
 

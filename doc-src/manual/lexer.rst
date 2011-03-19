@@ -16,8 +16,7 @@ Introduction
 
 The lexer pre-processes the stream that is being parsed, dividing it into
 tokens that correspond to regular expressions.  The tokens, and their
-contents, can then be matched in the grammar using the `Token()
-<api/redirect.html#lepl.lexer.matchers.Token>`_ matcher.
+contents, can then be matched in the grammar using the ``Token()`` matcher.
 
 Tokens give a "rough" description of the text to be parsed.  A simple parser
 of numerical expressions might have the following different token types:
@@ -40,7 +39,7 @@ automatically discarded and do not need to be specified in the grammar.
 Use
 ---
 
-Within a grammar, a `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_
+Within a grammar, a ``Token()``
 appears much like any other matcher.  For a full example, see 
 :ref:`tutorial`.
 
@@ -56,16 +55,13 @@ regular expression given as their argument.  For example::
   >>> number = Token(Integer())
 
 Here, ``name`` will match a string that starts with a capital letter and then
-has zero or more lower case letters.  The second `Token()
-<api/redirect.html#lepl.lexer.matchers.Token>`_, ``number``, is similar, but
-uses another matcher (`Integer()
-<api/redirect.html#lepl.matchers.derived.Integer>`_) to define the regular
+has zero or more lower case letters.  The second ``Token()``, ``number``, is similar, but
+uses another matcher (``Integer()``) to define the regular
 expression that is matched.
 
 .. note::
 
-  Not all matchers can be used to define the pattern for a `Token()
-  <api/redirect.html#lepl.lexer.matchers.Token>`_ --- only those that Lepl
+  Not all matchers can be used to define the pattern for a ``Token()`` --- only those that Lepl
   knows how to convert into regular expressions.
 
 The second way in which tokens are used is by specialisation, which generates
@@ -78,19 +74,17 @@ another example::
   >>> cos = function('cosine')
   >>> call = (sin | cos) & params
 
-Here the ``function`` `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_
+Here the ``function`` ``Token()``
 is restricted to match the strings "sine" and "cosine", creating two *new*
 matchers, ``sin`` and ``cos``.
 
-The example above used simple strings (which are converted to `Literal()
-<api/redirect.html#lepl.matchers.core.Literal>`_ matchers) as the additional
+The example above used simple strings (which are converted to ``Literal()`` matchers) as the additional
 constraints, but any matcher expression can be used.
 
 For a more realistic example of multiple specialisations, see the use of
 ``symbol`` in :ref:`this example <token_example>`.
 
-Note that specialisation is optional.  It's OK to use `Token()
-<api/redirect.html#lepl.lexer.matchers.Token>`_ as a simple matcher without
+Note that specialisation is optional.  It's OK to use ``Token()`` as a simple matcher without
 adding any more constraints (providing that the use is consistent with the
 limitations outlined below).
 
@@ -100,16 +94,14 @@ limitations outlined below).
 Limitations
 -----------
 
-The lexer has two limitations: it cannot backtrack and `Token()
-<api/redirect.html#lepl.lexer.matchers.Token>`_ matchers cannot be mixed with
+The lexer has two limitations: it cannot backtrack and ``Token()`` matchers cannot be mixed with
 non--Token matchers that consume input.
 
 The first limitation means that the regular expressions associated with tokens
 only match text once.  The lexer divides the input into fixed blocks that
 match the largest possible fragment; no alternatives are considered.
 
-This does not mean that a particular `Token()
-<api/redirect.html#lepl.lexer.matchers.Token>`_ is only called once, or that
+This does not mean that a particular ``Token()`` is only called once, or that
 it will return only a single result.  *Backtracking is still possible, but the
 parser is restricted to exploring different interpretations of a single,
 unchanging token stream.*
@@ -130,25 +122,21 @@ match, so we get only the single result::
   [['1', '-2']]
 
 (In the examples above, ``list()`` is used to expand the generator and the
-`Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ is given ``r'\-'``
+``Token()`` is given ``r'\-'``
 because its argument is a regular expression, not a literal value.)
 
 The second limitation is more subtle.  The lexer is implemented via a
-:ref:`rewriter <rewriting>` which adds a `Lexer()
-<api/redirect.html#lepl.lexer.functions.Lexer>`_ instance to the head of the
-matcher graph.  This divides the input into the "pieces" that the `Token()
-<api/redirect.html#lepl.lexer.matchers.Token>`_ matchers expect.
+:ref:`rewriter <rewriting>` which adds a ``Lexer()`` instance to the head of the
+matcher graph.  This divides the input into the "pieces" that the ``Token()`` matchers expect.
 
-So matchers receive a stream of labelled fragments from `Lexer()
-<api/redirect.html#lepl.lexer.functions.Lexer>`_.  It is only "inside" each
-`Token() <api/redirect.html#lepl.lexer.matchers.Token>`_, when the fragment is
+So matchers receive a stream of labelled fragments from ``Lexer()``.  It is only "inside" each
+``Token()``, when the fragment is
 passed to the sub--matcher, that the stream is returned to its original
 format.
 
 As a consequence, matchers that read the stream --- those that consume data,
-like `Any() <api/redirect.html#lepl.functions.Any>`_ or `Literal()
-<api/redirect.html#lepl.matchers.core.Literal>`_ --- can only be used *inside*
-`Token() <api/redirect.html#lepl.lexer.matchers.Token>`_.  If they are used
+like ``Any()`` or ``Literal()`` --- can only be used *inside*
+``Token()``.  If they are used
 alongside the following error occurs::
 
   >>> matcher = Token(Any()) & Any()
@@ -165,8 +153,7 @@ Advanced Options
 
 Configuration
 
-  The lexer can be configured using `.config.lexer()
-  <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_ (see
+  The lexer can be configured using ``.config.lexer()`` (see
   ref:`configuration`).  This can take an additional argument that specified
   the discard pattern.  Note that this is included in the default
   configuration (it does no harm if tokens are not used).
@@ -194,8 +181,7 @@ Completeness
 Example
 -------
 
-:ref:`tutorial` contains a complete, worked example using `Tokens
-<api/redirect.html#lepl.lexer.matchers.Token>`_.
+:ref:`tutorial` contains a complete, worked example using ``Tokens``.
 
 
 .. _lexer_process:
@@ -203,8 +189,7 @@ Example
 The Lexer Process
 -----------------
 
-In the explanations above I try to describe the `Token()
-<api/redirect.html#lepl.lexer.matchers.Token>`_ matcher in a fairly
+In the explanations above I try to describe the ``Token()`` matcher in a fairly
 declarative way.  However, I know that it is sometimes easier to understand
 how to use a tool by first understanding how the tool itself works.  So here I
 will sketch how the lexer is implemented by describing the steps involved when
@@ -221,20 +206,18 @@ a Python program uses the Lepl parser, with the lexer, to parse some text.
 #. Creation of matcher graph
 
    A function, or set of statements, that generates the Lepl matchers is
-   evaluated.  Matchers like `Token()
-   <api/redirect.html#lepl.lexer.matchers.Token>`_, `And()
-   <api/redirect.html#lepl.matchers.combine.And>`_, etc., are objects that
+   evaluated.  Matchers like ``Token()``, ``And()``, etc., are objects that
    link to each other.  The objects and their links form a graph (with a
    matcher object at each node).
 
    * Token numbering
 
-     Each time a `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ is
+     Each time a ``Token()`` is
      created it is assigned a unique number, which I will call the "tag".
 
    * Regular expression extraction
 
-     Whenever a `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ is
+     Whenever a ``Token()`` is
      created with another matcher as an argument Lepl attempts to convert the
      matcher to a regular expression.  If it cannot do so, it raises an error.
 
@@ -245,13 +228,10 @@ a Python program uses the Lepl parser, with the lexer, to parse some text.
        >>> function = Token('[a-z]*')
        >>> sin = function('sine')
 
-     In the example above, the first line creates a new `Token()
-     <api/redirect.html#lepl.lexer.matchers.Token>`_, with a unique tag and a
+     In the example above, the first line creates a new ``Token()``, with a unique tag and a
      regular expression, as explained just above.  On the second line the
-     token is specialised.  This creates another `Token()
-     <api/redirect.html#lepl.lexer.matchers.Token>`_, which contains the given
-     sub--matcher (a `Literal()
-     <api/redirect.html#lepl.matchers.core.Literal>`_ in this case), but with
+     token is specialised.  This creates another ``Token()``, which contains the given
+     sub--matcher (a ``Literal()`` in this case), but with
      the same tag and regular expression as the "parent".
 
      I call a token like this, which has the same tag and regular expression
@@ -273,10 +253,9 @@ a Python program uses the Lepl parser, with the lexer, to parse some text.
 
    The `lexer_rewriter()
    <api/redirect.html#lepl.lexer.rewriters.lexer_rewriter>`_ uses the matcher
-   graph to construct a `Lexer()
-   <api/redirect.html#lepl.lexer.functions.Lexer>`_ instance:
+   graph to construct a ``Lexer()`` instance:
 
-   * `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ instances are
+   * ``Token()`` instances are
      collected.  
 
    * The graph is checked to make sure that tokens and non-token matchers are
@@ -291,7 +270,7 @@ a Python program uses the Lepl parser, with the lexer, to parse some text.
      expressions and return the text and tag(s) associated with the longest
      match.
 
-   * A `Lexer() <api/redirect.html#lepl.lexer.functions.Lexer>`_ is added to
+   * A ``Lexer()`` is added to
      the "head" of the matcher graph.  It contains the regular expression
      matcher.
 
@@ -307,7 +286,7 @@ a Python program uses the Lepl parser, with the lexer, to parse some text.
      happens depends on the method called.
 
    * The input (as stream or text) is passed to the head of the matcher graph,
-     which is the `Lexer() <api/redirect.html#lepl.lexer.functions.Lexer>`_
+     which is the ``Lexer()``
      instance constructed earlier.
 
    * The lexer generates a new stream, which encapsulates both the input text
@@ -320,7 +299,7 @@ a Python program uses the Lepl parser, with the lexer, to parse some text.
    * The new stream of tagged fragments is passed to to the matcher graph in
      the same way as normal.
 
-   * When a `Token() <api/redirect.html#lepl.lexer.matchers.Token>`_ receives
+   * When a ``Token()`` receives
      the stream it checks whether the first item in the stream is tagged with
      its own tag.
 

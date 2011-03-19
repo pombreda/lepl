@@ -51,18 +51,15 @@ you will need.
 In the rest of the examples below I will assume that you have already imported
 this module.
 
-The second line creates a matcher --- `Real()
-<api/redirect.html#lepl.matchers.derived.Real>`_ (clicking on that link
+The second line creates a matcher --- ``Real()`` (clicking on that link
 will take you to the `API documentation <api>`_ that describes all Lepl's
 modules, including the source code) --- and uses it to match the text "123".
 The result is a list that contains the text "123".
 
-In other words, `Real()
-<api/redirect.html#lepl.matchers.derived.Real>`_ looked at "123" and
+In other words, ``Real()`` looked at "123" and
 recognised that it was a number.
 
-What would happen if we gave `Real()
-<api/redirect.html#lepl.matchers.derived.Real>`_ something that wasn't
+What would happen if we gave ``Real()`` something that wasn't
 a number?  We can try it and see::
 
   >>> Real().parse('cabbage')
@@ -80,7 +77,7 @@ Ambiguity
 ---------
 
 In fact, Lepl doesn't know that "123" is a single number.  Because of the way
-`Real() <api/redirect.html#lepl.matchers.derived.Real>`_ is defined
+``Real()`` is defined
 internally, it gives the `longest` number it can find.  But that doesn't mean
 it is the only result.  We can see all the different possibilities by calling
 ``parse_all()`` instead of ``parse()``:
@@ -105,8 +102,7 @@ Or we can create a list directly:
   >>> list(Real().parse_all('123'))
   [['123'], ['12'], ['1']]
 
-Either way we can see that `Real()
-<api/redirect.html#lepl.matchers.derived.Real>`_ is giving us a choice
+Either way we can see that ``Real()`` is giving us a choice
 of different results.  It can match the number "123", or the number "12", or
 the number "1".  Those are all the different numbers possible if you start
 with the first character.
@@ -144,8 +140,8 @@ both of these using `Integer()` and `Float()`.
 .. warning::
 
    The behaviour described above changed in version 4.4.  Before that,
-   `Float() <api/redirect.html#lepl.matchers.derived.Float>`_ also matched integers.  To convert code from before version 4.4
-   replace `Float() <api/redirect.html#lepl.matchers.derived.Float>`_ with `Real() <api/redirect.html#lepl.matchers.derived.Real>`_.
+   ``Float()`` also matched integers.  To convert code from before version 4.4
+   replace ``Float()`` with ``Real()``.
 
 
 .. index:: &, And(), Literal()
@@ -170,14 +166,12 @@ shorthand for::
 
 .. note::
 
-   Later, when we meet :ref:`separators <separators>`, we'll see that `And()
-   <api/redirect.html#lepl.matchers.combine.And>`_ and ``&`` aren't always
+   Later, when we meet :ref:`separators <separators>`, we'll see that ``And()`` and ``&`` aren't always
    exactly the same.  That's because ``&`` is an operator and operators can be
    redefined in Lepl (in the case of separators, for example, we redefine
    ``&`` to add extra spaces).
 
-The parser above also used `Literal()
-<api/redirect.html#lepl.matchers.core.Literal>`_.  Like its name suggests,
+The parser above also used ``Literal()``.  Like its name suggests,
 this matches whatever value it is given::
 
   >>> matcher = Literal('hello')
@@ -188,8 +182,7 @@ this matches whatever value it is given::
 Implicit Literals
 -----------------
 
-Often we can just use an ordinary string, instead of `Literal()
-<api/redirect.html#lepl.matchers.core.Literal>`_, and Lepl will still understand
+Often we can just use an ordinary string, instead of ``Literal()``, and Lepl will still understand
 what we mean::
 
   >>> add = Real() & '+' & Real()
@@ -199,8 +192,7 @@ what we mean::
 Unfortunately this doesn't always work, and predicting exactly when it's going
 to fail can be difficult (technically, the string must be an argument to a
 matcher's overloaded operator or constructor).  So if you get a strange error
-on a line with strings, try adding a `Literal()
-<api/redirect.html#lepl.matchers.core.Literal>`_ around the text --- after a
+on a line with strings, try adding a ``Literal()`` around the text --- after a
 while you'll get a feeling for when it is needed, and when not.
 
 Anyway, we still haven't added those numbers.  To do that we need to do
@@ -229,7 +221,7 @@ We can indicate that a match should be ignored by preceding the matcher with
   ['12', '30']
 
 Just like ``&``, this is shorthand for another matcher, in this case
-`Drop() <api/redirect.html#lepl.matchers.derived.Drop>`_::
+``Drop()``::
 
   >>> add = Real() & Drop(Literal('+')) & Real()
   >>> add.parse('12+30')
@@ -252,7 +244,7 @@ see what I mean, consider the two examples below::
 We want the first case, not the second.
 
 To do this we can define a new matcher, which takes the output from
-`Real() <api/redirect.html#lepl.matchers.derived.Real>`_ (a list of strings) and passes each value in the list to the
+``Real()`` (a list of strings) and passes each value in the list to the
 Python built--in function, ``float()``::
 
   >>> number = Real() >> float
@@ -333,11 +325,9 @@ What have we learnt so far?
 * Matchers can return one value (with ``parse()``) or all possible values
   (with ``parse_all()``).
 
-* We can join matchers together with ``&`` or `And()
-  <api/redirect.html#lepl.matchers.combine.And>`_.
+* We can join matchers together with ``&`` or ``And()``.
 
-* We can ignore the results of a matcher with ``~`` or `Drop()
-  <api/redirect.html#lepl.matchers.derived.Drop>`_.
+* We can ignore the results of a matcher with ``~`` or ``Drop()``.
 
 * We can process each value in a list of results with ``>>``.
 

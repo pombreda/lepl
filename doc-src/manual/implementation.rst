@@ -28,8 +28,7 @@ recursive call to a matcher.  Unfortunately, the default Python stack is
 rather small and there is no optimisation of tail--recursive calls.  So the
 degree of recursion is limited.  This problem is exacerbated by a "clean",
 orthogonal design that constructs matchers in a hierarchical manner
-(eg. `Word() <api/redirect.html#lepl.matchers.derived.Word>`_ calls `Any()
-<api/redirect.html#lepl.Any>`_ to handle character matching; memoisation uses
+(eg. ``Word()`` calls ``Any()`` to handle character matching; memoisation uses
 nested matchers to manage caches).
 
 Trampolining removes this limitation by moving evaluation to a separate
@@ -59,7 +58,7 @@ spent in the logic of the trampoline loop is relatively unimportant).
 However, in an attempt to improve performance wherever possible, I have
 experimented with various approaches to reducing the number of "bounces"
 made.  These include calling function--based (those that do not need to
-evaluate other matcher) directly; flattening nested `And() <api/redirect.html#lepl.matchers.combine.And>`_ and `Or() <api/redirect.html#lepl.matchers.combine.Or>`_
+evaluate other matcher) directly; flattening nested ``And()`` and ``Or()``
 matchers; compiling simple leaf matchers to regular expressions; combining
 nested transformations.
 
@@ -84,8 +83,7 @@ single character::
 
 The `@function_matcher
 <api/redirect.html#lepl.matchers.support.function_matcher>`_ decorator does
-the necessary work to place the given logic within an `OperatorMatcher()
-<api/redirect.html#lepl.matchers.support.OperatorMatcher>`_ instance, so the
+the necessary work to place the given logic within an ``OperatorMatcher()`` instance, so the
 resulting matcher includes all the usual Lepl functionality (configuration,
 operators, etc).
 
@@ -148,8 +146,7 @@ Trampoline Matchers
 
 The most general matchers evaluate other matchers.  It is difficult to think
 of a simple example to add here, but the curious can check the implementation
-of `And() <api/redirect.html#lepl.matchers.combine.And>`_ and `Or()
-<api/redirect.html#lepl.matchers.combine.Or>`_ (the API documentation includes
+of ``And()`` and ``Or()`` (the API documentation includes
 source).
 
 These matchers are defined using `@trampoline_matcher
@@ -164,7 +161,7 @@ cannot avoid trampolining.
 Memoisation
 -----------
 
-The simple memoizer, `RMemo() <api/redirect.html#lepl.matchers.memo.RMemo>`_, is
+The simple memoizer, ``RMemo()``, is
 equivalent to the approach described by `Norvig 1991
 <http://acl.ldc.upenn.edu/J/J91/J91-1004.pdf>`_ (I may be mistaken, because it
 seems odd that something so simple is so famous, but perhaps life was simpler
@@ -186,8 +183,7 @@ to consumer *something* each time round).  They therefore recommended
 extending the simple cache with a counter that blocks recursion past that
 depth.
 
-This approach is implemented in `LMemo()
-<api/redirect.html#lepl.matchers.memo.LMemo>`_ which makes Lepl robust to
+This approach is implemented in ``LMemo()`` which makes Lepl robust to
 left--recursive grammars.
 
 However, the implementation is non-trivial.  In particular, each occurrence of
@@ -208,19 +204,17 @@ cyclic) graph.  By storing the constructor arguments for the matcher objects
 (and knowing their types, which are constructors in Python) we can reconstruct
 (and, more generally, rewrite) the graph.
 
-The base classes for the graph are in the `graph
-<api/redirect.html#lepl.graph>`_ package (the `node
-<api/redirect.html#lepl.node>`_ package, used for ASTs, builds on these
+The base classes for the graph are in the ``graph`` package (the ``node`` package, used for ASTs, builds on these
 classes so many of the tools used internally within Lepl may also be useful to
 process ASTs).  Matcher graph rewriting occurs during parser construction
-(see the `parser <api/redirect.html#lepl.parser>`_ package).
+(see the ``parser`` package).
 
 Parser rewriting allows memoisation to be transparently added to all nodes,
 for example.
 
 Tree traversal (without rewriting) is also useful; it is used to generate
 various textual representations of the matchers (and the pretty ASCII trees
-for `Node() <api/redirect.html#lepl.support.node.Node>`_--based ASTs).
+for ``Node()``--based ASTs).
 
 
 .. index:: streams, SimpleStream(), LocationStream(), StreamFactory()

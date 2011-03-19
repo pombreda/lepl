@@ -162,7 +162,7 @@ to `.config.record_deepest()
 <api/redirect.html#lepl.core.config.ConfigBuilder.record_deepest>`_.
 
 Looking at the output we can see that the first failure after the deepest
-match was a `Lookahead() <api/redirect.html#lepl.match.Lookahead>`_ on the
+match was a ``Lookahead()`` on the
 input ``' bob, ...'``, after matching a newline, `Literal('\n')
 <api/redirect.html#lepl.matchers.core.Literal>`_.  So we are failing to match a
 space after the newline that separates lines --- this is why the original (see
@@ -183,8 +183,7 @@ space after the newline that separates lines --- this is why the original (see
 Trace Output
 ------------
 
-The same data can also be displayed to the logs with the `Trace()
-<api/redirect.html#lepl.matchers.monitor.Trace>`_ matcher.  This takes a
+The same data can also be displayed to the logs with the ``Trace()`` matcher.  This takes a
 matcher as an argument --- tracing is enabled when the selected matcher is
 called::
 
@@ -218,10 +217,9 @@ Unlike the deepest match output, I don't find this very useful in most cases.
 
 .. note::
 
-  `Trace() <api/redirect.html#lepl.matchers.monitor.Trace>`_ expects the
-  parser to be configured with the `TraceResults
-  <api/redirect.html#lepl.trace.TraceResults>`_ monitor.  This is done with
-  `.config.trace() <api/redirect.html#lepl.core.config.ConfigBuilder.trace>`_.
+  ``Trace()`` expects the
+  parser to be configured with the ``TraceResults`` monitor.  This is done with
+  ``.config.trace()``.
 
 
 .. index:: common errors
@@ -239,8 +237,7 @@ But please suggest new entries via the `mailing list / discussion group
 Missing Tokens
 ~~~~~~~~~~~~~~
 
-The default `Configuration()
-<api/redirect.html#lepl.config.Configuration>`_ includes processing for
+The default ``Configuration()`` includes processing for
 lexers.  If no lexers are present, this message is logged::
 
   Lexer rewriter used, but no tokens found.

@@ -22,9 +22,8 @@ tracebacks are now clearer (you no longer get something that has been mangled
 by the trampolining).
 
 Generating ASTs is simpler too.  There is extra support for using nested
-lists, with the new `List() <api/redirect.html#lepl.support.list.List>`_
-class, which means that the more complex `Node()
-<api/redirect.html#lepl.support.node.Node>`_ classes are often not needed (the
+lists, with the new ``List()``
+class, which means that the more complex ``Node()`` classes are often not needed (the
 examples in the documentation have been updated to reflect this).
 
 Sometimes, when software is made simpler, it becomes slower.  The reverse is
@@ -65,8 +64,7 @@ everything is right at your fingertips::
 
 Each configuration option has two methods --- one to turn it on, and one to
 turn it off.  These changes are relative to the default :ref:`configuration
-<configuration>` unless you first call `.config.clear()
-<api/redirect.html#lepl.core.config.ConfigBuilder.clear>`_ (which removes all
+<configuration>` unless you first call ``.config.clear()`` (which removes all
 options).
 
 So, for example::
@@ -113,7 +111,7 @@ The new `matcher.parse_all()
 related `matcher.parse_string_all()
 <api/redirect.html#lepl.core.config.ParserMixin.parse_string_all>`_, etc)
 returns a generator of all possible matches.  This is similar to the old
-`matcher.match() <api/redirect.html#lepl.core.config.ParserMixin.match>`_
+``matcher.match()``
 method (which still exists), but without the remaining streams (which were
 usually not interesting).  If you need multiple matches you'll probably find
 that `matcher.parse_all()
@@ -121,7 +119,7 @@ that `matcher.parse_all()
 code.
 
 Also, parsers are now cached (this isn't strictly new - it was also present in
-later Lepl 3 versions).  This means that you can call `matcher.parse() <api/redirect.html#lepl.core.config.ParserMixin.parse>`_
+later Lepl 3 versions).  This means that you can call ``matcher.parse()``
 repeatedly without worrying about wasting time re-compiling the parser.
 
 Cached parsers and configuration interact like you would expect --- changing

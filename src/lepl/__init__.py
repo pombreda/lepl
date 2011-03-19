@@ -117,7 +117,7 @@ from lepl.core.trace import RecordDeepest, TraceStack
 from lepl.matchers.combine import And, Or, First, Difference, Limit
 from lepl.matchers.core import Empty, Any, Delayed, Literal, Empty, \
     Lookahead, Regexp
-from lepl.matchers.complex import PostMatch, Columns
+from lepl.matchers.complex import PostMatch, Columns, Iterate
 from lepl.matchers.monitor import Trace
 from lepl.matchers.derived import Apply, args, KApply, Join, \
     AnyBut, Optional, Star, ZeroOrMore, Map, Add, Drop, Repeat, Plus, \
@@ -252,6 +252,7 @@ __all__ = [
         # lepl.matchers.complex
         'PostMatch',
         'Columns',
+        'Iterate',
 
         # lepl.matchers.support
         'function_matcher', 
