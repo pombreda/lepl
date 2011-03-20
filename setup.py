@@ -16,8 +16,9 @@ The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
 `Release 5.0 <http://www.acooke.org/lepl/lepl5.0.html>`_ has simpler stream
-(input) handling.  As a result, Lepl is faster and easier to maintain and 
-extend.
+(input) handling.  Memoisation, line-aware lexing and memory use have also 
+been revised.  These changes make future extension easier, fix several bugs, 
+and improve performance.
 
 Features
 --------
@@ -69,7 +70,6 @@ Features
                 'lepl.contrib',
                 'lepl.core',         'lepl.core._test',
                 'lepl.lexer',        'lepl.lexer._test',        'lepl.lexer._example',
-                'lepl.lexer.blocks', 'lepl.lexer.blocks._test', 'lepl.lexer.blocks._example',
                 'lepl.lexer.lines',  'lepl.lexer.lines._test',  'lepl.lexer.lines._example',
                 'lepl.matchers',     'lepl.matchers._test',
                 'lepl.regexp',       'lepl.regexp._test',
@@ -87,6 +87,7 @@ Features
                    'Programming Language :: Python :: 3',
                    'Programming Language :: Python :: 3.0',
                    'Programming Language :: Python :: 3.1',
+                   'Programming Language :: Python :: 3.2',
                    'Programming Language :: Python :: 2.6',
                    'Programming Language :: Python :: 2.7',
                    'Topic :: Software Development',

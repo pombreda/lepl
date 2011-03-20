@@ -191,8 +191,9 @@ Streams
     offside parsing - before it was technically possible to not do so).
 
 * The values available when generating an error message inside the parser have
-  changed.  The value names are LINK, and typically are prefixed by ``in_``
-  and ``out_`` for the input and output streams.
+  changed.  The value names are `documented here
+  <api/lepl.stream.core-pysrc.html#StreamHelper.kargs>`_, and typically are
+  prefixed by ``in_`` and ``out_`` for the input and output streams.
 
 * The configuration for "managed generators" has changed from
   `.config.manage()
@@ -208,7 +209,8 @@ Streams
   <api/redirect.html#lepl.stream.core.s_next>`_ and friends instead of
   accessing the "string".  So replace:: char = stream[0] next_stream =
   stream[1:] with ``(char, next_stream) = s_next(stream)``.  The full set of
-  functions is documented at LINK and the source is full of examples.
+  functions is documented in `lepl.stream.core <api/redirect.html#lepl.stream.core>`_ and the source is full of
+  examples.
 
 * `TraceResults() <api/redirect.html#lepl.core.trace.TraceResults>`_,
   configured by ``config.trace()``, is now `TraceStack()
@@ -221,9 +223,8 @@ Streams
   "leak".
 
 * Repetition joins values using a "repeat" operator.  By default this joins
-  lists, as before, but you can redefine it to define a fold over results.  I
-  use this in the large memory example (ADD LINK) which explains the idea in a
-  little more detail.
+  lists, as before, but you can redefine it to define a fold over results.
+  See the example :ref:`low_memory`.
 
 * (Implementation detail) The "wrapper" around trampolining matchers is no
   longer "transformable".  This should have no effect on your code unless you

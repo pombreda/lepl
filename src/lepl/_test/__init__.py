@@ -44,11 +44,14 @@ import lepl
 #@PydevCodeAnalysisIgnore
 import lepl._test.bug_stalled_parser
 import lepl._test.magus
+import lepl._test.wrong_cache_bug
+import lepl._test.wrong_depth_bug
+import lepl._test.wrong_regexp_bug
 
 # Number of tests if running in IDE with Python 3
 #TOTAL = 461 # Lepl 4
-TOTAL = 412
-NOT_DISTRIBUTED = 18
+TOTAL = 406
+NOT_DISTRIBUTED = 18 + 13
 NOT_3 = 22
 
 MODULES = [('apps', []), 
@@ -56,7 +59,7 @@ MODULES = [('apps', []),
            ('cairo', []),
            ('contrib', []),
            ('core', []),
-           ('lexer', [('lines', []), ('blocks', [])]), 
+           ('lexer', [('lines', [])]), 
            ('matchers', []),
            ('regexp', []),
            ('stream', []),
@@ -81,16 +84,13 @@ def all():
     print('\n\n\n----------------------------------------------------------'
           '------------\n')
     if version[0] == '2':
-        print('Expect 3-5 failures + 2 errors in Python 2.6: {0:d}, {1:d} '
-              '(lenient comparison, fmt variation from address size, '
-              'unicode ranges, weird string difference; json unicode)'
+        print('Expect 2-5 failures + 2 errors in Python 2.6: {0:d}, {1:d} '
               .format(len(result.failures), len(result.errors)))
-        assert 3 <= len(result.failures) <= 5, len(result.failures)
-        assert 2 <= len(result.errors) <= 2, len(result.errors)
+        assert 2 <= len(result.failures) <= 5, len(result.failures)
+        assert 1 <= len(result.errors) <= 2, len(result.errors)
         target = TOTAL - NOT_DISTRIBUTED - NOT_3
     else:
         print('Expect at most 1 failure + 0 errors in Python 3: {0:d}, {1:d} '
-              '(fmt variations from address size?)'
               .format(len(result.failures), len(result.errors)))
         assert 0 <= len(result.failures) <= 1, len(result.failures)
         assert 0 <= len(result.errors) <= 0, len(result.errors)

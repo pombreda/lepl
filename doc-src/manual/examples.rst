@@ -286,6 +286,7 @@ We can also use line-aware parsing with tokens to handle the newline::
   >>> lines.parse('abc de f\n pqr\n')
   [['abc', 'de', 'f'], ['pqr']]
 
+.. _low_memory:
 .. index:: low_memory(), Override()
 
 Low Memory Use

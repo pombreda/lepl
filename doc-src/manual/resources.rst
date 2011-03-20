@@ -82,7 +82,7 @@ above, because the alternatives will be unavailable.
 The hack is to return fragments of the output as alternative matches.  This
 means:
 
- * Adding the matcher ``Iterate()`` at the "top level" of the parser.  This
+ * Adding the matcher `Iterate() <api/redirect.html#lepl.matchers.complex.Iterate>`_ at the "top level" of the parser.  This
    will return each fragment in turn.
 
  * Calling `parse_all()
@@ -96,7 +96,7 @@ line::
   >>> all_lines = Line(Token(Any()[:,...]))[:]
 
 and here is the equivalent matcher than returns each line as a separate
-fragment.  Note how the final ``[:]`` is replaced by ``Iterate()``::
+fragment.  Note how the final ``[:]`` is replaced by `Iterate() <api/redirect.html#lepl.matchers.complex.Iterate>`_::
 
   >>> each_line = Iterate(Line(Token(Any()[:,...])))
 

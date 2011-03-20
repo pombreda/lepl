@@ -55,27 +55,17 @@ Binary Operators Between Matchers
 ========  ===========
 Operator  Description
 ========  ===========
-``&``     Joins matchers in sequence.  The result is a single list containing 
-          the results from all functions.  Identical (without separators) to 
-          `And() <api/redirect.html#lepl.matchers.combine.And>`_.
+``&``     Joins matchers in sequence.  The result is a single list containing the results from all functions.  Identical (without separators) to `And() <api/redirect.html#lepl.matchers.combine.And>`_.
 --------  -----------
-``+``     As ``&``, but the results are then joined together with the standard
-          Python ``+`` operator.
+``+``     As ``&``, but the results are then joined together with the standard Python ``+`` operator.
 --------  -----------
-``/``     As ``&``, but with optional spaces (0 or more) between functions.
-          If no space is found, no result is added, otherwise any found
-          spaces are joined together into a single result.
+``/``     As ``&``, but with optional spaces (0 or more) between functions.  If no space is found, no result is added, otherwise any found spaces are joined together into a single result.
 --------  -----------
-``//``    As ``&``, but with required spaces (1 or more) between functions.
-          The spaces are joined together into a single result.
+``//``    As ``&``, but with required spaces (1 or more) between functions.  The spaces are joined together into a single result.
 --------  -----------
-``|``     Matches one matcher from a list.  The result is the result of the
-          chosen matcher.  Identical to 
-          `Or() <api/redirect.html#lepl.matchers.combine.Or>`_.
+``|``     Matches one matcher from a list.  The result is the result of the chosen matcher.  Identical to `Or() <api/redirect.html#lepl.matchers.combine.Or>`_.
 --------  -----------
-``%``     As ``|``, but without backtracking between functions.  
-          Identical to 
-          `First() <api/redirect.html#lepl.matchers.combine.First>`_.
+``%``     As ``|``, but without backtracking between functions.  Identical to `First() <api/redirect.html#lepl.matchers.combine.First>`_.
 ========  ===========
 
 For a discussion of backtracking see :ref:`backtracking`.
@@ -114,35 +104,17 @@ Operators That Apply Functions To Results
 ========  ===========
 Operator  Description
 ========  ===========
-``>=``    Pass the results of the matcher (left) to the given function (right)
-          and use the result as the new result.  Identical to `Apply(raw=True) 
-          <api/redirect.html#lepl.matchers.derived.Apply>`_.
+``>=``    Pass the results of the matcher (left) to the given function (right) and use the result as the new result.  Identical to `Apply(raw=True) <api/redirect.html#lepl.matchers.derived.Apply>`_.
 --------  -----------
-``>``     Pass the results of the matcher (left) to the given function 
-          (right) and use the result, *within a new list*,  as the result.
-          If the function is a string a ``(string, result)`` pair is 
-          generated instead.  
-          Identical to 
-          `Apply() <api/redirect.html#lepl.matchers.derived.Apply>`_.
+``>``     Pass the results of the matcher (left) to the given function (right) and use the result, *within a new list*,  as the result.  If the function is a string a ``(string, result)`` pair is generated instead.  Identical to `Apply() <api/redirect.html#lepl.matchers.derived.Apply>`_.
 --------  -----------
-`args <api/redirect.html#lepl.matchers.derived.args>`_  Not an operator, but used with ``>`` to expand the list of results
-          to be arguments (like Python's ``*args`` convention).  For
-          example ``> args(myFunc)`` invokes ``myFunc(*results)``.
+``args``  Not an operator, but used with ``>`` to expand the list of results to be arguments (like Python's ``*args`` convention).  For example ``> args(myFunc)`` invokes ``myFunc(*results)``.
 --------  -----------
-``>>``    As ``>``, but the function is applied to each result in turn 
-          (instead of all results being supplied in a single list argument).
-          Identical to `Map() <api/redirect.html#lepl.matchers.derived.Map>`_.
+``>>``    As ``>``, but the function is applied to each result in turn (instead of all results being supplied in a single list argument).  Identical to `Map() <api/redirect.html#lepl.matchers.derived.Map>`_.
 --------  -----------
-``**``    As ``>``, but the results are passed as the named parameter 
-          *results*.  Additional keyword arguments are *stream_in* (the
-          stream passed to the matcher), *stream_out* (the stream returned
-          from the matcher) and *core* (see :ref:`resources`).  
-          Identical to 
-          `KApply() <api/redirect.html#lepl.matchers.derived.KApply>`_.
+``**``    As ``>``, but the results are passed as the named parameter *results*.  Additional keyword arguments are *stream_in* (the stream passed to the matcher), *stream_out* (the stream returned from the matcher) and *core* (see :ref:`resources`).  Identical to `KApply() <api/redirect.html#lepl.matchers.derived.KApply>`_.
 --------  -----------
-``^``     Raise a Syntax error.  The argument to the right is a string that
-          is treated as a format template for the same named arguments as 
-          ``**``.
+``^``     Raise a Syntax error.  The argument to the right is a string that is treated as a format template for the same named arguments as ``**``.
 ========  ===========
 
 
@@ -151,7 +123,8 @@ Operator  Description
 Replacement
 -----------
 
-Operators can be replaced inside a ``with`` context using `Override() <api/redirect.html#lepl.matchers.operators.Override>`_::
+Operators can be replaced inside a ``with`` context using `Override()
+<api/redirect.html#lepl.matchers.operators.Override>`_::
 
   >>> with Override(or_=And, and_=Or):
   >>>     abcd = (Literal('a') & Literal('b')) | ( Literal('c') & Literal('d'))
@@ -175,8 +148,11 @@ space--separated words in a transparent manner:
   ['hello', ' ', 'world']
 
 Note that there was no need to specify a separator in ``word[1:]``, and that
-this the argument of `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ is a rare example of a
-string being coerced to something other than a `Literal() <api/redirect.html#lepl.matchers.core.Literal>`_ (here `Regexp() <api/redirect.html#lepl.matchers.core.Regexp>`_ is used).
+this the argument of `Separator()
+<api/redirect.html#lepl.matchers.operators.Separator>`_ is a rare example of a
+string being coerced to something other than a `Literal()
+<api/redirect.html#lepl.matchers.core.Literal>`_ (here `Regexp()
+<api/redirect.html#lepl.matchers.core.Regexp>`_ is used).
 
 The use of separators to handle spaces is discussed in more detail below.
 
@@ -203,7 +179,8 @@ Alternatively, to handle optional spaces (zero or more), without tokens, use
       addition = value & "+" & value
 
 But sometimes these are not the right solution.  One case is
-:ref:`table_example`, when the `Columns() <api/redirect.html#lepl.matchers.complex.Columns>`_ matcher is a good fit.
+:ref:`table_example`, when the `Columns()
+<api/redirect.html#lepl.matchers.complex.Columns>`_ matcher is a good fit.
 Another is when spaces are *required*.
 
 It is something of a "beginner's mistake" to enforce the use of spaces in the
@@ -214,7 +191,8 @@ is sometimes necessary.
 In such cases, the only real solution is to specify all the spaces by hand.
 One option is to use the ``/`` and ``//`` operators (which match zero-- and
 one--or--more spaces respectively).  Alternatively, to save typing, Lepl
-includes various *separators* (`DroppedSpace() <api/redirect.html#lepl.matchers.operators.DroppedSpace>`_, above, is a
+includes various *separators* (`DroppedSpace()
+<api/redirect.html#lepl.matchers.operators.DroppedSpace>`_, above, is a
 separator).  The :ref:`Tutorial <separators>` introduced the basic
 `Separator() <api/redirect.html#lepl.matchers.operators.Separator>`_ (as
 described in the previous section, above), which requires a user--specified
@@ -225,10 +203,12 @@ the spaces remain even when the optional matcher is ignored.
 
 So, to help automate the (rare) case of *required* spaces, *automatic*
 addition of spaces for each `&`, and *optional* matchers, two "smart"
-separators are also available.  The first, `SmartSeparator1() <api/redirect.html#lepl.matchers.operators.SmartSeparator1>`_, checks whether
+separators are also available.  The first, `SmartSeparator1()
+<api/redirect.html#lepl.matchers.operators.SmartSeparator1>`_, checks whether
 a matcher is used by seeing whether it consumes input; spaces are only added
 when `&` is between two matchers that both "move along" the input stream.  The
-second, `SmartSeparator2() <api/redirect.html#lepl.contrib.matchers.SmartSeparator2>`_, takes a more
+second, `SmartSeparator2()
+<api/redirect.html#lepl.contrib.matchers.SmartSeparator2>`_, takes a more
 pro--active approach and examines the matchers to see whether they inherit
 from the base class used in Lepl to implement "optionality".
 
@@ -243,9 +223,11 @@ present, or whether you can do what you want more simply and reliably with the
 
 The following tables show the results of some simple tests for different
 separators, spaces, and functions.  They also illustrate two separate, but
-related, issues: the difference between `And() <api/redirect.html#lepl.matchers.combine.And>`_ and ``&`` when separators are
-present; and how matchers like `Eos() <api/redirect.html#lepl.matchers.core.Eos>`_ function (which is not
-optional, but consumes no input).
+related, issues: the difference between `And()
+<api/redirect.html#lepl.matchers.combine.And>`_ and ``&`` when separators are
+present; and how matchers like `Eos()
+<api/redirect.html#lepl.matchers.core.Eos>`_ function (which is not optional,
+but consumes no input).
 
 
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+

@@ -90,16 +90,18 @@ def print_timing(input, matchers, count=10, count_compile=None, best_of=3,
     if count_compile is None:
         count_compile = count
         
-    print('\n\nTiming Results (ms)', file=out)
-    print('-------------------', file=out)
-    print(fmt('\nCompiling:  best of {1:d} averages over {0:d} repetition(s)',
-              count_compile, best_of),
-          file=out)
-    print(fmt('Parse only: best of {1:d} averages over {0:d} repetition(s)',
-              count, best_of),
-          file=out)
-    print('\n             Matcher           Compiling | Parse only', file=out)
-    print('-----------------------------------------+------------------', file=out)
+    # python 2 has no support for print(..., file=...)
+    def prnt(msg='', end='\n'):
+        out.write(msg + end)
+        
+    prnt('\n\nTiming Results (ms)')
+    prnt('-------------------')
+    prnt(fmt('\nCompiling:  best of {1:d} averages over {0:d} repetition(s)',
+              count_compile, best_of))
+    prnt(fmt('Parse only: best of {1:d} averages over {0:d} repetition(s)',
+              count, best_of))
+    prnt('\n             Matcher           Compiling | Parse only')
+    prnt('-----------------------------------------+------------------')
     
     references = [None, None]
     names = sorted(matchers.keys())
@@ -112,7 +114,7 @@ def print_timing(input, matchers, count=10, count_compile=None, best_of=3,
     names = [reference] + [name for name in names if name != reference]
     
     for name in names:
-        print(fmt('{0:>20s}  ', name), end='', file=out)
+        prnt(fmt('{0:>20s}  ', name), end='')
         matcher = matchers[name]
         for (compile, n, end, r) in ((True, count_compile, ' |', 0), 
                                      (False, count, '\n', 1)):
@@ -131,17 +133,17 @@ def print_timing(input, matchers, count=10, count_compile=None, best_of=3,
                 
             times.sort()
             best = 1000 * times[0] / float(n)
-            print(fmt('{0:7.2f}', best), end='', file=out)
+            prnt(fmt('{0:7.2f}', best), end='')
 
             ref = references[r]
             if ref is None:
                 references[r] = best
-                print('           ', end=end, file=out)
+                prnt('           ', end=end)
             elif ref:
                 ratio = best / ref
-                print(fmt('  (x {0:5.1f})', ratio), end=end, file=out)
+                prnt(fmt('  (x {0:5.1f})', ratio), end=end)
             else:
-                print('  (x -----)', end=end, file=out)
+                prnt('  (x -----)', end=end)
                 
-    print(file=out)
+    prnt()
     

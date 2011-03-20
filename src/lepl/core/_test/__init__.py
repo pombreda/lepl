@@ -37,6 +37,7 @@ Tests for the lepl.core package.
 
 # pylint: disable-msg=E0611
 #@PydevCodeAnalysisIgnore
+import lepl.core._test.clone
 import lepl.core._test.config
 import lepl.core._test.manager
 import lepl.core._test.parser

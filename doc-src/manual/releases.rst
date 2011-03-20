@@ -113,12 +113,14 @@ Date        Version  Description
                      add ``Rational()`` matchers.
 ----------  -------  -----------
 2011-01-30  4.4      Rename `Float() <api/redirect.html#lepl.support.warn.Float>`_, `Real() <api/redirect.html#lepl.matchers.derived.Real>`_; add `Limit() <api/redirect.html#lepl.matchers.combine.Limit>`_.
+----------  -------  -----------
+2011-03-20  5.0      Rewrite of streams and related functionality.  Simplified core code.
 ==========  =======  ===========
 
 5.0
 ---
 
-See :ref:`lepl4`.
+See :ref:`lepl5`.
 
 Stream handling and line--aware parsing were simplified.  Resource management
 was improved.
