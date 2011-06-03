@@ -1,0 +1,1675 @@
+:hola
+:KMW
+  MajorVersion=1
+  MinorVersion=5
+  Path=f:farmas
+:eKMW
+:WorkPanel
+  :Info
+    Name=ArtVDat
+    Description=Datos de artículo en venta
+    Folder=Ventas
+  :eInfo
+  :ObjInfo
+  :eObjInfo
+  LastUpdate=2010-12-03 19:17:34
+  :Variable
+    Name=Today
+    Title=Today
+    Type=Date
+    Length=8
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-2
+    Name=Time
+    Title=Time
+    Type=Character
+    Length=8
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-3
+    Name=Pgmname
+    Title=Pgmname
+    Type=Character
+    Length=8
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-4
+    Name=Pgmdesc
+    Title=Pgmdesc
+    Type=Character
+    Length=30
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-5
+    Name=PcDes
+    Title=PcDes
+    Length=6
+    Sign
+    Picture=ZZ9.99
+    BasedOn=_CifraPorcentaje
+  :eVariable
+  :Variable
+    Id=-6
+    Name=PrecioDes
+    Title=PrecioDes
+    Picture=ZZZZZZ9.99
+  :eVariable
+  :Variable
+    Id=-7
+    Name=origen
+    Title=origen
+    Type=Character
+    Length=40
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-8
+    Name=ArtNom
+    Title=ArtNom
+    Type=Character
+    Length=40
+    Decimals=0
+    BasedOn=_NombreLargo
+  :eVariable
+  :Variable
+    Id=-9
+    Name=HayCat
+    Title=HayCat
+    Length=1
+    Decimals=0
+    Picture=9
+  :eVariable
+  :Variable
+    Id=-10
+    Name=VtalnPcDes
+    Title=VtalnPcDes
+    Length=6
+    Sign
+    Picture=ZZ9.99
+    BasedOn=_CifraPorcentaje
+  :eVariable
+  :Variable
+    Id=-11
+    Name=Desc
+    Title=Desc
+    Length=6
+    Sign
+    Picture=ZZ9.99
+    BasedOn=_CifraPorcentaje
+  :eVariable
+  :Variable
+    Id=-12
+    Name=Of
+    Title=Of
+    Type=Character
+    Length=2
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-13
+    Name=PrvNom
+    Title=PrvNom
+    Type=Character
+    Length=40
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-14
+    Name=ArtStk
+    Title=ArtStk
+    Length=8
+    Sign
+    Picture=ZZZZ9.99
+  :eVariable
+  :Variable
+    Id=-15
+    Name=ArtPreVta
+    Title=ArtPreVta
+    Length=8
+    Picture=ZZZZ9.99
+  :eVariable
+  :Variable
+    Id=-16
+    Name=ArtStkMin
+    Title=ArtStkMin
+    Length=8
+    Sign
+    Picture=ZZZZ9.99
+  :eVariable
+  :Variable
+    Id=-17
+    Name=ArtEstVta
+    Title=ArtEstVta
+    Type=Character
+    Length=3
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-18
+    Name=ArtEstDep
+    Title=ArtEstDep
+    Type=Character
+    Length=3
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-19
+    Name=ArtObs1
+    Title=ArtObs1
+    Type=Character
+    Length=40
+    Decimals=0
+    Rows=7
+  :eVariable
+  :Variable
+    Id=-20
+    Name=ArtCod
+    Title=ArtCod
+    Length=6
+    Decimals=0
+    Picture=ZZZZZ9
+  :eVariable
+  :Variable
+    Id=-21
+    Name=i
+    Title=i
+    Decimals=0
+    Picture=ZZZZZZZZZ9
+  :eVariable
+  :Variable
+    Id=-22
+    Name=j
+    Title=j
+    Decimals=0
+    Picture=ZZZZZZZZZ9
+  :eVariable
+  :Variable
+    Id=-23
+    Name=ArtPsiExt
+    Title=ArtPsiExt
+    Type=Character
+    Length=20
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-24
+    Name=ArtPreLis
+    Title=ArtPreLis
+    Length=8
+    Picture=ZZZZ9.99
+  :eVariable
+  :Variable
+    Id=-25
+    Name=tope
+    Title=tope
+    Type=Date
+    Length=8
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-26
+    Name=ArtPreLi2
+    Title=ArtPreLi2
+    Length=8
+    Picture=ZZZZ9.99
+  :eVariable
+  :Variable
+    Id=-27
+    Name=PcDesReal
+    Title=PcDesReal
+    Length=6
+    Sign
+    Picture=ZZ9.99
+  :eVariable
+  :Variable
+    Id=-28
+    Name=Maestro
+    Title=Maestro
+    Length=6
+    Decimals=0
+    Picture=ZZZZZ9
+  :eVariable
+  :Variable
+    Id=-29
+    Name=NoStk
+    Title=NoStk
+    Length=1
+    Decimals=0
+    Picture=9
+  :eVariable
+  :Variable
+    Id=-30
+    Name=ParStr
+    Title=ParStr
+    Type=Character
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-31
+    Name=StkStrTit
+    Title=StkStrTit
+    Type=Character
+    Length=7
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-32
+    Name=StkStrVal
+    Title=StkStrVal
+    Type=Character
+    Length=8
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-33
+    Name=Tipo
+    Title=Tipo
+    Type=Character
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-34
+    Name=tipfal
+    Title=tipfal
+    Length=1
+    Decimals=0
+    Picture=9
+  :eVariable
+  :Variable
+    Id=-35
+    Name=TipFalTxt
+    Title=TipFalTxt
+    Type=Character
+    Length=20
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-36
+    Name=MsgCntRece
+    Title=MsgCntRece
+    Type=Character
+    Length=20
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-37
+    Name=MsgCntPedi
+    Title=MsgCntPedi
+    Type=Character
+    Length=20
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-38
+    Name=MsgCntCanj
+    Title=MsgCntCanj
+    Type=Character
+    Length=20
+    Decimals=0
+  :eVariable
+  :Variable
+    Id=-39
+    Name=PedPrv
+    Title=PedPrv
+    Length=6
+    Decimals=1
+    Picture=ZZZ9.9
+  :eVariable
+  :Variable
+    Id=-40
+    Name=PedDroCnj
+    Title=PedDroCnj
+    Length=6
+    Decimals=1
+    Picture=ZZZ9.9
+  :eVariable
+  :Variable
+    Id=-41
+    Name=PedPrvCnj
+    Title=PedPrvCnj
+    Length=6
+    Decimals=1
+    Picture=ZZZ9.9
+  :eVariable
+  :Variable
+    Id=-42
+    Name=CntCanje
+    Title=CntCanje
+    Length=6
+    Decimals=1
+    Picture=ZZZ9.9
+  :eVariable
+  :Variable
+    Id=-43
+    Name=CntPedida
+    Title=CntPedida
+    Length=6
+    Decimals=1
+    Picture=ZZZ9.9
+  :eVariable
+  :Variable
+    Id=-44
+    Name=CntRecetas
+    Title=CntRecetas
+    Length=6
+    Decimals=1
+    Picture=ZZZ9.9
+  :eVariable
+  :Variable
+    Id=-45
+    Name=PedDro
+    Title=PedDro
+    Length=6
+    Decimals=1
+    Picture=ZZZ9.9
+  :eVariable
+  :Variable
+    Id=-46
+    Name=MsgCntDevB
+    Title=MsgCntDevB
+    Type=Character
+    Length=20
+    Decimals=0
+  :eVariable
+  :Property
+    Type=string
+    Name=WNDPOP
+    Value=YES
+    Rule=popup('N');
+  :eProperty
+  :Form
+    NextControlID=68
+    :FormInfo
+      FormId=1
+      FormClass=Text
+      IsGraphic=N
+      IsDefault=N
+      :Font
+        Size=9
+      :eFont
+      :Font
+        Size=9
+        Bold
+      :eFont
+      GridWidth=6
+      GridHeight=27
+      TemplateBased=N
+    :eFormInfo
+    :Block
+      :Frame
+        left=3
+        top=3
+        right=642
+        bottom=427
+        LBColor=0xE0C0B8
+        TextMode
+        :ColorInfo
+          Default=N
+          Foreground=Aqua
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        GSGridWidth=6
+        DataLeft=160
+        DataTop=119
+        DataRight=480
+        DataBottom=221
+      :eFrame
+      :Edit
+        left=56
+        top=51
+        right=375
+        bottom=67
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-8
+        Name=ArtNom
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=216
+        top=102
+        right=279
+        bottom=118
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-15
+        Name=ArtPreVta
+        :EditInfo
+        :eEditInfo
+        Align=2
+      :eEdit
+      :Text
+        left=80
+        top=102
+        right=215
+        bottom=118
+        TextMode
+        :ColorInfo
+          Default=N
+          Foreground=Aqua
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        Text=Precio de venta :
+        :Source
+Precio de venta :
+        :eSource
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eText
+      :Edit
+        left=56
+        top=68
+        right=375
+        bottom=84
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-13
+        Name=PrvNom
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=216
+        top=85
+        right=279
+        bottom=101
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-32
+        Name=StkStrVal
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Text
+        left=72
+        top=136
+        right=215
+        bottom=152
+        TextMode
+        :ColorInfo
+          Default=N
+          Foreground=Aqua
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        Text=Estante de venta :
+        :Source
+Estante de venta :
+        :eSource
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eText
+      :Text
+        left=48
+        top=153
+        right=215
+        bottom=169
+        TextMode
+        :ColorInfo
+          Default=N
+          Foreground=Aqua
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        Text=Estante en depósito :
+        :Source
+Estante en depósito :
+        :eSource
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eText
+      :Rect
+        left=40
+        top=34
+        right=568
+        bottom=323
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        OutStyle=Single
+      :eRect
+      :Text
+        left=40
+        top=34
+        right=367
+        bottom=50
+        TextMode
+        :ColorInfo
+          Default=N
+          Foreground=Aqua
+          Background=Teal
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        Text=' Datos de artículo                       '
+        :Source
+ Datos de artículo                       
+        :eSource
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eText
+      :Text
+        left=104
+        top=119
+        right=215
+        bottom=135
+        TextMode
+        :ColorInfo
+          Default=N
+          Foreground=Aqua
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        Text=Stock mínimo :
+        :Source
+Stock mínimo :
+        :eSource
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eText
+      :Edit
+        left=216
+        top=119
+        right=279
+        bottom=135
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-16
+        Name=ArtStkMin
+        :EditInfo
+        :eEditInfo
+        Align=2
+      :eEdit
+      :Edit
+        left=56
+        top=187
+        right=375
+        bottom=203
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-19
+        Name=ArtObs1
+        Dimension=1
+        Row='1 '
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Text
+        left=40
+        top=170
+        right=383
+        bottom=186
+        TextMode
+        :ColorInfo
+          Default=N
+          Foreground=Yellow
+          Background=Teal
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        Text=' Observaciones                             '
+        :Source
+ Observaciones                             
+        :eSource
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eText
+      :Edit
+        left=224
+        top=153
+        right=247
+        bottom=169
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-18
+        Name=ArtEstDep
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=224
+        top=136
+        right=247
+        bottom=152
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-17
+        Name=ArtEstVta
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :SubFile
+        left=392
+        top=34
+        right=552
+        bottom=203
+        Pen=N
+        LPColor=Lime
+        LBColor=Black
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Item
+          AttriId=-5
+          Name=PcDes
+          TDefault=N
+          Title=' %Desc'
+          Width=56
+          :ColorInfo
+          :eColorInfo
+          :ColorInfo
+          :eColorInfo
+          :EditInfo
+          :eEditInfo
+        :eItem
+        :Item
+          AttriId=-6
+          Name=PrecioDes
+          TDefault=N
+          Title=' Pr. desc.'
+          Width=88
+          :ColorInfo
+          :eColorInfo
+          :ColorInfo
+          :eColorInfo
+          :EditInfo
+          :eEditInfo
+        :eItem
+        :Item
+          AttriId=-12
+          Name=Of
+          TDefault=N
+          Width=16
+          :ColorInfo
+          :eColorInfo
+          :ColorInfo
+          :eColorInfo
+          DefaultType
+          :EditInfo
+          :eEditInfo
+        :eItem
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eSubFile
+      :Text
+        left=368
+        top=34
+        right=439
+        bottom=50
+        TextMode
+        :ColorInfo
+          Default=N
+          Foreground=Yellow
+          Background=Teal
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        Text='   %Desc '
+        :Source
+   %Desc 
+        :eSource
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eText
+      :Text
+        left=440
+        top=34
+        right=567
+        bottom=50
+        TextMode
+        :ColorInfo
+          Default=N
+          Foreground=Yellow
+          Background=Teal
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        Text=' Pre.Desc.      '
+        :Source
+ Pre.Desc.      
+        :eSource
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eText
+      :Edit
+        left=56
+        top=204
+        right=375
+        bottom=220
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-19
+        Name=ArtObs1
+        Dimension=1
+        Row='2 '
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=56
+        top=221
+        right=375
+        bottom=237
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-19
+        Name=ArtObs1
+        Dimension=1
+        Row='3 '
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=56
+        top=238
+        right=375
+        bottom=254
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-19
+        Name=ArtObs1
+        Dimension=1
+        Row='4 '
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=56
+        top=255
+        right=375
+        bottom=271
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-19
+        Name=ArtObs1
+        Dimension=1
+        Row='5 '
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=56
+        top=272
+        right=375
+        bottom=288
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-19
+        Name=ArtObs1
+        Dimension=1
+        Row='6 '
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=56
+        top=289
+        right=375
+        bottom=305
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-19
+        Name=ArtObs1
+        Dimension=1
+        Row='7 '
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=392
+        top=289
+        right=551
+        bottom=305
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-23
+        Name=ArtPsiExt
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=312
+        top=119
+        right=375
+        bottom=135
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-24
+        Name=ArtPreLis
+        :EditInfo
+        :eEditInfo
+        Align=2
+      :eEdit
+      :Edit
+        left=320
+        top=136
+        right=367
+        bottom=152
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-27
+        Name=PcDesReal
+        :EditInfo
+        :eEditInfo
+        Align=2
+      :eEdit
+      :Text
+        left=368
+        top=136
+        right=375
+        bottom=152
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        Text=%
+        :Source
+%
+        :eSource
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eText
+      :Rect
+        left=304
+        top=102
+        right=384
+        bottom=170
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        OutStyle=Single
+      :eRect
+      :Text
+        left=304
+        top=102
+        right=383
+        bottom=118
+        TextMode
+        :ColorInfo
+          Default=N
+          Foreground=Aqua
+          Background=Teal
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        Text=' En lista '
+        :Source
+ En lista 
+        :eSource
+        :Font
+          Name=Courier New
+          Size=10
+        :eFont
+      :eText
+      :Edit
+        left=160
+        top=85
+        right=215
+        bottom=101
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-31
+        Name=StkStrTit
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=392
+        top=272
+        right=551
+        bottom=288
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-35
+        Name=TipFalTxt
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=392
+        top=255
+        right=551
+        bottom=271
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-36
+        Name=MsgCntRece
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=392
+        top=221
+        right=551
+        bottom=237
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-37
+        Name=MsgCntPedi
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=392
+        top=238
+        right=551
+        bottom=254
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-38
+        Name=MsgCntCanj
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+      :Edit
+        left=392
+        top=204
+        right=551
+        bottom=220
+        TextMode
+        :ColorInfo
+        :eColorInfo
+        :WebProperties
+        :eWebProperties
+        FromStyle=N
+        FromDefault=N
+        :Font
+          Name=Courier New
+          Size=10
+          Underline
+        :eFont
+        Id=-46
+        Name=MsgCntDevB
+        :EditInfo
+        :eEditInfo
+        Align=0
+      :eEdit
+    :eBlock
+  :eForm
+  :Events
+Event Start
+
+    if null( &ArtCod )
+        //para "no existe IVAS"
+        dbase keyboard chr(13)
+        return
+    endif
+
+    &NoStk = 0 //parametro para esconder el stock al usuario (vale 1 si hay que esconderlo)
+    call(PGetParV, 83, &Tipo, &NoStk , &ParStr )
+
+    &MsgCntCanj = '                    '
+    &MsgCntPedi = '                    '
+    &MsgCntRece = '                    '
+EndEvent
+
+
+Event Refresh
+
+    For each order ArtCod
+    Where ArtCod = &ArtCod
+        &ArtNom = ArtNom
+        &PrvNom = PrvNom
+        &ArtPreVta = ArtPreVta
+
+        &ArtPreLis = 0
+        &Maestro = udp( PEsEscl, &ArtCod )
+
+        If &Maestro = 0
+            &Maestro = &ArtCod
+        Endif
+
+        For each order ArtCod, (LprFch)
+        Where ArtCod = &Maestro
+            If LprTip = 'S' .OR. LprTip = 'A'
+                &ArtPreLis = LprPreVtaSP
+                If &ArtPreLis <> 0
+                    Exit
+                Endif
+            Else  //LprTip = 'P' cuando hace cambios el usuario.
+                If LprPreVtaSP <> 0
+                    &ArtPreLis = LprPreVtaSP //es el "precio de lista" puesto por el usuario
+                    Exit
+                Else
+                    If &ArtPreLi2 = 0
+                        &ArtPreLi2 = LprPreVta //guardamos el ultimo precio que no es de lista por si no hay precio de lista
+                    Endif
+                Endif
+            Endif
+        Endfor
+
+        If &ArtPreLis = 0
+            If &ArtPreLi2 = 0
+                &ArtPreLis = &ArtPreVta //si no hay ningun ajuste de precios en lisprec dejamos el precio de venta
+            Else
+                &ArtPreLis = &ArtPreLi2 //si no hay ajuste de precios de SP nos quedamos con el ultimo hecho a mano
+            Endif
+        Endif
+
+        &ArtStkMin = ArtStkMin
+        &ArtStk = ArtStk
+
+        If &NoStk = 0 //no se esconde el stock
+            &StkStrTit = 'Stock :'
+            &StkStrVal = substr(str( &ArtStk, 8,2 ),0,5)+','+substr(str( &ArtStk, 8,2 ),7,2)
+        Else //se esconde el stock
+            &StkStrTit = '       '
+            &StkStrVal = '        '
+        Endif
+
+        //If &ArtStk = 0
+        //    Do 'ContarRecetasYPedidos'
+        //Endif
+
+        &ArtEstVta = ArtEstVta
+        &ArtEstDep = ArtEstDep
+        &ArtPsiExt = ArtPsiExt
+
+        &TipFal = ArtFal
+        Do Case
+            Case &TipFal = 0
+                If &ArtStk >= &ArtStkMin .AND. &ArtStkMin > 0
+                    &TipFalTxt = 'Sin faltante'
+                Else //no se cumplio una de las dos condiciones asi que separo para ver cual fue.
+                    If &ArtStk >= &ArtStkMin .AND. &ArtStkMin <= 0
+                        &TipFalTxt = 'REVISAR STOCK MINIMO'
+                    Else 
+                        &TipFalTxt = '**** NO SE PIDE ****'
+                    Endif
+                Endif
+            Case &TipFal = 1
+                &TipFalTxt = 'Bajo Mínimo'
+            Case &TipFal = 2
+                &TipFalTxt = 'Agotado'
+            Case &TipFal = 3
+                &TipFalTxt = 'Discontinuado'
+            Case &TipFal = 4
+                &TipFalTxt = 'Para revisar'
+            Case &TipFal = 5
+                &TipFalTxt = 'Barrido Iva Básico'
+            Case &TipFal = 6
+                &TipFalTxt = 'Barrido Iva Mínimo'
+            Case &TipFal = 7
+                &TipFalTxt = 'Barrido Exento'
+            Case &TipFal = 8
+                &TipFalTxt = 'Posible Faltante'
+            Case &TipFal = 9
+                &TipFalTxt = 'Pedido desde cero'
+            Otherwise 
+                &TipFalTxt = '*Estado desconocido*'
+        Endcase
+
+        &i = 0
+        &j = 0
+        Do while &i < 7  .AND. &j < 10
+            &j = &j + 1
+            Do Case
+                Case &j = 1 .AND. .NOT. null( ArtObs1 )
+                    &i = &i + 1
+                    &ArtObs1(&i) = ArtObs1
+                Case &j = 2 .AND. .NOT. null( ArtObs2 )
+                    &i = &i + 1
+                    &ArtObs1(&i) = ArtObs2
+                Case &j = 3 .AND. .NOT. null( ArtObs3 )
+                    &i = &i + 1
+                    &ArtObs1(&i) = ArtObs3
+                Case &j = 4 .AND. .NOT. null( ArtObs4 )
+                    &i = &i + 1
+                    &ArtObs1(&i) = ArtObs4
+                Case &j = 5 .AND. .NOT. null( ArtObs5 )
+                    &i = &i + 1
+                    &ArtObs1(&i) = ArtObs5
+                Case &j = 6 .AND. .NOT. null( PrvObs1 )
+                    &i = &i + 1
+                    &ArtObs1(&i) = PrvObs1
+                Case &j = 7 .AND. .NOT. null( PrvObs2 )
+                    &i = &i + 1
+                    &ArtObs1(&i) = PrvObs2
+                Case &j = 8 .AND. .NOT. null( PrvObs3 )
+                    &i = &i + 1
+                    &ArtObs1(&i) = PrvObs3
+                Case &j = 9 .AND. .NOT. null( PrvObs4 )
+                    &i = &i + 1
+                    &ArtObs1(&i) = PrvObs4
+                Case &j = 10 .AND. .NOT. null( PrvObs5 )
+                    &i = &i + 1
+                    &ArtObs1(&i) = PrvObs5
+            endcase
+        Enddo
+        Do while &i < 7
+            &i = &i + 1
+            &ArtObs1(&i) = nullvalue( ArtObs1 )
+        Enddo
+    Endfor
+
+EndEvent
+
+
+Event Load
+
+    &HayCat = 0
+    for each order ArtCod
+    Where ArtCod = &ArtCod
+    Defined by CatartCod
+
+
+        &TraPro = 0
+        For each order CatartCod
+        Defined by CatArClNom
+            &TraPro = 1
+        Endfor
+
+        If &TraPro = &EsTraPro
+            for each order DescueOrden DescuePcDes
+
+                &PcDes = DescuePcDes
+                &PrecioDes = &ArtPreVta * ( 1 - DescuePcDes / 100 )
+
+                If &ArtPreLis <> 0
+                    &PcDesReal = 100 * ( 1 - &PrecioDes / &ArtPreLis )
+                Else 
+                    If &PcDes > 100
+                        &PcDesReal = 100
+                    Else
+                        If &PcDes < -99
+                            &PcDesReal = -99
+                        Else
+                            &PcDesReal = &PcDes
+                        Endif
+                    Endif
+                Endif
+
+                //&str=str(&PcDesReal)
+                //Msg( &msg )
+
+                If &PcDesReal > 99.99
+                    &PcDesReal = 99.99
+                    //msg('porcentaje fuera de limite +')
+                Else
+                    If &PcDesReal < -99.99
+                        &PcDesReal = -99.99
+                        //msg('porcentaje fuera de limite -')
+                    Endif
+                Endif
+
+
+                If &TraPro = 1
+                    &Of = 'TP'
+                Else
+                    If substr(CatartNom, 1, 6) = 'OFERTA'
+                        &Of = 'OF'
+                    Else
+                        &Of = '  '
+                    Endif
+                Endif
+
+                load
+                &HayCat = 1
+
+            endfor
+        Endif
+    endfor
+
+    if null( &HayCat )
+
+        for each order DescgrPcDes
+
+            &origen = 'Descuentos generales'
+            &PcDes = DescgrPcDes
+            &PrecioDes = &ArtPreVta * ( 1 - DescgrPcDes / 100 )
+
+            If &ArtPreLis <> 0
+                &PcDesReal = 100 * ( 1 - &PrecioDes / &ArtPreLis )
+            Else 
+                &PcDesReal = &PcDes
+            Endif
+
+            If &PcDesReal > 99.99
+                &PcDesReal = 99.99
+                //msg('porcentaje fuera de limite +')
+            Else
+                If &PcDesReal < -99.99
+                    &PcDesReal = -99.99
+                    //msg('porcentaje fuera de limite -')
+                Endif
+            Endif
+            load
+
+        endfor
+
+    endif
+
+EndEvent
+
+Event Enter
+
+    &Desc = &PcDes
+
+    return
+
+EndEvent
+
+Event 'Textos' 2
+    call( WArtTxtV, &ArtCod )
+EndEvent
+
+Event 'RecetasYPedidos' 4
+    Do 'ContarRecetasYPedidos'
+    Refresh
+EndEvent
+
+Event 'Ver pedidos por articulo' 6
+
+    If .NOT. null( &ArtCod )
+        call(WPPedXAr ,&ArtCod)
+    Endif
+
+EndEvent
+  :eEvents
+  :Rules
+parm(&ArtCod ,&EsTraPro ,&Desc ) ;
+
+noaccept(&PcDes ) ;
+
+noaccept(&PcDesReal ) ;
+hidden(&PcDesReal ) ;
+
+noaccept(&PrecioDes ) ;
+
+noaccept(&StkStrTit ) ;
+noaccept(&StkStrVal ) ;
+
+noaccept(&ArtPreLis ) ;
+
+noaccept(&Of ) ;
+
+noaccept(&ArtNom ) ;
+
+noaccept(&PrvNom ) ;
+
+noaccept(&ArtStk ) ;
+
+noaccept(&ArtPreVta ) ;
+
+noaccept(&ArtStkMin ) ;
+
+noaccept(&ArtEstVta ) ;
+
+noaccept(&ArtEstDep ) ;
+
+noaccept(&ArtObs1( ) ) ;
+
+noaccept(&ArtPsiExt ) ;
+
+noaccept(&TipFalTxt ) ;
+
+noaccept(&MsgCntCanj ) ;
+noaccept(&MsgCntPedi ) ;
+noaccept(&MsgCntRece ) ;
+noaccept(&MsgCntDevB ) ;
+  :eRules
+  :Subroutines
+Sub 'ContarRecetasYPedidos'
+    &SaltearPed = 0
+    call( PArtTPed, &ArtCod ,&PedDro ,&PedPrv ,&SaltearPed ,&PedDroCnj ,&PedPrvCnj, &PedDroDevB ,&PedPrvDevB )
+
+    &CntDevBag  = &PedDroDevB + &PedPrvDevB
+    &CntCanje   = &PedDroCnj + &PedPrvCnj
+
+    //cantidad de recetas pendientes de ser pedidas!
+    &CntRecetas = udp( PPendRec, &ArtCod )// lo mismo para las reposiciones por receta
+
+    //se podria agregar otra linea con la cantidad de recetas pedidas pero pendientes de recepcion que no es lo mismo que lo anterior
+
+    &CntPedida  = &PedDro + &PedPrv
+
+    &MsgCntDevB = 'Devoluc: '+substr(str( &CntDevBag, 6,1 ),0,4) +','+substr(str( &CntDevBag, 6,1 ),6,1)
+    &MsgCntCanj = 'Canje:   '+substr(str( &CntCanje, 6,1 ),0,4)  +','+substr(str( &CntCanje, 6,1 ),6,1)
+    &MsgCntPedi = 'Pedido:  '+substr(str( &CntPedida, 6,1 ),0,4) +','+substr(str( &CntPedida, 6,1 ),6,1)
+    &MsgCntRece = 'Recetas: '+substr(str( &CntRecetas, 6,1 ),0,4)+','+substr(str( &CntRecetas, 6,1 ),6,1)
+EndSub
+  :eSubroutines
+:eWorkPanel
+:Attribute
+  Id=487
+  Name=_CifraPorcentaje
+  Title=CifraPorcentaje
+  Length=6
+  Decimals=2
+  Sign
+  Picture=ZZ9.99
+:eAttribute
+:AttInfo
+  :EditInfo
+  :eEditInfo
+:eAttInfo
+:Doc
+:eDoc
+:Attribute
+  Id=490
+  Name=_NombreLargo
+  Title=NombreLargo
+  Type=Character
+  Length=40
+:eAttribute
+:AttInfo
+  :EditInfo
+  :eEditInfo
+:eAttInfo
+:Doc
+:eDoc
+:Folder
+  :Info
+    Name=Ventas
+  :eInfo
+  :ObjInfo
+  :eObjInfo
+  LastUpdate=2010-10-29 18:21:14
+:eFolder
+:ehola
