@@ -20,8 +20,12 @@ class UnsupportedOperation(RxpyError):
 
 
 (I, M, S, U, X, A, _L, _C, _E, _U, _G) = map(lambda x: 2**x, range(11))
-(IGNORE_CASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII, _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS) = (I, M, S, U, X, A, _L, _C, _E, _U, _G)
-_FLAGS = (I, M, S, U, X, A, _L, _C, _E, _U, _G, IGNORE_CASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII, _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS)
+(IGNORE_CASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII, 
+ _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS) = (I, M, S, U, X, A,
+                                                    _L, _C, _E, _U, _G)
+_FLAGS = (I, M, S, U, X, A, _L, _C, _E, _U, _G,
+          IGNORE_CASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII,
+          _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS)
 
 FLAG_NAMES = {I: 'I/IGNORECASE',
               M: 'M/MULTILINE',
@@ -34,3 +38,15 @@ FLAG_NAMES = {I: 'I/IGNORECASE',
               _E: '_E/_EMPTY',
               _U: '_U/_UNSAFE',
               _G: '_G/_GROUPS'}
+
+
+def refuse_flags(flags):
+    '''
+    Raise an error for the flags given.
+    '''
+    names = [FLAG_NAMES[key] for key in FLAG_NAMES if key & flags]
+    if names:
+        raise RxpyError('Bad flag' + ('s' if len(names) > 1 else '')
+                         + ': ' + '; '.join(names))
+
+

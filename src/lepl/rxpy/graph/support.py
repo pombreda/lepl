@@ -1,6 +1,8 @@
 #LICENCE
+
 from _collections import deque
 from bisect import bisect_left
+
 
 def edge_iterator(node):
     '''

@@ -272,7 +272,7 @@ class Lookahead(BaseNode, BranchCompilableMixin):
 
 class Repeat(BaseNode, BranchCompilableMixin):
     '''
-    A numerical repeat.
+    A numerical repeat (used in, for example, `CountedLoop`).
 
     - `begin` is the minimum count value.
 
