@@ -17,8 +17,11 @@ those references (ultimately accumulating the graph nodes in the root
 from itertools import count
 from string import digits, ascii_letters
 
-from lepl.rxpy.graph.container import Alternatives, Sequence, Optional, Loop, CountedLoop
-from lepl.rxpy.graph.opcode import Match, Dot, StartOfLine, EndOfLine, Character, String, StartGroup, EndGroup, Lookahead, Conditional, GroupReference, WordBoundary, Digit, Word, Space
+from lepl.rxpy.graph.container import Alternatives, Sequence, Optional, Loop, \
+    CountedLoop
+from lepl.rxpy.graph.opcode import Match, Dot, StartOfLine, EndOfLine, \
+    Character, String, StartGroup, EndGroup, Lookahead, Conditional, \
+    GroupReference, WordBoundary, Digit, Word, Space
 from lepl.rxpy.parser.error import ParseError, EmptyError
 from lepl.rxpy.parser.support import Builder, ParserState, OCTAL, parse
 from lepl.rxpy.support import RxpyError
@@ -509,14 +512,18 @@ class CharacterBuilder(Builder):
     def append_character(self, character, escaped=False):
         '''Add the next character.'''
 
-        def unpack(character):
-            (is_charset, value) = self._parser_state.alphabet.unpack(character,
-                                                    self._parser_state.flags)
-            if not is_charset:
-                value = (character, character)
-            return value
-
         def append(character=character):
+            '''Helper function to avoid repetition below - adds character.'''
+
+            def unpack(character):
+                '''Generate a `CharSet` or a character pair.'''
+                (is_charset, value) = \
+                    self._parser_state.alphabet.unpack(character,
+                                                       self._parser_state.flags)
+                if not is_charset:
+                    value = (character, character)
+                return value
+
             if self._range:
                 if self._queue is None:
                     raise RxpyError('Incomplete range')
@@ -620,6 +627,7 @@ class IntermediateEscapeBuilder(SimpleEscapeBuilder):
     '''
 
     def append_character(self, character):
+        '''Add the next character.'''
         if not character:
             raise RxpyError('Incomplete character escape')
         elif character in digits and character != '0':
@@ -705,6 +713,7 @@ class OctalEscapeBuilder(Builder):
 
     @staticmethod
     def decode(buffer, alphabet):
+        '''Convert the octal sequence to a character.'''
         try:
             return alphabet.unescape(int(buffer, 8))
         except:
