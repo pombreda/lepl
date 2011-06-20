@@ -75,7 +75,7 @@ class Unicode(BaseAlphabet):
         # http://bugs.python.org/issue1693050
         if char:
             c = self.coerce(char)
-            return c in u' \t\n\r\f\v' or category(c) == 'Z'
+            return c in ' \t\n\r\f\v' or category(c) == 'Z'
         else:
             return False
         
