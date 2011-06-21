@@ -6,11 +6,12 @@ Logic related to Unicode input.
 
 
 from sys import maxunicode
+from unicodedata import category
 
 from lepl.rxpy.alphabet.base import BaseAlphabet
 
 
-WORD = set(['Ll', 'Lo', 'Lt', 'Lu', 'Mc', 'Me', 'Mn', 'Nd', 'Nl', 'No', 'Pc'])
+WORD = {'Ll', 'Lo', 'Lt', 'Lu', 'Mc', 'Me', 'Mn', 'Nd', 'Nl', 'No', 'Pc'}
 
 
 class Unicode(BaseAlphabet):
@@ -60,7 +61,7 @@ class Unicode(BaseAlphabet):
         Note - this is the basis of hash and equality for intervals, so must
         be unique, repeatable, etc.
         '''
-        text = repr(unicode(char))
+        text = repr(str(char))
         if text[0] == 'u':
             text = text[1:]
         return text[1:-1]

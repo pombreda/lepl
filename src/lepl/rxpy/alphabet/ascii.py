@@ -30,6 +30,7 @@ class Ascii(BaseAlphabet):
         alphabet to a contiguous set of integers - to a character in the
         alphabet.
         '''
+        # TODO - check range
         return chr(code)
     
     def char_to_code(self, char):
@@ -38,6 +39,7 @@ class Ascii(BaseAlphabet):
         between min and max, that maps the alphabet to a contiguous set of
         integers.
         '''
+        # TODO - check range
         return ord(char)
         
     def coerce(self, char):

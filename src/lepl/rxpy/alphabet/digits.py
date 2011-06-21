@@ -63,4 +63,4 @@ class Digits(BaseAlphabet):
         Note - this is the basis of hash and equality for intervals, so must
         be unique, repeatable, etc.
         '''
-        return unicode(char)
+        return str(char)

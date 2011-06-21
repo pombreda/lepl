@@ -4,12 +4,13 @@
 Support classes for parsing.
 '''
 
-
 from string import digits, ascii_letters
+
 from lepl.rxpy.alphabet.ascii import Ascii
 from lepl.rxpy.alphabet.unicode import Unicode
-
+from lepl.rxpy.parser.error import SimpleGroupError
 from lepl.rxpy.support import _FLAGS, RxpyError, refuse_flags
+
 
 OCTAL = '01234567'
 ALPHANUMERIC = digits + ascii_letters
@@ -211,7 +212,6 @@ class GroupState(object):
             # allow aliasing and numbers as names
             if not name:
                 name = str(next_index())
-            index = None
             try:
                 index = self.index_for_name_or_count(name)
             except RxpyError:
@@ -227,10 +227,10 @@ class GroupState(object):
             if name:
                 try:
                     int(name)
-                    raise SimpleGroupException('Invalid group name ' + name)
+                    raise SimpleGroupError('Invalid group name ' + name)
                 except ValueError:
                     if name in self.__name_to_index:
-                        raise SimpleGroupException('Repeated group name ' + name)
+                        raise SimpleGroupError('Repeated group name ' + name)
             else:
                 name = str(index)
 
