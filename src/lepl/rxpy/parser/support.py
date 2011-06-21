@@ -6,6 +6,8 @@ Support classes for parsing.
 
 
 from string import digits, ascii_letters
+from lepl.rxpy.alphabet.ascii import Ascii
+from lepl.rxpy.alphabet.unicode import Unicode
 
 from lepl.rxpy.support import _FLAGS, RxpyError, refuse_flags
 

@@ -29,7 +29,7 @@ class Unicode(BaseAlphabet):
         alphabet to a contiguous set of integers - to a character in the
         alphabet.
         '''
-        return unichr(code)
+        return chr(code)
     
     def char_to_code(self, char):
         '''
@@ -44,7 +44,7 @@ class Unicode(BaseAlphabet):
         Force a character in str, unicode, or the alphabet itself, to be a
         member of the alphabet.
         '''
-        return unicode(char)
+        return str(char)
     
     def join(self, *strings):
         '''
