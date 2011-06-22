@@ -1,11 +1,38 @@
 <component name="ProjectDictionaryState">
   <dictionary name="andrew">
     <words>
+      <w>addsub</w>
+      <w>endpos</w>
+      <w>findall</w>
+      <w>finditer</w>
+      <w>groupdict</w>
+      <w>groupindex</w>
+      <w>iadd</w>
+      <w>iter</w>
+      <w>kargs</w>
+      <w>lastgroup</w>
+      <w>lastindex</w>
+      <w>lepl</w>
+      <w>lgpl</w>
       <w>lookahead</w>
+      <w>lookaheads</w>
       <w>lookback</w>
+      <w>matchiter</w>
+      <w>maxsplit</w>
+      <w>mixin</w>
+      <w>mozilla</w>
+      <w>muldiv</w>
       <w>multiline</w>
+      <w>opcodes</w>
+      <w>parens</w>
+      <w>repl</w>
       <w>repr</w>
       <w>rxpy</w>
+      <w>scaniter</w>
+      <w>searchiter</w>
+      <w>splititer</w>
+      <w>subiter</w>
+      <w>subn</w>
       <w>unescape</w>
       <w>unescaped</w>
     </words>

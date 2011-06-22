@@ -284,6 +284,8 @@ class SelfIdCompilableMixin(BaseNodeIdCompilableMixin):
 class NextCompilableMixin(BaseNodeIdCompilableMixin):
     '''
     First arg is `next[0]`, transformed to index
+
+    Expects to be combined with a `BaseNode` which provides .next.
     '''
 
     def _compile_args(self):
@@ -295,6 +297,8 @@ class BranchCompilableMixin(BaseCompilableMixin):
     '''
     Expects `method` to return the required index, which is evaluated until
     input is consumed.
+
+    Expects to be combined with a `BaseNode` which provides .next.
     '''
 
     def compile(self, target):
@@ -308,6 +312,7 @@ class BranchCompilableMixin(BaseCompilableMixin):
             Call the method with a list of translated node IDs as the first arg,
             then return the node for the returned ID.
             '''
+            #noinspection PyUnresolvedReferences
             next = list(map(lambda node: (node_to_index[node], node), self.next))
             new_args = [next] + args
             def compiled():
