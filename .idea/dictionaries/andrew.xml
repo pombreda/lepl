@@ -1,8 +1,13 @@
 <component name="ProjectDictionaryState">
   <dictionary name="andrew">
     <words>
+      <w>lookahead</w>
       <w>lookback</w>
+      <w>multiline</w>
+      <w>repr</w>
+      <w>rxpy</w>
       <w>unescape</w>
+      <w>unescaped</w>
     </words>
   </dictionary>
 </component>

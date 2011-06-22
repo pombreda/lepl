@@ -1,12 +1,12 @@
 #LICENCE
 
 
-from rxpy.lib import RxpyException, _CHARS
-from rxpy.graph._test.lib import GraphTest
-from rxpy.parser.pattern import parse_pattern
-from rxpy.parser.support import ParserState
-from rxpy.engine.base import BaseEngine
-from rxpy.parser.error import SimpleGroupException
+from lepl.rxpy.support import RxpyError, _CHARS
+from lepl.rxpy.graph._test.lib import GraphTest
+from lepl.rxpy.parser.pattern import parse_pattern
+from lepl.rxpy.parser.support import ParserState
+from lepl.rxpy.engine.base import BaseEngine
+from lepl.rxpy.parser.error import SimpleGroupError
 
 
 class DummyEngine(BaseEngine):
@@ -357,7 +357,7 @@ class ParserTest(GraphTest):
  0 -> 1
 }""")
 
-    def test_autoescaped_range(self):
+    def test_auto_escaped_range(self):
         self.assert_graphs(parse('[]]'), 
 """digraph {
  0 [label="]"]
@@ -1287,7 +1287,7 @@ r"""digraph {
         try:
             parse(r'(?P<a>.)(?P<a>.)')
             assert False, 'expected error'
-        except SimpleGroupException:
+        except SimpleGroupError:
             pass
         
     def test_star_star_bug(self):
@@ -1348,14 +1348,14 @@ r"""digraph {
         
     def test_flags(self):
         self.assert_flags('', 0)
-        self.assert_flags('(?i)', ParserState.IGNORECASE)
+        self.assert_flags('(?i)', ParserState.IGNORE_CASE)
         try:
             self.assert_flags('(?L)', 0)
             assert False
-        except RxpyException:
+        except RxpyError:
             pass
         self.assert_flags('(?m)', ParserState.MULTILINE)
-        self.assert_flags('(?s)', ParserState.DOTALL)
+        self.assert_flags('(?s)', ParserState.DOT_ALL)
         self.assert_flags('(?u)', ParserState.UNICODE)
         self.assert_flags('(?x)', ParserState.VERBOSE)
         self.assert_flags('(?a)', ParserState.ASCII)
@@ -1363,9 +1363,9 @@ r"""digraph {
         try:
             self.assert_flags('(?imsuxa_l)', 0)
             assert False
-        except RxpyException:
+        except RxpyError:
             pass
         self.assert_flags('(?imsux_l)', 
-                          ParserState.IGNORECASE | ParserState.MULTILINE | 
-                          ParserState.DOTALL | ParserState.UNICODE |
+                          ParserState.IGNORE_CASE | ParserState.MULTILINE |
+                          ParserState.DOT_ALL | ParserState.UNICODE |
                           ParserState.VERBOSE | ParserState._LOOP_UNROLL)

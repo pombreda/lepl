@@ -1,7 +1,7 @@
 #LICENCE
 
 
-from lepl.rxpy.lib import _CHARS
+from lepl.rxpy.support import _CHARS
 from lepl.rxpy.graph._test.lib import GraphTest
 from lepl.rxpy.engine.base import BaseEngine
 from lepl.rxpy.parser.replace import parse_replace

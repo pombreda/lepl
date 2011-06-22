@@ -166,3 +166,10 @@ class CharSet(object):
 
     def __nonzero__(self):
         return self.__bool__()
+
+
+def contains_instance(graph, type_):
+    for node in node_iterator(graph):
+        if isinstance(node, type_):
+            return True
+    return False

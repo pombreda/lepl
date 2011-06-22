@@ -8,6 +8,7 @@ from string import digits, ascii_letters
 
 from lepl.rxpy.alphabet.ascii import Ascii
 from lepl.rxpy.alphabet.unicode import Unicode
+from lepl.rxpy.graph.post import resolve_group_names, post_process
 from lepl.rxpy.parser.error import SimpleGroupError
 from lepl.rxpy.support import _FLAGS, RxpyError, refuse_flags
 
@@ -312,6 +313,6 @@ def parse(text, parser_state, class_, mutable_flags=True):
     graph = post_process(graph, resolve_group_names(parser_state))
     if parser_state.has_new_flags:
         raise RxpyError('Inconsistent flags')
-    return (parser_state, graph)
+    return parser_state, graph
 
 
