@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -37,7 +36,7 @@ offset are stored in the helper.
 from itertools import chain
 
 from lepl.support.lib import fmt, add_defaults, str, LogMixin
-from lepl.stream.core import StreamHelper, OFFSET, LINENO, CHAR, HashKey
+from lepl.stream.core import StreamHelper, OFFSET, LINE_NO, CHAR, HashKey
 
 
 class BaseHelper(LogMixin, StreamHelper):
@@ -70,7 +69,7 @@ class SequenceHelper(BaseHelper):
         #self._debug(fmt('Hash at offset {0}: {1}', offset, hash(key)))
         return key
     
-    def _fmt(self, sequence, offset, maxlen=60, left='', right='', index=True):
+    def _fmt(self, sequence, offset, max_len=60, left='', right='', index=True):
         '''fmt a possibly long subsection of data.'''
         if not sequence:
             if index:
@@ -102,9 +101,9 @@ class SequenceHelper(BaseHelper):
             text = fmt(template, left, body, right, offset)
             if index:
                 text = fmt('{0!s}[{1:d}:]', text, offset)
-            if longest is None or len(text) <= maxlen:
+            if longest is None or len(text) <= max_len:
                 longest = text
-            if len(text) > maxlen:
+            if len(text) > max_len:
                 return longest
             begin -= 1
             end += 1
@@ -154,7 +153,7 @@ class SequenceHelper(BaseHelper):
                     'rest': self._fmt(self._sequence[offset:], 0, index=False),
                     'repr': repr(self._sequence[offset]) if within else '<EOS>',
                     'str': str(self._sequence[offset]) if within else '',
-                    'lineno': 1,
+                    'line_no': 1,
                     'char': offset+1}
         add_defaults(kargs, defaults, prefix=prefix)
         add_defaults(kargs, {prefix + 'location': self._location(kargs, prefix)})
@@ -237,26 +236,26 @@ class StringHelper(SequenceHelper):
                 max=max, global_kargs=global_kargs, cache_level=cache_level, 
                 delta=delta)
 
-    def _fmt(self, sequence, offset, maxlen=60, left="'", right="'", index=True):
-        return super(StringHelper, self)._fmt(sequence, offset, maxlen=maxlen, 
+    def _fmt(self, sequence, offset, max_len=60, left="'", right="'", index=True):
+        return super(StringHelper, self)._fmt(sequence, offset, max_len=max_len, 
                                         left=left, right=right, index=index)
         
     def _location(self, kargs, prefix):
-        return fmt('line {' + prefix + 'lineno:d}, character {' + prefix + 'char:d}', **kargs)
+        return fmt('line {' + prefix + 'line_no:d}, character {' + prefix + 'char:d}', **kargs)
     
     def delta(self, state):
         offset = self._delta[OFFSET] + state
-        lineno = self._delta[LINENO] + self._sequence.count('\n', 0, state)
+        line_no = self._delta[LINE_NO] + self._sequence.count('\n', 0, state)
         start = self._sequence.rfind('\n', 0, state)
         if start > -1:
             char = state - start
         else:
             char = self._delta[CHAR] + state
-        return (offset, lineno, char)
+        return (offset, line_no, char)
         
     def kargs(self, state, prefix='', kargs=None):
         if kargs is None: kargs = {}
-        (_, lineno, char) = self.delta(state)
+        (_, line_no, char) = self.delta(state)
         start = self._sequence.rfind('\n', 0, state) + 1 # omit \n
         end = self._sequence.find('\n', state) # omit \n
         # all is str() because passed to SyntaxError constructor
@@ -271,7 +270,7 @@ class StringHelper(SequenceHelper):
             'filename': '<string>',
             'rest': rest,
             'all': all,
-            'lineno': lineno,
+            'line_no': line_no,
             'char': char}, prefix=prefix)
         return super(StringHelper, self).kargs(state, prefix=prefix, kargs=kargs)
     
@@ -301,8 +300,8 @@ class ListHelper(SequenceHelper):
     List-specific fprmatting
     '''
     
-    def _fmt(self, sequence, offset, maxlen=60, left="[", right="]", index=True):
-        return super(ListHelper, self)._fmt(sequence, offset, maxlen=maxlen, 
+    def _fmt(self, sequence, offset, max_len=60, left="[", right="]", index=True):
+        return super(ListHelper, self)._fmt(sequence, offset, max_len=max_len, 
                                             left=left, right=right, index=index)
 
     def join(self, state, *values):

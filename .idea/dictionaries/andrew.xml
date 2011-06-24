@@ -2,37 +2,53 @@
   <dictionary name="andrew">
     <words>
       <w>addsub</w>
+      <w>basestring</w>
+      <w>delitem</w>
       <w>endpos</w>
       <w>findall</w>
       <w>finditer</w>
+      <w>getattr</w>
+      <w>getitem</w>
       <w>groupdict</w>
       <w>groupindex</w>
       <w>iadd</w>
       <w>iter</w>
+      <w>iterable</w>
+      <w>karg</w>
       <w>kargs</w>
       <w>lastgroup</w>
       <w>lastindex</w>
       <w>lepl</w>
       <w>lgpl</w>
+      <w>lmap</w>
       <w>lookahead</w>
       <w>lookaheads</w>
       <w>lookback</w>
+      <w>matchers</w>
       <w>matchiter</w>
       <w>maxsplit</w>
+      <w>metaclass</w>
       <w>mixin</w>
       <w>mozilla</w>
       <w>muldiv</w>
       <w>multiline</w>
       <w>opcodes</w>
       <w>parens</w>
+      <w>postorder</w>
+      <w>postprocess</w>
+      <w>preorder</w>
       <w>repl</w>
       <w>repr</w>
       <w>rxpy</w>
       <w>scaniter</w>
       <w>searchiter</w>
+      <w>setitem</w>
+      <w>sexpr</w>
       <w>splititer</w>
       <w>subiter</w>
       <w>subn</w>
+      <w>tuple</w>
+      <w>typename</w>
       <w>unescape</w>
       <w>unescaped</w>
     </words>

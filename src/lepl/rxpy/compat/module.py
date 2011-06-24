@@ -1,11 +1,11 @@
 #LICENCE
 
-from rxpy.compat.support import compile as compile_, \
+from lepl.rxpy.compat.support import compile as compile_, \
     RegexObject as RegexObject_, MatchIterator as MatchIterator_, \
     match as match_, search as search_, findall as findall_, \
     finditer as finditer_, sub as sub_, subn as subn_, \
     split as split_, error as error_, escape as escape_, Scanner as Scanner_
-from rxpy.lib import _FLAGS
+from lepl.rxpy.support import _FLAGS
     
 
 class Re(object):
@@ -18,7 +18,7 @@ class Re(object):
         self.FLAGS = _FLAGS
         (self.I, self.M, self.S, self.U, self.X, self.A, 
          self._L, self._C, self._E, self._U, self._G, 
-         self.IGNORECASE, self.MULTILINE, self.DOTALL, self.UNICODE, 
+         self.IGNORE_CASE, self.MULTILINE, self.DOT_ALL, self.UNICODE,
          self.VERBOSE, self.ASCII, 
          self._LOOP_UNROLL, self._CHARS, self._EMPTY, self._UNSAFE, 
          self._GROUPS) = _FLAGS

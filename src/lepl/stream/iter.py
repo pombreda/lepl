@@ -57,7 +57,7 @@ be possible to have iterables of iterables...
 '''
 
 from lepl.support.lib import add_defaults, fmt
-from lepl.stream.simple import OFFSET, LINENO, BaseHelper
+from lepl.stream.simple import OFFSET, LINE_NO, BaseHelper
 from lepl.stream.core import s_delta, s_kargs, s_fmt, s_debug, s_next, \
     s_line, s_join, s_empty, s_eq, HashKey
 
@@ -172,7 +172,7 @@ class IterableHelper(
     
     def _next_line(self, cons, empty_line_stream):
         delta = s_delta(empty_line_stream)
-        delta = (delta[OFFSET], delta[LINENO]+1, 1)
+        delta = (delta[OFFSET], delta[LINE_NO]+1, 1)
         return self.factory(cons.head, id=self.id, factory=self.factory,
                             max=self.max, global_kargs=self.global_kargs, 
                             delta=delta)

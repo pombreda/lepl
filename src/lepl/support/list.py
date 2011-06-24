@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -133,9 +132,7 @@ sexpr_flatten = sexpr_fold(per_list=lambda type_, items: join(items),
 Flatten a list completely, so [[1],[2, [3]]] becomes [1,2,3]
 '''
 
-_fmt={}
-_fmt[list] = '[{1}]'
-_fmt[tuple] = '({1})'
+_fmt = {list: '[{1}]', tuple: '({1})'}
 
 sexpr_to_str = sexpr_fold(per_list=lambda type_, items: 
                             fmt(_fmt.get(type_, '{0}([{1}])'),
@@ -153,6 +150,7 @@ def sexpr_to_tree(list_):
     level.
     '''
     def per_item(item):
+        #noinspection PyUnusedLocal
         def fun(first, _rest):
             return [first + repr(item)]
         return fun

@@ -4,7 +4,7 @@ from string import ascii_letters, digits
 
 from lepl.rxpy.alphabet.unicode import Unicode
 from lepl.rxpy.parser.pattern import parse_pattern, parse_groups
-from lepl.rxpy.compat.replace import compile_repl
+#from lepl.rxpy.compat.replace import compile_repl
 from lepl.rxpy.support import RxpyError
 
 
@@ -236,8 +236,8 @@ class MatchObject(object):
         self.pos = pos
         self.endpos = endpos
         self.__state = state
-        self.lastindex = groups.lastindex
-        self.lastgroup = groups.lastgroup
+        self.lastindex = groups.last_index
+        self.lastgroup = groups.last_group
         
     def group(self, *indices):
         if not indices:

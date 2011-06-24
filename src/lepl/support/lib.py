@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -35,10 +34,15 @@ from logging import getLogger
 
 # this is an attempt to make 2.6 and 3 function equally with strings
 try:
+    #noinspection PyUnresolvedReferences
     chr = unichr
+    #noinspection PyUnresolvedReferences
     str = unicode
+    #noinspection PyUnresolvedReferences
     basestring = basestring
+    #noinspection PyUnresolvedReferences
     file = file
+    #noinspection PyUnresolvedReferences
     from StringIO import StringIO
 except NameError:
     from io import IOBase, StringIO
@@ -98,7 +102,7 @@ class CircularFifo(object):
         '''
         Remove and return the next item.
         '''
-        if index != 0:
+        if index:
             raise IndexError('FIFO is only a FIFO')
         if self.__size < 1:
             raise IndexError('FIFO empty')
@@ -137,7 +141,6 @@ def lmap(function, values):
     '''
     A map that returns a list rather than an iterator.
     '''
-    # pylint: disable-msg=W0141
     return list(map(function, values))
 
 
@@ -162,7 +165,6 @@ def compose_tuple(fun_a, fun_b):
         '''
         Supply result from fun_b as *arg.
         '''
-        # pylint: disable-msg=W0142
         return fun_a(*fun_b(*args, **kargs))
     return fun
 
@@ -190,7 +192,9 @@ class LogMixin(object):
     '''
     
     def __init__(self, *args, **kargs):
+        #noinspection PyArgumentList
         super(LogMixin, self).__init__(*args, **kargs)
+        #noinspection PyUnresolvedReferences
         self._log = getLogger(self.__module__ + '.' + self.__class__.__name__)
         self._debug = self._log.debug
         self._info = self._log.info
@@ -288,18 +292,18 @@ def identity(x):
     return x
 
 
-def document(destn, source, text=None):
+def document(destination, source, text=None):
     '''
     Copy function name and docs.
     '''
     if text:
-        destn.__name__ = text
+        destination.__name__ = text
     else:
-        destn.__name__ = source.__name__
-    destn.__doc__ = source.__doc__
+        destination.__name__ = source.__name__
+    destination.__doc__ = source.__doc__
     # module used in auto-linking for docs
-    destn.__module__ = source.__module__
-    return destn
+    destination.__module__ = source.__module__
+    return destination
 
 
 def add_defaults(original, defaults, prefix=''):
@@ -322,6 +326,7 @@ def unimplemented(method):
     '''
     A decorator that raise an error if the (abstract) method is called.
     '''
+    #noinspection PyUnusedLocal
     def replacement(*args, **kargs):
         raise UnimplementedMethod(method)
     return replacement

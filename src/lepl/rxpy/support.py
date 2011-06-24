@@ -27,9 +27,9 @@ _FLAGS = (I, M, S, U, X, A, _L, _C, _E, _U, _G,
           IGNORE_CASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII,
           _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS)
 
-FLAG_NAMES = {I: 'I/IGNORECASE',
+FLAG_NAMES = {I: 'I/IGNORE_CASE',
               M: 'M/MULTILINE',
-              S: 'S/DOTALL',
+              S: 'S/DOT_ALL',
               U: 'U/UNICODE',
               X: 'X/VERBOSE',
               A: 'A/ASCII',
