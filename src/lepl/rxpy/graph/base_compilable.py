@@ -195,7 +195,7 @@ class BaseCompilableMixin(object):
         '''
         #noinspection PyUnresolvedReferences
         kargs = self._kargs()
-        return (kargs[name] for name in sorted(kargs))
+        return list(kargs[name] for name in sorted(kargs))
 
 
 class SimpleCompilableMixin(BaseCompilableMixin):
@@ -278,7 +278,7 @@ class SelfIdCompilableMixin(BaseNodeIdCompilableMixin):
     '''
 
     def _compile_args(self):
-        return [self] + self._untranslated_args()
+        return [self] + list(self._untranslated_args())
 
 
 class NextCompilableMixin(BaseNodeIdCompilableMixin):
