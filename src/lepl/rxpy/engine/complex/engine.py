@@ -10,13 +10,13 @@ the simple engine, when that fails on an unsupported operation.
 '''
 
 
-from lepl.rxpy.engine.base import BaseEngine
+from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.engine.complex.support import State
 from lepl.rxpy.engine.support import Match, Fail, lookahead_logic, Groups
-from lepl.rxpy.graph.base_compilable import BaseCompilableMixin, compile
+from lepl.rxpy.graph.base_compilable import compile
 
 
-class ComplexEngine(BaseEngine, BaseCompilableMixin):
+class ComplexEngine(BaseMatchEngine):
     
     def __init__(self, parser_state, graph, program=None):
         super(ComplexEngine, self).__init__(parser_state, graph)

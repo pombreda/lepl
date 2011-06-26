@@ -33,20 +33,23 @@ Library routines / utilities (some unused).
 from logging import getLogger
 
 # this is an attempt to make 2.6 and 3 function equally with strings
+
 try:
     #noinspection PyUnresolvedReferences
     chr = unichr
     #noinspection PyUnresolvedReferences
     str = unicode
-    #noinspection PyUnresolvedReferences
+    #noinspection PyUnresolvedReferences,PyUnboundLocalVariable
     basestring = basestring
-    #noinspection PyUnresolvedReferences
+    #noinspection PyUnresolvedReferences,PyUnboundLocalVariable
     file = file
     #noinspection PyUnresolvedReferences
     from StringIO import StringIO
 except NameError:
     from io import IOBase, StringIO
+    #noinspection PyUnboundLocalVariable
     chr = chr
+    #noinspection PyUnboundLocalVariable
     str = str
     basestring = str
     file = IOBase

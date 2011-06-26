@@ -1,10 +1,15 @@
 #LICENCE
 
+'''
+A collection of support routines that match the RXPY  interfaces to the standard
+Python API.
+'''
+
 from string import ascii_letters, digits
 
 from lepl.rxpy.alphabet.unicode import Unicode
 from lepl.rxpy.parser.pattern import parse_pattern, parse_groups
-#from lepl.rxpy.compat.replace import compile_repl
+from lepl.rxpy.engine.replace.engine import compile_replacement
 from lepl.rxpy.support import RxpyError
 
 
@@ -133,8 +138,8 @@ class RegexObject(object):
         if pending_empty and count:
             yield pending_empty
             
-    def subn(self, repl, text, count=0):
-        replacement = compile_repl(repl, self.__parser_state)
+    def subn(self, replacement, text, count=0):
+        replacement = compile_replacement(replacement, self.__parser_state)
         n = 0
         pos = 0
         results = []
@@ -266,8 +271,8 @@ class MatchObject(object):
             groups[name] = self.__groups.group(name, default=default)
         return groups
     
-    def expand(self, repl):
-        replacement = compile_repl(repl, self.__state)
+    def expand(self, replacement):
+        replacement = compile_replacement(replacement, self.__state)
         return replacement(self)
     
     @property

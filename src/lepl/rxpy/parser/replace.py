@@ -126,9 +126,11 @@ class ReplacementBuilder(Builder):
         return self
     
 
-def parse_replace(text, state):
+def parse_replace(text, parser_state):
     '''
     Parse a "replacement" (eg for `re.sub`).
+
+    Returns (parser_state, graph)
     '''
-    return parse(text, state, ReplacementBuilder, mutable_flags=False)
+    return parse(text, parser_state, ReplacementBuilder, mutable_flags=False)
 

@@ -7,18 +7,19 @@ plus the earliest start index and a matched flag).
 '''
 
 
-from lepl.rxpy.engine.base import BaseEngine
+from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.support import UnsupportedOperation, _LOOP_UNROLL
 from lepl.rxpy.engine.support import Match, Fail, lookahead_logic, Groups
-from lepl.rxpy.graph.base_compilable import BaseCompilableMixin, compile
+from lepl.rxpy.graph.base_compilable import compile
 
 
-class SimpleEngine(BaseEngine, BaseCompilableMixin):
+class SimpleEngine(BaseMatchEngine):
     
     REQUIRE = _LOOP_UNROLL
     
     def __init__(self, parser_state, graph, program=None):
         super(SimpleEngine, self).__init__(parser_state, graph)
+        # TODO - why is this needed?
         if program is None:
             program = compile(graph, self)
         self._program = program

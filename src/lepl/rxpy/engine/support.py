@@ -186,7 +186,7 @@ class Groups(object):
 
 def lookahead_logic(branch, forwards, groups):
     '''
-    Encapsulate common logic for calculating lookback logic.  This doesn't
+    Encapsulate common logic for calculating lookaheads.  This doesn't
     really fit on the opcode, but is common to several engines.
     '''
     reads = contains_instance(branch, ReadsGroup)

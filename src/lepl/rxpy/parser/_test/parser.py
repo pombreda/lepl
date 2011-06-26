@@ -5,15 +5,15 @@ from lepl.rxpy.support import RxpyError, _CHARS
 from lepl.rxpy.graph._test.lib import GraphTest
 from lepl.rxpy.parser.pattern import parse_pattern
 from lepl.rxpy.parser.support import ParserState
-from lepl.rxpy.engine.base import BaseEngine
+from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.parser.error import SimpleGroupError
 
 
-class DummyEngine(BaseEngine):
+class DummyEngine(BaseMatchEngine):
     REQUIRE = _CHARS
     
 
-def parse(pattern, engine=BaseEngine, flags=0):
+def parse(pattern, engine=BaseMatchEngine, flags=0):
     return parse_pattern(pattern, engine, flags=flags)
 
 

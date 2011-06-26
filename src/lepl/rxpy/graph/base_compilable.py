@@ -15,15 +15,15 @@ from lepl.support.lib import unimplemented
 
 
 #noinspection PyUnusedLocal
-class BaseTarget(object):
+class BaseMatchTarget(object):
     '''
-    The interface against which the opcodes "execute".  In simple terms, an
-    engine implements the methods below, and the graph node calls the
-    appropriate method.
+    The interface against which the opcodes "execute" when matching.  In
+    simple terms, an engine implements the methods below, and the graph
+    node calls the appropriate method.
 
     In practice, there is an initial "compilation" step in which the node
     is passed the engine and returns a function that, when called, calls the
-    interface.  This allows any "once only" precomputation to be done before
+    interface.  This allows any "once only" pre-computation to be done before
     matching.
 
     Note that the arguments and in alphabetical order(!).  This is used by
@@ -31,7 +31,7 @@ class BaseTarget(object):
     This ties in with the node constructor arguments via `AutoClone`.
     '''
 
-    def string(self, text):
+    def string(self, next, text, length):
         '''Match the given literal.'''
         raise UnsupportedOperation('string')
 
@@ -117,6 +117,24 @@ class BaseTarget(object):
         raise UnsupportedOperation('repeat')
 
 
+class BaseReplaceTarget(object):
+    '''
+    As `BaseMatchTarget`, but for replacing results (eg. using `re.sub()`).
+    '''
+
+    def string(self, next, text, length):
+        '''Literal text replacement.'''
+        raise UnsupportedOperation('string')
+
+    def group_reference(self, next, number):
+        '''Replace with matched data.'''
+        raise UnsupportedOperation('group_reference')
+
+    def match(self):
+        '''Indicate a successful (end of) a replacement.'''
+        raise UnsupportedOperation('match')
+
+
 def compile(graph, target):
     '''
     Compilation is a two-step process that supports (1) pre-computation of
@@ -129,7 +147,7 @@ def compile(graph, target):
     It's non-trivial (I think?) to make an efficient closure that includes
     loops, so the compilation avoids this.  Instead, indices into an array
     of nodes are used.  So the compilation process works as follows:
-      1. - The `.compile()` method is passed the engine (`BaseTarget` above)
+      1. - The `.compile()` method is passed the engine (`BaseMatchTarget` above)
            and numbered.  It returns a "compiler" function.
       2. - The compiler function is called with the map from nodes to indices
            and the (future) table of compiled nodes by index.  This converts
@@ -165,7 +183,7 @@ class BaseCompilableMixin(object):
 
     def _compile_name(self):
         '''
-        If classes are named after the methds on `BaseTarget` that they will
+        If classes are named after the methods on `BaseMatchTarget` that they will
         call then we can find the correct name by converting from CamelCase
         to dash_separated.
         '''
@@ -189,7 +207,7 @@ class BaseCompilableMixin(object):
 
     def _compile_args(self):
         '''
-        The method arguments in `BaseTarget` are in alphabetical order.
+        The method arguments in `BaseMatchTarget` are in alphabetical order.
         This method maps from node attributes (kargs via `AutoClone`) to
         the method arguments.
         '''
@@ -226,7 +244,14 @@ class SimpleCompilableMixin(BaseCompilableMixin):
             except IndexError:
                 next = None
             def compiled():
-                '''Evaluate and return next node.'''
+                '''
+                Evaluate and return next node.
+
+                The node should return True if input is consumed.  Otherwise,
+                it should return False and the next opcode is invoked immediately.
+                This means that we only return to the caller when input is
+                consumed (so position in input indicates state of system).
+                '''
                 if method(*args):
                     return next
                 else:
@@ -238,9 +263,9 @@ class SimpleCompilableMixin(BaseCompilableMixin):
 class BaseNodeIdCompilableMixin(SimpleCompilableMixin):
     '''
     Some nodes pass in a node ID as the first argument (see subclasses).
-    This is a base class that suppotrs such nodes by (1) allowing them
+    This is a base class that supports such nodes by (1) allowing them
     to provide a modified set of args via `._compile_args()` and (2)
-    translating the first argument give to a node ID.
+    translating the first argument to a node ID.
     '''
 
     @unimplemented
@@ -287,6 +312,7 @@ class NextCompilableMixin(BaseNodeIdCompilableMixin):
 
     Expects to be combined with a `BaseNode` which provides .next.
     '''
+    # TODO - why is next (first arg) nececssary at all?  is it used by any engine?
 
     def _compile_args(self):
         #noinspection PyUnresolvedReferences

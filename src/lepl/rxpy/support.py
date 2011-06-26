@@ -15,6 +15,8 @@ class RxpyError(Exception):
 class UnsupportedOperation(RxpyError):
     '''
     Raised by an interface when called in error.
+
+    # TODO - use decorator to apply
     '''
     pass
 

@@ -29,9 +29,11 @@
       <w>maxsplit</w>
       <w>metaclass</w>
       <w>mixin</w>
+      <w>mixins</w>
       <w>mozilla</w>
       <w>muldiv</w>
       <w>multiline</w>
+      <w>opcode</w>
       <w>opcodes</w>
       <w>parens</w>
       <w>postorder</w>
@@ -51,6 +53,7 @@
       <w>typename</w>
       <w>unescape</w>
       <w>unescaped</w>
+      <w>unhashable</w>
     </words>
   </dictionary>
 </component>

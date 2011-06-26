@@ -2,9 +2,10 @@
 
 
 from lepl.support.lib import UnimplementedMethod
+from lepl.rxpy.graph.base_compilable import BaseMatchTarget
 
 
-class BaseEngine(object):
+class BaseMatchEngine(BaseMatchTarget):
     '''
     Subclasses can redefine REFUSE and REQUIRE to indicate what flags
     should be set (REQUIRE) or trigger an error (REFUSE).
@@ -40,5 +41,5 @@ class BaseEngine(object):
         
         A `Groups` instance should be returned.
         '''
-        raise UnimplementedMethod('Engines must implement match()')
+        raise UnimplementedMethod('Engines must implement run()')
 

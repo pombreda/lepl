@@ -750,8 +750,7 @@ class ReTests(BaseTest):
         # a RuntimeError is raised instead of OverflowError.
         long_overflow = 2**128
         self.assertRaises(TypeError, self._re.finditer, "a", {})
-        self.assertRaises(OverflowError, _sre.compile, "abc", 0, [long_overflow]
-)
+        self.assertRaises(OverflowError, _sre.compile, "abc", 0, [long_overflow])
         self.assertRaises(TypeError, _sre.compile, {}, 0, [])
 
 def run_re_tests():

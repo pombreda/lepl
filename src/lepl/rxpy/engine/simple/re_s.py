@@ -7,7 +7,7 @@ A replacement for Python's `re` package that uses the quick engine.
 from lepl.rxpy.compat.module import Re
 from lepl.rxpy.engine.simple.engine import SimpleEngine
 
-_re = Re(SimpleEngine, 'Parallel simple')
+_re = Re(SimpleEngine, 'Simple')
 
 compile = _re.compile
 RegexObject = _re.RegexObject

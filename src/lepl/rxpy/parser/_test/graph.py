@@ -4,11 +4,11 @@
 from lepl.rxpy.graph._test.lib import GraphTest
 from lepl.rxpy.parser.pattern import parse_pattern
 from lepl.rxpy.parser.support import ParserState
-from lepl.rxpy.engine.base import BaseEngine
+from lepl.rxpy.engine.base import BaseMatchEngine
 
 
 def parse(pattern, flags=0):
-    return parse_pattern(pattern, BaseEngine, flags=flags)
+    return parse_pattern(pattern, BaseMatchEngine, flags=flags)
 
 class ReprTest(GraphTest):
     
