@@ -155,7 +155,7 @@ class SimpleEngine(BaseMatchEngine):
             raise Fail
         
     def character(self, charset):
-        if self._current in charset:
+        if self._current and self._current in charset:
             return True
         else:
             raise Fail
