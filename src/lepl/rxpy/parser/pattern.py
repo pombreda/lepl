@@ -42,7 +42,7 @@ class SequenceBuilder(Builder):
         '''Parse a regular expression.'''
         builder, index = self, None
         try:
-            for (character, index) in zip(text, count()):
+            for (index, character) in enumerate(text):
                 builder = builder.append_character(character)
             builder = builder.append_character(None)
         except ParseError as e:
@@ -83,7 +83,7 @@ class SequenceBuilder(Builder):
             self._sequence.append(EndOfLine(self._parser_state.flags & ParserState.MULTILINE))
         elif not escaped and character == '|':
             self.__start_new_alternative()
-        elif character and self._sequence and (not escaped and character in '+?*'):
+        elif character and self._sequence and (not escaped and str(character) in '+?*'):
             return RepeatBuilder(self._parser_state, self, self._sequence.pop(), character)
         elif character and (escaped or self._parser_state.significant(character)):
             (is_pair, value) = self._parser_state.alphabet.unpack(character,
@@ -695,7 +695,7 @@ class CharacterCodeBuilder(Builder):
             return self
         try:
             return self.__parent.append_character(
-                    self._parser_state.alphabet.code_to_char(int(self.__buffer, 16)),
+                    self._parser_state.alphabet.unescape(int(self.__buffer, 16)),
                     escaped=True)
         except:
             raise RxpyError('Bad unicode escape: ' + self.__buffer)
@@ -740,7 +740,7 @@ class OctalEscapeBuilder(Builder):
 class GroupReferenceBuilder(Builder):
     '''
     Parse group references - expressions of the form \\1.
-    This delegates to `OctalEscapeBuilder` when appropriate.
+    This delegates to `OctalEscapeBuilder` when appropriate (ambiguous).
     '''
 
     def __init__(self, parser_state, parent, initial):

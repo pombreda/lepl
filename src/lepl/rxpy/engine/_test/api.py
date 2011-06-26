@@ -114,9 +114,7 @@ class ReTest(BaseTest):
     def test_pickle(self):
         import pickle
         self.pickle_test(pickle)
-        import cPickle
-        self.pickle_test(cPickle)
-        
+
     def pickle_test(self, pickle):
         oldpat = self._re.compile('a(?:b|(c|e){1,2}?|d)+?(.)')
         s = pickle.dumps(oldpat)

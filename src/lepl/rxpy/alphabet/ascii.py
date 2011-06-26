@@ -83,7 +83,8 @@ class Ascii(BaseAlphabet):
         '''
         from lepl.rxpy.parser.support import ParserState
         char = self.join(self.coerce(char))
-        if flags & ParserState.IGNORE_CASE:
+        # restrict case conversion to 7bit values
+        if flags & ParserState.IGNORE_CASE and self.char_to_code(char) < 128:
             lo = char.lower()
             hi = char.upper()
             if lo != hi:
