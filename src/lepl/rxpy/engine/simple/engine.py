@@ -198,7 +198,8 @@ class SimpleEngine(BaseMatchEngine):
     
     def word_boundary(self, inverted):
         word = self._parser_state.alphabet.word
-        boundary = word(self._current) != word(self._previous)
+        flags = self._parser_state.flags
+        boundary = word(self._current, flags) != word(self._previous, flags)
         if boundary != inverted:
             return False
         else:
@@ -207,21 +208,24 @@ class SimpleEngine(BaseMatchEngine):
     def digit(self, inverted):
         # current here tests whether we have finished
         if self._current and \
-                self._parser_state.alphabet.digit(self._current) != inverted:
+                self._parser_state.alphabet.digit(self._current,
+                            self._parser_state.flags) != inverted:
             return True
         else:
             raise Fail
     
     def space(self, inverted):
         if self._current and \
-                self._parser_state.alphabet.space(self._current) != inverted:
+                self._parser_state.alphabet.space(self._current,
+                            self._parser_state.flags) != inverted:
             return True
         else:
             raise Fail
         
     def word(self, inverted):
         if self._current and \
-                self._parser_state.alphabet.word(self._current) != inverted:
+                self._parser_state.alphabet.word(self._current,
+                            self._parser_state.flags) != inverted:
             return True
         else:
             raise Fail

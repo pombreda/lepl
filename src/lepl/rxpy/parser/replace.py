@@ -122,7 +122,8 @@ class ReplacementBuilder(Builder):
         elif character:
             self._sequence.append(
                 String(self._parser_state.alphabet.join(
-                            self._parser_state.alphabet.coerce(character))))
+                            self._parser_state.alphabet.expression_to_letter(
+                                character))))
         return self
     
 

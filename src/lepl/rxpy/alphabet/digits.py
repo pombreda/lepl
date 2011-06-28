@@ -16,9 +16,9 @@ class Digits(BaseAlphabet):
     '''
     
     def __init__(self):
-        super(Digits, self).__init__(0, 9)
+        super(Digits, self).__init__(0, 9, None)
         
-    def code_to_char(self, code):
+    def code_to_letter(self, code):
         '''
         Convert a code - an integer value between min and max, that maps the
         alphabet to a contiguous set of integers - to a character in the
@@ -26,7 +26,7 @@ class Digits(BaseAlphabet):
         '''
         return code
     
-    def char_to_code(self, char):
+    def letter_to_code(self, char):
         '''
         Convert a character in the alphabet to a code - an integer value
         between min and max, that maps the alphabet to a contiguous set of

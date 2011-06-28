@@ -71,7 +71,7 @@ class CharSet(object):
         self.__index = None
         self.__str = None
 
-        (a1, b1) = map(alphabet.coerce, interval)
+        (a1, b1) = map(alphabet.expression_to_letter, interval)
         if b1 < a1:
             (a1, b1) = (b1, a1)
         intervals = deque()
@@ -133,11 +133,11 @@ class CharSet(object):
     def __format_interval(self, interval, alphabet):
         (a, b) = interval
         if a == b:
-            return alphabet.to_str(a)
+            return alphabet.letter_to_str(a)
         elif a == alphabet.before(b):
-            return alphabet.to_str(a) + alphabet.to_str(b)
+            return alphabet.letter_to_str(a) + alphabet.letter_to_str(b)
         else:
-            return alphabet.to_str(a) + '-' + alphabet.to_str(b)
+            return alphabet.letter_to_str(a) + '-' + alphabet.letter_to_str(b)
 
     def to_str(self, alphabet):
         '''

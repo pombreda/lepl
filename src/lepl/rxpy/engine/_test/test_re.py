@@ -678,15 +678,14 @@ class ReTests(BaseTest):
         # Mixing str and bytes is disallowed
         pat = self._re.compile('.')
         bpat = self._re.compile(b'.')
-        # TODO - should Lepl / RXPY refuse these?
-#        self.assertRaises(TypeError, pat.match, b'b')
-#        self.assertRaises(TypeError, bpat.match, 'b')
-#        self.assertRaises(TypeError, pat.sub, b'b', 'c')
-#        self.assertRaises(TypeError, pat.sub, 'b', b'c')
-#        self.assertRaises(TypeError, pat.sub, b'b', b'c')
-#        self.assertRaises(TypeError, bpat.sub, b'b', 'c')
-#        self.assertRaises(TypeError, bpat.sub, 'b', b'c')
-#        self.assertRaises(TypeError, bpat.sub, 'b', 'c')
+        self.assertRaises(TypeError, pat.match, b'b')
+        self.assertRaises(TypeError, bpat.match, 'b')
+        self.assertRaises(TypeError, pat.sub, b'b', 'c')
+        self.assertRaises(TypeError, pat.sub, 'b', b'c')
+        self.assertRaises(TypeError, pat.sub, b'b', b'c')
+        self.assertRaises(TypeError, bpat.sub, b'b', 'c')
+        self.assertRaises(TypeError, bpat.sub, 'b', b'c')
+        self.assertRaises(TypeError, bpat.sub, 'b', 'c')
 
     def test_ascii_and_unicode_flag(self):
         # String patterns
@@ -710,13 +709,12 @@ class ReTests(BaseTest):
             pat = self._re.compile(b'\w')
             self.assertEqual(pat.match(b'\xe0'), None)
         # Incompatibilities
-        # TODO - should Lepl/RXPY reject these?
-#        self.assertRaises(ValueError, self._re.compile, b'\w', self._re.UNICODE)
-#        self.assertRaises(ValueError, self._re.compile, b'(?u)\w')
-#        self.assertRaises(ValueError, self._re.compile, '\w', self._re.UNICODE | self._re.ASCII)
-#        self.assertRaises(ValueError, self._re.compile, '(?u)\w', self._re.ASCII)
-#        self.assertRaises(ValueError, self._re.compile, '(?a)\w', self._re.UNICODE)
-#        self.assertRaises(ValueError, self._re.compile, '(?au)\w')
+        self.assertRaises(ValueError, self._re.compile, b'\w', self._re.UNICODE)
+        self.assertRaises(ValueError, self._re.compile, b'(?u)\w')
+        self.assertRaises(ValueError, self._re.compile, '\w', self._re.UNICODE | self._re.ASCII)
+        self.assertRaises(ValueError, self._re.compile, '(?u)\w', self._re.ASCII)
+        self.assertRaises(ValueError, self._re.compile, '(?a)\w', self._re.UNICODE)
+        self.assertRaises(ValueError, self._re.compile, '(?au)\w')
 
 def run_re_tests():
     from test.re_tests import tests, SUCCEED, FAIL, SYNTAX_ERROR

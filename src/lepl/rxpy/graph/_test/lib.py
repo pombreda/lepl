@@ -15,10 +15,11 @@ class GraphTest(TestCase):
             try:
                 print('target:\n' + target)
                 print(Popen(["graph-easy", "--as_ascii"], stdin=PIPE, stdout=PIPE)\
-                    .communicate(target.encode('ascii'))[0].decode('ascii'))
+                    .communicate(target.encode('utf8'))[0].decode('utf8'))
                 print('result:\n' + graph)
                 print(Popen(["graph-easy", "--as_ascii"], stdin=PIPE, stdout=PIPE)\
-                      .communicate(graph.encode('ascii'))[0].decode('ascii'))
+                      .communicate(graph.encode('utf8'))[0].decode('utf8'))
             except Exception as e:
                 print(e)
-            assert False
+                raise
+            #assert False

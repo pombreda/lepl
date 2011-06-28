@@ -7,7 +7,8 @@ Python API.
 
 from string import ascii_letters, digits
 
-from lepl.rxpy.alphabet.unicode import Unicode
+from lepl.rxpy.alphabet.bytes import Bytes
+from lepl.rxpy.alphabet.string import String
 from lepl.rxpy.parser.pattern import parse_pattern, parse_groups
 from lepl.rxpy.engine.replace.engine import compile_replacement
 from lepl.rxpy.support import RxpyError
@@ -26,13 +27,8 @@ def compile(pattern, flags=None, alphabet=None, engine=None):
     else:
         if flags is None:
             flags = 0
-        if isinstance(pattern, str):
-            hint_alphabet = Unicode()
-        else:
-            hint_alphabet = None
-        pattern = RegexObject(parse_pattern(pattern, engine, flags=flags, 
-                                            alphabet=alphabet, 
-                                            hint_alphabet=hint_alphabet),
+        pattern = RegexObject(parse_pattern(pattern, engine, flags=flags,
+                                            alphabet=alphabet),
                               pattern, engine=engine)
     return pattern
 
@@ -75,6 +71,8 @@ class RegexObject(object):
         return dict(self.__parser_state.groups.names)
     
     def scanner(self, text, pos=0, endpos=None):
+        self.__parser_state.alphabet.validate_input(text,
+                                                    self.__parser_state.flags)
         return MatchIterator(self, self.__parsed, text, pos=pos, endpos=endpos,
                              engine=self.__engine)
         
@@ -333,13 +331,23 @@ def split(pattern, text, maxsplit=0, flags=0, alphabet=None, engine=None):
 error = RxpyError
 
 
-def escape(text):
+def default_alphabet(alphabet, text):
+    if not alphabet:
+        if isinstance(text, bytes):
+            alphabet = Bytes()
+        else:
+            alphabet = String()
+    return alphabet
+
+
+def escape(text, alphabet=None):
+    alphabet = default_alphabet(alphabet, text)
     def letters():
         for letter in text:
-            if letter not in _ALPHANUMERICS:
-                yield '\\'
-            yield letter
-    return type(text)('').join(list(letters()))
+            if alphabet.expression_to_str(letter) not in _ALPHANUMERICS:
+                yield alphabet.escape
+            yield alphabet.expression_to_letter(letter)
+    return alphabet.join(*list(letters()))
 
 
 class Scanner(object):

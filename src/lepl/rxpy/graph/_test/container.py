@@ -1,4 +1,5 @@
 #LICENCE
+from lepl.rxpy.alphabet.string import String
 
 from lepl.rxpy.graph._test.lib import GraphTest
 from lepl.rxpy.graph.base_graph import BaseLabelledNode
@@ -12,7 +13,7 @@ def n(label):
 
 
 def build(sequence):
-    return None, sequence.join(Match(), ParserState())
+    return None, sequence.join(Match(), ParserState(String()))
 
 
 class DummyState(object):

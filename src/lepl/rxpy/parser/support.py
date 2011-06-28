@@ -6,8 +6,6 @@ Support classes for parsing.
 
 from string import digits, ascii_letters
 
-from lepl.rxpy.alphabet.ascii import Ascii
-from lepl.rxpy.alphabet.unicode import Unicode
 from lepl.rxpy.graph.post import resolve_group_names, post_process
 from lepl.rxpy.parser.error import SimpleGroupError
 from lepl.rxpy.support import _FLAGS, RxpyError, refuse_flags
@@ -28,48 +26,29 @@ class ParserState(object):
      IGNORE_CASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII,
      _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS) = _FLAGS
 
-    def __init__(self, flags=0, alphabet=None, hint_alphabet=None,
-                 require=0, refuse=0):
+    def __init__(self, alphabet, flags=0, require=0, refuse=0):
         '''
+        `alphabet` - alphabet to use
+
         `flags` - initial flags set by user (bits as int)
 
-        `alphabet` - optional alphabet (if given, checked against flags; if not
-        given inferred from flags and hint)
+        `require` - flags required by the engine
 
-        `hint_alphabet` - used to help auto-detect ASCII and Unicode in 2.6
-
-        `require` - fkags required by the alphabet
-
-        `refuse` - flags refused by the alphabet
+        `refuse` - flags refused by the engine
         '''
 
-        self.__new_flags = 0
-        self.__initial_alphabet = alphabet
-        self.__hint_alphabet = hint_alphabet
+        flags = flags | require
+        # check contradictions
+        if (flags & ParserState.ASCII) and (flags & ParserState.UNICODE):
+            raise ValueError('Cannot specify Unicode and ASCII together')
+        refuse_flags(flags & refuse)
+
+        self.__flags = flags
+        self.__alphabet = alphabet
         self.__require = require
         self.__refuse = refuse
 
-        flags = flags | require
-        # default, if nothing specified, is unicode
-        if alphabet is None and not (flags & (ParserState.ASCII | ParserState.UNICODE)):
-            alphabet = hint_alphabet if hint_alphabet else Unicode()
-        # else, if alphabet given, set flag
-        elif alphabet:
-            if isinstance(alphabet, Ascii): flags |= ParserState.ASCII
-            elif isinstance(alphabet, Unicode): flags |= ParserState.UNICODE
-            elif flags & (ParserState.ASCII | ParserState.UNICODE):
-                raise RxpyError('The alphabet is inconsistent with the parser flags')
-        # if alphabet missing, set from flag
-        else:
-            if flags & ParserState.ASCII: alphabet = Ascii()
-            if flags & ParserState.UNICODE: alphabet = Unicode()
-        # check contradictions
-        if (flags & ParserState.ASCII) and (flags & ParserState.UNICODE):
-            raise RxpyError('Cannot specify Unicode and ASCII together')
-        refuse_flags(flags & refuse)
-
-        self.__alphabet = alphabet
-        self.__flags = flags
+        self.__new_flags = 0
         self.groups = GroupState()
         self.__comment = False  # used to track comments with extended syntax
         self.__unwind_credit = 10
@@ -82,8 +61,6 @@ class ParserState(object):
             '''Test for same type'''
             return a == b == None or (a and b and type(a) == type(b))
         return self.__new_flags == other.__new_flags and \
-            same_type(self.__initial_alphabet, other.__initial_alphabet) and \
-            same_type(self.__hint_alphabet, other.__hint_alphabet) and \
             self.__require == other.__require and \
             self.__refuse == other.__refuse and \
             same_type(self.__alphabet, other.__alphabet) and \
@@ -97,17 +74,26 @@ class ParserState(object):
         '''
         Have flags change during parsing (possible when flags are embedded in
         the regular expression)?
-        '''
-        return bool(self.__new_flags & ~self.__flags)
 
-    def clone_with_new_flags(self):
+        We also return True of neither ASCII nor UNICODE was set - this lets
+        us set UNICODE as the default for the second parse.
+        '''
+        return (self.__new_flags & ~self.__flags) or \
+               not ((self.__new_flags | self.__flags) &
+                    (ParserState.ASCII | ParserState.UNICODE))
+
+    def clone_with_new_flags(self, expression):
         '''
         This discards group information because the expression will be parsed
         again with new flags.
         '''
-        return ParserState(alphabet=self.__initial_alphabet,
-                           flags=self.__flags | self.__new_flags,
-                           hint_alphabet=self.__hint_alphabet,
+        flags = self.__flags | self.__new_flags
+        if not (flags & (ParserState.ASCII | ParserState.UNICODE)):
+            if isinstance(expression, bytes):
+                flags |= ParserState.ASCII
+            else:
+                flags |= ParserState.UNICODE
+        return ParserState(alphabet=self.__alphabet, flags=flags,
                            require=self.__require, refuse=self.__refuse)
 
     def next_group_index(self, name=None):
@@ -134,14 +120,15 @@ class ParserState(object):
         '''
         Returns false if character should be ignored (extended syntax).
         '''
+        char_str = self.__alphabet.expression_to_str(character)
         if self.__flags & self.VERBOSE:
-            if character == '#':
+            if char_str == '#':
                 self.__comment = True
                 return False
             elif self.__comment:
-                self.__comment = character != '\n'
+                self.__comment = char_str != '\n'
                 return False
-            elif self.__alphabet.space(character):
+            elif self.__alphabet.space(character, self.__flags):
                 return False
             else:
                 return True
@@ -173,7 +160,7 @@ class ParserState(object):
     def flags(self):
         '''
         Current flags (this does not change as new flags are added; instead
-        the entire expression must be reparsed if `has_new_flags` is True.
+        the entire expression must be re-parsed if `has_new_flags` is True.
         '''
         return self.__flags
 
@@ -301,6 +288,7 @@ def parse(text, parser_state, class_, mutable_flags=True):
     If the expression sets flags then it is parsed again.  If it changes flags
     on the second parse then an error is raised.
     '''
+    graph = None
     try:
         graph = class_(parser_state).parse(text)
     except RxpyError:
@@ -308,8 +296,9 @@ def parse(text, parser_state, class_, mutable_flags=True):
         if not (mutable_flags and parser_state.has_new_flags):
             raise
     if mutable_flags and parser_state.has_new_flags:
-        parser_state = parser_state.clone_with_new_flags()
+        parser_state = parser_state.clone_with_new_flags(text)
         graph = class_(parser_state).parse(text)
+    parser_state.alphabet.validate_expression(text, parser_state.flags)
     graph = post_process(graph, resolve_group_names(parser_state))
     if parser_state.has_new_flags:
         raise RxpyError('Inconsistent flags')

@@ -1347,23 +1347,23 @@ r"""digraph {
         assert state.flags == flags, state.flags 
         
     def test_flags(self):
-        self.assert_flags('', 0)
-        self.assert_flags('(?i)', ParserState.IGNORE_CASE)
+        self.assert_flags('', ParserState.UNICODE) # default
+        self.assert_flags('(?i)', ParserState.IGNORE_CASE | ParserState.UNICODE)
         try:
             self.assert_flags('(?L)', 0)
             assert False
         except RxpyError:
             pass
-        self.assert_flags('(?m)', ParserState.MULTILINE)
-        self.assert_flags('(?s)', ParserState.DOT_ALL)
+        self.assert_flags('(?m)', ParserState.MULTILINE | ParserState.UNICODE)
+        self.assert_flags('(?s)', ParserState.DOT_ALL | ParserState.UNICODE)
         self.assert_flags('(?u)', ParserState.UNICODE)
-        self.assert_flags('(?x)', ParserState.VERBOSE)
+        self.assert_flags('(?x)', ParserState.VERBOSE | ParserState.UNICODE)
         self.assert_flags('(?a)', ParserState.ASCII)
-        self.assert_flags('(?_l)', ParserState._LOOP_UNROLL)
+        self.assert_flags('(?_l)', ParserState._LOOP_UNROLL | ParserState.UNICODE)
         try:
             self.assert_flags('(?imsuxa_l)', 0)
             assert False
-        except RxpyError:
+        except ValueError:
             pass
         self.assert_flags('(?imsux_l)', 
                           ParserState.IGNORE_CASE | ParserState.MULTILINE |

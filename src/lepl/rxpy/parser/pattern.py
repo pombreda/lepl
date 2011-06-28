@@ -14,7 +14,6 @@ those references (ultimately accumulating the graph nodes in the root
 `SequenceBuilder`).
 '''
 
-from itertools import count
 from string import digits, ascii_letters
 
 from lepl.rxpy.graph.container import Alternatives, Sequence, Optional, Loop, \
@@ -67,27 +66,31 @@ class SequenceBuilder(Builder):
 
     def append_character(self, character, escaped=False):
         '''Add the next character.'''
-        if not escaped and character == '\\':
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if not escaped and char_str == '\\':
             return ComplexEscapeBuilder(self._parser_state, self)
-        elif not escaped and character == '{':
-            return CountBuilder(self._parser_state, self)
-        elif not escaped and character == '(':
+        elif not escaped and char_str == '{':
+            return CountBuilder(self._parser_state, self, character)
+        elif not escaped and char_str == '(':
             return GroupEscapeBuilder(self._parser_state, self)
-        elif not escaped and character == '[':
+        elif not escaped and char_str == '[':
             return CharacterBuilder(self._parser_state, self)
-        elif not escaped and character == '.':
+        elif not escaped and char_str == '.':
             self._sequence.append(Dot(self._parser_state.flags & ParserState.DOT_ALL))
-        elif not escaped and character == '^':
+        elif not escaped and char_str == '^':
             self._sequence.append(StartOfLine(self._parser_state.flags & ParserState.MULTILINE))
-        elif not escaped and character == '$':
+        elif not escaped and char_str == '$':
             self._sequence.append(EndOfLine(self._parser_state.flags & ParserState.MULTILINE))
-        elif not escaped and character == '|':
+        elif not escaped and char_str == '|':
             self.__start_new_alternative()
-        elif character and self._sequence and (not escaped and str(character) in '+?*'):
+        elif character is not None and self._sequence and (
+                not escaped and char_str in '+?*'):
             return RepeatBuilder(self._parser_state, self, self._sequence.pop(), character)
-        elif character and (escaped or self._parser_state.significant(character)):
-            (is_pair, value) = self._parser_state.alphabet.unpack(character,
-                                                           self._parser_state.flags)
+        elif character is not None and (
+                escaped or self._parser_state.significant(character)):
+            (is_pair, value) = \
+                self._parser_state.alphabet.expression_to_charset(character,
+                                                     self._parser_state.flags)
             if is_pair:
                 self._sequence.append(Character([(value[0], value[0]),
                                              (value[1], value[1])],
@@ -121,23 +124,25 @@ class RepeatBuilder(Builder):
         super(RepeatBuilder, self).__init__(parser_state)
         self._parent = parent
         self._latest = latest
-        self._initial_character = character
+        self._initial_char_str = self._parser_state.alphabet.expression_to_str(character)
 
     #noinspection PyMethodOverriding
     def append_character(self, character):
         '''Add the next character.'''
 
-        lazy = character == '?'
+        char_str = self._parser_state.alphabet.expression_to_str(character)
 
-        if character and character in '+*':
+        lazy = char_str == '?'
+
+        if character is not None and char_str in '+*':
             raise RxpyError('Compound repeat: ' +
-                                 self._initial_character + character)
-        elif self._initial_character == '?':
+                                 self._initial_char_str + char_str)
+        elif self._initial_char_str == '?':
             self.build_optional(self._parent, self._latest, lazy)
-        elif self._initial_character == '+':
+        elif self._initial_char_str == '+':
             self.build_plus(self._parent, self._latest, lazy,
                             self._parser_state)
-        elif self._initial_character == '*':
+        elif self._initial_char_str == '*':
             self.build_star(self._parent, self._latest, lazy, self._parser_state)
         else:
             raise RxpyError('Bad initial character for RepeatBuilder')
@@ -191,35 +196,36 @@ class GroupEscapeBuilder(Builder):
     def append_character(self, character):
         '''Add the next character.'''
         self._count += 1
+        char_str = self._parser_state.alphabet.expression_to_str(character)
         if self._count == 1:
-            if character == '?':
+            if char_str == '?':
                 return self
             else:
                 builder = GroupBuilder(self._parser_state, self._parent)
                 return builder.append_character(character)
         else:
-            if character == ':':
+            if char_str == ':':
                 return GroupBuilder(self._parser_state, self._parent,
                                     binding=False)
-            elif character in ParserStateBuilder.INITIAL:
+            elif char_str in ParserStateBuilder.INITIAL:
                 return ParserStateBuilder(self._parser_state, self._parent).append_character(character)
-            elif character == 'P':
+            elif char_str == 'P':
                 return NamedGroupBuilder(self._parser_state, self._parent)
-            elif character == '#':
+            elif char_str == '#':
                 return CommentGroupBuilder(self._parser_state, self._parent)
-            elif character == '=':
+            elif char_str == '=':
                 return LookaheadBuilder(
                             self._parser_state, self._parent, True, True)
-            elif character == '!':
+            elif char_str == '!':
                 return LookaheadBuilder(
                             self._parser_state, self._parent, False, True)
-            elif character == '<':
+            elif char_str == '<':
                 return LookbackBuilder(self._parser_state, self._parent)
-            elif character == '(':
+            elif char_str == '(':
                 return ConditionalBuilder(self._parser_state, self._parent)
             else:
                 raise RxpyError(
-                    'Unexpected qualifier after (? - ' + character)
+                    'Unexpected qualifier after (? - ' + char_str)
 
 
 class ParserStateBuilder(Builder):
@@ -248,24 +254,25 @@ class ParserStateBuilder(Builder):
     #noinspection PyMethodOverriding
     def append_character(self, character):
         '''Add the next character.'''
-        if not self.__escape and character == '_':
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if not self.__escape and char_str == '_':
             self.__escape = True
             return self
-        elif self.__escape and character in 'lceug':
-            self._parser_state.new_flag(self.__table['_' + character])
+        elif self.__escape and char_str in 'lceug':
+            self._parser_state.new_flag(self.__table['_' + char_str])
             self.__escape = False
             return self
-        elif not self.__escape and character == 'L':
+        elif not self.__escape and char_str == 'L':
             raise RxpyError('Locale based classes unsupported')
-        elif not self.__escape and character in self.__table:
-            self._parser_state.new_flag(self.__table[character])
+        elif not self.__escape and char_str in self.__table:
+            self._parser_state.new_flag(self.__table[char_str])
             return self
-        elif not self.__escape and character == ')':
+        elif not self.__escape and char_str == ')':
             return self.__parent
         elif self.__escape:
-            raise RxpyError('Unexpected characters after (? - _' + character)
+            raise RxpyError('Unexpected characters after (? - _' + char_str)
         else:
-            raise RxpyError('Unexpected character after (? - ' + character)
+            raise RxpyError('Unexpected character after (? - ' + char_str)
 
 
 class BaseGroupBuilder(SequenceBuilder):
@@ -282,7 +289,8 @@ class BaseGroupBuilder(SequenceBuilder):
 
     def append_character(self, character, escaped=False):
         '''Add the next character.'''
-        if not escaped and character == ')':
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if not escaped and char_str == ')':
             return self._build_group()
         else:
             # this allows further child groups to be opened, etc
@@ -330,13 +338,14 @@ class LookbackBuilder(Builder):
     #noinspection PyMethodOverriding
     def append_character(self, character):
         '''Add the next character.'''
-        if character == '=':
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if char_str == '=':
             return LookaheadBuilder(self._parser_state, self._parent, True, False)
-        elif character == '!':
+        elif char_str == '!':
             return LookaheadBuilder(self._parser_state, self._parent, False, False)
         else:
             raise RxpyError(
-                'Unexpected qualifier after (?< - ' + character)
+                'Unexpected qualifier after (?< - ' + char_str)
 
 
 class LookaheadBuilder(BaseGroupBuilder):
@@ -377,12 +386,13 @@ class ConditionalBuilder(Builder):
 
     def append_character(self, character, escaped=False):
         '''Add the next character.'''
-        if not escaped and character == ')':
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if not escaped and char_str == ')':
             return YesNoBuilder(self, self._parser_state, self.__parent, '|)')
-        elif not escaped and character == '\\':
+        elif not escaped and char_str == '\\':
             return SimpleEscapeBuilder(self._parser_state, self)
         else:
-            self.__name += character
+            self.__name += char_str
             return self
 
     def callback(self, yes_no, terminal):
@@ -419,9 +429,10 @@ class YesNoBuilder(BaseGroupBuilder):
 
     def append_character(self, character, escaped=False):
         '''Add the next character.'''
+        char_str = self._parser_state.alphabet.expression_to_str(character)
         if character is None:
             raise RxpyError('Incomplete conditional match')
-        elif not escaped and character in self.__terminals:
+        elif not escaped and char_str in self.__terminals:
             return self.__conditional.callback(self, character)
         else:
             return super(YesNoBuilder, self).append_character(character, escaped)
@@ -442,30 +453,30 @@ class NamedGroupBuilder(Builder):
 
     def append_character(self, character, escaped=False):
         '''Add the next character.'''
-
+        char_str = self._parser_state.alphabet.expression_to_str(character)
         if self._create is None:
-            if character == '<':
+            if char_str == '<':
                 self._create = True
-            elif character == '=':
+            elif char_str == '=':
                 self._create = False
             else:
                 raise RxpyError(
-                    'Unexpected qualifier after (?P - ' + character)
+                    'Unexpected qualifier after (?P - ' + char_str)
 
         else:
-            if self._create and not escaped and character == '>':
+            if self._create and not escaped and char_str == '>':
                 if not self._name:
                     raise RxpyError('Empty name for group')
                 return GroupBuilder(self._parser_state, self._parent, True, self._name)
-            elif not self._create and not escaped and character == ')':
+            elif not self._create and not escaped and char_str == ')':
                 self._parent._sequence.append(
                     GroupReference(self._parser_state.index_for_name_or_count(self._name)))
                 return self._parent
-            elif not escaped and character == '\\':
+            elif not escaped and char_str == '\\':
                 # this is just for the name
                 return SimpleEscapeBuilder(self._parser_state, self)
             elif character:
-                self._name += character
+                self._name += char_str
             else:
                 raise RxpyError('Incomplete named group')
 
@@ -483,11 +494,12 @@ class CommentGroupBuilder(Builder):
 
     def append_character(self, character, escaped=False):
         '''Add the next character.'''
-        if not escaped and character == ')':
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if not escaped and char_str == ')':
             return self._parent
-        elif not escaped and character == '\\':
+        elif not escaped and char_str == '\\':
             return SimpleEscapeBuilder(self._parser_state, self)
-        elif character:
+        elif character is not None:
             return self
         else:
             raise RxpyError('Incomplete comment')
@@ -518,8 +530,8 @@ class CharacterBuilder(Builder):
             def unpack(character):
                 '''Generate a `CharSet` or a character pair.'''
                 (is_charset, value) = \
-                    self._parser_state.alphabet.unpack(character,
-                                                       self._parser_state.flags)
+                    self._parser_state.alphabet.expression_to_charset(
+                        character, self._parser_state.flags)
                 if not is_charset:
                     value = (character, character)
                 return value
@@ -541,31 +553,32 @@ class CharacterBuilder(Builder):
                     self._charset.append_interval((hi, hi))
                 self._queue = character
 
-        if self._invert is None and character == '^':
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if self._invert is None and char_str == '^':
             self._invert = True
-        elif not escaped and character == '\\':
+        elif not escaped and char_str == '\\':
             return SimpleEscapeBuilder(self._parser_state, self)
-        elif escaped and character in 'dD':
+        elif escaped and char_str in 'dD':
             self._charset.append_class(self._parser_state.alphabet.digit,
-                                       character, character=='D')
-        elif escaped and character in 'wW':
+                                       character, char_str=='D')
+        elif escaped and char_str in 'wW':
             self._charset.append_class(self._parser_state.alphabet.word,
-                                       character, character=='W')
-        elif escaped and character in 'sS':
+                                       character, char_str=='W')
+        elif escaped and char_str in 'sS':
             self._charset.append_class(self._parser_state.alphabet.space,
-                                       character, character=='S')
+                                       character, char_str=='S')
         # not charset allows first character to be unescaped - or ]
-        elif character and \
+        elif character is not None and \
                 ((not self._charset and not self._queue)
-                 or escaped or character not in "-]"):
+                 or escaped or char_str not in "-]"):
             append()
-        elif character == '-':
+        elif char_str == '-':
             if self._range:
                 # repeated - is range to -?
                 append()
             else:
                 self._range = True
-        elif character == ']':
+        elif char_str == ']':
             if self._queue:
                 if self._range:
                     self._range = False
@@ -602,16 +615,17 @@ class SimpleEscapeBuilder(Builder):
     #noinspection PyMethodOverriding
     def append_character(self, character):
         '''Add the next character.'''
-        if not character:
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if character is None:
             raise RxpyError('Incomplete character escape')
-        elif character in 'xuU':
+        elif char_str in 'xuU':
             return CharacterCodeBuilder(self._parser_state, self._parent, character)
-        elif character in digits:
+        elif char_str in digits:
             return OctalEscapeBuilder(self._parser_state, self._parent, character)
-        elif character in self.__std_escapes:
+        elif char_str in self.__std_escapes:
             return self._parent.append_character(
-                        self.__std_escapes[character], escaped=True)
-        elif character not in ascii_letters: # matches re.escape
+                        self.__std_escapes[char_str], escaped=True)
+        elif char_str not in ascii_letters: # matches re.escape
             return self._parent.append_character(character, escaped=True)
         else:
             return self._unexpected_character(character)
@@ -628,9 +642,10 @@ class IntermediateEscapeBuilder(SimpleEscapeBuilder):
 
     def append_character(self, character):
         '''Add the next character.'''
-        if not character:
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if character is None:
             raise RxpyError('Incomplete character escape')
-        elif character in digits and character != '0':
+        elif char_str in digits and char_str != '0':
             return GroupReferenceBuilder(self._parser_state, self._parent, character)
         else:
             return super(IntermediateEscapeBuilder, self).append_character(character)
@@ -644,26 +659,27 @@ class ComplexEscapeBuilder(IntermediateEscapeBuilder):
 
     def append_character(self, character):
         '''Add the next character.'''
-        if not character:
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if character is None:
             raise RxpyError('Incomplete character escape')
-        elif character in digits and character != '0':
+        elif char_str in digits and char_str != '0':
             return GroupReferenceBuilder(self._parser_state, self._parent, character)
-        elif character == 'A':
+        elif char_str == 'A':
             self._parent._sequence.append(StartOfLine(False))
             return self._parent
-        elif character in 'bB':
-            self._parent._sequence.append(WordBoundary(character=='B'))
+        elif char_str in 'bB':
+            self._parent._sequence.append(WordBoundary(char_str=='B'))
             return self._parent
-        elif character in 'dD':
-            self._parent._sequence.append(Digit(character=='D'))
+        elif char_str in 'dD':
+            self._parent._sequence.append(Digit(char_str=='D'))
             return self._parent
-        elif character in 'wW':
-            self._parent._sequence.append(Word(character=='W'))
+        elif char_str in 'wW':
+            self._parent._sequence.append(Word(char_str=='W'))
             return self._parent
-        elif character in 'sS':
-            self._parent._sequence.append(Space(character=='S'))
+        elif char_str in 'sS':
+            self._parent._sequence.append(Space(char_str=='S'))
             return self._parent
-        elif character == 'Z':
+        elif char_str == 'Z':
             self._parent._sequence.append(EndOfLine(False))
             return self._parent
         else:
@@ -687,7 +703,7 @@ class CharacterCodeBuilder(Builder):
     #noinspection PyMethodOverriding
     def append_character(self, character):
         '''Add the next character.'''
-        if not character:
+        if character is None:
             raise RxpyError('Incomplete unicode escape')
         self.__buffer += character
         self.__remaining -= 1
@@ -722,7 +738,8 @@ class OctalEscapeBuilder(Builder):
     #noinspection PyMethodOverriding
     def append_character(self, character):
         '''Add the next character.'''
-        if character and character in '01234567':
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if character is not None and char_str in '01234567':
             self.__buffer += character
             if len(self.__buffer) == 3:
                 return self.__parent.append_character(
@@ -759,10 +776,11 @@ class GroupReferenceBuilder(Builder):
     #noinspection PyMethodOverriding
     def append_character(self, character):
         '''Add the next character.'''
-        if character and (
-                (character in digits and len(self.__buffer) < 2) or
-                (character in OCTAL and len(self.__buffer) < 3)):
-            self.__buffer += character
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+        if character is not None and (
+                (char_str in digits and len(self.__buffer) < 2) or
+                (char_str in OCTAL and len(self.__buffer) < 3)):
+            self.__buffer += char_str
             if self.__octal():
                 return self.__parent.append_character(
                             OctalEscapeBuilder.decode(self.__buffer,
@@ -783,9 +801,10 @@ class CountBuilder(Builder):
     equivalent to 'aaa?a?'
     '''
 
-    def __init__(self, parser_state, parent):
+    def __init__(self, parser_state, parent, open):
         super(CountBuilder, self).__init__(parser_state)
         self._parent = parent
+        self._open = open
         self._begin = None
         self._end = None
         self._acc = ''
@@ -797,8 +816,10 @@ class CountBuilder(Builder):
     def append_character(self, character):
         '''Add the next character.'''
 
+        char_str = self._parser_state.alphabet.expression_to_str(character)
+
         if self._closed:
-            if not self._lazy and character == '?':
+            if not self._lazy and char_str == '?':
                 self._lazy = True
                 return self
             else:
@@ -806,16 +827,17 @@ class CountBuilder(Builder):
                 return self._parent.append_character(character)
 
         empty = not self._acc and self._begin is None
-        if empty and character == '}':
-            for character in '{}':
-                self._parent.append_character(character, escaped=True)
+        if empty and char_str == '}':
+            # oops - not a count at all
+            self._parent.append_character(self._open, escaped=True)
+            self._parent.append_character(character, escaped=True)
             return self._parent
-        elif character == '}':
+        elif char_str == '}':
             self.__store_value()
             self._closed = True
-        elif character == ',':
+        elif char_str == ',':
             self.__store_value()
-        elif character:
+        elif character is not None:
             self._acc += character
         else:
             raise RxpyError('Incomplete count specification')
@@ -878,12 +900,13 @@ class CountBuilder(Builder):
         parent._sequence.append(loop)
 
 
-def parse_pattern(text, engine, flags=0, alphabet=None, hint_alphabet=None):
+def parse_pattern(text, engine, flags=0, alphabet=None):
     '''
     Parse a standard regular expression.
     '''
-    parser_state = ParserState(flags=flags, alphabet=alphabet,
-                        hint_alphabet=hint_alphabet,
+    from lepl.rxpy.compat.support import default_alphabet
+    alphabet = default_alphabet(alphabet, text)
+    parser_state = ParserState(alphabet=alphabet, flags=flags,
                         refuse=engine.REFUSE, require=engine.REQUIRE)
     return parse(text, parser_state, SequenceBuilder)
 
@@ -892,6 +915,10 @@ def parse_groups(texts, engine, flags=0, alphabet=None):
     '''
     Parse set of expressions, used to define groups for `Scanner`.
     '''
+    from lepl.rxpy.compat.support import default_alphabet
+    if not texts:
+        raise ValueError('Empty set of texts for scanner')
+    alphabet = default_alphabet(alphabet, texts[0])
     parser_state = ParserState(flags=flags, alphabet=alphabet,
                         refuse=engine.REFUSE, require=engine.REQUIRE)
     sequence = SequenceBuilder(parser_state)

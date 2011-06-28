@@ -2,14 +2,14 @@
 
 from unittest import TestCase
 
-from lepl.rxpy.alphabet.ascii import Ascii
+from lepl.rxpy.alphabet.string import String
 from lepl.rxpy.graph.opcode import Character
 
 
 class CharacterTest(TestCase):
     
     def do_test_str(self, intervals, target):
-        result = str(Character(intervals, Ascii()))
+        result = str(Character(intervals, String()))
         assert result == target, result
     
     def test_str(self):
@@ -37,18 +37,18 @@ class CharacterTest(TestCase):
         self.do_test_str([('b','a'), ('b', 'c')], '[a-c]')
     
     def test_contains(self):
-        assert 'a' not in Character([('b', 'b')], Ascii())
-        assert 'b' in Character([('b', 'b')], Ascii())
-        assert 'c' not in Character([('b', 'b')], Ascii())
-        assert 'a' in Character([('a', 'b')], Ascii())
-        assert 'b' in Character([('a', 'b')], Ascii())
-        assert 'c' not in Character([('a', 'b')], Ascii())
-        assert 'a' in Character([('a', 'c')], Ascii())
-        assert 'b' in Character([('a', 'c')], Ascii())
-        assert 'c' in Character([('a', 'c')], Ascii())
-        assert 'a' in Character([('a', 'b'), ('b', 'c')], Ascii())
-        assert 'b' in Character([('a', 'b'), ('b', 'c')], Ascii())
-        assert 'c' in Character([('a', 'b'), ('b', 'c')], Ascii())
-        assert 'a' in Character([('a', 'a'), ('c', 'c')], Ascii())
-        assert 'b' not in Character([('a', 'a'), ('c', 'c')], Ascii())
-        assert 'c' in Character([('a', 'a'), ('c', 'c')], Ascii())
+        assert 'a' not in Character([('b', 'b')], String())
+        assert 'b' in Character([('b', 'b')], String())
+        assert 'c' not in Character([('b', 'b')], String())
+        assert 'a' in Character([('a', 'b')], String())
+        assert 'b' in Character([('a', 'b')], String())
+        assert 'c' not in Character([('a', 'b')], String())
+        assert 'a' in Character([('a', 'c')], String())
+        assert 'b' in Character([('a', 'c')], String())
+        assert 'c' in Character([('a', 'c')], String())
+        assert 'a' in Character([('a', 'b'), ('b', 'c')], String())
+        assert 'b' in Character([('a', 'b'), ('b', 'c')], String())
+        assert 'c' in Character([('a', 'b'), ('b', 'c')], String())
+        assert 'a' in Character([('a', 'a'), ('c', 'c')], String())
+        assert 'b' not in Character([('a', 'a'), ('c', 'c')], String())
+        assert 'c' in Character([('a', 'a'), ('c', 'c')], String())
