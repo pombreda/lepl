@@ -3,6 +3,7 @@
     <words>
       <w>addsub</w>
       <w>basestring</w>
+      <w>coallesce</w>
       <w>delitem</w>
       <w>endpos</w>
       <w>findall</w>
