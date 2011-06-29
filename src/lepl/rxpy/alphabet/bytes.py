@@ -78,7 +78,7 @@ class Bytes(BaseAlphabet):
         '''Test whether the character is a word character or not.'''
         if flags & ParserState.UNICODE:
             raise ValueError('Cannot use UNICODE flag with bytes')
-        return char and chr(char) in ASCII_WORD
+        return char and chr(char[0]) in ASCII_WORD
     
     def expression_to_charset(self, char, flags):
         from lepl.rxpy.parser.support import ParserState

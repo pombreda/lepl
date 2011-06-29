@@ -42,7 +42,7 @@ class SimpleEngine(BaseMatchEngine):
     def _set_offset(self, offset):
         self._offset = offset
         if 0 <= self._offset < len(self._text):
-            self._current = self._text[self._offset]
+            self._current = self._text[self._offset:self._offset+1]
         else:
             self._current = None
         if 0 <= self._offset-1 < len(self._text):
@@ -145,7 +145,7 @@ class SimpleEngine(BaseMatchEngine):
     
     def string(self, next, text, length):
         if length == 1:
-            if self._current == text[0]:
+            if self._current == text[0:1]:
                 return True
             else:
                 raise Fail

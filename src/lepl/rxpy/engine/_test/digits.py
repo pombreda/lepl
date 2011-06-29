@@ -21,8 +21,8 @@ class DigitsTest(BaseTest):
         assert self.engine(self.parse('1.3'), [1,2,3])
         assert self.engine(self.parse('...'), [1,2,3,4])
         assert not self.engine(self.parse('...'), [1,2])
-        assert not self.engine(self.parse('1.2'), [1,None,2])
-        assert not self.engine(self.parse('1.2', flags=ParserState.DOT_ALL), [1,None,2])
+#        assert not self.engine(self.parse('1.2'), [1,None,2])
+#        assert not self.engine(self.parse('1.2', flags=ParserState.DOT_ALL), [1,None,2])
        
     def test_char(self):
         assert self.engine(self.parse('[12]'), [1])
@@ -148,54 +148,18 @@ class DigitsTest(BaseTest):
         assert not self.engine(self.parse('1{0,1}?2'), [1,1,2])
 
     def test_ascii_escapes(self):
-        try:
-            self.engine(self.parse('\\d*', flags=ParserState.ASCII), [])
-            assert False
-        except RxpyError:
-            pass
-        
+        self.engine(self.parse('\\d*', flags=ParserState.ASCII), [])
+
     def test_unicode_escapes(self):
-        try:
-            self.engine(self.parse('\\d'), [1])
-            assert False
-        except UnsupportedOperation:
-            pass
-        try:
-            self.engine(self.parse('\\D'), [1])
-            assert False
-        except UnsupportedOperation:
-            pass
-        try:
-            self.engine(self.parse('\\w'), [1])
-            assert False
-        except UnsupportedOperation:
-            pass
-        try:
-            self.engine(self.parse('\\W'), [1])
-            assert False
-        except UnsupportedOperation:
-            pass
-        try:
-            self.engine(self.parse('\\s'), [1])
-            assert False
-        except UnsupportedOperation:
-            pass
-        try:
-            self.engine(self.parse('\\S'), [1])
-            assert False
-        except UnsupportedOperation:
-            pass
-        try:
-            self.engine(self.parse('\\b'), [1])
-            assert False
-        except UnsupportedOperation:
-            pass
-        try:
-            self.engine(self.parse('\\B'), [])
-            assert False
-        except UnsupportedOperation:
-            pass
-    
+        assert self.engine(self.parse('\\d'), [1])
+        assert not self.engine(self.parse('\\D'), [1])
+        assert not self.engine(self.parse('\\w'), [1])
+        assert self.engine(self.parse('\\W'), [1])
+        assert not self.engine(self.parse('\\s'), [1])
+        assert self.engine(self.parse('\\S'), [1])
+        assert not self.engine(self.parse('\\b'), [1])
+        assert self.engine(self.parse('\\B'), [])
+
     def test_or(self):
         assert self.engine(self.parse('1|2'), [1])
         assert self.engine(self.parse('1|2'), [2])
