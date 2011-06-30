@@ -42,7 +42,7 @@ class RegexObject(object):
         self.__parsed = parsed
         self.__pattern = pattern
         self.__engine = engine
-        
+
     def deep_eq(self, other):
         '''
         Used only for testing.
@@ -86,8 +86,8 @@ class RegexObject(object):
     def scanner(self, text, pos=0, endpos=None):
         self.__parser_state.alphabet.validate_input(text,
                                                     self.__parser_state.flags)
-        return MatchIterator(self, self.__parsed, text, pos=pos, endpos=endpos,
-                             engine=self.__engine)
+        return MatchIterator(self, self.__parsed, text, self.__pattern,
+                             pos=pos, endpos=endpos, engine=self.__engine)
         
     def match(self, text, pos=0, endpos=None):
         return self.scanner(text, pos=pos, endpos=endpos).match()
@@ -193,14 +193,17 @@ class MatchIterator(object):
     None when no more calls will work.
     '''
     
-    def __init__(self, re, parsed, text, pos=0, endpos=None, engine=None):
+    def __init__(self, re, parsed, text, pattern, pos=0, endpos=None, engine=None):
         require_engine(engine)
         self.__re = re
         self.__parsed = parsed
         self.__text = text
+        # required by a test in Python3.2
+        self.pattern = pattern
         self.__pos = pos
         self.__endpos = endpos if endpos else len(text)
         self.__engine = engine(*parsed)
+        self.pattern = 1
     
     @property
     def __parser_state(self):
@@ -375,6 +378,8 @@ class Scanner(object):
                                                 engine, flags=flags, alphabet=alphabet),
                                    engine=engine)
         self.__actions = list(map(lambda x: x[1], pairs))
+        # this is implied by a test in Python 3.2
+        self.scanner = self.__regex
     
     def scaniter(self, text, pos=0, endpos=None, search=False):
         return self.__scaniter(self.__regex.scanner(text, pos=pos, endpos=endpos), 

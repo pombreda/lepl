@@ -925,5 +925,10 @@ def parse_groups(texts, engine, flags=0, alphabet=None):
     for text in texts:
         sequence.parse_group(text)
     if parser_state.has_new_flags:
-        raise RxpyError('Inconsistent flags')
+        parser_state = parser_state.clone_with_new_flags(texts[0])
+        sequence = SequenceBuilder(parser_state)
+        for text in texts:
+            sequence.parse_group(text)
+        if parser_state.has_new_flags:
+            raise RxpyError('Inconsistent flags')
     return parser_state, sequence.to_sequence().join(Match(), parser_state)
