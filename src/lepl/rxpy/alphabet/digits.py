@@ -54,7 +54,7 @@ class Digits(BaseAlphabet):
         return char
 
     def letter_to_str(self, letter):
-        return str(letter[0])
+        return None if letter is None else str(letter[0])
 
     def expression_to_charset(self, char, flags):
         return (False, [int(char)])

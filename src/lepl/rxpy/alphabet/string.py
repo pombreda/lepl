@@ -59,6 +59,7 @@ class String(BaseAlphabet):
         return char if char else None
 
     def letter_to_str(self, letter):
+        if letter is None: return None
         text = repr(letter)
         if text[0] == 'u':
             text = text[1:]
@@ -101,3 +102,6 @@ class String(BaseAlphabet):
         return char and (char in ASCII_WORD or
                 (flags & ParserState.UNICODE and category(char) in UNICODE_WORD))
     
+    def unescape(self, code):
+        '''No idea why, but needed for some tests.'''
+        return self.code_to_letter(code % 256)

@@ -5,6 +5,7 @@ source ./env/bin/activate
 #pip install python-graph-core
 #pip install python-graph-dot
 #pip install pygraphviz
+pip install pytest
 
 
 

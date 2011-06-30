@@ -155,7 +155,7 @@ class SimpleEngine(BaseMatchEngine):
             raise Fail
         
     def character(self, charset):
-        if self._current and self._current in charset:
+        if self._current is not None and self._current in charset:
             return True
         else:
             raise Fail
@@ -188,9 +188,10 @@ class SimpleEngine(BaseMatchEngine):
             raise Fail
     
     def end_of_line(self, multiline):
+        current_str = self._parser_state.alphabet.letter_to_str(self._current)
         if ((len(self._text) == self._offset or 
-                    (multiline and self._current == '\n'))
-                or (self._current == '\n' and
+                    (multiline and current_str == '\\n'))
+                or (current_str == '\\n' and
                         not self._text[self._offset+1:])):
             return False
         else:
@@ -207,7 +208,7 @@ class SimpleEngine(BaseMatchEngine):
 
     def digit(self, inverted):
         # current here tests whether we have finished
-        if self._current and \
+        if self._current is not None and \
                 self._parser_state.alphabet.digit(self._current,
                             self._parser_state.flags) != inverted:
             return True
@@ -215,7 +216,7 @@ class SimpleEngine(BaseMatchEngine):
             raise Fail
     
     def space(self, inverted):
-        if self._current and \
+        if self._current is not None and \
                 self._parser_state.alphabet.space(self._current,
                             self._parser_state.flags) != inverted:
             return True
@@ -223,7 +224,7 @@ class SimpleEngine(BaseMatchEngine):
             raise Fail
         
     def word(self, inverted):
-        if self._current and \
+        if self._current is not None and \
                 self._parser_state.alphabet.word(self._current,
                             self._parser_state.flags) != inverted:
             return True

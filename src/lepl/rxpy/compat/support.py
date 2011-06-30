@@ -11,7 +11,9 @@ from lepl.rxpy.alphabet.bytes import Bytes
 from lepl.rxpy.alphabet.string import String
 from lepl.rxpy.parser.pattern import parse_pattern, parse_groups
 from lepl.rxpy.engine.replace.engine import compile_replacement
+from lepl.rxpy.parser.support import ParserState
 from lepl.rxpy.support import RxpyError
+from lepl.support.lib import lmap
 
 
 _ALPHANUMERICS = ascii_letters + digits
@@ -68,7 +70,18 @@ class RegexObject(object):
     
     @property
     def groupindex(self):
-        return dict(self.__parser_state.groups.names)
+        if self.__parser_state.flags & ParserState._GROUPS:
+            return dict(self.__parser_state.groups.names)
+        else:
+            def is_int(name):
+                try:
+                    int(name)
+                    return True
+                except ValueError:
+                    return False
+            return dict((name, value)
+                for (name, value) in self.__parser_state.groups.names.items()
+                if not is_int(name))
     
     def scanner(self, text, pos=0, endpos=None):
         self.__parser_state.alphabet.validate_input(text,
@@ -358,7 +371,7 @@ class Scanner(object):
 
     def __init__(self, pairs, flags=0, alphabet=None, engine=None):
         require_engine(engine)
-        self.__regex = RegexObject(parse_groups(map(lambda x: x[0], pairs), 
+        self.__regex = RegexObject(parse_groups(lmap(lambda x: x[0], pairs),
                                                 engine, flags=flags, alphabet=alphabet),
                                    engine=engine)
         self.__actions = list(map(lambda x: x[1], pairs))

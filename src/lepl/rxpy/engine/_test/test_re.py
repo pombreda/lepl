@@ -502,8 +502,7 @@ class ReTests(BaseTest):
         # SRE_OP_MIN_REPEAT_ONE for eliminating recursion on simple uses of
         # pattern '*?' on a long string.
         self.assertEqual(self._re.match('.*?c', 10000*'ab'+'cd').end(0), 20001)
-        self.assertEqual(self._re.match('.*?cd', 5000*'ab'+'c'+5000*'ab'+'cde').end(0)
-,
+        self.assertEqual(self._re.match('.*?cd', 5000*'ab'+'c'+5000*'ab'+'cde').end(0),
                          20003)
         self.assertEqual(self._re.match('.*?cd', 20000*'abc'+'de').end(0), 60001)
         # non-simple '*?' still used to hit the recursion limit, before the
@@ -520,7 +519,7 @@ class ReTests(BaseTest):
         def s_float(scanner, token): return float(token)
         def s_int(scanner, token): return int(token)
 
-        scanner = Scanner([
+        scanner = self._re.Scanner([
             (r"[a-zA-Z_]\w*", s_ident),
             (r"\d+\.\d*", s_float),
             (r"\d+", s_int),
@@ -566,7 +565,7 @@ class ReTests(BaseTest):
         # mark_stack_base restoring before restoring marks
         self.assertEqual(self._re.match('(a)(?:(?=(b)*)c)*', 'abb').groups(),
                          ('a', None))
-        self.assertEqual(self._re.match('(a)((?!(b)*))*', 'abb').groups(),
+        self.assertEqual(self._re.match('(?_e)(a)((?!(b)*))*', 'abb').groups(),
                          ('a', None, None))
 
     def test_bug_764548(self):

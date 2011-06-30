@@ -31,11 +31,11 @@ class ReplaceEngine(BaseReplaceTarget):
         return False # loop internally til done
 
     def group_reference(self, next, number):
-        try:
-            self.__replacement.append(self.__match.group(number))
+        match = self.__match.group(number)
+        if match:
+            self.__replacement.append(match)
             return False # loop internally til done
-        # raised when match.group returns None
-        except TypeError:
+        else:
             raise RxpyError('No match for group ' + str(number))
 
     def match(self):

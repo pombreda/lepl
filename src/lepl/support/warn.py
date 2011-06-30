@@ -77,7 +77,9 @@ def warn_on_use(message, name=None):
     def decorator(func, name=name):
         if name is None:
             name = func.__name__
-        warning = Warning(name, message)
+        if name not in _WARNINGS:
+            Warning(name, message)
+        warning = _WARNINGS[name]
         def wrapper(*args, **kargs):
             warning.warn()
             return func(*args, **kargs)
