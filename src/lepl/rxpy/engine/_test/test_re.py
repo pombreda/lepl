@@ -312,7 +312,8 @@ class ReTests(BaseTest):
 
     def test_getattr(self):
         self.assertEqual(self._re.compile("(?i)(a)(b)").pattern, "(?i)(a)(b)")
-        self.assertEqual(self._re.compile("(?i)(a)(b)").flags, self._re.I | self._re.U)
+        # the 63 below masks the expended flags used by RXPY
+        self.assertEqual(self._re.compile("(?i)(a)(b)").flags & 63, self._re.I | self._re.U)
         self.assertEqual(self._re.compile("(?i)(a)(b)").groups, 2)
         self.assertEqual(self._re.compile("(?i)(a)(b)").groupindex, {})
         self.assertEqual(self._re.compile("(?i)(?P<first>a)(?P<other>b)").groupindex,
