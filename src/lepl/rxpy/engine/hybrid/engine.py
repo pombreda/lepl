@@ -8,8 +8,8 @@ from lepl.rxpy.engine.complex.engine import ComplexEngine
 
 class HybridEngine(SimpleEngine):
     
-    def __init__(self, parser_state, graph, program=None):
-        super(HybridEngine, self).__init__(parser_state, graph, program=program)
+    def __init__(self, parser_state, graph):
+        super(HybridEngine, self).__init__(parser_state, graph)
         self.__cached_fallback = None
     
     def run(self, text, pos=0, search=False):

@@ -67,7 +67,7 @@ class String(BaseAlphabet):
 
     def expression_to_charset(self, char, flags):
         from lepl.rxpy.parser.support import ParserState
-        if flags & ParserState.IGNORE_CASE and \
+        if flags & ParserState.IGNORECASE and \
                 (flags & ParserState.UNICODE or ord(char) < 128):
             lo = char.lower()
             hi = char.upper()

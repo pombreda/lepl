@@ -13,6 +13,7 @@
       <w>groupdict</w>
       <w>groupindex</w>
       <w>iadd</w>
+      <w>ignorecase</w>
       <w>iter</w>
       <w>iterable</w>
       <w>karg</w>

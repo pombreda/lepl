@@ -109,7 +109,7 @@ class BaseAlphabet(object):
         Return either (True, CharSet) or (False, letter)
         '''
         from lepl.rxpy.parser.support import ParserState
-        if flags & ParserState.IGNORE_CASE:
+        if flags & ParserState.IGNORECASE:
             raise RxpyError('Default alphabet does not handle case')
         return False, self.join(self.expression_to_letter(char))
 

@@ -1,13 +1,13 @@
 #LICENCE
 
 '''
-A replacement for Python's `re` package that uses the complex engine.
+A replacement for Python's `re` package that uses the hybrid engine.
 '''
 
 from lepl.rxpy.compat.module import Re
-from lepl.rxpy.engine.complex.engine import ComplexEngine
+from lepl.rxpy.engine.hybrid.engine import HybridEngine
 
-_re = Re(ComplexEngine, 'Complex')
+_re = Re(HybridEngine, 'Quick')
 
 compile = _re.compile
 RegexObject = _re.RegexObject
@@ -23,4 +23,4 @@ error = _re.error
 escape = _re.escape    
 Scanner = _re.Scanner    
 
-(I, M, S, U, X, A, _L, _C, _E, _U, _G, IGNORE_CASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII, _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS) = _re.FLAGS
+(I, M, S, U, X, A, _L, _C, _E, _U, _G, IGNORECASE, MULTILINE, DOTALL, UNICODE, VERBOSE, ASCII, _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS) = _re.FLAGS

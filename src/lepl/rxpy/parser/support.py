@@ -23,7 +23,7 @@ class ParserState(object):
     '''
 
     (I, M, S, U, X, A, _L, _C, _E, _U, _G,
-     IGNORE_CASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII,
+     IGNORECASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII,
      _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS) = _FLAGS
 
     def __init__(self, alphabet, flags=0, require=0, refuse=0):

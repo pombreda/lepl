@@ -18,7 +18,7 @@ class Re(object):
         self.FLAGS = _FLAGS
         (self.I, self.M, self.S, self.U, self.X, self.A, 
          self._L, self._C, self._E, self._U, self._G, 
-         self.IGNORE_CASE, self.MULTILINE, self.DOT_ALL, self.UNICODE,
+         self.IGNORECASE, self.MULTILINE, self.DOT_ALL, self.UNICODE,
          self.VERBOSE, self.ASCII, 
          self._LOOP_UNROLL, self._CHARS, self._EMPTY, self._UNSAFE, 
          self._GROUPS) = _FLAGS

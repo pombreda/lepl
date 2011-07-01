@@ -449,7 +449,7 @@ class ReTests(BaseTest):
         self.assertEqual(oldpat, newpat)
 
     def test_constants(self):
-        self.assertEqual(self._re.I, self._re.IGNORE_CASE)
+        self.assertEqual(self._re.I, self._re.IGNORECASE)
 #        self.assertEqual(self._re.L, self._re.LOCALE)
         self.assertEqual(self._re.M, self._re.MULTILINE)
         self.assertEqual(self._re.S, self._re.DOT_ALL)
@@ -690,13 +690,13 @@ class ReTests(BaseTest):
     def test_ascii_and_unicode_flag(self):
         # String patterns
         for flags in (0, self._re.UNICODE):
-            pat = self._re.compile('\xc0', flags | self._re.IGNORE_CASE)
+            pat = self._re.compile('\xc0', flags | self._re.IGNORECASE)
             self.assertNotEqual(pat.match('\xe0'), None)
             pat = self._re.compile('\w', flags)
             self.assertNotEqual(pat.match('\xe0'), None)
-        pat = self._re.compile('\xc0', self._re.ASCII | self._re.IGNORE_CASE)
+        pat = self._re.compile('\xc0', self._re.ASCII | self._re.IGNORECASE)
         self.assertEqual(pat.match('\xe0'), None)
-        pat = self._re.compile('(?a)\xc0', self._re.IGNORE_CASE)
+        pat = self._re.compile('(?a)\xc0', self._re.IGNORECASE)
         self.assertEqual(pat.match('\xe0'), None)
         pat = self._re.compile('\w', self._re.ASCII)
         self.assertEqual(pat.match('\xe0'), None)
@@ -704,7 +704,7 @@ class ReTests(BaseTest):
         self.assertEqual(pat.match('\xe0'), None)
         # Bytes patterns
         for flags in (0, self._re.ASCII):
-            pat = self._re.compile(b'\xc0', self._re.IGNORE_CASE)
+            pat = self._re.compile(b'\xc0', self._re.IGNORECASE)
             self.assertEqual(pat.match(b'\xe0'), None)
             pat = self._re.compile(b'\w')
             self.assertEqual(pat.match(b'\xe0'), None)
@@ -821,9 +821,9 @@ def run_re_tests():
                     if result is None:
                         print('=== Failed on range-limited match', t)
 
-                # Try the match with IGNORE_CASE enabled, and check that it
+                # Try the match with IGNORECASE enabled, and check that it
                 # still succeeds.
-                obj = self._re.compile(pattern, self._re.IGNORE_CASE)
+                obj = self._re.compile(pattern, self._re.IGNORECASE)
                 result = obj.search(s)
                 if result is None:
                     print('=== Fails on case-insensitive match', t)

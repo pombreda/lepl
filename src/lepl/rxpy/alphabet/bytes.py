@@ -85,7 +85,7 @@ class Bytes(BaseAlphabet):
         if flags & ParserState.UNICODE:
             raise ValueError('Cannot use UNICODE flag with bytes')
         # restrict case conversion to 7bit values
-        if flags & ParserState.IGNORE_CASE and char < 128:
+        if flags & ParserState.IGNORECASE and char < 128:
             lo = chr(char).lower().encode('ascii')
             hi = chr(char).upper()
             if lo != hi:

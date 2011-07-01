@@ -22,14 +22,14 @@ class UnsupportedOperation(RxpyError):
 
 
 (I, M, S, U, X, A, _L, _C, _E, _U, _G) = map(lambda x: 2**x, range(11))
-(IGNORE_CASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII, 
+(IGNORECASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII,
  _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS) = (I, M, S, U, X, A,
                                                     _L, _C, _E, _U, _G)
 _FLAGS = (I, M, S, U, X, A, _L, _C, _E, _U, _G,
-          IGNORE_CASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII,
+          IGNORECASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII,
           _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS)
 
-FLAG_NAMES = {I: 'I/IGNORE_CASE',
+FLAG_NAMES = {I: 'I/IGNORECASE',
               M: 'M/MULTILINE',
               S: 'S/DOT_ALL',
               U: 'U/UNICODE',

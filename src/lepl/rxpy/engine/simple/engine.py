@@ -17,12 +17,9 @@ class SimpleEngine(BaseMatchEngine):
     
     REQUIRE = _LOOP_UNROLL
     
-    def __init__(self, parser_state, graph, program=None):
+    def __init__(self, parser_state, graph):
         super(SimpleEngine, self).__init__(parser_state, graph)
-        # TODO - why is this needed?
-        if program is None:
-            program = compile(graph, self)
-        self._program = program
+        self._program = compile(graph, self)
         self.__stack = []
         
     def push(self):

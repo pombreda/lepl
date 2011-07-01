@@ -18,11 +18,9 @@ from lepl.rxpy.graph.base_compilable import compile
 
 class ComplexEngine(BaseMatchEngine):
     
-    def __init__(self, parser_state, graph, program=None):
+    def __init__(self, parser_state, graph):
         super(ComplexEngine, self).__init__(parser_state, graph)
-        if program is None:
-            program = compile(graph, self)
-        self._program = program
+        self._program = compile(graph, self)
         self.__stack = []
         
     def push(self):

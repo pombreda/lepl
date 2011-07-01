@@ -108,11 +108,11 @@ class BaseMatchTarget(object):
         '''
         raise UnsupportedOperation('split')
 
-    def lookahead(self, equal, forwards):
+    def lookahead(self, next, equal, forwards):
         '''Perform a lookahead match.'''
         raise UnsupportedOperation('lookahead')
 
-    def repeat(self, begin, end, lazy):
+    def repeat(self, next, begin, end, lazy):
         '''Perform a counted repetition.'''
         raise UnsupportedOperation('repeat')
 
@@ -267,6 +267,7 @@ class BaseNodeIdCompilableMixin(SimpleCompilableMixin):
     to provide a modified set of args via `._compile_args()` and (2)
     translating the first argument to a node ID.
     '''
+    # TODO - do we ever need the node id?
 
     @unimplemented
     def _compile_args(self):

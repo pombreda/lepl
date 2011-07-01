@@ -1348,7 +1348,7 @@ r"""digraph {
         
     def test_flags(self):
         self.assert_flags('', ParserState.UNICODE) # default
-        self.assert_flags('(?i)', ParserState.IGNORE_CASE | ParserState.UNICODE)
+        self.assert_flags('(?i)', ParserState.IGNORECASE | ParserState.UNICODE)
         try:
             self.assert_flags('(?L)', 0)
             assert False
@@ -1366,6 +1366,6 @@ r"""digraph {
         except ValueError:
             pass
         self.assert_flags('(?imsux_l)', 
-                          ParserState.IGNORE_CASE | ParserState.MULTILINE |
+                          ParserState.IGNORECASE | ParserState.MULTILINE |
                           ParserState.DOT_ALL | ParserState.UNICODE |
                           ParserState.VERBOSE | ParserState._LOOP_UNROLL)
