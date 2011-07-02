@@ -38,8 +38,7 @@ class String(BaseNode, NextCompilableMixin):
         self.size = len(self.text)
 
     def _untranslated_args(self):
-        # TODO - we don't need to pass in length!
-        return [self.text, len(self.text)]
+        return [self.text]
 
 
 class StartGroup(BaseGroupReference, SimpleCompilableMixin):

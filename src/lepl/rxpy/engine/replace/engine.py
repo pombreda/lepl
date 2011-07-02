@@ -26,7 +26,7 @@ class ReplaceEngine(BaseReplaceTarget):
         self.__program[state]()
         return self.__parser_state.alphabet.join(*self.__replacement)
 
-    def string(self, next, text, length):
+    def string(self, next, text):
         self.__replacement.append(text)
         return False # loop internally til done
 

@@ -127,7 +127,8 @@ class ComplexEngine(BaseMatchEngine):
         except Match:
             return self._state.groups(self._parser_state.groups)
     
-    def string(self, next, text, length):
+    def string(self, next, text):
+        length = len(text)
         if length == 1:
             if self._current == text[0:1]:
                 return True
@@ -225,7 +226,7 @@ class ComplexEngine(BaseMatchEngine):
             if text is None:
                 raise Fail
             else:
-                return self.string(next, text, len(text))
+                return self.string(next, text)
         except KeyError:
             raise Fail
 

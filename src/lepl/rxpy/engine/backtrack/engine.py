@@ -323,7 +323,7 @@ class BacktrackingEngine(BaseMatchEngine):
             
     # below are the engine methods - these implement the different opcodes
 
-    def string(self, next, text, length):
+    def string(self, next, text):
         self.ticks += 1
         self.__state = self.__state.string(text)
         return True

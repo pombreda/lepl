@@ -31,7 +31,7 @@ class BaseMatchTarget(object):
     This ties in with the node constructor arguments via `AutoClone`.
     '''
 
-    def string(self, next, text, length):
+    def string(self, next, text):
         '''Match the given literal.'''
         raise UnsupportedOperation('string')
 
@@ -122,7 +122,7 @@ class BaseReplaceTarget(object):
     As `BaseMatchTarget`, but for replacing results (eg. using `re.sub()`).
     '''
 
-    def string(self, next, text, length):
+    def string(self, next, text):
         '''Literal text replacement.'''
         raise UnsupportedOperation('string')
 
@@ -238,10 +238,9 @@ class SimpleCompilableMixin(BaseCompilableMixin):
         '''
         def compiler(node_to_index, table):
             '''Find the next ID and return the compiled function.'''
-            try: # TODO - is this try necessary?
-                #noinspection PyUnresolvedReferences
+            if self.next:
                 next = node_to_index[self.next[0]]
-            except IndexError:
+            else:
                 next = None
             def compiled():
                 '''
@@ -282,11 +281,8 @@ class BaseNodeIdCompilableMixin(SimpleCompilableMixin):
         '''Extend the superclass with a conversion of args[0].'''
         def compiler(node_to_index, table):
             '''Extend the superclass with a conversion of args[0].'''
-            try: # TODO - is this try necessary?
-                #noinspection PyUnresolvedReferences
-                next = node_to_index[self.next[0]]
-            except IndexError:
-                next = None
+            #noinspection PyUnresolvedReferences
+            next = node_to_index[self.next[0]]
             args[0] = node_to_index[args[0]]
             def compiled():
                 '''Evaluate and return next node.'''
@@ -313,7 +309,6 @@ class NextCompilableMixin(BaseNodeIdCompilableMixin):
 
     Expects to be combined with a `BaseNode` which provides .next.
     '''
-    # TODO - why is next (first arg) nececssary at all?  is it used by any engine?
 
     def _compile_args(self):
         #noinspection PyUnresolvedReferences

@@ -140,7 +140,8 @@ class SimpleEngine(BaseMatchEngine):
             groups.end_group(0, self._offset)
             return groups
     
-    def string(self, next, text, length):
+    def string(self, next, text):
+        length = len(text)
         if length == 1:
             if self._current == text[0:1]:
                 return True
