@@ -283,7 +283,7 @@ class BacktrackingEngine(BaseMatchEngine):
         self.__stacks.append((self.__stack, self.__state))
         self.__stack = Stack()
         self.__state = state
-        save_pointer = False
+        save_pointer = None
         try:
             try:
                 # search loop
@@ -291,10 +291,11 @@ class BacktrackingEngine(BaseMatchEngine):
                     # if searching, save state for restart
                     if search:
                         (save_state, save_pointer) = (self.__state.clone(), pointer)
-                    # trampoline loop
+                    # backtrack loop
                     while True:
-                        self.ticks += 1
                         try:
+                            # can't loop completely inside program as we exceed
+                            # stack depth
                             pointer = self._program[pointer]()
                         # backtrack if stack exists
                         except Fail:
@@ -321,35 +322,41 @@ class BacktrackingEngine(BaseMatchEngine):
             self.__match = False
             
     # below are the engine methods - these implement the different opcodes
-    # TODO - can we return False sometimes?
 
     def string(self, next, text, length):
+        self.ticks += 1
         self.__state = self.__state.string(text)
         return True
     
     def character(self, charset):
+        self.ticks += 1
         self.__state = self.__state.character(charset)
         return True
 
     def start_group(self, number):
+        self.ticks += 1
         self.__state = self.__state.start_group(number)
-        return True
+        return False
 
     def end_group(self, number):
+        self.ticks += 1
         self.__state = self.__state.end_group(number)
-        return True
+        return False
 
     def group_reference(self, next, number):
+        self.ticks += 1
         try:
             text = self.__state.groups.group(number)
             if text is None:
                 raise Fail
             else:
-                return self.string(next, text, len(text))
+                self.__state = self.__state.string(text)
+                return False
         except KeyError:
             raise Fail
 
     def conditional(self, next, number):
+        self.ticks += 1
         try:
             if self.__state.groups.group(number):
                 return 1
@@ -358,31 +365,37 @@ class BacktrackingEngine(BaseMatchEngine):
         return 0
 
     def split(self, next):
-        for (index, _node) in reversed(next):
+        self.ticks += 1
+        for (index, _node) in reversed(next[1:]):
             clone = self.__state.clone()
             self.__stack.push(index, clone)
-        # start from new states
-        raise Fail
+        return 0
 
     def match(self):
+        self.ticks += 1
         raise Match
 
     def no_match(self):
+        self.ticks += 1
         raise Fail
 
     def dot(self, multiline):
+        self.ticks += 1
         self.__state = self.__state.dot(multiline)
         return True
 
     def start_of_line(self, multiline):
+        self.ticks += 1
         self.__state = self.__state.start_of_line(multiline)
-        return True
+        return False
         
     def end_of_line(self, multiline):
+        self.ticks += 1
         self.__state = self.__state.end_of_line(multiline)
-        return True
+        return False
 
     def lookahead(self, next, equal, forwards):
+        self.ticks += 1
         (index, node) = next[1]
         if node not in self.__lookaheads:
             self.__lookaheads[node] = {}
@@ -423,6 +436,7 @@ class BacktrackingEngine(BaseMatchEngine):
             raise Fail
 
     def repeat(self, next, begin, end, lazy):
+        self.ticks += 1
         (index, node) = next[1]
         count = self.__state.increment(node)
         # if we haven't yet reached the point where we can continue, loop
@@ -455,37 +469,42 @@ class BacktrackingEngine(BaseMatchEngine):
                 return 1
     
     def word_boundary(self, inverted):
+        self.ticks += 1
         previous = self.__state.previous
         current = self.__state.text[0:1]
         flags = self._parser_state.flags
         word = self._parser_state.alphabet.word
         boundary = word(current, flags) != word(previous, flags)
         if boundary != inverted:
-            return True
+            return False
         else:
             raise Fail
 
     def digit(self, inverted):
+        self.ticks += 1
         if self._parser_state.alphabet.digit(
                 self.__state.text[0:1], self._parser_state.flags) != inverted:
             self.__state = self.__state.dot()
-            return True
+            return False
         raise Fail
     
     def space(self, inverted):
+        self.ticks += 1
         if self._parser_state.alphabet.space(
                 self.__state.text[0:1], self._parser_state.flags) != inverted:
             self.__state = self.__state.dot()
-            return True
+            return False
         raise Fail
     
     def word(self, inverted):
+        self.ticks += 1
         if self._parser_state.alphabet.word(
                 self.__state.text[0:1], self._parser_state.flags) != inverted:
             self.__state = self.__state.dot()
-            return True
+            return False
         raise Fail
 
     def checkpoint(self, token):
+        self.ticks += 1
         self.__state = self.__state.checkpoint(token)
-        return True
+        return False

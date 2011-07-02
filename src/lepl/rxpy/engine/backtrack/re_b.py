@@ -31,8 +31,8 @@
 A replacement for Python's `re` package that uses the simple engine.
 '''
 
-from rxpy.compat.module import Re
-from rxpy.engine.backtrack.engine import BacktrackingEngine
+from lepl.rxpy.compat.module import Re
+from lepl.rxpy.engine.backtrack.engine import BacktrackingEngine
 
 _re = Re(BacktrackingEngine, 'Backtracking')
 
