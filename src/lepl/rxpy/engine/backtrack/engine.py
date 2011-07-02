@@ -70,8 +70,9 @@ class State(object):
             self.__previous = self.__text[length-1:length]
             self.__text = self.__text[length:]
             self.__offset += length
-        if not self.__previous: raise IndexError
-    
+            if not self.__previous:
+                raise IndexError
+
     def increment(self, node):
         return self.__loops.increment(node)
 
@@ -79,16 +80,22 @@ class State(object):
     # these are called from the engine.
         
     def string(self, text):
-        l = len(text)
-        if self.__text[0:l] == text:
-            self.__increment(l)
-            return self
+        try:
+            l = len(text)
+            if self.__text[0:l] == text:
+                self.__increment(l)
+                return self
+        except IndexError:
+            pass
         raise Fail
     
     def character(self, charset):
-        if self.__text[0:1] in charset:
-            self.__increment()
-            return self
+        try:
+            if self.__text[0:1] in charset:
+                self.__increment()
+                return self
+        except IndexError:
+            pass
         raise Fail
     
     def start_group(self, number):
@@ -252,6 +259,7 @@ class BacktrackingEngine(BaseMatchEngine):
         self.max_depth = 0
         
         self.__stack = None
+        self.__state = None
         self.__stacks = []
         self.__lookaheads = {} # map from node to set of known ok states
         
@@ -272,7 +280,7 @@ class BacktrackingEngine(BaseMatchEngine):
         the the compiled program.  Callbacks return the new program pointer,
         raise `Fail` on failure, or `Match` on success.
         '''
-        self.__stacks.append(self.__stack)
+        self.__stacks.append((self.__stack, self.__state))
         self.__stack = Stack()
         self.__state = state
         save_pointer = False
@@ -309,7 +317,7 @@ class BacktrackingEngine(BaseMatchEngine):
         finally:
             # restore state so that another run can resume
             self.max_depth = max(self.max_depth, self.__stack.max_depth)
-            self.__stack = self.__stacks.pop()
+            self.__stack, self.__state = self.__stacks.pop()
             self.__match = False
             
     # below are the engine methods - these implement the different opcodes
@@ -375,7 +383,7 @@ class BacktrackingEngine(BaseMatchEngine):
         return True
 
     def lookahead(self, next, equal, forwards):
-        node = next[1]
+        (index, node) = next[1]
         if node not in self.__lookaheads:
             self.__lookaheads[node] = {}
         if self.__state.offset in self.__lookaheads[node]:
@@ -383,7 +391,7 @@ class BacktrackingEngine(BaseMatchEngine):
             success = self.__lookaheads[node][self.__state.offset]
         else:
             (reads, mutates, size) = \
-                lookahead_logic(next[1], forwards, self.__state.groups)
+                lookahead_logic(node, forwards, self.__state.groups)
             search = False
             if forwards:
                 clone = State(self.__state.text, self.__state.groups.clone())
@@ -402,7 +410,7 @@ class BacktrackingEngine(BaseMatchEngine):
                     else:
                         previous = None
                 clone = State(subtext, self.__state.groups.clone(), previous=previous)
-            (match, clone) = self.__run(next[1], clone, search=search)
+            (match, clone) = self.__run(index, clone, search=search)
             success = match == equal
             if not (reads or mutates):
                 self.__lookaheads[node][self.__state.offset] = success
@@ -410,12 +418,12 @@ class BacktrackingEngine(BaseMatchEngine):
         if success:
             if mutates:
                 self.__state = self.__state.clone(groups=clone.groups)
-            return True
+            return 0
         else:
             raise Fail
 
     def repeat(self, next, begin, end, lazy):
-        node = next[1]
+        (index, node) = next[1]
         count = self.__state.increment(node)
         # if we haven't yet reached the point where we can continue, loop
         if count < begin:
@@ -428,7 +436,7 @@ class BacktrackingEngine(BaseMatchEngine):
             # this is well-behaved with stack space
             if (end is None and self.__state.text) \
                     or (end is not None and count < end):
-                self.__stack.push(next[1], self.__state.clone())
+                self.__stack.push(index, self.__state.clone())
             if end is None or count <= end:
                 self.__state.drop(node)
                 return 0
@@ -437,7 +445,7 @@ class BacktrackingEngine(BaseMatchEngine):
         else:
             if end is None or count < end:
                 # add a fallback so that if a higher loop fails, we can continue
-                self.__stack.push(next[0], self.__state.clone().drop(node))
+                self.__stack.push(next[0][0], self.__state.clone().drop(node))
             if count == end:
                 # if last possible loop, continue
                 self.__state.drop(node)
@@ -449,27 +457,31 @@ class BacktrackingEngine(BaseMatchEngine):
     def word_boundary(self, inverted):
         previous = self.__state.previous
         current = self.__state.text[0:1]
+        flags = self._parser_state.flags
         word = self._parser_state.alphabet.word
-        boundary = word(current) != word(previous)
+        boundary = word(current, flags) != word(previous, flags)
         if boundary != inverted:
             return True
         else:
             raise Fail
 
     def digit(self, inverted):
-        if self._parser_state.alphabet.digit(self.__state.text[0:1]) != inverted:
+        if self._parser_state.alphabet.digit(
+                self.__state.text[0:1], self._parser_state.flags) != inverted:
             self.__state = self.__state.dot()
             return True
         raise Fail
     
     def space(self, inverted):
-        if self._parser_state.alphabet.space(self.__state.text[0:1]) != inverted:
+        if self._parser_state.alphabet.space(
+                self.__state.text[0:1], self._parser_state.flags) != inverted:
             self.__state = self.__state.dot()
             return True
         raise Fail
     
     def word(self, inverted):
-        if self._parser_state.alphabet.word(self.__state.text[0:1]) != inverted:
+        if self._parser_state.alphabet.word(
+                self.__state.text[0:1], self._parser_state.flags) != inverted:
             self.__state = self.__state.dot()
             return True
         raise Fail

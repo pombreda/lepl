@@ -14,11 +14,11 @@ class BacktrackingEngineTest(EngineTest, TestCase):
     
     def test_stack(self):
         # optimized
-        assert self.engine(self.parse('(?:abc)*x'), ('abc' * 50000) + 'x',  maxdepth=1)
+        assert self.engine(self.parse('(?:abc)*x'), ('abc' * 50000) + 'x',  max_depth=1)
         # this defines a group, so requires state on stack
-        assert self.engine(self.parse('(abc)*x'), ('abc' * 5) + 'x',  maxdepth=6)
+        assert self.engine(self.parse('(abc)*x'), ('abc' * 5) + 'x',  max_depth=6)
         # this is lazy, so doesn't
-        assert self.engine(self.parse('(abc)*?x'), ('abc' * 5) + 'x',  maxdepth=1)
+        assert self.engine(self.parse('(abc)*?x'), ('abc' * 5) + 'x',  max_depth=1)
         
     def test_lookback_with_offset(self):
         assert self.engine(self.parse('..(?<=a)'), 'xa', ticks=7)
