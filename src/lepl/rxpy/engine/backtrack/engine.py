@@ -402,7 +402,7 @@ class BacktrackingEngine(BaseMatchEngine):
         if self.__state.offset in self.__lookaheads[node]:
             success = self.__lookaheads[node][self.__state.offset]
         else:
-            size = None if mutates else node.length(self.__state.groups)
+            size = None if (reads and mutates) else node.length(self.__state.groups)
             search = False
             if forwards:
                 clone = State(self.__state.text, self.__state.groups.clone())

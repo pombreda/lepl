@@ -265,7 +265,7 @@ class SimpleEngine(BaseMatchEngine):
             # requires complex engine
             if reads:
                 raise UnsupportedOperation('lookahead')
-            size = None if mutates else node.length(None)
+            size = None if (reads and mutates) else node.length(None)
 
             # invoke simple engine and cache
             self.push()

@@ -261,7 +261,7 @@ class ComplexEngine(BaseMatchEngine):
         else:
             # we need to match the lookahead
             search = False
-            size = None if mutates else \
+            size = None if (reads and mutates) else \
                 node.length(self._state.groups(self._parser_state.groups))
             if forwards:
                 prefix = self._text
