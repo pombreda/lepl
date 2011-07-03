@@ -7,7 +7,7 @@ based on classes from base_compilable).
 '''
 
 from lepl.rxpy.graph.base_compilable import NextCompilableMixin, \
-    SimpleCompilableMixin, BranchCompilableMixin, SelfIdCompilableMixin, BranchCompilableMixin2
+    SimpleCompilableMixin, SelfIdCompilableMixin, BranchCompilableMixin
 from lepl.rxpy.graph.base_graph import BaseNode, BaseGroupReference, \
     BaseLabelledNode, BaseLineNode, BaseEscapedNode
 from lepl.rxpy.graph.support import ReadsGroup, CharSet
@@ -80,7 +80,7 @@ class EndGroup(BaseGroupReference, SimpleCompilableMixin):
         return ")"
 
 
-class Split(BaseLabelledNode, BranchCompilableMixin2):
+class Split(BaseLabelledNode, BranchCompilableMixin):
     '''
     Branch the graph, providing alternative matches for the current context
     (eg via backtracking on failure).
@@ -245,7 +245,7 @@ class GroupReference(BaseGroupReference, ReadsGroup, NextCompilableMixin):
                 return len(groups.group(self.number))
 
 
-class Lookahead(BaseNode, BranchCompilableMixin2):
+class Lookahead(BaseNode, BranchCompilableMixin):
     '''
     Lookahead match (one that does not consume any input).
 
@@ -282,7 +282,7 @@ class Lookahead(BaseNode, BranchCompilableMixin2):
         return args
 
 
-class Repeat(BaseNode, BranchCompilableMixin2):
+class Repeat(BaseNode, BranchCompilableMixin):
     '''
     A numerical repeat (used in, for example, `CountedLoop`).
 
@@ -326,7 +326,7 @@ class Repeat(BaseNode, BranchCompilableMixin2):
 
 
 class Conditional(BaseLabelledNode, BaseGroupReference, ReadsGroup,
-                  BranchCompilableMixin2):
+                  BranchCompilableMixin):
     '''
     Branch the graph, depending on the existence of a group.
 

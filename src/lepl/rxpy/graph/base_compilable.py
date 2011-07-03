@@ -266,7 +266,6 @@ class BaseNodeIdCompilableMixin(SimpleCompilableMixin):
     to provide a modified set of args via `._compile_args()` and (2)
     translating the first argument to a node ID.
     '''
-    # TODO - do we ever need the node id?
 
     @unimplemented
     def _compile_args(self):
@@ -316,35 +315,6 @@ class NextCompilableMixin(BaseNodeIdCompilableMixin):
 
 
 class BranchCompilableMixin(BaseCompilableMixin):
-    '''
-    Expects `method` to return the required index, which is evaluated until
-    input is consumed.
-
-    Expects to be combined with a `BaseNode` which provides .next.
-    '''
-
-    def compile(self, target):
-        '''
-        Compile the node.  See the `compile()` function for full details.
-        '''
-        method = getattr(target, self._compile_name())
-        args = self._compile_args()
-        def compiler(node_to_index, table):
-            '''
-            Call the method with a list of translated node IDs as the first arg,
-            then return the node for the returned ID.
-            '''
-            #noinspection PyUnresolvedReferences
-            next = list(map(lambda node: (node_to_index[node], node), self.next))
-            new_args = [next] + args
-            def compiled():
-                '''When matching, invoke the branch selected.'''
-                return table[next[method(*new_args)][0]]()
-            return compiled
-        return compiler
-
-
-class BranchCompilableMixin2(BaseCompilableMixin):
     '''
     Expects `method` to return the required index, which is evaluated until
     input is consumed.
