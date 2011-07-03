@@ -273,7 +273,7 @@ class Lookahead(BaseNode, BranchCompilableMixin2):
 
     def _compile_args(self):
         args = super(Lookahead, self)._compile_args()
-        args.append(lambda graph: self.length(graph))
+        args.append(lambda graph: self.next[1].length(graph))
         return args
 
 
