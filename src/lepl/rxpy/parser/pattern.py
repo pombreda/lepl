@@ -342,6 +342,7 @@ class LookbackBuilder(Builder):
         if char_str == '=':
             return LookaheadBuilder(self._parser_state, self._parent, True, False)
         elif char_str == '!':
+            self._parser_state.new_flag(ParserState._LOOKBACK)
             return LookaheadBuilder(self._parser_state, self._parent, False, False)
         else:
             raise RxpyError(

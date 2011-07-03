@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -26,7 +25,6 @@
 # required by the LGPL License.  If you do not delete the provisions
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
-
 
 from collections import Iterable
 
@@ -83,9 +81,9 @@ class StreamFactory(object):
         which will close the file after parsing.
         '''
         try:
-            gkargs = kargs.get('global_kargs', {})
-            add_defaults(gkargs, {'filename': file_.name})
-            add_defaults(kargs, {'global_kargs': gkargs})
+            global_kargs = kargs.get('global_kargs', {})
+            add_defaults(global_kargs, {'filename': file_.name})
+            add_defaults(kargs, {'global_kargs': global_kargs})
         except AttributeError:
             pass
         return self.from_iterable(file_, **kargs)

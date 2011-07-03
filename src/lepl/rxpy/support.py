@@ -21,13 +21,13 @@ class UnsupportedOperation(RxpyError):
     pass
 
 
-(I, M, S, U, X, A, _L, _C, _E, _U, _G) = map(lambda x: 2**x, range(11))
+(I, M, S, U, X, A, _L, _C, _E, _U, _G ,_B) = map(lambda x: 2**x, range(12))
 (IGNORECASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII,
- _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS) = (I, M, S, U, X, A,
-                                                    _L, _C, _E, _U, _G)
-_FLAGS = (I, M, S, U, X, A, _L, _C, _E, _U, _G,
+ _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS, _LOOKBACK) = \
+    (I, M, S, U, X, A, _L, _C, _E, _U, _G, _B)
+_FLAGS = (I, M, S, U, X, A, _L, _C, _E, _U, _G, _B,
           IGNORECASE, MULTILINE, DOT_ALL, UNICODE, VERBOSE, ASCII,
-          _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS)
+          _LOOP_UNROLL, _CHARS, _EMPTY, _UNSAFE, _GROUPS, _LOOKBACK)
 
 FLAG_NAMES = {I: 'I/IGNORECASE',
               M: 'M/MULTILINE',
@@ -39,7 +39,8 @@ FLAG_NAMES = {I: 'I/IGNORECASE',
               _C: '_C/_CHARS',
               _E: '_E/_EMPTY',
               _U: '_U/_UNSAFE',
-              _G: '_G/_GROUPS'}
+              _G: '_G/_GROUPS',
+              _B: '_B/_LOOKBACK'}
 
 
 def refuse_flags(flags):

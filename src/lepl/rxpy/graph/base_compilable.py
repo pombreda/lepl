@@ -86,7 +86,7 @@ class BaseMatchTarget(object):
     def checkpoint(self, id):
         '''
         Successive calls to checkpoint with the same id must consume text.
-        If they don't, there is an error (a repeating empy loop) and the
+        If they don't, there is an error (a repeating empty loop) and the
         engine should abort (raise an exception).
         '''
         raise UnsupportedOperation('checkpoint')

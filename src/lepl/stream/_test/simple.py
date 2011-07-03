@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -26,7 +25,6 @@
 # required by the LGPL License.  If you do not delete the provisions
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
-
 
 from lepl.support.lib import fmt
 from lepl._test.base import BaseTest

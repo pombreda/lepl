@@ -15,6 +15,7 @@
       <w>groupindex</w>
       <w>iadd</w>
       <w>ignorecase</w>
+      <w>indexable</w>
       <w>iter</w>
       <w>iterable</w>
       <w>karg</w>
