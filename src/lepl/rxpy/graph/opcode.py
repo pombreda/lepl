@@ -22,6 +22,11 @@ class String(BaseNode, NextCompilableMixin):
 
     - `next` will contain a single value, which is the opcode to use if the
       match is successful.
+
+    This is a subclass of `NextCompilableMixin`, and so passes `next` to
+    the engine, because for strings that match more than one character
+    the re2 algorithm implies a "jump ahead" for the current state (and
+    passing next makes it easy to implement that jump).
     '''
 
     def __init__(self, text):
@@ -75,7 +80,7 @@ class EndGroup(BaseGroupReference, SimpleCompilableMixin):
         return ")"
 
 
-class Split(BaseLabelledNode, BranchCompilableMixin):
+class Split(BaseLabelledNode, BranchCompilableMixin2):
     '''
     Branch the graph, providing alternative matches for the current context
     (eg via backtracking on failure).
@@ -277,7 +282,7 @@ class Lookahead(BaseNode, BranchCompilableMixin2):
         return args
 
 
-class Repeat(BaseNode, BranchCompilableMixin):
+class Repeat(BaseNode, BranchCompilableMixin2):
     '''
     A numerical repeat (used in, for example, `CountedLoop`).
 
@@ -321,7 +326,7 @@ class Repeat(BaseNode, BranchCompilableMixin):
 
 
 class Conditional(BaseLabelledNode, BaseGroupReference, ReadsGroup,
-                  BranchCompilableMixin):
+                  BranchCompilableMixin2):
     '''
     Branch the graph, depending on the existence of a group.
 

@@ -235,13 +235,13 @@ class ComplexEngine(BaseMatchEngine):
     def conditional(self, next, number):
         try:
             if self._state.group(number) is not None:
-                return 1
+                return next[1]
         except KeyError:
             pass
-        return 0
+        return next[0]
 
     def split(self, next):
-        for (index, _node) in reversed(next):
+        for index in reversed(next):
             self._states.append(self._state.clone(index))
         # start from new states
         raise Fail
@@ -297,52 +297,52 @@ class ComplexEngine(BaseMatchEngine):
 
     def repeat(self, next, begin, end, lazy):
         # index on first loop item
-        index = next[1][0]
+        loop = next[1]
         state = self._state
-        count = state.get_loop(index)
+        count = state.get_loop(loop)
         if count is None:
             if 0 < begin:
                 # increment and loop
-                state.new_loop(index)
-                return 1
+                state.new_loop(loop)
+                return loop
             elif end is None or 0 < end:
                 # can both increment and exit
                 if lazy:
                     # increment on stack
-                    self._states.append(state.clone(next[1][0]).new_loop(index))
+                    self._states.append(state.clone(loop).new_loop(loop))
                     # exit (never started, so just continue) now
-                    return 0
+                    return next[0]
                 else:
                     # exit (never started, so just continue) on stack
-                    self._states.append(state.clone(next[0][0]))
+                    self._states.append(state.clone(next[0]))
                     # new loop now
-                    state.new_loop(index)
-                    return 1
+                    state.new_loop(loop)
+                    return loop
             else:
                 # strange {0,0} loop so just exit
-                return 0
+                return next[0]
         else:
             count += 1
             if count < begin:
                 # increment and loop
-                state.increment_loop(index)
-                return 1
+                state.increment_loop(loop)
+                return loop
             elif end is None or count < end:
                 # can both increment and exit
                 if lazy:
                     # increment on stack
-                    self._states.append(state.clone(next[1][0]).increment_loop(index))
+                    self._states.append(state.clone(loop).increment_loop(loop))
                     # exit now
-                    state.drop_loop(index)
-                    return 0
+                    state.drop_loop(loop)
+                    return next[0]
                 else:
                     # exit on stack
-                    self._states.append(state.clone(next[0][0]).drop_loop(index))
+                    self._states.append(state.clone(next[0]).drop_loop(loop))
                     # new loop now
-                    state.increment_loop(index)
-                    return 1
+                    state.increment_loop(loop)
+                    return loop
             else:
                 # equal to end so exit
-                state.drop_loop(index)
-                return 0
+                state.drop_loop(loop)
+                return next[0]
     

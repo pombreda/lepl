@@ -359,17 +359,17 @@ class BacktrackingEngine(BaseMatchEngine):
         self.ticks += 1
         try:
             if self.__state.groups.group(number):
-                return 1
+                return next[1]
         except KeyError:
             pass
-        return 0
+        return next[0]
 
     def split(self, next):
         self.ticks += 1
-        for (index, _node) in reversed(next[1:]):
+        for index in reversed(next[1:]):
             clone = self.__state.clone()
             self.__stack.push(index, clone)
-        return 0
+        return next[0]
 
     def match(self):
         self.ticks += 1
@@ -435,11 +435,11 @@ class BacktrackingEngine(BaseMatchEngine):
 
     def repeat(self, next, begin, end, lazy):
         self.ticks += 1
-        (index, node) = next[1]
-        count = self.__state.increment(node)
+        loop = next[1]
+        count = self.__state.increment(loop)
         # if we haven't yet reached the point where we can continue, loop
         if count < begin:
-            return 1
+            return loop
         # stack logic depends on laziness
         if lazy:
             # we can continue from here, but if that fails we want to restart 
@@ -448,23 +448,23 @@ class BacktrackingEngine(BaseMatchEngine):
             # this is well-behaved with stack space
             if (end is None and self.__state.text) \
                     or (end is not None and count < end):
-                self.__stack.push(index, self.__state.clone())
+                self.__stack.push(loop, self.__state.clone())
             if end is None or count <= end:
-                self.__state.drop(node)
-                return 0
+                self.__state.drop(loop)
+                return next[0]
             else:
                 raise Fail
         else:
             if end is None or count < end:
                 # add a fallback so that if a higher loop fails, we can continue
-                self.__stack.push(next[0][0], self.__state.clone().drop(node))
+                self.__stack.push(next[0], self.__state.clone().drop(loop))
             if count == end:
                 # if last possible loop, continue
-                self.__state.drop(node)
-                return 0
+                self.__state.drop(loop)
+                return next[0]
             else:
                 # otherwise, do another loop
-                return 1
+                return loop
     
     def word_boundary(self, inverted):
         self.ticks += 1

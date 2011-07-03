@@ -246,7 +246,7 @@ class SimpleEngine(BaseMatchEngine):
         raise UnsupportedOperation('conditional')
 
     def split(self, next):
-        for (index, _node) in reversed(next):
+        for index in reversed(next):
             self._states.append((index, self._group_start, False))
         # start from new states
         raise Fail
