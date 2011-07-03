@@ -36,6 +36,28 @@ class Re(object):
         return compile_(pattern, flags=flags, alphabet=alphabet,
                         engine=self._engine(engine))
 
+    @property
+    def RegexObject(self):
+        class RegexObject(RegexObject_):
+            #noinspection PyMethodParameters
+            def __init__(inner, parsed, pattern=None, engine=None):
+                super(RegexObject_, inner).__init__(
+                                    parsed, pattern=pattern,
+                                    engine=self._engine(engine))
+        return RegexObject
+
+    @property
+    def MatchIterator(self):
+        class MatchIterator(MatchIterator_):
+            #noinspection PyMethodParameters
+            def __init__(inner, re, parsed, text, pattern, pos=0, endpos=None,
+                         engine=None):
+                super(MatchIterator_, inner).__init__(
+                                    re, parsed, text, pattern,
+                                    pos=pos, endpos=endpos,
+                                    engine=self._engine(engine))
+        return MatchIterator
+
     def match(self, pattern, text, flags=0, alphabet=None, engine=None):
         return match_(pattern, text, flags=flags, alphabet=alphabet,
                       engine=self._engine(engine))
