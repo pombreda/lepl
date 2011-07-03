@@ -3,6 +3,7 @@
     <words>
       <w>addsub</w>
       <w>basestring</w>
+      <w>cacheable</w>
       <w>coallesce</w>
       <w>delitem</w>
       <w>endpos</w>
@@ -26,6 +27,7 @@
       <w>lookahead</w>
       <w>lookaheads</w>
       <w>lookback</w>
+      <w>lookbacks</w>
       <w>matchers</w>
       <w>matchiter</w>
       <w>maxsplit</w>
@@ -52,6 +54,7 @@
       <w>subiter</w>
       <w>subn</w>
       <w>tuple</w>
+      <w>tuples</w>
       <w>typename</w>
       <w>unescape</w>
       <w>unescaped</w>

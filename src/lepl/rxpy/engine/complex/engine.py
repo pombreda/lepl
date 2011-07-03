@@ -12,7 +12,7 @@ the simple engine, when that fails on an unsupported operation.
 
 from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.engine.complex.support import State
-from lepl.rxpy.engine.support import Match, Fail, lookahead_logic, Groups
+from lepl.rxpy.engine.support import Match, Fail, Groups
 from lepl.rxpy.graph.base_compilable import compile
 
 
@@ -246,7 +246,7 @@ class ComplexEngine(BaseMatchEngine):
         # start from new states
         raise Fail
 
-    def lookahead(self, next, equal, forwards):
+    def lookahead(self, next, equal, forwards, mutates, reads):
         # todo - could also cache things that read groups by state
         
         (index, node) = next[1]
@@ -257,14 +257,12 @@ class ComplexEngine(BaseMatchEngine):
         lookaheads = self._lookaheads[1]
         
         if index in lookaheads:
-            # only non-mutating non-reading values are cached 
-            mutates = False
             success = lookaheads[index]
         else:
             # we need to match the lookahead
             search = False
-            groups = self._state.groups(self._parser_state.groups)
-            (reads, mutates, size) = lookahead_logic(node, forwards, groups)
+            size = None if mutates else \
+                node.length(self._state.groups(self._parser_state.groups))
             if forwards:
                 prefix = self._text
                 offset = self._offset

@@ -7,8 +7,6 @@ Support classes shared by various engines.
 from operator import xor
 from functools import reduce
 
-from lepl.rxpy.graph.support import contains_instance, ReadsGroup
-from lepl.rxpy.graph.opcode import StartGroup
 from lepl.rxpy.parser.support import GroupState
 
 
@@ -183,18 +181,4 @@ class Groups(object):
     def groups(self):
         return self.__groups
 
-
-def lookahead_logic(branch, forwards, groups):
-    '''
-    Encapsulate common logic for calculating lookaheads.  This doesn't
-    really fit on the opcode, but is common to several engines.
-    '''
-    reads = contains_instance(branch, ReadsGroup)
-    mutates = contains_instance(branch, StartGroup)
-    # use groups to calculate size if they are unchanged in lookback
-    if forwards or (reads and mutates):
-        size = None
-    else:
-        size = branch.length(groups)
-    return reads, mutates, size
 

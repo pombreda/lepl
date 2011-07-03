@@ -10,7 +10,7 @@ for example).
 '''                                    
 
 from lepl.rxpy.engine.base import BaseMatchEngine
-from lepl.rxpy.engine.support import Groups, lookahead_logic, Loops, Fail, Match
+from lepl.rxpy.engine.support import Groups, Loops, Fail, Match
 from lepl.rxpy.graph.base_compilable import compile
 
 
@@ -394,17 +394,15 @@ class BacktrackingEngine(BaseMatchEngine):
         self.__state = self.__state.end_of_line(multiline)
         return False
 
-    def lookahead(self, next, equal, forwards):
+    def lookahead(self, next, equal, forwards, mutates, reads):
         self.ticks += 1
         (index, node) = next[1]
         if node not in self.__lookaheads:
             self.__lookaheads[node] = {}
         if self.__state.offset in self.__lookaheads[node]:
-            reads, mutates = False, False
             success = self.__lookaheads[node][self.__state.offset]
         else:
-            (reads, mutates, size) = \
-                lookahead_logic(node, forwards, self.__state.groups)
+            size = None if mutates else node.length(self.__state.groups)
             search = False
             if forwards:
                 clone = State(self.__state.text, self.__state.groups.clone())

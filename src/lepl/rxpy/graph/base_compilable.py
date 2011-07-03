@@ -108,7 +108,7 @@ class BaseMatchTarget(object):
         '''
         raise UnsupportedOperation('split')
 
-    def lookahead(self, next, equal, forwards):
+    def lookahead(self, next, equal, forwards, mutates, reads):
         '''Perform a lookahead match.'''
         raise UnsupportedOperation('lookahead')
 

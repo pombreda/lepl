@@ -2,7 +2,7 @@
 
 '''
 These are both graph nodes, constructed from the regexp text (based on
-classes from base_graph), and opcodes for the engine (the target inteface,
+classes from base_graph), and opcodes for the engine (the target interface,
 based on classes from base_compilable).
 '''
 
@@ -259,10 +259,12 @@ class Lookahead(BaseNode, BranchCompilableMixin):
     approaches, as long as the results remain correct.
     '''
 
-    def __init__(self, equal, forwards):
+    def __init__(self, equal, forwards, reads=False, mutates=False):
         super(Lookahead, self).__init__(consumes=False, size=0)
         self.equal = equal
         self.forwards = forwards
+        self.reads = reads
+        self.mutates = mutates
 
     def __str__(self):
         return '(?' + \

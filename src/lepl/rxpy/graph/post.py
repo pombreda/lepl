@@ -1,17 +1,30 @@
 #LICENCE
 
 
-from lepl.rxpy.graph.support import node_iterator
+from lepl.rxpy.graph.support import node_iterator, ReadsGroup, contains_instance
 from lepl.rxpy.support import RxpyError
-from lepl.rxpy.graph.opcode import GroupReference, Conditional
+from lepl.rxpy.graph.opcode import GroupReference, Conditional, StartGroup, Lookahead
 
 
 def resolve_group_names(state):
     '''
+    Calls "resolve" on group references and conditionals (sets index for
+    a given name).
+
     Returns a list of actions that can be passed to the post-processor.
     '''
     resolve = lambda node: node.resolve(state)
     return [(GroupReference, resolve), (Conditional, resolve)]
+
+
+def set_lookahead_properties():
+    '''
+    Sets "reads" and "mutates" properties on lookahead nodes.
+    '''
+    def set(node):
+        node.reads = contains_instance(node.next[1], ReadsGroup)
+        node.mutates = contains_instance(node.next[1], StartGroup)
+    return (Lookahead, set)
 
 
 def post_process(graph, actions):

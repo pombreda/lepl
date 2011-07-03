@@ -6,7 +6,7 @@ Support classes for parsing.
 
 from string import digits, ascii_letters
 
-from lepl.rxpy.graph.post import resolve_group_names, post_process
+from lepl.rxpy.graph.post import resolve_group_names, post_process, set_lookahead_properties
 from lepl.rxpy.parser.error import SimpleGroupError
 from lepl.rxpy.support import _FLAGS, RxpyError, refuse_flags
 
@@ -299,7 +299,9 @@ def parse(text, parser_state, class_, mutable_flags=True):
         parser_state = parser_state.clone_with_new_flags(text)
         graph = class_(parser_state).parse(text)
     parser_state.alphabet.validate_expression(text, parser_state.flags)
-    graph = post_process(graph, resolve_group_names(parser_state))
+    actions = resolve_group_names(parser_state)
+    actions.append(set_lookahead_properties())
+    graph = post_process(graph, actions)
     if parser_state.has_new_flags:
         raise RxpyError('Inconsistent flags')
     return parser_state, graph

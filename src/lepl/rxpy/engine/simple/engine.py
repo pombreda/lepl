@@ -9,7 +9,7 @@ plus the earliest start index and a matched flag).
 
 from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.support import UnsupportedOperation, _LOOP_UNROLL
-from lepl.rxpy.engine.support import Match, Fail, lookahead_logic, Groups
+from lepl.rxpy.engine.support import Match, Fail, Groups
 from lepl.rxpy.graph.base_compilable import compile
 
 
@@ -43,7 +43,7 @@ class SimpleEngine(BaseMatchEngine):
         else:
             self._current = None
         if 0 <= self._offset-1 < len(self._text):
-            self._previous = self._text[self._offset-1]
+            self._previous = self._text[self._offset-1:self._offset]
         else:
             self._previous = None
         
@@ -252,7 +252,7 @@ class SimpleEngine(BaseMatchEngine):
         # start from new states
         raise Fail
 
-    def lookahead(self, next, equal, forwards):
+    def lookahead(self, next, equal, forwards, mutates, reads):
         (index, node) = next[1]
         
         # discard old values
@@ -263,10 +263,10 @@ class SimpleEngine(BaseMatchEngine):
         if index not in lookaheads:
             
             # requires complex engine
-            (reads, _mutates, size) = lookahead_logic(node, forwards, None)
             if reads:
                 raise UnsupportedOperation('lookahead')
-            
+            size = None if mutates else node.length(None)
+
             # invoke simple engine and cache
             self.push()
             try:
