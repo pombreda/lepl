@@ -24,6 +24,7 @@ def set_lookahead_properties():
     def set(node):
         node.reads = contains_instance(node.next[1], ReadsGroup)
         node.mutates = contains_instance(node.next[1], StartGroup)
+        node.size = lambda groups: node.next[1].length(groups)
     return (Lookahead, set)
 
 

@@ -65,7 +65,7 @@ class BaseNode(AutoClone):
         Subclasses should pay attention to the relationship between
         constructor kargs and attributes assumed in `.clone()`.
 
-        `consumes` - a tristate flag indicating whether this node consumes
+        `consumes` - a tri-state flag indicating whether this node consumes
         input (None means unknown).  This is used to detect non-consuming
         loops (see `consumer()`).
 
@@ -97,7 +97,7 @@ class BaseNode(AutoClone):
 
     def length(self, groups, known=None):
         '''
-        The number of characters matched by this and subsequence nodes, if
+        The number of characters matched by this and subsequent nodes, if
         known, otherwise None.  Nodes must give a single, fixed number or
         None, so any loops should return None.  This is used at *runtime*
         when some groups are known.

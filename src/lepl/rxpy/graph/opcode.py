@@ -7,7 +7,7 @@ based on classes from base_compilable).
 '''
 
 from lepl.rxpy.graph.base_compilable import NextCompilableMixin, \
-    SimpleCompilableMixin, BranchCompilableMixin, SelfIdCompilableMixin
+    SimpleCompilableMixin, BranchCompilableMixin, SelfIdCompilableMixin, BranchCompilableMixin2
 from lepl.rxpy.graph.base_graph import BaseNode, BaseGroupReference, \
     BaseLabelledNode, BaseLineNode, BaseEscapedNode
 from lepl.rxpy.graph.support import ReadsGroup, CharSet
@@ -240,7 +240,7 @@ class GroupReference(BaseGroupReference, ReadsGroup, NextCompilableMixin):
                 return len(groups.group(self.number))
 
 
-class Lookahead(BaseNode, BranchCompilableMixin):
+class Lookahead(BaseNode, BranchCompilableMixin2):
     '''
     Lookahead match (one that does not consume any input).
 
@@ -270,6 +270,11 @@ class Lookahead(BaseNode, BranchCompilableMixin):
         return '(?' + \
             ('' if self.forwards else '<') + \
             ('=' if self.equal else '!') + '...)'
+
+    def _compile_args(self):
+        args = super(Lookahead, self)._compile_args()
+        args.append(lambda graph: self.length(graph))
+        return args
 
 
 class Repeat(BaseNode, BranchCompilableMixin):

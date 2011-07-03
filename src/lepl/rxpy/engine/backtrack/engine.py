@@ -394,15 +394,15 @@ class BacktrackingEngine(BaseMatchEngine):
         self.__state = self.__state.end_of_line(multiline)
         return False
 
-    def lookahead(self, next, equal, forwards, mutates, reads):
+    def lookahead(self, next, equal, forwards, mutates, reads, length):
         self.ticks += 1
-        (index, node) = next[1]
-        if node not in self.__lookaheads:
-            self.__lookaheads[node] = {}
-        if self.__state.offset in self.__lookaheads[node]:
-            success = self.__lookaheads[node][self.__state.offset]
+        alternate = next[1]
+        if alternate not in self.__lookaheads:
+            self.__lookaheads[alternate] = {}
+        if self.__state.offset in self.__lookaheads[alternate]:
+            success = self.__lookaheads[alternate[self.__state.offset]]
         else:
-            size = None if (reads and mutates) else node.length(self.__state.groups)
+            size = None if (reads and mutates) else length(self.__state.groups)
             search = False
             if forwards:
                 clone = State(self.__state.text, self.__state.groups.clone())
@@ -421,15 +421,15 @@ class BacktrackingEngine(BaseMatchEngine):
                     else:
                         previous = None
                 clone = State(subtext, self.__state.groups.clone(), previous=previous)
-            (match, clone) = self.__run(index, clone, search=search)
+            (match, clone) = self.__run(alternate, clone, search=search)
             success = match == equal
             if not (reads or mutates):
-                self.__lookaheads[node][self.__state.offset] = success
+                self.__lookaheads[alternate][self.__state.offset] = success
         # if lookahead succeeded, continue
         if success:
             if mutates:
                 self.__state = self.__state.clone(groups=clone.groups)
-            return 0
+            return next[0]
         else:
             raise Fail
 

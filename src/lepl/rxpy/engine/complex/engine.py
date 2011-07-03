@@ -246,23 +246,21 @@ class ComplexEngine(BaseMatchEngine):
         # start from new states
         raise Fail
 
-    def lookahead(self, next, equal, forwards, mutates, reads):
+    def lookahead(self, next, equal, forwards, mutates, reads, length):
         # todo - could also cache things that read groups by state
-        
-        (index, node) = next[1]
         
         # discard old values
         if self._lookaheads[0] != self._offset:
             self._lookaheads = (self._offset, {})
         lookaheads = self._lookaheads[1]
         
-        if index in lookaheads:
-            success = lookaheads[index]
+        if next[1] in lookaheads:
+            success = lookaheads[next[1]]
         else:
             # we need to match the lookahead
             search = False
             size = None if (reads and mutates) else \
-                node.length(self._state.groups(self._parser_state.groups))
+                length(self._state.groups(self._parser_state.groups))
             if forwards:
                 prefix = self._text
                 offset = self._offset
@@ -274,7 +272,7 @@ class ComplexEngine(BaseMatchEngine):
                 else:
                     offset = self._offset - size
                     
-            new_state = self._state.clone(index, prefix=prefix)
+            new_state = self._state.clone(next[1], prefix=prefix)
             
             if offset < 0:
                 match = Groups()
@@ -288,13 +286,13 @@ class ComplexEngine(BaseMatchEngine):
                 
             success = bool(match) == equal
             if not (mutates or reads):
-                lookaheads[index] = success
+                lookaheads[next[1]] = success
 
         # if lookahead succeeded, continue
         if success:
             if mutates and match:
                 self._state.merge_groups(new_state)
-            self._states.append(self._state.advance(next[0][0]))
+            self._states.append(self._state.advance(next[0]))
         raise Fail
 
     def repeat(self, next, begin, end, lazy):

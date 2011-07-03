@@ -108,7 +108,7 @@ class BaseMatchTarget(object):
         '''
         raise UnsupportedOperation('split')
 
-    def lookahead(self, next, equal, forwards, mutates, reads):
+    def lookahead(self, next, equal, forwards, mutates, reads, length):
         '''Perform a lookahead match.'''
         raise UnsupportedOperation('lookahead')
 
@@ -342,3 +342,33 @@ class BranchCompilableMixin(BaseCompilableMixin):
                 return table[next[method(*new_args)][0]]()
             return compiled
         return compiler
+
+
+class BranchCompilableMixin2(BaseCompilableMixin):
+    '''
+    Expects `method` to return the required index, which is evaluated until
+    input is consumed.
+
+    Expects to be combined with a `BaseNode` which provides .next.
+    '''
+
+    def compile(self, target):
+        '''
+        Compile the node.  See the `compile()` function for full details.
+        '''
+        method = getattr(target, self._compile_name())
+        args = self._compile_args()
+        def compiler(node_to_index, table):
+            '''
+            Call the method with a list of indices as the first arg,
+            then evaluate returned index.
+            '''
+            #noinspection PyUnresolvedReferences
+            next = list(map(lambda node: node_to_index[node], self.next))
+            new_args = [next] + args
+            def compiled():
+                '''When matching, invoke the branch selected.'''
+                return table[method(*new_args)]()
+            return compiled
+        return compiler
+

@@ -6,7 +6,6 @@ groups or stateful loops (so state is simply the current offset in the table
 plus the earliest start index and a matched flag).
 '''
 
-
 from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.support import UnsupportedOperation, _LOOP_UNROLL
 from lepl.rxpy.engine.support import Match, Fail, Groups
@@ -252,20 +251,19 @@ class SimpleEngine(BaseMatchEngine):
         # start from new states
         raise Fail
 
-    def lookahead(self, next, equal, forwards, mutates, reads):
-        (index, node) = next[1]
-        
+    def lookahead(self, next, equal, forwards, mutates, reads, length):
+
         # discard old values
         if self._lookaheads[0] != self._offset:
             self._lookaheads = (self._offset, {})
         lookaheads = self._lookaheads[1]
         
-        if index not in lookaheads:
+        if next[1] not in lookaheads:
             
             # requires complex engine
             if reads:
                 raise UnsupportedOperation('lookahead')
-            size = None if (reads and mutates) else node.length(None)
+            size = None if (reads and mutates) else length(None)
 
             # invoke simple engine and cache
             self.push()
@@ -282,13 +280,13 @@ class SimpleEngine(BaseMatchEngine):
                     else:
                         pos = self._offset - size
                         search = False
-                result = bool(self._run_from(index, text, pos, search)) == equal
+                result = bool(self._run_from(next[1], text, pos, search)) == equal
             finally:
                 self.pop()
-            lookaheads[index] = result
+            lookaheads[next[1]] = result
             
-        if lookaheads[index]:
-            return 0
+        if lookaheads[next[1]]:
+            return next[0]
         else:
             raise Fail
 
