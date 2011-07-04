@@ -10,6 +10,7 @@ from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.support import UnsupportedOperation, _LOOP_UNROLL
 from lepl.rxpy.engine.support import Match, Fail, Groups
 from lepl.rxpy.graph.base_compilable import compile
+from lepl.stream.core import s_next, s_empty, s_stream, s_len
 
 
 class SimpleEngine(BaseMatchEngine):
@@ -23,53 +24,74 @@ class SimpleEngine(BaseMatchEngine):
         
     def push(self):
         # group_defined purposefully excluded
-        self.__stack.append((self._offset, self._text, self._search,
-                             self._current, self._previous, self._states, 
-                             self._group_start,  self._checkpoints, 
-                             self._lookaheads))
+        self.__stack.append((self._offset, self._excess, self._stream,
+                             self._search, self._current, self._previous,
+                             self._states, self._group_start,
+                             self._checkpoints, self._lookaheads))
         
     def pop(self):
         # group_defined purposefully excluded
-        (self._offset, self._text, self._search,
+        (self._offset, self._excess, self._stream, self._search,
          self._current, self._previous, self._states, 
          self._group_start, self._checkpoints, 
          self._lookaheads) = self.__stack.pop()
         
-    def _set_offset(self, offset):
-        self._offset = offset
-        if 0 <= self._offset < len(self._text):
-            self._current = self._text[self._offset:self._offset+1]
-        else:
+    def _advance(self, delta=1):
+        '''
+        Move forwards in the stream.
+
+        The following conventions are followed:
+        - `offset` is the offset from the initial input
+        - `stream` is the stream starting at the current location
+        - `current` is the character at the current location
+        - `previous` is the character just before the current location
+        '''
+        self._offset += delta
+        old_stream = self._stream
+        try:
+            (advanced, self._stream) = s_next(old_stream, delta)
+            if advanced:
+                self._previous = advanced[-1:]
+            try:
+                (self._current, _) = s_next(self._stream)
+            except StopIteration:
+                self._current = None
+        except StopIteration:
+            if old_stream:
+                self._excess = delta - s_len(old_stream)
+            else:
+                self._excess += delta
+            self._stream = None
             self._current = None
-        if 0 <= self._offset-1 < len(self._text):
-            self._previous = self._text[self._offset-1:self._offset]
-        else:
-            self._previous = None
-        
-    def run(self, text, pos=0, search=False):
-        self._group_defined = False
-        
+
+    def run(self, stream, pos=0, search=False):
+
+        self._initial_stream = stream
+
         # TODO - add explicit search if expression starts with constant
         
-        result = self._run_from(0, text, pos, search)
-        
+        self._group_defined = False
+        result = self._run_from(0, stream, pos, search)
         if self._group_defined:
             raise UnsupportedOperation('groups')
         else:
             return result
         
-    def _run_from(self, start_state, text, pos, search):
-        self._text = text
-        self._set_offset(pos)
+    def _run_from(self, start_index, stream, delta, search):
+        self._previous = None
+        self._offset = 0
+        self._excess = 0
+        self._stream = stream
+        self._advance(delta)
         self._search = search
         self._checkpoints = {}
         self._lookaheads = (self._offset, {})
         search = self._search # read only, dereference optimisation
         
-        self._states = [(start_state, self._offset, 0)]
+        self._states = [(start_index, self._offset, 0)]
         
         try:
-            while self._states and self._offset <= len(self._text):
+            while self._states and self._excess < 2:
                 
                 known_next = set()
                 next_states = []
@@ -77,16 +99,15 @@ class SimpleEngine(BaseMatchEngine):
                 while self._states:
                     
                     # unpack state
-                    (state, self._group_start, skip) = self._states.pop()
+                    (index, self._group_start, skip) = self._states.pop()
                     try:
                         
                         if not skip:
-                            # advance a character (compiled actions recall on stack
-                            # until a character is consumed)
-                            next = self._program[state]()
-                            if next not in known_next:
-                                next_states.append((next, self._group_start, 0))
-                                known_next.add(next)
+                            # process the current character
+                            index = self._program[index]()
+                            if index not in known_next:
+                                next_states.append((index, self._group_start, 0))
+                                known_next.add(index)
                                 
                         elif skip == -1:
                             raise Match
@@ -96,14 +117,14 @@ class SimpleEngine(BaseMatchEngine):
                             
                             # if we have other states, or will add them via search
                             if search or next_states or self._states:
-                                next_states.append((state, self._group_start, skip))
+                                next_states.append((index, self._group_start, skip))
                                 # block this same "future state"
-                                known_next.add((state, skip))
+                                known_next.add((index, skip))
                                 
                             # otherwise, we can jump directly
                             else:
-                                self._offset += skip
-                                next_states.append((state, self._group_start, 0))
+                                self._advance(skip)
+                                next_states.append((index, self._group_start, 0))
                             
                     except Fail:
                         pass
@@ -111,22 +132,22 @@ class SimpleEngine(BaseMatchEngine):
                     except Match:
                         if not next_states:
                             raise
-                        next_states.append((next, self._group_start, -1))
-                        known_next.add(next)
+                        next_states.append((index, self._group_start, -1))
+                        known_next.add(index)
                         self._states = []
                     
                 # move to next character
-                self._set_offset(self._offset + 1)
+                self._advance()
                 self._states = next_states
                
                 # add current position as search if necessary
-                if search and start_state not in known_next:
-                    self._states.append((start_state, self._offset, 0))
+                if search and start_index not in known_next:
+                    self._states.append((start_index, self._offset, 0))
                     
                 self._states.reverse()
             
             while self._states:
-                (state, self._group_start, matched) = self._states.pop()
+                (index, self._group_start, matched) = self._states.pop()
                 if matched:
                     raise Match
                 
@@ -134,9 +155,10 @@ class SimpleEngine(BaseMatchEngine):
             return Groups()
         
         except Match:
-            groups = Groups(self._parser_state.groups, self._text)
+            groups = Groups(group_state=self._parser_state.groups,
+                            stream=self._initial_stream)
             groups.start_group(0, self._group_start)
-            groups.end_group(0, self._offset)
+            groups.end_group(0, self._offset - self._excess)
             return groups
     
     def string(self, next, text):
@@ -147,10 +169,14 @@ class SimpleEngine(BaseMatchEngine):
             else:
                 raise Fail
         else:
-            if self._text[self._offset:self._offset+length]  == text:
-                self._states.append((next, self._group_start, length))
+            try:
+                (advanced, _) = s_next(self._stream, length)
+                if advanced == text:
+                    self._states.append((next, self._group_start, length))
+            except StopIteration:
+                pass
             raise Fail
-        
+
     def character(self, charset):
         if self._current is not None and self._current in charset:
             return True
@@ -186,14 +212,16 @@ class SimpleEngine(BaseMatchEngine):
     
     def end_of_line(self, multiline):
         current_str = self._parser_state.alphabet.letter_to_str(self._current)
-        if ((len(self._text) == self._offset or 
-                    (multiline and current_str == '\\n'))
-                or (current_str == '\\n' and
-                        not self._text[self._offset+1:])):
+        if multiline and current_str == '\\n':
             return False
-        else:
-            raise Fail
-    
+        try:
+            # at end of stream?
+            (_, next) = s_next(self._stream)
+            if current_str == '\\n': s_next(next)
+        except StopIteration:
+            return False
+        raise Fail
+
     def word_boundary(self, inverted):
         word = self._parser_state.alphabet.word
         flags = self._parser_state.flags
@@ -257,9 +285,9 @@ class SimpleEngine(BaseMatchEngine):
         if self._lookaheads[0] != self._offset:
             self._lookaheads = (self._offset, {})
         lookaheads = self._lookaheads[1]
-        
+
         if next[1] not in lookaheads:
-            
+
             # requires complex engine
             if reads:
                 raise UnsupportedOperation('lookahead')
@@ -269,22 +297,23 @@ class SimpleEngine(BaseMatchEngine):
             self.push()
             try:
                 if forwards:
-                    text = self._text
+                    stream = self._initial_stream
                     pos = self._offset
                     search = False
                 else:
-                    text = self._text[0:self._offset]
+                    (text, _) = s_next(self._initial_stream, self._offset)
+                    stream = s_stream(self._initial_stream, text)
                     if size is None:
                         pos = 0
                         search = True
                     else:
                         pos = self._offset - size
                         search = False
-                result = bool(self._run_from(next[1], text, pos, search)) == equal
+                result = bool(self._run_from(next[1], stream, pos, search)) == equal
             finally:
                 self.pop()
             lookaheads[next[1]] = result
-            
+
         if lookaheads[next[1]]:
             return next[0]
         else:

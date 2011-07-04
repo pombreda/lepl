@@ -8,6 +8,7 @@ from operator import xor
 from functools import reduce
 
 from lepl.rxpy.parser.support import GroupState
+from lepl.stream.core import s_next
 
 
 class Fail(Exception):
@@ -64,7 +65,7 @@ class Loops(object):
 
 class Groups(object):
     
-    def __init__(self, group_state=None, text=None, 
+    def __init__(self, group_state=None, stream=None,
                  groups=None, offsets=None, last_index=None):
         '''
         `group_state` - The group definitions (GroupState)
@@ -74,7 +75,7 @@ class Groups(object):
         Other arguments are internal for cloning.
         '''
         self.__state = group_state if group_state else GroupState()
-        self.__text = text
+        self.__stream = stream
         # map from index to (text, start, end)
         self.__groups = groups if groups else {}
         # map from index to start for pending groups
@@ -91,14 +92,15 @@ class Groups(object):
         
     def end_group(self, number, offset):
         assert isinstance(number, int)
-        assert number in self.__offsets, 'Unopened group: ' + str(number) 
+        assert number in self.__offsets, 'Unopened group: ' + str(number)
         self.__str = None
-        self.__groups[number] = (self.__text[self.__offsets[number]:offset],
-                                 self.__offsets[number], offset)
+        (_, stream) = s_next(self.__stream, self.__offsets[number])
+        (text, _) = s_next(stream, offset - self.__offsets[number])
+        self.__groups[number] = (text, self.__offsets[number], offset)
         del self.__offsets[number]
         if number: # avoid group 0
             self.__last_index = number
-    
+
     def __len__(self):
         return self.__state.count
     
