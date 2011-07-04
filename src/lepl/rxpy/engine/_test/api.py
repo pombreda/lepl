@@ -1,7 +1,6 @@
 #LICENCE
 
 
-from lepl.rxpy.parser.support import ParserState
 from lepl.rxpy.engine._test.base import BaseTest
 
 

@@ -6,7 +6,8 @@ from lepl.rxpy.compat.support import compile as compile_, \
     finditer as finditer_, sub as sub_, subn as subn_, \
     split as split_, error as error_, escape as escape_, Scanner as Scanner_
 from lepl.rxpy.support import _FLAGS
-    
+from lepl.stream.factory import DEFAULT_STREAM_FACTORY
+
 
 class Re(object):
     
@@ -32,18 +33,20 @@ class Re(object):
         else:
             return self.__engine
         
-    def compile(self, pattern, flags=None, alphabet=None, engine=None):
+    def compile(self, pattern, flags=None, alphabet=None, engine=None,
+                factory=DEFAULT_STREAM_FACTORY.from_string):
         return compile_(pattern, flags=flags, alphabet=alphabet,
-                        engine=self._engine(engine))
+                        engine=self._engine(engine), factory=factory)
 
     @property
     def RegexObject(self):
         class RegexObject(RegexObject_):
             #noinspection PyMethodParameters
-            def __init__(inner, parsed, pattern=None, engine=None):
+            def __init__(inner, parsed, pattern=None, engine=None,
+                factory=DEFAULT_STREAM_FACTORY.from_string):
                 super(RegexObject_, inner).__init__(
                                     parsed, pattern=pattern,
-                                    engine=self._engine(engine))
+                                    engine=self._engine(engine), factory=factory)
         return RegexObject
 
     @property
@@ -51,52 +54,62 @@ class Re(object):
         class MatchIterator(MatchIterator_):
             #noinspection PyMethodParameters
             def __init__(inner, re, parsed, text, pattern, pos=0, endpos=None,
-                         engine=None):
+                         engine=None, factory=DEFAULT_STREAM_FACTORY.from_string):
                 super(MatchIterator_, inner).__init__(
                                     re, parsed, text, pattern,
                                     pos=pos, endpos=endpos,
-                                    engine=self._engine(engine))
+                                    engine=self._engine(engine),
+                                    factory=factory)
         return MatchIterator
 
-    def match(self, pattern, text, flags=0, alphabet=None, engine=None):
+    def match(self, pattern, text, flags=0, alphabet=None, engine=None,
+                factory=DEFAULT_STREAM_FACTORY.from_string):
         return match_(pattern, text, flags=flags, alphabet=alphabet,
-                      engine=self._engine(engine))
+                      engine=self._engine(engine), factory=factory)
         
-    def search(self, pattern, text, flags=0, alphabet=None, engine=None):
+    def search(self, pattern, text, flags=0, alphabet=None, engine=None,
+                factory=DEFAULT_STREAM_FACTORY.from_string):
         return search_(pattern, text, flags=flags, alphabet=alphabet,
-                      engine=self._engine(engine))
+                      engine=self._engine(engine), factory=factory)
 
-    def findall(self, pattern, text, flags=0, alphabet=None, engine=None):
+    def findall(self, pattern, text, flags=0, alphabet=None, engine=None,
+                factory=DEFAULT_STREAM_FACTORY.from_string):
         return findall_(pattern, text, flags=flags, alphabet=alphabet,
-                        engine=self._engine(engine))
+                        engine=self._engine(engine), factory=factory)
 
-    def finditer(self, pattern, text, flags=0, alphabet=None, engine=None):
+    def finditer(self, pattern, text, flags=0, alphabet=None, engine=None,
+                factory=DEFAULT_STREAM_FACTORY.from_string):
         return finditer_(pattern, text, flags=flags, alphabet=alphabet,
-                         engine=self._engine(engine))
+                         engine=self._engine(engine), factory=factory)
         
     def sub(self, pattern, repl, text, count=0, flags=0, alphabet=None, 
-            engine=None):
+            engine=None, factory=DEFAULT_STREAM_FACTORY.from_string):
         return sub_(pattern, repl, text, count=count, flags=flags, 
-                    alphabet=alphabet, engine=self._engine(engine))
+                    alphabet=alphabet, engine=self._engine(engine),
+                    factory=factory)
 
     def subn(self, pattern, repl, text, count=0, flags=0, alphabet=None, 
-             engine=None):
+             engine=None, factory=DEFAULT_STREAM_FACTORY.from_string):
         return subn_(pattern, repl, text, count=count, flags=flags, 
-                     alphabet=alphabet, engine=self._engine(engine))
+                     alphabet=alphabet, engine=self._engine(engine),
+                     factory=factory)
 
     def split(self, pattern, text, maxsplit=0, flags=0, alphabet=None, 
-              engine=None):
+              engine=None, factory=DEFAULT_STREAM_FACTORY.from_string):
         return split_(pattern, text, maxsplit=maxsplit, flags=flags, 
-                      alphabet=alphabet, engine=self._engine(engine))
+                      alphabet=alphabet, engine=self._engine(engine),
+                      factory=factory)
 
     @property
     def Scanner(self):
         class Scanner(Scanner_):
             #noinspection PyMethodParameters
-            def __init__(inner, pairs, flags=0, alphabet=None, engine=None):
+            def __init__(inner, pairs, flags=0, alphabet=None, engine=None,
+                factory=DEFAULT_STREAM_FACTORY.from_string):
                 super(Scanner, inner).__init__(
                                     pairs, flags=flags, alphabet=alphabet,
-                                    engine=self._engine(engine))
+                                    engine=self._engine(engine),
+                                    factory=factory)
         return Scanner
 
     

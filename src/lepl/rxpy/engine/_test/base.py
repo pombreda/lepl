@@ -14,6 +14,9 @@ class BaseTest(object):
         '''
         Should return an engine class
         '''
+
+    def default_factory(self):
+        return DEFAULT_STREAM_FACTORY.from_string
         
     def default_alphabet(self):
         return None
@@ -31,7 +34,7 @@ class BaseTest(object):
                search=False, ticks=None, max_depth=None, **kargs):
         engine = self.default_engine()(*parse, **kargs)
         if not factory:
-            factory = DEFAULT_STREAM_FACTORY.from_string
+            factory = self.default_factory()
         stream = factory(text)
         result = engine.run(stream, search=search)
         if ticks is not None:

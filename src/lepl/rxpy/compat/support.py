@@ -19,7 +19,7 @@ from lepl.support.lib import lmap
 _ALPHANUMERICS = ascii_letters + digits
 
 
-def compile(pattern, flags=None, alphabet=None, engine=None):
+def compile(pattern, flags=None, alphabet=None, engine=None, factory=None):
     require_engine(engine)
     if isinstance(pattern, RegexObject):
         if flags is not None and flags != pattern.flags:
@@ -31,17 +31,18 @@ def compile(pattern, flags=None, alphabet=None, engine=None):
             flags = 0
         pattern = RegexObject(parse_pattern(pattern, engine, flags=flags,
                                             alphabet=alphabet),
-                              pattern, engine=engine)
+                              pattern=pattern, engine=engine, factory=factory)
     return pattern
 
 
 class RegexObject(object):
     
-    def __init__(self, parsed, pattern=None, engine=None):
+    def __init__(self, parsed, pattern=None, engine=None, factory=None):
         require_engine(engine)
         self.__parsed = parsed
         self.__pattern = pattern
         self.__engine = engine
+        self.__factory = factory
 
     def deep_eq(self, other):
         '''
@@ -50,7 +51,8 @@ class RegexObject(object):
         return self.__parsed[0].deep_eq(other.__parsed[0]) and \
             self.__parsed[1].deep_eq(other.__parsed[1]) and \
             self.__pattern == other.__pattern and \
-            self.__engine == other.__engine
+            self.__engine == other.__engine and \
+            self.__factory == other.__factory
         
     @property
     def __parser_state(self):
@@ -84,9 +86,13 @@ class RegexObject(object):
                 if not is_int(name))
     
     def scanner(self, text, pos=0, endpos=None):
-        self.__parser_state.alphabet.validate_input(text,
-                                                    self.__parser_state.flags)
-        return MatchIterator(self, self.__parsed, text, self.__pattern,
+        if self.__factory:
+            self.__parser_state.alphabet.validate_input(text,
+                                                        self.__parser_state.flags)
+            stream = self.__factory(text)
+        else:
+            stream = text
+        return MatchIterator(self, self.__parsed, stream, self.__pattern,
                              pos=pos, endpos=endpos, engine=self.__engine)
         
     def match(self, text, pos=0, endpos=None):
@@ -193,11 +199,15 @@ class MatchIterator(object):
     None when no more calls will work.
     '''
     
-    def __init__(self, re, parsed, text, pattern, pos=0, endpos=None, engine=None):
+    def __init__(self, re, parsed, text, pattern, pos=0,
+                 endpos=None, engine=None, factory=None):
         require_engine(engine)
         self.__re = re
         self.__parsed = parsed
-        self.__text = text
+        if factory:
+            self.__stream = factory(text)
+        else:
+            self.__stream = text
         # required by a test in Python3.2
         self.pattern = pattern
         self.__pos = pos
@@ -211,10 +221,10 @@ class MatchIterator(object):
 
     def next(self, search):
         if self.__pos <= self.__endpos:
-            groups = self.__engine.run(self.__text[:self.__endpos], 
+            groups = self.__engine.run(self.__stream[:self.__endpos],
                                        pos=self.__pos, search=search)
             if groups:
-                found = MatchObject(groups, self.__re, self.__text, 
+                found = MatchObject(groups, self.__re, self.__stream,
                                     self.__pos, self.__endpos, 
                                     self.__parser_state)
                 offset = found.end()
@@ -243,7 +253,7 @@ class MatchIterator(object):
     
     @property
     def remaining(self):
-        return self.__text[self.__pos:]
+        return self.__stream[self.__pos:]
     
 
 class MatchObject(object):
@@ -300,48 +310,55 @@ class MatchObject(object):
         return tuple(groups)
     
     
-def match(pattern, text, flags=0, alphabet=None, engine=None):
+def match(pattern, text, flags=0,
+          alphabet=None, engine=None, factory=None):
     require_engine(engine)
-    return compile(pattern, flags=flags, 
-                   alphabet=alphabet, engine=engine).match(text)
+    return compile(pattern, flags=flags, alphabet=alphabet,
+                   engine=engine, factory=factory).match(text)
 
 
-def search(pattern, text, flags=0, alphabet=None, engine=None):
+def search(pattern, text, flags=0,
+           alphabet=None, engine=None, factory=None):
     require_engine(engine)
-    return compile(pattern, flags=flags, 
-                   alphabet=alphabet, engine=engine).search(text)
+    return compile(pattern, flags=flags, alphabet=alphabet,
+                   engine=engine, factory=factory).search(text)
 
 
-def findall(pattern, text, flags=0, alphabet=None, engine=None):
+def findall(pattern, text, flags=0,
+            alphabet=None, engine=None, factory=None):
     require_engine(engine)
-    return compile(pattern, flags=flags, 
-                   alphabet=alphabet, engine=engine).findall(text)
+    return compile(pattern, flags=flags, alphabet=alphabet,
+                   engine=engine, factory=factory).findall(text)
 
 
-def finditer(pattern, text, flags=0, alphabet=None, engine=None):
+def finditer(pattern, text, flags=0,
+             alphabet=None, engine=None, factory=None):
     require_engine(engine)
-    return compile(pattern, flags=flags, 
-                   alphabet=alphabet, engine=engine).finditer(text)
+    return compile(pattern, flags=flags, alphabet=alphabet,
+                   engine=engine, factory=factory).finditer(text)
 
 
-def sub(pattern, repl, text, count=0, flags=0, alphabet=None, engine=None):
+def sub(pattern, repl, text, count=0, flags=0,
+        alphabet=None, engine=None, factory=None):
     '''
     Find `pattern` in `text` and replace it with `repl`; limit this to
     `count` replacements (from left) if `count > 0`.
     '''
     require_engine(engine)
-    return compile(pattern, flags=flags, 
-                   alphabet=alphabet, engine=engine).sub(repl, text, count=count)
+    return compile(pattern, flags=flags, alphabet=alphabet,
+                   engine=engine, factory=factory).sub(repl, text, count=count)
 
 
-def subn(pattern, repl, text, count=0, flags=0, alphabet=None, engine=None):
-    return compile(pattern, flags=flags, 
-                   alphabet=alphabet, engine=engine).subn(repl, text, count=count)
+def subn(pattern, repl, text, count=0, flags=0,
+         alphabet=None, engine=None, factory=None):
+    return compile(pattern, flags=flags, alphabet=alphabet,
+                   engine=engine, factory=factory).subn(repl, text, count=count)
 
 
-def split(pattern, text, maxsplit=0, flags=0, alphabet=None, engine=None):
-    return compile(pattern, flags=flags, 
-                   alphabet=alphabet, engine=engine).split(text, maxsplit=maxsplit)
+def split(pattern, text, maxsplit=0, flags=0,
+          alphabet=None, engine=None, factory=None):
+    return compile(pattern, flags=flags, alphabet=alphabet,
+                   engine=engine, factory=factory).split(text, maxsplit=maxsplit)
 
 
 error = RxpyError
@@ -372,11 +389,13 @@ class Scanner(object):
     http://code.activestate.com/recipes/457664-hidden-scanner-functionality-in-re-module/
     '''
 
-    def __init__(self, pairs, flags=0, alphabet=None, engine=None):
+    def __init__(self, pairs, flags=0,
+                 alphabet=None, engine=None, factory=None):
         require_engine(engine)
         self.__regex = RegexObject(parse_groups(lmap(lambda x: x[0], pairs),
-                                                engine, flags=flags, alphabet=alphabet),
-                                   engine=engine)
+                                                engine, flags=flags,
+                                                alphabet=alphabet),
+                                   engine=engine, factory=factory)
         self.__actions = list(map(lambda x: x[1], pairs))
         # this is implied by a test in Python 3.2
         self.scanner = self.__regex

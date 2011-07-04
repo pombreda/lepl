@@ -1,9 +1,9 @@
 #LICENCE
 
 from lepl.rxpy.alphabet.digits import Digits
-from lepl.rxpy.support import UnsupportedOperation
-from lepl.rxpy.parser.support import ParserState, RxpyError
+from lepl.rxpy.parser.support import ParserState
 from lepl.rxpy.engine._test.base import BaseTest
+from lepl.stream.factory import DEFAULT_STREAM_FACTORY
 
 
 class DigitsTest(BaseTest):
@@ -11,6 +11,9 @@ class DigitsTest(BaseTest):
     def default_alphabet(self):
         return Digits()
     
+    def default_factory(self):
+        return DEFAULT_STREAM_FACTORY.from_sequence
+
     def test_string(self):
         assert self.engine(self.parse('1'), [1])
         assert self.engine(self.parse('123'), [1,2,3])

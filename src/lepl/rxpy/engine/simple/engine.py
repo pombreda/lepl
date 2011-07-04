@@ -91,7 +91,8 @@ class SimpleEngine(BaseMatchEngine):
         self._states = [(start_index, self._offset, 0)]
         
         try:
-            while self._states and self._excess < 2:
+            # TODO - looks like we may not need excess
+            while self._states and not self._excess:
                 
                 known_next = set()
                 next_states = []
