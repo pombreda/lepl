@@ -224,14 +224,20 @@ class SequenceHelper(BaseHelper):
     
 class StringHelper(SequenceHelper):
     '''
-    String-specific fmtting and location.
+    String-specific formatting and location.
     '''
+
+    __counter = 0
     
     def __init__(self, sequence, id=None, factory=None, max=None, 
                  global_kargs=None, cache_level=None, delta=None):
         # avoid duplicating processing on known strings
         if id is None:
-            id = hash(sequence)
+            try:
+                id = hash(sequence)
+            except TypeError:
+                self.__counter += 1
+                id = self.__counter
         super(StringHelper, self).__init__(sequence, id=id, factory=factory, 
                 max=max, global_kargs=global_kargs, cache_level=cache_level, 
                 delta=delta)
@@ -297,7 +303,7 @@ class StringHelper(SequenceHelper):
     
 class ListHelper(SequenceHelper):
     '''
-    List-specific fprmatting
+    List-specific formatting
     '''
     
     def _fmt(self, sequence, offset, max_len=60, left="[", right="]", index=True):
