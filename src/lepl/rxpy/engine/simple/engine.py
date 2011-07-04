@@ -87,81 +87,89 @@ class SimpleEngine(BaseMatchEngine):
         self._checkpoints = {}
         self._lookaheads = (self._offset, {})
         search = self._search # read only, dereference optimisation
-        
+
+        # states are ordered by group start, which explains a lot of
+        # the otherwise rather opaque logic below.
         self._states = [(start_index, self._offset, 0)]
         
         try:
             # TODO - looks like we may not need excess
             while self._states and not self._excess:
-                
+
                 known_next = set()
                 next_states = []
-                
+
                 while self._states:
-                    
+
                     # unpack state
                     (index, self._group_start, skip) = self._states.pop()
                     try:
-                        
+
                         if not skip:
                             # process the current character
                             index = self._program[index]()
                             if index not in known_next:
                                 next_states.append((index, self._group_start, 0))
                                 known_next.add(index)
-                                
+
                         elif skip == -1:
                             raise Match
 
                         else:
                             skip -= 1
-                            
+
                             # if we have other states, or will add them via search
                             if search or next_states or self._states:
                                 next_states.append((index, self._group_start, skip))
                                 # block this same "future state"
                                 known_next.add((index, skip))
-                                
+
                             # otherwise, we can jump directly
                             else:
                                 self._advance(skip)
                                 next_states.append((index, self._group_start, 0))
-                            
+
                     except Fail:
                         pass
-                    
+
                     except Match:
+                        # no groups starting earlier?
                         if not next_states:
                             raise
+                        # some other, pending, earlier starting, state may
+                        # still give a match
                         next_states.append((index, self._group_start, -1))
                         known_next.add(index)
+                        # but we can discard anything that starts later
                         self._states = []
-                    
+                        search = False
+
                 # move to next character
                 self._advance()
                 self._states = next_states
-               
+
                 # add current position as search if necessary
                 if search and start_index not in known_next:
                     self._states.append((start_index, self._offset, 0))
-                    
+
                 self._states.reverse()
-            
+
+            # pick first matched state, if any
             while self._states:
-                (index, self._group_start, matched) = self._states.pop()
-                if matched:
+                (index, self._group_start, skip) = self._states.pop()
+                if skip == -1:
                     raise Match
-                
+
             # exhausted states with no match
             return Groups()
-        
+
         except Match:
             groups = Groups(group_state=self._parser_state.groups,
                             stream=self._initial_stream)
             groups.start_group(0, self._group_start)
             groups.end_group(0, self._offset - self._excess)
             return groups
-    
+
     def string(self, next, text):
         length = len(text)
         if length == 1:
