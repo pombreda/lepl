@@ -89,11 +89,9 @@ class RegexObject(object):
         if self.__factory:
             self.__parser_state.alphabet.validate_input(text,
                                                         self.__parser_state.flags)
-            stream = self.__factory(text)
-        else:
-            stream = text
-        return MatchIterator(self, self.__parsed, stream, self.__pattern,
-                             pos=pos, endpos=endpos, engine=self.__engine)
+        return MatchIterator(self, self.__parsed, text, self.__pattern,
+                             pos=pos, endpos=endpos, engine=self.__engine,
+                             factory=self.__factory)
         
     def match(self, text, pos=0, endpos=None):
         return self.scanner(text, pos=pos, endpos=endpos).match()
@@ -204,15 +202,13 @@ class MatchIterator(object):
         require_engine(engine)
         self.__re = re
         self.__parsed = parsed
-        if factory:
-            self.__stream = factory(text)
-        else:
-            self.__stream = text
+        self.__text = text
         # required by a test in Python3.2
         self.pattern = pattern
         self.__pos = pos
         self.__endpos = endpos if endpos else len(text)
         self.__engine = engine(*parsed)
+        self.__factory = factory
         self.pattern = 1
     
     @property
@@ -221,10 +217,10 @@ class MatchIterator(object):
 
     def next(self, search):
         if self.__pos <= self.__endpos:
-            groups = self.__engine.run(self.__stream[:self.__endpos],
+            groups = self.__engine.run(self.__factory(self.__text[:self.__endpos]),
                                        pos=self.__pos, search=search)
             if groups:
-                found = MatchObject(groups, self.__re, self.__stream,
+                found = MatchObject(groups, self.__re, self.__text,
                                     self.__pos, self.__endpos, 
                                     self.__parser_state)
                 offset = found.end()
@@ -253,7 +249,7 @@ class MatchIterator(object):
     
     @property
     def remaining(self):
-        return self.__stream[self.__pos:]
+        return self.__text[self.__pos:]
     
 
 class MatchObject(object):
