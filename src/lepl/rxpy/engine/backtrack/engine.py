@@ -12,6 +12,7 @@ for example).
 from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.engine.support import Groups, Loops, Fail, Match
 from lepl.rxpy.graph.base_compilable import compile
+from lepl.stream.core import s_next, s_empty
 
 
 class State(object):
@@ -19,14 +20,18 @@ class State(object):
     State for a particular position moment / graph position / text offset.
     '''
     
-    def __init__(self, text, groups, previous=None, offset=0, loops=None,
+    def __init__(self, stream, groups, previous=None, offset=0, loops=None,
                  checkpoints=None):
-        self.__text = text
+        self.__stream = stream
         self.__groups = groups
         self.__previous = previous
         self.__offset = offset
         self.__loops = loops if loops else Loops()
         self.__checkpoints = checkpoints
+        if s_empty(self.__stream):
+            self.__current = None
+        else:
+            (self.__current, _) = s_next(self.__stream)
     
     def clone(self, offset=None, groups=None):
         '''
@@ -38,39 +43,44 @@ class State(object):
         if groups is None:
             groups = self.__groups.clone()
         previous = self.__previous
-        if offset is None:
+        if offset is None or offset == self.__offset:
             offset = self.__offset
-            text = self.__text
+            stream = self.__stream
         else:
             delta = offset - self.__offset
-            if delta:
-                previous = self.__text[delta-1:delta]
-            text = self.__text[delta:]
+            (advanced, stream) = s_next(self.__stream, delta)
+            previous = advanced[-1:]
         checkpoints = set(self.__checkpoints) if self.__checkpoints else None
-        return State(text, groups, previous=previous, offset=offset, 
+        return State(stream, groups, previous=previous, offset=offset,
                      loops=self.__loops.clone(), checkpoints=checkpoints)
         
     def advance(self):
         '''
         Used in search to increment start point.
         '''
-        if self.__text:
+        if not s_empty(self.__stream):
             self.__increment()
             self.__groups.start_group(0, self.__offset)
             return True
         else:
             return False
         
-    def __increment(self, length=1):
+    def __increment(self, delta=1):
         '''
         Increment offset during match.
         '''
-        if length:
+        if delta:
             self.__checkpoints = None
-            self.__previous = self.__text[length-1:length]
-            self.__text = self.__text[length:]
-            self.__offset += length
-            if not self.__previous:
+            self.__offset += delta
+            self.__current = None
+            try:
+                (advanced, self.__stream) = s_next(self.__stream, delta)
+                self.__previous = advanced[-1:]
+                if not s_empty(self.__stream):
+                    (self.__current, _) = s_next(self.__stream)
+            except StopIteration:
+                self.__stream = None
+                self.__previous = None
                 raise IndexError
 
     def increment(self, node):
@@ -81,17 +91,17 @@ class State(object):
         
     def string(self, text):
         try:
-            l = len(text)
-            if self.__text[0:l] == text:
-                self.__increment(l)
+            (advanced, _) = s_next(self.__stream, len(text))
+            if advanced == text:
+                self.__increment(len(text))
                 return self
-        except IndexError:
+        except StopIteration:
             pass
         raise Fail
     
     def character(self, charset):
         try:
-            if self.__text[0:1] in charset:
+            if self.__current in charset:
                 self.__increment()
                 return self
         except IndexError:
@@ -112,7 +122,8 @@ class State(object):
 
     def dot(self, multiline=True):
         try:
-            if multiline or self.__text[0] != '\n':
+            # TODO - alphabet here?
+            if multiline or self.__current != '\n':
                 self.__increment()
                 return self
         except IndexError:
@@ -120,14 +131,16 @@ class State(object):
         raise Fail
         
     def start_of_line(self, multiline):
+        # TODO - alphabet here?
         if self.__offset == 0 or (multiline and self.__previous == '\n'):
             return self
         else:
             raise Fail
             
     def end_of_line(self, multiline):
-        if ((not self.__text or (multiline and self.__text[0] == '\n'))
-                # also before \n at end of text
+        # TODO - alphabet here?
+        if ((s_empty(self.__stream) or (multiline and self.__current == '\n'))
+                # also at final \n
                 or (self.__text and self.__text[0] == '\n' and
                     not self.__text[1:])):
             return self

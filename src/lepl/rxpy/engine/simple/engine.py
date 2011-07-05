@@ -8,12 +8,12 @@ plus the earliest start index and a matched flag).
 
 from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.support import UnsupportedOperation, _LOOP_UNROLL
-from lepl.rxpy.engine.support import Match, Fail, Groups
+from lepl.rxpy.engine.support import Match, Fail, Groups, StreamTargetMixin
 from lepl.rxpy.graph.base_compilable import compile
-from lepl.stream.core import s_next, s_empty, s_stream, s_len
+from lepl.stream.core import s_next, s_stream
 
 
-class SimpleEngine(BaseMatchEngine):
+class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
     
     REQUIRE = _LOOP_UNROLL
     
@@ -36,34 +36,6 @@ class SimpleEngine(BaseMatchEngine):
          self._group_start, self._checkpoints, 
          self._lookaheads) = self.__stack.pop()
         
-    def _advance(self, delta=1):
-        '''
-        Move forwards in the stream.
-
-        The following conventions are followed:
-        - `offset` is the offset from the initial input
-        - `stream` is the stream starting at the current location
-        - `current` is the character at the current location
-        - `previous` is the character just before the current location
-        '''
-        self._offset += delta
-        old_stream = self._stream
-        try:
-            (advanced, self._stream) = s_next(old_stream, delta)
-            if advanced:
-                self._previous = advanced[-1:]
-            try:
-                (self._current, _) = s_next(self._stream)
-            except StopIteration:
-                self._current = None
-        except StopIteration:
-            if old_stream:
-                self._excess = delta - s_len(old_stream)
-            else:
-                self._excess += delta
-            self._stream = None
-            self._current = None
-
     def run(self, stream, pos=0, search=False):
 
         self._initial_stream = stream
@@ -78,10 +50,7 @@ class SimpleEngine(BaseMatchEngine):
             return result
         
     def _run_from(self, start_index, stream, delta, search):
-        self._previous = None
-        self._offset = 0
-        self._excess = 0
-        self._stream = stream
+        self._reset(0, stream, None)
         self._advance(delta)
         self._search = search
         self._checkpoints = {}
@@ -94,7 +63,7 @@ class SimpleEngine(BaseMatchEngine):
         
         try:
             # TODO - looks like we may not need excess
-            while self._states and not self._excess:
+            while self._states and self._excess < 2:
 
                 known_next = set()
                 next_states = []
@@ -167,30 +136,12 @@ class SimpleEngine(BaseMatchEngine):
             groups = Groups(group_state=self._parser_state.groups,
                             stream=self._initial_stream)
             groups.start_group(0, self._group_start)
-            groups.end_group(0, self._offset - self._excess)
+            groups.end_group(0, self._offset)
             return groups
 
-    def string(self, next, text):
-        length = len(text)
-        if length == 1:
-            if self._current == text[0:1]:
-                return True
-            else:
-                raise Fail
-        else:
-            try:
-                (advanced, _) = s_next(self._stream, length)
-                if advanced == text:
-                    self._states.append((next, self._group_start, length))
-            except StopIteration:
-                pass
-            raise Fail
-
-    def character(self, charset):
-        if self._current is not None and self._current in charset:
-            return True
-        else:
-            raise Fail
+    def _string_advance(self, next, length):
+        self._states.append((next, self._group_start, length))
+        raise Fail
 
     #noinspection PyUnusedLocal
     def start_group(self, number):
@@ -207,64 +158,6 @@ class SimpleEngine(BaseMatchEngine):
     def no_match(self):
         raise Fail
 
-    def dot(self, multiline):
-        if self._current and (multiline or self._current != '\n'):
-            return True
-        else:
-            raise Fail
-    
-    def start_of_line(self, multiline):
-        if self._offset == 0 or (multiline and self._previous == '\n'):
-            return False
-        else:
-            raise Fail
-    
-    def end_of_line(self, multiline):
-        current_str = self._parser_state.alphabet.letter_to_str(self._current)
-        if multiline and current_str == '\\n':
-            return False
-        try:
-            # at end of stream?
-            (_, next) = s_next(self._stream)
-            if current_str == '\\n': s_next(next)
-        except StopIteration:
-            return False
-        raise Fail
-
-    def word_boundary(self, inverted):
-        word = self._parser_state.alphabet.word
-        flags = self._parser_state.flags
-        boundary = word(self._current, flags) != word(self._previous, flags)
-        if boundary != inverted:
-            return False
-        else:
-            raise Fail
-
-    def digit(self, inverted):
-        # current here tests whether we have finished
-        if self._current is not None and \
-                self._parser_state.alphabet.digit(self._current,
-                            self._parser_state.flags) != inverted:
-            return True
-        else:
-            raise Fail
-    
-    def space(self, inverted):
-        if self._current is not None and \
-                self._parser_state.alphabet.space(self._current,
-                            self._parser_state.flags) != inverted:
-            return True
-        else:
-            raise Fail
-        
-    def word(self, inverted):
-        if self._current is not None and \
-                self._parser_state.alphabet.word(self._current,
-                            self._parser_state.flags) != inverted:
-            return True
-        else:
-            raise Fail
-        
     def checkpoint(self, id):
         if id not in self._checkpoints or self._offset != self._checkpoints[id]:
             self._checkpoints[id] = self._offset

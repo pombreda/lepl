@@ -27,7 +27,7 @@
 # MPL or the LGPL License.
 
 '''
-Default implementations of the stream classes. 
+Core implementation of the stream classes.
 
 A stream is a tuple (state, helper), where `state` will vary from location to 
 location, while `helper` is an "unchanging" instance of `StreamHelper`, 
