@@ -193,9 +193,6 @@ class StreamTargetMixin(object):
     Assumes self._parser_state is present in subclass.
     '''
 
-    def __init__(self, *args, **kargs):
-        super(StreamTargetMixin, self).__init__(*args, **kargs)
-
     def _reset(self, offset, stream, previous):
         self._previous = previous
         self._stream = stream
@@ -240,27 +237,8 @@ class StreamTargetMixin(object):
             else:
                 self._excess += delta
             self._stream = None
-
-    def string(self, next, text):
-        length = len(text)
-        if length == 1:
-            if self._current == text[0:1]:
-                return True
-            else:
-                raise Fail
-        else:
-            try:
-                (advanced, _) = s_next(self._stream, length)
-                if advanced == text:
-                    return self._string_advance(next, length)
-            except StopIteration:
-                pass
-            raise Fail
-
-    #noinspection PyUnusedLocal
-    @unimplemented
-    def _string_advance(self, next, length):
-        '''Called by `string()` above if match over multiple characters'''
+        # this allows the method to be chained with "and"
+        return True
 
     def character(self, charset):
         if self._current is not None and self._current in charset:

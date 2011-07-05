@@ -10,29 +10,26 @@ for example).
 '''                                    
 
 from lepl.rxpy.engine.base import BaseMatchEngine
-from lepl.rxpy.engine.support import Groups, Loops, Fail, Match
+from lepl.rxpy.engine.support import Groups, Loops, Fail, Match, StreamTargetMixin
 from lepl.rxpy.graph.base_compilable import compile
-from lepl.stream.core import s_next, s_empty
+from lepl.stream.core import s_next
 
 
-class State(object):
+class State(StreamTargetMixin):
     '''
     State for a particular position moment / graph position / text offset.
     '''
     
-    def __init__(self, stream, groups, previous=None, offset=0, loops=None,
-                 checkpoints=None):
-        self.__stream = stream
+    def __init__(self, parser_state, stream, groups, pos=None,
+                 previous=None, offset=0, loops=None, checkpoints=None):
+        self._parser_state = parser_state
+        self._reset(offset, stream, previous)
+        if pos is not None:
+            self._advance(pos)
         self.__groups = groups
-        self.__previous = previous
-        self.__offset = offset
         self.__loops = loops if loops else Loops()
         self.__checkpoints = checkpoints
-        if s_empty(self.__stream):
-            self.__current = None
-        else:
-            (self.__current, _) = s_next(self.__stream)
-    
+
     def clone(self, offset=None, groups=None):
         '''
         Duplicate this state.  If offset is specified, it must be greater than
@@ -42,111 +39,61 @@ class State(object):
         '''
         if groups is None:
             groups = self.__groups.clone()
-        previous = self.__previous
-        if offset is None or offset == self.__offset:
-            offset = self.__offset
-            stream = self.__stream
+        previous = self._previous
+        if offset is None or offset == self._offset:
+            offset = self._offset
+            stream = self._stream
         else:
-            delta = offset - self.__offset
-            (advanced, stream) = s_next(self.__stream, delta)
+            delta = offset - self._offset
+            (advanced, stream) = s_next(self._stream, delta)
             previous = advanced[-1:]
         checkpoints = set(self.__checkpoints) if self.__checkpoints else None
-        return State(stream, groups, previous=previous, offset=offset,
+        return State(self._parser_state, stream, groups,
+                     previous=previous, offset=offset,
                      loops=self.__loops.clone(), checkpoints=checkpoints)
         
     def advance(self):
         '''
         Used in search to increment start point.
         '''
-        if not s_empty(self.__stream):
-            self.__increment()
-            self.__groups.start_group(0, self.__offset)
+        if self._current is not None:
+            self._advance()
+            self.__groups.start_group(0, self._offset)
             return True
         else:
             return False
         
-    def __increment(self, delta=1):
-        '''
-        Increment offset during match.
-        '''
-        if delta:
-            self.__checkpoints = None
-            self.__offset += delta
-            self.__current = None
-            try:
-                (advanced, self.__stream) = s_next(self.__stream, delta)
-                self.__previous = advanced[-1:]
-                if not s_empty(self.__stream):
-                    (self.__current, _) = s_next(self.__stream)
-            except StopIteration:
-                self.__stream = None
-                self.__previous = None
-                raise IndexError
-
     def increment(self, node):
         return self.__loops.increment(node)
 
     # below are methods that correspond roughly to opcodes in the graph.
     # these are called from the engine.
         
-    def string(self, text):
-        try:
-            (advanced, _) = s_next(self.__stream, len(text))
-            if advanced == text:
-                self.__increment(len(text))
-                return self
-        except StopIteration:
-            pass
+    def string(self, next, text):
+        length = len(text)
+        if length == 1:
+            if self._current == text[0:1]:
+                self._advance()
+                return True
+        else:
+            try:
+                (advanced, _) = s_next(self._stream, length)
+                if advanced == text:
+                    self._advance(length)
+                    return True
+            except StopIteration:
+                pass
         raise Fail
-    
-    def character(self, charset):
-        try:
-            if self.__current in charset:
-                self.__increment()
-                return self
-        except IndexError:
-            pass
-        raise Fail
-    
+
     def start_group(self, number):
-        self.__groups.start_group(number, self.__offset)
-        return self
-        
+        self.__groups.start_group(number, self._offset)
+
     def end_group(self, number):
-        self.__groups.end_group(number, self.__offset)
-        return self
-    
+        self.__groups.end_group(number, self._offset)
+
     def drop(self, node):
         self.__loops.drop(node)
-        return self
 
-    def dot(self, multiline=True):
-        try:
-            # TODO - alphabet here?
-            if multiline or self.__current != '\n':
-                self.__increment()
-                return self
-        except IndexError:
-            pass
-        raise Fail
-        
-    def start_of_line(self, multiline):
-        # TODO - alphabet here?
-        if self.__offset == 0 or (multiline and self.__previous == '\n'):
-            return self
-        else:
-            raise Fail
-            
-    def end_of_line(self, multiline):
-        # TODO - alphabet here?
-        if ((s_empty(self.__stream) or (multiline and self.__current == '\n'))
-                # also at final \n
-                or (self.__text and self.__text[0] == '\n' and
-                    not self.__text[1:])):
-            return self
-        else:
-            raise Fail
-        
     def similar(self, other):
         '''
         Is this state similar to the one given?  In particular, are the
@@ -160,25 +107,13 @@ class State(object):
         else:
             if token in self.__checkpoints:
                 raise Fail
-        return self
+        return False
 
     @property
     def groups(self):
         return self.__groups
     
-    @property
-    def offset(self):
-        return self.__offset
 
-    @property
-    def text(self):
-        return self.__text
-
-    @property
-    def previous(self):
-        return self.__previous
-    
-    
 class Stack(object):
     '''
     A stack of states.  This extends a simple stack with the ability to 
@@ -204,78 +139,79 @@ class Stack(object):
         self.__stack = []
         self.max_depth = 0  # for tests
         
-    def push(self, pointer, state):
+    def push(self, index, state):
         if self.__stack:
-            (p_pointer, p_state, p_repeat) = self.__stack[-1]
+            (p_index, p_state, p_repeat) = self.__stack[-1]
             # is compressed repetition possible?
-            if p_state.similar(state) and p_pointer == pointer:
+            if p_state.similar(state) and p_index == index:
                 # do we have an existing repeat?
                 if p_repeat:
                     (end, step) = p_repeat
                     # and this new state has the expected increment
-                    if state.offset == end + step:
+                    if state._offset == end + step:
                         self.__stack.pop()
-                        self.__stack.append((pointer, p_state,
-                                             (state.offset, step)))
+                        self.__stack.append((index, p_state,
+                                             (state._offset, step)))
                         return
                 # otherwise, start a new repeat block
-                elif p_state.offset < state.offset:
+                elif p_state._offset < state._offset:
                     self.__stack.pop()
-                    self.__stack.append((pointer, p_state,
-                                         (state.offset, state.offset - p_state.offset)))
+                    self.__stack.append((index, p_state,
+                                         (state._offset,
+                                          state._offset - p_state._offset)))
                     return
         # above returns on success, so here default to a "normal" push
-        self.__stack.append((pointer, state, None))
+        self.__stack.append((index, state, None))
         self.max_depth = max(self.max_depth, len(self.__stack))
-        
+
     def pop(self):
-        (pointer, state, repeat) = self.__stack.pop()
+        (index, state, repeat) = self.__stack.pop()
         if repeat:
             (end, step) = repeat
             # if the repeat has not expired
-            if state.offset != end:
+            if state._offset != end:
                 # add back one step down
-                self.__stack.append((pointer, state, (end-step, step)))
+                self.__stack.append((index, state, (end-step, step)))
                 state = state.clone(end)
-        return (pointer, state)
+        return (index, state)
 
 
     def __bool__(self):
         return bool(self.__stack)
-    
+
     def __nonzero__(self):
         return self.__bool__()
-    
+
 
 class BacktrackingEngine(BaseMatchEngine):
     '''
     The interpreter.
     '''
-    
+
     def __init__(self, parser_state, graph):
         super(BacktrackingEngine, self).__init__(parser_state, graph)
         self._program = compile(graph, self)
 
-    def run(self, text, pos=0, search=False):
+    def run(self, stream, pos=0, search=False):
         '''
         Execute a search.
         '''
-        self.__text = text
+        self.__stream = stream
         self.__pos = pos
-        
-        state = State(text[pos:],
-                      Groups(group_state=self._parser_state.groups, text=text),
-                      offset=pos, previous=text[pos-1:pos] if pos else None)
+
+        state = State(self._parser_state, stream,
+                      Groups(group_state=self._parser_state.groups, stream=stream),
+                      pos=pos)
 
         # for testing optimizations
         self.ticks = 0
         self.max_depth = 0
-        
+
         self.__stack = None
         self.__state = None
         self.__stacks = []
         self.__lookaheads = {} # map from node to set of known ok states
-        
+
         state.start_group(0)
         (match, state) = self.__run(0, state, search=search)
         if match:
@@ -283,43 +219,43 @@ class BacktrackingEngine(BaseMatchEngine):
             return state.groups
         else:
             return Groups()
-            
-    def __run(self, pointer, state, search=False):
+
+    def __run(self, index, state, search=False):
         '''
         Run a sub-search.  We support multiple searches (stacks) so that we
         can invoke the same interpreter for lookaheads etc.
-        
+
         This is a simple trampoline - it stores state on a stack and invokes
-        the the compiled program.  Callbacks return the new program pointer,
+        the the compiled program.  Callbacks return the new program index,
         raise `Fail` on failure, or `Match` on success.
         '''
         self.__stacks.append((self.__stack, self.__state))
         self.__stack = Stack()
         self.__state = state
-        save_pointer = None
+        save_index = None
         try:
             try:
                 # search loop
                 while True:
                     # if searching, save state for restart
                     if search:
-                        (save_state, save_pointer) = (self.__state.clone(), pointer)
+                        (save_state, save_index) = (self.__state.clone(), index)
                     # backtrack loop
                     while True:
                         try:
                             # can't loop completely inside program as we exceed
                             # stack depth
-                            pointer = self._program[pointer]()
+                            index = self._program[index]()
                         # backtrack if stack exists
                         except Fail:
                             if self.__stack:
-                                (pointer, self.__state) = self.__stack.pop()
+                                (index, self.__state) = self.__stack.pop()
                             else:
                                 break
                     # nudge search forwards and try again, or exit
                     if search:
                         if save_state.advance():
-                            (self.__state, pointer) = (save_state, save_pointer)
+                            (self.__state, index) = (save_state, save_index)
                         else:
                             break
                     # match (not search), so exit with failure
@@ -338,23 +274,23 @@ class BacktrackingEngine(BaseMatchEngine):
 
     def string(self, next, text):
         self.ticks += 1
-        self.__state = self.__state.string(text)
-        return True
-    
+        return self.__state.string(next, text)
+
     def character(self, charset):
         self.ticks += 1
-        self.__state = self.__state.character(charset)
-        return True
+        return self.__state.character(charset) and self.__state._advance()
+
+    def dot(self, multiline):
+        self.ticks += 1
+        return self.__state.dot(multiline) and self.__state._advance()
 
     def start_group(self, number):
         self.ticks += 1
-        self.__state = self.__state.start_group(number)
-        return False
+        return self.__state.start_group(number)
 
     def end_group(self, number):
         self.ticks += 1
-        self.__state = self.__state.end_group(number)
-        return False
+        return self.__state.end_group(number)
 
     def group_reference(self, next, number):
         self.ticks += 1
@@ -363,7 +299,7 @@ class BacktrackingEngine(BaseMatchEngine):
             if text is None:
                 raise Fail
             else:
-                self.__state = self.__state.string(text)
+                self.__state.string(text)
                 return False
         except KeyError:
             raise Fail
@@ -392,43 +328,36 @@ class BacktrackingEngine(BaseMatchEngine):
         self.ticks += 1
         raise Fail
 
-    def dot(self, multiline):
-        self.ticks += 1
-        self.__state = self.__state.dot(multiline)
-        return True
-
     def start_of_line(self, multiline):
         self.ticks += 1
-        self.__state = self.__state.start_of_line(multiline)
-        return False
-        
+        return self.__state.start_of_line(multiline)
+
     def end_of_line(self, multiline):
         self.ticks += 1
-        self.__state = self.__state.end_of_line(multiline)
-        return False
+        return self.__state.end_of_line(multiline)
 
     def lookahead(self, next, equal, forwards, mutates, reads, length):
         self.ticks += 1
         alternate = next[1]
         if alternate not in self.__lookaheads:
             self.__lookaheads[alternate] = {}
-        if self.__state.offset in self.__lookaheads[alternate]:
-            success = self.__lookaheads[alternate[self.__state.offset]]
+        if self.__state._offset in self.__lookaheads[alternate]:
+            success = self.__lookaheads[alternate[self.__state._offset]]
         else:
             size = None if (reads and mutates) else length(self.__state.groups)
             search = False
             if forwards:
                 clone = State(self.__state.text, self.__state.groups.clone())
             else:
-                if size is not None and size > self.__state.offset and equal:
+                if size is not None and size > self.__state._offset and equal:
                     raise Fail
-                elif size is None or size > self.__state.offset:
-                    subtext = self.__text[0:self.__state.offset]
+                elif size is None or size > self.__state._offset:
+                    subtext = self.__text[0:self.__state._offset]
                     previous = None
                     search = True
                 else:
-                    offset = self.__state.offset - size
-                    subtext = self.__text[offset:self.__state.offset]
+                    offset = self.__state._offset - size
+                    subtext = self.__text[offset:self.__state._offset]
                     if offset:
                         previous = self.__text[offset-1:offset]
                     else:
@@ -437,7 +366,7 @@ class BacktrackingEngine(BaseMatchEngine):
             (match, clone) = self.__run(alternate, clone, search=search)
             success = match == equal
             if not (reads or mutates):
-                self.__lookaheads[alternate][self.__state.offset] = success
+                self.__lookaheads[alternate][self.__state._offset] = success
         # if lookahead succeeded, continue
         if success:
             if mutates:
@@ -481,41 +410,20 @@ class BacktrackingEngine(BaseMatchEngine):
     
     def word_boundary(self, inverted):
         self.ticks += 1
-        previous = self.__state.previous
-        current = self.__state.text[0:1]
-        flags = self._parser_state.flags
-        word = self._parser_state.alphabet.word
-        boundary = word(current, flags) != word(previous, flags)
-        if boundary != inverted:
-            return False
-        else:
-            raise Fail
+        return self.__state.word_boundary(inverted)
 
     def digit(self, inverted):
         self.ticks += 1
-        if self._parser_state.alphabet.digit(
-                self.__state.text[0:1], self._parser_state.flags) != inverted:
-            self.__state = self.__state.dot()
-            return False
-        raise Fail
-    
+        return self.__state.digit(inverted) and self.__state._advance()
+
     def space(self, inverted):
         self.ticks += 1
-        if self._parser_state.alphabet.space(
-                self.__state.text[0:1], self._parser_state.flags) != inverted:
-            self.__state = self.__state.dot()
-            return False
-        raise Fail
-    
+        return self.__state.space(inverted) and self.__state._advance()
+
     def word(self, inverted):
         self.ticks += 1
-        if self._parser_state.alphabet.word(
-                self.__state.text[0:1], self._parser_state.flags) != inverted:
-            self.__state = self.__state.dot()
-            return False
-        raise Fail
+        return self.__state.word(inverted) and self.__state._advance()
 
     def checkpoint(self, token):
         self.ticks += 1
-        self.__state = self.__state.checkpoint(token)
-        return False
+        return self.__state.checkpoint(token)

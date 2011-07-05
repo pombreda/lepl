@@ -139,8 +139,18 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
             groups.end_group(0, self._offset)
             return groups
 
-    def _string_advance(self, next, length):
-        self._states.append((next, self._group_start, length))
+    def string(self, next, text):
+        length = len(text)
+        if length == 1:
+            if self._current == text[0:1]:
+                return True
+        else:
+            try:
+                (advanced, _) = s_next(self._stream, length)
+                if advanced == text:
+                    self._states.append((next, self._group_start, length))
+            except StopIteration:
+                pass
         raise Fail
 
     #noinspection PyUnusedLocal
