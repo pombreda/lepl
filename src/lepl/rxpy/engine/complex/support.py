@@ -2,6 +2,7 @@
 
 
 from lepl.rxpy.engine.support import Fail, Groups
+from lepl.stream.core import s_next
 
 
 class State(object):
@@ -10,10 +11,10 @@ class State(object):
     new objects (copy on write for slowly changing structures).
     '''
     
-    def __init__(self, index, text, groups=None, loops=None, checks=None, 
+    def __init__(self, index, stream, groups=None, loops=None, checks=None,
                  last_number=None, hash=0):
         self.__index = index
-        self.__text = text
+        self.__stream = stream
         # map from index to (text, start, end) where text and end may be None
         # - copy on write
         self.__groups = groups if groups else {}
@@ -28,16 +29,16 @@ class State(object):
         # never cloned on non-zero
         self.__skip = 0
         
-    def clone(self, index=None, prefix=None):
+    def clone(self, index=None, stream=None):
         hash = self.__hash
         if index is not None:
             hash = hash ^ self.__index ^ index
         else:
             index = self.index
-        if prefix is None:
-            prefix = self.__text
+        if stream is None:
+            stream = self.__stream
         # don't clone contents - they are copy on write
-        return State(index, prefix, groups=self.__groups, 
+        return State(index, stream, groups=self.__groups,
                      loops=self.__loops, checks=self.__checks, 
                      last_number=self.__last_number, hash=hash)
         
@@ -79,7 +80,10 @@ class State(object):
         (_text, start, end) = old_triple
         # remove old value from hash
         if end is not None: self.__hash ^= end << 24
-        new_triple = (self.__text[start:offset], start, offset)
+        # TODO - maybe this should be postponed
+        (_, stream) = s_next(self.__stream, start)
+        (text, _) = s_next(stream, offset - start)
+        new_triple = (text, start, offset)
         # add new value to hash
         self.__hash ^= offset << 24
         # and store
@@ -122,14 +126,14 @@ class State(object):
         self.__hash ^= hash(next)
         return self
     
-    def increment_loop(self, index):
+    def increment_inner_loop(self):
         # copy on write
         loops = list(self.__loops)
         self.__loops = loops
         prev = loops.pop()
         # drop from hash (added back later on increment)
         self.__hash ^= hash(prev)
-        (_index, count) = prev
+        (index, count) = prev
         # increment
         count += 1
         next = (index, count)
@@ -138,7 +142,7 @@ class State(object):
         self.__hash ^= hash(next)
         return self
     
-    def drop_loop(self, index):
+    def drop_inner_loop(self):
         # copy on write
         loops = list(self.__loops)
         self.__loops = loops
@@ -159,15 +163,15 @@ class State(object):
     def index(self):
         return self.__index
     
-    def advance(self, index, text=None):
+    def advance(self, index, stream=None):
         self.__hash ^= index ^ self.__index
         self.__index = index
-        if text is not None:
-            self.__text = text
+        if stream is not None:
+            self.__stream = stream
         return self
 
     def groups(self, group_state):
-        return Groups(group_state, self.__text, self.__groups, None, 
+        return Groups(group_state, self.__stream, self.__groups, None,
                       self.__last_number)
         
     def group(self, number):

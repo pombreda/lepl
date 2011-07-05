@@ -9,7 +9,6 @@ from functools import reduce
 
 from lepl.rxpy.parser.support import GroupState
 from lepl.stream.core import s_next, s_empty, s_len
-from lepl.support.lib import unimplemented
 
 
 class Fail(Exception):

@@ -1,9 +1,8 @@
 #LICENCE
 
 '''
-This is an "optimized" (but largely unmeasured) engine that provides all
-functionality while staying as close to Thompson's approach as possible
-(DFA incrementally constructed, like re2).
+This engine provides all functionality while staying as close to
+Thompson's approach as possible (DFA incrementally constructed).
 
 It can be used standalone, but is intended to be used as a fallback from
 the simple engine, when that fails on an unsupported operation. 
@@ -12,11 +11,12 @@ the simple engine, when that fails on an unsupported operation.
 
 from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.engine.complex.support import State
-from lepl.rxpy.engine.support import Match, Fail, Groups
+from lepl.rxpy.engine.support import Match, Fail, Groups, StreamTargetMixin
 from lepl.rxpy.graph.base_compilable import compile
+from lepl.stream.core import s_next, s_stream
 
 
-class ComplexEngine(BaseMatchEngine):
+class ComplexEngine(StreamTargetMixin, BaseMatchEngine):
     
     def __init__(self, parser_state, graph):
         super(ComplexEngine, self).__init__(parser_state, graph)
@@ -24,40 +24,29 @@ class ComplexEngine(BaseMatchEngine):
         self.__stack = []
         
     def push(self):
-        self.__stack.append((self._offset, self._text, self._search,
+        self.__stack.append((self._offset, self._stream, self._search,
                              self._current, self._previous, self._states, 
                              self._state, self._lookaheads))
         
     def pop(self):
-        (self._offset, self._text, self._search,
+        (self._offset, self._stream, self._search,
          self._current, self._previous, self._states, 
          self._state, self._lookaheads) = self.__stack.pop()
         
-    def _set_offset(self, offset):
-        self._offset = offset
-        if 0 <= self._offset < len(self._text):
-            self._current = self._text[self._offset:self._offset+1]
-        else:
-            self._current = None
-        if 0 <= self._offset-1 < len(self._text):
-            self._previous = self._text[self._offset-1:self._offset]
-        else:
-            self._previous = None
+    def run(self, stream, pos=0, search=False):
+        self._initial_stream = stream
+        return self._run_from(State(0, stream), stream, pos, search)
         
-    def run(self, text, pos=0, search=False):
-        return self._run_from(State(0, text), text, pos, search)
-        
-    def _run_from(self, start_state, text, pos, search):
-        start_state.start_group(0, pos)
-        self._text = text
-        self._set_offset(pos)
+    def _run_from(self, start_state, stream, delta, search):
+        start_state.start_group(0, delta)
+        self._reset(0, stream, None)
+        self._advance(delta)
         self._search = search
-        
         self._lookaheads = (self._offset, {})
         self._states = [start_state.clone()]
         
         try:
-            while self._states and self._offset <= len(self._text):
+            while self._states and self._excess < 2:
                 
                 known_next = set()
                 next_states = []
@@ -101,12 +90,12 @@ class ComplexEngine(BaseMatchEngine):
                             
                         # otherwise, we can jump directly
                         else:
-                            self._offset += skip
+                            self._advance(skip)
                             state.skip = 0
                             next_states.append(state)
                     
                 # move to next character
-                self._set_offset(self._offset + 1)
+                self._advance()
                 self._states = next_states
                
                 # add current position as search if necessary
@@ -132,20 +121,16 @@ class ComplexEngine(BaseMatchEngine):
         if length == 1:
             if self._current == text[0:1]:
                 return True
-            else:
-                raise Fail
         else:
-            if self._text[self._offset:self._offset+length] == text:
-                self._state.skip = length
-                self._states.append(self._state.advance(next))
-            raise Fail
-        
-    def character(self, charset):
-        if self._current is not None and self._current in charset:
-            return True
-        else:
-            raise Fail
-    
+            try:
+                (advanced, _) = s_next(self._stream, length)
+                if advanced == text:
+                    self._state.skip = length
+                    self._states.append(self._state.advance(next))
+            except StopIteration:
+                pass
+        raise Fail
+
     def start_group(self, number):
         self._state.start_group(number, self._offset)
         return False
@@ -161,62 +146,6 @@ class ComplexEngine(BaseMatchEngine):
     def no_match(self):
         raise Fail
 
-    def dot(self, multiline):
-        if self._current is not None and (multiline or self._current != '\n'):
-            return True
-        else:
-            raise Fail
-    
-    def start_of_line(self, multiline):
-        if self._offset == 0 or (multiline and self._previous == '\n'):
-            return False
-        else:
-            raise Fail
-    
-    def end_of_line(self, multiline):
-        current_str = self._parser_state.alphabet.letter_to_str(self._current)
-        if ((len(self._text) == self._offset or
-                    (multiline and current_str == '\\n'))
-                or (current_str == '\\n' and
-                        not self._text[self._offset+1:])):
-            return False
-        else:
-            raise Fail
-    
-    def word_boundary(self, inverted):
-        word = self._parser_state.alphabet.word
-        flags = self._parser_state.flags
-        boundary = word(self._current, flags) != word(self._previous, flags)
-        if boundary != inverted:
-            return False
-        else:
-            raise Fail
-
-    def digit(self, inverted):
-        # current here tests whether we have finished
-        if self._current is not None and \
-                self._parser_state.alphabet.digit(
-                    self._current, self._parser_state.flags) != inverted:
-            return True
-        else:
-            raise Fail
-    
-    def space(self, inverted):
-        if self._current is not None and \
-                self._parser_state.alphabet.space(
-                    self._current, self._parser_state.flags) != inverted:
-            return True
-        else:
-            raise Fail
-        
-    def word(self, inverted):
-        if self._current is not None and \
-                self._parser_state.alphabet.word(
-                    self._current, self._parser_state.flags) != inverted:
-            return True
-        else:
-            raise Fail
-        
     def checkpoint(self, id):
         self._state.check(self._offset, id)
         
@@ -253,7 +182,10 @@ class ComplexEngine(BaseMatchEngine):
         if self._lookaheads[0] != self._offset:
             self._lookaheads = (self._offset, {})
         lookaheads = self._lookaheads[1]
-        
+
+        # approach here different from simple engine as not all
+        # results can be cached
+        match = False
         if next[1] in lookaheads:
             success = lookaheads[next[1]]
         else:
@@ -262,28 +194,26 @@ class ComplexEngine(BaseMatchEngine):
             size = None if (reads and mutates) else \
                 length(self._state.groups(self._parser_state.groups))
             if forwards:
-                prefix = self._text
+                stream = self._initial_stream
                 offset = self._offset
             else:
-                prefix = self._text[0:self._offset]
+                (text, _) = s_next(self._initial_stream, self._offset)
+                stream = s_stream(self._initial_stream, text)
                 if size is None:
                     offset = 0
                     search = True
                 else:
                     offset = self._offset - size
-                    
-            new_state = self._state.clone(next[1], prefix=prefix)
-            
-            if offset < 0:
-                match = Groups()
-            else:
+
+            if offset >= 0:
+                new_state = self._state.clone(next[1], stream=stream)
                 self.push()
                 try:
-                    match = self._run_from(new_state, prefix, offset, search)
+                    match = self._run_from(new_state, stream, offset, search)
                     new_state = self._state
                 finally:
                     self.pop()
-                
+
             success = bool(match) == equal
             if not (mutates or reads):
                 lookaheads[next[1]] = success
@@ -325,24 +255,24 @@ class ComplexEngine(BaseMatchEngine):
             count += 1
             if count < begin:
                 # increment and loop
-                state.increment_loop(loop)
+                state.increment_inner_loop()
                 return loop
             elif end is None or count < end:
                 # can both increment and exit
                 if lazy:
                     # increment on stack
-                    self._states.append(state.clone(loop).increment_loop(loop))
+                    self._states.append(state.clone(loop).increment_inner_loop())
                     # exit now
-                    state.drop_loop(loop)
+                    state.drop_inner_loop()
                     return next[0]
                 else:
                     # exit on stack
-                    self._states.append(state.clone(next[0]).drop_loop(loop))
+                    self._states.append(state.clone(next[0]).drop_inner_loop())
                     # new loop now
-                    state.increment_loop(loop)
+                    state.increment_inner_loop()
                     return loop
             else:
                 # equal to end so exit
-                state.drop_loop(loop)
+                state.drop_inner_loop()
                 return next[0]
     
