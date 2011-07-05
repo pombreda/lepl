@@ -212,6 +212,9 @@ class StreamTargetMixin(object):
         - `final` is True if the current character is the last
         - `excess` is the amount by which we advanced past the end
         '''
+
+        # TODO - this mess must be a big limit on performance
+
         if delta:
             if delta == 1:
                 self._previous = self._current

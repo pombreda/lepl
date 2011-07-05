@@ -12,7 +12,7 @@ for example).
 from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.engine.support import Groups, Loops, Fail, Match, StreamTargetMixin
 from lepl.rxpy.graph.base_compilable import compile
-from lepl.stream.core import s_next
+from lepl.stream.core import s_next, s_stream
 
 
 class State(StreamTargetMixin):
@@ -52,19 +52,21 @@ class State(StreamTargetMixin):
                      previous=previous, offset=offset,
                      loops=self.__loops.clone(), checkpoints=checkpoints)
         
-    def advance(self):
-        '''
-        Used in search to increment start point.
-        '''
+    def search_forwards(self):
         if self._current is not None:
             self._advance()
             self.__groups.start_group(0, self._offset)
             return True
         else:
             return False
+
+    def _advance(self, delta=1):
+        if delta:
+            self.__checkpoints = None
+        return super(State, self)._advance(delta)
         
-    def increment(self, node):
-        return self.__loops.increment(node)
+    def increment(self, index):
+        return self.__loops.increment(index)
 
     # below are methods that correspond roughly to opcodes in the graph.
     # these are called from the engine.
@@ -93,6 +95,7 @@ class State(StreamTargetMixin):
 
     def drop(self, node):
         self.__loops.drop(node)
+        return self
 
     def similar(self, other):
         '''
@@ -254,7 +257,7 @@ class BacktrackingEngine(BaseMatchEngine):
                                 break
                     # nudge search forwards and try again, or exit
                     if search:
-                        if save_state.advance():
+                        if save_state.search_forwards():
                             (self.__state, index) = (save_state, save_index)
                         else:
                             break
@@ -299,8 +302,7 @@ class BacktrackingEngine(BaseMatchEngine):
             if text is None:
                 raise Fail
             else:
-                self.__state.string(text)
-                return False
+                return self.__state.string(next, text)
         except KeyError:
             raise Fail
 
@@ -347,22 +349,20 @@ class BacktrackingEngine(BaseMatchEngine):
             size = None if (reads and mutates) else length(self.__state.groups)
             search = False
             if forwards:
-                clone = State(self.__state.text, self.__state.groups.clone())
+                clone = State(self.__state._parser_state, self.__state._stream,
+                              self.__state.groups.clone())
             else:
                 if size is not None and size > self.__state._offset and equal:
                     raise Fail
-                elif size is None or size > self.__state._offset:
-                    subtext = self.__text[0:self.__state._offset]
-                    previous = None
+                (text, _) = s_next(self.__stream, self.__state._offset)
+                stream = s_stream(self.__stream, text)
+                if size is None or size > self.__state._offset:
                     search = True
+                    pos = None
                 else:
-                    offset = self.__state._offset - size
-                    subtext = self.__text[offset:self.__state._offset]
-                    if offset:
-                        previous = self.__text[offset-1:offset]
-                    else:
-                        previous = None
-                clone = State(subtext, self.__state.groups.clone(), previous=previous)
+                    pos = self.__state._offset - size
+                clone = State(self.__state._parser_state, stream,
+                              self.__state.groups.clone(), pos=pos)
             (match, clone) = self.__run(alternate, clone, search=search)
             success = match == equal
             if not (reads or mutates):
@@ -388,7 +388,7 @@ class BacktrackingEngine(BaseMatchEngine):
             # with another loop, unless we've exceeded the count or there's
             # no text left
             # this is well-behaved with stack space
-            if (end is None and self.__state.text) \
+            if (end is None and self.__state._current is not None) \
                     or (end is not None and count < end):
                 self.__stack.push(loop, self.__state.clone())
             if end is None or count <= end:
