@@ -36,15 +36,15 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
          self._group_start, self._checkpoints, 
          self._lookaheads) = self.__stack.pop()
         
-    def run(self, stream, pos=0, search=False):
+    def run(self, stream, pos=0, search=False, fail_on_groups=True):
 
         self._initial_stream = stream
 
         # TODO - add explicit search if expression starts with constant
         
-        self._group_defined = False
+        self.group_defined = False
         result = self._run_from(0, stream, pos, search)
-        if self._group_defined:
+        if self.group_defined and fail_on_groups:
             raise UnsupportedOperation('groups')
         else:
             return result
@@ -62,7 +62,7 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
         self._states = [(start_index, self._offset, 0)]
         
         try:
-            # TODO - looks like we may not need excess
+
             while self._states and self._excess < 2:
 
                 known_next = set()
@@ -159,7 +159,7 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
 
     #noinspection PyUnusedLocal
     def end_group(self, number):
-        self._group_defined = True
+        self.group_defined = True
         return False
     
     def match(self):

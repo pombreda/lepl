@@ -1,5 +1,6 @@
 #LICENCE
-
+from lepl.matchers.derived import Real
+from lepl.regexp.rewriters import CompileRegexp
 
 from lepl.rxpy.parser.pattern import EmptyError
 from lepl.rxpy.parser.support import ParserState
@@ -340,3 +341,16 @@ class EngineTest(BaseTest):
         assert self.engine(self.parse(r'^1?$|^(11+?)\1+$'), 4*'1')
         assert self.engine(self.parse(r'^1?$|^(11+?)\1+$'), 100*'1')
         assert not self.engine(self.parse(r'^1?$|^(11+?)\1+$'), 101*'1')
+
+    def test_real(self):
+        compiler = CompileRegexp()
+        regexp = str(compiler(Real()).regexp)
+        parsed = self.parse(regexp)
+        assert self.engine(parsed, '1')
+        assert self.engine(parsed, '1.2')
+        assert self.engine(parsed, '1.2e3')
+        assert self.engine(parsed, '-1')
+        assert self.engine(parsed, '-1.2')
+        assert self.engine(parsed, '-1.2e3')
+        assert self.engine(parsed, '1.2e-3')
+        assert self.engine(parsed, '-1.2e-3')

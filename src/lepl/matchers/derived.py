@@ -501,7 +501,7 @@ def SignedEReal(decimal='.', exponent='eE'):
     
 Real = SignedEReal
 '''
-The default float is signed with exponents.
+The default real is signed with exponents.
 '''
 
 _FLOAT_WARN = '''WARNING: The definition of the Float matchers changed in Lepl 4.4.0

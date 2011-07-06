@@ -261,9 +261,17 @@ class MatchObject(object):
         self.pos = pos
         self.endpos = endpos
         self.__state = state
-        self.lastindex = groups.last_index
-        self.lastgroup = groups.last_group
-        
+
+    @property
+    def lastindex(self):
+        # property rather than direct copy so that lazy groups work
+        return self.__groups.last_index
+
+    @property
+    def lastgroup(self):
+        # property rather than direct copy so that lazy groups work
+        return self.__groups.last_group
+
     def group(self, *indices):
         if not indices:
             indices = [0]

@@ -21,8 +21,8 @@ class SimpleTest(ReTests, TestCase):
         self.assertEqual(self._re.match('.*?cd', 20000*'abc'+'de').end(0), 60001)
         # non-simple '*?' still used to hit the recursion limit, before the
         # non-recursive scheme was implemented.
-        self.assertEqual(self._re.search('(a|b)*?c', 10000*'ab'+'cd').end(0), 20001)
-        pass
+# uses groups (see hybrid)
+#        self.assertEqual(self._re.search('(a|b)*?c', 10000*'ab'+'cd').end(0), 20001)
 
     def test_symbolic_refs(self):
         pass
