@@ -197,50 +197,94 @@ class StreamTargetMixin(object):
         self._stream = stream
         self._offset = offset
         self._excess = 0
-        self._advance(0)
+        try:
+            (self._current, self._next_stream) = s_next(stream)
+        except StopIteration:
+            self._current = None
+            self._next_stream = None
+            self._excess = 1
 
     def _advance(self, delta=1):
         '''
         Move forwards in the stream.
 
+        I've tried to optimise for the common (delta=1) case.
+
         The following conventions are followed:
         - `offset` is the offset from the initial input
         - `stream` is the stream starting at the current location
+        - `next_stream` is the stream after current
         - `current` is the character at the current location
         - `previous` is the character just before the current location
-        - `final` is True if the current character is the last
         - `excess` is the amount by which we advanced past the end
+
+        If `excess` is set, streams should not be used.
         '''
-
-        # TODO - this mess must be a big limit on performance
-
-        if delta:
-            if delta == 1:
-                self._previous = self._current
-            else:
-                self._previous = None
-            self._offset += delta
-
-        old_stream = self._stream
-        self._current = None
-        self._final = False
-        try:
-            (advanced, self._stream) = s_next(old_stream, delta)
-            if advanced:
-                self._previous = advanced[-1:]
+        assert delta >= 0
+        self._offset += delta
+        if self._excess:
+            self._excess += delta
+            self._previous = None
+        elif delta == 1:
+            self._stream = self._next_stream
+            self._previous = self._current
             try:
-                (self._current, next) = s_next(self._stream)
-                self._final = s_empty(next)
+                (self._current, self._next_stream) = s_next(self._next_stream)
             except StopIteration:
+                self._current = None
+                self._next_stream = None
                 self._excess = 1
-        except StopIteration:
-            if old_stream:
+        elif delta:
+            old_stream = self._stream
+            try:
+                (advanced, self._stream) = s_next(old_stream, delta)
+                self._previous = advanced[-1:]
+                try:
+                    (self._current, self._next_stream) = s_next(self._stream)
+                except StopIteration:
+                    self._current = None
+                    self._next_stream = None
+                    self._excess = 1
+            except StopIteration:
+                self._stream = None
+                self._next_stream = None
+                self._current = None
+                self._previous = None
                 self._excess = delta - s_len(old_stream) + 1
-            else:
-                self._excess += delta
-            self._stream = None
-        # this allows the method to be chained with "and"
+                assert self._excess
         return True
+
+#            if self._excess:
+#                self._excess += delta
+#            else:
+#                old_stream = self._stream
+#                try:
+#                    (advanced, self._stream) = s_next(old_stream, delta)
+#                    self._previous = advanced[-1:]
+#                    try:
+#                        (self._current, _) = s_next(self._stream)
+#                    except StopIteration:
+#                        self._current = None
+#                except StopIteration:
+#                    self._current = None
+#                    self._previous = None
+#                    self._excess = delta - s_len(old_stream) + 1
+#        # this allows the method to be chained with "and"
+#        return True
+
+    @property
+    def _final(self):
+        '''Current character is last?'''
+        if not self._excess:
+            try:
+                (_, stream) = s_next(self._stream)
+                try:
+                    s_next(stream)
+                except StopIteration:
+                    return True
+            except StopIteration:
+                pass
+        return False
 
     def character(self, charset):
         if self._current is not None and self._current in charset:

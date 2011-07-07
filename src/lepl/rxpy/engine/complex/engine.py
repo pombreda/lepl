@@ -23,16 +23,6 @@ class ComplexEngine(StreamTargetMixin, BaseMatchEngine):
         self._program = compile(graph, self)
         self.__stack = []
         
-    def push(self):
-        self.__stack.append((self._offset, self._stream, self._search,
-                             self._current, self._previous, self._states, 
-                             self._state, self._lookaheads))
-        
-    def pop(self):
-        (self._offset, self._stream, self._search,
-         self._current, self._previous, self._states, 
-         self._state, self._lookaheads) = self.__stack.pop()
-        
     def run(self, stream, pos=0, search=False):
         self._initial_stream = stream
         return self._run_from(State(0, stream), stream, pos, search)
@@ -175,6 +165,23 @@ class ComplexEngine(StreamTargetMixin, BaseMatchEngine):
         # start from new states
         raise Fail
 
+    def _push(self):
+        '''
+        Save current state for lookahead.
+        '''
+        self.__stack.append((self._offset, self._excess, self._stream,
+                             self._next_stream, self._current, self._previous,
+                             self._state, self._states, self._search,
+                             self._lookaheads))
+
+    def _pop(self):
+        '''
+        Restore current state after lookahead.
+        '''
+        (self._offset, self._excess, self._stream, self._next_stream,
+         self._current, self._previous, self._state, self._states,
+         self._search, self._lookaheads) = self.__stack.pop()
+
     def lookahead(self, next, equal, forwards, mutates, reads, length):
         # todo - could also cache things that read groups by state
         
@@ -207,12 +214,12 @@ class ComplexEngine(StreamTargetMixin, BaseMatchEngine):
 
             if offset >= 0:
                 new_state = self._state.clone(next[1], stream=stream)
-                self.push()
+                self._push()
                 try:
                     match = self._run_from(new_state, stream, offset, search)
                     new_state = self._state
                 finally:
-                    self.pop()
+                    self._pop()
 
             success = bool(match) == equal
             if not (mutates or reads):

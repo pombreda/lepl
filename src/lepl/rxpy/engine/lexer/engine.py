@@ -3,10 +3,10 @@
 '''
 An engine that is based on the simple engine but which assumes:
  - the pattern matched will be a series of alternative groups
+ - no other groups defined
  - no lookback
- - no search
-Plus all the assumptions in the simple engine (eg, no group
-references).
+ - no search (patterns anchored at start)
+ - no conditional (on groups)
 
 It then returns sufficient group information to indicate which
 group matched.  This allows use within a lexer that has ordered tokens.
@@ -36,7 +36,7 @@ class LexerEngine(StreamTargetMixin, BaseMatchEngine):
         self._initial_stream = stream
         self._reset(0, stream, None)
         self._checkpoints = {}
-        self._last_group = None
+        self._last_group = 0 # default for no group
 
         self._states = [(0, 0)]
 
@@ -60,7 +60,7 @@ class LexerEngine(StreamTargetMixin, BaseMatchEngine):
                                 next_states.append((index, 0))
                                 known_next.add(index)
 
-                        elif skip == -1:
+                        elif skip < 0:
                             raise Match
 
                         else:
@@ -82,12 +82,14 @@ class LexerEngine(StreamTargetMixin, BaseMatchEngine):
 
                     except Match:
                         # no groups starting earlier?
+                        if skip >= 0:
+                            skip = self._last_group
                         if not next_states:
                             raise
                         # some other, pending, earlier starting, state may
                         # still give a match
                         if index not in known_next:
-                            next_states.append((index, self._last_group))
+                            next_states.append((index, skip))
                             known_next.add(index)
                         # but we can discard anything that starts later
                         self._states = []
@@ -131,6 +133,8 @@ class LexerEngine(StreamTargetMixin, BaseMatchEngine):
 
     #noinspection PyUnusedLocal
     def start_group(self, number):
+        if self._offset:
+            raise UnsupportedOperation('embedded group')
         return False
 
     #noinspection PyUnusedLocal

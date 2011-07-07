@@ -181,21 +181,18 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
         '''
         Save current state for lookahead.
         '''
-        # group_defined purposefully excluded
         self.__stack.append((self._offset, self._excess, self._stream,
-                             self._search, self._current, self._previous,
-                             self._states, self._start,
+                             self._next_stream, self._current, self._previous,
+                             self._states, self._start, self._search,
                              self._checkpoints, self._lookaheads))
 
     def _pop(self):
         '''
         Restore current state after lookahead.
         '''
-        # group_defined purposefully excluded
-        (self._offset, self._excess, self._stream, self._search,
-         self._current, self._previous, self._states,
-         self._start, self._checkpoints,
-         self._lookaheads) = self.__stack.pop()
+        (self._offset, self._excess, self._stream, self._next_stream,
+         self._current, self._previous, self._states, self._start,
+         self._search, self._checkpoints, self._lookaheads) = self.__stack.pop()
 
     def lookahead(self, next, equal, forwards, mutates, reads, length):
 
@@ -227,7 +224,10 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
                     else:
                         pos = self._offset - size
                         search = False
-                result = bool(self._run_from(next[1], stream, pos, search)) == equal
+                if pos >= 0:
+                    result = bool(self._run_from(next[1], stream, pos, search)) == equal
+                else:
+                    result = not equal
             finally:
                 self._pop()
             lookaheads[next[1]] = result
