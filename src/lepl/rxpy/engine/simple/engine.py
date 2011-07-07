@@ -2,8 +2,8 @@
 
 '''
 An engine with a simple compiled transition table that does not support 
-groups or stateful loops (so state is simply the current offset in the table
-plus the earliest start index and a matched flag).
+groups or stateful loops (so state is the current offset in the table,
+the start index, and a skip/matched flag).
 '''
 
 from lepl.rxpy.engine.base import BaseMatchEngine
@@ -21,20 +21,6 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
         super(SimpleEngine, self).__init__(parser_state, graph)
         self._program = compile(graph, self)
         self.__stack = []
-        
-    def push(self):
-        # group_defined purposefully excluded
-        self.__stack.append((self._offset, self._excess, self._stream,
-                             self._search, self._current, self._previous,
-                             self._states, self._group_start,
-                             self._checkpoints, self._lookaheads))
-        
-    def pop(self):
-        # group_defined purposefully excluded
-        (self._offset, self._excess, self._stream, self._search,
-         self._current, self._previous, self._states, 
-         self._group_start, self._checkpoints, 
-         self._lookaheads) = self.__stack.pop()
         
     def run(self, stream, pos=0, search=False, fail_on_groups=True):
 
@@ -71,14 +57,14 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
                 while self._states:
 
                     # unpack state
-                    (index, self._group_start, skip) = self._states.pop()
+                    (index, self._start, skip) = self._states.pop()
                     try:
 
                         if not skip:
                             # process the current character
                             index = self._program[index]()
                             if index not in known_next:
-                                next_states.append((index, self._group_start, 0))
+                                next_states.append((index, self._start, 0))
                                 known_next.add(index)
 
                         elif skip == -1:
@@ -89,14 +75,14 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
 
                             # if we have other states, or will add them via search
                             if search or next_states or self._states:
-                                next_states.append((index, self._group_start, skip))
-                                # block this same "future state"
-                                known_next.add((index, skip))
+                                if (index, skip) not in known_next:
+                                    next_states.append((index, self._start, skip))
+                                    known_next.add((index, skip))
 
                             # otherwise, we can jump directly
                             else:
                                 self._advance(skip)
-                                next_states.append((index, self._group_start, 0))
+                                next_states.append((index, self._start, 0))
 
                     except Fail:
                         pass
@@ -107,7 +93,7 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
                             raise
                         # some other, pending, earlier starting, state may
                         # still give a match
-                        next_states.append((index, self._group_start, -1))
+                        next_states.append((index, self._start, -1))
                         known_next.add(index)
                         # but we can discard anything that starts later
                         self._states = []
@@ -125,7 +111,7 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
 
             # pick first matched state, if any
             while self._states:
-                (index, self._group_start, skip) = self._states.pop()
+                (index, self._start, skip) = self._states.pop()
                 if skip == -1:
                     raise Match
 
@@ -135,7 +121,7 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
         except Match:
             groups = Groups(group_state=self._parser_state.groups,
                             stream=self._initial_stream)
-            groups.start_group(0, self._group_start)
+            groups.start_group(0, self._start)
             groups.end_group(0, self._offset)
             return groups
 
@@ -148,7 +134,7 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
             try:
                 (advanced, _) = s_next(self._stream, length)
                 if advanced == text:
-                    self._states.append((next, self._group_start, length))
+                    self._states.append((next, self._start, length))
             except StopIteration:
                 pass
         raise Fail
@@ -187,9 +173,29 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
 
     def split(self, next):
         for index in reversed(next):
-            self._states.append((index, self._group_start, False))
+            self._states.append((index, self._start, 0))
         # start from new states
         raise Fail
+
+    def _push(self):
+        '''
+        Save current state for lookahead.
+        '''
+        # group_defined purposefully excluded
+        self.__stack.append((self._offset, self._excess, self._stream,
+                             self._search, self._current, self._previous,
+                             self._states, self._start,
+                             self._checkpoints, self._lookaheads))
+
+    def _pop(self):
+        '''
+        Restore current state after lookahead.
+        '''
+        # group_defined purposefully excluded
+        (self._offset, self._excess, self._stream, self._search,
+         self._current, self._previous, self._states,
+         self._start, self._checkpoints,
+         self._lookaheads) = self.__stack.pop()
 
     def lookahead(self, next, equal, forwards, mutates, reads, length):
 
@@ -206,7 +212,7 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
             size = None if (reads and mutates) else length(None)
 
             # invoke simple engine and cache
-            self.push()
+            self._push()
             try:
                 if forwards:
                     stream = self._initial_stream
@@ -223,7 +229,7 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
                         search = False
                 result = bool(self._run_from(next[1], stream, pos, search)) == equal
             finally:
-                self.pop()
+                self._pop()
             lookaheads[next[1]] = result
 
         if lookaheads[next[1]]:
