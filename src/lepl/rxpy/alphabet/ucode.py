@@ -13,8 +13,15 @@ from lepl.rxpy.parser.support import ParserState
 from lepl.support.lib import basestring
 from lepl.rxpy.alphabet.bytes import ASCII_WORD
 
+try:
+    def u(x): return unicode(x)
+    def c(x): return unichr(x)
+except NameError:
+    def u(x): return x
+    def c(x): return chr(x)
 
-UNICODE_WORD = {'Ll', 'Lo', 'Lt', 'Lu', 'Mc', 'Me', 'Mn', 'Nd', 'Nl', 'No', 'Pc'}
+
+UNICODE_WORD = {u('Ll'), u('Lo'), u('Lt'), u('Lu'), u('Mc'), u('Me'), u('Mn'), u('Nd'), u('Nl'), u('No'), u('Pc')}
 
 
 class String(BaseAlphabet):
@@ -26,7 +33,7 @@ class String(BaseAlphabet):
     '''
     
     def __init__(self):
-        super(String, self).__init__(0, maxunicode, '\\')
+        super(String, self).__init__(0, maxunicode, u('\\'))
         
     def code_to_letter(self, code):
         '''
@@ -34,7 +41,7 @@ class String(BaseAlphabet):
         alphabet to a contiguous set of integers - to a character in the
         alphabet.
         '''
-        return chr(code)
+        return c(code)
     
     def letter_to_code(self, letter):
         '''
@@ -93,8 +100,8 @@ class String(BaseAlphabet):
     def space(self, char, flags):
         '''Test whether the character is a whitespace or not.'''
         # http://bugs.python.org/issue1693050
-        return char and (char in ' \t\n\r\f\v' or
-                         (flags & ParserState.UNICODE and category(char) == 'Z'))
+        return char and (char in u(' \t\n\r\f\v') or
+                         (flags & ParserState.UNICODE and category(char) == u('Z')))
 
     def word(self, char, flags):
         '''Test whether the character is a word character or not.'''

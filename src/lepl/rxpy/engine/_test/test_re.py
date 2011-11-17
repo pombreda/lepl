@@ -1,10 +1,16 @@
 
 # THIS FILE FROM PYTHON SOURCE - SEPARATE LICENCE
 
+from __future__ import print_function
 import sys, traceback
 from weakref import proxy
 
 from lepl.rxpy.engine._test.base import BaseTest
+
+try:
+    def u(x): return unicode(x)
+except NameError:
+    def u(x): return x
 
 # Misc tests from Tim Peters' self._re.doc
 

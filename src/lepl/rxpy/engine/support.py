@@ -251,26 +251,7 @@ class StreamTargetMixin(object):
                 self._current = None
                 self._previous = None
                 self._excess = delta - s_len(old_stream) + 1
-                assert self._excess
         return True
-
-#            if self._excess:
-#                self._excess += delta
-#            else:
-#                old_stream = self._stream
-#                try:
-#                    (advanced, self._stream) = s_next(old_stream, delta)
-#                    self._previous = advanced[-1:]
-#                    try:
-#                        (self._current, _) = s_next(self._stream)
-#                    except StopIteration:
-#                        self._current = None
-#                except StopIteration:
-#                    self._current = None
-#                    self._previous = None
-#                    self._excess = delta - s_len(old_stream) + 1
-#        # this allows the method to be chained with "and"
-#        return True
 
     @property
     def _final(self):

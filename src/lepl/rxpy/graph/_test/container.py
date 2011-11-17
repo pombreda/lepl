@@ -1,5 +1,5 @@
 #LICENCE
-from lepl.rxpy.alphabet.string import String
+from lepl.rxpy.alphabet.ucode import String
 
 from lepl.rxpy.graph._test.lib import GraphTest
 from lepl.rxpy.graph.base_graph import BaseLabelledNode

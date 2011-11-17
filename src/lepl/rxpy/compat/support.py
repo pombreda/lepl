@@ -8,10 +8,10 @@ Python API.
 from string import ascii_letters, digits
 
 from lepl.rxpy.alphabet.bytes import Bytes
-from lepl.rxpy.alphabet.string import String
+from lepl.rxpy.alphabet.ucode import String
 from lepl.rxpy.parser.pattern import parse_pattern, parse_groups
 from lepl.rxpy.engine.replace.engine import compile_replacement
-from lepl.rxpy.parser.support import ParserState
+from lepl.rxpy.parser.support import ParserState, default_alphabet
 from lepl.rxpy.support import RxpyError
 from lepl.support.lib import lmap
 
@@ -366,15 +366,6 @@ def split(pattern, text, maxsplit=0, flags=0,
 
 
 error = RxpyError
-
-
-def default_alphabet(alphabet, text):
-    if not alphabet:
-        if isinstance(text, bytes):
-            alphabet = Bytes()
-        else:
-            alphabet = String()
-    return alphabet
 
 
 def escape(text, alphabet=None):

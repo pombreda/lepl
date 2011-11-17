@@ -89,7 +89,7 @@ class ParserState(object):
         '''
         flags = self.__flags | self.__new_flags
         if not (flags & (ParserState.ASCII | ParserState.UNICODE)):
-            if isinstance(expression, bytes):
+            if is_bytes(expression):
                 flags |= ParserState.ASCII
             else:
                 flags |= ParserState.UNICODE
@@ -306,4 +306,19 @@ def parse(text, parser_state, class_, mutable_flags=True):
         raise RxpyError('Inconsistent flags')
     return parser_state, graph
 
+
+def is_bytes(text):
+    # experimented here with avoiding strings in 2.7, but was inconsistent
+    return isinstance(text, bytes)
+
+
+def default_alphabet(alphabet, text):
+    from lepl.rxpy.alphabet.bytes import Bytes
+    from lepl.rxpy.alphabet.ucode import String
+    if not alphabet:
+        if is_bytes(text):
+            alphabet = Bytes()
+        else:
+            alphabet = String()
+    return alphabet
 

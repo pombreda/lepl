@@ -7,7 +7,7 @@ from lepl.rxpy.engine._test.api import ReTest
 from lepl.rxpy.engine.lexer.engine import LexerEngine
 
 
-class SimpleReTest(ReTest, TestCase):
+class LexerReTest(ReTest, TestCase):
     
     def default_engine(self):
         return LexerEngine

@@ -12,6 +12,19 @@ from lepl.rxpy.parser.support import ParserState
 from lepl.rxpy.support import RxpyError
 from lepl.support.lib import fmt
 
+try:
+    # Python 2.7
+    byte_to_str = str
+    byte_to_int = ord
+    int_to_byte = chr
+    byte_to_bytes = bytes
+except NameError:
+    # Python 3
+    byte_to_str = chr
+    byte_to_int = lambda x: x
+    int_to_byte = lambda x: bytes([x])
+    byte_to_bytes = lambda x: bytes([x])
+
 
 ASCII_WORD = set(ascii_letters + digits + '_')
 
@@ -29,12 +42,12 @@ class Bytes(BaseAlphabet):
     def code_to_letter(self, code):
         if code < 0 or code > 255:
             raise ValueError(fmt('Byte out of range: {}', code))
-        return bytes([code])
+        return int_to_byte(code)
     
     def letter_to_code(self, char):
-        if len(char) != 1 or char[0] < 0 or char[0] > 255:
+        if len(char) != 1 or byte_to_int(char[0]) < 0 or byte_to_int(char[0]) > 255:
             raise ValueError(fmt('Byte out of range: {}', char))
-        return char[0]
+        return byte_to_int(char[0])
 
     def validate_expression(self, expression, flags):
         if not isinstance(expression, bytes):
@@ -47,13 +60,15 @@ class Bytes(BaseAlphabet):
             raise TypeError('Input for bytes alphabet must be bytes or array')
 
     def expression_to_letter(self, char):
-        return bytes([char])
+        return byte_to_bytes(char)
 
     def expression_to_str(self, char):
-        return chr(char) if char is not None else None
+        # in 2.7 this receives a character, in 3 a byte (integer)
+        return byte_to_str(char) if char is not None else None
     
     def letter_to_str(self, letter):
-        return chr(letter[0])
+        if letter is None: return letter
+        return byte_to_str(letter[0])
 
     def join(self, *strings):
         '''
@@ -78,16 +93,16 @@ class Bytes(BaseAlphabet):
         '''Test whether the character is a word character or not.'''
         if flags & ParserState.UNICODE:
             raise ValueError('Cannot use UNICODE flag with bytes')
-        return char and chr(char[0]) in ASCII_WORD
+        return char and byte_to_str(char[0]) in ASCII_WORD
     
     def expression_to_charset(self, char, flags):
         from lepl.rxpy.parser.support import ParserState
         if flags & ParserState.UNICODE:
             raise ValueError('Cannot use UNICODE flag with bytes')
         # restrict case conversion to 7bit values
-        if flags & ParserState.IGNORECASE and char < 128:
-            lo = chr(char).lower().encode('ascii')
-            hi = chr(char).upper()
+        if flags & ParserState.IGNORECASE and byte_to_int(char) < 128:
+            lo = byte_to_str(char).lower()
+            hi = byte_to_str(char).upper()
             if lo != hi:
                 return True, (lo, hi)
         return False, self.expression_to_letter(char)

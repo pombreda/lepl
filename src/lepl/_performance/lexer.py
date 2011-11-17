@@ -66,7 +66,7 @@ def lexer():
     # this lets us handle the ambiguity between subtraction and
     # negation which requires context (not available to the the lexer)
     # to resolve correctly.
-    number  = Token(UnsignedFloat())
+    number  = Token(UnsignedReal())
     name    = Token('[a-z]+')
     symbol  = Token('[^a-zA-Z0-9\\. ]')
     

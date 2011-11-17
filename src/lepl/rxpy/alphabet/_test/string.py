@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 
-from lepl.rxpy.alphabet.string import String
+from lepl.rxpy.alphabet.ucode import String
 from lepl.rxpy.graph.opcode import Character
 
 

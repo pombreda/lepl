@@ -2,7 +2,6 @@
 
 from subprocess import Popen, PIPE
 from unittest import TestCase
-from io import StringIO
 
 
 class GraphTest(TestCase):
@@ -14,10 +13,10 @@ class GraphTest(TestCase):
         if not ok:
             try:
                 print('target:\n' + target)
-                print(Popen(["graph-easy", "--as_ascii"], stdin=PIPE, stdout=PIPE)\
+                print(Popen(["graph-easy", "--as_ascii"], stdin=PIPE, stdout=PIPE)
                     .communicate(target.encode('utf8'))[0].decode('utf8'))
                 print('result:\n' + graph)
-                print(Popen(["graph-easy", "--as_ascii"], stdin=PIPE, stdout=PIPE)\
+                print(Popen(["graph-easy", "--as_ascii"], stdin=PIPE, stdout=PIPE)
                       .communicate(graph.encode('utf8'))[0].decode('utf8'))
             except Exception as e:
                 print(e)

@@ -27,11 +27,11 @@ Regular Expressions in Lepl
 Summary
 -------
 
-The Lepl parser includes a library for matching regular expressions that is
-"99% compatible" with the standard Python library (``re``).  It is implemented
-in Python with a modular architecture, making it flexible and extensible: it
-has three matching engines, supports arbitrary alphabets, and accepts multiple
-input formats.  This is a description of the implementation.
+The Lepl parser includes a library for matching regular expressions, called
+rxpy.  It is "99% compatible" with the standard Python regular expression
+library.  Rxpy's implementation, in native Python, is modular, flexible, and
+extensible: it has three matching engines, supports arbitrary alphabets, and
+accepts multiple input formats.
 
 :Author: Andrew Cooke (andrew@acooke.org)
 :Version: 0.0 / 2011-07-04 / ``Lepl`` v6.0
@@ -50,8 +50,8 @@ Architecture
 Alphabet
 ~~~~~~~~
 
-A regular expression describes how to match a sequence of *characters* taken
-from an *alphabet*.  Often,
+A regular expression describes a set of *sentences* (ie "a match") consisting
+of *characters* from an *alphabet*.  
 
 Regular expressions are defined for a particular alphabet.  An alphabet
 includes a set of acceptable characters and various related utilities

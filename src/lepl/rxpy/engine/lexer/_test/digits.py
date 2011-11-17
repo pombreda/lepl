@@ -6,7 +6,7 @@ from lepl.rxpy.engine._test.digits import DigitsTest
 from lepl.rxpy.engine.lexer.engine import LexerEngine
 
 
-class SimpleDigitsTest(DigitsTest, TestCase):
+class LexerDigitsTest(DigitsTest, TestCase):
     
     def default_engine(self):
         return LexerEngine
