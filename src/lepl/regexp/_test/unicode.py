@@ -1,4 +1,3 @@
-from lepl.stream.simple import StringHelper
 
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
@@ -38,6 +37,7 @@ from unittest import TestCase
 from lepl import RegexpError, DEFAULT_STREAM_FACTORY
 from lepl.regexp.core import NfaGraph, NfaToDfa, Compiler
 from lepl.regexp.unicode import UnicodeAlphabet
+from lepl.stream.simple import StringHelper
 from lepl.support.lib import fmt
 
 # pylint: disable-msg=C0103, C0111, C0301, R0201, R0904
@@ -85,7 +85,8 @@ class CharactersTest(TestCase):
         c = _test_parser('[,a-bq]')
         assert label('[,a-bq]') == str(c), str(c)
         c = _test_parser('[^a]')
-        assert r'(?P<label>[\x00-`b-\uffff])' == str(c), str(c)
+        assert (r'(?P<label>[\x00-`b-\uffff])' == str(c) or
+                r'(?P<label>[\x00-`b-\U0010ffff])' == str(c)), str(c)
    
     def test_merge(self):
         c = _test_parser('[a-ce-g]')
@@ -228,7 +229,10 @@ class DfaGraphTest(TestCase):
         nfa = NfaGraph(UNICODE)
         r.expression.build(nfa, nfa.new_node(), nfa.new_node())
         dfa = NfaToDfa(nfa, UNICODE).dfa
-        assert str(dfa) == desc, str(dfa)
+        try:
+            assert str(dfa) in desc, str(dfa)
+        except:
+            assert str(dfa) == desc, str(dfa)
 
     def test_dfa_no_empty(self):
         self.assert_dfa_graph('abc',
@@ -264,7 +268,8 @@ class DfaGraphTest(TestCase):
         '''
         #basicConfig(level=DEBUG)
         self.assert_dfa_graph('.*a?b', 
-            r'0: [0, 3, 4, 5] [\x00-ac-\uffff]->1,b->2; 1: [3, 4, 5] [\x00-ac-\uffff]->1,b->2; 2(label): [1, 2, 3, 4, 5] [\x00-ac-\uffff]->1,b->2')
+            (r'0: [0, 3, 4, 5] [\x00-ac-\uffff]->1,b->2; 1: [3, 4, 5] [\x00-ac-\uffff]->1,b->2; 2(label): [1, 2, 3, 4, 5] [\x00-ac-\uffff]->1,b->2',
+             r'0: [0, 3, 4, 5] [\x00-ac-\U0010ffff]->1,b->2; 1: [3, 4, 5] [\x00-ac-\U0010ffff]->1,b->2; 2(label): [1, 2, 3, 4, 5] [\x00-ac-\U0010ffff]->1,b->2'))
 
 class DfaTest(TestCase):
     

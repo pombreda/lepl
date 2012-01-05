@@ -43,5 +43,5 @@ import lepl.lexer.lines._test.left_bug
 import lepl.lexer.lines._test.offside
 import lepl.lexer.lines._test.pithon
 import lepl.lexer.lines._test.stream
-import lepl.lexer.lines._test.test
+import lepl.lexer.lines._test.text
 import lepl.lexer.lines._test.word_bug
