@@ -50,7 +50,7 @@ import lepl._test.wrong_regexp_bug
 
 # Number of tests if running in IDE with Python 3
 #TOTAL = 461 # Lepl 4
-TOTAL = 406
+TOTAL = 421
 NOT_DISTRIBUTED = 18 + 13
 NOT_3 = 22
 

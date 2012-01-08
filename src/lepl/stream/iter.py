@@ -161,6 +161,13 @@ def base_iterable_factory(state_to_line_stream, type_):
         def deepest(self):
             return self.max.get()
         
+        def new_max(self, state):
+            return (self.max, 
+                    (state, type(self)(id=self.id, factory=self.factory,
+                                       max=None, delta=self.delta,
+                                       global_kargs=self.global_kargs,
+                                       cache_level=self.cache_level)))
+    
     return BaseIterableHelper
 
 

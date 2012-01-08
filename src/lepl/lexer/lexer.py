@@ -135,9 +135,10 @@ class Lexer(NamespaceMixin, BaseMatcher):
             length = s_len(in_stream)
         except TypeError:
             length = None
-        token_stream = s_factory(in_stream).to_token(
+        factory = s_factory(in_stream)
+        token_stream = factory.to_token(
                             self._tokens(clean_stream, max), 
-                            id=s_id(in_stream), factory=s_factory(in_stream), 
+                            id=s_id(in_stream), factory=factory, 
                             max=s_max(in_stream), 
                             global_kargs=s_global_kargs(in_stream),
                             delta=s_delta(in_stream), len=length,

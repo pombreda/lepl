@@ -182,7 +182,8 @@ class BaseToken(OperatorMatcher, NoMemo):
         if self.id_ in tokens:
             if self.content is None:
                 # result contains all data (use s_next not s_line to set max)
-                (line, _) = s_next(line_stream, count=s_len(line_stream))
+                (line, _) = s_line(line_stream, True)
+                (line, _) = s_next(line_stream, count=len(line))
                 yield ([line], next_stream)
             else:
                 generator = self.content._match(line_stream)

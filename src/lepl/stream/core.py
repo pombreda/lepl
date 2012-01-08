@@ -218,7 +218,9 @@ class StreamHelper(_StreamHelper):
     
     def new_max(self, state):
         '''
-        Return a new stream, with a new helper, that uses a new max.
+        Return (old max, new stream), where new stream uses a new max.
+        This is used when we want to read from the stream without 
+        affecting the max (eg when looking ahead to generate tokens).
         '''
         raise NotImplementedError
     
