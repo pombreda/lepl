@@ -49,9 +49,8 @@ import lepl._test.wrong_depth_bug
 import lepl._test.wrong_regexp_bug
 
 # Number of tests if running in IDE with Python 3
-#TOTAL = 461 # Lepl 4
-TOTAL = 421
-NOT_DISTRIBUTED = 18 + 13
+TOTAL = 423
+NOT_DISTRIBUTED = 12
 NOT_3 = 22
 
 MODULES = [('apps', []), 
@@ -84,7 +83,7 @@ def all():
     print('\n\n\n----------------------------------------------------------'
           '------------\n')
     if version[0] == '2':
-        print('Expect 2-5 failures + 2 errors in Python 2.6: {0:d}, {1:d} '
+        print('Expect 2-5 failures + 2 errors in Python 2: {0:d}, {1:d} '
               .format(len(result.failures), len(result.errors)))
         assert 2 <= len(result.failures) <= 5, len(result.failures)
         assert 1 <= len(result.errors) <= 2, len(result.errors)

@@ -36,6 +36,7 @@ Tests for the lepl.stream package.
 
 # pylint: disable-msg=E0611
 #@PydevCodeAnalysisIgnore
+import lepl.stream._test.file
 import lepl.stream._test.iter
 import lepl.stream._test.simple
 

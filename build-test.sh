@@ -8,7 +8,7 @@ rm -fr test
 mkdir test
 #virtualenv --python=python2.7 --no-site-packages test
 #virtualenv --python=python2.6 --no-site-packages test
-virtualenv3 --python=python3.1 --no-site-packages test
+virtualenv --python=python3.2 --no-site-packages test
 
 cd test
 source bin/activate
