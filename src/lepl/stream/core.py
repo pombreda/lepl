@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -28,7 +27,7 @@
 # MPL or the LGPL License.
 
 '''
-Default implementations of the stream classes. 
+Core implementation of the stream classes.
 
 A stream is a tuple (state, helper), where `state` will vary from location to 
 location, while `helper` is an "unchanging" instance of `StreamHelper`, 
@@ -46,14 +45,13 @@ from lepl.support.lib import fmt
 
 #class _SimpleStream(metaclass=ABCMeta):
 # Python 2.6
-# pylint: disable-msg=W0105, C0103
 _StreamHelper = ABCMeta('_StreamHelper', (object, ), {})
 '''ABC used to identify streams.'''
 
 DUMMY_HELPER = object()
 '''Allows tests to specify an arbitrary helper in results.'''
     
-OFFSET, LINENO, CHAR = range(3)
+OFFSET, LINE_NO, CHAR = range(3)
 '''Indices into delta.'''
 
 
@@ -124,7 +122,7 @@ class StreamHelper(_StreamHelper):
         
         These values are always global:
         - filename: a filename, if available, or the type
-        - lineno: a 1-based line number for the current offset
+        - LINE_NO: a 1-based line number for the current offset
         - char: a 1-based character count within the line for the current offset
         - location: a summary of the current location
         '''
@@ -205,7 +203,7 @@ class StreamHelper(_StreamHelper):
     
     def delta(self, state):
         '''
-        Return the offset, lineno and char of the current point, relative to 
+        Return the offset, LINE_NO and char of the current point, relative to 
         the entire stream, as a tuple. 
         '''
         raise NotImplementedError

@@ -31,13 +31,6 @@
 Matchers that embody fundamental, common actions.
 '''
 
-# pylint: disable-msg=C0103,W0212
-# (consistent interfaces)
-# pylint: disable-msg=E1101
-# (_args create attributes)
-# pylint: disable-msg=R0901, R0904, W0142
-# lepl conventions
-
 from re import compile as compile_
 
 from lepl.stream.core import s_next, s_eq, s_empty, s_line
@@ -48,6 +41,7 @@ from lepl.matchers.support import OperatorMatcher, coerce_, \
 from lepl.support.lib import fmt
 
 
+#noinspection PyUnusedLocal
 @sequence_matcher
 def Never(support, stream):
     '''
@@ -86,7 +80,7 @@ def Any(restrict=None):
                     raise StopIteration
             except TypeError:
                 # it would be nice to make this an error, but for line aware
-                # parsing (and any other heterogenous input) it's legal
+                # parsing (and any other heterogeneous input) it's legal
                 if not warned[0]:
                     support._warn(fmt('Cannot restrict {0} with {1!r}',
                                           value, restrict))
@@ -106,6 +100,7 @@ def Literal(text):
     with some streams.
     '''
     delta = len(text)
+    #noinspection PyUnusedLocal
     def match(support, stream):
         '''
         Do the matching (return a generator that provides successive 
@@ -122,15 +117,17 @@ def Literal(text):
             pass
     return match
 
-       
+
+#noinspection PyUnusedLocal
 @function_matcher
 def Empty(support, stream):
     '''
     Match any stream, consumes no input, and returns nothing.
     '''
     return ([], stream)
- 
 
+
+#noinspection PyUnresolvedReferences
 class Lookahead(OperatorMatcher):
     '''
     Tests to see if the embedded matcher *could* match, but does not do the
@@ -192,7 +189,8 @@ def Regexp(pattern):
         The regular expression to match. 
     '''
     pattern = compile_(pattern)
-    
+
+    #noinspection PyUnusedLocal
     def match(support, stream):
         (line, _) = s_line(stream, True)
         match = pattern.match(line)
@@ -232,8 +230,6 @@ class Delayed(OperatorMatcher):
         '''
         self.assert_matcher()
         
-    # pylint: disable-msg=E0203, W0201
-    # _karg defined this in constructor
     def __iadd__(self, matcher):
         if self.matcher:
             raise ValueError('Delayed matcher already bound.')
@@ -241,8 +237,9 @@ class Delayed(OperatorMatcher):
             self.matcher = coerce_(matcher)
             self._match = matcher._match
             return self
-        
 
+
+#noinspection PyUnusedLocal
 @function_matcher
 def Eof(support, stream):
     '''
@@ -251,7 +248,7 @@ def Eof(support, stream):
     This is also aliased to Eos in lepl.derived.
     '''
     if s_empty(stream):
-        return ([], stream)
+        return [], stream
 
 
 @trampoline_matcher_factory(matcher=to(Literal))
@@ -259,6 +256,7 @@ def Consumer(matcher, consume=True):
     '''
     Only accept the match if it consumes data from the input
     '''
+    #noinspection PyUnusedLocal
     def match(support, stream_in):
         '''
         Do the match and test whether the stream has progressed.

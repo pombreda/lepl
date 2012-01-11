@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -74,8 +73,6 @@ def coerce(arg):
         return arg
     
 
-# pylint: disable-msg=R0903
-# it's not supposed to have public attributes, because it exposes contents
 class Node(LogMixin, ConstructorGraphNode):
     '''
     A base class for AST nodes.
@@ -216,7 +213,6 @@ class Node(LogMixin, ConstructorGraphNode):
             try:
                 sibling = next(siblings)
                 try:
-                    # pylint: disable-msg=W0212
                     if not child._recursively_eq(sibling):
                         return False
                 except AttributeError:
@@ -247,8 +243,6 @@ class Node(LogMixin, ConstructorGraphNode):
         return (args, {})
     
     
-# pylint: disable-msg=R0903
-# __ method
 class MutableNode(Node):
     '''
     Extend `Node` to allow children to be set.

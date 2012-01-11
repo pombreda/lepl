@@ -1,5 +1,3 @@
-from lepl.stream.core import DUMMY_HELPER
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -38,6 +36,7 @@ from unittest import TestCase
 
 from lepl import *
 from lepl.regexp.rewriters import CompileRegexp
+from lepl.stream.core import DUMMY_HELPER
 
 # pylint: disable-msg=C0103, C0111, C0301, C0324
 # (dude this is just a test)

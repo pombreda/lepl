@@ -52,9 +52,9 @@ from lepl.core.rewriters import NodeStats, Flatten, \
 
 class MagusTest(TestCase):
     '''
-    Based on the original bug report. 
+    Based on the original bug report.
     '''
-    
+
     def test_magus(self):
         '''
         This was failing.
@@ -81,13 +81,13 @@ class MagusTest(TestCase):
         dotted_name.config.auto_memoize().no_full_first_match()
         parser = dotted_name.get_parse_string()
         parser("1func()")
-        
+
 
 #class DelayedCloneTest(TestCase):
 #    '''
 #    The original problem for 3.2 was related to clones losing children.
 #    '''
-#    
+#
 #    def test_clone(self):
 #        '''
 #        Clone and check children.
@@ -95,19 +95,19 @@ class MagusTest(TestCase):
 #        a = Delayed()
 #        b = (a | 'c')
 #        a += b
-#        
+#
 #        def simple_clone(node):
 #            '''
 #            Clone the node.
 #            '''
 #            walker = ConstructorWalker(node, Matcher)
 #            return walker(DelayedClone())
-#            
+#
 #        self.assert_children(b)
 #        bb = simple_clone(b)
 #        self.assert_children(bb)
-#        
-#        
+#
+#
 #    def assert_children(self, b):
 #        '''
 #        Check children are non-None.
@@ -116,14 +116,14 @@ class MagusTest(TestCase):
 #        assert is_child(b, Or)
 #        for child in b.matchers:
 #            assert child
-            
+
 
 
 class CloneTest(TestCase):
     '''
     Test various clone functions.
     '''
-    
+
     def test_describe(self):
         '''
         Use a description of the graph to check against changes.
@@ -148,7 +148,7 @@ class CloneTest(TestCase):
         self.assert_count(desc0, And, 5)
         self.assert_count(desc0, Or, 2)
         self.assert_count(desc0, Delayed, 2)
-        
+
         clone0 = clone_matcher(dotted_name)
 #        print(clone0.tree())
         diff = Differ()
@@ -157,7 +157,7 @@ class CloneTest(TestCase):
         descx = NodeStats(clone0)
         print(descx)
         assert descx == desc0
-        
+
         clone1 = Flatten()(dotted_name)
         print(clone1.tree())
         desc1 = NodeStats(clone1)
@@ -169,7 +169,7 @@ class CloneTest(TestCase):
         self.assert_count(desc1, Delayed, 2)
         self.assert_count(desc1, Transform, 7)
         self.assert_count(desc1, TransformationWrapper, 7)
-        
+
         clone2 = ComposeTransforms()(clone1)
         desc2 = NodeStats(clone2)
         #print(desc2)
@@ -180,43 +180,43 @@ class CloneTest(TestCase):
         self.assert_count(desc2, Delayed, 2)
         self.assert_count(desc2, Transform, 6)
         self.assert_count(desc2, TransformationWrapper, 6)
-        
+
         clone3 = RightMemoize()(clone2)
-        desc3 = NodeStats(clone3) 
+        desc3 = NodeStats(clone3)
         #print(desc3)
         assert desc3.total == 17, desc3
         self.assert_count(desc3, _RMemo, 17)
         self.assert_count(desc3, Delayed, 2)
 
         clone4 = LeftMemoize()(clone2)
-        desc4 = NodeStats(clone4) 
+        desc4 = NodeStats(clone4)
         #print(desc4)
         assert desc4.total == 17, desc4
         self.assert_count(desc4, _LMemo, 20)
         # left memo duplicates delayed
         self.assert_count(desc4, Delayed, 3)
-        
+
         clone5 = AutoMemoize(left=LMemo, right=RMemo)(clone2)
-        desc5 = NodeStats(clone5) 
+        desc5 = NodeStats(clone5)
         #print(desc5)
         assert desc5.total == 17, desc5
         self.assert_count(desc5, _RMemo, 5)
         self.assert_count(desc5, _LMemo, 15)
         # left memo duplicates delayed
         self.assert_count(desc5, Delayed, 3)
-        
+
         try:
             clone3.config.clear()
             clone3.parse_string('1join()')
             assert False, 'Expected error'
         except MemoException as error:
             assert 'Left recursion was detected' in str(error), str(error)
-        
+
         clone4.config.clear()
         clone4.parse_string('1join()')
         clone5.config.clear()
         clone5.parse_string('1join()')
-        
+
     def assert_count(self, desc, type_, count):
         '''
         Check the count for a given type.
@@ -228,4 +228,3 @@ class CloneTest(TestCase):
         assert type_ in desc.types and len(desc.types[type_]) == count, \
             len(desc.types[type_]) if type_ in desc.types else type_
 
-        

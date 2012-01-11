@@ -112,3 +112,14 @@ We can use ``each_line`` as follows::
   ['line one\n']
   ['line two\n']
   ['line three']
+
+Examples
+--------
+
+I use this approach to manage the links in to the Lepl API in this document:
+
+ * The routine to remove links is `here
+   <http://code.google.com/p/lepl/source/browse/src/lepl/_experiment/no_links.py>`_.
+
+ * The routine to add links is `here
+   <http://code.google.com/p/lepl/source/browse/src/lepl/_experiment/add_links.py>`_.

@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -91,17 +90,17 @@ def print_timing(input, matchers, count=10, count_compile=None, best_of=3,
         count_compile = count
         
     # python 2 has no support for print(..., file=...)
-    def prnt(msg='', end='\n'):
+    def _print(msg='', end='\n'):
         out.write(msg + end)
         
-    prnt('\n\nTiming Results (ms)')
-    prnt('-------------------')
-    prnt(fmt('\nCompiling:  best of {1:d} averages over {0:d} repetition(s)',
+    _print('\n\nTiming Results (ms)')
+    _print('-------------------')
+    _print(fmt('\nCompiling:  best of {1:d} averages over {0:d} repetition(s)',
               count_compile, best_of))
-    prnt(fmt('Parse only: best of {1:d} averages over {0:d} repetition(s)',
+    _print(fmt('Parse only: best of {1:d} averages over {0:d} repetition(s)',
               count, best_of))
-    prnt('\n             Matcher           Compiling | Parse only')
-    prnt('-----------------------------------------+------------------')
+    _print('\n             Matcher           Compiling | Parse only')
+    _print('-----------------------------------------+------------------')
     
     references = [None, None]
     names = sorted(matchers.keys())
@@ -114,7 +113,7 @@ def print_timing(input, matchers, count=10, count_compile=None, best_of=3,
     names = [reference] + [name for name in names if name != reference]
     
     for name in names:
-        prnt(fmt('{0:>20s}  ', name), end='')
+        _print(fmt('{0:>20s}  ', name), end='')
         matcher = matchers[name]
         for (compile, n, end, r) in ((True, count_compile, ' |', 0), 
                                      (False, count, '\n', 1)):
@@ -133,17 +132,17 @@ def print_timing(input, matchers, count=10, count_compile=None, best_of=3,
                 
             times.sort()
             best = 1000 * times[0] / float(n)
-            prnt(fmt('{0:7.2f}', best), end='')
+            _print(fmt('{0:7.2f}', best), end='')
 
             ref = references[r]
             if ref is None:
                 references[r] = best
-                prnt('           ', end=end)
+                _print('           ', end=end)
             elif ref:
                 ratio = best / ref
-                prnt(fmt('  (x {0:5.1f})', ratio), end=end)
+                _print(fmt('  (x {0:5.1f})', ratio), end=end)
             else:
-                prnt('  (x -----)', end=end)
+                _print('  (x -----)', end=end)
                 
-    prnt()
+    _print()
     

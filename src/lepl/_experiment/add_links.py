@@ -28,12 +28,14 @@
 # MPL or the LGPL License.
 
 '''
-Remove API Links from the documentation.
+Add API Links to the documentation.
 
 This replaces each 
- `.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_
-with
  ``.config.lexer()``
+with
+ `.config.lexer() <api/redirect.html#lepl.core.config.ConfigBuilder.lexer>`_
+
+It is used in alternation to the `no_links.py` script.
 '''
 
 from os import walk, rename, remove, fdopen

@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -700,7 +699,7 @@ class ParserMixin(object):
         '''
         return self._raw_parser('list')
         
-    def get_match_string(self,):
+    def get_match_string(self):
         '''
         Get a function that will parse the contents of a string returning a 
         sequence of (results, stream) pairs.

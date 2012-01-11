@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -61,23 +60,20 @@ calls it in a way that replicates the original calls to the node constructors.
 
 from collections import Sequence, deque
 
-from lepl.support.lib import compose, safe_in, safe_add, empty, fmt,\
-    fallback_add
+from lepl.support.lib import compose, safe_in, empty, fmt, fallback_add
 
 
 FORWARD = 1    # forward edge
 BACKWARD = 2   # backward edge
-NONTREE = 4    # cyclic edge
+NON_TREE = 4    # cyclic edge
 ROOT = 8       # root node (not an edge)
 NODE = 16      # child is a 'normal' node (of the given type)
 LEAF = 32      # child is a leaf node (not the given type)
 
-POSTORDER = BACKWARD | NONTREE
-PREORDER = FORWARD | NONTREE
+POSTORDER = BACKWARD | NON_TREE
+PREORDER = FORWARD | NON_TREE
 
 
-# pylint: disable-msg=R0911
-# many yields appropriate here
 def dfs_edges(node, type_):
     '''
     Iterative DFS, based on http://www.ics.uci.edu/~eppstein/PADS/DFS.py
@@ -95,12 +91,12 @@ def dfs_edges(node, type_):
             visited = set()
             visited = fallback_add(visited, node)
             while stack:
-                parent, children, ptype = stack[-1]
+                parent, children, p_type = stack[-1]
                 try:
                     child = next(children)
                     if isinstance(child, type_):
                         if safe_in(child, visited, False):
-                            yield parent, child, NONTREE
+                            yield parent, child, NON_TREE
                         else:
                             stack.append((child, iter(child), NODE))
                             yield parent, child, FORWARD | NODE
@@ -111,7 +107,7 @@ def dfs_edges(node, type_):
                 except StopIteration:
                     stack.pop()
                     if stack:
-                        yield stack[-1][0], parent, BACKWARD | ptype
+                        yield stack[-1][0], parent, BACKWARD | p_type
             yield node, node, BACKWARD | ROOT
             return
         except Reset:
@@ -177,7 +173,7 @@ def loops(node, type_):
     Each loop is a list that starts and ends with the given node.
     '''
     stack = [[node]]
-    known = set([node]) # avoid getting lost in sub-loops
+    known = {node} # avoid getting lost in sub-loops
     while stack:
         ancestors = stack.pop()
         parent = ancestors[-1]
@@ -193,8 +189,6 @@ def loops(node, type_):
                         known = fallback_add(known, child)
 
 
-# pylint: disable-msg=R0903
-# interface
 class ConstructorGraphNode(object):
     '''
     An interface that provides information on constructor arguments.
@@ -213,8 +207,6 @@ class ConstructorGraphNode(object):
     constructor arguments during depth-first postorder traversal.
     '''
 
-    # pylint: disable-msg=R0201
-    # interface
     def _constructor_args(self):
         '''
         Regenerate the constructor arguments (returns (args, kargs)).
@@ -240,7 +232,7 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
         '''
         setattr(self, name, value)
         return name
-            
+
     def _arg(self, **kargs):
         '''
         Set a single named argument as an attribute (the signature uses kargs
@@ -250,37 +242,37 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
         assert len(kargs) == 1
         for name in kargs:
             self.__arg_names.append(self.__set_attribute(name, kargs[name]))
-        
+
     def _karg(self, **kargs):
         '''
-        Set a single keyword argument (ie with default) as an attribute (the 
-        signature uses kargs so that the name does not need to be quoted).  
+        Set a single keyword argument (ie with default) as an attribute (the
+        signature uses kargs so that the name does not need to be quoted).
         The attribute name is added to self.__karg_names.
         '''
         assert len(kargs) == 1
         for name in kargs:
             self.__karg_names.append(self.__set_attribute(name, kargs[name]))
-      
+
     def _args(self, **kargs):
         '''
-        Set a *arg as an attribute (the signature uses kargs so that the 
+        Set a *arg as an attribute (the signature uses kargs so that the
         attribute name does not need to be quoted).  The name (without '*')
         is added to self.__arg_names.
         '''
         assert len(kargs) == 1
         for name in kargs:
-            assert isinstance(kargs[name], Sequence), kargs[name] 
-            self.__arg_names.append('*' + 
+            assert isinstance(kargs[name], Sequence), kargs[name]
+            self.__arg_names.append('*' +
                                     self.__set_attribute(name, kargs[name]))
-        
+
     def _kargs(self, kargs):
         '''
-        Set **kargs as attributes.  The attribute names are added to 
+        Set **kargs as attributes.  The attribute names are added to
         self.__arg_names.
         '''
         for name in kargs:
             self.__karg_names.append(self.__set_attribute(name, kargs[name]))
-        
+
     def __args(self):
         '''
         All (non-keyword) arguments.
@@ -291,19 +283,19 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
             if name.startswith('*'):
                 args.extend(getattr(self, name[1:]))
         return args
-        
+
     def __kargs(self):
         '''
         All keyword argmuents.
         '''
         return dict((name, getattr(self, name)) for name in self.__karg_names)
-        
+
     def _constructor_args(self):
         '''
         Regenerate the constructor arguments.
         '''
         return (self.__args(), self.__kargs())
-    
+
     def __iter__(self):
         '''
         Return all children, in order.
@@ -361,8 +353,6 @@ class Visitor(object):
         '''
         pass
     
-    # pylint: disable-msg=R0201
-    # interface
     def postprocess(self, result):
         '''
         Called after walking, passed the match to the initial node.
@@ -393,7 +383,6 @@ class ConstructorWalker(object):
         for node in postorder(self.__root, self.__type, exclude=LEAF):
             visitor.node(node)
             (args, kargs) = self.__arguments(node, visitor, results)
-            # pylint: disable-msg=W0142
             results[node] = visitor.constructor(*args, **kargs)
         return visitor.postprocess(results[self.__root])
     
@@ -401,9 +390,6 @@ class ConstructorWalker(object):
         '''
         Collect arguments for the constructor.
         '''
-        # pylint: disable-msg=W0212
-        # (this is the ConstructorGraphNode interface; it's purposefully
-        # like that to avoid conflicting with Node attributes)
         (old_args, old_kargs) = node._constructor_args()
         (new_args, new_kargs) = ([], {})
         for arg in old_args:
@@ -447,8 +433,6 @@ class SimpleWalker(object):
         '''
         Apply the visitor to the nodes in the graph, in postorder.
         '''
-        # pylint: disable-msg=W0142
-        # (*args)
         pending = {}
         for (parent, node, kind) in dfs_edges(self.__root, self.__type):
             if kind & POSTORDER:
@@ -462,7 +446,7 @@ class SimpleWalker(object):
                 visitor.node(node)
                 if kind & LEAF:
                     pending[parent].append(visitor.leaf(node))
-                elif kind & NONTREE:
+                elif kind & NON_TREE:
                     pending[parent].append(visitor.loop(node))
                 else:
                     pending[parent].append(visitor.constructor(*args))
@@ -564,7 +548,7 @@ class ConstructorStr(Visitor):
                 sections.append((indent, scan))
             elif i < indent:
                 (scan, indent) = self.__compress(lines, sections.pop()[1], scan)
-            scan = scan + 1
+            scan += 1
         while sections:
             self.__compress(lines, sections.pop()[1], len(lines))
         return self.__fmt(lines)
@@ -600,7 +584,7 @@ class ConstructorStr(Visitor):
         '''
         Try all on one line.
         '''
-        if start == 0:
+        if not start:
             raise _LineOverflow()
         (indent, text) = lines[start-1]
         size = indent + len(text) 
@@ -739,7 +723,6 @@ def clone(node, args, kargs):
     an instance based on its type and arguments.
     '''
     try:
-        # pylint: disable-msg=W0142
         return type(node)(*args, **kargs)
     except TypeError as err:
         raise TypeError(fmt('Error cloning {0} with ({1}, {2}): {3}',

@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -33,7 +32,7 @@ parser.
 '''
 
 from lepl.matchers.memo import LMemo, RMemo
-from lepl.support.graph import Visitor, preorder, loops, order, NONTREE, \
+from lepl.support.graph import Visitor, preorder, loops, order, NON_TREE, \
     dfs_edges, LEAF
 from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
     BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
@@ -434,7 +433,7 @@ class AutoMemoize(Rewriter):
 
     def __call__(self, graph):
         dangerous = set()
-        for head in order(graph, NONTREE, Matcher):
+        for head in order(graph, NON_TREE, Matcher):
             for loop in either_loops(head, self.conservative):
                 for node in loop:
                     dangerous.add(node)
@@ -668,7 +667,7 @@ class NodeStats(object):
             node_type = type(node)
         if type_ & LEAF:
             self.leaves += 1
-        if type_ & NONTREE and is_child(node_type, Matcher, fail=False):
+        if type_ & NON_TREE and is_child(node_type, Matcher, fail=False):
             self.loops += 1
         try:
             if node not in self.__known:

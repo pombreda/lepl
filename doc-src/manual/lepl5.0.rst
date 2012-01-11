@@ -207,10 +207,12 @@ Streams
 
 * If you define your own matchers you will need to use `s_next()
   <api/redirect.html#lepl.stream.core.s_next>`_ and friends instead of
-  accessing the "string".  So replace:: char = stream[0] next_stream =
-  stream[1:] with ``(char, next_stream) = s_next(stream)``.  The full set of
-  functions is documented in `lepl.stream.core <api/redirect.html#lepl.stream.core>`_ and the source is full of
-  examples.
+  accessing the "string".  So replace::
+    char = stream[0] 
+    next_stream = stream[1:] 
+  with ``(char, next_stream) = s_next(stream)``.  The full set of functions is
+  documented in `lepl.stream.core <api/redirect.html#lepl.stream.core>`_ and
+  the source is full of examples.
 
 * `TraceResults() <api/redirect.html#lepl.core.trace.TraceResults>`_,
   configured by ``config.trace()``, is now `TraceStack()
@@ -297,7 +299,7 @@ The left-memoisation code does the following:
   instances (and the `LMemo() <api/redirect.html#lepl.matchers.memo.LMemo>`_
   wrappers) are duplicated when multiple references exist.  This is necessary
   so that the "curtailment" is not duplicated at multiple points in the
-  matcher graph (in general it doe snot matter of the same node is used at
+  matcher graph (in general it does not matter if the same node is used at
   various point in the parser, because the parser is "pure", but memoisation
   adds state).
 

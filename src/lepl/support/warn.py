@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -78,7 +77,9 @@ def warn_on_use(message, name=None):
     def decorator(func, name=name):
         if name is None:
             name = func.__name__
-        warning = Warning(name, message)
+        if name not in _WARNINGS:
+            Warning(name, message)
+        warning = _WARNINGS[name]
         def wrapper(*args, **kargs):
             warning.warn()
             return func(*args, **kargs)

@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -54,7 +53,7 @@ from logging import getLogger
 from operator import __add__
 
 from lepl.matchers.core import Regexp
-from lepl.matchers.matcher import Matcher, matcher_map
+from lepl.matchers.matcher import matcher_map
 from lepl.matchers.support import FunctionWrapper, SequenceWrapper, \
     TrampolineWrapper, TransformableTrampolineWrapper
 from lepl.regexp.core import Choice, Sequence, Repeat, Empty, Option
@@ -110,7 +109,7 @@ class RegexpContainer(object):
                 cls.log.debug(fmt('cannot unpack: {0!s}', 
                                      possible.__class__))
                 raise Unsuitable('Not a container.')
-        return (use, regexps)
+        return use, regexps
         
     @staticmethod
     def to_matcher(possible):
@@ -173,7 +172,7 @@ def empty_adapter(_stream, matcher):
     (results, stream_out) = matcher()
     if results == ['']:
         results = []
-    return (results, stream_out)
+    return results, stream_out
 
         
 class Unsuitable(Exception):
@@ -265,7 +264,7 @@ def make_clone(alphabet_, old_clone, regexp_type, use_from_start):
                             RegexpContainer.to_regexps(use, [matcher], 
                                                        have_add=None)[1][0])
                 except Unsuitable:
-                    return (original, None)
+                    return original, None
             output = []
             (regexps, originals) = ([], [])
             for (matcher, regexp) in [unpack(matcher) for matcher in matchers]:

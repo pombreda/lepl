@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the Mozilla Public License
 # (MPL) Version 1.1 (the "License"); you may not use this file except
 # in compliance with the License. You may obtain a copy of the License
@@ -60,7 +59,6 @@ class ContextError(Exception):
     pass
 
 
-# pylint: disable-msg=R0903
 class NamespaceMap(local):
     '''
     A store for namespaces.
@@ -117,7 +115,8 @@ class Namespace(object):
         '''
         self.push()
         return self
-       
+
+    #noinspection PyUnusedLocal
     def __exit__(self, *_args):
         '''
         Restore the previous state from the stack on leaving the context.
@@ -175,7 +174,6 @@ class OnceOnlyNamespace(Namespace):
             super(OnceOnlyNamespace, self).set(name, value)
         
 
-# pylint: disable-msg=C0103, W0603
 def Global(name, default=None):
     '''
     Global (per-thread) binding from operator name to implementation, by
@@ -219,7 +217,8 @@ class Scope(object):
         On entering the context, add the new definitions.
         '''
         Global(self.__name, self.__namespace).push(self.__frame)
-        
+
+    #noinspection PyUnusedLocal
     def __exit__(self, *_args):
         '''
         On leaving the context, return to previous definition.

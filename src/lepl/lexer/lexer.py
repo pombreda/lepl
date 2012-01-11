@@ -64,7 +64,7 @@ class Lexer(NamespaceMixin, BaseMatcher):
         discard is the regular expression for spaces (which are silently
         dropped if not token can be matcher).
         
-        t_regexp and s_regexp are internally compiled state, use in cloning,
+        t_regexp and s_regexp are internally compiled state, used in cloning,
         and should not be provided by non-cloning callers.
         '''
         super(Lexer, self).__init__(TOKENS, TokenNamespace)
