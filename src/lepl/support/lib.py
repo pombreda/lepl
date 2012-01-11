@@ -35,10 +35,12 @@ from logging import getLogger
 # this is an attempt to make 2.6 and 3 function equally with strings
 
 try:
+    unicode
     #noinspection PyUnresolvedReferences
     chr = unichr
     #noinspection PyUnresolvedReferences
     str = unicode
+    bytes = bytes
     #noinspection PyUnresolvedReferences,PyUnboundLocalVariable
     basestring = basestring
     #noinspection PyUnresolvedReferences,PyUnboundLocalVariable
@@ -51,6 +53,7 @@ except NameError:
     chr = chr
     #noinspection PyUnboundLocalVariable
     str = str
+    bytes = bytes
     basestring = str
     file = IOBase
 

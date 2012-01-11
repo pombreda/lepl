@@ -8,6 +8,7 @@ from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.parser.error import SimpleGroupError
 
 try:
+    unicode
     def u(x): return unicode(x)
 except NameError:
     def u(x): return x
@@ -378,9 +379,9 @@ r"""digraph {
 }""")
         
     def test_escaped_range(self):
-        self.assert_graphs(parse(u(r'[\x00-`b-oq-y{-\U0010ffff]')),
+        self.assert_graphs(parse(u(r'[\x00-`b-oq-y]')),
 r"""digraph {
- 0 [label="[\\x00-`b-oq-y{-\\U0010ffff]"]
+ 0 [label="[\\x00-`b-oq-y]"]
  1 [label="Match"]
  0 -> 1
 }""")

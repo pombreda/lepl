@@ -101,7 +101,7 @@ class ReTest(BaseTest):
         
     def test_end_of_line(self):
         results = list(self._re.compile('$').finditer('ab\n'))
-        assert len(results) == 2, results
+        assert len(results) == 2, len(results)
         assert results[0].group(0) == '', results[0].group(0)
         assert results[0].span(0) == (2,2), results[0].span(0)
         assert results[1].group(0) == '', results[1].group(0)

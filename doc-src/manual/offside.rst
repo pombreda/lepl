@@ -176,7 +176,7 @@ example::
   >>> statement += (simple | empty | block) > list
   >>> program = statement[:]
 
-  >>> program.config.blocks(block_policy=2)
+  >>> program.config.lines(block_policy=2)
   >>> parser = program.get_parse_string()
 
   >>> parser('''

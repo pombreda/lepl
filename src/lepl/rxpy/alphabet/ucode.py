@@ -14,6 +14,7 @@ from lepl.support.lib import basestring
 from lepl.rxpy.alphabet.bytes import ASCII_WORD
 
 try:
+    unicode
     def u(x): return unicode(x)
     def c(x): return unichr(x)
 except NameError:
@@ -73,7 +74,6 @@ class String(BaseAlphabet):
         return text[1:-1] # drop quotes
 
     def expression_to_charset(self, char, flags):
-        from lepl.rxpy.parser.support import ParserState
         if flags & ParserState.IGNORECASE and \
                 (flags & ParserState.UNICODE or ord(char) < 128):
             lo = char.lower()

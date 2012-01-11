@@ -1,11 +1,11 @@
 #LICENCE
 
 '''
-A replacement for Python's `re` package that uses the quick engine.
+A replacement for Python's `re` package that uses the lexer engine.
 '''
 
 from lepl.rxpy.compat.module import Re
-from lepl.rxpy.engine.simple.engine import LexerEngine
+from lepl.rxpy.engine.lexer.engine import LexerEngine
 
 _re = Re(LexerEngine, 'Lexer')
 

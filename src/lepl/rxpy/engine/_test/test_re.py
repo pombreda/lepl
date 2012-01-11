@@ -8,6 +8,7 @@ from weakref import proxy
 from lepl.rxpy.engine._test.base import BaseTest
 
 try:
+    unicode
     def u(x): return unicode(x)
 except NameError:
     def u(x): return x

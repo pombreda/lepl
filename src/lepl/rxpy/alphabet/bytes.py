@@ -14,12 +14,15 @@ from lepl.support.lib import fmt
 
 try:
     # Python 2.7
+    unicode
+    byte_to_esc_str = lambda x: repr(x)[1:-1]
     byte_to_str = str
     byte_to_int = ord
     int_to_byte = chr
     byte_to_bytes = bytes
 except NameError:
     # Python 3
+    byte_to_esc_str = lambda x: repr(chr(x))[1:-1]
     byte_to_str = chr
     byte_to_int = lambda x: x
     int_to_byte = lambda x: bytes([x])
@@ -68,7 +71,7 @@ class Bytes(BaseAlphabet):
     
     def letter_to_str(self, letter):
         if letter is None: return letter
-        return byte_to_str(letter[0])
+        return byte_to_esc_str(letter[0])
 
     def join(self, *strings):
         '''
