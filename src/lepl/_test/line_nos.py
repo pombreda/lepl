@@ -3,7 +3,7 @@ from lepl import *
 
 def with_line(node):
     def wrapper(results, stream_out, **kargs):
-        return node(results, ('lineno', s_delta(stream_out)[1]))
+        return node(results, ('line_no', s_delta(stream_out)[1]))
     return wrapper
 
 class Greeting(Node): pass

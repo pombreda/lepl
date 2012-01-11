@@ -165,8 +165,8 @@ class _TraceStack(ActiveMonitor, ValueMonitor, LogMixin):
         Provide a standard fmt for location.
         '''
         try:
-            (offset, lineno, char) = s_delta(self.generator.stream)
-            locn = fmt('{0}/{1}.{2}', offset, lineno, char)
+            (offset, line_no, char) = s_delta(self.generator.stream)
+            locn = fmt('{0}/{1}.{2}', offset, line_no, char)
             try:
                 stream = sample('', s_line(self.generator.stream, False)[0], 9)
             except StopIteration:

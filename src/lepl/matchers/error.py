@@ -89,13 +89,13 @@ class Error(Node, SyntaxError):
         if 'in_all' in kargs:
             SyntaxError.__init__(self, msg, 
                                  (kargs.get('in_filename', ''),
-                                  int(kargs.get('in_lineno', 0)),
+                                  int(kargs.get('in_line_no', 0)),
                                   int(kargs.get('in_char', 0)),
                                   kargs.get('in_all')))
         else:
             SyntaxError.__init__(self, msg, 
                                  (kargs.get('in_filename', ''),
-                                  int(kargs.get('in_lineno', -1)),
+                                  int(kargs.get('in_line_no', -1)),
                                   int(kargs.get('in_offset', 1)),
                                   kargs.get('in_rest', '')))
         
