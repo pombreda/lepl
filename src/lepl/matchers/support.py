@@ -93,7 +93,7 @@ class BaseMatcher(ArgAsAttributeMixin, PostorderWalkerMixin,
         (args, kargs) = self._constructor_args()
         indent1 = 0 if self._fmt_compact else indent0 + 1 
         contents = [self._fmt_repr(indent1, arg, visited) for arg in args] + \
-            [self._fmt_repr(indent1, kargs[key], visited, key) for key in kargs]
+            [self._fmt_repr(indent1, kargs[key_], visited, key) for key_ in kargs]
         return self._format_repr(indent0, key, contents)
         
     @property

@@ -44,6 +44,8 @@ class OperatorExamples(Example):
     def test_errors(self):
         self.examples([(lambda: eval("('Mr' | 'Ms') // Word()"),
                         "TypeError: unsupported operand type(s) for |: 'str' and 'str'\n"),
+            # the next example fails in 2 because the syntax error doesn't
+            # print the file if the offset is None (afaict)
                        (lambda: eval("('Mr' // Word() > 'man' | 'Ms' // Word() > 'woman')"),
                         '''  File "<string>", line None
 SyntaxError: The operator > for And(Literal, Transform, Transform) was applied to a matcher (Or(Literal, And)). Check syntax and parentheses.\n''')])

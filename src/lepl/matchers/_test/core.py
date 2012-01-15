@@ -231,7 +231,7 @@ class StrTest(TestCase):
         expression += (factor / (addsub / factor)[0::])    > Expression
 
         description = repr(expression)
-        self.assert_same(description, r'''Delayed(matcher=Transform:<apply>(
+        self.assert_same(description, r'''Delayed(Transform:<apply>(
  And(
   Transform:<apply>(
    And(
@@ -240,12 +240,12 @@ class StrTest(TestCase):
       Transform:<apply>(
        Transform:<add>(
         DepthFirst(
-         generator_manager_queue_len=None,
-         stop=None,
-         reduce=([], <built-in function __add__>),
-         rest=FunctionWrapper<Any:<>>('0123456789'),
-         start=1,
-         first=FunctionWrapper<Any:<>>('0123456789')),
+         None,
+         None,
+         ([], <built-in function __add__>),
+         FunctionWrapper<Any:<>>('0123456789'),
+         1,
+         FunctionWrapper<Any:<>>('0123456789')),
         TransformationWrapper(<add>)),
        TransformationWrapper(<apply>)),
       And(
@@ -253,62 +253,62 @@ class StrTest(TestCase):
         FunctionWrapper<Literal:<>>('('),
         Transform:<add>(
          DepthFirst(
-          generator_manager_queue_len=None,
-          stop=None,
-          reduce=([], <built-in function __add__>),
-          rest=FunctionWrapper<Any:<>>(' \t'),
-          start=0,
-          first=FunctionWrapper<Any:<>>(' \t')),
+          None,
+          None,
+          ([], <built-in function __add__>),
+          FunctionWrapper<Any:<>>(' \t'),
+          0,
+          FunctionWrapper<Any:<>>(' \t')),
          TransformationWrapper(<add>)),
         [Delayed]),
        Transform:<add>(
         DepthFirst(
-         generator_manager_queue_len=None,
-         stop=None,
-         reduce=([], <built-in function __add__>),
-         rest=FunctionWrapper<Any:<>>(' \t'),
-         start=0,
-         first=FunctionWrapper<Any:<>>(' \t')),
+         None,
+         None,
+         ([], <built-in function __add__>),
+         FunctionWrapper<Any:<>>(' \t'),
+         0,
+         FunctionWrapper<Any:<>>(' \t')),
         TransformationWrapper(<add>)),
        FunctionWrapper<Literal:<>>(')'))),
      TransformationWrapper(<apply>)),
     Transform:<add>(
      DepthFirst(
-      generator_manager_queue_len=None,
-      stop=None,
-      reduce=([], <built-in function __add__>),
-      rest=FunctionWrapper<Any:<>>(' \t'),
-      start=0,
-      first=FunctionWrapper<Any:<>>(' \t')),
+      None,
+      None,
+      ([], <built-in function __add__>),
+      FunctionWrapper<Any:<>>(' \t'),
+      0,
+      FunctionWrapper<Any:<>>(' \t')),
      TransformationWrapper(<add>)),
     DepthFirst(
-     generator_manager_queue_len=None,
-     stop=None,
-     reduce=([], <built-in function __add__>),
-     rest=And(
+     None,
+     None,
+     ([], <built-in function __add__>),
+     And(
       Transform:<apply>(
        FunctionWrapper<Any:<>>('*/'),
        TransformationWrapper(<apply>)),
       Transform:<add>(
        DepthFirst(
-        generator_manager_queue_len=None,
-        stop=None,
-        reduce=([], <built-in function __add__>),
-        rest=FunctionWrapper<Any:<>>(' \t'),
-        start=0,
-        first=FunctionWrapper<Any:<>>(' \t')),
+        None,
+        None,
+        ([], <built-in function __add__>),
+        FunctionWrapper<Any:<>>(' \t'),
+        0,
+        FunctionWrapper<Any:<>>(' \t')),
        TransformationWrapper(<add>)),
       Transform:<apply>(
        Or(
         Transform:<apply>(
          Transform:<add>(
           DepthFirst(
-           generator_manager_queue_len=None,
-           stop=None,
-           reduce=([], <built-in function __add__>),
-           rest=FunctionWrapper<Any:<>>('0123456789'),
-           start=1,
-           first=FunctionWrapper<Any:<>>('0123456789')),
+           None,
+           None,
+           ([], <built-in function __add__>),
+           FunctionWrapper<Any:<>>('0123456789'),
+           1,
+           FunctionWrapper<Any:<>>('0123456789')),
           TransformationWrapper(<add>)),
          TransformationWrapper(<apply>)),
         And(
@@ -316,50 +316,50 @@ class StrTest(TestCase):
           FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
            DepthFirst(
-            generator_manager_queue_len=None,
-            stop=None,
-            reduce=([], <built-in function __add__>),
-            rest=FunctionWrapper<Any:<>>(' \t'),
-            start=0,
-            first=FunctionWrapper<Any:<>>(' \t')),
+            None,
+            None,
+            ([], <built-in function __add__>),
+            FunctionWrapper<Any:<>>(' \t'),
+            0,
+            FunctionWrapper<Any:<>>(' \t')),
            TransformationWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
           DepthFirst(
-           generator_manager_queue_len=None,
-           stop=None,
-           reduce=([], <built-in function __add__>),
-           rest=FunctionWrapper<Any:<>>(' \t'),
-           start=0,
-           first=FunctionWrapper<Any:<>>(' \t')),
+           None,
+           None,
+           ([], <built-in function __add__>),
+           FunctionWrapper<Any:<>>(' \t'),
+           0,
+           FunctionWrapper<Any:<>>(' \t')),
           TransformationWrapper(<add>)),
          FunctionWrapper<Literal:<>>(')'))),
        TransformationWrapper(<apply>))),
-     start=0,
-     first=And(
+     0,
+     And(
       Transform:<apply>(
        FunctionWrapper<Any:<>>('*/'),
        TransformationWrapper(<apply>)),
       Transform:<add>(
        DepthFirst(
-        generator_manager_queue_len=None,
-        stop=None,
-        reduce=([], <built-in function __add__>),
-        rest=FunctionWrapper<Any:<>>(' \t'),
-        start=0,
-        first=FunctionWrapper<Any:<>>(' \t')),
+        None,
+        None,
+        ([], <built-in function __add__>),
+        FunctionWrapper<Any:<>>(' \t'),
+        0,
+        FunctionWrapper<Any:<>>(' \t')),
        TransformationWrapper(<add>)),
       Transform:<apply>(
        Or(
         Transform:<apply>(
          Transform:<add>(
           DepthFirst(
-           generator_manager_queue_len=None,
-           stop=None,
-           reduce=([], <built-in function __add__>),
-           rest=FunctionWrapper<Any:<>>('0123456789'),
-           start=1,
-           first=FunctionWrapper<Any:<>>('0123456789')),
+           None,
+           None,
+           ([], <built-in function __add__>),
+           FunctionWrapper<Any:<>>('0123456789'),
+           1,
+           FunctionWrapper<Any:<>>('0123456789')),
           TransformationWrapper(<add>)),
          TransformationWrapper(<apply>)),
         And(
@@ -367,51 +367,51 @@ class StrTest(TestCase):
           FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
            DepthFirst(
-            generator_manager_queue_len=None,
-            stop=None,
-            reduce=([], <built-in function __add__>),
-            rest=FunctionWrapper<Any:<>>(' \t'),
-            start=0,
-            first=FunctionWrapper<Any:<>>(' \t')),
+            None,
+            None,
+            ([], <built-in function __add__>),
+            FunctionWrapper<Any:<>>(' \t'),
+            0,
+            FunctionWrapper<Any:<>>(' \t')),
            TransformationWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
           DepthFirst(
-           generator_manager_queue_len=None,
-           stop=None,
-           reduce=([], <built-in function __add__>),
-           rest=FunctionWrapper<Any:<>>(' \t'),
-           start=0,
-           first=FunctionWrapper<Any:<>>(' \t')),
+           None,
+           None,
+           ([], <built-in function __add__>),
+           FunctionWrapper<Any:<>>(' \t'),
+           0,
+           FunctionWrapper<Any:<>>(' \t')),
           TransformationWrapper(<add>)),
          FunctionWrapper<Literal:<>>(')'))),
        TransformationWrapper(<apply>))))),
    TransformationWrapper(<apply>)),
   Transform:<add>(
    DepthFirst(
-    generator_manager_queue_len=None,
-    stop=None,
-    reduce=([], <built-in function __add__>),
-    rest=FunctionWrapper<Any:<>>(' \t'),
-    start=0,
-    first=FunctionWrapper<Any:<>>(' \t')),
+    None,
+    None,
+    ([], <built-in function __add__>),
+    FunctionWrapper<Any:<>>(' \t'),
+    0,
+    FunctionWrapper<Any:<>>(' \t')),
    TransformationWrapper(<add>)),
   DepthFirst(
-   generator_manager_queue_len=None,
-   stop=None,
-   reduce=([], <built-in function __add__>),
-   rest=And(
+   None,
+   None,
+   ([], <built-in function __add__>),
+   And(
     Transform:<apply>(
      FunctionWrapper<Any:<>>('+-'),
      TransformationWrapper(<apply>)),
     Transform:<add>(
      DepthFirst(
-      generator_manager_queue_len=None,
-      stop=None,
-      reduce=([], <built-in function __add__>),
-      rest=FunctionWrapper<Any:<>>(' \t'),
-      start=0,
-      first=FunctionWrapper<Any:<>>(' \t')),
+      None,
+      None,
+      ([], <built-in function __add__>),
+      FunctionWrapper<Any:<>>(' \t'),
+      0,
+      FunctionWrapper<Any:<>>(' \t')),
      TransformationWrapper(<add>)),
     Transform:<apply>(
      And(
@@ -420,12 +420,12 @@ class StrTest(TestCase):
         Transform:<apply>(
          Transform:<add>(
           DepthFirst(
-           generator_manager_queue_len=None,
-           stop=None,
-           reduce=([], <built-in function __add__>),
-           rest=FunctionWrapper<Any:<>>('0123456789'),
-           start=1,
-           first=FunctionWrapper<Any:<>>('0123456789')),
+           None,
+           None,
+           ([], <built-in function __add__>),
+           FunctionWrapper<Any:<>>('0123456789'),
+           1,
+           FunctionWrapper<Any:<>>('0123456789')),
           TransformationWrapper(<add>)),
          TransformationWrapper(<apply>)),
         And(
@@ -433,62 +433,62 @@ class StrTest(TestCase):
           FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
            DepthFirst(
-            generator_manager_queue_len=None,
-            stop=None,
-            reduce=([], <built-in function __add__>),
-            rest=FunctionWrapper<Any:<>>(' \t'),
-            start=0,
-            first=FunctionWrapper<Any:<>>(' \t')),
+            None,
+            None,
+            ([], <built-in function __add__>),
+            FunctionWrapper<Any:<>>(' \t'),
+            0,
+            FunctionWrapper<Any:<>>(' \t')),
            TransformationWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
           DepthFirst(
-           generator_manager_queue_len=None,
-           stop=None,
-           reduce=([], <built-in function __add__>),
-           rest=FunctionWrapper<Any:<>>(' \t'),
-           start=0,
-           first=FunctionWrapper<Any:<>>(' \t')),
+           None,
+           None,
+           ([], <built-in function __add__>),
+           FunctionWrapper<Any:<>>(' \t'),
+           0,
+           FunctionWrapper<Any:<>>(' \t')),
           TransformationWrapper(<add>)),
          FunctionWrapper<Literal:<>>(')'))),
        TransformationWrapper(<apply>)),
       Transform:<add>(
        DepthFirst(
-        generator_manager_queue_len=None,
-        stop=None,
-        reduce=([], <built-in function __add__>),
-        rest=FunctionWrapper<Any:<>>(' \t'),
-        start=0,
-        first=FunctionWrapper<Any:<>>(' \t')),
+        None,
+        None,
+        ([], <built-in function __add__>),
+        FunctionWrapper<Any:<>>(' \t'),
+        0,
+        FunctionWrapper<Any:<>>(' \t')),
        TransformationWrapper(<add>)),
       DepthFirst(
-       generator_manager_queue_len=None,
-       stop=None,
-       reduce=([], <built-in function __add__>),
-       rest=And(
+       None,
+       None,
+       ([], <built-in function __add__>),
+       And(
         Transform:<apply>(
          FunctionWrapper<Any:<>>('*/'),
          TransformationWrapper(<apply>)),
         Transform:<add>(
          DepthFirst(
-          generator_manager_queue_len=None,
-          stop=None,
-          reduce=([], <built-in function __add__>),
-          rest=FunctionWrapper<Any:<>>(' \t'),
-          start=0,
-          first=FunctionWrapper<Any:<>>(' \t')),
+          None,
+          None,
+          ([], <built-in function __add__>),
+          FunctionWrapper<Any:<>>(' \t'),
+          0,
+          FunctionWrapper<Any:<>>(' \t')),
          TransformationWrapper(<add>)),
         Transform:<apply>(
          Or(
           Transform:<apply>(
            Transform:<add>(
             DepthFirst(
-             generator_manager_queue_len=None,
-             stop=None,
-             reduce=([], <built-in function __add__>),
-             rest=FunctionWrapper<Any:<>>('0123456789'),
-             start=1,
-             first=FunctionWrapper<Any:<>>('0123456789')),
+             None,
+             None,
+             ([], <built-in function __add__>),
+             FunctionWrapper<Any:<>>('0123456789'),
+             1,
+             FunctionWrapper<Any:<>>('0123456789')),
             TransformationWrapper(<add>)),
            TransformationWrapper(<apply>)),
           And(
@@ -496,50 +496,50 @@ class StrTest(TestCase):
             FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
              DepthFirst(
-              generator_manager_queue_len=None,
-              stop=None,
-              reduce=([], <built-in function __add__>),
-              rest=FunctionWrapper<Any:<>>(' \t'),
-              start=0,
-              first=FunctionWrapper<Any:<>>(' \t')),
+              None,
+              None,
+              ([], <built-in function __add__>),
+              FunctionWrapper<Any:<>>(' \t'),
+              0,
+              FunctionWrapper<Any:<>>(' \t')),
              TransformationWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
             DepthFirst(
-             generator_manager_queue_len=None,
-             stop=None,
-             reduce=([], <built-in function __add__>),
-             rest=FunctionWrapper<Any:<>>(' \t'),
-             start=0,
-             first=FunctionWrapper<Any:<>>(' \t')),
+             None,
+             None,
+             ([], <built-in function __add__>),
+             FunctionWrapper<Any:<>>(' \t'),
+             0,
+             FunctionWrapper<Any:<>>(' \t')),
             TransformationWrapper(<add>)),
            FunctionWrapper<Literal:<>>(')'))),
          TransformationWrapper(<apply>))),
-       start=0,
-       first=And(
+       0,
+       And(
         Transform:<apply>(
          FunctionWrapper<Any:<>>('*/'),
          TransformationWrapper(<apply>)),
         Transform:<add>(
          DepthFirst(
-          generator_manager_queue_len=None,
-          stop=None,
-          reduce=([], <built-in function __add__>),
-          rest=FunctionWrapper<Any:<>>(' \t'),
-          start=0,
-          first=FunctionWrapper<Any:<>>(' \t')),
+          None,
+          None,
+          ([], <built-in function __add__>),
+          FunctionWrapper<Any:<>>(' \t'),
+          0,
+          FunctionWrapper<Any:<>>(' \t')),
          TransformationWrapper(<add>)),
         Transform:<apply>(
          Or(
           Transform:<apply>(
            Transform:<add>(
             DepthFirst(
-             generator_manager_queue_len=None,
-             stop=None,
-             reduce=([], <built-in function __add__>),
-             rest=FunctionWrapper<Any:<>>('0123456789'),
-             start=1,
-             first=FunctionWrapper<Any:<>>('0123456789')),
+             None,
+             None,
+             ([], <built-in function __add__>),
+             FunctionWrapper<Any:<>>('0123456789'),
+             1,
+             FunctionWrapper<Any:<>>('0123456789')),
             TransformationWrapper(<add>)),
            TransformationWrapper(<apply>)),
           And(
@@ -547,39 +547,39 @@ class StrTest(TestCase):
             FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
              DepthFirst(
-              generator_manager_queue_len=None,
-              stop=None,
-              reduce=([], <built-in function __add__>),
-              rest=FunctionWrapper<Any:<>>(' \t'),
-              start=0,
-              first=FunctionWrapper<Any:<>>(' \t')),
+              None,
+              None,
+              ([], <built-in function __add__>),
+              FunctionWrapper<Any:<>>(' \t'),
+              0,
+              FunctionWrapper<Any:<>>(' \t')),
              TransformationWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
             DepthFirst(
-             generator_manager_queue_len=None,
-             stop=None,
-             reduce=([], <built-in function __add__>),
-             rest=FunctionWrapper<Any:<>>(' \t'),
-             start=0,
-             first=FunctionWrapper<Any:<>>(' \t')),
+             None,
+             None,
+             ([], <built-in function __add__>),
+             FunctionWrapper<Any:<>>(' \t'),
+             0,
+             FunctionWrapper<Any:<>>(' \t')),
             TransformationWrapper(<add>)),
            FunctionWrapper<Literal:<>>(')'))),
          TransformationWrapper(<apply>))))),
      TransformationWrapper(<apply>))),
-   start=0,
-   first=And(
+   0,
+   And(
     Transform:<apply>(
      FunctionWrapper<Any:<>>('+-'),
      TransformationWrapper(<apply>)),
     Transform:<add>(
      DepthFirst(
-      generator_manager_queue_len=None,
-      stop=None,
-      reduce=([], <built-in function __add__>),
-      rest=FunctionWrapper<Any:<>>(' \t'),
-      start=0,
-      first=FunctionWrapper<Any:<>>(' \t')),
+      None,
+      None,
+      ([], <built-in function __add__>),
+      FunctionWrapper<Any:<>>(' \t'),
+      0,
+      FunctionWrapper<Any:<>>(' \t')),
      TransformationWrapper(<add>)),
     Transform:<apply>(
      And(
@@ -588,12 +588,12 @@ class StrTest(TestCase):
         Transform:<apply>(
          Transform:<add>(
           DepthFirst(
-           generator_manager_queue_len=None,
-           stop=None,
-           reduce=([], <built-in function __add__>),
-           rest=FunctionWrapper<Any:<>>('0123456789'),
-           start=1,
-           first=FunctionWrapper<Any:<>>('0123456789')),
+           None,
+           None,
+           ([], <built-in function __add__>),
+           FunctionWrapper<Any:<>>('0123456789'),
+           1,
+           FunctionWrapper<Any:<>>('0123456789')),
           TransformationWrapper(<add>)),
          TransformationWrapper(<apply>)),
         And(
@@ -601,62 +601,62 @@ class StrTest(TestCase):
           FunctionWrapper<Literal:<>>('('),
           Transform:<add>(
            DepthFirst(
-            generator_manager_queue_len=None,
-            stop=None,
-            reduce=([], <built-in function __add__>),
-            rest=FunctionWrapper<Any:<>>(' \t'),
-            start=0,
-            first=FunctionWrapper<Any:<>>(' \t')),
+            None,
+            None,
+            ([], <built-in function __add__>),
+            FunctionWrapper<Any:<>>(' \t'),
+            0,
+            FunctionWrapper<Any:<>>(' \t')),
            TransformationWrapper(<add>)),
           [Delayed]),
          Transform:<add>(
           DepthFirst(
-           generator_manager_queue_len=None,
-           stop=None,
-           reduce=([], <built-in function __add__>),
-           rest=FunctionWrapper<Any:<>>(' \t'),
-           start=0,
-           first=FunctionWrapper<Any:<>>(' \t')),
+           None,
+           None,
+           ([], <built-in function __add__>),
+           FunctionWrapper<Any:<>>(' \t'),
+           0,
+           FunctionWrapper<Any:<>>(' \t')),
           TransformationWrapper(<add>)),
          FunctionWrapper<Literal:<>>(')'))),
        TransformationWrapper(<apply>)),
       Transform:<add>(
        DepthFirst(
-        generator_manager_queue_len=None,
-        stop=None,
-        reduce=([], <built-in function __add__>),
-        rest=FunctionWrapper<Any:<>>(' \t'),
-        start=0,
-        first=FunctionWrapper<Any:<>>(' \t')),
+        None,
+        None,
+        ([], <built-in function __add__>),
+        FunctionWrapper<Any:<>>(' \t'),
+        0,
+        FunctionWrapper<Any:<>>(' \t')),
        TransformationWrapper(<add>)),
       DepthFirst(
-       generator_manager_queue_len=None,
-       stop=None,
-       reduce=([], <built-in function __add__>),
-       rest=And(
+       None,
+       None,
+       ([], <built-in function __add__>),
+       And(
         Transform:<apply>(
          FunctionWrapper<Any:<>>('*/'),
          TransformationWrapper(<apply>)),
         Transform:<add>(
          DepthFirst(
-          generator_manager_queue_len=None,
-          stop=None,
-          reduce=([], <built-in function __add__>),
-          rest=FunctionWrapper<Any:<>>(' \t'),
-          start=0,
-          first=FunctionWrapper<Any:<>>(' \t')),
+          None,
+          None,
+          ([], <built-in function __add__>),
+          FunctionWrapper<Any:<>>(' \t'),
+          0,
+          FunctionWrapper<Any:<>>(' \t')),
          TransformationWrapper(<add>)),
         Transform:<apply>(
          Or(
           Transform:<apply>(
            Transform:<add>(
             DepthFirst(
-             generator_manager_queue_len=None,
-             stop=None,
-             reduce=([], <built-in function __add__>),
-             rest=FunctionWrapper<Any:<>>('0123456789'),
-             start=1,
-             first=FunctionWrapper<Any:<>>('0123456789')),
+             None,
+             None,
+             ([], <built-in function __add__>),
+             FunctionWrapper<Any:<>>('0123456789'),
+             1,
+             FunctionWrapper<Any:<>>('0123456789')),
             TransformationWrapper(<add>)),
            TransformationWrapper(<apply>)),
           And(
@@ -664,50 +664,50 @@ class StrTest(TestCase):
             FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
              DepthFirst(
-              generator_manager_queue_len=None,
-              stop=None,
-              reduce=([], <built-in function __add__>),
-              rest=FunctionWrapper<Any:<>>(' \t'),
-              start=0,
-              first=FunctionWrapper<Any:<>>(' \t')),
+              None,
+              None,
+              ([], <built-in function __add__>),
+              FunctionWrapper<Any:<>>(' \t'),
+              0,
+              FunctionWrapper<Any:<>>(' \t')),
              TransformationWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
             DepthFirst(
-             generator_manager_queue_len=None,
-             stop=None,
-             reduce=([], <built-in function __add__>),
-             rest=FunctionWrapper<Any:<>>(' \t'),
-             start=0,
-             first=FunctionWrapper<Any:<>>(' \t')),
+             None,
+             None,
+             ([], <built-in function __add__>),
+             FunctionWrapper<Any:<>>(' \t'),
+             0,
+             FunctionWrapper<Any:<>>(' \t')),
             TransformationWrapper(<add>)),
            FunctionWrapper<Literal:<>>(')'))),
          TransformationWrapper(<apply>))),
-       start=0,
-       first=And(
+       0,
+       And(
         Transform:<apply>(
          FunctionWrapper<Any:<>>('*/'),
          TransformationWrapper(<apply>)),
         Transform:<add>(
          DepthFirst(
-          generator_manager_queue_len=None,
-          stop=None,
-          reduce=([], <built-in function __add__>),
-          rest=FunctionWrapper<Any:<>>(' \t'),
-          start=0,
-          first=FunctionWrapper<Any:<>>(' \t')),
+          None,
+          None,
+          ([], <built-in function __add__>),
+          FunctionWrapper<Any:<>>(' \t'),
+          0,
+          FunctionWrapper<Any:<>>(' \t')),
          TransformationWrapper(<add>)),
         Transform:<apply>(
          Or(
           Transform:<apply>(
            Transform:<add>(
             DepthFirst(
-             generator_manager_queue_len=None,
-             stop=None,
-             reduce=([], <built-in function __add__>),
-             rest=FunctionWrapper<Any:<>>('0123456789'),
-             start=1,
-             first=FunctionWrapper<Any:<>>('0123456789')),
+             None,
+             None,
+             ([], <built-in function __add__>),
+             FunctionWrapper<Any:<>>('0123456789'),
+             1,
+             FunctionWrapper<Any:<>>('0123456789')),
             TransformationWrapper(<add>)),
            TransformationWrapper(<apply>)),
           And(
@@ -715,22 +715,22 @@ class StrTest(TestCase):
             FunctionWrapper<Literal:<>>('('),
             Transform:<add>(
              DepthFirst(
-              generator_manager_queue_len=None,
-              stop=None,
-              reduce=([], <built-in function __add__>),
-              rest=FunctionWrapper<Any:<>>(' \t'),
-              start=0,
-              first=FunctionWrapper<Any:<>>(' \t')),
+              None,
+              None,
+              ([], <built-in function __add__>),
+              FunctionWrapper<Any:<>>(' \t'),
+              0,
+              FunctionWrapper<Any:<>>(' \t')),
              TransformationWrapper(<add>)),
             [Delayed]),
            Transform:<add>(
             DepthFirst(
-             generator_manager_queue_len=None,
-             stop=None,
-             reduce=([], <built-in function __add__>),
-             rest=FunctionWrapper<Any:<>>(' \t'),
-             start=0,
-             first=FunctionWrapper<Any:<>>(' \t')),
+             None,
+             None,
+             ([], <built-in function __add__>),
+             FunctionWrapper<Any:<>>(' \t'),
+             0,
+             FunctionWrapper<Any:<>>(' \t')),
             TransformationWrapper(<add>)),
            FunctionWrapper<Literal:<>>(')'))),
          TransformationWrapper(<apply>))))),

@@ -318,12 +318,12 @@ class ReTests(BaseTest):
         self.assertNotEqual(self._re.match("^x{}$", "x{}"), None)
 
     def test_getattr(self):
-        self.assertEqual(self._re.compile("(?i)(a)(b)").pattern, "(?i)(a)(b)")
+        self.assertEqual(self._re.compile(u("(?i)(a)(b)")).pattern, u("(?i)(a)(b)"))
         # the 63 below masks the expended flags used by RXPY
-        self.assertEqual(self._re.compile("(?i)(a)(b)").flags & 63, self._re.I | self._re.U)
-        self.assertEqual(self._re.compile("(?i)(a)(b)").groups, 2)
-        self.assertEqual(self._re.compile("(?i)(a)(b)").groupindex, {})
-        self.assertEqual(self._re.compile("(?i)(?P<first>a)(?P<other>b)").groupindex,
+        self.assertEqual(self._re.compile(u("(?i)(a)(b)")).flags & 63, self._re.I | self._re.U)
+        self.assertEqual(self._re.compile(u("(?i)(a)(b)")).groups, 2)
+        self.assertEqual(self._re.compile(u("(?i)(a)(b)")).groupindex, {})
+        self.assertEqual(self._re.compile(u("(?i)(?P<first>a)(?P<other>b)")).groupindex,
                          {'first': 1, 'other': 2})
 
         self.assertEqual(self._re.match("(a)", "a").pos, 0)
@@ -333,6 +333,10 @@ class ReTests(BaseTest):
         self.assertNotEqual(self._re.match("(a)", "a").re, None)
 
     def test_special_escapes(self):
+        if PYTHON3:
+            u2 = u
+        else:
+            u2 = unicode # avoid strange escape error for \b
         self.assertEqual(self._re.search(r"\b(b.)\b",
                                    "abcd abc bcd bx").group(1), "bx")
         self.assertEqual(self._re.search(r"\B(b.)\B",
@@ -341,34 +345,34 @@ class ReTests(BaseTest):
 #                                   "abcd abc bcd bx", self._re.LOCALE).group(1), "bx")
 #        self.assertEqual(self._re.search(r"\B(b.)\B",
 #                                   "abc bcd bc abxd", self._re.LOCALE).group(1), "bx")
-        self.assertEqual(self._re.search(r"\b(b.)\b",
-                                   "abcd abc bcd bx", self._re.UNICODE).group(1), "bx"
+        self.assertEqual(self._re.search(u2(r"\b(b.)\b"),
+                                   u2("abcd abc bcd bx"), self._re.UNICODE).group(1), "bx"
 )
-        self.assertEqual(self._re.search(r"\B(b.)\B",
-                                   "abc bcd bc abxd", self._re.UNICODE).group(1), "bx"
+        self.assertEqual(self._re.search(u2(r"\B(b.)\B"),
+                                  u2("abc bcd bc abxd"), self._re.UNICODE).group(1), "bx"
 )
-        self.assertEqual(self._re.search(r"^abc$", "\nabc\n", self._re.M).group(0), "abc")
-        self.assertEqual(self._re.search(r"^\Aabc\Z$", "abc", self._re.M).group(0), "abc")
-        self.assertEqual(self._re.search(r"^\Aabc\Z$", "\nabc\n", self._re.M), None)
-        self.assertEqual(self._re.search(r"\b(b.)\b",
-                                   "abcd abc bcd bx").group(1), "bx")
-        self.assertEqual(self._re.search(r"\B(b.)\B",
-                                   "abc bcd bc abxd").group(1), "bx")
-        self.assertEqual(self._re.search(r"^abc$", "\nabc\n", self._re.M).group(0), "abc")
-        self.assertEqual(self._re.search(r"^\Aabc\Z$", "abc", self._re.M).group(0), "abc")
-        self.assertEqual(self._re.search(r"^\Aabc\Z$", "\nabc\n", self._re.M), None)
-        self.assertEqual(self._re.search(r"\d\D\w\W\s\S",
-                                   "1aa! a").group(0), "1aa! a")
+        self.assertEqual(self._re.search(u2(r"^abc$"), u2("\nabc\n"), self._re.M).group(0), "abc")
+        self.assertEqual(self._re.search(u2(r"^\Aabc\Z$"), u2("abc"), self._re.M).group(0), "abc")
+        self.assertEqual(self._re.search(u2(r"^\Aabc\Z$"), u2("\nabc\n"), self._re.M), None)
+        self.assertEqual(self._re.search(u2(r"\b(b.)\b"),
+                                   u2("abcd abc bcd bx")).group(1), "bx")
+        self.assertEqual(self._re.search(u2(r"\B(b.)\B"),
+                                   u2("abc bcd bc abxd")).group(1), "bx")
+        self.assertEqual(self._re.search(u2(r"^abc$"), u2("\nabc\n"), self._re.M).group(0), "abc")
+        self.assertEqual(self._re.search(u2(r"^\Aabc\Z$"), u2("abc"), self._re.M).group(0), "abc")
+        self.assertEqual(self._re.search(u2(r"^\Aabc\Z$"), u2("\nabc\n"), self._re.M), None)
+        self.assertEqual(self._re.search(u2(r"\d\D\w\W\s\S"),
+                                   u2("1aa! a")).group(0), "1aa! a")
 #        self.assertEqual(self._re.search(r"\d\D\w\W\s\S",
 #                                   "1aa! a", self._re.LOCALE).group(0), "1aa! a")
-        self.assertEqual(self._re.search(r"\d\D\w\W\s\S",
-                                   "1aa! a", self._re.UNICODE).group(0), "1aa! a")
+        self.assertEqual(self._re.search(u2(r"\d\D\w\W\s\S"),
+                                   u2("1aa! a"), self._re.UNICODE).group(0), "1aa! a")
 
     def test_bigcharset(self):
-        self.assertEqual(self._re.match("([\u2222\u2223])",
-                                  "\u2222").group(1), "\u2222")
-        self.assertEqual(self._re.match("([\u2222\u2223])",
-                                  "\u2222", self._re.UNICODE).group(1), "\u2222")
+        self.assertEqual(self._re.match(u("([\u2222\u2223])"),
+                                   u("\u2222")).group(1), u("\u2222"))
+        self.assertEqual(self._re.match(u("([\u2222\u2223])"),
+                                  u("\u2222"), self._re.UNICODE).group(1), u("\u2222"))
 
     def test_anyall(self):
         self.assertEqual(self._re.match("a.b", "a\nb", self._re.DOT_ALL).group(0),
