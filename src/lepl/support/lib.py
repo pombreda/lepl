@@ -36,26 +36,24 @@ from logging import getLogger
 
 try:
     unicode
-    #noinspection PyUnresolvedReferences
-    chr = unichr
-    #noinspection PyUnresolvedReferences
-    str = unicode
-    bytes = bytes
-    #noinspection PyUnresolvedReferences,PyUnboundLocalVariable
-    basestring = basestring
-    #noinspection PyUnresolvedReferences,PyUnboundLocalVariable
-    file = file
-    #noinspection PyUnresolvedReferences
-    from StringIO import StringIO
+    PYTHON3 = False
 except NameError:
+    PYTHON3 = True
+
+if PYTHON3:
     from io import IOBase, StringIO
-    #noinspection PyUnboundLocalVariable
     chr = chr
-    #noinspection PyUnboundLocalVariable
     str = str
     bytes = bytes
     basestring = str
     file = IOBase
+else:
+    chr = unichr
+    bytes = lambda x, s=str: s(bytearray(x))
+    str = unicode
+    basestring = basestring
+    file = file
+    from StringIO import StringIO
 
 
 def assert_type(name, value, type_, none_ok=False):

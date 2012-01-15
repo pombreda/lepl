@@ -1,6 +1,6 @@
 #LICENCE
 
-from unittest.case import TestCase
+from unittest import TestCase
 
 from lepl.rxpy.engine._test.base import BaseTest
 from lepl.rxpy.engine.lexer.engine import LexerEngine

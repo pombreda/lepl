@@ -6,12 +6,7 @@ from lepl.rxpy.parser.pattern import parse_pattern
 from lepl.rxpy.parser.support import ParserState
 from lepl.rxpy.engine.base import BaseMatchEngine
 from lepl.rxpy.parser.error import SimpleGroupError
-
-try:
-    unicode
-    def u(x): return unicode(x)
-except NameError:
-    def u(x): return x
+from lepl.support.lib import str
 
 
 class DummyEngine(BaseMatchEngine):
@@ -379,7 +374,7 @@ r"""digraph {
 }""")
         
     def test_escaped_range(self):
-        self.assert_graphs(parse(u(r'[\x00-`b-oq-y]')),
+        self.assert_graphs(parse(str(r'[\x00-`b-oq-y]')),
 r"""digraph {
  0 [label="[\\x00-`b-oq-y]"]
  1 [label="Match"]
@@ -1352,25 +1347,25 @@ r"""digraph {
         assert state.flags == flags, state.flags 
         
     def test_flags(self):
-        self.assert_flags(u(''), ParserState.UNICODE) # default
-        self.assert_flags(u('(?i)'), ParserState.IGNORECASE | ParserState.UNICODE)
+        self.assert_flags(str(''), ParserState.UNICODE) # default
+        self.assert_flags(str('(?i)'), ParserState.IGNORECASE | ParserState.UNICODE)
         try:
             self.assert_flags('(?L)', 0)
             assert False
         except RxpyError:
             pass
-        self.assert_flags(u('(?m)'), ParserState.MULTILINE | ParserState.UNICODE)
-        self.assert_flags(u('(?s)'), ParserState.DOT_ALL | ParserState.UNICODE)
-        self.assert_flags(u('(?u)'), ParserState.UNICODE)
-        self.assert_flags(u('(?x)'), ParserState.VERBOSE | ParserState.UNICODE)
+        self.assert_flags(str('(?m)'), ParserState.MULTILINE | ParserState.UNICODE)
+        self.assert_flags(str('(?s)'), ParserState.DOT_ALL | ParserState.UNICODE)
+        self.assert_flags(str('(?u)'), ParserState.UNICODE)
+        self.assert_flags(str('(?x)'), ParserState.VERBOSE | ParserState.UNICODE)
         self.assert_flags('(?a)', ParserState.ASCII)
-        self.assert_flags(u('(?_l)'), ParserState._LOOP_UNROLL | ParserState.UNICODE)
+        self.assert_flags(str('(?_l)'), ParserState._LOOP_UNROLL | ParserState.UNICODE)
         try:
             self.assert_flags('(?imsuxa_l)', 0)
             assert False
         except ValueError:
             pass
-        self.assert_flags(u('(?imsux_l)'),
+        self.assert_flags(str('(?imsux_l)'),
                           ParserState.IGNORECASE | ParserState.MULTILINE |
                           ParserState.DOT_ALL | ParserState.UNICODE |
                           ParserState.VERBOSE | ParserState._LOOP_UNROLL)

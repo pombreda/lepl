@@ -10,24 +10,21 @@ from string import digits, ascii_letters
 from lepl.rxpy.alphabet.base import BaseAlphabet
 from lepl.rxpy.parser.support import ParserState
 from lepl.rxpy.support import RxpyError
-from lepl.support.lib import fmt
+from lepl.support.lib import fmt, PYTHON3, basestring
 
-try:
-    # Python 2.7
-    unicode
-    byte_to_esc_str = lambda x: repr(x)[1:-1]
-    byte_to_str = str
-    byte_to_int = ord
-    int_to_byte = chr
-    byte_to_bytes = bytes
-except NameError:
-    # Python 3
+
+if PYTHON3:
     byte_to_esc_str = lambda x: repr(chr(x))[1:-1]
     byte_to_str = chr
     byte_to_int = lambda x: x
     int_to_byte = lambda x: bytes([x])
     byte_to_bytes = lambda x: bytes([x])
-
+else:
+    byte_to_esc_str = lambda x: repr(x)[1:-1]
+    byte_to_str = str
+    byte_to_int = ord
+    int_to_byte = chr
+    byte_to_bytes = bytes
 
 ASCII_WORD = set(ascii_letters + digits + '_')
 

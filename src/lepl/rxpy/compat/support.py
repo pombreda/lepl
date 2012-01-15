@@ -4,6 +4,7 @@
 A collection of support routines that match the RXPY  interfaces to the standard
 Python API.
 '''
+from collections import Callable
 
 from string import ascii_letters, digits
 
@@ -154,6 +155,12 @@ class RegexObject(object):
             yield pending_empty
             
     def subn(self, replacement, text, count=0):
+        if self.__factory and not isinstance(replacement, Callable):
+            # we should probably test what is returned from callable,
+            # but i am not so sure these tests are a good idea (they
+            # are needed to pass the existing python test suite)
+            self.__parser_state.alphabet.validate_input(replacement,
+                                                        self.__parser_state.flags)
         replacement = compile_replacement(replacement, self.__parser_state)
         n = 0
         pos = 0

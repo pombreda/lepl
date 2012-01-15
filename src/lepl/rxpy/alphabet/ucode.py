@@ -10,16 +10,11 @@ from unicodedata import category
 
 from lepl.rxpy.alphabet.base import BaseAlphabet
 from lepl.rxpy.parser.support import ParserState
-from lepl.support.lib import basestring
+from lepl.support.lib import basestring, str, chr
 from lepl.rxpy.alphabet.bytes import ASCII_WORD
 
-try:
-    unicode
-    def u(x): return unicode(x)
-    def c(x): return unichr(x)
-except NameError:
-    def u(x): return x
-    def c(x): return chr(x)
+u = str
+c = chr
 
 
 UNICODE_WORD = {u('Ll'), u('Lo'), u('Lt'), u('Lu'), u('Mc'), u('Me'), u('Mn'), u('Nd'), u('Nl'), u('No'), u('Pc')}
@@ -57,7 +52,7 @@ class String(BaseAlphabet):
             raise TypeError('Expression for string (Unicode) alphabet must be a string')
 
     def validate_input(self, input, flags):
-        if not isinstance(input, basestring):
+        if not isinstance(input, str):
             raise TypeError('Input for string (Unicode) alphabet must be a string')
 
     def expression_to_letter(self, char):
