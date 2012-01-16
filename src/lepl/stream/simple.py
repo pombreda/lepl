@@ -76,7 +76,7 @@ class SequenceHelper(BaseHelper):
                 return fmt('{0!r}[{1:d}]', sequence, offset)
             else:
                 return fmt('{0!r}', sequence)
-        if offset >= 0 and offset < len(sequence):
+        if 0 <= offset < len(sequence):
             centre = offset
         elif offset > 0:
             centre = len(sequence) - 1
@@ -140,7 +140,7 @@ class SequenceHelper(BaseHelper):
         offset = state + self._delta[OFFSET]
         if kargs is None: kargs = {}
         add_defaults(kargs, self._kargs, prefix=prefix)
-        within = offset > -1 and offset < len(self._sequence)
+        within = -1 < offset < len(self._sequence)
         data = self._fmt(self._sequence, state)
         text = self._fmt(self._sequence, state, index=False)
         # some values below may be already present in self._global_kargs

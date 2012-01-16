@@ -25,7 +25,7 @@ class StreamTargetTest(TestCase):
 
         target = self.new_target('', 0)
         self.assert_target(target, 0, None, None, 1)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 1, None, None, 2)
 
         target = self.new_target('', 1)
@@ -35,16 +35,16 @@ class StreamTargetTest(TestCase):
 
         target = self.new_target('', 0, previous='x')
         self.assert_target(target, 0, 'x', None, 1)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 1, None, None, 2)
 
     def test_char(self):
 
         target = self.new_target('x', 0)
         self.assert_target(target, 0, None, 'x', 0)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 1, 'x', None, 1)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 2, None, None, 2)
 
         target = self.new_target('x', 1)
@@ -54,18 +54,18 @@ class StreamTargetTest(TestCase):
 
         target = self.new_target('x', 0, previous='y')
         self.assert_target(target, 0, 'y', 'x', 0)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 1, 'x', None, 1)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 2, None, None, 2)
 
     def test_string(self):
 
         target = self.new_target('xz', 0)
         self.assert_target(target, 0, None, 'x', 0)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 1, 'x', 'z', 0)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 2, 'z', None, 1)
 
         target = self.new_target('xz', 1)
@@ -75,18 +75,18 @@ class StreamTargetTest(TestCase):
 
         target = self.new_target('xz', 0, previous='y')
         self.assert_target(target, 0, 'y', 'x', 0)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 1, 'x', 'z', 0)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 2, 'z', None, 1)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 3, None, None, 2)
 
         target = self.new_target('xz', 0, previous='y')
         self.assert_target(target, 0, 'y', 'x', 0)
         target._advance(2)
         self.assert_target(target, 2, 'z', None, 1)
-        target._advance(1)
+        target._advance()
         self.assert_target(target, 3, None, None, 2)
 
         target = self.new_target('xz', 0, previous='y')

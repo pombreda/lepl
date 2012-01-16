@@ -320,7 +320,7 @@ class ConfigBuilder(object):
         from lepl.regexp.rewriters import CompileRegexp
         self.alphabet(alphabet)
         return self.add_rewriter(
-                    CompileRegexp(self.__get_alphabet(), force, NfaRegexp))
+                    CompileRegexp(self.__get_alphabet(), force))
 
     def compile_to_re(self, force=False, alphabet=None):
         '''

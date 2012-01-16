@@ -183,7 +183,7 @@ class _GeneratorManager(StackMonitor, ValueMonitor, LogMixin):
         heappush(self.__queue, candidate)
         # this is currently 1 too small, and zero means unlimited, so
         # doubling should always be sufficient.
-        self.queue_len = self.queue_len * 2
+        self.queue_len *= 2
         self._warn(fmt('Queue is too small - extending to {0}', self.queue_len))
             
 

@@ -79,7 +79,7 @@ class CharSet(object):
         while self.intervals:
             (a0, b0) = self.intervals.popleft()
             if a0 <= a1:
-                if b0 < a1 and b0 != alphabet.before(a1):
+                if b0 < a1 and (b0 != alphabet.before(a1)):
                     # old interval starts and ends before new interval
                     # so keep old interval and continue
                     intervals.append((a0, b0))
@@ -95,7 +95,7 @@ class CharSet(object):
                     # (since it may overlap more intervals...)
                     (a1, b1) = (a0, b1)
             else:
-                if b1 < a0 and b1 != alphabet.before(a0):
+                if b1 < a0 and (b1 != alphabet.before(a0)):
                     # new interval starts and ends before old, so add both
                     # and slurp
                     intervals.append((a1, b1))

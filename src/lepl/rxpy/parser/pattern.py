@@ -715,7 +715,6 @@ class CharacterCodeBuilder(Builder):
                     self._parser_state.alphabet.unescape(int(self.__buffer, 16)),
                     escaped=True)
         except:
-            raise
             raise RxpyError('Bad unicode escape: ' + self.__buffer)
 
 

@@ -249,7 +249,7 @@ def BreadthNoTrampoline(first, start, stop, rest, reduce,
     return matcher
 
 
-add_children(BaseSearch, DepthFirst, BreadthFirst, \
+add_children(BaseSearch, DepthFirst, BreadthFirst,
              DepthNoTrampoline, BreadthNoTrampoline)
 
                 

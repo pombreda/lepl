@@ -300,7 +300,7 @@ class Flatten(Rewriter):
                 for arg in old_args:
                     if matcher_type(arg, fail=False) is type_ and \
                         (not hasattr(arg, 'wrapper') or
-                         ((not arg.wrapper and not node.wrapper) or \
+                         ((not arg.wrapper and not node.wrapper) or
                           (arg.wrapper.functions == node.wrapper.functions 
                            and node.wrapper.functions == [add]))):
                         new_args.extend(arg.matchers)

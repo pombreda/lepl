@@ -77,8 +77,8 @@ class HelperFacade(StreamHelper):
     def len(self, state):
         return self._delegate.len(state)
     
-    def stream(self, state, value, id_=None):
-        return self._delegate.stream(state, value, id_)
+    def stream(self, state, value, id_=None, max=None):
+        return self._delegate.stream(state, value, id_, max)
 
     def deepest(self):
         return self._delegate.deepest()

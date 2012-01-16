@@ -21,7 +21,8 @@ class SimpleEngine(StreamTargetMixin, BaseMatchEngine):
         super(SimpleEngine, self).__init__(parser_state, graph)
         self._program = compile(graph, self)
         self.__stack = []
-        
+
+    # fail_on_groups allows hybrid to fail later, if groups read
     def run(self, stream, pos=0, search=False, fail_on_groups=True):
 
         self._initial_stream = stream

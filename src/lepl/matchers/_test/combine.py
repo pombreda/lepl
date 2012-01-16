@@ -97,7 +97,7 @@ class LimitTest(BaseTest):
     
     def test_limit(self):
         self.assert_direct('1.2', Real(), [['1.2'], ['1.'], ['1']])
-        self.assert_direct('1.2', Limit(Real(), 1), [['1.2']])
+        self.assert_direct('1.2', Limit(Real()), [['1.2']])
         self.assert_direct('1.2', Limit(Real(), 2), [['1.2'], ['1.']])
         self.assert_direct('1.2', Limit(Real(), 0), [])
         

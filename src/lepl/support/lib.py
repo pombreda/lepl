@@ -138,7 +138,7 @@ def open_stop(spec):
     available in Python 3.  This uses a minimum value for maxint I found
     somewhere; hopefully no-one ever wants finite repeats larger than this.
     '''
-    return spec.stop == None or spec.stop > 2147483647
+    return spec.stop is None or spec.stop > 2147483647
 
 
 def lmap(function, values):

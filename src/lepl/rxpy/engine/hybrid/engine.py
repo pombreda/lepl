@@ -9,8 +9,7 @@ from lepl.rxpy.support import UnsupportedOperation
 class HybridEngine(BaseMatchEngine):
     
     def __init__(self, parser_state, graph):
-        self.__parser_state = parser_state
-        self.__graph = graph
+        super(HybridEngine, self).__init__(parser_state, graph)
         self.__simple = SimpleEngine(parser_state, graph)
         self.__cached_complex = None
     
@@ -26,7 +25,7 @@ class HybridEngine(BaseMatchEngine):
     @property
     def __complex(self):
         if self.__cached_complex is None:
-            self.__cached_complex = ComplexEngine(self.__parser_state, self.__graph)
+            self.__cached_complex = ComplexEngine(self._parser_state, self._graph)
         return self.__cached_complex
 
         

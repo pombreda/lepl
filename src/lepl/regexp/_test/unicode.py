@@ -48,7 +48,7 @@ UNICODE = UnicodeAlphabet.instance()
 
 
 def _test_parser(regexp):
-    return Compiler.single(UNICODE, regexp, 'label')
+    return Compiler.single(UNICODE, regexp)
 
 def label(text):
     return fmt('(?P<label>{0!s})', text)

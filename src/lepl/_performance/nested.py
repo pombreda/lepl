@@ -107,7 +107,7 @@ p.print_stats(35)
 
 if __name__ == '__main__':
 #    time('left')
-    time('right')
+    time()
 #    profile('left')
 #    right()
 #    left()

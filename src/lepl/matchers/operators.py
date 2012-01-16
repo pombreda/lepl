@@ -599,9 +599,9 @@ class OperatorMixin(NamespaceMixin):
                 if have_index:
                     raise TypeError(
                         fmt('Multiple slices not supported: {0!r}', index))
-                start = index.start if index.start != None else 0
+                start = index.start if index.start is not None else 0
                 stop = index.stop if not open_stop(index) else None
-                step = index.step if index.step != None else DEPTH_FIRST
+                step = index.step if index.step is not None else DEPTH_FIRST
                 have_index = True
             elif index == Ellipsis:
                 add = True
