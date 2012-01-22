@@ -165,15 +165,6 @@ class BaseNode(AutoClone):
     def _node_eq(self, other):
         return type(self) == type(other) and self._kargs() == other._kargs()
 
-    #noinspection PyUnusedLocal
-    @unimplemented
-    def visit(self, visitor, state=None):
-        '''
-        The visitor pattern - used to evaluate the graph by an interpreter,
-        for example.  Calls back to the visitor via the interface described
-        in `rxpy.parser.visitor.Visitor`.
-        '''
-
 
 class BaseGroupReference(BaseNode):
     '''

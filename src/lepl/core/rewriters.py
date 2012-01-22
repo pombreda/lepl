@@ -32,8 +32,7 @@ parser.
 '''
 
 from lepl.matchers.memo import LMemo, RMemo
-from lepl.support.graph import Visitor, preorder, loops, order, NON_TREE, \
-    dfs_edges, LEAF
+from lepl.support.graph import preorder, loops, order, NON_TREE, dfs_edges, LEAF
 from lepl.matchers.combine import DepthFirst, DepthNoTrampoline, \
     BreadthFirst, BreadthNoTrampoline, And, AndNoTrampoline, \
     Or, OrNoTrampoline
@@ -758,80 +757,3 @@ class NodeStats2(object):
         return str(self) == str(other)
 
 
-#class DelayedClone(Visitor):    
-#    '''
-#    A version of `Clone()` that uses `Delayed()` rather
-#    that `Proxy()` to handle circular references.  Also caches results to
-#    avoid duplications.
-#    '''
-#    
-#    def __init__(self, clone_=clone):
-#        super(DelayedClone, self).__init__()
-#        self._clone = clone_
-#        self._visited = {}
-#        self._loops = set()
-#        self._node = None
-#    
-#    def loop(self, node):
-#        '''
-#        This is called for nodes that are involved in cycles when they are
-#        needed as arguments but have not themselves been cloned.
-#        '''
-#        if node not in self._visited:
-#            self._visited[node] = Delayed()
-#            self._loops.add(node)
-#        return self._visited[node]
-#    
-#    def node(self, node):
-#        '''
-#        Store the current node.
-#        '''
-#        self._node = node
-#        
-#    def constructor(self, *args, **kargs):
-#        '''
-#        Clone the node, taking care to handle loops.
-#        '''
-#        if self._node not in self._visited:
-#            self._visited[self._node] = self.__clone_node(args, kargs)
-#        # if this is one of the loops we replaced with a delayed instance,
-#        # then we need to patch the delayed matcher
-#        elif self._node in self._loops and \
-#                not self._visited[self._node].matcher:
-#            self._visited[self._node] += self.__clone_node(args, kargs)
-#        return self._visited[self._node]
-#    
-#    def __clone_node(self, args, kargs):
-#        '''
-#        Before cloning, drop any Delayed from args and kargs.  Afterwards,
-#        check if this is a Delaed instance and, if so, return the contents.
-#        This helps keep the number of Delayed instances from exploding.
-#        '''
-##        args = lmap(self.__drop, args)
-##        kargs = dict((key, self.__drop(kargs[key])) for key in kargs)
-##        return self.__drop(self._clone(self._node, args, kargs))
-#        return self._clone(self._node, args, kargs)
-#    
-#    # not needed now Delayed dynamically sets _match()
-#    # also, will break new cloning
-##    @staticmethod
-##    def __drop(node):
-##        '''
-##        Filter `Delayed` instances where possible (if they have the matcher
-##        defined and are nor transformed).
-##        '''
-##        # delayed import to avoid dependency loops
-##        from lepl.matchers.transform import Transformable
-##        if isinstance(node, Delayed) and node.matcher and \
-##                not (isinstance(node, Transformable) and node.wrapper):
-##            return node.matcher
-##        else:
-##            return node
-#    
-#    def leaf(self, value):
-#        '''
-#        Leaf values are unchanged.
-#        '''
-#        return value
-    
-    

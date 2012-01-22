@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='LEPL',
-      version='5.0.1',
+      version='6.0.0',
       description='A Parser Library for Python 2.6+/3+: Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -73,6 +73,18 @@ Features
                 'lepl.lexer.lines',  'lepl.lexer.lines._test',  'lepl.lexer.lines._example',
                 'lepl.matchers',     'lepl.matchers._test',
                 'lepl.regexp',       'lepl.regexp._test',
+                'lepl.rxpy',         'lepl.rxpy._profile',
+                'lepl.rxpy.alphabet','lepl.rxpy.alphabet._test',
+                'lepl.rxpy.compat',
+                'lepl.rxpy.engine',  'lepl.rxpy.engine._test',
+                'lepl.rxpy.engine.backtrack', 'lepl.rxpy.engine.backtrack._test',
+                'lepl.rxpy.engine.complex',   'lepl.rxpy.engine.complex._test',
+                'lepl.rxpy.engine.hybrid',    'lepl.rxpy.engine.hybrid._test',
+                'lepl.rxpy.engine.lexer',     'lepl.rxpy.engine.lexer._test',
+                'lepl.rxpy.engine.replace',
+                'lepl.rxpy.engine.simple',    'lepl.rxpy.engine.simple._test',
+                'lepl.rxpy.graph',   'lepl.rxpy.graph._test',
+                'lepl.rxpy.parser',  'lepl.rxpy.parser._test',
                 'lepl.stream',       'lepl.stream._test',
                 'lepl.support',      'lepl.support._test',
                 ],

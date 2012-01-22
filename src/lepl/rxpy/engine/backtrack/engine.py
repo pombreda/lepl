@@ -1,12 +1,11 @@
 #LICENCE
 
 '''
-A matcher implementation using a simple interpreter-based approach with the
-`Visitor` interface.  State is encapsulated in `State` while program flow 
-uses trampolining to avoid exhausting the Python stack.  In addition, to
-further reduce the use of the (non-Python) stack, simple repetition is
-"run length" compressed (this addresses ".*" matching against long strings, 
-for example). 
+A matcher implementation using a simple interpreter-based approach.  State is
+encapsulated in `State` while program flow uses trampolining to avoid
+exhausting the Python stack.  In addition, to further reduce the use of the
+(non-Python) stack, simple repetition is "run length" compressed (this
+addresses ".*" matching against long strings, for example).
 '''                                    
 
 from lepl.rxpy.engine.base import BaseMatchEngine

@@ -309,50 +309,50 @@ class ArgAsAttributeMixin(ConstructorGraphNode):
 class Visitor(object):
     '''
     The interface required by the walkers.
-    
+
     ``loop`` is value returned when a node is re-visited.
-    
+
     ``type_`` is set with the node type before constructor() is called.  This
     allows constructor() itself to be invoked with the Python arguments used to
     construct the original graph.
     '''
-    
+
     def loop(self, value):
         '''
         Called on nodes that belong to a loop (eg. in the `ConstructorWalker`
         nodes are visited in postorder, and this is called when a node is
         *first* found as a constructor argument (before bing found in the
         "postorder" traversal)).
-        
+
         By default, do nothing.
         '''
         pass
-    
+
     def node(self, node):
         '''
         Called when first visiting a node.
-        
+
         By default, do nothing.
         '''
         pass
-        
+
     def constructor(self, *args, **kargs):
         '''
         Called for node instances.  The args and kargs are the values for
         the corresponding child nodes, as returned by this visitor.
-        
+
         By default, do nothing.
         '''
         pass
-    
+
     def leaf(self, value):
         '''
         Called for children that are not node instances.
-        
+
         By default, do nothing.
         '''
         pass
-    
+
     def postprocess(self, result):
         '''
         Called after walking, passed the match to the initial node.
@@ -480,135 +480,10 @@ class _LineOverflow(Exception):
     pass
 
 
-class ConstructorStr(Visitor):
-    '''
-    Reconstruct the constructors used to generate the graph as a string
-    (useful for repr).
-    
-    Internally, data is stored as a list of (indent, line) pairs.
-    '''
-    
-    def __init__(self, line_length=80):
-        super(ConstructorStr, self).__init__()
-        self.__line_length = line_length
-        self.__name = None
-        
-    def node(self, node):
-        '''
-        Store the node's class name for later use.
-        '''
-        try:
-            self.__name = node.delegate.__class__.__name__
-        except AttributeError:
-            self.__name = node.__class__.__name__
-        
-    def loop(self, value):
-        '''
-        Replace loop nodes by a <loop> marker.
-        '''
-        return [[0, '<loop>']]
-    
-    def constructor(self, *args, **kargs):
-        '''
-        Build the constructor string, given the node and arguments.
-        '''
-        contents = []
-        for arg in args:
-            if contents:
-                contents[-1][1] += ', '
-            contents.extend([indent+1, line] for (indent, line) in arg)
-        for name in kargs:
-            if contents:
-                contents[-1][1] += ', '
-            arg = kargs[name]
-            contents.append([arg[0][0]+1, name + '=' + arg[0][1]])
-            contents.extend([indent+1, line] for (indent, line) in arg[1:])
-        lines = [[0, self.__name + '(']] + contents
-        lines[-1][1] += ')'
-        return lines
-    
-    def leaf(self, value):
-        '''
-        Non-node nodes (attributes) are displayed using repr.
-        '''
-        return [[0, repr(value)]]
-
-    def postprocess(self, lines):
-        '''
-        This is an ad-hoc algorithm to make the final string reasonably
-        compact.  It's ugly, bug-prone and completely arbitrary, but it 
-        seems to work....
-        '''
-        sections = deque()
-        (scan, indent) = (0, -1)
-        while scan < len(lines):
-            (i, _) = lines[scan]
-            if i > indent:
-                indent = i
-                sections.append((indent, scan))
-            elif i < indent:
-                (scan, indent) = self.__compress(lines, sections.pop()[1], scan)
-            scan += 1
-        while sections:
-            self.__compress(lines, sections.pop()[1], len(lines))
-        return self.__fmt(lines)
-    
-    def __compress(self, lines, start, stop):
-        '''
-        Try a compact version first.
-        '''
-        try:
-            return self.__all_on_one_line(lines, start, stop)
-        except _LineOverflow:
-            return self.__bunch_up(lines, start, stop)
-        
-    def __bunch_up(self, lines, start, stop):
-        '''
-        Scrunch adjacent lines together.
-        '''
-        (indent, _) = lines[start]
-        while start+1 < stop:
-            if indent == lines[start][0] and \
-                    (start+1 >= stop or indent == lines[start+1][0]) and \
-                    (start+2 >= stop or indent == lines[start+2][0]) and \
-                    indent + len(lines[start][1]) + len(lines[start+1][1]) < \
-                        self.__line_length:
-                lines[start][1] += lines[start+1][1]
-                del lines[start+1]
-                stop -= 1
-            else:
-                start += 1
-        return (stop, indent-1)
-
-    def __all_on_one_line(self, lines, start, stop):
-        '''
-        Try all on one line.
-        '''
-        if not start:
-            raise _LineOverflow()
-        (indent, text) = lines[start-1]
-        size = indent + len(text) 
-        for (_, extra) in lines[start:stop]:
-            size += len(extra)
-            if size > self.__line_length:
-                raise _LineOverflow()
-            text += extra
-        lines[start-1] = [indent, text]
-        del lines[start:stop]
-        return (start-1, indent)
-
-    @staticmethod
-    def __fmt(lines):
-        '''
-        Join lines together, given the indent.
-        '''
-        return '\n'.join(' ' * indent + line for (indent, line) in lines)
-                
-                
 class GraphStr(Visitor):
     '''
     Generate an ASCII graph of the nodes.
-    
+
     This should be used with `ConstructorWalker` and works rather like
     cloning, except that instead of generating a new set of nodes we
     generate a nested set of functions.  This set of functions has the
@@ -618,30 +493,30 @@ class GraphStr(Visitor):
     Functions higher up the tree are similar, except instead of returning
     a picture directly they extend the prefix and then call the functions
     that are their children.
-    
+
     Once we have an entire tree of functions, we can call the root with
     an empty prefix and the functions will "cascade" down, building the
     prefixes necessary and passing them to the root functions that
     generate the final ASCII data.
     '''
-    
+
     def __init__(self):
         super(GraphStr, self).__init__()
         self._type = None
-    
+
     def loop(self, value):
         '''
         Mark loops (what else could we do?)
         '''
         return lambda first, rest, name: \
             [first + name + (' ' if name else '') + '<loop>']
-    
+
     def node(self, node):
         '''
         Store the class name.
         '''
         self._type = node.__class__.__name__
-    
+
     def constructor(self, *args, **kargs):
         '''
         Generate a function that can construct the local section of the
@@ -654,8 +529,8 @@ class GraphStr(Visitor):
             and Kargs are the equivalent functions for the constructor
             arguments; we evaluate them here as we "expend" the ASCII
             picture.
-            
-            Does this need to be so complex - see my answer at 
+
+            Does this need to be so complex - see my answer at
             https://www.quora.com/Is-there-an-easy-way-to-print-trees-with-nodes-and-lines-maybe
             '''
             spec = []
@@ -671,7 +546,7 @@ class GraphStr(Visitor):
                 for line in fun_(first_, rest_, name_):
                     yield rest + line
         return fun
-    
+
     def leaf(self, value):
         '''
         Generate a function that can construct the local section of the
@@ -679,7 +554,7 @@ class GraphStr(Visitor):
         '''
         return lambda first, rest, name: \
             [first + name + (' ' if name else '') + repr(value)]
-    
+
     def postprocess(self, fun):
         '''
         Invoke the functions generated above and join the resulting lines.
@@ -733,13 +608,13 @@ class Clone(Visitor):
     '''
     Clone the graph, applying a particular clone function.
     '''
-    
+
     def __init__(self, clone_=clone):
         super(Clone, self).__init__()
         self._clone = clone_
         self._proxies = {}
         self._node = None
-    
+
     def loop(self, node):
         '''
         Wrap loop nodes in proxies.
@@ -747,13 +622,13 @@ class Clone(Visitor):
         if node not in self._proxies:
             self._proxies[node] = make_proxy()
         return self._proxies[node][1]
-    
+
     def node(self, node):
         '''
         Store the current node.
         '''
         self._node = node
-    
+
     def constructor(self, *args, **kargs):
         '''
         Clone the node, back-patching proxies as necessary.
@@ -762,7 +637,7 @@ class Clone(Visitor):
         if self._node in self._proxies:
             self._proxies[self._node][0](node)
         return node
-    
+
     def leaf(self, value):
         '''
         Don't clone leaf nodes.
