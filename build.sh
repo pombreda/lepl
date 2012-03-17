@@ -15,7 +15,7 @@ rm -fr dist MANIFEST*
 
 python setup.py sdist --formats=gztar,zip
 
-#./build-doc.sh
+./build-doc.sh
 
 rm -fr "LEPL-$RELEASE"
 mkdir "LEPL-$RELEASE"

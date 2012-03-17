@@ -100,5 +100,3 @@ class LimitTest(BaseTest):
         self.assert_direct('1.2', Limit(Real()), [['1.2']])
         self.assert_direct('1.2', Limit(Real(), 2), [['1.2'], ['1.']])
         self.assert_direct('1.2', Limit(Real(), 0), [])
-        
-        
