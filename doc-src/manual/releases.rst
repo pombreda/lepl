@@ -115,6 +115,10 @@ Date        Version  Description
 2011-01-30  4.4      Rename `Float() <api/redirect.html#lepl.support.warn.Float>`_, `Real() <api/redirect.html#lepl.matchers.derived.Real>`_; add `Limit() <api/redirect.html#lepl.matchers.combine.Limit>`_.
 ----------  -------  -----------
 2011-03-20  5.0      Rewrite of streams and related functionality.  Simplified core code.
+----------  -------  -----------
+2012-01-08  5.0.1    Tokens + iterables bugfix.
+----------  -------  -----------
+2012-03-17  5.0.2    Made String() more string-specific.
 ==========  =======  ===========
 
 5.0

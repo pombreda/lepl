@@ -63,13 +63,13 @@ class RepeatTest(TestCase):
         self.assert_simple([1], 1, 2, 'd', ['0'])
         self.assert_simple([2], 1, 1, 'd', ['0','1'])
         self.assert_simple([2], 1, 2, 'd', ['0','1'])
-        self.assert_simple([2], 0, 2, 'd', ['0','1', ''])
+        self.assert_simple([2], 0, 2, 'd', ['0','1',''])
         self.assert_simple([1,2], 1, 1, 'd', ['0'])
-        self.assert_simple([1,2], 1, 2, 'd', ['00','01', '0'])
+        self.assert_simple([1,2], 1, 2, 'd', ['00','01','0'])
         self.assert_simple([1,2], 2, 2, 'd', ['00','01'])
-        self.assert_simple([1,2], 1, 2, 'b', ['0', '00','01'])
-        self.assert_simple([1,2], 1, 2, 'g', ['00', '01','0'])
-        
+        self.assert_simple([1,2], 1, 2, 'b', ['0','00','01'])
+        self.assert_simple([1,2], 1, 2, 'g', ['00','01','0'])
+
     def assert_simple(self, stream, start, stop, algorithm, target):
         matcher = Repeat(RangeMatch(), start, stop, algorithm=algorithm)
         matcher.config.no_full_first_match()
@@ -193,6 +193,10 @@ class StringTest(BaseTest):
         self.assert_direct('"abc"d', SingleLineString(), [['abc']])
         self.assert_direct('"abc"', SkipString(), [['abc']])
         self.assert_direct('"abc"d', SkipString(), [['abc']])
+
+    def test_empty(self):
+        self.assert_direct('""', String(), [['']])
+        self.assert_direct("''", String(quote="'"), [['']])
 
     def test_escape(self):
         self.assert_direct('"ab\\"c"', String(), [['ab"c'], ['ab\\']])

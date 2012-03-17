@@ -49,7 +49,7 @@ import lepl._test.wrong_depth_bug
 import lepl._test.wrong_regexp_bug
 
 # Number of tests if running in IDE with Python 3
-TOTAL = 423
+TOTAL = 424
 NOT_DISTRIBUTED = 12
 NOT_3 = 22
 

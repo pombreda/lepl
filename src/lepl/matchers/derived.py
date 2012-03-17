@@ -44,6 +44,7 @@ from lepl.matchers.support import coerce_
 from lepl.matchers.transform import TransformationWrapper, Transform, \
     ApplyArgs, ApplyRaw
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
+from lepl.stream.core import s_join
 from lepl.support.lib import assert_type, lmap, fmt, basestring
 from lepl.support.warn import warn_on_use
 
@@ -612,7 +613,7 @@ def String(quote='"', escape='\\'):
     content = AnyBut(q)
     if escape:
         content = Or(And(Drop(escape), q), content)
-    content = Repeat(content, add_=True) 
+    content = Repeat(content, reduce=([''], lambda a, b: [a[0] + b[0]]))
     return And(Drop(q), content, Drop(q))
 
 
@@ -624,7 +625,7 @@ def SingleLineString(quote='"', escape='\\', exclude='\n'):
     content = AnyBut(Or(q, Any(exclude)))
     if escape:
         content = Or(content, And(Drop(escape), q))
-    content = Repeat(content, add_=True)
+    content = Repeat(content, reduce=([''], lambda a, b: [a[0] + b[0]]))
     return And(Drop(q), content, Drop(q))
 
 
@@ -638,7 +639,8 @@ def SkipString(quote='"', escape='\\', ignore='\n'):
     if escape:
         content = Or(content, And(Drop(escape), q))
     content = Or(content, Drop(Any(ignore)))
-    content = Repeat(content, add_=True)
+    content = Repeat(content,
+        reduce=([''], lambda a, b: [a[0] + (b[0] if b else '')]))
     return And(Drop(q), content, Drop(q))
 
 
