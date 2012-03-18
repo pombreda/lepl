@@ -39,7 +39,7 @@ from lepl.matchers.monitor import Trace
 from lepl.matchers.derived import Repeat, Space, SkipTo, Newline, String, \
     SkipString, SingleLineString, UnsignedInteger, SignedInteger, \
     UnsignedReal, SignedReal, UnsignedEReal, SignedEReal, UnsignedFloat, \
-    SignedFloat, UnsignedEFloat, SignedEFloat, Optional
+    SignedFloat, UnsignedEFloat, SignedEFloat, Optional, Add, Reduce, Star
 from lepl.stream.maxdepth import FullFirstMatchException
 from lepl.matchers.core import Any
 from lepl._test.base import BaseTest
@@ -153,6 +153,15 @@ class RangeMatch(OperatorMatcher):
         (value, next_stream) = s_next(stream)
         for i in range(value[0]):
             yield ([i], next_stream)
+
+
+class AddReduceTest(BaseTest):
+
+    def test_add(self):
+        self.assert_direct('123', Add(Star(Any())), [['123'], ['12'], ['1'], []])
+
+    def test_reduce(self):
+        self.assert_direct('123', Reduce(Star(Any()), ''), [['123'], ['12'], ['1'], ['']])
 
 
 class SpaceTest(BaseTest):

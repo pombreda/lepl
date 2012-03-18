@@ -40,12 +40,14 @@ try:
     basestring = basestring
     file = file
     from StringIO import StringIO
+    reduce = reduce
 except NameError:
     from io import IOBase, StringIO
     chr = chr
     str = str
     basestring = str
     file = IOBase
+    from functools import reduce
 
 
 def assert_type(name, value, type_, none_ok=False):

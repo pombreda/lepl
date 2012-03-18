@@ -50,7 +50,7 @@ sed -i -r 's/lepl\.node\.(Error|throw|make_error)/lepl.matchers.error.\1/g' *.rs
 
 # lepl 4 direct
 sed -i -r 's/``(SignedFloat|Drop|Space|Star|Optional|Letter|Digit|args|Eos|Word|Integer|Apply|KApply|Add|AnyBut|Columns|Eos|Float|Identity|Integer|Lower|Map|Name|Newline|OneOrMore|Plus|Printable|Punctuation|SignedEFloat|SignedFloat|SignedInteger|SkipTo|String|Substitute|UnsignedFloat|UnsignedInteger|Upper|Whitespace|Word|ZeroOrMore|Repeat|UnsignedReal|SignedReal|UnsignedEReal|SignedEReal|Real)(\([^\)]*\))``/`\1\2 <api\/redirect.html#lepl.matchers.derived.\1>`_/g' *.rst
-sed -i -r 's/``(And|Or|First|Limit|Difference)(\([^\)]*\))``/`\1\2 <api\/redirect.html#lepl.matchers.combine.\1>`_/g' *.rst
+sed -i -r 's/``(And|Or|Reduce|First|Limit|Difference)(\([^\)]*\))``/`\1\2 <api\/redirect.html#lepl.matchers.combine.\1>`_/g' *.rst
 sed -i -r 's/``(Literal|Regexp|Delayed|Lookahead|Empty|Eof)(\([^\)]*\))``/`\1\2 <api\/redirect.html#lepl.matchers.core.\1>`_/g' *.rst
 sed -i -r 's/``(LMemo|RMemo)(\([^\)]*\))``/`\1\2 <api\/redirect.html#lepl.matchers.memo.\1>`_/g' *.rst
 sed -i -r 's/``(DroppedSpace|Separator)(\([^\)]*\))``/`\1\2 <api\/redirect.html#lepl.matchers.operators.\1>`_/g' *.rst
