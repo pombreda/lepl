@@ -119,7 +119,15 @@ Date        Version  Description
 2012-01-08  5.0.1    Tokens + iterables bugfix.
 ----------  -------  -----------
 2012-03-17  5.0.2    Made String() more string-specific.
+----------  -------  -----------
+2012-03-18  5.1      Add Reduce() (makes String() more general again).
 ==========  =======  ===========
+
+5.1
+---
+
+The addition of `Reduce` simplified `String` and resolved some long-standing
+issues about empty sequences.
 
 5.0
 ---
@@ -128,7 +136,6 @@ See :ref:`lepl5`.
 
 Stream handling and line--aware parsing were simplified.  Resource management
 was improved.
-
 
 .. release_4_4:
 

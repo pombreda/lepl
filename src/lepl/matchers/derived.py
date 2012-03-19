@@ -44,7 +44,6 @@ from lepl.matchers.support import coerce_
 from lepl.matchers.transform import TransformationWrapper, Transform, \
     ApplyArgs, ApplyRaw
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
-from lepl.stream.core import s_join
 from lepl.support.lib import assert_type, lmap, fmt, basestring, reduce
 from lepl.support.warn import warn_on_use
 
@@ -71,13 +70,14 @@ def Repeat(matcher, start=0, stop=None, limit=None, algorithm=DEPTH_FIRST,
     
     If `separator` is given then each repetition is separated by that matcher.
     
-    If `add` is true then the results are joined with `Add` (once all
+    If `add_` is true then the results are joined with `Add` (once all
     results are obtained).
     
     If `reduce` is given it should be a pair (zero, join) where
     `join(results, next)` is used to accumulate results and `zero` is the
-    initial value of `results`.  By default the value is `([], +)`.  This
-    uses an internal reduction, rather than the `Repeat` matcher.
+    initial value of `results`.  This is implemented via `Reduce`.
+
+    `reduce` and `add_` cannot be given together.
     '''
     first = coerce_(matcher)
     if separator is None:
@@ -98,22 +98,24 @@ def Repeat(matcher, start=0, stop=None, limit=None, algorithm=DEPTH_FIRST,
     if 'dbgn'.find(algorithm) == -1:
         raise ValueError('Repeat or [...] must have a step (algorithm) '
                          'of d, b, g or n.')
-    add_ = Add if add_ else Identity
-    reduce = reduce if reduce else ([], __add__)
+    if add_ and reduce:
+        raise ValueError('Repeat cannot apply both add_ and reduce')
+    elif add_:
+        process = Add
+    elif reduce:
+        process = lambda r: Reduce(r, reduce[0], reduce[1])
+    else:
+        process = Identity
     matcher = {DEPTH_FIRST:
-                add_(DepthFirst(first=first, start=start, stop=stop, 
-                                rest=rest, reduce=reduce)),
+                process(DepthFirst(first=first, start=start, stop=stop, rest=rest)),
                BREADTH_FIRST: 
-                add_(BreadthFirst(first=first, start=start, stop=stop, 
-                                  rest=rest, reduce=reduce)),
-               GREEDY:        
-                add_(OrderByResultCount(
-                        BreadthFirst(first=first, start=start, stop=stop, 
-                                     rest=rest, reduce=reduce))),
+                process(BreadthFirst(first=first, start=start, stop=stop, rest=rest)),
+               GREEDY:
+                process(OrderByResultCount(
+                        BreadthFirst(first=first, start=start, stop=stop, rest=rest))),
                NON_GREEDY:
-                add_(OrderByResultCount(
-                        BreadthFirst(first=first, start=start, stop=stop, 
-                                     rest=rest, reduce=reduce),
+                process(OrderByResultCount(
+                        BreadthFirst(first=first, start=start, stop=stop, rest=rest),
                         False))
             }[algorithm]
     if limit is not None:
@@ -620,12 +622,15 @@ def String(quote='"', escape='\\', empty='', join=__add__):
     '''
     Match a string with quotes that can be escaped.  This will match across
     newlines (see `SingleLineString` for an alternative).
+
+    More generally, a string is a grouping of results.  Setting `empty` and
+    `join` correctly will allow this matcher to work with a variety of types.
     '''
     q = Literal(quote)
     content = AnyBut(q)
     if escape:
         content = Or(And(Drop(escape), q), content)
-    content = Repeat(content, reduce=([empty], lambda a, b: [join(a[0], b[0])]))
+    content = Repeat(content, reduce=(empty, join))
     return And(Drop(q), content, Drop(q))
 
 
@@ -637,7 +642,7 @@ def SingleLineString(quote='"', escape='\\', exclude='\n', empty='', join=__add_
     content = AnyBut(Or(q, Any(exclude)))
     if escape:
         content = Or(content, And(Drop(escape), q))
-    content = Repeat(content, reduce=([empty], lambda a, b: [join(a[0], b[0])]))
+    content = Repeat(content, reduce=(empty, join))
     return And(Drop(q), content, Drop(q))
 
 
@@ -651,8 +656,7 @@ def SkipString(quote='"', escape='\\', ignore='\n', empty='', join=__add__):
     if escape:
         content = Or(content, And(Drop(escape), q))
     content = Or(content, Drop(Any(ignore)))
-    content = Repeat(content,
-        reduce=([empty], lambda a, b: [join(a[0], b[0]) if b else a[0]]))
+    content = Repeat(content, reduce=(empty, join))
     return And(Drop(q), content, Drop(q))
 
 

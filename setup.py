@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='LEPL',
-      version='5.0.2',
+      version='5.1.0',
       description='A Parser Library for Python 2.6+/3+: Recursive Descent; Full Backtracking',
       long_description='''
 LEPL is a recursive descent parser, written in Python, which has a a friendly,
@@ -15,7 +15,7 @@ grammars and it can also handle left-recursive grammars.
 The aim is a powerful, extensible parser that will also give solid, reliable
 results to first-time users.
 
-`Release 5.0 <http://www.acooke.org/lepl/lepl5.0.html>`_ has simpler stream
+`Release 5 <http://www.acooke.org/lepl/lepl5.0.html>`_ has simpler stream
 (input) handling.  Memoisation, line-aware lexing and memory use have also 
 been revised.  These changes make future extension easier, fix several bugs, 
 and improve performance.

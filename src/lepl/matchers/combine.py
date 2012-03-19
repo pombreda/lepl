@@ -70,26 +70,23 @@ def search_factory(factory):
     '''
     Add the arg processing common to all searching.
     '''
-    def new_factory(first, start, stop, rest=None, reduce=None, 
+    def new_factory(first, start, stop, rest=None,
                     generator_manager_queue_len=None):
         rest = first if rest is None else rest
-        reduce = reduce if reduce else ([], __add__)
-        return factory(first, start, stop, rest, reduce, 
-                       generator_manager_queue_len)
+        return factory(first, start, stop, rest, generator_manager_queue_len)
     return document(new_factory, factory)
 
 
 @trampoline_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
-def DepthFirst(first, start, stop, rest, reduce, generator_manager_queue_len):
+def DepthFirst(first, start, stop, rest, generator_manager_queue_len):
     '''
     (Post order) Depth first repetition (typically used via `Repeat`).
     '''
-    (zero, join) = reduce
     def match(support, stream):
         stack = deque()
         try:
-            stack.append((0, zero, stream, first._match(stream)))
+            stack.append((0, [], stream, first._match(stream)))
             stream = None
             while stack:
                 (count1, acc1, stream1, generator) = stack[-1]
@@ -98,7 +95,7 @@ def DepthFirst(first, start, stop, rest, reduce, generator_manager_queue_len):
                     count2 = count1 + 1
                     try:
                         (value, stream2) = yield generator
-                        acc2 = join(acc1, value)
+                        acc2 = acc1 + value
                         stack.append((count2, acc2, stream2, rest._match(stream2)))
                         extended = True
                     except StopIteration:
@@ -119,15 +116,14 @@ def DepthFirst(first, start, stop, rest, reduce, generator_manager_queue_len):
 
 @trampoline_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
-def BreadthFirst(first, start, stop, rest, reduce, generator_manager_queue_len):
+def BreadthFirst(first, start, stop, rest, generator_manager_queue_len):
     '''
     (Level order) Breadth first repetition (typically used via `Repeat`).
     '''
-    (zero, join) = reduce
     def match(support, stream):
         queue = deque()
         try:
-            queue.append((0, zero, stream, first._match(stream)))
+            queue.append((0, [], stream, first._match(stream)))
             stream = None
             while queue:
                 (count1, acc1, stream1, generator) = queue.popleft()
@@ -137,7 +133,7 @@ def BreadthFirst(first, start, stop, rest, reduce, generator_manager_queue_len):
                 try:
                     while True:
                         (value, stream2) = yield generator
-                        acc2 = join(acc1, value)
+                        acc2 = acc1 + value
                         if stop is None or count2 <= stop:
                             queue.append((count2, acc2, stream2, 
                                           rest._match(stream2)))
@@ -176,17 +172,15 @@ def OrderByResultCount(matcher, ascending=True):
 
 @sequence_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
-def DepthNoTrampoline(first, start, stop, rest, reduce, 
-                      generator_manager_queue_len):
+def DepthNoTrampoline(first, start, stop, rest, generator_manager_queue_len):
     '''
     A more efficient search when all matchers are functions (so no need to
     trampoline).  Depth first (greedy).
     '''
-    (zero, join) = reduce
     def matcher(support, stream):
         stack = deque()
         try:
-            stack.append((0, zero, stream, first._untagged_match(stream)))
+            stack.append((0, [], stream, first._untagged_match(stream)))
             stream = None
             while stack:
                 (count1, acc1, stream1, generator) = stack[-1]
@@ -195,7 +189,7 @@ def DepthNoTrampoline(first, start, stop, rest, reduce,
                     count2 = count1 + 1
                     try:
                         (value, stream2) = next(generator)
-                        acc2 = join(acc1, value)
+                        acc2 = acc1 + value
                         stack.append((count2, acc2, stream2, 
                                       rest._untagged_match(stream2)))
                         extended = True
@@ -217,17 +211,15 @@ def DepthNoTrampoline(first, start, stop, rest, reduce,
             
 @sequence_matcher_factory(first=to(Literal), rest=to(Literal))
 @search_factory
-def BreadthNoTrampoline(first, start, stop, rest, reduce, 
-                        generator_manager_queue_len):
+def BreadthNoTrampoline(first, start, stop, rest, generator_manager_queue_len):
     '''
     A more efficient search when all matchers are functions (so no need to
     trampoline).  Breadth first (non-greedy).
     '''
-    (zero, join) = reduce
     def matcher(support, stream):
         queue = deque()
         try:
-            queue.append((0, zero, stream, first._untagged_match(stream)))
+            queue.append((0, [], stream, first._untagged_match(stream)))
             stream = None
             while queue:
                 (count1, acc1, stream1, generator) = queue.popleft()
@@ -235,7 +227,7 @@ def BreadthNoTrampoline(first, start, stop, rest, reduce,
                     yield (acc1, stream1)
                 count2 = count1 + 1
                 for (value, stream2) in generator:
-                    acc2 = join(acc1, value)
+                    acc2 = acc1 + value
                     if stop is None or count2 <= stop:
                         queue.append((count2, acc2, stream2, 
                                       rest._untagged_match(stream2)))
