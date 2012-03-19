@@ -214,7 +214,10 @@ class StringTest(BaseTest):
         self.assert_direct('"ab\nc"', String(), [['ab\nc']])
         self.assert_direct('"ab\nc"', SingleLineString(), [])
         self.assert_direct('"ab\nc"', SkipString(), [['abc']])
-        
+
+    def test_ints(self):
+        self.assert_direct([1,2,3,1], String(quote=[1], empty=[]), [[[2,3]]])
+
 
 class OptionalTest(BaseTest):
     
