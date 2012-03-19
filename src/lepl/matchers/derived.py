@@ -45,7 +45,7 @@ from lepl.matchers.transform import TransformationWrapper, Transform, \
     ApplyArgs, ApplyRaw
 from lepl.regexp.matchers import NfaRegexp, DfaRegexp
 from lepl.stream.core import s_join
-from lepl.support.lib import assert_type, lmap, fmt, basestring
+from lepl.support.lib import assert_type, lmap, fmt, basestring, reduce
 from lepl.support.warn import warn_on_use
 
  
@@ -76,7 +76,8 @@ def Repeat(matcher, start=0, stop=None, limit=None, algorithm=DEPTH_FIRST,
     
     If `reduce` is given it should be a pair (zero, join) where
     `join(results, next)` is used to accumulate results and `zero` is the
-    initial value of `results`.  By default the value is `([], +)`.
+    initial value of `results`.  By default the value is `([], +)`.  This
+    uses an internal reduction, rather than the `Repeat` matcher.
     '''
     first = coerce_(matcher)
     if separator is None:
@@ -323,6 +324,16 @@ def Map(matcher, function):
         return Apply(matcher, lambda l: list(map(function, l)), raw=True)
 
 
+def Reduce(matcher, zero, join=__add__):
+    '''
+    Combine the results from the matcher using `reduce(join, results, zero)`.
+    Unlike `Add` this will return a value (`zero`) when there are no matches.
+    '''
+    def reduce_(_stream, matcher):
+        (results, stream_out) = matcher()
+        return ([reduce(join, results, zero)], stream_out)
+    return Apply(matcher, TransformationWrapper(reduce_))
+
 
 def add(_stream, matcher):
     '''
@@ -349,7 +360,8 @@ def add(_stream, matcher):
 def Add(matcher):
     '''
     Join tokens in the result using the "+" operator (**+**).
-    This joins strings and merges lists.  
+    This joins strings and merges lists.
+    Unlike `Reduce` this will have no effect of there are no matches.
     '''
     return Apply(matcher, TransformationWrapper(add))
 
@@ -604,7 +616,7 @@ def Literals(*matchers):
     return Or(*lmap(Literal, matchers))
 
 
-def String(quote='"', escape='\\'):
+def String(quote='"', escape='\\', empty='', join=__add__):
     '''
     Match a string with quotes that can be escaped.  This will match across
     newlines (see `SingleLineString` for an alternative).
@@ -613,11 +625,11 @@ def String(quote='"', escape='\\'):
     content = AnyBut(q)
     if escape:
         content = Or(And(Drop(escape), q), content)
-    content = Repeat(content, reduce=([''], lambda a, b: [a[0] + b[0]]))
+    content = Repeat(content, reduce=([empty], lambda a, b: [join(a[0], b[0])]))
     return And(Drop(q), content, Drop(q))
 
 
-def SingleLineString(quote='"', escape='\\', exclude='\n'):
+def SingleLineString(quote='"', escape='\\', exclude='\n', empty='', join=__add__):
     '''
     Like `String`,  but will not match across multiple lines.
     '''
@@ -625,11 +637,11 @@ def SingleLineString(quote='"', escape='\\', exclude='\n'):
     content = AnyBut(Or(q, Any(exclude)))
     if escape:
         content = Or(content, And(Drop(escape), q))
-    content = Repeat(content, reduce=([''], lambda a, b: [a[0] + b[0]]))
+    content = Repeat(content, reduce=([empty], lambda a, b: [join(a[0], b[0])]))
     return And(Drop(q), content, Drop(q))
 
 
-def SkipString(quote='"', escape='\\', ignore='\n'):
+def SkipString(quote='"', escape='\\', ignore='\n', empty='', join=__add__):
     '''
     Like `String`, matching across multiple lines, but will silently 
     drop newlines.
@@ -640,7 +652,7 @@ def SkipString(quote='"', escape='\\', ignore='\n'):
         content = Or(content, And(Drop(escape), q))
     content = Or(content, Drop(Any(ignore)))
     content = Repeat(content,
-        reduce=([''], lambda a, b: [a[0] + (b[0] if b else '')]))
+        reduce=([empty], lambda a, b: [join(a[0], b[0]) if b else a[0]]))
     return And(Drop(q), content, Drop(q))
 
 
