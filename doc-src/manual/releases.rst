@@ -121,6 +121,8 @@ Date        Version  Description
 2012-03-17  5.0.2    Made String() more string-specific.
 ----------  -------  -----------
 2012-03-18  5.1      Add Reduce() (makes String() more general again).
+----------  -------  -----------
+2012-04-07  5.1.1    Added lepl.core.dynamic.IntVar.
 ==========  =======  ===========
 
 5.1

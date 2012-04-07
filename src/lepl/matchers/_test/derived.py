@@ -96,7 +96,7 @@ class RepeatTest(TestCase):
         try:        
             self.assert_mixin(r[1::'x'], [1,2,3], [])
             assert False, 'expected error'
-        except ValueError:
+        except KeyError:
             pass
     
     def assert_mixin(self, match, stream, target):

@@ -91,7 +91,7 @@ def DepthFirst(first, start, stop, rest, generator_manager_queue_len):
             while stack:
                 (count1, acc1, stream1, generator) = stack[-1]
                 extended = False
-                if stop is None or count1 < stop:
+                if stop == None or count1 < stop:
                     count2 = count1 + 1
                     try:
                         (value, stream2) = yield generator
@@ -101,7 +101,7 @@ def DepthFirst(first, start, stop, rest, generator_manager_queue_len):
                     except StopIteration:
                         pass
                 if not extended:
-                    if count1 >= start and (stop is None or count1 <= stop):
+                    if count1 >= start and (stop == None or count1 <= stop):
                         yield (acc1, stream1)
                     stack.pop()
                 while support.generator_manager_queue_len \
@@ -127,14 +127,14 @@ def BreadthFirst(first, start, stop, rest, generator_manager_queue_len):
             stream = None
             while queue:
                 (count1, acc1, stream1, generator) = queue.popleft()
-                if count1 >= start and (stop is None or count1 <= stop):
+                if count1 >= start and (stop == None or count1 <= stop):
                     yield (acc1, stream1)
                 count2 = count1 + 1
                 try:
                     while True:
                         (value, stream2) = yield generator
                         acc2 = acc1 + value
-                        if stop is None or count2 <= stop:
+                        if stop == None or count2 <= stop:
                             queue.append((count2, acc2, stream2, 
                                           rest._match(stream2)))
                 except StopIteration:
@@ -185,7 +185,7 @@ def DepthNoTrampoline(first, start, stop, rest, generator_manager_queue_len):
             while stack:
                 (count1, acc1, stream1, generator) = stack[-1]
                 extended = False
-                if stop is None or count1 < stop:
+                if stop == None or count1 < stop:
                     count2 = count1 + 1
                     try:
                         (value, stream2) = next(generator)
@@ -196,7 +196,7 @@ def DepthNoTrampoline(first, start, stop, rest, generator_manager_queue_len):
                     except StopIteration:
                         pass
                 if not extended:
-                    if count1 >= start and (stop is None or count1 <= stop):
+                    if count1 >= start and (stop == None or count1 <= stop):
                         yield (acc1, stream1)
                     stack.pop()
                 while support.generator_manager_queue_len \
@@ -223,12 +223,12 @@ def BreadthNoTrampoline(first, start, stop, rest, generator_manager_queue_len):
             stream = None
             while queue:
                 (count1, acc1, stream1, generator) = queue.popleft()
-                if count1 >= start and (stop is None or count1 <= stop):
+                if count1 >= start and (stop == None or count1 <= stop):
                     yield (acc1, stream1)
                 count2 = count1 + 1
                 for (value, stream2) in generator:
                     acc2 = acc1 + value
-                    if stop is None or count2 <= stop:
+                    if stop == None or count2 <= stop:
                         queue.append((count2, acc2, stream2, 
                                       rest._untagged_match(stream2)))
                 while support.generator_manager_queue_len \

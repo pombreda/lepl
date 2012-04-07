@@ -355,7 +355,7 @@ __all__ = [
         'print_timing'
        ]
 
-__version__ = '5.1.0'
+__version__ = '5.1.1'
 
 if __version__.find('b') > -1:
     from logging import getLogger, basicConfig, WARN

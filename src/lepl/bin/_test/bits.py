@@ -185,7 +185,7 @@ else:
             assert BitString.from_int('100110001110000111b0') == b, b
             
         def assert_round_trip(self, start, stop=None, length=None):
-            if stop is None:
+            if stop == None:
                 stop = start
             result = BitString.from_int(start, length=length).to_int()
             assert result == stop, (result, stop)

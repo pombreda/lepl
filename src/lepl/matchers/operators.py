@@ -44,29 +44,31 @@ def RepeatWrapper(matcher, start, stop, step, separator, add, reduce):
     '''Parse `step` if it is a string.'''
     # Handle circular dependencies
     from lepl.matchers.derived import Repeat
-    if (isinstance(step, int)):
+    try:
+        int(step) # if this works, we may have a var, so keep the instance
         limit = step
         algorithm = DEPTH_FIRST
-    elif (isinstance(step, basestring)):
-        limit = None
-        algorithm = None
-        while step:
-            match = DIGITS.match(step)
-            if match:
-                if limit is None:
-                    limit = int(match.group(1))
-                    step = match.group(2)
+    except ValueError:
+        if (isinstance(step, basestring)):
+            limit = None
+            algorithm = None
+            while step:
+                match = DIGITS.match(step)
+                if match:
+                    if limit is None:
+                        limit = int(match.group(1))
+                        step = match.group(2)
+                    else:
+                        raise TypeError(fmt('Cannot parse limit/algorithm for []: {}',
+                                            step))
                 else:
-                    raise TypeError(fmt('Cannot parse limit/algorithm for []: {}',
-                                        step))
-            else:
-                if algorithm is None:
-                    algorithm = step[0]
-                    step = step[1:]
-    else:
-        raise TypeError('The step of [...] must be an integer limit, or a '
-                        'string to select the algorithm, or both as a string '
-                        'like "d1" for a single value, depth first')
+                    if algorithm is None:
+                        algorithm = step[0]
+                        step = step[1:]
+        else:
+            raise TypeError('The step of [...] must be an integer limit, or a '
+                            'string to select the algorithm, or both as a string '
+                            'like "d1" for a single value, depth first')
     return Repeat(matcher, start=start, stop=stop, limit=limit, 
                   algorithm=algorithm, separator=separator, add_=add,
                   reduce=reduce)
