@@ -8,4 +8,7 @@ syntax: glob
 *~
 dist
 *.pyc
-
+.idea
+*.iml
+test
+src/LEPL.egg-info

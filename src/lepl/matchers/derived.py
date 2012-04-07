@@ -86,18 +86,19 @@ def Repeat(matcher, start=0, stop=None, limit=None, algorithm=DEPTH_FIRST,
         rest = And(coerce_(separator, Regexp), first)
     if start is None:
         start = 0
-    assert_type('The start index for Repeat or [...]', start, int)
-    assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
-    assert_type('The limit value (step index) for Repeat or [...]', limit, int, none_ok=True)
-    assert_type('The algorithm (step index) for Repeat or [...]', algorithm, str)
-    if start < 0:
-        raise ValueError('Repeat or [...] cannot have a negative start.')
-    if stop is not None and stop < start:
-        raise ValueError('Repeat or [...] must have a stop '
-                         'value greater than or equal to the start.')
-    if 'dbgn'.find(algorithm) == -1:
-        raise ValueError('Repeat or [...] must have a step (algorithm) '
-                         'of d, b, g or n.')
+    # allow duck typing (mutable values - IntVar etc)
+#    assert_type('The start index for Repeat or [...]', start, int)
+#    assert_type('The stop index for Repeat or [...]', stop, int, none_ok=True)
+#    assert_type('The limit value (step index) for Repeat or [...]', limit, int, none_ok=True)
+#    assert_type('The algorithm (step index) for Repeat or [...]', algorithm, str)
+#    if start < 0:
+#        raise ValueError('Repeat or [...] cannot have a negative start.')
+#    if stop is not None and stop < start:
+#        raise ValueError('Repeat or [...] must have a stop '
+#                         'value greater than or equal to the start.')
+#    if 'dbgn'.find(algorithm) == -1:
+#        raise ValueError('Repeat or [...] must have a step (algorithm) '
+#                         'of d, b, g or n.')
     if add_ and reduce:
         raise ValueError('Repeat cannot apply both add_ and reduce')
     elif add_:

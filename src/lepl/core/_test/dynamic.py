@@ -27,21 +27,30 @@
 # above, a recipient may use your version of this file under either the
 # MPL or the LGPL License.
 
-
 '''
-Tests for the lepl.core package.
+Initial, minimal support for dynamic variables.  This allows you to use a
+value found in matching as part of another matcher IN SOME RESTRICTED CASES.
 '''
 
+from unittest import TestCase
 
-# we need to import all files used in the automated self-test
+from lepl import Apply, UnsignedInteger, Repeat, Any
+from lepl.core.dynamic import IntVar
 
-# pylint: disable-msg=E0611
-#@PydevCodeAnalysisIgnore
-import lepl.core._test.clone
-import lepl.core._test.config
-import lepl.core._test.dynamic
-import lepl.core._test.manager
-import lepl.core._test.parser
-import lepl.core._test.rewrite_delayed_bug
-import lepl.core._test.rewrite_repeat_bug
-import lepl.core._test.rewriters
+
+class DynamicTest(TestCase):
+
+    def test_lt(self):
+        three = IntVar(3)
+        assert three < 4
+        assert 2 < three
+        assert 3 == three
+
+    def test_dynamic(self):
+        size = IntVar()
+        header = Apply(UnsignedInteger(), size.setter())
+        body = Repeat(Any(), stop=size, add_=True)
+        matcher = ~header & body
+        matcher.config.no_compile_to_regexp().no_full_first_match()
+        result = next(matcher.match_string("3abcd"))[0]
+        assert result == ['abc'], result
